@@ -2,6 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "cards": {
     "01001a": {
+      "cardName": "Spider-Man",
+      "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "abilities": [
         {
           "id": "spider_sense",
@@ -13,6 +15,8 @@
       ]
     },
     "01001b": {
+      "cardName": "Peter Parker",
+      "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "abilities": [
         {
           "id": "scientist",
@@ -24,6 +28,8 @@
       ]
     },
     "01002": {
+      "cardName": "Black Cat",
+      "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand.",
       "abilities": [
         {
           "id": "black_cat_when_played",
@@ -35,6 +41,8 @@
       ]
     },
     "01003": {
+      "cardName": "Backflip",
+      "comment": "Defense Event: Interrupt when taking attack damage -> prevent all damage.",
       "abilities": [
         {
           "id": "backflip",
@@ -48,6 +56,8 @@
       ]
     },
     "01004": {
+      "cardName": "Enhanced Spider-Sense",
+      "comment": "Hero Event: Hero Interrupt when treachery revealed -> cancel its When Revealed effects.",
       "abilities": [
         {
           "id": "enhanced_spider_sense",
@@ -60,6 +70,8 @@
       ]
     },
     "01005": {
+      "cardName": "Swinging Web Kick",
+      "comment": "Attack Event: Hero Action -> Deal 8 damage to an enemy.",
       "abilities": [
         {
           "id": "swinging_web_kick",
@@ -71,6 +83,8 @@
       ]
     },
     "01006": {
+      "cardName": "Aunt May",
+      "comment": "Support: Alter-Ego Action -> Exhaust Aunt May to heal 4 damage from Peter Parker.",
       "abilities": [
         {
           "id": "aunt_may",
@@ -82,6 +96,8 @@
       ]
     },
     "01007": {
+      "cardName": "Spider-Tracer",
+      "comment": "Upgrade: Attach to minion. Forced Interrupt when attached minion defeated -> remove 3 threat.",
       "abilities": [
         {
           "id": "spider_tracer_defeated",
@@ -93,6 +109,8 @@
       ]
     },
     "01008": {
+      "cardName": "Web-Shooter",
+      "comment": "Upgrade: Enters play with 3 web counters -> Exhaust & remove 1 counter to generate a Wild resource.",
       "uses": { "type": "counters", "count": 3, "discardOnEmpty": true },
       "abilities": [
         {
@@ -105,6 +123,8 @@
       ]
     },
     "01009": {
+      "cardName": "Webbed Up",
+      "comment": "Upgrade: Attach to enemy. Forced Interrupt when attached enemy attacks -> discard Webbed Up & stun enemy.",
       "abilities": [
         {
           "id": "webbed_up_attack_interrupt",
@@ -116,6 +136,8 @@
       ]
     },
     "01059": {
+      "cardName": "Jessica Jones",
+      "comment": "Ally: Constant -> Gets +1 THW for each side scheme in play.",
       "abilities": [
         {
           "id": "jessica_jones_thw_boost",
@@ -126,6 +148,8 @@
       ]
     },
     "01060": {
+      "cardName": "For Justice!",
+      "comment": "Event: Hero Action -> Remove 3 threat (4 threat instead if paid using a Mental resource).",
       "abilities": [
         {
           "id": "for_justice",
@@ -137,6 +161,8 @@
       ]
     },
     "01061": {
+      "cardName": "Great Responsibility",
+      "comment": "Event: Hero Interrupt when threat would be placed on a scheme -> take it as damage instead.",
       "abilities": [
         {
           "id": "great_responsibility",
@@ -149,6 +175,8 @@
       ]
     },
     "01063": {
+      "cardName": "Interrogation Room",
+      "comment": "Support: Response after you defeat a minion -> exhaust to remove 1 threat from a scheme.",
       "abilities": [
         {
           "id": "interrogation_room_response",
@@ -161,6 +189,8 @@
       ]
     },
     "01064": {
+      "cardName": "Surveillance Team",
+      "comment": "Support: Enters play with 3 snoop counters -> exhaust & remove 1 counter to remove 1 threat.",
       "uses": { "type": "snoop_counters", "count": 3, "discardOnEmpty": true },
       "abilities": [
         {
@@ -173,6 +203,8 @@
       ]
     },
     "01083": {
+      "cardName": "Mockingbird",
+      "comment": "Ally: Forced Response after Mockingbird enters play -> stun an enemy.",
       "abilities": [
         {
           "id": "mockingbird_when_played",
@@ -184,6 +216,8 @@
       ]
     },
     "01086": {
+      "cardName": "First Aid",
+      "comment": "Event: Action -> Heal 2 damage from any character.",
       "abilities": [
         {
           "id": "first_aid",
@@ -194,6 +228,8 @@
       ]
     },
     "01087": {
+      "cardName": "Haymaker",
+      "comment": "Attack Event: Hero Action -> Deal 3 damage to an enemy.",
       "abilities": [
         {
           "id": "haymaker",
@@ -205,6 +241,8 @@
       ]
     },
     "01091": {
+      "cardName": "Avengers Mansion",
+      "comment": "Support: Action -> Exhaust Avengers Mansion to choose a player to draw 1 card.",
       "abilities": [
         {
           "id": "avengers_mansion",
@@ -216,6 +254,8 @@
       ]
     },
     "01092": {
+      "cardName": "Helicarrier",
+      "comment": "Support: Action -> Exhaust Helicarrier to reduce the resource cost of the next card by 1.",
       "abilities": [
         {
           "id": "helicarrier_action",
@@ -227,6 +267,8 @@
       ]
     },
     "01095": {
+      "cardName": "Rhino (Stage II)",
+      "comment": "Villain Stage: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
       "abilities": [
         {
           "id": "rhino_2_when_revealed",
@@ -238,6 +280,8 @@
       ]
     },
     "01096": {
+      "cardName": "Rhino (Stage III)",
+      "comment": "Villain Stage: When Revealed -> Stun each hero. Enters play with Tough.",
       "abilities": [
         {
           "id": "rhino_3_when_revealed",
@@ -249,6 +293,8 @@
       ]
     },
     "01102": {
+      "cardName": "Sandman",
+      "comment": "Minion: When Revealed / Enters play -> Gains Tough status.",
       "abilities": [
         {
           "id": "sandman_toughness",
@@ -260,6 +306,8 @@
       ]
     },
     "01103": {
+      "cardName": "Shocker",
+      "comment": "Minion: When Revealed -> Deal 1 damage to each hero.",
       "abilities": [
         {
           "id": "shocker_when_revealed",
@@ -271,6 +319,8 @@
       ]
     },
     "01104": {
+      "cardName": "Hard to Keep Down",
+      "comment": "Treachery: When Revealed -> Rhino heals 4 HP. If 0 healed, gains Surge.",
       "abilities": [
         {
           "id": "hard_to_keep_down",
@@ -282,6 +332,8 @@
       ]
     },
     "01105": {
+      "cardName": "I'm Tough!",
+      "comment": "Treachery: When Revealed -> Rhino gains Tough status. If already Tough, gains Surge.",
       "abilities": [
         {
           "id": "im_tough",
@@ -293,6 +345,8 @@
       ]
     },
     "01106": {
+      "cardName": "Stampede",
+      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Rhino attacks you.",
       "abilities": [
         {
           "id": "stampede",
@@ -302,27 +356,9 @@
         }
       ]
     },
-    "01186": {
-      "abilities": [
-        {
-          "id": "advance_treachery",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
-        }
-      ]
-    },
-    "01187": {
-      "abilities": [
-        {
-          "id": "assault_treachery",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
-        }
-      ]
-    },
     "01110": {
+      "cardName": "Hydra Bomber",
+      "comment": "Minion: When Revealed -> Choose either take 2 damage or place 1 threat on main scheme.",
       "abilities": [
         {
           "id": "hydra_bomber_when_revealed",
@@ -334,6 +370,8 @@
       ]
     },
     "01111": {
+      "cardName": "False Alarm",
+      "comment": "Treachery: When Revealed -> Confuse your hero.",
       "abilities": [
         {
           "id": "false_alarm",
@@ -345,6 +383,8 @@
       ]
     },
     "01112": {
+      "cardName": "Explosion",
+      "comment": "Treachery: When Revealed -> Deal 1 damage to each character and place 1 threat on main scheme.",
       "abilities": [
         {
           "id": "explosion",
@@ -352,6 +392,30 @@
           "trigger": "WHEN_REVEALED",
           "effect": "EXPLOSION_EFFECT",
           "params": { "damage": 1, "threat": 1 }
+        }
+      ]
+    },
+    "01186": {
+      "cardName": "Advance",
+      "comment": "Treachery: When Revealed -> The villain schemes immediately.",
+      "abilities": [
+        {
+          "id": "advance_treachery",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
+        }
+      ]
+    },
+    "01187": {
+      "cardName": "Assault",
+      "comment": "Treachery: When Revealed -> The villain attacks you immediately.",
+      "abilities": [
+        {
+          "id": "assault_treachery",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
         }
       ]
     }

@@ -81,6 +81,18 @@ export function setupGame(options: GameSetupOptions): GameState {
   const playerCount = options.players.length;
   const skipMulligan = options.skipMulligan ?? false;
 
+  // Unicity Constraint (RR v1.8): No two players can share the same hero identity
+  const seenHeroNames = new Set<string>();
+  for (const p of options.players) {
+    const heroKey = p.hero.name.toLowerCase();
+    if (seenHeroNames.has(heroKey)) {
+      throw new Error(
+        `Unicity constraint violation (RR v1.8): Duplicate hero identity '${p.hero.name}' selected. Each hero in a game must be unique.`,
+      );
+    }
+    seenHeroNames.add(heroKey);
+  }
+
   // 1. Setup Players
   const players: PlayerState[] = options.players.map((pConfig) => {
     // Instantiate all deck cards

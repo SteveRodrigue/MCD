@@ -265,6 +265,17 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 const heroCard =
                   deckDef && catalog ? catalog.getCard(deckDef.rawDeck.hero_code) : undefined;
 
+                // Find heroes taken in OTHER seats to enforce RR v1.8 unicity
+                const takenInOtherSeats = seats
+                  .map((otherDeckId, otherIdx) => {
+                    if (otherIdx === index || !otherDeckId) return null;
+                    const otherDeck = starterDecks.find((d) => d.id === otherDeckId);
+                    return otherDeck
+                      ? { heroId: otherDeck.heroId, heroName: otherDeck.heroName, seatNum: otherIdx + 1 }
+                      : null;
+                  })
+                  .filter(Boolean) as { heroId: string; heroName: string; seatNum: number }[];
+
                 return (
                   <div
                     key={index}
@@ -303,11 +314,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                               <span className="bg-comic-blue text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
                                 {deckDef.aspect}
                               </span>
-                              {/* Remove button (if more than 1 seat assigned or index > 0) */}
+                              {/* Remove button (if more than 1 seat assigned) */}
                               {playerCount > 1 && (
                                 <button
                                   onClick={() => handleAssignSeat(index, null)}
-                                  className="text-slate-400 hover:text-comic-red p-1 rounded hover:bg-rose-50 transition-colors"
+                                  className="text-slate-400 hover:text-comic-red p-1 rounded hover:bg-rose-50 transition-colors cursor-pointer"
                                   title="Vacate this hero seat"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -326,11 +337,24 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                               onChange={(e) => handleAssignSeat(index, e.target.value)}
                               className="w-full p-1.5 bg-white border border-comic-black rounded font-comic text-xs text-slate-900 shadow-comic-sm focus:outline-none cursor-pointer"
                             >
-                              {starterDecks.map((deck) => (
-                                <option key={deck.id} value={deck.id}>
-                                  {deck.heroName} ({deck.aspect} Starter • 40 Cards)
-                                </option>
-                              ))}
+                              {starterDecks.map((deck) => {
+                                const conflict = takenInOtherSeats.find(
+                                  (t) => t.heroId === deck.heroId,
+                                );
+                                const isTaken = Boolean(conflict);
+
+                                return (
+                                  <option
+                                    key={deck.id}
+                                    value={deck.id}
+                                    disabled={isTaken}
+                                    className={isTaken ? 'text-slate-400 bg-slate-100' : ''}
+                                  >
+                                    {deck.heroName} ({deck.aspect} Starter • 40 Cards)
+                                    {isTaken ? ` — (Taken in Seat ${conflict!.seatNum})` : ''}
+                                  </option>
+                                );
+                              })}
                             </select>
                           </div>
                         </div>
@@ -357,11 +381,24 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                             <option value="" disabled>
                               + Assign Hero to Seat {index + 1}...
                             </option>
-                            {starterDecks.map((deck) => (
-                              <option key={deck.id} value={deck.id}>
-                                {deck.heroName} ({deck.aspect} Starter)
-                              </option>
-                            ))}
+                            {starterDecks.map((deck) => {
+                              const conflict = takenInOtherSeats.find(
+                                (t) => t.heroId === deck.heroId,
+                              );
+                              const isTaken = Boolean(conflict);
+
+                              return (
+                                <option
+                                  key={deck.id}
+                                  value={deck.id}
+                                  disabled={isTaken}
+                                  className={isTaken ? 'text-slate-400 bg-slate-100' : ''}
+                                >
+                                  {deck.heroName} ({deck.aspect} Starter)
+                                  {isTaken ? ` — (Taken in Seat ${conflict!.seatNum})` : ''}
+                                </option>
+                              );
+                            })}
                           </select>
                         </div>
                       </div>

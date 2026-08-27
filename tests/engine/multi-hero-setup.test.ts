@@ -61,22 +61,21 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     const scenario = getScenario('rhino')!;
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
-    const starterDeck = getStarterDeck('spider_man_justice')!;
-    const deck1 = starterDeck.loadDeck(catalog);
-    const deck2 = starterDeck.loadDeck(catalog);
+    const deck1 = getStarterDeck('spider_man_justice')!.loadDeck(catalog);
+    const deck2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
     const state = setupGame({
       players: [
         {
           id: 'player_1',
-          name: 'Spider-Man (Hero 1)',
+          name: 'Hero 1 (Spider-Man)',
           hero: deck1.hero,
           alterEgo: deck1.alterEgo,
           deckCards: deck1.deckCards,
         },
         {
           id: 'player_2',
-          name: 'Spider-Man (Hero 2)',
+          name: 'Hero 2 (Captain Marvel)',
           hero: deck2.hero,
           alterEgo: deck2.alterEgo,
           deckCards: deck2.deckCards,
@@ -103,14 +102,19 @@ describe('Multi-Hero Solo Mode & Scenario Setup', () => {
     const scenario = getScenario('rhino')!;
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
-    const starterDeck = getStarterDeck('spider_man_justice')!;
+    const deckIds = [
+      'spider_man_justice',
+      'captain_marvel_leadership',
+      'she_hulk_aggression',
+      'black_panther_protection',
+    ];
 
     const state = setupGame({
-      players: [1, 2, 3, 4].map((i) => {
-        const d = starterDeck.loadDeck(catalog);
+      players: deckIds.map((deckId, i) => {
+        const d = getStarterDeck(deckId)!.loadDeck(catalog);
         return {
-          id: `player_${i}`,
-          name: `Hero Seat ${i}`,
+          id: `player_${i + 1}`,
+          name: `Hero Seat ${i + 1} (${d.hero.name})`,
           hero: d.hero,
           alterEgo: d.alterEgo,
           deckCards: d.deckCards,

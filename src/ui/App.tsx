@@ -8,7 +8,6 @@ import {
   getScenario,
   getStarterDeck,
   GameState,
-  GamePhase,
 } from '../engine';
 import { ScenarioSelector, SetupSelection } from './components/setup/ScenarioSelector';
 import { MulliganScreen } from './components/setup/MulliganScreen';
@@ -57,7 +56,7 @@ export const AppContent: React.FC = () => {
     setStage('MULLIGAN');
   };
 
-  const handleConfirmMulligan = (playerId: string, discardIds: string[]) => {
+  const handleResolveHeroMulligan = (playerId: string, discardIds: string[]) => {
     if (!gameState) return;
 
     const { state: nextState } = dispatchAction(gameState, {
@@ -67,11 +66,26 @@ export const AppContent: React.FC = () => {
     });
 
     setGameState(nextState);
+  };
 
-    // If all players completed mulligan, move to in-game
-    if (nextState.phase === GamePhase.PLAYER_PHASE) {
-      setStage('IN_GAME');
+  const handleStartScenario = () => {
+    if (!gameState) return;
+    let currentState = gameState;
+
+    // Auto-resolve any remaining unconfirmed players (keeping full hands)
+    for (const player of currentState.players) {
+      if (!currentState.setupState?.mulliganCompleted[player.id]) {
+        const { state: nextState } = dispatchAction(currentState, {
+          type: 'RESOLVE_MULLIGAN',
+          playerId: player.id,
+          discardCardInstanceIds: [],
+        });
+        currentState = nextState;
+      }
     }
+
+    setGameState(currentState);
+    setStage('IN_GAME');
   };
 
   const handleReset = () => {
@@ -93,7 +107,8 @@ export const AppContent: React.FC = () => {
         {stage === 'MULLIGAN' && gameState && (
           <MulliganScreen
             gameState={gameState}
-            onConfirmMulligan={handleConfirmMulligan}
+            onResolveHeroMulligan={handleResolveHeroMulligan}
+            onStartScenario={handleStartScenario}
           />
         )}
 

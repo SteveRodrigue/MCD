@@ -20,7 +20,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
       </div>
 
       {/* 1. Engaged Minions Row (Always Visible for this Hero Seat!) */}
-      <div className="bg-rose-50/80 p-3 rounded-lg border-2 border-comic-black shadow-comic-sm">
+      <div className="bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm">
         <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
           <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
@@ -59,25 +59,26 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
             })}
           </div>
         ) : (
-          <div className="py-2.5 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2">
+          <div className="py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2">
             <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
           </div>
         )}
       </div>
 
-      {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start pt-1">
-        {/* Identity Station (Left: 4 cols) */}
-        <div className="md:col-span-4 flex flex-col items-center sm:items-start gap-2.5 bg-sky-50/70 p-3 rounded-lg border border-comic-black">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-comic-blue" />
-              <span className="font-comic text-base text-comic-black">
+      {/* 2. Main Hero Play Area Grid: Identity Station (Shrunk to card), Allies, Tableau */}
+      <div className="flex flex-wrap items-start gap-4 pt-1">
+        {/* Identity Station (Shrunk to exact width of card + borders) */}
+        <div className="w-fit flex flex-col gap-2 bg-sky-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+          {/* Header */}
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-1">
+              <Shield className="w-4 h-4 text-comic-blue shrink-0" />
+              <span className="font-comic text-sm text-comic-black truncate max-w-[120px]">
                 {player.activeFormCard.name}
               </span>
             </div>
             <span
-              className={`font-comic text-xs px-2 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm ${
+              className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold shrink-0 ${
                 player.currentForm === 'hero'
                   ? 'bg-comic-red text-white'
                   : 'bg-amber-300 text-slate-950'
@@ -87,18 +88,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
             </span>
           </div>
 
-          {/* Health Bar & Dial */}
-          <div className="w-full space-y-1">
-            <div className="flex justify-between text-xs font-bold">
+          {/* Health Bar (Exact width of card) */}
+          <div className="w-full space-y-0.5">
+            <div className="flex justify-between text-[11px] font-bold">
               <span className="text-slate-600 flex items-center gap-1">
-                <Heart className="w-3.5 h-3.5 text-comic-red fill-comic-red" />
+                <Heart className="w-3 h-3 text-comic-red fill-comic-red" />
                 Health:
               </span>
-              <span className="text-comic-blue font-comic text-sm">
+              <span className="text-comic-blue font-comic text-xs">
                 {player.health} / {player.maxHealth} HP
               </span>
             </div>
-            <div className="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden border-2 border-comic-black shadow-comic-sm">
+            <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-comic-black shadow-comic-sm">
               <div
                 className="bg-comic-blue h-full transition-all duration-300"
                 style={{ width: `${healthPercent}%` }}
@@ -108,11 +109,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
 
           {/* Status Overlay Badges */}
           {player.statusCards.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {player.statusCards.map((st, i) => (
                 <span
                   key={i}
-                  className={`font-comic text-xs px-2 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
+                  className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
                     st === StatusCard.TOUGH
                       ? 'bg-sky-400 text-slate-950'
                       : st === StatusCard.STUNNED
@@ -127,7 +128,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
           )}
 
           {/* Identity Card */}
-          <div className="mx-auto sm:mx-0 pt-1">
+          <div className="pt-0.5">
             <CardView
               card={player.activeFormCard}
               isExhausted={player.exhausted}
@@ -138,9 +139,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
           </div>
         </div>
 
-        {/* Allies Row (Center: 4 cols) */}
-        <div className="md:col-span-4 bg-amber-50/60 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
-          <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-amber-200 pb-1">
+        {/* Allies Row (Expands in remaining space) */}
+        <div className="flex-1 min-w-[200px] bg-amber-50/60 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2 min-h-[220px]">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-amber-200 pb-1.5">
             <span className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-comic-blue" />
               Allies in Play ({player.allies.length} / 3)
@@ -162,9 +163,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
           )}
         </div>
 
-        {/* Tableau: Supports & Upgrades (Right: 4 cols) */}
-        <div className="md:col-span-4 bg-slate-50 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
-          <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1">
+        {/* Tableau: Supports & Upgrades (Expands in remaining space) */}
+        <div className="flex-1 min-w-[220px] bg-slate-50 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2 min-h-[220px]">
+          <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1.5">
             <span className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-comic-yellow" />
               Tableau: Upgrades & Supports ({player.tableau.length})

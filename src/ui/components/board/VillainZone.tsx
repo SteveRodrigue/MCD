@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Skull, AlertTriangle, Layers, Flame, X, Eye } from 'lucide-react';
-import { VillainState, MainSchemeState, SideSchemeState, CardInstance, StatusCard } from '../../../engine/models';
+import React, { useState, useMemo } from 'react';
+import { Skull, AlertTriangle, Layers, Flame, X, Eye, ArrowDownUp, Filter } from 'lucide-react';
+import { VillainState, MainSchemeState, SideSchemeState, CardInstance, StatusCard, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 
 interface VillainZoneProps {
@@ -10,6 +10,41 @@ interface VillainZoneProps {
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
   accelerationTokens: number;
+}
+
+type SortMode = 'deck_order' | 'card_type' | 'encounter_set';
+type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
+
+export function getEncounterSetName(card: NormalizedCard): string {
+  if (card.type === 'obligation' || (card as any).type_code === 'obligation') {
+    return 'Player Obligations';
+  }
+  const setCode = card.setCode || (card as any).set_code || (card as any).set || '';
+  if (setCode === 'rhino') return 'Rhino';
+  if (setCode === 'standard') return 'Standard';
+  if (setCode === 'bomb_scare') return 'Bomb Scare';
+  if (setCode === 'masters_of_evil') return 'Masters of Evil';
+  if (setCode === 'under_attack') return 'Under Attack';
+  if (setCode === 'legions_of_hydra') return 'Legions of Hydra';
+  if (setCode === 'doomsday_chair') return 'The Doomsday Chair';
+  if (setCode.includes('spider') || setCode.includes('obligation')) return 'Player Obligations';
+
+  return setCode
+    .split('_')
+    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ') || 'Encounter Set';
+}
+
+function getCardTypeName(card: NormalizedCard): string {
+  const type = card.type || (card as any).type_code || 'encounter';
+  if (type === 'minion') return 'Minions';
+  if (type === 'treachery') return 'Treacheries';
+  if (type === 'side_scheme' || type === 'player_side_scheme') return 'Side Schemes';
+  if (type === 'attachment') return 'Attachments';
+  if (type === 'obligation') return 'Obligations';
+  if (type === 'main_scheme') return 'Main Schemes';
+  if (type === 'villain') return 'Villains';
+  return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 export const VillainZone: React.FC<VillainZoneProps> = ({
@@ -23,10 +58,61 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
+  // Inspector View Sort States
+  const [sortMode, setSortMode] = useState<SortMode>('deck_order');
+  const [deckDirection, setDeckDirection] = useState<DeckDirection>('top_to_bottom');
+
   const threatPercent = Math.min(100, (mainScheme.threat / mainScheme.targetThreat) * 100);
   const healthPercent = Math.max(0, (villain.health / villain.maxHealth) * 100);
 
   const topDiscard = encounterDiscard[encounterDiscard.length - 1];
+
+  // Process and sort Encounter Deck for Inspector View
+  const processedDeckItems = useMemo(() => {
+    // Attach original deck index (0-based: 0 is top of deck)
+    const items = encounterDeck.map((instance, originalIndex) => ({
+      instance,
+      originalIndex,
+      encounterSet: getEncounterSetName(instance.card),
+      cardType: getCardTypeName(instance.card),
+    }));
+
+    if (sortMode === 'deck_order') {
+      return deckDirection === 'top_to_bottom' ? items : [...items].reverse();
+    }
+
+    if (sortMode === 'card_type') {
+      return [...items].sort((a, b) => {
+        if (a.cardType !== b.cardType) return a.cardType.localeCompare(b.cardType);
+        return a.originalIndex - b.originalIndex;
+      });
+    }
+
+    if (sortMode === 'encounter_set') {
+      return [...items].sort((a, b) => {
+        if (a.encounterSet !== b.encounterSet) return a.encounterSet.localeCompare(b.encounterSet);
+        return a.originalIndex - b.originalIndex;
+      });
+    }
+
+    return items;
+  }, [encounterDeck, sortMode, deckDirection]);
+
+  // Group items by category if not in pure deck order
+  const groupedDeckItems = useMemo(() => {
+    if (sortMode === 'deck_order') return null;
+
+    const groupKey = sortMode === 'card_type' ? 'cardType' : 'encounterSet';
+    const groups: Record<string, typeof processedDeckItems> = {};
+
+    processedDeckItems.forEach((item) => {
+      const key = item[groupKey];
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+
+    return groups;
+  }, [processedDeckItems, sortMode]);
 
   return (
     <>
@@ -44,7 +130,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             <div
               onClick={() => setShowDeckModal(true)}
               className="flex flex-col items-center group cursor-pointer"
-              title="Inspect Encounter Deck (Dev Mode - Search/Scry)"
+              title="Inspect Encounter Deck (Dev Mode)"
             >
               <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-900 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots group-hover:border-comic-yellow transition-all">
                 <Layers className="w-5 h-5 text-comic-yellow mb-1 group-hover:scale-110 transition-transform" />
@@ -208,10 +294,11 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
         </div>
       </section>
 
-      {/* Encounter Deck Inspector Modal (Dev Mode) */}
+      {/* Encounter Deck Inspector Modal (Dev Mode with Sorting & Set Labels) */}
       {showDeckModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-6 h-6 text-comic-yellow" />
@@ -225,7 +312,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-600">
-                    Cards are listed in exact draw order from Top of Deck (first) to Bottom of Deck (last).
+                    Sort view by Deck Order, Card Type, or Encounter Set. Each card displays its Encounter Set label below.
                   </p>
                 </div>
               </div>
@@ -237,21 +324,109 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 py-4">
-              {encounterDeck.map((cardInst, idx) => (
-                <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                  <div className="relative">
-                    <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
-                    <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
-                      #{idx + 1}
+            {/* Sorting Controls Bar */}
+            <div className="bg-slate-100 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-comic-blue" />
+                <span className="font-comic text-xs text-slate-700 uppercase">Sort View By:</span>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setSortMode('deck_order')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'deck_order'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Deck Order
+                  </button>
+                  <button
+                    onClick={() => setSortMode('card_type')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'card_type'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Card Type
+                  </button>
+                  <button
+                    onClick={() => setSortMode('encounter_set')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'encounter_set'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Encounter Set
+                  </button>
+                </div>
+              </div>
+
+              {sortMode === 'deck_order' && (
+                <div className="flex items-center gap-2">
+                  <ArrowDownUp className="w-4 h-4 text-slate-600" />
+                  <button
+                    onClick={() =>
+                      setDeckDirection((prev) =>
+                        prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom'
+                      )
+                    }
+                    className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
+                  >
+                    {deckDirection === 'top_to_bottom' ? '⬆️ Top to Bottom (#1 ⟶ #N)' : '⬇️ Bottom to Top (#N ⟶ #1)'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Cards Display Grid (Grouped or Flat) */}
+            {groupedDeckItems ? (
+              <div className="space-y-6 py-2">
+                {Object.entries(groupedDeckItems).map(([groupName, groupItems]) => (
+                  <div key={groupName} className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-300">
+                    <div className="flex items-center justify-between border-b border-slate-300 pb-1.5">
+                      <span className="font-comic text-sm text-comic-black uppercase">
+                        {groupName} ({groupItems.length} Cards)
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
+                      {groupItems.map(({ instance, originalIndex, encounterSet }) => (
+                        <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                          <div className="relative">
+                            <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                            <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                              #{originalIndex + 1}
+                            </span>
+                          </div>
+                          {/* Encounter Set Label at the Bottom */}
+                          <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
+                            {encounterSet}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-center gap-4 py-4">
+                {processedDeckItems.map(({ instance, originalIndex, encounterSet }) => (
+                  <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                      <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                        #{originalIndex + 1}
+                      </span>
+                    </div>
+                    {/* Encounter Set Label at the Bottom */}
+                    <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
+                      {encounterSet}
                     </span>
                   </div>
-                  <span className="font-comic text-[11px] text-slate-700 truncate max-w-[110px] text-center">
-                    {cardInst.card.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="text-center pt-2 border-t border-slate-200">
               <button
@@ -298,8 +473,8 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                       #{idx + 1}
                     </span>
                   </div>
-                  <span className="font-comic text-[11px] text-slate-700 truncate max-w-[110px] text-center">
-                    {cardInst.card.name}
+                  <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
+                    {getEncounterSetName(cardInst.card)}
                   </span>
                 </div>
               ))}

@@ -157,18 +157,9 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
   }
 
-  // 5. Hero Basic Actions: Thwart vs Attack
-  if (player.currentForm === 'hero') {
-    // If threat >= floor(maxThreat / 2), strictly THWART instead of Attack
-    if (isThreatHigh && canBasicThwart(state, playerId, 'main_scheme').allowed) {
-      return {
-        type: 'BASIC_THWART',
-        playerId,
-        targetType: 'main_scheme',
-      };
-    }
-
-    // Side Scheme thwart check if any active
+  // 5. Hero Basic Actions: MUST exhaust hero before ending turn (privilege Thwart over Attack)
+  if (player.currentForm === 'hero' && !player.exhausted) {
+    // 5A. Privilege Thwarting: Side Scheme first
     if (state.sideSchemes.length > 0) {
       const sideScheme = state.sideSchemes[0];
       if (canBasicThwart(state, playerId, 'side_scheme', sideScheme.instanceId).allowed) {
@@ -181,8 +172,8 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       }
     }
 
-    // General Main Scheme thwart if threat > 0
-    if (state.mainScheme.threat > 1 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
+    // 5B. Privilege Thwarting: Main Scheme if threat > 0
+    if (state.mainScheme.threat > 0 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
       return {
         type: 'BASIC_THWART',
         playerId,
@@ -190,7 +181,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       };
     }
 
-    // Attack Minion if engaged with any
+    // 5C. Attack Minion if engaged with any
     if (player.engagedMinions.length > 0) {
       const targetMinion = player.engagedMinions[0];
       if (canBasicAttack(state, playerId, 'minion', targetMinion.instanceId).allowed) {
@@ -203,7 +194,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       }
     }
 
-    // Attack Villain if allowed (no Guard)
+    // 5D. Attack Villain if allowed (no Guard)
     if (canBasicAttack(state, playerId, 'villain').allowed) {
       return {
         type: 'BASIC_ATTACK',
@@ -213,7 +204,25 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
   }
 
-  // 6. If no further actions, end turn
+  // 6. If in Alter-Ego form and not exhausted:
+  if (player.currentForm === 'alter_ego' && !player.exhausted) {
+    if (player.health < player.maxHealth && canBasicRecover(state, playerId).allowed) {
+      return { type: 'BASIC_RECOVER', playerId };
+    }
+    // If full HP and can flip to Hero to thwart/attack, flip now
+    if (canChangeForm(state, playerId).allowed) {
+      const heroForm = player.availableForms.find((f) => f.type === CardType.HERO);
+      if (heroForm) {
+        return {
+          type: 'CHANGE_FORM',
+          playerId,
+          targetFormCode: heroForm.code,
+        };
+      }
+    }
+  }
+
+  // 7. End turn only once all available activations/exhaustions are exhausted
   return {
     type: 'END_PLAYER_TURN',
     playerId,

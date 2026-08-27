@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Users, Flame, Zap, Play, Info } from 'lucide-react';
 import { listScenarios } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
+import { CardView } from '../cards/CardView';
 
 export interface SetupSelection {
   scenarioId: string;
@@ -102,6 +103,74 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               <div>
                 <span className="font-bold text-comic-blue uppercase">Recommended Modular: </span>
                 <span className="font-semibold">Bomb Scare</span> (Included in encounter deck)
+              </div>
+            </div>
+
+            {/* Scenario Card Art Previews */}
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                Scenario Preview:
+              </div>
+              <div className="flex items-center justify-center gap-4">
+                {/* Villain Stage I/II Card */}
+                <div className="text-center">
+                  <CardView
+                    card={
+                      {
+                        code: difficulty === 'standard' ? '01094' : '01095',
+                        name: `Rhino (Stage ${difficulty === 'standard' ? 'I' : 'II'})`,
+                        type: 'villain' as any,
+                        faction: 'encounter' as any,
+                        packCode: 'core',
+                        position: 94,
+                        quantity: 1,
+                        deckLimit: 1,
+                        isUnique: true,
+                        text: 'Rhino charges through the facility!',
+                        traits: ['Brute.', 'Criminal.'],
+                        resources: { physical: 0, energy: 0, mental: 0, wild: 0, total: 0 },
+                        boostIcons: 0,
+                        boostStar: false,
+                        errata: undefined,
+                        raw: {} as any,
+                      }
+                    }
+                    size="sm"
+                  />
+                  <span className="font-comic text-xs text-comic-black block mt-1">
+                    VILLAIN STAGE {difficulty === 'standard' ? 'I' : 'II'}
+                  </span>
+                </div>
+
+                {/* Main Scheme 1B */}
+                <div className="text-center">
+                  <CardView
+                    card={
+                      {
+                        code: '01097b',
+                        name: 'The Break-In! (1B)',
+                        type: 'main_scheme' as any,
+                        faction: 'encounter' as any,
+                        packCode: 'core',
+                        position: 97,
+                        quantity: 1,
+                        deckLimit: 1,
+                        isUnique: false,
+                        text: 'If 7 threat per player is on this scheme, the players lose the game.',
+                        traits: [],
+                        resources: { physical: 0, energy: 0, mental: 0, wild: 0, total: 0 },
+                        boostIcons: 0,
+                        boostStar: false,
+                        errata: undefined,
+                        raw: {} as any,
+                      }
+                    }
+                    size="sm"
+                  />
+                  <span className="font-comic text-xs text-comic-black block mt-1">
+                    MAIN SCHEME 1B
+                  </span>
+                </div>
               </div>
             </div>
           </div>

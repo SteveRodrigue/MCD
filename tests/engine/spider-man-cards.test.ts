@@ -9,12 +9,11 @@ import {
   MainSchemeCard,
   createCardInstance,
 } from '@engine/index';
-import { CardEffectRegistry } from '../../src/engine/cards/card-registry';
 
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
-describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
+describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
   let gameState: ReturnType<typeof setupGame>;
@@ -59,7 +58,7 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
   });
 
   describe('Spider-Sense Interrupt (01001a)', () => {
-    it('draws 1 card when the villain initiates an attack', () => {
+    it('draws 1 card dynamically via VILLAIN_INITIATES_ATTACK trigger', () => {
       // Put player in Hero form with empty hand
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
@@ -67,7 +66,7 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
 
       const initialDeckCount = gameState.players[0].deck.length;
 
-      // Villain activates against hero
+      // Step 2 Villain activates against hero
       step2_villainActivations(gameState);
 
       // Spider-Sense triggered: hand should have drawn 1 card
@@ -77,7 +76,7 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
   });
 
   describe('Backflip Defense Interrupt (01003)', () => {
-    it('prevents all attack damage and discards Backflip', () => {
+    it('prevents all attack damage and discards Backflip via TAKE_ATTACK_DAMAGE trigger', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
       gameState.players[0].hand = []; // Clean hand
@@ -101,7 +100,7 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
   });
 
   describe('Swinging Web Kick Hero Action (01005)', () => {
-    it('deals 8 damage to the villain', () => {
+    it('deals 8 damage to the villain via declarative DEAL_DAMAGE effect', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
 
@@ -133,7 +132,7 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
   });
 
   describe('Aunt May Alter-Ego Action (01006)', () => {
-    it('heals 4 damage from Peter Parker in Alter-Ego form', () => {
+    it('heals 4 damage from Peter Parker via USE_CARD_ABILITY action', () => {
       gameState.players[0].currentForm = 'alter_ego';
       gameState.players[0].health = 5; // Damaged to 5/10
 
@@ -141,22 +140,22 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
       const auntMayInst = createCardInstance(auntMayCard);
       gameState.players[0].tableau.push(auntMayInst);
 
-      const handler = CardEffectRegistry['01006'];
-      const result = handler({
-        state: gameState,
+      const res = dispatchAction(gameState, {
+        type: 'USE_CARD_ABILITY',
         playerId: 'p1',
-        cardInstance: auntMayInst,
+        cardInstanceId: auntMayInst.instanceId,
+        abilityId: 'aunt_may',
       });
 
-      expect(result.success).toBe(true);
+      expect(res.result.success).toBe(true);
       // 5 + 4 = 9 HP
-      expect(gameState.players[0].health).toBe(9);
-      expect(auntMayInst.exhausted).toBe(true);
+      expect(res.state.players[0].health).toBe(9);
+      expect(res.state.players[0].tableau.find((c) => c.instanceId === auntMayInst.instanceId)?.exhausted).toBe(true);
     });
   });
 
   describe('Web-Shooter Uses & Resource (01008)', () => {
-    it('enters play with 3 web-counters and exhausts to generate wild resource', () => {
+    it('enters play with 3 web-counters and exhausts via USE_CARD_ABILITY', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
 
@@ -181,17 +180,18 @@ describe('Spider-Man Signature Cards & Trigger Windows (RR v1.8)', () => {
       expect(inPlayShooter).toBeDefined();
       expect(inPlayShooter.tokens?.counters).toBe(3); // 3 counters initialized!
 
-      // Activate Web-Shooter resource
-      const handler = CardEffectRegistry['01008'];
-      const resourceRes = handler({
-        state: res.state,
+      // Activate Web-Shooter resource ability
+      const resourceRes = dispatchAction(res.state, {
+        type: 'USE_CARD_ABILITY',
         playerId: 'p1',
-        cardInstance: inPlayShooter,
+        cardInstanceId: inPlayShooter.instanceId,
+        abilityId: 'web_shooter_resource',
       });
 
-      expect(resourceRes.success).toBe(true);
-      expect(inPlayShooter.tokens?.counters).toBe(2);
-      expect(inPlayShooter.exhausted).toBe(true);
+      expect(resourceRes.result.success).toBe(true);
+      const updatedShooter = resourceRes.state.players[0].tableau.find((c) => c.card.code === '01008')!;
+      expect(updatedShooter.tokens?.counters).toBe(2);
+      expect(updatedShooter.exhausted).toBe(true);
     });
   });
 });

@@ -16,7 +16,7 @@ import {
   canBasicThwart,
   canPlayCard,
 } from './legality-checker';
-import { CardEffectRegistry } from '../cards/card-registry';
+import { executeEffect } from '../effects';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -161,7 +161,6 @@ export function dispatchAction(
 
         // Check Villain Defeat
         if (nextState.villain.health <= 0) {
-          // If stage I defeated and Stage II exists, can advance in future or win
           nextState.winner = 'HEROES';
         }
 
@@ -271,7 +270,6 @@ export function dispatchAction(
         sideScheme.threat -= removed;
 
         if (sideScheme.threat <= 0) {
-          // Defeated side scheme -> discard
           nextState.sideSchemes.splice(schemeIndex, 1);
           nextState.encounterDiscard.push({
             instanceId: sideScheme.instanceId,
@@ -316,9 +314,13 @@ export function dispatchAction(
 
       const cardType = playedCardInstance.card.type;
 
-      // Initialize counters for cards with 'Uses' keyword (e.g. Web-Shooter: 3 counters)
-      if (playedCardInstance.card.code === '01008') {
-        playedCardInstance.tokens = { ...playedCardInstance.tokens, counters: 3 };
+      // Initialize counters declaratively for cards with 'uses' definition
+      const usesDef = playedCardInstance.card.enrichment?.uses;
+      if (usesDef) {
+        playedCardInstance.tokens = {
+          ...playedCardInstance.tokens,
+          counters: usesDef.count,
+        };
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
@@ -326,14 +328,12 @@ export function dispatchAction(
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
       } else if (cardType === CardType.EVENT) {
-        // Execute Event effect if registered in CardEffectRegistry
-        const handler = CardEffectRegistry[playedCardInstance.card.code];
-        if (handler) {
-          handler({
-            state: nextState,
+        // Execute declarative event abilities
+        const abilities = playedCardInstance.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          executeEffect(nextState, ability, {
             playerId: action.playerId,
-            cardInstance: playedCardInstance,
-            targetType: 'villain', // default or action target
+            targetType: 'villain',
             targetInstanceId: action.targetInstanceId,
           });
         }
@@ -355,6 +355,84 @@ export function dispatchAction(
       return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
+    case 'USE_CARD_ABILITY': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      // Find card in tableau or identity
+      let targetCardInst = player.tableau.find((c) => c.instanceId === action.cardInstanceId);
+      const isIdentity = player.activeFormCard.code === action.cardInstanceId;
+
+      const enrichment = isIdentity
+        ? player.activeFormCard.enrichment
+        : targetCardInst?.card.enrichment;
+
+      if (!enrichment || !enrichment.abilities) {
+        return { state, result: { success: false, error: 'Card has no registered abilities' } };
+      }
+
+      const ability = enrichment.abilities.find((a) => a.id === action.abilityId);
+      if (!ability) {
+        return { state, result: { success: false, error: 'Ability not found on card' } };
+      }
+
+      // Timing / Form validation
+      if (ability.timing === 'HERO_ACTION' && player.currentForm !== 'hero') {
+        return { state, result: { success: false, error: 'Can only use this ability in Hero form' } };
+      }
+      if (ability.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') {
+        return { state, result: { success: false, error: 'Can only use this ability in Alter-Ego form' } };
+      }
+
+      // Cost validation and execution
+      if (targetCardInst) {
+        if (ability.cost?.exhaustSelf && targetCardInst.exhausted) {
+          return { state, result: { success: false, error: 'Card is already exhausted' } };
+        }
+        if (ability.cost?.removeCounter) {
+          const currentCounters = targetCardInst.tokens?.counters || 0;
+          if (currentCounters < ability.cost.removeCounter) {
+            return { state, result: { success: false, error: 'Insufficient counters on card' } };
+          }
+          targetCardInst.tokens = {
+            ...targetCardInst.tokens,
+            counters: currentCounters - ability.cost.removeCounter,
+          };
+        }
+        if (ability.cost?.exhaustSelf) {
+          targetCardInst.exhausted = true;
+        }
+
+        // Discard on empty counters if configured
+        if (
+          targetCardInst.card.enrichment?.uses?.discardOnEmpty &&
+          (targetCardInst.tokens?.counters || 0) <= 0
+        ) {
+          const idx = player.tableau.findIndex((c) => c.instanceId === targetCardInst!.instanceId);
+          if (idx !== -1) {
+            const [discarded] = player.tableau.splice(idx, 1);
+            player.discard.push(discarded);
+          }
+        }
+      }
+
+      // Execute effect primitive
+      const effectRes = executeEffect(nextState, ability, {
+        playerId: action.playerId,
+        sourceCardInstance: targetCardInst,
+        targetInstanceId: action.targetInstanceId,
+      });
+
+      return {
+        state: nextState,
+        result: {
+          success: effectRes.success,
+          error: effectRes.error,
+          onomatopoeia: effectRes.onomatopoeia || 'ABILITY ACTIVATED!',
+        },
+      };
+    }
+
     case 'END_PLAYER_TURN': {
       return { state: nextState, result: { success: true } };
     }
@@ -363,3 +441,4 @@ export function dispatchAction(
       return { state, result: { success: false, error: 'Unknown action type' } };
   }
 }
+

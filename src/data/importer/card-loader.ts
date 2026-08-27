@@ -39,10 +39,19 @@ export function parseResources(raw: RawUpstreamCard) {
   };
 }
 
+import defaultCardEffects from '../supplemental/card-effects.json';
+import { CardEnrichment } from '@engine/models';
+
 /**
- * Converts a raw upstream MarvelsDB card into a normalized, strongly-typed card.
+ * Converts a raw upstream MarvelsDB card into a normalized, strongly-typed card,
+ * enriching it with supplemental abilities and trigger definitions.
  */
-export function normalizeRawCard(raw: RawUpstreamCard): NormalizedCard {
+export function normalizeRawCard(
+  raw: RawUpstreamCard,
+  supplementalEffects: Record<string, CardEnrichment> = defaultCardEffects.cards as Record<string, CardEnrichment>,
+): NormalizedCard {
+  const enrichment = supplementalEffects[raw.code];
+
   const base: NormalizedCard = {
     code: raw.code,
     name: raw.name,
@@ -66,6 +75,7 @@ export function normalizeRawCard(raw: RawUpstreamCard): NormalizedCard {
     boostIcons: raw.boost,
     boostStar: !!raw.boost_star,
     errata: raw.errata,
+    enrichment,
     raw,
   };
 

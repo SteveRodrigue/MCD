@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "cards": {
+    "01001a": {
+      "abilities": [
+        {
+          "id": "spider_sense",
+          "timing": "INTERRUPT",
+          "trigger": "VILLAIN_INITIATES_ATTACK",
+          "effect": "DRAW_CARDS",
+          "params": { "count": 1, "target": "SELF" }
+        }
+      ]
+    },
+    "01001b": {
+      "abilities": [
+        {
+          "id": "scientist",
+          "timing": "RESOURCE",
+          "limit": "ONCE_PER_ROUND",
+          "effect": "GENERATE_RESOURCE",
+          "params": { "resource": "mental", "amount": 1 }
+        }
+      ]
+    },
+    "01003": {
+      "abilities": [
+        {
+          "id": "backflip",
+          "timing": "INTERRUPT",
+          "trigger": "TAKE_ATTACK_DAMAGE",
+          "zone": "HAND",
+          "cost": { "discardSelf": true },
+          "effect": "PREVENT_DAMAGE",
+          "params": { "amount": "ALL" }
+        }
+      ]
+    },
+    "01005": {
+      "abilities": [
+        {
+          "id": "swinging_web_kick",
+          "timing": "HERO_ACTION",
+          "tags": ["ATTACK"],
+          "effect": "DEAL_DAMAGE",
+          "params": { "amount": 8, "target": "CHOSEN_ENEMY" }
+        }
+      ]
+    },
+    "01006": {
+      "abilities": [
+        {
+          "id": "aunt_may",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": { "exhaustSelf": true },
+          "effect": "HEAL_DAMAGE",
+          "params": { "amount": 4, "target": "SELF" }
+        }
+      ]
+    },
+    "01008": {
+      "uses": { "type": "counters", "count": 3, "discardOnEmpty": true },
+      "abilities": [
+        {
+          "id": "web_shooter_resource",
+          "timing": "RESOURCE",
+          "cost": { "exhaustSelf": true, "removeCounter": 1 },
+          "effect": "GENERATE_RESOURCE",
+          "params": { "resource": "wild", "amount": 1 }
+        }
+      ]
+    }
+  }
+}

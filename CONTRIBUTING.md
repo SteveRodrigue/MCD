@@ -6,6 +6,8 @@ Thank you for your interest in contributing to **Marvel Champions Digital**! As 
 
 ## 📜 Principles & Standards
 
+Before writing any code, please review our comprehensive **[Coding Guidelines & Best Practices](docs/coding_guidelines.md)**.
+
 1. **Decoupled Architecture:**
    * All game rules, card abilities, and trigger logic must reside strictly in `src/engine/` without any dependency on React, DOM, or browser APIs.
    * UI components in `src/ui/` should only render state and dispatch actions to the engine.

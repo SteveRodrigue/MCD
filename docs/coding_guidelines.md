@@ -1,0 +1,159 @@
+# Marvel Champions Digital (MCD) — Coding Guidelines & Best Practices
+
+To maintain high code quality, rules accuracy, and architectural integrity across all contributors (human and AI), all code written for **Marvel Champions Digital** must strictly adhere to these guidelines.
+
+---
+
+## 1. Architectural Boundaries (Strict Separation)
+
+```
++-------------------------------------------------------------------------+
+|                              src/ui/                                    |
+|   (React Components, Tailwind, Framer Motion, Dialogs, Comic Panels)    |
+|   ❌ NEVER contains rules calculations, HP math, or card effect logic.   |
+|   ✅ ONLY renders GameState and dispatches Action commands.              |
++------------------------------------+------------------------------------+
+                                     |
+                          dispatches Actions / Events
+                                     |
+                                     v
++-------------------------------------------------------------------------+
+|                            src/engine/                                  |
+|   (Pure TypeScript, Headless, Deterministic, 100% Testable)             |
+|   ❌ NEVER imports React, DOM, window, document, or CSS.                |
+|   ✅ ONLY processes state transitions, rule checks, and trigger queues.  |
++------------------------------------+------------------------------------+
+                                     |
+                           ingests JSON Card Data
+                                     |
+                                     v
++-------------------------------------------------------------------------+
+|                             src/data/                                   |
+|   (MarvelsDB card schemas, static JSON definitions, card loaders)       |
++-------------------------------------------------------------------------+
+```
+
+### Golden Rule:
+* **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
+
+---
+
+## 2. TypeScript & Type Safety Standards
+
+1. **Strict Typing Always:**
+   * No `any` types. If a type is truly unknown until runtime, use `unknown` with a custom type guard function.
+   * Do not disable ESLint/TypeScript strict checks with `@ts-ignore` unless accompanied by an explanatory comment and an issue reference.
+2. **Discriminated Unions for Actions & Events:**
+   * All game actions and events must use discriminated unions with a `type` literal:
+   ```typescript
+   export type GameAction =
+     | { type: 'PLAY_CARD'; playerId: string; cardId: string; payment: PaymentPlan }
+     | { type: 'BASIC_ATTACK'; playerId: string; targetId: string }
+     | { type: 'BASIC_THWART'; playerId: string; schemeId: string }
+     | { type: 'RECOVER'; playerId: string }
+     | { type: 'FLIP_IDENTITY'; playerId: string };
+   ```
+3. **State Immutability & Serialization:**
+   * `GameState` must be 100% JSON-serializable (plain objects, arrays, numbers, strings, booleans).
+   * **Do not** store class instances, closures, functions, DOM elements, or circular references inside `GameState`.
+   * State updates must be immutable (using pure functions, structural cloning, or state reducers).
+
+---
+
+## 3. Card Implementation Standards (Declarative Card DSL)
+
+Each card implementation must follow a predictable, declarative pattern:
+
+1. **Card Code Identification:**
+   * Every card must reference its canonical MarvelsDB code (e.g. `01001a` for Peter Parker, `01001b` for Spider-Man, `01005` for Web-Shooter).
+2. **Standardized Trigger Windows:**
+   * Abilities must explicitly declare their trigger window:
+     * `Action` / `Hero Action` / `Alter-Ego Action`
+     * `Forced Interrupt` / `Interrupt`
+     * `Forced Response` / `Response`
+     * `Resource` / `Hero Resource`
+     * `Constant`
+3. **Keyword & Trait Constants:**
+   * Never use raw string comparisons for traits or keywords. Use defined enums/consts:
+   ```typescript
+   // ❌ BAD
+   if (card.traits.includes("Avenger")) { ... }
+
+   // ✅ GOOD
+   import { Trait } from '@engine/models/traits';
+   if (card.traits.includes(Trait.AVENGER)) { ... }
+   ```
+
+---
+
+## 4. Test-Driven Development (TDD) Rules
+
+1. **No Card Without a Test:**
+   * Every hero ability, event card, upgrade, attachment, and villain activation must have automated tests in `tests/`.
+2. **Follow the AAA Pattern (Arrange - Act - Assert):**
+   ```typescript
+   it('triggers Spider-Sense when the villain initiates an attack', () => {
+     // Arrange
+     const state = createTestGame({
+       hero: '01001b', // Spider-Man
+       villain: '01094', // Rhino
+       hand: ['01009'], // Backflip in hand
+     });
+     const initialHandSize = state.players[0].hand.length;
+
+     // Act
+     const nextState = engine.stepVillainAttack(state, { targetPlayerId: 'player-1' });
+
+     // Assert
+     expect(nextState.players[0].hand.length).toBe(initialHandSize + 1); // Spider-Sense drew 1 card
+   });
+   ```
+3. **Fast Execution:**
+   * Unit tests must remain lightweight and headless. The entire test suite should execute in < 2 seconds.
+
+---
+
+## 5. Localization (i18n) Standards
+
+1. **Zero Hardcoded Display Strings:**
+   * All user-facing text, dialogs, button labels, and system log descriptions must use translation keys via `t('key')` or locale catalogs.
+   ```tsx
+   // ❌ BAD
+   <button>End Turn</button>
+
+   // ✅ GOOD
+   <button>{t('game.actions.endTurn')}</button>
+   ```
+2. **Translation Key Hierarchy:**
+   * Keys must be structured hierarchically in JSON:
+     * `game.phases.*`
+     * `game.actions.*`
+     * `keywords.*`
+     * `status.*`
+     * `prompts.*`
+
+---
+
+## 6. Code Style & Naming Conventions
+
+| Category | Convention | Example |
+| :--- | :--- | :--- |
+| **Interfaces / Types** | PascalCase | `GameState`, `CardDefinition`, `GameAction` |
+| **Enums / Const Objects** | PascalCase (name) / UPPER_SNAKE (values) | `Phase.PLAYER_PHASE`, `Trait.WEB_WARRIOR` |
+| **Functions / Methods** | camelCase | `calculateDamage()`, `resolveTrigger()` |
+| **React Components** | PascalCase | `HeroPlaymat.tsx`, `ComicOnomatopoeia.tsx` |
+| **Constants** | UPPER_SNAKE_CASE | `MAX_HAND_SIZE`, `DEFAULT_THREAT` |
+| **File Names** | kebab-case or camelCase (matching module standard) | `game-state.ts`, `card-loader.ts` |
+
+---
+
+## 7. Git & Commit Message Standards
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+* `feat:` A new feature or card ability implementation (e.g. `feat(engine): implement Tough replacement effect`)
+* `fix:` A bug fix in rules or UI (e.g. `fix(rules): prevent thwart when Patrol minion is active`)
+* `test:` Adding or refactoring test suites (e.g. `test(hero): add unit tests for Spider-Man Backflip`)
+* `docs:` Documentation or ADR updates (e.g. `docs(adr): add ADR-0006`)
+* `refactor:` Code restructuring without changing external behavior
+* `chore:` Build scripts, package updates, CI changes

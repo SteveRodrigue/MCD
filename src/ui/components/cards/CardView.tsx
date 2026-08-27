@@ -65,7 +65,7 @@ export const CardView: React.FC<CardViewProps> = ({
       <div
         className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${
           enableHoverZoom
-            ? 'group-hover:scale-[1.4] group-hover:-translate-y-4 group-hover:shadow-2xl'
+            ? 'group-hover:scale-[1.9] group-hover:-translate-y-8 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
           isMulliganSelected

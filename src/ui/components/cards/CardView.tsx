@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NormalizedCard, CardInstance, StatusCard } from '../../../engine/models';
+import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { useCardArt } from '../../hooks/useCardArt';
 
 export interface CardViewProps {
@@ -34,12 +34,21 @@ export const CardView: React.FC<CardViewProps> = ({
   const { artUrl, loading, error } = useCardArt(card.code);
   const [imageFailed, setImageFailed] = useState(false);
 
-  const isLandscape = card.isLandscape || card.orientation === 'landscape';
+  const isLandscape =
+    card.isLandscape === true ||
+    card.orientation === 'landscape' ||
+    card.type === CardType.MAIN_SCHEME ||
+    card.type === CardType.SIDE_SCHEME ||
+    (card.type as string) === 'main_scheme' ||
+    (card.type as string) === 'side_scheme' ||
+    (card.type as string) === 'player_side_scheme' ||
+    card.code === '01097a' ||
+    card.code === '01097b';
 
-  // Size Dimension Classes for Portrait vs Landscape Cards
+  // Size Dimension Classes for Portrait vs Landscape Cards (3.5:2.5 vs 2.5:3.5)
   const sizeClasses = isLandscape
     ? {
-        sm: 'w-40 h-28 text-xs',
+        sm: 'w-44 h-32 text-xs',
         md: 'w-64 h-44 text-sm',
         lg: 'w-80 h-56 text-base',
         xl: 'w-[410px] h-72 text-lg',

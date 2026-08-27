@@ -95,7 +95,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
           {/* Main Scheme Card in Landscape */}
           <div className="mx-auto sm:mx-0 pt-1">
-            <CardView card={mainScheme.card} size="sm" showTokens={false} enableHoverZoom={true} />
+            <CardView card={mainScheme.card} size="md" showTokens={false} enableHoverZoom={true} />
           </div>
         </div>
 

@@ -242,14 +242,22 @@
     },
     "01084": {
       "cardName": "Nick Fury",
-      "comment": "Ally: Forced Response after enters play -> draw 3 cards. Discard at end of round.",
+      "comment": "Ally: Forced Response after enters play -> choose: remove 2 threat, draw 3 cards, or deal 4 damage. Discard at end of round.",
       "abilities": [
         {
-          "id": "nick_fury_draw",
+          "id": "nick_fury_enters_play",
           "timing": "FORCED_RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "DRAW_CARDS",
-          "params": { "count": 3, "target": "SELF" }
+          "effect": "NICK_FURY_CHOICE",
+          "params": {
+            "defaultChoice": "DRAW_CARDS"
+          }
+        },
+        {
+          "id": "nick_fury_round_end",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ROUND_END",
+          "effect": "DISCARD_SELF"
         }
       ]
     },

@@ -234,6 +234,33 @@ export function executeEffect(
       return { state, success: true, onomatopoeia: 'SIDE SCHEME REVEALED!' };
     }
 
+    case 'NICK_FURY_CHOICE': {
+      // Dynamic AI evaluation: Threat -> Hand -> Damage
+      if (state.mainScheme.threat >= 3) {
+        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - 2);
+        return { state, success: true, onomatopoeia: 'NICK FURY REMOVES 2 THREAT!' };
+      }
+      if (player.hand.length <= 3) {
+        let drawnCount = 0;
+        for (let i = 0; i < 3; i++) {
+          const drawn = player.deck.shift();
+          if (drawn) {
+            player.hand.push(drawn);
+            drawnCount += 1;
+          }
+        }
+        return { state, success: true, onomatopoeia: `NICK FURY DRAWS +${drawnCount} CARDS!` };
+      }
+      const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+      if (toughIdx !== -1) {
+        state.villain.statusCards.splice(toughIdx, 1);
+        return { state, success: true, onomatopoeia: 'NICK FURY BREAKS TOUGH!' };
+      }
+      state.villain.health = Math.max(0, state.villain.health - 4);
+      if (state.villain.health <= 0) state.winner = 'HEROES';
+      return { state, success: true, onomatopoeia: 'NICK FURY DEALS 4 DAMAGE!' };
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }

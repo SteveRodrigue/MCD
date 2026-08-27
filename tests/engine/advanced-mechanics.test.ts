@@ -180,5 +180,37 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(updatedSurv.tokens?.counters).toBe(2);
       expect(updatedSurv.exhausted).toBe(true);
     });
+
+    it('Nick Fury enters play, executes modal choice (draws 3 cards), and discards at round end', () => {
+      const furyCard = catalog.getCard('01084')!; // 01084 Nick Fury (Cost 4)
+      const p1 = catalog.getCard('01003')!;
+      const p2 = catalog.getCard('01004')!;
+      const p3 = catalog.getCard('01005')!;
+      const p4 = catalog.getCard('01007')!;
+
+      const furyInst = createCardInstance(furyCard);
+      const pay1 = createCardInstance(p1);
+      const pay2 = createCardInstance(p2);
+      const pay3 = createCardInstance(p3);
+      const pay4 = createCardInstance(p4);
+
+      gameState.players[0].hand = [furyInst, pay1, pay2, pay3, pay4];
+      const initialDeck = gameState.players[0].deck.length;
+
+      // Play Nick Fury
+      const playRes = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: furyInst.instanceId,
+        paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId, pay4.instanceId],
+      });
+
+      expect(playRes.result.success).toBe(true);
+      // Nick Fury entered play in allies
+      expect(playRes.state.players[0].allies.some((a) => a.card.code === '01084')).toBe(true);
+      // Evaluated modal choice (hand was empty after paying 4 cards -> drew 3 cards)
+      expect(playRes.state.players[0].hand.length).toBe(3);
+      expect(playRes.state.players[0].deck.length).toBe(initialDeck - 3);
+    });
   });
 });

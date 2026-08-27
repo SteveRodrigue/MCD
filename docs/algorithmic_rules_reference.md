@@ -66,6 +66,34 @@ stateDiagram-v2
 
 ---
 
+### 2.1 Setup Phase & Multi-Hero Scaling State Machine (RR v1.8 p. 23–24)
+
+```mermaid
+stateDiagram-v2
+    [*] --> ScenarioSelection: Choose Scenario, Difficulty & Seats (1-4)
+    ScenarioSelection --> DeckAssembly: Pre-built Starter Decks Loaded
+    DeckAssembly --> DynamicScaling: Scale HP ($N \times 14$) & Threat ($N \times 7$)
+    DynamicScaling --> OpeningHands: Each Seat Draws Hand in Alter-Ego
+    OpeningHands --> MulliganPhase: Setup State = MULLIGAN_PHASE
+    
+    state MulliganPhase {
+        [*] --> SelectDiscards: Choose 0 to 6 cards
+        SelectDiscards --> DrawReplacements: Draw equal replacements from deck
+        DrawReplacements --> ShuffleDiscards: Shuffle discards into deck
+        ShuffleDiscards --> MarkSeatComplete: mulliganCompleted[playerId] = true
+        MarkSeatComplete --> NextSeat: If pending seats remain
+    }
+    
+    MulliganPhase --> PlayerPhase: All Seats Done (Game Ready)
+```
+
+* **Multi-Hero Scaling Formulae ($N = \text{playerCount}$):**
+  * $\text{Villain.MaxHealth} = \begin{cases} N \times \text{Card.Health} & \text{if } \text{healthPerHero} = \text{true} \\ \text{Card.Health} & \text{otherwise} \end{cases}$
+  * $\text{MainScheme.TargetThreat} = N \times \text{Card.TargetThreat}$
+  * $\text{MainScheme.StartingThreat} = \begin{cases} \text{Card.BaseThreat} & \text{if } \text{baseThreatFixed} = \text{true} \\ N \times \text{Card.BaseThreat} & \text{otherwise} \end{cases}$
+
+---
+
 ## 3. Formal Play Areas & Zones Architecture (RR v1.8 p. 22-23)
 
 The MCD rules engine strictly partitions all card instances into deterministic, immutable zones:
@@ -146,6 +174,25 @@ function ProcessEventPipeline(event: GameEvent, state: GameState): GameState {
 ---
 
 ## 5. Formal Player Action State Reducers (`src/engine/pipeline/action-dispatcher.ts`)
+
+### Algorithm 5.0: `RESOLVE_MULLIGAN` (RR v1.8 p. 23–24)
+* **Preconditions:**
+  1. `state.setupState.stage === 'MULLIGAN_PHASE'`
+  2. `state.setupState.mulliganCompleted[action.playerId] !== true`
+  3. `discardCardInstanceIds` $\subseteq \text{player.hand}$
+* **State Mutations:**
+  1. $\text{mulliganDiscards} \leftarrow \{ c \in \text{player.hand} \mid c.\text{instanceId} \in \text{discardCardInstanceIds} \}$
+  2. $\text{keptCards} \leftarrow \text{player.hand} \setminus \text{mulliganDiscards}$
+  3. $\text{drawnReplacements} \leftarrow \text{player.deck}.\text{splice}(0, |\text{mulliganDiscards}|)$
+  4. $\text{player.hand} \leftarrow \text{keptCards} \cup \text{drawnReplacements}$
+  5. $\text{player.deck} \leftarrow \text{shuffle}(\text{player.deck} \cup \text{mulliganDiscards})$
+  6. $\text{state.setupState.mulliganCompleted}[\text{player.id}] \leftarrow \text{true}$
+  7. **All Players Check:** If all players have completed mulligan:
+     * $\text{state.setupState.stage} \leftarrow \text{'GAME\_READY'}$
+     * $\text{state.phase} \leftarrow \text{GamePhase.PLAYER\_PHASE}$
+     * Emit Event: `phase.player_phase.start` (Round 1)
+
+---
 
 ### Algorithm 5.1: `CHANGE_FORM` (RR v1.8 p. 13–14)
 * **Preconditions:**

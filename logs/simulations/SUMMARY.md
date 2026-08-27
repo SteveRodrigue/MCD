@@ -1,6 +1,6 @@
 # Marvel Champions Match Simulator — Batch Execution Summary
 
-**Generated:** 2026-08-27T03:13:19.890Z  
+**Generated:** 2026-08-27T03:17:34.282Z  
 **Scenario:** Rhino (Stage I) — *The Break-In!*  
 **Modular Set:** Bomb Scare  
 **Hero:** Spider-Man (Justice Aspect, 40-Card Deck)
@@ -12,19 +12,19 @@
 | Metric | Result |
 | :--- | :--- |
 | **Total Matches Simulated** | 3 |
-| **Hero Win Rate** | **33%** (1/3) |
-| **Villain Win Rate** | **67%** (2/3) |
-| **Average Game Duration** | 5.3 Rounds |
+| **Hero Win Rate** | **0%** (0/3) |
+| **Villain Win Rate** | **100%** (3/3) |
+| **Average Game Duration** | 5.7 Rounds |
 
 ---
 
 ## 🎮 Match Breakdown
 
-| Match | Winner | Rounds | Final Hero HP | Final Rhino HP | Final Threat | Detailed Log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Game #1 | **💀 VILLAIN** | 5 | 5/10 | 4/14 | 8/7 | [simulation-game-1.md](./simulation-game-1.md) |
-| Game #2 | **🏆 HEROES** | 5 | 2/10 | 0/14 | 3/7 | [simulation-game-2.md](./simulation-game-2.md) |
-| Game #3 | **💀 VILLAIN** | 6 | 5/10 | 8/14 | 8/7 | [simulation-game-3.md](./simulation-game-3.md) |
+| Match | Result | Loss / Win Condition | Rounds | Final Hero HP | Final Rhino HP | Final Threat | Detailed Log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Game #1 | 💀 **HERO DEFEAT** | Hero HP reduced to 0 | 4 | 0/10 | 10/14 | 5/7 | [simulation-game-1.md](./simulation-game-1.md) |
+| Game #2 | 💀 **HERO DEFEAT** | Hero HP reduced to 0 | 5 | 0/10 | 2/14 | 4/7 | [simulation-game-2.md](./simulation-game-2.md) |
+| Game #3 | 💀 **HERO DEFEAT** | Scheme threat reached limit (7) | 8 | 2/10 | 6/14 | 7/7 | [simulation-game-3.md](./simulation-game-3.md) |
 
 ---
 

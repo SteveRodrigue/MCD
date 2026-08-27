@@ -451,6 +451,16 @@ export function executeVillainPhase(state: GameState): GameState {
   const nextState: GameState = JSON.parse(JSON.stringify(state));
   nextState.phase = GamePhase.VILLAIN_PHASE;
 
+  nextState.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    round: nextState.roundNumber,
+    phase: GamePhase.VILLAIN_PHASE,
+    key: 'phase.villain_phase.start',
+    params: { round: nextState.roundNumber },
+    onomatopoeia: 'VILLAIN PHASE!',
+  });
+
   step1_placeThreat(nextState);
   if (nextState.winner) return nextState;
 

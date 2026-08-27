@@ -34,6 +34,16 @@ export function runMatch(
   while (!state.winner && state.roundNumber <= maxRounds) {
     state.phase = GamePhase.PLAYER_PHASE;
 
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: GamePhase.PLAYER_PHASE,
+      key: 'phase.player_phase.start',
+      params: { round: state.roundNumber },
+      onomatopoeia: 'HEROES ACT!',
+    });
+
     // 1. PLAYER PHASE: Execute each player's turn in order
     for (let pIdx = 0; pIdx < state.players.length; pIdx++) {
       const activeIdx = (state.firstPlayerIndex + pIdx) % state.players.length;

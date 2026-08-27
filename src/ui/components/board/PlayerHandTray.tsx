@@ -40,7 +40,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           <div className="flex flex-col items-center">
             {topDiscard ? (
               <div className="relative">
-                <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} />
+                <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} zoomOrigin="bottom" />
                 <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
                   {discard.length}
                 </span>
@@ -82,6 +82,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 instance={cardInst}
                 size="md"
                 enableHoverZoom={true}
+                zoomOrigin="bottom"
                 onClick={() => onCardClick && onCardClick(cardInst)}
               />
             ))}

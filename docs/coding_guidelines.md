@@ -38,10 +38,19 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 ### Golden Rules:
 1. **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
 2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be written into `src/data/overrides/` or `src/data/supplemental/`.
+3. **Official Rules Authority is Rules Reference v1.8.** All game mechanics, timing trigger hierarchies, keyword resolutions, and official card errata must strictly adhere to the official FFG **[Rules Reference v1.8](references/mc_rulesreference_v18_compressed.pdf)** and **[Learn to Play Guide](references/mvc01_learn_to_play_eng-compressed.pdf)** stored in `references/`.
 
 ---
 
-## 2. TypeScript & Type Safety Standards
+## 2. Rules Authority & Errata Standards
+
+* **Authoritative Source:** When designing engine logic or unit tests, always cite and verify against the **Rules Reference v1.8** (`references/mc_rulesreference_v18_compressed.pdf`).
+* **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
+* **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior implemented via `src/data/overrides/`.
+
+---
+
+## 3. TypeScript & Type Safety Standards
 
 1. **Strict Typing Always:**
    * No `any` types. If a type is truly unknown until runtime, use `unknown` with a custom type guard function.
@@ -63,7 +72,7 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 
 ---
 
-## 3. Card Implementation Standards (Declarative Card DSL)
+## 4. Card Implementation Standards (Declarative Card DSL)
 
 Each card implementation must follow a predictable, declarative pattern:
 
@@ -89,7 +98,7 @@ Each card implementation must follow a predictable, declarative pattern:
 
 ---
 
-## 4. Iterative Development & Test Recursion (Micro-Iterations)
+## 5. Iterative Development & Test Recursion (Micro-Iterations)
 
 To ensure stability, prevent regressions, and maintain high velocity, all development must follow a **strict micro-iteration workflow**:
 
@@ -121,7 +130,7 @@ To ensure stability, prevent regressions, and maintain high velocity, all develo
 
 ---
 
-## 5. Test-Driven Development (TDD) Standards
+## 6. Test-Driven Development (TDD) Standards
 
 1. **No Card Without a Test:**
    * Every hero ability, event card, upgrade, attachment, and villain activation must have automated tests in `tests/`.

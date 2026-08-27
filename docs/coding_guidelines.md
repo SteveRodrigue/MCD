@@ -30,11 +30,14 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 +-------------------------------------------------------------------------+
 |                             src/data/                                   |
 |   (MarvelsDB card schemas, static JSON definitions, card loaders)       |
+|   ❌ NEVER mutates or writes to data/upstream/ (zzorba raw files).      |
+|   ✅ ONLY reads upstream data and applies overrides in src/data/overrides|
 +-------------------------------------------------------------------------+
 ```
 
-### Golden Rule:
-* **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
+### Golden Rules:
+1. **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
+2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be written into `src/data/overrides/` or `src/data/supplemental/`.
 
 ---
 

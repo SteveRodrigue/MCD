@@ -22,6 +22,7 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 ## 🏗️ Architecture & Decisions
 
+* **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine specifications for all timing pipelines, actions, and keyword reducers (derived from RR v1.8).
 * **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan.
 * **[Coding Guidelines & Best Practices](docs/coding_guidelines.md)** — Strict architectural boundaries, typing standards, and TDD rules.
 * **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Tracking every major technical and design choice:

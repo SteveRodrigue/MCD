@@ -11,6 +11,10 @@ interface PlayerHandTrayProps {
   setAsideCards?: CardInstance[];
   heroName: string;
   handSizeLimit: number;
+  seatNumber?: number;
+  isFocused?: boolean;
+  isSideBySide?: boolean;
+  onFocus?: () => void;
   onCardClick?: (cardInst: CardInstance) => void;
 }
 
@@ -79,6 +83,10 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   setAsideCards = [],
   heroName,
   handSizeLimit,
+  seatNumber,
+  isFocused = true,
+  isSideBySide = false,
+  onFocus,
   onCardClick,
 }) => {
   const { devMode } = useGameSettings();
@@ -173,80 +181,91 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
   return (
     <>
-      <footer className="w-full bg-amber-100/95 border-t-3 border-comic-black shadow-comic p-4 z-20 sticky bottom-0 overflow-visible">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6 overflow-visible">
-          {/* 1. Player Deck & Discard Piles (Left of Hand) */}
-          <div className="flex items-center gap-3 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
-            {/* Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
+      {isSideBySide ? (
+        /* Side-by-Side In-Column Hand Card Panel */
+        <section
+          className={`comic-panel p-4 bg-amber-100/95 relative shadow-comic space-y-3 transition-all overflow-visible ${
+            !isFocused
+              ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300'
+              : 'ring-2 ring-comic-blue shadow-comic-lg'
+          }`}
+        >
+          {/* Zone Title Ribbon */}
+          <div className="absolute -top-3 left-4 flex items-center gap-2 z-10">
             <div
-              onClick={() => devMode && setShowDeckModal(true)}
-              className={`flex flex-col items-center group ${devMode ? 'cursor-pointer' : 'cursor-default'}`}
-              title={
-                devMode
-                  ? 'Inspect Player Deck (Dev Mode Active)'
-                  : 'Player Draw Deck (Hidden Information • Enable Dev Mode to inspect)'
-              }
+              className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+                isFocused ? 'bg-comic-blue' : 'bg-slate-700'
+              }`}
             >
-              <div
-                className={`w-18 h-26 sm:w-20 sm:h-28 bg-comic-blue border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots transition-all ${
-                  devMode ? 'group-hover:border-comic-yellow' : ''
-                }`}
-              >
-                <Layers className="w-5 h-5 text-white mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-comic text-lg text-white leading-none">{deck.length}</span>
-                <span className="text-[9px] font-bold text-sky-200 uppercase">DECK</span>
-              </div>
+              <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
+              <span>
+                {seatNumber ? `SEAT ${seatNumber}: ` : ''}
+                {heroName}'s HAND ({hand.length} / {handSizeLimit})
+                {isFocused ? ' • (ACTIVE HAND)' : ' • (UP NEXT)'}
+              </span>
             </div>
 
-            {/* Discard Pile (Open Information • Click to Inspect) */}
-            <div className="flex flex-col items-center">
-              {topDiscard ? (
-                <div
-                  onClick={() => setShowDiscardModal(true)}
-                  className="relative cursor-pointer group"
-                  title="Inspect Player Discard Pile"
-                >
-                  <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} zoomOrigin="bottom" />
-                  <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                    {discard.length}
-                  </span>
-                </div>
-              ) : (
-                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
-                  <span className="font-comic text-xs text-slate-400">DISCARD</span>
-                  <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
-                </div>
-              )}
-            </div>
+            {!isFocused && onFocus && (
+              <button
+                onClick={onFocus}
+                className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+              >
+                Focus This Hand ➔
+              </button>
+            )}
           </div>
 
-          {/* 2. Hand Cards Area (Center) */}
-          <div className="flex-1 w-full space-y-2 overflow-visible">
-            {/* Hand Header Bar */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-xs px-2.5 py-0.5 rounded shadow-comic-sm font-bold">
-                  HAND ({hand.length} / {handSizeLimit})
-                </span>
-                <span className="font-comic text-sm text-comic-blue">
-                  {heroName}'s Hand
-                </span>
+          <div className="flex flex-col gap-3 overflow-visible pt-1">
+            {/* Top Row: Deck, Discard, Nemesis Piles */}
+            <div className="flex items-center justify-between gap-2 bg-white/90 p-2 rounded-xl border-2 border-comic-black shadow-comic-sm">
+              {/* Draw Pile */}
+              <div
+                onClick={() => devMode && setShowDeckModal(true)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm cursor-pointer ${
+                  devMode ? 'hover:bg-sky-600' : ''
+                }`}
+                title={
+                  devMode
+                    ? 'Inspect Player Deck (Dev Mode Active)'
+                    : 'Player Draw Deck'
+                }
+              >
+                <Layers className="w-3.5 h-3.5 text-comic-yellow" />
+                <span className="font-comic text-xs">DECK: {deck.length}</span>
               </div>
 
-              <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-slate-600">
-                <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
-                <span>Hover card to zoom (1.9×)</span>
+              {/* Discard Pile */}
+              <div
+                onClick={() => discard.length > 0 && setShowDiscardModal(true)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-100 text-slate-800 border border-comic-black shadow-comic-sm ${
+                  discard.length > 0 ? 'cursor-pointer hover:bg-amber-100' : 'cursor-default opacity-60'
+                }`}
+                title="Inspect Discard Pile"
+              >
+                <span className="font-comic text-xs">DISCARD: {discard.length}</span>
+              </div>
+
+              {/* Nemesis Set */}
+              <div
+                onClick={() => setAsideCards.length > 0 && setShowNemesisModal(true)}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded bg-rose-50 text-rose-900 border border-comic-black shadow-comic-sm ${
+                  setAsideCards.length > 0 ? 'cursor-pointer hover:bg-rose-100' : 'cursor-default opacity-60'
+                }`}
+                title="Inspect Nemesis Set (Out of Play)"
+              >
+                <Skull className="w-3.5 h-3.5 text-rose-700" />
+                <span className="font-comic text-xs">NEMESIS: {setAsideCards.length}</span>
               </div>
             </div>
 
-            {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
+            {/* Cards in Hand (size="sm" with unconstrained hover zoom!) */}
+            <div className="flex flex-wrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
               {hand.map((cardInst) => (
                 <CardView
                   key={cardInst.instanceId}
                   card={cardInst.card}
                   instance={cardInst}
-                  size="md"
+                  size="sm"
                   enableHoverZoom={true}
                   zoomOrigin="bottom"
                   onClick={() => onCardClick && onCardClick(cardInst)}
@@ -254,47 +273,140 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               ))}
 
               {hand.length === 0 && (
-                <div className="w-full py-8 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
-                  <span className="font-comic text-base text-slate-400">
-                    Hand is empty. (Cards will be drawn at the end of the round during Upkeep).
+                <div className="w-full py-6 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
+                  <span className="font-comic text-xs text-slate-400">
+                    Hand is empty. (Cards will be drawn during Upkeep).
                   </span>
                 </div>
               )}
             </div>
           </div>
-
-          {/* 3. Out of Play / Nemesis Set Area (Right of Hand - Displays Nemesis Minion!) */}
-          <div className="flex flex-col items-center gap-1 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
-            <span className="text-[10px] font-bold text-slate-600 uppercase font-comic">
-              OUT OF PLAY
-            </span>
-
-            {nemesisMinion ? (
+        </section>
+      ) : (
+        /* Full Single Hero Sticky Bottom Footer Dock */
+        <footer className="w-full bg-amber-100/95 border-t-3 border-comic-black shadow-comic p-4 z-20 sticky bottom-0 overflow-visible">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6 overflow-visible">
+            {/* 1. Player Deck & Discard Piles (Left of Hand) */}
+            <div className="flex items-center gap-3 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+              {/* Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
               <div
-                onClick={() => setShowNemesisModal(true)}
-                className="relative cursor-pointer group flex flex-col items-center"
-                title="Click to view all Set-Aside Nemesis cards (Out of Play)"
+                onClick={() => devMode && setShowDeckModal(true)}
+                className={`flex flex-col items-center group ${devMode ? 'cursor-pointer' : 'cursor-default'}`}
+                title={
+                  devMode
+                    ? 'Inspect Player Deck (Dev Mode Active)'
+                    : 'Player Draw Deck (Hidden Information • Enable Dev Mode to inspect)'
+                }
               >
-                <CardView
-                  card={nemesisMinion.card}
-                  size="sm"
-                  showTokens={false}
-                  enableHoverZoom={true}
-                  zoomOrigin="bottom"
-                />
-                <span className="absolute -bottom-2 -right-2 bg-rose-700 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                  {setAsideCards.length}
-                </span>
+                <div
+                  className={`w-18 h-26 sm:w-20 sm:h-28 bg-comic-blue border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots transition-all ${
+                    devMode ? 'group-hover:border-comic-yellow' : ''
+                  }`}
+                >
+                  <Layers className="w-5 h-5 text-white mb-1 group-hover:scale-110 transition-transform" />
+                  <span className="font-comic text-lg text-white leading-none">{deck.length}</span>
+                  <span className="text-[9px] font-bold text-sky-200 uppercase">DECK</span>
+                </div>
               </div>
-            ) : (
-              <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
-                <span className="font-comic text-xs text-slate-400">EMPTY</span>
-                <span className="text-[9px] text-slate-400 font-bold">OUT OF PLAY</span>
+
+              {/* Discard Pile (Open Information • Click to Inspect) */}
+              <div className="flex flex-col items-center">
+                {topDiscard ? (
+                  <div
+                    onClick={() => setShowDiscardModal(true)}
+                    className="relative cursor-pointer group"
+                    title="Inspect Player Discard Pile"
+                  >
+                    <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} zoomOrigin="bottom" />
+                    <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                      {discard.length}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
+                    <span className="font-comic text-xs text-slate-400">DISCARD</span>
+                    <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* 2. Hand Cards Area (Center) */}
+            <div className="flex-1 w-full space-y-2 overflow-visible">
+              {/* Hand Header Bar */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-xs px-2.5 py-0.5 rounded shadow-comic-sm font-bold">
+                    HAND ({hand.length} / {handSizeLimit})
+                  </span>
+                  <span className="font-comic text-sm text-comic-blue">
+                    {heroName}'s Hand
+                  </span>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-slate-600">
+                  <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
+                  <span>Hover card to zoom (1.9×)</span>
+                </div>
+              </div>
+
+              {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
+              <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
+                {hand.map((cardInst) => (
+                  <CardView
+                    key={cardInst.instanceId}
+                    card={cardInst.card}
+                    instance={cardInst}
+                    size="md"
+                    enableHoverZoom={true}
+                    zoomOrigin="bottom"
+                    onClick={() => onCardClick && onCardClick(cardInst)}
+                  />
+                ))}
+
+                {hand.length === 0 && (
+                  <div className="w-full py-8 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
+                    <span className="font-comic text-base text-slate-400">
+                      Hand is empty. (Cards will be drawn at the end of the round during Upkeep).
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 3. Out of Play / Nemesis Set Area (Right of Hand - Displays Nemesis Minion!) */}
+            <div className="flex flex-col items-center gap-1 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+              <span className="text-[10px] font-bold text-slate-600 uppercase font-comic">
+                OUT OF PLAY
+              </span>
+
+              {nemesisMinion ? (
+                <div
+                  onClick={() => setShowNemesisModal(true)}
+                  className="relative cursor-pointer group flex flex-col items-center"
+                  title="Click to view all Set-Aside Nemesis cards (Out of Play)"
+                >
+                  <CardView
+                    card={nemesisMinion.card}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                    zoomOrigin="bottom"
+                  />
+                  <span className="absolute -bottom-2 -right-2 bg-rose-700 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                    {setAsideCards.length}
+                  </span>
+                </div>
+              ) : (
+                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
+                  <span className="font-comic text-xs text-slate-400">EMPTY</span>
+                  <span className="text-[9px] text-slate-400 font-bold">OUT OF PLAY</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* Player Deck Inspector Modal (Dev Mode with Sorting & Card Names) */}
       {showDeckModal && (

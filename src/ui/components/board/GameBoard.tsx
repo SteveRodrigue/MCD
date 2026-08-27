@@ -56,25 +56,52 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
           accelerationTokens={gameState.accelerationTokens}
         />
 
-        {/* Tier 2: Hero Play Area (Single or Side-by-Side Dual Column) */}
+        {/* Tier 2: Hero Play Areas & Hands (Side-by-Side Dual Column or Single Hero) */}
         {isDualHeroMode ? (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-            {/* Column 1: Current Active Hero */}
-            <HeroZone
-              player={player1}
-              seatNumber={player1Index + 1}
-              isFocused={true}
-              isSideBySide={true}
-            />
+            {/* Column 1: Current Active Hero (Play Area + Hand) */}
+            <div className="space-y-4">
+              <HeroZone
+                player={player1}
+                seatNumber={player1Index + 1}
+                isFocused={true}
+                isSideBySide={true}
+              />
+              <PlayerHandTray
+                hand={player1.hand}
+                deck={player1.deck}
+                discard={player1.discard}
+                setAsideCards={player1.setAsideCards}
+                heroName={player1.name}
+                handSizeLimit={(player1.activeFormCard as any).handSize ?? 6}
+                seatNumber={player1Index + 1}
+                isFocused={true}
+                isSideBySide={true}
+              />
+            </div>
 
-            {/* Column 2: Next Hero in Turn Order */}
-            <HeroZone
-              player={player2}
-              seatNumber={player2Index + 1}
-              isFocused={false}
-              isSideBySide={true}
-              onFocus={() => setActiveSeatIndex(player2Index)}
-            />
+            {/* Column 2: Next Hero in Turn Order (Play Area + Hand) */}
+            <div className="space-y-4">
+              <HeroZone
+                player={player2}
+                seatNumber={player2Index + 1}
+                isFocused={false}
+                isSideBySide={true}
+                onFocus={() => setActiveSeatIndex(player2Index)}
+              />
+              <PlayerHandTray
+                hand={player2.hand}
+                deck={player2.deck}
+                discard={player2.discard}
+                setAsideCards={player2.setAsideCards}
+                heroName={player2.name}
+                handSizeLimit={(player2.activeFormCard as any).handSize ?? 6}
+                seatNumber={player2Index + 1}
+                isFocused={false}
+                isSideBySide={true}
+                onFocus={() => setActiveSeatIndex(player2Index)}
+              />
+            </div>
           </div>
         ) : (
           <HeroZone
@@ -86,15 +113,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
         )}
       </main>
 
-      {/* 3. Sticky Bottom Player Hand Dock */}
-      <PlayerHandTray
-        hand={player1.hand}
-        deck={player1.deck}
-        discard={player1.discard}
-        setAsideCards={player1.setAsideCards}
-        heroName={player1.name}
-        handSizeLimit={(player1.activeFormCard as any).handSize ?? 6}
-      />
+      {/* 3. Sticky Bottom Player Hand Dock (Single Hero Mode Only) */}
+      {!isDualHeroMode && (
+        <PlayerHandTray
+          hand={player1.hand}
+          deck={player1.deck}
+          discard={player1.discard}
+          setAsideCards={player1.setAsideCards}
+          heroName={player1.name}
+          handSizeLimit={(player1.activeFormCard as any).handSize ?? 6}
+          seatNumber={totalPlayers > 1 ? player1Index + 1 : undefined}
+          isFocused={true}
+          isSideBySide={false}
+        />
+      )}
 
       {/* 4. Slide-Out Combat Log & History Drawer */}
       <CombatLogDrawer

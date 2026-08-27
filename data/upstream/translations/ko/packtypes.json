@@ -1,0 +1,22 @@
+[
+	{
+		"code": "core",
+		"name": "기본판"
+	},
+	{
+		"code": "encounter",
+		"name": "조우"
+	},
+	{
+		"code": "hero",
+		"name": "히어로 팩"
+	},
+	{
+		"code": "scenario",
+		"name": "시나리오 팩"
+	},
+	{
+		"code": "story",
+		"name": "Campaign"
+	}
+]

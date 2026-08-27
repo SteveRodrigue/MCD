@@ -1,0 +1,31 @@
+[
+	{
+		"code": "05025",
+		"name": "Rechtzeitig daheim sein",
+		"text": "<b><i>Gib dies dem Spieler von Kamala Khan.</i></b>\nDu darfst deine Identität auf deine Alter-Ego-Seite umdrehen. Wähle:\n\u2022 Erschöpfe Kamala Khan → entferne Rechtzeitig daheim sein aus dem Spiel.\n\u2022 Lege 1 [[Person]] Vorteil unter deiner Kontrolle ab. Falls auf diese Weise kein Vorteil abgelegt wurde, erhält diese Karte Nachrüsten. Lege diese Verpflichtung ab."
+	},
+	{
+		"code": "05026",
+		"flavor": "Der Inventor hat die Jugend von Jersey City davon überzeugt, als menschliche Batterien für seine Experimente zu dienen",
+		"name": "Generation Fragezeichen",
+		"text": "<b>Sobald aufgedeckt</b>: Lege für jeden Verbündeten und jeden [[Person]]-Vorteil im Spiel die oberste Karte jedes Spielerdecks ab."
+	},
+	{
+		"code": "05027",
+		"flavor": "\"ICH BIN KEIN VOGEL!\"",
+		"name": "Thomas Edison",
+		"text": "Thomas Edison kann keinen Schaden nehmen, solange du mit einem anderen Schergen im Kampf bist.\n<i>(Ms. Marvels Erzfeind-Scherge.)</i>",
+		"traits": "Genie. Vogel."
+	},
+	{
+		"code": "05028",
+		"name": "Edisons Riesenroboter",
+		"text": "Edisons Riesenroboter kann keinen Schaden nehmen.\n<b>Held Aktion:</b> Gib eine [mental]-Ressource aus → behandle bis zum Ende der Phase das aufgedruckte Textfeld dieser Karte, als ob es leer wäre.",
+		"traits": "Roboter."
+	},
+	{
+		"code": "05029",
+		"name": "Ernte",
+		"text": "<b>Sobald aufgedeckt</b>: Erschöpfe jeden [[Person]]-Vorteil im Spiel. Der Schurke heilt für jeden auf diese Weise erschöpften Vorteil 1 Schaden. Falls auf diese Weise kein [[Person]]-Vorteil erschöpft wurde, erhält diese Karte Nachrüsten."
+	}
+]

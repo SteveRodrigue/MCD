@@ -1,0 +1,38 @@
+[
+	{
+		"code": "villain",
+		"name": "Villano"
+	},
+	{
+		"code": "hero",
+		"name": "Héroe"
+	},
+	{
+		"code": "nemesis",
+		"name": "Archienemigo"
+	},
+	{
+		"code": "modular",
+		"name": "Conjunto modular"
+	},
+	{
+		"code": "standard",
+		"name": "Normal"
+	},
+	{
+		"code": "expert",
+		"name": "Experto"
+	},
+	{
+		"code": "evidence",
+		"name": "Evidencia"
+	},
+	{
+		"code": "leader",
+		"name": "Líder"
+	},
+	{
+		"code": "main_scheme",
+		"name": "Plan principal"
+	}
+]

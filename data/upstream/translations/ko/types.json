@@ -1,0 +1,62 @@
+[
+	{
+		"code": "ally",
+		"name": "동료"
+	},
+	{
+		"code": "alter_ego",
+		"name": "일상"
+	},
+	{
+		"code": "attachment",
+		"name": "장착"
+	},
+	{
+		"code": "environment",
+		"name": "환경"
+	},
+	{
+		"code": "event",
+		"name": "이벤트"
+	},
+	{
+		"code": "hero",
+		"name": "히어로"
+	},
+	{
+		"code": "main_scheme",
+		"name": "주요 음모"
+	},
+	{
+		"code": "minion",
+		"name": "하수인"
+	},
+	{
+		"code": "obligation",
+		"name": "의무"
+	},
+	{
+		"code": "resource",
+		"name": "자원"
+	},
+	{
+		"code": "side_scheme",
+		"name": "부가 음모"
+	},
+	{
+		"code": "support",
+		"name": "지원"
+	},
+	{
+		"code": "treachery",
+		"name": "배반"
+	},
+	{
+		"code": "upgrade",
+		"name": "업그레이드"
+	},
+	{
+		"code": "villain",
+		"name": "Villain"
+	}
+]

@@ -1,0 +1,31 @@
+[
+	{
+		"code": "03026",
+		"name": "Aus der Zeit gefallen",
+		"text": "<b><i>Gib dies dem Spieler von Steve Rogers.</i></b>\nDu darfst deine Identität auf deine Alter-Ego-Seite umdrehen. Wähle eines:\n\u2022 Erschöpfe Steve Rogers → entferne Au der Zeit gefallen aus dem Spiel.\n\u2022 Lege die Hälfte der Karten von deiner Hand ab (abgerundet). Lege diese Verpflichtung ab."
+	},
+	{
+		"code": "03027",
+		"flavor": "Auf der Jagd nach den Avengers führt Baron Zemo ein Hydra-Einsatzkommando in die Stadt.",
+		"name": "Killerkommando",
+		"text": "<b>Sobald aufgedeckt</b>: in Spieler-Reihenfolge legt jeder Spieler die oberste Karte des Begegnungsdecks ab und nimmt für jedes auf diese Weise abgelegte Boost-Symbol 1 Schaden."
+	},
+	{
+		"code": "03028",
+		"flavor": "\"Um meinen Vater zu rächen, muss Captain America sterben.\"",
+		"name": "Baron Zemo",
+		"text": "Erstschlag.\nSolange Baron Zemo mit dir im Kampf ist, kann du keinen Widerstand leisten.\n<i>(Captain Americas Erzfeind-Scherge.)</i>",
+		"traits": "Hydra. Elite."
+	},
+	{
+		"code": "03029",
+		"name": "Hydra-Soldat",
+		"text": "Wache. <i>(Solange dieser Scherge mit dir im Kampf ist, kannst du den Schurken nicht angreifen.)</i>\n<b>Sobald besiegt</b>: Teile dem Spieler, der mit Hydra-Soldat im Kampf ist, eine Begegnungskarte zu.",
+		"traits": "Hydra."
+	},
+	{
+		"code": "03030",
+		"name": "Heil Hydra!",
+		"text": "<b>Sobald aufgedeckt</b>: Jeder [[Hydra]] Scherge im Kampf mit einem Helden greift jenen Helden an. Jeder Spieler, der nicht auf diese Weise angegriffen wurde, durchsucht das Begegnungsdeck und den Ablagestapel nach einem [[Hydra]] Schergen und bringt ihn mit sich im Kampf ins Spiel. Mische das Begegnungsdeck, falls es durchsucht wurde."
+	}
+]

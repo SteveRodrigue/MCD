@@ -1,0 +1,93 @@
+[
+	{
+		"code": "30024",
+		"name": "\"Ich will jetzt einen Hot Dog!\"",
+		"text": "<b>Gib dies dem Spieler von Peter Porker.</b>\nDu darfst deine Identität auf deine Alter-Ego-Seite umdrehen. Wähle eines:\n\u2022Erschöpfe Peter Porker und entferne 1 Toon-Marker von ihm → entferne aus dem Spiel.\n\u2022Du wirst betäubt. Falls du bereits betäubt bist, erhält diese Karte Nachrüsten. Lege diese Verpflichtung ab."
+	},
+	{
+		"code": "30025",
+		"name": "Tückische Falle",
+		"text": "<b>Sobald besiegt</b>: Green Gobbler greift den Spieler an, der diesen Plan besiegt hat. Falls Green Gobbler nicht im Spiel ist, durchsuche das Begegnungsdeck und den Ablagestapel nach ihm und bringe ihn mit dem Spieler im Kampf ins Spiel, der diesen Plan besiegt hat."
+	},
+	{
+		"code": "30026",
+		"flavor": "\"Ich werde gewinnen, mit allen Mitteln, auch wenn ich zu faulen Eiern greifen muss!\" — Green Gobbler",
+		"name": "Green Gobbler",
+		"text": "<b>Erzwungene Reaktion</b>: Nachdem Green Gobbler dich in einen Kampf verwickelt hat, lege alle Marker von jeder Karte unter deiner Kontrolle ab.\n<i>(Spider-Hams Erzfeind-Scherge.)</i>",
+		"traits": "Cartoon. Krimineller."
+	},
+	{
+		"code": "30027",
+		"flavor": "\"Wenn ich fertig bin, werde ich an der Spitze der Hackordnung stehen.\" — Green Gobbler",
+		"name": "Gobbler-Gleiter",
+		"text": "Nachrüsten.\nHänge diese Karte an Green Gobbler an. Falls du das nicht kannst, hänge sie an einen Schergen an.\nDer Scherge mit diesem Anhang erhält das Merkmal [[Fliegend]]."
+	},
+	{
+		"code": "30028",
+		"flavor": "\"Ich hoffe, du hast noch etwas Platz gelassen für KürbisTOTE!\" — Green Gobbler",
+		"name": "\"Friss das!\"",
+		"text": "<b>Sobald aufgedeckt</b>: Nimm 2 Schaden. Du wirst verwirrt. Falls du bereits verwirrt bist, erhält diese Karte Nachrüsten."
+	},
+	{
+		"code": "30030",
+		"flavor": "\"Es gibt keine 'Mission'. Das ist es, was wir tun - wir jagen die Spinnen. Das ist unsere Art.\" —Karn",
+		"name": "Jagd auf die Spinnen-Totems",
+		"text": "<b>Erzwungene Unterbrechung</b>: Sobald die Schurkenphase beginnt, lege die obersten 3 Karten des Begegnungsdecks ab. Bringe jeden auf diese Weise abgelegten [[Inheritor]]-Schergen im Kampf mit einem Spieler ins Spiel der einen [[Web-Warrior]]-Charakter kontrolliert, falls möglich. Ansonsten bringe jeden auf diese Weise abgelegten [[Inheritor]]-Schergen im Kampf mit dem Startspiel ins Spiel."
+	},
+	{
+		"code": "30031",
+		"flavor": "\"Meine lieben Brüder, lasst sie uns gemeinsam verschlingen!!\"",
+		"name": "Bora",
+		"text": "Jeder [[Inheritor]]-Scherge erhält 1 Beschleunigungssymbol ([acceleration]).\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, platziere 1 Bedrohung auf jedem Plan.",
+		"traits": "Inheritor."
+	},
+	{
+		"code": "30032",
+		"flavor": "\"In einer ironischen Wendung hat uns das Netz des Lebens und Schicksals genau zu diesem Augenblick gebracht. Deinem letzten Augenblick.\"",
+		"name": "Brix",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Patrouille.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, platziere 2 Bedrohung auf dem Hauptplan.",
+		"traits": "Inheritor."
+	},
+	{
+		"code": "30033",
+		"flavor": "\"Ich bin Daemos, Sohn des Solus. Einer der Erben der gesamten Schöpfung. Und du… bist Staub. Ein winziger Fleck. Ein Sandkorn im Wind.\"",
+		"name": "Daemos",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Gestählt.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, betäube einen Charakter unter deiner Kontrolle.",
+		"traits": "Inheritor."
+	},
+	{
+		"code": "30034",
+		"flavor": "\"Ich ziehe es vor, sie zappeln zu lassen. Ich liebe den Geschmack von Adrenalin.\"",
+		"name": "Jennix",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Wache.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, gib Jennix eine Zäh-Statuskarte.",
+		"traits": "Inheritor."
+	},
+	{
+		"code": "30035",
+		"flavor": "\"Du wirst ein sättigendes Mahl abgeben.\"",
+		"name": "Karn",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Durchdringend und Overkill.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, lege ein Upgrade oder einen Vorteil unter deiner Kontrolle ab.",
+		"traits": "Inheritor."
+	},
+	{
+		"code": "30036",
+		"flavor": "\"Mm. Noch nie war eine Lebenskraft so süß.\"",
+		"name": "Morlun",
+		"text": "Jeder [[Inheritor]]-Scherge erhält +1 ANG.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, nimm 2 Schaden.",
+		"traits": "Elite. Inheritor."
+	},
+	{
+		"code": "30037",
+		"flavor": "\"Ich bin Solus. Ich kündige euer aller Tod an.\"",
+		"name": "Solus",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Schurkisch.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, gib Solus 1 verdeckte Boost-Karte.",
+		"traits": "Elite. Inheritor."
+	},
+	{
+		"code": "30038",
+		"flavor": "\"Ich werde mich an deinen Knochen laben!\"",
+		"name": "Verna",
+		"text": "Jeder [[Inheritor]]-Scherge erhält Vergeltung 1.\n<b>Sobald aufgedeckt</b>: Falls ein [[Web-Warrior]]-Charakter im Spiel ist, füge jedem Charakter unter deiner Kontrolle 1 Schaden zu.",
+		"traits": "Elite. Inheritor."
+	}
+]

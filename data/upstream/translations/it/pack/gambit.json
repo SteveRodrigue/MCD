@@ -1,0 +1,122 @@
+[
+    {
+        "code": "37001a",
+        "name": "Gambit",
+        "text": "<i>Caricare la Carta</i> − <b>Azione</b>: Colloca 1 gettone carica su questa carta. (Limite di una volta per round).\n<i>Lanciare la Carta</i> − <b>Interruzione</b>: Quando giochi un evento [[ATTACCO]], rimuovi fino a 3 gettoni carica da questa carta → quell'evento infligge +1 danno per ogni gettone carica rimosso in quel modo.",
+        "traits": "Ladro. X-Men."
+    },
+    {
+        "code": "37001b",
+        "name": "Remy Lebeau",
+        "text": "<i>Ladro Extraordinaire</i> − <b>Azione</b> <i>(intervento)</i>: Esaurisci Remy LeBeau e guarda 2 carte dalla cima del mazzo degli incontri. Scarta 1 di quelle carte → rimuovi da una trama un ammontare di minacce pari al numero di icone potenziamento ([boost]) su quella carta.",
+        "traits": "Ladro. Mutante."
+    },
+    {
+        "code": "37002",
+        "flavor": "\"Non posso portare quel pazzo di un cajun da nessuna parte!\"",
+        "name": "Rogue",
+        "subname": "Anna Marie",
+        "text": "Riduci il costo per giocare Rogue di 1 per ogni gettone carica sulla tua identità.\n\nRobustezza.",
+        "traits": "Aereo. X-Men."
+    },
+    {
+        "code": "37003",
+        "name": "Loggia dei Ladri",
+        "text": "<b>Risposta Alter Ego</b>: Dopo che hai risolto la tua capacità <i>\"Ladro Extraordinaire\"</i>, esaurisci Loggia dei Ladri → rimuovi 1 minaccia da una trama. Se farlo rimuove l'ultima minaccia da quella trama, pesca 1 carta.",
+        "traits": "Gilda."
+    },
+    {
+        "code": "37004",
+        "flavor": "\"Vuoi metterti contro Gambit, eh?\" − Gambit",
+        "name": "Bastone di Gambit",
+        "text": "<b>Interruzione Eroe</b>: Quando un nemico attacca, esaurisci Bastone di Gambit → infliggi un danno a quel nemico.",
+        "traits": "Arma. Oggetto."
+    },
+    {
+        "code": "37005",
+        "flavor": "I membri della Loggia dei Ladri indossano armature speciali per proteggersi dagli assassini.",
+        "name": "Armatura della Loggia di Gambit",
+        "text": "<b>Risposta Eroe</b>: Dopo che Gambit ha difeso da un attacco e non ha subito danni, esaurisci Armatura della Loggia di Gambit → ripristina Gambit.",
+        "traits": "Armatura. Oggetto. "
+    },
+    {
+        "code": "37006",
+        "name": "Carta Caricata",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 4 danni a un nemico. Per questo attacco, se la capacità <i>\"Lanciare la Carta\"</i> di Gambit ha rimosso un ammontare di gettoni carica pari o superiore a:\n• 1, questo attacco ottiene Distanza.\n• 2, questo attacco ottiene anche Perforante.\n• 3, questo attacco ottiene anche Sopraffazione.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "37007",
+        "flavor": "\"Copritevi gli occhi, mes amis. Questa mano farà fuochi d'artificio!\" - Gambit",
+        "name": "Scala Reale",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Colloca 1 gettone carica su Gambit. Infliggi 0 danni a un nemico. Infliggi 0 danni a un nemico. Infliggi 0 danni a un nemico.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "37008",
+        "name": "Agilità Naturale",
+        "text": "<b>Interruzione Eroe</b> <i>(difesa)</i>: Quando difendi da un attacco, colloca 1 gettone carica su Gambit → per ogni gettone carica su Gambit, ricevi +1 DIF per quell'attacco.",
+        "traits": "Difesa. Superpotere."
+    },
+    {
+        "code": "37009",
+        "flavor": "\"Come posso essere io il ladro se sei stata tu a rubarmi il cuore, chére?\" −Gambit",
+        "name": "Fascino Creolo",
+        "text": "<b>Azione Alter Ego</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se farlo rimove l'ultima minaccia da quella trama, confondi il criminale.",
+        "traits": "Intervento."
+    },
+    {
+        "code": "37010",
+        "name": "Accelerazione Molecolare",
+        "text": "<b>Interruzione Eroe</b>: Quando spendi le risorse di questa carta, colloca 1 gettone carica su Gambit."
+    },
+    {
+        "code": "37011",
+        "name": "Alfiere",
+        "subname": "Lucas Bishop",
+        "text": "<b>Risposta</b>: Dopo che un nemico ti ha attaccato, colloca 1 gettone energia su questa carta.\n[star]<b>Interruzione</b>: Quando Alfiere attacca, rimuovi ogni gettone energia su di esso → per ogni gettone energia rimosso in questo modo, Alfiere riceve +2 ATT per questo attacco (fino a un massimo di +6 ATT).",
+        "traits": "X-Men."
+    },
+    {
+        "code": "37012",
+        "flavor": "\"Tutto quel rumore... questa città è una sinfonia, e io sono il suo altoparlante.\"",
+        "name": "Dazzler",
+        "subname": "Alison Blaire",
+        "text": "<b>Risposta</b>: Dopo che Dazzler è entrata in gioco, confondi 1 nemico.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "37013",
+        "name": "Abilità da Operativo",
+        "text": "Utilizzo (3 gettoni operativo). Massimo 1 per giocatore.\n<b>Interruzione</b>: Quando intervieni, rimuovi 1 gettone operativo da questa carta → quell'intervento rimuove 1 minaccia aggiuntiva.",
+        "traits": "Abilità."
+    },
+    {
+        "code": "37015",
+        "name": "Furto con Scasso",
+        "text": "Gioca solo se la tua identità possiede il tratto [[LADRO]] o [[SPIA]].\n<b>Azione</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama.",
+        "traits": "Intervento."
+    },
+    {
+        "code": "37019",
+        "name": "La Bella e Il Ladro",
+        "text": "Team-Up (Gambit e Rogue). Massimo 1 per mazzo.\n<b>Azione Eroe</b> <i>(attacco/intervento)</i>: Infliggi 4 danni a un nemico. Rimuovi 4 minacce da una trama.",
+        "traits": "Attacco. Intervento."
+    },
+    {
+        "code": "37021",
+        "name": "Educazione Mutante",
+        "text": "Gioca solo se la tua identità possiede il tratto [[MUTANTE]].\n<b>Azione Alter Ego</b>: Scegli fino a 2 carte specifiche di identità nella tua pila degli scarti e mescolale nel tuo mazzo. Se Villa-X è in gioco, pesca 1 carta."
+    },
+    {
+        "code": "37030",
+        "name": "Sala Tattica",
+        "text": "Massimo 1 per giocatore.\n<b>Risposta</b>: Dopo che un alleato ha attaccato e sconfitto un gregario, esaurisci Sala Tattica → rimuovi 1 minaccia da una trama",
+        "traits": "Luogo."
+    },
+    {
+        "code": "37031",
+        "name": "Istruzione degli X-Men",
+        "text": "Gioca solo se la tua identità possiede il tratto [[MUTANTE]].\n<b>Azione Alter Ego</b>: Scegli fino a 2 alleati <b>X-MEN</b> nella tua pila degli scarti e mescolali nel tuo mazzo. Se Villa-X è in gioco, pesca 1 carta."
+    }
+]

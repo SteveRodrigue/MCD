@@ -1,0 +1,194 @@
+[
+    {
+        "code": "49001a",
+        "flavor": "\"Non ho bisogno di difendere le mie decisioni.\"",
+        "name": "Magneto",
+        "text": "<i>Attrazione Magnetica</i> — <b>Azione</b>: Scarta carte dalla cima del tuo mazzo finché non scarti 1 carta [[MAGNETICO]] → aggiungi quella carta alla tua mano. (Limite di una volta per round.)",
+        "traits": "X-Men."
+    },
+    {
+        "code": "49001b",
+        "flavor": "\"Tutto ciò che ho sopportato, tutto ciò che ho fatto, è stato per preservare la specie mutante.\"",
+        "name": "Erik Lehnsherr",
+        "text": "<i>Sopravvivenza</i> — <b>Risposta</b>: Dopo che hai assunto questa sembianza, mescola nel tuo mazzo 3 carte dalla cima della tua pila degli scarti.",
+        "traits": "Mutante."
+    },
+    {
+        "code": "49002",
+        "flavor": "\"Ricostruire la mia dimora ha richiesto un considerevole sforzo. Cerchiamo di non distruggerla nuovamente.\"  — Magneto",
+        "name": "Asteroide M",
+        "text": "<b>Azione Alter Ego</b>: Esaurisci Asteroide M → mescola nel tuo mazzo la prima carta [[MAGNETICO]] dalla cima della tua pila degli scarti e cura 1 danno alla tua identità.",
+        "traits": "Luogo. Magnetico."
+    },
+    {
+        "code": "49003",
+        "flavor": "L'elmo di Magneto lo protegge dagli attacchi telepatici.",
+        "name": "Elmo di Magneto",
+        "text": "Magneto ottiene Tempra.\n<b>Risorsa</b>: Esaurisci Elmo di Magneto → genera [wild] per una carta [[MAGNETICO]].",
+        "traits": "Armatura. Magnetico."
+    },
+    {
+        "code": "49004",
+        "name": "Armatura di Magneto",
+        "text": "<b>Risposta</b>: Dopo che hai risolto la tua capacità <i>\"Attrazione Magnetica\"</i>, se hai scartato 1 o più delle icone risorsa seguenti:\n[mental] — Magneto riceve +1 INT per questo round.\n[physical] — Magneto riceve +1 ATT per questo round.\n[energy] — Magneto riceve +1 DIF per questo round.",
+        "traits": "Armatura. Magnetico."
+    },
+    {
+        "code": "49005",
+        "name": "Cappa di Magneto",
+        "text": "Magneto ottiene il tratto [[AEREO]].\n<b>Risposta</b>: Dopo che hai risolto la tua capacità <i>\"Attrazione Magnetica\"</i>, esaurisci Cappa di Magneto → Ripristina Magneto.",
+        "traits": "Armatura. Magnetico."
+    },
+    {
+        "code": "49006",
+        "name": "Bolla Magnetica",
+        "text": "Magneto ottiene Ritorsione 1.\n<b>Interruzione Obbligata</b>: Quando stai per subire un qualsiasi ammontare di danni, collocalo invece su questa carta. Poi, se ci sono 6 o più danni su questa carta, scartala.",
+        "traits": "Magnetico. Superpotere."
+    },
+    {
+        "code": "49007",
+        "flavor": "\"I tuoi poteri non sono nulla al cospetto del Signore del Magnetismo!\"— Magneto",
+        "name": "Avvolto nel Metallo",
+        "text": "Solo sembianza di eroe. Assegna a un gregario non [[ELITE]].\nIl gregario con questa miglioria non può attivarsi. Considera il suo riquadro di testo stampato come se fosse vuoto.",
+        "traits": "Magnetico."
+    },
+    {
+        "code": "49008",
+        "name": "Scarica Elettromagnetica",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se farlo rimuove l'ultima minaccia da quella trama, puoi scartare 1 aggiunta con il testo <b>\"Azione Eroe\"</b> o <b>\"Risposta Eroe.\"</b>",
+        "traits": "Intervento. Magnetico. Superpotere."
+    },
+    {
+        "code": "49009",
+        "flavor": "\"L'unico modo per difendere i mutanti è sconfiggere i nostri nemici.\" — Magneto",
+        "name": "Schegge Metalliche",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 7 danni a un nemico. Se questo attacco sconfigge quel nemico, irrobustisciti.",
+        "traits": "Attacco. Magnetico. Superpotere."
+    },
+    {
+        "code": "49010",
+        "flavor": "\"Ho ascoltato le tue minacce, e questa è la mia risposta.\" — Magneto",
+        "name": "Missile Magnetico",
+        "text": "<b>Azione Eroe</b>: Scarta un gregario con Avvolto nel Metallo → infliggi 5 danni a un nemico e stordiscilo.",
+        "traits": "Magnetico. Superpotere."
+    },
+    {
+        "code": "49011",
+        "flavor": "Il potere di magneto rende inutili le armi da fuoco convenzionali.",
+        "name": "Signore del Magnetismo",
+        "traits": "Magnetico."
+    },
+    {
+        "code": "49012",
+        "flavor": "\"Non mi dispiace essere il proverbiale elefante nella cristalleria.\"",
+        "name": "M",
+        "subname": "Monet St. Croix",
+        "text": "<b>Risposta</b>: Dopo che M è entrata in gioco, sconfiggi 1 gregario con meno punti ferita di M.",
+        "traits": "Psionico. X-Men."
+    },
+    {
+        "code": "49013",
+        "name": "Kid Omega",
+        "subname": "Quentin Quire",
+        "text": "<b>Risposta</b>: Dopo che Kid Omega è entrato in gioco, scegli 1 effetto tra:\n• Spendi [energy] → infliggi 1 danno a ogni nemico.\n• Spendi [mental] → rimuovi 1 minaccia da ogni trama.",
+        "traits": "Psionico. X-Men."
+    },
+    {
+        "code": "49014",
+        "flavor": "\"Entrare a far parte degli X-Men vuol dire entrare a far parte di una famiglia. Vuol dire non essere mai soli.\"",
+        "name": "Fenice",
+        "subname": "Jean Grey",
+        "text": "<b>Risposta</b>: Dopo che Fenice è entrata in gioco, scegli 1 alleato [[X-MEN]] → ripristina quell'alleato e curagli 1 danno.",
+        "traits": "Psionico. X-Men."
+    },
+    {
+        "code": "49015",
+        "flavor": "\"A me, miei X-Men!\"",
+        "name": "Ciclope",
+        "subname": "Scott Summers",
+        "text": "<b>Risposta</b>: Dopo che Ciclope è entrato in gioco, scegli 1 nemico. Fino alla fine della fase, Aumenta di 1 l'ammontare di danni che quel nemico subisce da ogni attacco.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "49016",
+        "name": "Mai al Tappeto",
+        "text": "Gioca solo se la tua identità possiede il tratto [[X-FORCE]] o [[X-MEN]]. Massimo 1 per giocatore.\n<b>Azione Alter Ego</b>: Scarta questa carta → rimetti nella tua mano 1 alleato [[X-FORCE]] o [[X-MEM]] dalla tua pila degli scarti.",
+        "traits": "Condizione."
+    },
+    {
+        "code": "49017",
+        "flavor": "\"Fatti sotto.\" — M",
+        "name": "Pronto allo Scontro",
+        "text": "<b>Azione Eroe</b>: Scarta carte dalla cima del mazzo degli incontri finché non scarti 1 gregario. Metti in gioco quel gregario impegnato con te → gioca 1 alleato dalla tua mano, riducendo di 3 il suo costo.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "49018",
+        "flavor": "\"Non aspettate me. Andate!\" — X-23",
+        "name": "Nobile Sacrificio",
+        "text": "<b>Azione Eroe</b>: Scarta 1 alleato che controlli → cura un ammontare di danni pari ai punti ferita stampati di quell'alleato al tuo eroe e irrobustiscilo.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "49019",
+        "name": "\"Ce la Puoi Fare!\"",
+        "text": "<b>Risposta Eroe</b>: Dopo che hai esaurito il tuo eroe per effettuare un intervento base o un attacco base, scarta 1 alleato che controlli → aggiungi il suo potere corrispondente al potere del tuo eroe per questo uso. Ripristina il tuo eroe.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "49020",
+        "flavor": "Entrare a far parte degli X-Men è il sogno di ogni studente della scuola di Xavier.",
+        "name": "Nuove Reclute",
+        "text": "Vittoria 0.\nGioca solo se la tua identità possiede il tratto [[X-MEN]].\n<b>Quando Sconfitta</b>: Ogni giocatore sceglie 1 alleato [[NUOVO]] messo da parte e lo aggiunge alla sua mano."
+    },
+    {
+        "code": "49021",
+        "flavor": "\"Oh, dolcezza, non credo mi servano dei poteri psionici per manipolarti.\"",
+        "name": "Regina Bianca",
+        "subname": "Emma Frost",
+        "text": "Gioca solo se la tua identità possiede il tratto [[X-FORCE]] o [[X-MEN]].\n<b>Risposta</b>: Dopo che Regina Bianca è entrata in gioco, scarta 1 carta status da un personaggio.",
+        "traits": "Psionico. X-Men."
+    },
+    {
+        "code": "49022",
+        "name": "Affrontare il Passato",
+        "text": "Massimo 1 per mazzo.\n<b>Azione Eroe</b>: Cerca nel mazzo degli incontri, nella pila degli scarti degli incontri e nelle carte messe da parte il tuo gregario nemesi e rivelalo → ripristina il tue eroe e pesca 3 carte. Non puoi attaccare il criminale in questa fase. Rimuovi dal gioco questa carta."
+    },
+    {
+        "code": "49033",
+        "flavor": "\"Tocca i miei amici e ti scaricherò addosso 10000 volt!\"",
+        "name": "Surge",
+        "subname": "Noriko Ashida",
+        "text": "Vincolo (Nuove Reclute).\nSe possiedi il tratto [[MUTANTE]] o [[X-MEN]], Surge riceve +1 ATT e non conta al fine di determinare il limite di alleati.",
+        "traits": "Nuovo. X-Men."
+    },
+    {
+        "code": "49034",
+        "flavor": "\"Non è facile essere un ragazzino quando hai l'aspetto di un mostro.\"",
+        "name": "Anole",
+        "subname": "Victor Borkowski",
+        "text": "Vincolo (Nuove Reclute).\nSe possiedi il tratto [[MUTANTE]] o [[X-MEN]], Anole riceve +1 INT e non conta al fine di determinare il limite di alleati.",
+        "traits": "Nuovo. X-Men."
+    },
+    {
+        "code": "49035",
+        "flavor": "\"Questa scuola fa schifo!\"",
+        "name": "Bling!",
+        "subname": "Roxanne Washington",
+        "text": "Vincolo (Nuove Reclute).\nSe possiedi il tratto [[MUTANTE]] o [[X-MEN]], Bling! ottiene Robustezza e non conta al fine di determinare il limite di alleati.",
+        "traits": "Nuovo. X-Men."
+    },
+    {
+        "code": "49036",
+        "flavor": "\"Ne ho viste di atrocità commesse sui mutanti. Ora basta!\"",
+        "name": "Indra",
+        "subname": "Paras Gavaskar",
+        "text": "Vincolo (Nuove Reclute).\nSe possiedi il tratto [[MUTANTE]] o [[X-MEN]], Indra riceve +2 punti ferita e non conta al fine di determinare il limite di alleati.",
+        "traits": "Nuovo. X-Men."
+    },
+    {
+        "code": "49037",
+        "name": "Figli dell'Atomo",
+        "text": "Gioca sotto il controllo di un qualsiasi giocatore. Massimo 1 per giocatore.\nOgni personaggio [[X-FACTOR]], [[X-FORCE]], e [[X-MEN]] che controlli ottiene i tratti [[X-FACTOR]], [[X-FORCE]], e [[X-MEN]]."
+    }
+]

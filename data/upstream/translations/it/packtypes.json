@@ -1,0 +1,22 @@
+[
+    {
+        "code": "core",
+        "name": "Base"
+    },
+    {
+        "code": "encounter",
+        "name": "Pack Incontri"
+    },
+    {
+        "code": "hero",
+        "name": "Pack Eroe"
+    },
+    {
+        "code": "scenario",
+        "name": "Pack Scenario"
+    },
+    {
+        "code": "story",
+        "name": "Campagna"
+    }
+]

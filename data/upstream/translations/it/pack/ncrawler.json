@@ -1,0 +1,144 @@
+[
+    {
+        "code": "48001a",
+        "flavor": "\"Verzeihung! Vi dispiacerebbe darci un taglio?\"",
+        "name": "Nightcrawler",
+        "text": "<i>Teletrasporto Rapido</i> — <b>Azione</b>: Spendi 1 risorsa di qualsiasi tipo → rimetti in mano 1 Bamf! dalla tua pila degli scarti. (Limite di una volta per fase.)",
+        "traits": "X-Men."
+    },
+    {
+        "code": "48001b",
+        "flavor": "\"Persino nei momenti più bui è possibile trovare pace e bellezza.\"",
+        "name": "Kurt Wagner",
+        "text": "<b>Azione</b>: Cerca nel tuo mazzo 1 Bamf! e aggiungilo alla tua mano. (Limite di 1 volta per round.)",
+        "traits": "Mutante."
+    },
+    {
+        "code": "48002",
+        "name": "Daytripper",
+        "subname": "Amanda Sefton",
+        "text": "<b>Risposta</b>: Dopo che Daytripper è entrata in gioco cerca nel tuo mazzo e nella tua pila degli scarti 1 Bamf! e assegnalo a un nemico. Infliggi 1 danno a ogni nemico con Bamf!.",
+        "traits": "Mistico."
+    },
+    {
+        "code": "48003",
+        "name": "Chiesa di Kurt",
+        "text": "Kurt Wagner riceve +1 REC.\n<b>Risposta Alter Ego</b>: Dopo che hai effettuato un recupero base, esaurisci Chiesa di Kurt e scegli 1 giocatore → quel giocatore pesca 1 carta.",
+        "traits": "Luogo."
+    },
+    {
+        "code": "48004",
+        "flavor": "\"Ho due spade, una per ognuno di voi!\"",
+        "name": "Sciabole di Kurt",
+        "text": "Conta come 2 carte con Restrizione.\nNightcrawler riceve +1 ATT, +1 DIF, e ottiene Ritorsione 1.",
+        "traits": "Arma."
+    },
+    {
+        "code": "48005",
+        "flavor": "La coda di Nightcrawler gli permette di sferrare attacchi impossibili per chiunque altro.",
+        "name": "Coda Prensile",
+        "text": "Puoi controllare 1 miglioria aggiuntiva che possiede la parola chiave Restrizione.\n<b>Risorsa</b>: Esaurisci Coda Prensile → genera [wild] per un evento.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "48006",
+        "name": "Bamf!",
+        "text": "Assegna a un nemico. Massimo 1 per nemico.\n<b>Interruzione Eroe</b> <i>(difesa)</i>: Quando il nemico con questa miglioria attacca, scarta questa carta → dichiara Nightcrawler come difensore senza esaurirlo."
+    },
+    {
+        "code": "48007",
+        "flavor": "Nightcrawler può affrontare diversi nemici alla volta, teletrasportandosi per colpirli senza che abbiano il tempo di reagire.",
+        "name": "Teletraspugno",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 3 danni a un nemico. Infliggi 3 danni a ogni nemico con Bamf!.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "48008",
+        "flavor": "\"Quando hai l'aspetto di un demone, puoi avere la tentazione di comportarti come tale.\" — Nightcrawler",
+        "name": "Teletrasporto e Lancio",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Scarta 1 Bamf! da un nemico → infliggi 8 danni a quel nemico e stordiscilo.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "48009",
+        "flavor": "\"Un attimo, liebchen... Voglio accertarmi che sia sicuro.\" — Nightcrawler",
+        "name": "Avanscoperta",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Puoi scartare 1 Bamf! dalla tua mano per rimuovere 3 minacce da una trama diversa.",
+        "traits": "Intervento. Superpotere."
+    },
+    {
+        "code": "48010",
+        "flavor": "\"Tornerò!\" — Nightcrawler",
+        "name": "Teletrasportarsi Via",
+        "text": "<b>Azione</b>: Scarta 1 Bamf! dalla tua mano → cambia sembianza e ripristina la tua identità.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "48011",
+        "name": "En Garde!",
+        "text": "<b>Risposta Eroe</b> <i>(difesa)</i>: Dopo che Bamf! ha reso Nightcrawler il difensore di un attacco, rimetti nella tua mano quel Bamf!. Infliggi 3 danni al nemico attaccante.",
+        "traits": "Difesa. Superpotere."
+    },
+    {
+        "code": "48012",
+        "name": "Rogue",
+        "subname": "Anna Marie",
+        "text": "<b>Azione</b>: Infliggi 1 danno a un personaggio amico → fino alla fine del round, Rogue ottiene ogni [[TRATTO]] di quel personaggio e aggiunge l'INT e l'ATT di quel personaggio ai suoi poteri corrispondenti. (Limite di una volta per round.)",
+        "traits": "X-Men."
+    },
+    {
+        "code": "48013",
+        "flavor": "\"I cattivoni non sono cosi spaventosi quando ti muovi più veloce di un battito di ciglia.\"",
+        "name": "Northstar",
+        "subname": "Jean-Paul Beaubier",
+        "text": "<b>Interruzione</b>: Quando una carta potenziamento viene girata a faccia in su durante un attacco, infliggi 1 danno a Northstar → annulla tutte le icone potenziamento ([boost]) su quella carta.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "48014",
+        "name": "Ribaltare la Sorte",
+        "text": "Gioca sotto il controllo di un qualsiasi giocatore. Massimo 1 per giocatore.\n<b>Risposta</b>: Dopo che hai sconfitto un nemico durante la Fase del Criminale, esaurisci questa carta → pesca 2 carte."
+    },
+    {
+        "code": "48015",
+        "name": "Sotto Controllo",
+        "text": "Assegna a un gregario. Massimo 1 per gregario.\n<b>Risposta</b>: Dopo che un eroe ha difesa dall'attacco del gregario con questa miglioria e non ha subito danni, infliggi 4 danni a quel gregario.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "48016",
+        "name": "\"Vieni a Prendermi, Cocco!\"",
+        "text": "<b>Azione Eroe</b>: Scarta carte dalla cima del mazzo degli incontri finché non scarti 1 gregario. Metti in gioco quel gregario impegnato con te → cura 3 danni alla tua identità e irrobustiscila.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "48018",
+        "name": "Risposta",
+        "text": "<b>Interruzione Eroe</b> <i>(difesa)</i>: Quando il tuo eroe difende da un attacco, riceve +2 DIF per quell'attacco. Se non subisci danni da quell'attacco, infliggi 3 danni al nemico attaccante.",
+        "traits": "Difesa."
+    },
+    {
+        "code": "48020",
+        "name": "Insuperabili X-Men",
+        "text": "Vittoria 0.\n<b>Risposta</b>: Dopo che un personaggio [[X-MEN]] ha difeso da un attacco nemico e non ha subito danni, rimuovi 1 minaccia da questa trama.\n<b>Quando Sconfitta</b>: Stordisci e confondi ogni nemico in gioco."
+    },
+    {
+        "code": "48021",
+        "name": "Gambit",
+        "subname": "Remy LeBeau",
+        "text": "X è pari al numero di icone potenziamento ([boost]) sulla carta sotto Gambit.\n<b>Risposta</b>: Dopo che Gambit è entrato in gioco, guarda 3 carte dalla cima del mazzo degli incontri e fanne scorrere 1 sotto di lui in modo che sia visibile solo il campo di potenziamento.",
+        "traits": "Ladro. X-Men."
+    },
+    {
+        "code": "48031",
+        "flavor": "\"Caro mio, mi sa che hai scelto i mutanti sbagliati nel giorno sbagliato!\" — Ciclope",
+        "name": "Forze Combinate",
+        "text": "Alleanza.\n<b>Azione Eroe</b>: Esaurisci 1 personaggio [[X-FORCE]] e 1 personaggio [[X-MEN]] → scarta 1 gregario non [[ELITE]]."
+    },
+    {
+        "code": "48032",
+        "name": "Diplomazia delle Cannoniere",
+        "text": "Alleanza.\n<b>Azione Eroe</b> <i>(attacco/intervento)</i>: Esaurisci 1 personaggio [[X-FORCE]] e 1 personaggio [[X-MEN]] → rimuovi un totale di X minacce dalle trame in gioco e infliggi un totale di X danni ai nemici in gioco, dove X è pari all'INT totale dei 2 personaggi esauriti.",
+        "traits": "Attacco. Intervento."
+    }
+]

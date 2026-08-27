@@ -1,0 +1,30 @@
+[
+	{
+		"code": "08025",
+		"name": "Verbrannte Agentin",
+		"text": "<b><i>Gib dies dem Spieler von Natasha Romanoff </i></b>\nDu darfst deine Identität auf deine Alter-Ego-Seite umdrehen. Wähle eines:\n\u2022 Erschöpfe Natasha Romanoff → entferne diese Karte aus dem Spiel.\n\u2022 Lege die [[Vorbereitung]]-Karte unter deiner Kontrolle mit den höchsten Kosten ab. Falls du das nicht kannst, erhält diese Karte Nachrüsten. Lege diese Verpflichtung ab."
+	},
+	{
+		"code": "08026",
+		"name": "Taskmaster",
+		"text": "[star] Taskmaster bekommt +1 PLA und +1 ANG für jedes Upgrade unter deiner Kontrolle.\n<i>(Black Widow's Erzfeind-Scherge.)</i>\n<hr />\n[star] <b>Boost</b>: Für diese Aktivierung bekommt der Schurke +1 PLA und +1 ANG für jedes Upgrade unter deiner Kontrolle.",
+		"traits": "Elite. Hydra."
+	},
+	{
+		"code": "08027",
+		"name": "Auftragskiller",
+		"text": "<b>Sobald aufgedeckt</b>: Platziere hier zusätzlich 1 [per_hero] Bedrohung."
+	},
+	{
+		"code": "08028",
+		"flavor": "\"Was hat Hydra hier zu suchen?\" -- Carol Danvers",
+		"name": "Hydra Söldner",
+		"text": "Wache. <i>(Solange dieser Scherge mit dir im Kampf ist, kannst du den Schurken nicht angreifen.)</i>",
+		"traits": "Hydra."
+	},
+	{
+		"code": "08029",
+		"name": "Tödlicher Schuss",
+		"text": "<b>Sobald aufgedeckt (Alter-Ego)</b>: Lege ein Upgrade unter deiner Kontrolle ab und platziere 1 Bedrohung auf dem Hauptplan.\n<b>Sobald aufgedeckt (Held)</b>: Lege ein Upgrade unter deiner Kontrolle ab und nimm 1 Schaden."
+	}
+]

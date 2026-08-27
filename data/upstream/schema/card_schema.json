@@ -1,0 +1,348 @@
+{
+	"additionalProperties": true,
+	"dependencies": {
+		"name": [
+			"faction_code",
+			"type_code"
+		]
+	},
+	"properties": {
+		"attack": {
+			"oneOf": [
+				{
+					"minimum": -1,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"attack_cost": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"attack_star": {
+			"type": "boolean"
+		},
+		"back_flavor": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"back_text": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"base_threat": {
+			"oneOf": [
+				{
+					"minimum": 0,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"base_threat_fixed": {
+			"type": "boolean"
+		},
+		"base_threat_per_group": {
+			"type": "boolean"
+		},
+		"base_threat_star": {
+			"type": "boolean"
+		},
+		"boost": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"boost_star": {
+			"type": "boolean"
+		},
+		"code": {
+			"pattern": "^[0-9]{5}[abcdef]?$",
+			"type": "string"
+		},
+		"cost": {
+			"minimum": -1,
+			"type": "integer"
+		},
+		"cost_per_hero": {
+			"type": "boolean"
+		},
+		"cost_star": {
+			"type": "boolean"
+		},
+		"deck_limit": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"deck_options": {
+			"items": {
+				"properties": {
+					"limit": {
+						"minimum": 1,
+						"type": "integer"
+					},
+					"name_limit": {
+						"minimum": 1,
+						"type": "integer"
+					},
+					"resource": {
+						"items": {
+							"minlength": 1,
+							"type": "string"
+						},
+						"minItems": 1,
+						"type": "array"
+					},
+					"trait": {
+						"items": {
+							"minlength": 1,
+							"type": "string"
+						},
+						"minItems": 1,
+						"type": "array"
+					},
+					"type": {
+						"items": {
+							"minlength": 1,
+							"type": "string"
+						},
+						"minItems": 1,
+						"type": "array"
+					},
+					"use_deck_limit": {
+						"type": "boolean"
+					}
+				},
+				"type": "object"
+			},
+			"minItems": 1,
+			"type": "array"
+		},
+		"deck_requirements": {
+			"items": {
+				"properties": {
+					"aspects": {
+						"minimum": 1,
+						"type": "integer"
+					},
+					"limit": {
+						"minimum": 1,
+						"type": "integer"
+					}
+				},
+				"type": "object"
+			},
+			"minItems": 1,
+			"type": "array"
+		},
+		"defense": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"defense_star": {
+			"type": "boolean"
+		},
+		"double_sided": {
+			"type": "boolean"
+		},
+		"duplicate_of": {
+			"pattern": "^[0-9a-z]{5}[0-9a-z]?$",
+			"type": "string"
+		},
+		"errata": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"escalation_threat": {
+			"oneOf": [
+				{
+					"minimum": -1,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"escalation_threat_fixed": {
+			"type": "boolean"
+		},
+		"escalation_threat_star": {
+			"type": "boolean"
+		},
+		"faction_code": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"flavor": {
+			"minLength": 0,
+			"type": "string"
+		},
+		"hand_size": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"health": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"health_per_group": {
+			"type": "boolean"
+		},
+		"health_per_hero": {
+			"type": "boolean"
+		},
+		"health_star": {
+			"type": "boolean"
+		},
+		"illustrator": {
+			"pattern": ".*",
+			"type": "string"
+		},
+		"is_unique": {
+			"oneof": [
+				{
+					"type": "boolean"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"name": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"pack_code": {
+			"maxLength": 10,
+			"minLength": 2,
+			"type": "string"
+		},
+		"permanent": {
+			"type": "boolean"
+		},
+		"position": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"quantity": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"recover": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"recover_star": {
+			"type": "boolean"
+		},
+		"resource_energy": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"resource_mental": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"resource_physical": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"resource_wild": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"restrictions": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"scheme_acceleration": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"scheme_crisis": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"scheme_hazard": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"scheme_star": {
+			"type": "boolean"
+		},
+		"set_code": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"stage": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"subname": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"text": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"threat": {
+			"oneOf": [
+				{
+					"minimum": -1,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"threat_fixed": {
+			"type": "boolean"
+		},
+		"threat_per_group": {
+			"type": "boolean"
+		},
+		"threat_star": {
+			"type": "boolean"
+		},
+		"thwart": {
+			"oneOf": [
+				{
+					"minimum": -1,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"thwart_cost": {
+			"minimum": 0,
+			"type": "integer"
+		},
+		"thwart_star": {
+			"type": "boolean"
+		},
+		"traits": {
+			"minLength": 0,
+			"type": "string"
+		},
+		"type_code": {
+			"minLength": 1,
+			"type": "string"
+		}
+	},
+	"required": [
+		"code",
+		"pack_code",
+		"position",
+		"quantity"
+	],
+	"type": "object"
+}

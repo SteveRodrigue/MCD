@@ -1,0 +1,156 @@
+[
+	{
+		"code": "10001a",
+		"flavor": "\"Hulk ist nicht leidtun. Hulk ist Hulk.\"",
+		"name": "Hulk",
+		"text": "\"Wütend\" — <b>Erzwungene Unterbrechung</b>: Sobald dein Zug endet, lege deine Hand ab.",
+		"traits": "Avenger. Gamma."
+	},
+	{
+		"code": "10001b",
+		"flavor": "\"Machen Sie mich nicht wütend. Sie werden es nicht mögen, wenn ich wütend bin.\"",
+		"name": "Bruce Banner",
+		"text": "Experimentelle Forschung — <b>Aktion</b>: Ziehe 1 Karte. Wähle 1 Karte von deiner Hand und lege sie ab. (Nur ein Mal pro Runde.)",
+		"traits": "Genie. Wissenschaftler."
+	},
+	{
+		"code": "10002",
+		"flavor": "\"Mickriges Monster.\" -- Hulk",
+		"name": "Vernichtender Schlag",
+		"text": "Du kannst nur [physical]-Ressourcen ausgeben, um für diese Karte zu bezahlen.\n <b>Held Aktion</b> <i>(Angriff)</i>: Füge einem Gegner Schaden in Höhe deines ANG-Wertes zu.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "10003",
+		"flavor": "\"Was Hulk smasht, bleibt gesmasht!\" -- Hulk",
+		"name": "HULK SMASH",
+		"text": "<b>Held Unterbrechung</b>: Sobald du einen Basisangriff durchführst, bekommst du +10 ANG für den Angriff. Falls du für diese Karte nur mit [physical]-Ressourcen bezahlt hast, erhält der Angriff Overkill.",
+		"traits": "Superkraft."
+	},
+	{
+		"code": "10004",
+		"flavor": "\"Hulk in Ruhe lassen!\" -- Hulk",
+		"name": "Suborbitaler Sprung",
+		"text": "<b>Held Aktion</b> <i>(Widerstand)</i>: Entferne 3 Bedrohung von einem Plan (5 Bedrohung stattdessen, falls du für diese Karte nur mit [physical]-Ressourcen bezahlt hast).",
+		"traits": "Superkraft. Widerstand."
+	},
+	{
+		"code": "10005",
+		"flavor": "\"Du dich fürchten vor Hulks kleinem Wind?\" -- Hulk",
+		"name": "Donnerschlag",
+		"text": "<b>Held Aktion</b>: Wähle bis zu 3 verschiedene Gegner. Füge jedem der Gegner 3 Schaden zu.",
+		"traits": "Superkraft."
+	},
+	{
+		"code": "10006",
+		"flavor": "\"Niemand Hulk aufhalten!\" -- Hulk",
+		"name": "Unaufhaltsame Gewalt",
+		"text": "<b>Held Aktion</b>: Mache Hulk spielbereit. Falls du für diese Karte nur mit [physical]-Ressourcen bezahlt hast, ziehe 1 Karte."
+	},
+	{
+		"code": "10007",
+		"name": "Grenzenlose Stärke",
+		"text": "Gib diese Karte nur aus, falls du in Heldengestalt bist."
+	},
+	{
+		"code": "10008",
+		"flavor": "\"Das Beste an meinem Labor ist, dass mich hier nie jemand stört.\" -- Bruce Banner",
+		"name": "Banners Labor",
+		"text": "Bruce Banner bekommt +2 ERH.\n<b>Alter-Ego Ressource</b>: Erschöpfe Banners Labor → erzeuge eine [mental]-Ressource.",
+		"traits": "Ort."
+	},
+	{
+		"code": "10009",
+		"flavor": "\"Je wütender ich werde, desto stärker werde ich.\" -- Bruce Banner",
+		"name": "Unbändige Rage",
+		"text": "Nur in Heldengestalt. Hulk bekommt +1 ANG.\n<b>Erzwungene Reaktion</b>: Nachdem du deine Gestalt gewechselt hast, lege diese Karte ab.",
+		"traits": "Gamma. Zustand."
+	},
+	{
+		"code": "10010",
+		"name": "Unbewegliches Objekt",
+		"text": "Du bekommt +4 Lebenspunkte.\nHulk erhält Vergeltung 1.",
+		"traits": "Zustand."
+	},
+	{
+		"code": "10011",
+		"flavor": "\"Ich bin der Stärkste von allen. Und der Klügste. Das ist alle Autorität, die ich brauche.\"",
+		"name": "Brawn",
+		"text": "<b>Reaktion</b>: Nachdem Brawn angegriffen hat, entferne 1 Bedrohung von einem Plan.",
+		"traits": "Champion. Gamma."
+	},
+	{
+		"code": "10012",
+		"flavor": "\"Wenn ich meine Kraft von Million explodierender Sonnen nutze, entfessele ich Void. Er greift die Welt jedes Mal an, wenn ich versuche, sie zu retten.\"",
+		"name": "Sentry",
+		"subname": "Robert Reynolds",
+		"text": "<b>Erzwungene Reaktion</b>: Nachdem Sentry unter deiner Kontrolle ins Spiel gekommen ist, teile dir 1 Begegnungskarte zu.",
+		"traits": "Avenger."
+	},
+	{
+		"code": "10013",
+		"flavor": "\"Ich würde dich ja bitten, dich zu ergeben... aber ich hoffe sehr, dass du auf einen Kampf aus bist.\"",
+		"name": "She-Hulk",
+		"subname": "Jennifer Walters",
+		"text": "[star] She-Hulk bekommt +1 ANG für jeden Schadensmarker auf ihr.",
+		"traits": "Avenger. Gamma."
+	},
+	{
+		"code": "10014",
+		"flavor": "\"Smashen können Hulk am besten!\" -- Hulk",
+		"name": "Drop Kick",
+		"text": "<b>Held Aktion</b> <i>(Angriff)</i>: Füge einem Gegner 4 Schaden zu. Falls du für diese Karte nur mit [physical]-Ressourcen bezahlt hast, betäube den Gegner und ziehe 1 Karte.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "10015",
+		"flavor": "\"Wie wäre es mit einer Kostprobe deiner eigenen Medizin!\" -- Captain Marvel",
+		"name": "Auge in Auge",
+		"text": "<b>Held Aktion</b> <i>(Angriff)</i>: Wähle einen Gegner. Der Gegner greift dich an. Füge dem Gegner 5 Schaden zu.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "10016",
+		"name": "\"Dafür wirst du bezahlen!\"",
+		"text": "<b>Held Reaktion</b> <i>(Widerstand)</i>: Nachdem der Schurke dich angegriffen hat, entferne 1 Bedrohung von einem Plan für jeden Schaden, den du durch den Angriff genommen hast (bis zu einem Maximum von 5).",
+		"traits": "Widerstand."
+	},
+	{
+		"code": "10018",
+		"name": "Kämpferisches Können",
+		"text": "Spiele diese Karte unter die Kontrolle eines beliebigen Spielers.\n Max. 1 pro Spieler.\n <b>Ressource</b>: Erschöpfe Kämpferisches Können → erzeuge für ein [[Angriff]]-Ereignis eine [physical]-Ressource.",
+		"traits": "Fertigkeit."
+	},
+	{
+		"code": "10019",
+		"name": "Auf zur Rettung!",
+		"text": "<b>Held Aktion</b> <i>(Widerstand)</i>: Entferne 2 Bedrohung von einem Plan.",
+		"traits": "Widerstand."
+	},
+	{
+		"code": "10029",
+		"name": "Streifenpolizistin",
+		"text": "<b>Aktion</b>: Erschöpfe Streifenpolizistin → verschiebe 1 Bedrohung von einem Plan hierher.\n<b>Aktion</b>: Erschöpfe Streifenpolizistin und lege sie ab → füge einem Schergen für jede hier liegende Bedrohung 1 Schaden zu.",
+		"traits": "Person."
+	},
+	{
+		"code": "10030",
+		"flavor": "\"Wappnet euch, denn an eurer Seite steht der mächtige Thor.\" -- Thor",
+		"name": "Inspirierende Präsenz",
+		"text": "Spiele diese Karte nur, falls deine Identität das Merkmal [[Avenger]] hat.\n <b>Held Aktion</b>: Heile 1 Schaden von einem Verbündeten und mache ihn spielbereit.",
+		"traits": ""
+	},
+	{
+		"code": "10031",
+		"name": "Elektrostatische Rüstung",
+		"text": "Spiele diese Karte unter die Kontrolle eines beliebigen Spielers.\n Max. 1 pro Spieler.\n <b>Reaktion</b>: Nachdem du gegen einen Angriff verteidigt hast, füge dem angreifenden Charakter 1 Schaden zu.",
+		"traits": "Rüstung. Tech."
+	},
+	{
+		"code": "10032",
+		"flavor": "\"Innovation ist die ultimative Waffe.\" -- Vision",
+		"name": "Einfallsreich",
+		"text": "<b>Ressource</b>: Lege Einfallsreich ab → erzeuge eine [wild]-Ressource.",
+		"traits": "Fertigkeit."
+	}
+]

@@ -86,7 +86,9 @@ export const AppContent: React.FC = () => {
 
       {/* Screen Render Switcher */}
       <div className="relative z-10 w-full">
-        {stage === 'SETUP' && <ScenarioSelector onStartSetup={handleStartSetup} />}
+        {stage === 'SETUP' && (
+          <ScenarioSelector catalog={catalog} onStartSetup={handleStartSetup} />
+        )}
 
         {stage === 'MULLIGAN' && gameState && (
           <MulliganScreen

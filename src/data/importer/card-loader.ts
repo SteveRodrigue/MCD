@@ -40,7 +40,7 @@ export function parseResources(raw: RawUpstreamCard) {
   };
 }
 
-import defaultCardEffects from '../supplemental/card-effects.json';
+import { supplementalRegistry } from '../supplemental';
 import { CardEnrichment } from '@engine/models';
 
 /**
@@ -49,7 +49,7 @@ import { CardEnrichment } from '@engine/models';
  */
 export function normalizeRawCard(
   raw: RawUpstreamCard,
-  supplementalEffects: Record<string, CardEnrichment> = defaultCardEffects.cards as Record<string, CardEnrichment>,
+  supplementalEffects: Record<string, CardEnrichment> = supplementalRegistry,
 ): NormalizedCard {
   const enrichment = supplementalEffects[raw.code];
 

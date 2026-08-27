@@ -94,9 +94,17 @@ export enum VillainPhaseStep {
 export interface GameLogEntry {
   id: string;
   timestamp: number;
+  round?: number;
+  phase?: GamePhase;
+  category?: 'combat' | 'scheme' | 'card_play' | 'status' | 'phase' | 'ability';
+  actor?: {
+    name: string;
+    type: 'hero' | 'alter_ego' | 'villain' | 'minion' | 'ally' | 'environment';
+  };
   key: string;
   params?: Record<string, string | number>;
-  onomatopoeia?: string; // e.g. "POW!", "BAM!", "THWIP!"
+  onomatopoeia?: string; // e.g. "POW!", "BAM!", "THWIP!", "CLANG!"
+  text?: string;
 }
 
 export interface GameState {

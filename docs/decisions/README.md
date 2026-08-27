@@ -27,6 +27,7 @@ Each record documents:
 | [ADR-0006](0006-local-first-card-data-architecture.md) | 2026-08-26 | Local-First Card Data & Layered Overrides | **Accepted** | Keep a 100% local copy of all card data with an explicit sync workflow and a supplemental/override layer for engine hooks and errata. |
 | [ADR-0007](0007-official-rules-authority-rr-v18.md) | 2026-08-26 | Official Rules Authority (RR v1.8 & Errata) | **Accepted** | All game mechanics, timing windows, and errata must strictly adhere to the official Rules Reference v1.8 and Learn to Play Guide. |
 | [ADR-0008](0008-declarative-card-ability-enrichment.md) | 2026-08-26 | Declarative Card Ability & Effect Enrichment | **Accepted** | Define a declarative supplemental ability layer with reusable effect primitives to handle complex card interactions consistently. |
+| [ADR-0009](0009-game-history-and-action-log.md) | 2026-08-26 | In-Game Action History & Real-Time Combat Log | **Accepted** | Implement a strictly ordered, immutable log of game events to support undo mechanics, replayability, and debugging. |
 
 ---
 

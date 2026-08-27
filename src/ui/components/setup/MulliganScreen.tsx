@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { GameState, CardInstance } from '../../../engine';
+import { CardView } from '../cards/CardView';
 
 interface MulliganScreenProps {
   gameState: GameState;
@@ -62,70 +63,20 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
       </div>
 
       {/* Hand Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
         {activePlayer.hand.map((cardInst: CardInstance) => {
           const isDiscarded = selectedDiscards.includes(cardInst.instanceId);
-          const card = cardInst.card;
 
           return (
-            <button
+            <CardView
               key={cardInst.instanceId}
+              card={cardInst.card}
+              instance={cardInst}
+              size="md"
+              isMulliganSelected={isDiscarded}
+              isKeepSelected={!isDiscarded}
               onClick={() => toggleDiscard(cardInst.instanceId)}
-              className={`relative flex flex-col justify-between p-3 rounded-lg border-3 transition-all transform hover:-translate-y-1 text-left min-h-[220px] ${
-                isDiscarded
-                  ? 'border-comic-red bg-rose-50 shadow-comic scale-95 opacity-80'
-                  : 'border-comic-black bg-white shadow-comic hover:shadow-comic-lg'
-              }`}
-            >
-              {/* Status Ribbon */}
-              <div
-                className={`absolute -top-3 -right-2 px-2 py-0.5 font-comic text-xs font-bold tracking-wider rounded border border-comic-black shadow-comic-sm ${
-                  isDiscarded
-                    ? 'bg-comic-red text-white'
-                    : 'bg-emerald-400 text-slate-950'
-                }`}
-              >
-                {isDiscarded ? 'MULLIGAN' : 'KEEP'}
-              </div>
-
-              {/* Card Top: Cost & Name */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="w-6 h-6 rounded-full bg-slate-900 text-comic-yellow font-comic text-sm flex items-center justify-center font-bold">
-                    {card.cost ?? 0}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase text-slate-500">
-                    {card.type}
-                  </span>
-                </div>
-                <h3 className="font-comic text-base text-comic-black leading-tight">
-                  {card.name}
-                </h3>
-              </div>
-
-              {/* Card Body: Text */}
-              <div className="my-2 text-[11px] text-slate-600 line-clamp-4 leading-snug">
-                {card.text || 'No special text.'}
-              </div>
-
-              {/* Card Bottom: Resource Icon & Faction */}
-              <div className="border-t border-slate-200 pt-2 flex items-center justify-between text-[10px] font-semibold text-slate-500">
-                <span className="capitalize">{card.faction}</span>
-                <span className="text-slate-700 font-bold uppercase">
-                  {card.resources.total > 0
-                    ? `${card.resources.total} ${
-                        card.resources.physical > 0
-                          ? 'PHY'
-                          : card.resources.energy > 0
-                            ? 'NRG'
-                            : card.resources.mental > 0
-                              ? 'MNT'
-                              : 'WLD'
-                      }`
-                    : ''}
-                </span>
-              </div>
-            </button>
+            />
           );
         })}
       </div>

@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "simulate": "tsx scripts/simulate-games.ts",
+    "cache:cards": "tsx scripts/cache-card-images.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },

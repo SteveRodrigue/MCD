@@ -10,3 +10,4 @@ export * from './state';
 export * from './effects';
 export * from './triggers';
 export * from './pipeline';
+export * from './simulation';

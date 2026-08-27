@@ -39,11 +39,7 @@ export const CardView: React.FC<CardViewProps> = ({
     card.orientation === 'landscape' ||
     card.type === CardType.MAIN_SCHEME ||
     card.type === CardType.SIDE_SCHEME ||
-    (card.type as string) === 'main_scheme' ||
-    (card.type as string) === 'side_scheme' ||
-    (card.type as string) === 'player_side_scheme' ||
-    card.code === '01097a' ||
-    card.code === '01097b';
+    (card.type as string) === 'player_side_scheme';
 
   // Size Dimension Classes for Portrait vs Landscape Cards (3.5:2.5 vs 2.5:3.5)
   const sizeClasses = isLandscape

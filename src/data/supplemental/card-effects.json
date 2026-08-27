@@ -135,6 +135,19 @@
         }
       ]
     },
+    "01058": {
+      "cardName": "Daredevil",
+      "comment": "Ally: Response after Daredevil thwarts -> deal 1 damage to an enemy.",
+      "abilities": [
+        {
+          "id": "daredevil_after_thwart",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "DEAL_DAMAGE",
+          "params": { "amount": 1, "target": "CHOSEN_ENEMY" }
+        }
+      ]
+    },
     "01059": {
       "cardName": "Jessica Jones",
       "comment": "Ally: Constant -> Gets +1 THW for each side scheme in play.",
@@ -189,9 +202,9 @@
       ]
     },
     "01064": {
+      "uses": { "type": "snoop_counters", "count": 3, "discardOnEmpty": true },
       "cardName": "Surveillance Team",
       "comment": "Support: Enters play with 3 snoop counters -> exhaust & remove 1 counter to remove 1 threat.",
-      "uses": { "type": "snoop_counters", "count": 3, "discardOnEmpty": true },
       "abilities": [
         {
           "id": "surveillance_team_action",
@@ -199,6 +212,18 @@
           "cost": { "exhaustSelf": true, "removeCounter": 1 },
           "effect": "REMOVE_THREAT",
           "params": { "amount": 1, "target": "CHOSEN_SCHEME" }
+        }
+      ]
+    },
+    "01065": {
+      "cardName": "Heroic Intuition",
+      "comment": "Upgrade: Attached hero gets +1 THW.",
+      "abilities": [
+        {
+          "id": "heroic_intuition_buff",
+          "timing": "CONSTANT",
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 1 }
         }
       ]
     },
@@ -212,6 +237,34 @@
           "trigger": "CARD_PLAYED",
           "effect": "ADD_STATUS",
           "params": { "status": "STUNNED", "target": "CHOSEN_ENEMY" }
+        }
+      ]
+    },
+    "01084": {
+      "cardName": "Nick Fury",
+      "comment": "Ally: Forced Response after enters play -> draw 3 cards. Discard at end of round.",
+      "abilities": [
+        {
+          "id": "nick_fury_draw",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "DRAW_CARDS",
+          "params": { "count": 3, "target": "SELF" }
+        }
+      ]
+    },
+    "01085": {
+      "cardName": "Emergency",
+      "comment": "Event: Interrupt when villain schemes -> reduce threat placed by 1.",
+      "abilities": [
+        {
+          "id": "emergency_interrupt",
+          "timing": "INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
+          "zone": "HAND",
+          "cost": { "discardSelf": true },
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 1 }
         }
       ]
     },
@@ -263,6 +316,19 @@
           "cost": { "exhaustSelf": true },
           "effect": "REDUCE_NEXT_CARD_COST",
           "params": { "amount": 1 }
+        }
+      ]
+    },
+    "01093": {
+      "cardName": "Tenacity",
+      "comment": "Upgrade: Hero Action -> Spend a Physical resource and discard Tenacity to ready your hero.",
+      "abilities": [
+        {
+          "id": "tenacity_ready",
+          "timing": "HERO_ACTION",
+          "cost": { "discardSelf": true },
+          "effect": "HEAL_DAMAGE",
+          "params": { "amount": 0 }
         }
       ]
     },

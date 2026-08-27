@@ -203,6 +203,57 @@
         }
       ]
     },
+    "01165": {
+      "cardName": "Eviction Notice",
+      "comment": "Obligation: Give to Peter Parker player -> Exhaust Peter Parker or discard 1 random card (gains Surge).",
+      "abilities": [
+        {
+          "id": "eviction_notice",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+        }
+      ]
+    },
+    "01166": {
+      "cardName": "Highway Robbery",
+      "comment": "Nemesis Side Scheme: Acceleration icon. When Revealed -> Each player places random hand card facedown here.",
+      "abilities": [
+        {
+          "id": "highway_robbery_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 0 }
+        }
+      ]
+    },
+    "01167": {
+      "cardName": "Vulture",
+      "comment": "Nemesis Minion: Quickstrike (attacks immediately after engaging hero).",
+      "abilities": [
+        {
+          "id": "vulture_quickstrike",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": { "amount": 3, "target": "HERO" }
+        }
+      ]
+    },
+    "01168": {
+      "cardName": "Sweeping Swoop",
+      "comment": "Nemesis Treachery: When Revealed -> Stun your hero. If Vulture is in play, gains Surge.",
+      "abilities": [
+        {
+          "id": "sweeping_swoop",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "STUNNED", "target": "HERO" }
+        }
+      ]
+    },
     "01186": {
       "cardName": "Advance",
       "comment": "Treachery: When Revealed -> The villain schemes immediately.",

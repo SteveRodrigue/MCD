@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { useCardArt } from '../../hooks/useCardArt';
 
@@ -14,7 +14,7 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
-  zoomOrigin?: 'bottom' | 'top' | 'center' | 'bottom-left' | 'bottom-right';
+  zoomOrigin?: 'bottom' | 'top' | 'center' | 'left' | 'right' | 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
   className?: string;
 }
 
@@ -33,6 +33,9 @@ export const CardView: React.FC<CardViewProps> = ({
   zoomOrigin = 'center',
   className = '',
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
+
   const { artUrl, loading, error } = useCardArt(card.code);
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -58,20 +61,64 @@ export const CardView: React.FC<CardViewProps> = ({
         xl: 'w-72 h-[410px] text-lg',
       }[size];
 
-  const originClass = {
-    bottom: 'origin-bottom',
-    top: 'origin-top',
-    center: 'origin-center',
-    'bottom-left': 'origin-bottom-left',
-    'bottom-right': 'origin-bottom-right',
-  }[zoomOrigin];
+  // Dynamic Viewport Boundary Detection on Hover
+  const handleMouseEnter = () => {
+    if (!enableHoverZoom || !cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const scale = 1.9;
+    const scaledWidth = rect.width * scale;
+    const scaledHeight = rect.height * scale;
+
+    const overflowLeft = rect.left - (scaledWidth - rect.width) / 2 < 16;
+    const overflowRight = rect.right + (scaledWidth - rect.width) / 2 > viewportWidth - 16;
+    const overflowTop = rect.top - (scaledHeight - rect.height) / 2 < 55;
+    const overflowBottom = rect.bottom + (scaledHeight - rect.height) / 2 > viewportHeight - 16;
+
+    let vAlign = 'center';
+    let hAlign = 'center';
+
+    if (overflowTop) vAlign = 'top';
+    else if (overflowBottom) vAlign = 'bottom';
+
+    if (overflowLeft) hAlign = 'left';
+    else if (overflowRight) hAlign = 'right';
+
+    if (vAlign === 'center' && hAlign === 'center') {
+      setDynamicOrigin(zoomOrigin);
+    } else if (vAlign === 'center') {
+      setDynamicOrigin(hAlign);
+    } else if (hAlign === 'center') {
+      setDynamicOrigin(vAlign);
+    } else {
+      setDynamicOrigin(`${vAlign}-${hAlign}`);
+    }
+  };
+
+  const activeOrigin = dynamicOrigin || zoomOrigin;
+  const originClass =
+    {
+      bottom: 'origin-bottom',
+      top: 'origin-top',
+      center: 'origin-center',
+      left: 'origin-left',
+      right: 'origin-right',
+      'bottom-left': 'origin-bottom-left',
+      'bottom-right': 'origin-bottom-right',
+      'top-left': 'origin-top-left',
+      'top-right': 'origin-top-right',
+    }[activeOrigin] || 'origin-center';
 
   const exhaustedState = instance?.exhausted || isExhausted;
   const showFallback = imageFailed || error || (!artUrl && !loading);
 
   return (
     <div
+      ref={cardRef}
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
         exhaustedState ? 'rotate-90 my-6 mx-4' : 'rotate-0'
       } ${className}`}
@@ -80,7 +127,7 @@ export const CardView: React.FC<CardViewProps> = ({
       <div
         className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
-            ? 'group-hover:scale-[1.9] group-hover:-translate-y-6 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
+            ? 'group-hover:scale-[1.9] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
           isMulliganSelected

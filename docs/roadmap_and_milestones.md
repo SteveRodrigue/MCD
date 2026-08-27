@@ -116,5 +116,7 @@ graph TD
   * Package standalone Windows `.exe` and installers with native file system access and ultra-low RAM footprint.
 * **Localization Packs:**
   * Complete translations for French, Spanish, German, etc. via `i18next` and MarvelsDB multi-lingual sets.
+* **Developer State Presets (Debug Playground):**
+  * Quick-switcher dropdown in Dev Mode offering pre-configured scenario states (e.g., *"Mid-game: 3 Engaged Minions"*, *"Main Scheme at 90% Threat"*, *"Villain Stage II with 3 Attachments"*) for instant edge-case testing and UI layout validation.
 * **Peer-to-Peer Network Multiplayer:**
   * Synchronized game state room for 2–4 players over WebRTC / WebSockets.

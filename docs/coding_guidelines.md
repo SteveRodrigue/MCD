@@ -39,14 +39,18 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 1. **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
 2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be written into `src/data/overrides/` or `src/data/supplemental/`.
 3. **Official Rules Authority is Rules Reference v1.8.** All game mechanics, timing trigger hierarchies, keyword resolutions, and official card errata must strictly adhere to the official FFG **[Rules Reference v1.8](references/mc_rulesreference_v18_compressed.pdf)** and **[Learn to Play Guide](references/mvc01_learn_to_play_eng-compressed.pdf)** stored in `references/`.
+4. **Documentation-First Rule Search:** Before implementing any game rule, action, or card interaction, developers and AI agents must thoroughly search and cross-reference the official rulebooks for exact keyword definitions, edge cases, and rulings. Never rely on generic assumptions or mechanics from other card games.
+5. **Proactive User Consultation:** Whenever a rule, card interaction, or design choice has ambiguity or multiple possible interpretations, stop and consult the user for clarification before making assumptions.
 
 ---
 
-## 2. Rules Authority & Errata Standards
+## 2. Rules Authority, Documentation Search & Errata Standards
 
 * **Authoritative Source:** When designing engine logic or unit tests, always cite and verify against the **Rules Reference v1.8** (`references/mc_rulesreference_v18_compressed.pdf`).
+* **Search & Verification Requirement:** Thoroughly search the PDF text for exact keywords (e.g. *Form*, *Change Form*, *Guard*, *Patrol*, *Crisis*, *Boost*, *Interrupt*, *Replacement*, *Defend*, *Surge*, *Overkill*, *Piercing*, *Villain Phase*, *Consequential Damage*) before coding mechanics.
 * **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
 * **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior implemented via `src/data/overrides/`.
+* **Clarifications & Ambiguities:** If any rule or card interaction is ambiguous or underspecified, proactively ask the user.
 
 ---
 

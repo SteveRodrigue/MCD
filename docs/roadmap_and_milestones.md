@@ -94,12 +94,16 @@ graph TD
   * Persistent `GameSettingsContext` with top bar Dev Mode indicator and Options Menu.
   * Encounter Deck Inspector with multi-tier sorting (Deck Order, Card Type, Encounter Set).
   * Player Deck Inspector with multi-tier sorting (Deck Order, Card Type, Affinity, Cost with direction toggle and separated Resource cards).
+* [ ] 🔴 `[Must-Have]` **Multi-Handed Solo UI Layout & Second Core Hero Deck (Captain Marvel - Leadership):**
+  * Built-in multi-hero architectural baseline in engine and UI *before* advancing to complex card actions (prevents future refactoring and architectural debt).
+  * Addition of a second prebuilt Core Set starter deck: **Captain Marvel (Leadership)** (Carol Danvers / Captain Marvel, 15 signature cards, Leadership aspect cards like *Make the Call*, *Maria Hill*, *Lead from the Front*, *Family Emergency* obligation, and *Yon-Rogg* 5-card nemesis set).
+  * Multi-Handed Solo tabletop layout enhancements: persistent multi-seat switcher tabs, active seat indicator, independent per-hero hand dock/tableaus, and synchronized multi-hero state transitions.
 * [ ] 🔴 `[Must-Have]` **Interactive Card Play & Resource Payment Modal:**
-  * Clicking a card in hand opens the payment modal with resource selection from hand cards and exhausted generators (*Web-Shooter*, Peter Parker's Scientist ability).
+  * Clicking a card in hand opens the payment modal with resource selection from hand cards and exhausted generators (*Web-Shooter*, Peter Parker's Scientist ability, Carol Danvers' Rechannel).
 * [ ] 🔴 `[Must-Have]` **Hero Identity Basic Actions:**
   * Interactive action buttons on Hero station: Suit Up / Flip form, Basic Attack, Basic Thwart, Basic Recover.
 * [ ] 🔴 `[Must-Have]` **Turn Pass & Step-by-Step Villain Phase Execution:**
-  * Pass turn button triggering sequential Villain Phase activations and upkeep card redraws.
+  * Pass turn button triggering sequential Villain Phase activations and upkeep card redraws in player order.
 * [ ] 🔴 `[Must-Have]` **Win / Defeat Victory Banners:**
   * Game-over modal overlay when Villain is defeated (Victory) or Hero HP reaches 0 / Scheme target reached (Defeat).
 * [ ] 🟠 `[Should-Have]` **Dynamic Onomatopoeia Overlays:**
@@ -112,8 +116,8 @@ graph TD
 ## 📍 Phase 4: Core Set Expansion & Deckbuilder 🃏 (Planned)
 *Objective: Complete all Core Set content and local deck management.*
 
-* 🔴 `[Must-Have]` **Remaining 4 Core Set Heroes:**
-  * Captain Marvel (Leadership), Iron Man (Aggression), She-Hulk (Aggression), Black Panther (Protection).
+* 🔴 `[Must-Have]` **Remaining 3 Core Set Heroes:**
+  * Iron Man (Aggression), She-Hulk (Aggression), Black Panther (Protection).
 * 🔴 `[Must-Have]` **Remaining 2 Core Set Villains:**
   * Klaw (Stage I & II + Weapons Runner / Boost cards), Ultron (Stage I & II + Drone mechanics).
 * 🟠 `[Should-Have]` **Core Modular Encounter Sets:**

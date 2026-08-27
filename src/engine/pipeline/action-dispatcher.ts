@@ -16,6 +16,7 @@ import {
   canBasicThwart,
   canPlayCard,
 } from './legality-checker';
+import { CardEffectRegistry } from '../cards/card-registry';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -315,11 +316,27 @@ export function dispatchAction(
 
       const cardType = playedCardInstance.card.type;
 
+      // Initialize counters for cards with 'Uses' keyword (e.g. Web-Shooter: 3 counters)
+      if (playedCardInstance.card.code === '01008') {
+        playedCardInstance.tokens = { ...playedCardInstance.tokens, counters: 3 };
+      }
+
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
         player.tableau.push(playedCardInstance);
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
       } else if (cardType === CardType.EVENT) {
+        // Execute Event effect if registered in CardEffectRegistry
+        const handler = CardEffectRegistry[playedCardInstance.card.code];
+        if (handler) {
+          handler({
+            state: nextState,
+            playerId: action.playerId,
+            cardInstance: playedCardInstance,
+            targetType: 'villain', // default or action target
+            targetInstanceId: action.targetInstanceId,
+          });
+        }
         player.discard.push(playedCardInstance);
       }
 

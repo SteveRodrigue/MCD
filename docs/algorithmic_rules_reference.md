@@ -98,7 +98,51 @@ function ProcessEventPipeline(event: GameEvent, state: GameState): GameState {
 
 ---
 
-## 4. Player Action Algorithms (`src/engine/pipeline/action-dispatcher.ts`)
+## 3. Formal Play Areas & Zones Architecture (RR v1.8 p. 22-23)
+
+The MCD rules engine strictly partitions all card instances into deterministic, immutable zones:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 SHARED IN-PLAY AREA                                    │
+├────────────────────────────────────────┬───────────────────────────────────────────────┤
+│ 1. SCENARIO / VILLAIN ZONE             │ 2. ENCOUNTER DRAW & DISCARD ZONES             │
+│    • state.villain (Card, HP, Status)  │    • state.encounterDeck (Draw pile)          │
+│    • state.villain.attachments         │    • state.encounterDiscard (Discard pile)    │
+│    • state.mainScheme (Active Stage)   │    • state.activeBoostCard (Revealed boost)   │
+│    • state.sideSchemes[] (Active)      │                                               │
+│    • state.environments[]              │                                               │
+└────────────────────────────────────────┴───────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                           INDIVIDUAL PLAYER PLAY AREA (per player)                     │
+├──────────────────────────┬─────────────────────────────┬───────────────────────────────┤
+│ 3. IDENTITY & HAND ZONE  │ 4. TABLEAU & ALLIES ZONE    │ 5. ENGAGED & DEALT CARDS ZONE │
+│    • player.activeFormCard│   • player.tableau (Upgrades│   • player.engagedMinions[]   │
+│    • player.availableForms│     & Supports in play)     │     (Minions on this player)  │
+│    • player.currentForm  │   • player.allies[] (Allies │   • player.dealtEncounterCards│
+│    • player.hand[]       │     in play, ally limit 3)  │     (Face-down Step 4 queue)  │
+│    • player.deck[]       │                             │                               │
+│    • player.discard[]    │                             │                               │
+└──────────────────────────┴─────────────────────────────┴───────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                              OUT-OF-PLAY / SET-ASIDE ZONES                             │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ • player.setAsideCards[]    (Set-aside Nemesis set waiting for Shadow of the Past)     │
+│ • state.victoryDisplay[]    (Defeated cards with Victory keyword)                      │
+│ • state.removedFromGame[]   (Removed cards e.g. resolved Obligation)                   │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Zone Transition Invariants:
+1. **Entering Play:** Upgrades & Supports $\rightarrow$ `player.tableau`; Allies $\rightarrow$ `player.allies`; Minions $\rightarrow$ `player.engagedMinions`; Side Schemes $\rightarrow$ `state.sideSchemes`.
+2. **Defeat / Discard:** Player cards $\rightarrow$ `player.discard`; Encounter cards $\rightarrow$ `state.encounterDiscard`; Cards with Victory $\rightarrow$ `state.victoryDisplay`.
+3. **Empty Deck Recycling:**
+   * **Player Deck empty:** Immediately shuffle `player.discard` $\rightarrow$ `player.deck` and deal 1 facedown encounter card to player (RR v1.8 p. 12).
+   * **Encounter Deck empty:** Immediately shuffle `state.encounterDiscard` $\rightarrow$ `state.encounterDeck` and place 1 Acceleration token on Main Scheme (RR v1.8 p. 13).
+
+---
+
+## 4. Formal Player Action State Reducers (`src/engine/pipeline/action-dispatcher.ts`)
 
 ### Algorithm 4.1: `CHANGE_FORM` (RR v1.8 p. 13–14)
 * **Preconditions:**

@@ -43,10 +43,24 @@ export function executeEffect(
           drawnCount += 1;
         }
       }
+      const onomatopoeia = `DRAW +${drawnCount}!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.drawCards',
+        params: {
+          player: player.name,
+          count: drawnCount,
+          handSize: player.hand.length,
+        },
+        onomatopoeia,
+      });
       return {
         state,
         success: true,
-        onomatopoeia: `DRAW +${drawnCount}!`,
+        onomatopoeia,
       };
     }
 
@@ -58,7 +72,17 @@ export function executeEffect(
         const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
         if (toughIdx !== -1) {
           state.villain.statusCards.splice(toughIdx, 1);
-          return { state, success: true, onomatopoeia: 'CLANG! (TOUGH)' };
+          const onomatopoeia = 'CLANG! (TOUGH)';
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.dealDamage',
+            params: { player: player.name, target: 'villain', amount: 0, toughAbsorbed: true },
+            onomatopoeia,
+          });
+          return { state, success: true, onomatopoeia };
         }
 
         state.villain.health = Math.max(0, state.villain.health - amount);
@@ -66,10 +90,26 @@ export function executeEffect(
           state.winner = 'HEROES';
         }
 
+        const onomatopoeia = `KAPOW! ${amount} DAMAGE!`;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: {
+            player: player.name,
+            target: 'villain',
+            amount,
+            remainingHealth: state.villain.health,
+          },
+          onomatopoeia,
+        });
+
         return {
           state,
           success: true,
-          onomatopoeia: `KAPOW! ${amount} DAMAGE!`,
+          onomatopoeia,
         };
       }
 
@@ -83,7 +123,17 @@ export function executeEffect(
             const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
             if (toughIdx !== -1) {
               minion.statusCards!.splice(toughIdx, 1);
-              return { state, success: true, onomatopoeia: 'CLANG!' };
+              const onomatopoeia = 'CLANG!';
+              state.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: state.roundNumber,
+                phase: state.phase,
+                key: 'card.effect.dealDamage',
+                params: { player: player.name, target: minion.card.name, amount: 0, toughAbsorbed: true },
+                onomatopoeia,
+              });
+              return { state, success: true, onomatopoeia };
             }
 
             const currentDmg = minion.tokens?.damage || 0;
@@ -93,10 +143,30 @@ export function executeEffect(
             if (newDmg >= minionHp) {
               p.engagedMinions.splice(minionIdx, 1);
               state.encounterDiscard.push(minion);
-              return { state, success: true, onomatopoeia: 'SMASH! MINION DEFEATED!' };
+              const onomatopoeia = 'SMASH! MINION DEFEATED!';
+              state.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: state.roundNumber,
+                phase: state.phase,
+                key: 'card.effect.dealDamage',
+                params: { player: player.name, target: minion.card.name, amount, defeated: true },
+                onomatopoeia,
+              });
+              return { state, success: true, onomatopoeia };
             } else {
               minion.tokens = { ...minion.tokens, damage: newDmg };
-              return { state, success: true, onomatopoeia: 'WHAM!' };
+              const onomatopoeia = 'WHAM!';
+              state.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: state.roundNumber,
+                phase: state.phase,
+                key: 'card.effect.dealDamage',
+                params: { player: player.name, target: minion.card.name, amount, remainingHealth: minionHp - newDmg },
+                onomatopoeia,
+              });
+              return { state, success: true, onomatopoeia };
             }
           }
         }
@@ -110,10 +180,25 @@ export function executeEffect(
       const healed = Math.min(player.maxHealth - player.health, amount);
       player.health += healed;
 
+      const onomatopoeia = `HEAL +${healed} HP!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.heal',
+        params: {
+          player: player.name,
+          amount: healed,
+          health: player.health,
+        },
+        onomatopoeia,
+      });
+
       return {
         state,
         success: true,
-        onomatopoeia: `HEAL +${healed} HP!`,
+        onomatopoeia,
       };
     }
 
@@ -140,10 +225,25 @@ export function executeEffect(
       const amount = (ability.params?.amount as number) || 0;
       state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
 
+      const onomatopoeia = `-${amount} THREAT!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.removeThreat',
+        params: {
+          player: player.name,
+          amount,
+          remainingThreat: state.mainScheme.threat,
+        },
+        onomatopoeia,
+      });
+
       return {
         state,
         success: true,
-        onomatopoeia: `-${amount} THREAT!`,
+        onomatopoeia,
       };
     }
 
@@ -167,7 +267,22 @@ export function executeEffect(
           }
         }
       }
-      return { state, success: true, onomatopoeia: `${status} APPLIED!` };
+
+      const onomatopoeia = `${status} APPLIED!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.addStatus',
+        params: {
+          status,
+          target,
+        },
+        onomatopoeia,
+      });
+
+      return { state, success: true, onomatopoeia };
     }
 
     case 'DISCARD_TOP_DECK_FILTER': {
@@ -188,7 +303,24 @@ export function executeEffect(
           }
         }
       }
-      return { state, success: true, onomatopoeia: `BLACK CAT FOUND +${matchedCount} CARDS!` };
+
+      const onomatopoeia = `BLACK CAT FOUND +${matchedCount} CARDS!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.drawCards',
+        params: {
+          player: player.name,
+          card: 'Black Cat',
+          count: matchedCount,
+          handSize: player.hand.length,
+        },
+        onomatopoeia,
+      });
+
+      return { state, success: true, onomatopoeia };
     }
 
     case 'HEAL_DAMAGE_WITH_SURGE': {
@@ -238,7 +370,22 @@ export function executeEffect(
       // Dynamic AI evaluation: Threat -> Hand -> Damage
       if (state.mainScheme.threat >= 3) {
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - 2);
-        return { state, success: true, onomatopoeia: 'NICK FURY REMOVES 2 THREAT!' };
+        const onomatopoeia = 'NICK FURY REMOVES 2 THREAT!';
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.removeThreat',
+          params: {
+            player: player.name,
+            card: 'Nick Fury',
+            amount: 2,
+            remainingThreat: state.mainScheme.threat,
+          },
+          onomatopoeia,
+        });
+        return { state, success: true, onomatopoeia };
       }
       if (player.hand.length <= 3) {
         let drawnCount = 0;
@@ -249,16 +396,61 @@ export function executeEffect(
             drawnCount += 1;
           }
         }
-        return { state, success: true, onomatopoeia: `NICK FURY DRAWS +${drawnCount} CARDS!` };
+        const onomatopoeia = `NICK FURY DRAWS +${drawnCount} CARDS!`;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.drawCards',
+          params: {
+            player: player.name,
+            card: 'Nick Fury',
+            count: drawnCount,
+            handSize: player.hand.length,
+          },
+          onomatopoeia,
+        });
+        return { state, success: true, onomatopoeia };
       }
       const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
       if (toughIdx !== -1) {
         state.villain.statusCards.splice(toughIdx, 1);
-        return { state, success: true, onomatopoeia: 'NICK FURY BREAKS TOUGH!' };
+        const onomatopoeia = 'NICK FURY BREAKS TOUGH!';
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: {
+            player: player.name,
+            card: 'Nick Fury',
+            amount: 0,
+            toughAbsorbed: true,
+          },
+          onomatopoeia,
+        });
+        return { state, success: true, onomatopoeia };
       }
       state.villain.health = Math.max(0, state.villain.health - 4);
       if (state.villain.health <= 0) state.winner = 'HEROES';
-      return { state, success: true, onomatopoeia: 'NICK FURY DEALS 4 DAMAGE!' };
+      const onomatopoeia = 'NICK FURY DEALS 4 DAMAGE!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.dealDamage',
+        params: {
+          player: player.name,
+          card: 'Nick Fury',
+          damage: 4,
+          remainingHealth: state.villain.health,
+        },
+        onomatopoeia,
+      });
+      return { state, success: true, onomatopoeia };
     }
 
     case 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE': {

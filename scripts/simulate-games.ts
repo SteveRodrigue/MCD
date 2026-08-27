@@ -172,8 +172,8 @@ function generateMatchMarkdown(matchId: string, result: any): string {
       formattedLogs.push(`\n#### 🦏 Villain Phase`);
     }
 
-    if (entry.key === 'card.state.exhausted') {
-      const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}!]**` : ' **[EXHAUST!]**';
+    if (entry.key === 'card.state.exhausted' || entry.key.startsWith('card.effect.')) {
+      const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
       const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
       formattedLogs.push(`\n   ↳ \`${entry.key}\`${omo}${paramsStr}\n`);
     } else {

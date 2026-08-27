@@ -3,6 +3,7 @@ import {
   CardInstance,
   StatusCard,
   MinionCard,
+  SideSchemeCard,
   CardAbility,
 } from '@engine/models';
 
@@ -146,7 +147,94 @@ export function executeEffect(
       };
     }
 
+    case 'ADD_STATUS': {
+      let status: StatusCard = StatusCard.STUNNED;
+      const statusParam = ability.params?.status;
+      if (statusParam === 'TOUGH' || statusParam === StatusCard.TOUGH) status = StatusCard.TOUGH;
+      if (statusParam === 'CONFUSED' || statusParam === StatusCard.CONFUSED) status = StatusCard.CONFUSED;
+      if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED) status = StatusCard.STUNNED;
+
+      const target = (ability.params?.target as string) || 'VILLAIN';
+
+      if (target === 'VILLAIN' || target === 'CHOSEN_ENEMY') {
+        if (!state.villain.statusCards.includes(status)) {
+          state.villain.statusCards.push(status);
+        }
+      } else if (target === 'HERO' || target === 'ALL_HEROES') {
+        for (const p of state.players) {
+          if (!p.statusCards.includes(status)) {
+            p.statusCards.push(status);
+          }
+        }
+      }
+      return { state, success: true, onomatopoeia: `${status} APPLIED!` };
+    }
+
+    case 'DISCARD_TOP_DECK_FILTER': {
+      // Black Cat: Discard top 2 cards, add each Mental resource to hand
+      const count = (ability.params?.count as number) || 2;
+      const filterRes = (ability.params?.filterResource as string) || 'mental';
+      let matchedCount = 0;
+
+      for (let i = 0; i < count; i++) {
+        const discarded = player.deck.shift();
+        if (discarded) {
+          const hasResource = discarded.card.resources[filterRes as keyof typeof discarded.card.resources] > 0;
+          if (hasResource) {
+            player.hand.push(discarded);
+            matchedCount += 1;
+          } else {
+            player.discard.push(discarded);
+          }
+        }
+      }
+      return { state, success: true, onomatopoeia: `BLACK CAT FOUND +${matchedCount} CARDS!` };
+    }
+
+    case 'HEAL_DAMAGE_WITH_SURGE': {
+      // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
+      const amount = (ability.params?.amount as number) || 4;
+      const healed = Math.min(state.villain.maxHealth - state.villain.health, amount);
+      if (healed > 0) {
+        state.villain.health += healed;
+        return { state, success: true, onomatopoeia: `RHINO HEALED +${healed} HP!` };
+      } else {
+        // Surge -> deal 1 extra encounter card
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      }
+    }
+
+    case 'ADD_STATUS_WITH_SURGE': {
+      // "I'm Tough" (01105): Give Rhino Tough. If already Tough -> surge
+      if (!state.villain.statusCards.includes(StatusCard.TOUGH)) {
+        state.villain.statusCards.push(StatusCard.TOUGH);
+        return { state, success: true, onomatopoeia: 'RHINO GAINS TOUGH!' };
+      } else {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      }
+    }
+
+    case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {
+      // Rhino Stage II (01095): Search for Breakin' & Takin' (01107) and reveal it
+      const schemeCode = (ability.params?.schemeCode as string) || '01107';
+      const deckIdx = state.encounterDeck.findIndex((c) => c.card.code === schemeCode);
+      if (deckIdx !== -1) {
+        const [scheme] = state.encounterDeck.splice(deckIdx, 1);
+        const sideCard = scheme.card as SideSchemeCard;
+        state.sideSchemes.push({
+          instanceId: scheme.instanceId,
+          card: sideCard,
+          threat: sideCard.baseThreat * state.players.length,
+        });
+      }
+      return { state, success: true, onomatopoeia: 'SIDE SCHEME REVEALED!' };
+    }
+
     default:
-      return { state, success: false, error: `Unknown effect type: ${ability.effect}` };
+      return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }
 }

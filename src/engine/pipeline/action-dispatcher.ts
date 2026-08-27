@@ -7,6 +7,7 @@ import {
   HeroCard,
   AlterEgoCard,
   MinionCard,
+  AllyCard,
 } from '@engine/models';
 import {
   getPlayer,
@@ -209,6 +210,84 @@ export function dispatchAction(
       return { state: nextState, result: { success: true } };
     }
 
+    case 'ALLY_ATTACK': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
+      if (allyIdx === -1) return { state, result: { success: false, error: 'Ally not found in play' } };
+
+      const ally = player.allies[allyIdx];
+      if (ally.exhausted) return { state, result: { success: false, error: 'Ally is exhausted' } };
+
+      ally.exhausted = true;
+      const allyCard = ally.card as AllyCard;
+      const attackDmg = allyCard.attack || 1;
+
+      // Deal damage to target
+      if (action.targetType === 'villain') {
+        const toughIdx = nextState.villain.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          nextState.villain.statusCards.splice(toughIdx, 1);
+        } else {
+          nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
+          if (nextState.villain.health <= 0) nextState.winner = 'HEROES';
+        }
+      }
+
+      // Consequential damage to ally (e.g. 1 damage)
+      const consequential = allyCard.attackCost ?? 1;
+      ally.tokens = { ...ally.tokens, damage: (ally.tokens?.damage || 0) + consequential };
+
+      // Check Ally Defeat
+      const allyHp = allyCard.health || 2;
+      if ((ally.tokens?.damage || 0) >= allyHp) {
+        player.allies.splice(allyIdx, 1);
+        player.discard.push(ally);
+      }
+
+      const onomatopoeia = 'ALLY ATTACK!';
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
+    case 'ALLY_THWART': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
+      if (allyIdx === -1) return { state, result: { success: false, error: 'Ally not found in play' } };
+
+      const ally = player.allies[allyIdx];
+      if (ally.exhausted) return { state, result: { success: false, error: 'Ally is exhausted' } };
+
+      ally.exhausted = true;
+      const allyCard = ally.card as AllyCard;
+      let thwValue = allyCard.thwart || 1;
+
+      // Jessica Jones THW boost: +1 for each side scheme in play
+      if (allyCard.code === '01059') {
+        thwValue += nextState.sideSchemes.length;
+      }
+
+      if (action.targetType === 'main_scheme') {
+        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - thwValue);
+      }
+
+      // Consequential damage to ally
+      const consequential = allyCard.thwartCost ?? 1;
+      ally.tokens = { ...ally.tokens, damage: (ally.tokens?.damage || 0) + consequential };
+
+      // Check Ally Defeat
+      const allyHp = allyCard.health || 2;
+      if ((ally.tokens?.damage || 0) >= allyHp) {
+        player.allies.splice(allyIdx, 1);
+        player.discard.push(ally);
+      }
+
+      const onomatopoeia = 'ALLY THWART!';
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
     case 'BASIC_THWART': {
       const check = canBasicThwart(
         nextState,
@@ -327,6 +406,18 @@ export function dispatchAction(
         player.tableau.push(playedCardInstance);
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
+        // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter)
+        const abilities = playedCardInstance.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'CARD_PLAYED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(nextState, ability, {
+              playerId: action.playerId,
+              targetType: 'villain',
+              targetInstanceId: action.targetInstanceId,
+              sourceCardInstance: playedCardInstance,
+            });
+          }
+        }
       } else if (cardType === CardType.EVENT) {
         // Execute declarative event abilities
         const abilities = playedCardInstance.card.enrichment?.abilities || [];

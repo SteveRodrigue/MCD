@@ -49,6 +49,7 @@ export interface GameSetupOptions {
   mainScheme: MainSchemeCard;
   encounterCards: NormalizedCard[];
   shuffleFn?: <T>(array: T[]) => T[];
+  skipMulligan?: boolean;
 }
 
 /**
@@ -70,10 +71,12 @@ export function defaultShuffle<T>(array: T[]): T[] {
  * 3. Main scheme initialized (The Break-In! starts at 0 threat).
  * 4. Encounter deck created from villain + standard + modular sets.
  * 5. Players draw starting hand equal to Alter-Ego hand size.
+ * 6. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
  */
 export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
   const playerCount = options.players.length;
+  const skipMulligan = options.skipMulligan ?? false;
 
   // 1. Setup Players
   const players: PlayerState[] = options.players.map((pConfig) => {
@@ -141,11 +144,21 @@ export function setupGame(options: GameSetupOptions): GameState {
   const encounterInstances = options.encounterCards.map(createCardInstance);
   const shuffledEncounterDeck = shuffle(encounterInstances);
 
-  // 5. Initialize Complete GameState
+  // 5. Setup State
+  const initialPhase = skipMulligan ? GamePhase.PLAYER_PHASE : GamePhase.SETUP_PHASE;
+  const setupState = skipMulligan
+    ? undefined
+    : {
+        stage: 'MULLIGAN_PHASE' as const,
+        mulliganCompleted: {},
+      };
+
+  // 6. Initialize Complete GameState
   return {
     id: options.id || `game_${Date.now()}`,
     roundNumber: 1,
-    phase: GamePhase.PLAYER_PHASE,
+    phase: initialPhase,
+    setupState,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
     players,
@@ -167,6 +180,7 @@ export function setupGame(options: GameSetupOptions): GameState {
         params: {
           villain: options.villain.name,
           scheme: options.mainScheme.name,
+          playerCount,
         },
       },
     ],

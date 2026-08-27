@@ -11,3 +11,5 @@ export * from './effects';
 export * from './triggers';
 export * from './pipeline';
 export * from './simulation';
+export * from './scenarios';
+export * from './decks';

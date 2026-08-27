@@ -1,4 +1,5 @@
 export type ActionType =
+  | 'RESOLVE_MULLIGAN'
   | 'CHANGE_FORM'
   | 'BASIC_RECOVER'
   | 'BASIC_ATTACK'
@@ -8,6 +9,12 @@ export type ActionType =
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
   | 'END_PLAYER_TURN';
+
+export interface ResolveMulliganAction {
+  type: 'RESOLVE_MULLIGAN';
+  playerId: string;
+  discardCardInstanceIds: string[]; // Cards from initial hand to discard & replace (0 to 6)
+}
 
 export interface ChangeFormAction {
   type: 'CHANGE_FORM';
@@ -76,6 +83,7 @@ export interface EndPlayerTurnAction {
 }
 
 export type GameAction =
+  | ResolveMulliganAction
   | ChangeFormAction
   | BasicRecoverAction
   | BasicAttackAction

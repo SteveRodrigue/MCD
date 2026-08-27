@@ -78,8 +78,14 @@ export interface SideSchemeState {
 }
 
 export enum GamePhase {
+  SETUP_PHASE = 'SETUP_PHASE',
   PLAYER_PHASE = 'PLAYER_PHASE',
   VILLAIN_PHASE = 'VILLAIN_PHASE',
+}
+
+export interface SetupState {
+  stage: 'SCENARIO_SETUP' | 'MULLIGAN_PHASE' | 'GAME_READY';
+  mulliganCompleted: Record<string, boolean>; // playerId -> boolean
 }
 
 export enum VillainPhaseStep {
@@ -102,7 +108,7 @@ export interface GameLogEntry {
     type: 'hero' | 'alter_ego' | 'villain' | 'minion' | 'ally' | 'environment';
   };
   key: string;
-  params?: Record<string, string | number>;
+  params?: Record<string, string | number | boolean>;
   onomatopoeia?: string; // e.g. "POW!", "BAM!", "THWIP!", "CLANG!"
   text?: string;
 }
@@ -111,6 +117,7 @@ export interface GameState {
   id: string;
   roundNumber: number;
   phase: GamePhase;
+  setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
   firstPlayerIndex: number;
   activePlayerIndex: number;

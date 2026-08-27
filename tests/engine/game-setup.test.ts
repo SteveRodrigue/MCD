@@ -73,7 +73,8 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
 
     // 1. Game State Headers
     expect(gameState.id).toBe('test_game_1');
-    expect(gameState.phase).toBe(GamePhase.PLAYER_PHASE);
+    expect(gameState.phase).toBe(GamePhase.SETUP_PHASE);
+    expect(gameState.setupState?.stage).toBe('MULLIGAN_PHASE');
     expect(gameState.roundNumber).toBe(1);
     expect(gameState.winner).toBeNull();
     expect(gameState.firstPlayerIndex).toBe(0);

@@ -1,6 +1,6 @@
 # ADR-0016: 1-File-Per-Deck Storage Strategy & Collision-Resistant Naming
 
-* **Status:** Accepted
+* **Status:** Accepted (Option 3 Approved by Project Maintainer)
 * **Date:** 2026-08-27
 * **Deciders:** Core Engineering Team & Project Maintainer
 * **Consulted:** Open Source Contributors & Filesystem Modding Guidelines
@@ -64,7 +64,7 @@ Adopt a standardized naming scheme per folder domain:
 
 ## Decision Outcome
 
-**Chosen Option: Option 3 (Domain-Namespaced Prefix + Semantic Slug + ID Suffix with 1-File-Per-Deck).**
+**Chosen Option: Option 3 (Domain-Namespaced Prefix + Semantic Slug + ID Suffix with 1-File-Per-Deck) — Approved by Project Maintainer.**
 
 ### 1. Concrete Directory Layout
 

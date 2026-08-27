@@ -86,6 +86,8 @@ export function dispatchAction(
       nextState.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
         key: 'player.action.recover',
         params: {
           player: player.name,
@@ -93,6 +95,17 @@ export function dispatchAction(
           health: player.health,
         },
         onomatopoeia,
+      });
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'status',
+        key: 'card.state.exhausted',
+        params: { card: player.activeFormCard.name },
+        onomatopoeia: 'EXHAUST',
       });
 
       return { state: nextState, result: { success: true, onomatopoeia } };
@@ -138,19 +151,41 @@ export function dispatchAction(
           nextState.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
-            key: 'target.tough.absorbed',
-            params: { target: nextState.villain.card.name },
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            key: 'player.action.attackVillain',
+            params: {
+              player: player.name,
+              damage: 0,
+              remainingHealth: nextState.villain.health,
+            },
             onomatopoeia,
+          });
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'status',
+            key: 'card.state.exhausted',
+            params: { card: player.activeFormCard.name },
+            onomatopoeia: 'EXHAUST',
           });
           return { state: nextState, result: { success: true, onomatopoeia } };
         }
 
         nextState.villain.health = Math.max(0, nextState.villain.health - attackDamage);
 
+        if (nextState.villain.health <= 0) {
+          nextState.winner = 'HEROES';
+        }
+
         const onomatopoeia = 'POW!';
         nextState.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
           key: 'player.action.attackVillain',
           params: {
             player: player.name,
@@ -159,11 +194,16 @@ export function dispatchAction(
           },
           onomatopoeia,
         });
-
-        // Check Villain Defeat
-        if (nextState.villain.health <= 0) {
-          nextState.winner = 'HEROES';
-        }
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
+          category: 'status',
+          key: 'card.state.exhausted',
+          params: { card: player.activeFormCard.name },
+          onomatopoeia: 'EXHAUST',
+        });
 
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
@@ -222,6 +262,18 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'status',
+        key: 'card.state.exhausted',
+        params: { card: allyCard.name },
+        onomatopoeia: 'EXHAUST',
+      });
+
       const attackDmg = allyCard.attack || 1;
 
       // Deal damage to target
@@ -262,6 +314,18 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'status',
+        key: 'card.state.exhausted',
+        params: { card: allyCard.name },
+        onomatopoeia: 'EXHAUST',
+      });
+
       let thwValue = allyCard.thwart || 1;
 
       // Jessica Jones THW boost: +1 for each side scheme in play
@@ -310,9 +374,21 @@ export function dispatchAction(
         nextState.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
           key: 'status.confused.cleared',
           params: { player: player.name },
           onomatopoeia,
+        });
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
+          category: 'status',
+          key: 'card.state.exhausted',
+          params: { card: player.activeFormCard.name },
+          onomatopoeia: 'EXHAUST',
         });
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
@@ -327,6 +403,8 @@ export function dispatchAction(
         nextState.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
           key: 'player.action.thwartMainScheme',
           params: {
             player: player.name,
@@ -334,6 +412,17 @@ export function dispatchAction(
             remainingThreat: nextState.mainScheme.threat,
           },
           onomatopoeia,
+        });
+
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
+          category: 'status',
+          key: 'card.state.exhausted',
+          params: { card: player.activeFormCard.name },
+          onomatopoeia: 'EXHAUST',
         });
 
         return { state: nextState, result: { success: true, onomatopoeia } };
@@ -492,6 +581,16 @@ export function dispatchAction(
         }
         if (ability.cost?.exhaustSelf) {
           targetCardInst.exhausted = true;
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'status',
+            key: 'card.state.exhausted',
+            params: { card: targetCardInst.card.name },
+            onomatopoeia: 'EXHAUST',
+          });
         }
 
         // Discard on empty counters if configured

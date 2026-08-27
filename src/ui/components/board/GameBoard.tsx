@@ -5,6 +5,7 @@ import { VillainZone } from './VillainZone';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
+import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -14,8 +15,18 @@ interface GameBoardProps {
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [isLogOpen, setIsLogOpen] = useState<boolean>(false);
+  const { sideBySideLayout } = useGameSettings();
 
-  const activePlayer = gameState.players[activeSeatIndex] || gameState.players[0];
+  const totalPlayers = gameState.players.length;
+  const isDualHeroMode = sideBySideLayout && totalPlayers >= 2;
+
+  // Active (Current) Player
+  const player1Index = activeSeatIndex;
+  const player1 = gameState.players[player1Index] || gameState.players[0];
+
+  // Next Player to play in clockwise turn order
+  const player2Index = (activeSeatIndex + 1) % totalPlayers;
+  const player2 = gameState.players[player2Index];
 
   return (
     <div className="relative min-h-screen w-full flex flex-col justify-between bg-comic-paper">
@@ -30,9 +41,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
       />
 
       {/* 2. Main Play Areas Tabletop */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6 pb-8">
+      <main
+        className={`flex-1 w-full mx-auto p-4 md:p-6 space-y-6 pb-8 transition-all ${
+          isDualHeroMode ? 'max-w-[1700px]' : 'max-w-7xl'
+        }`}
+      >
         {/* Tier 1: Scenario & Villain Zone */}
-        {/* [Encounter Deck & Discard] -> [Villain Card & HP] -> [Main Scheme] -> [Side Schemes] */}
         <VillainZone
           villain={gameState.villain}
           mainScheme={gameState.mainScheme}
@@ -42,19 +56,44 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
           accelerationTokens={gameState.accelerationTokens}
         />
 
-        {/* Tier 2: Hero Play Area (Per Hero Seat) */}
-        {/* [Player Deck & Discard] -> [Hero Identity & HP] -> [Allies] -> [Tableau] */}
-        <HeroZone player={activePlayer} />
+        {/* Tier 2: Hero Play Area (Single or Side-by-Side Dual Column) */}
+        {isDualHeroMode ? (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+            {/* Column 1: Current Active Hero */}
+            <HeroZone
+              player={player1}
+              seatNumber={player1Index + 1}
+              isFocused={true}
+              isSideBySide={true}
+            />
+
+            {/* Column 2: Next Hero in Turn Order */}
+            <HeroZone
+              player={player2}
+              seatNumber={player2Index + 1}
+              isFocused={false}
+              isSideBySide={true}
+              onFocus={() => setActiveSeatIndex(player2Index)}
+            />
+          </div>
+        ) : (
+          <HeroZone
+            player={player1}
+            seatNumber={totalPlayers > 1 ? player1Index + 1 : undefined}
+            isFocused={true}
+            isSideBySide={false}
+          />
+        )}
       </main>
 
-      {/* 3. Sticky Bottom Player Hand Dock (with Player Deck/Discard/Nemesis) */}
+      {/* 3. Sticky Bottom Player Hand Dock */}
       <PlayerHandTray
-        hand={activePlayer.hand}
-        deck={activePlayer.deck}
-        discard={activePlayer.discard}
-        setAsideCards={activePlayer.setAsideCards}
-        heroName={activePlayer.name}
-        handSizeLimit={(activePlayer.activeFormCard as any).handSize ?? 6}
+        hand={player1.hand}
+        deck={player1.deck}
+        discard={player1.discard}
+        setAsideCards={player1.setAsideCards}
+        heroName={player1.name}
+        handSizeLimit={(player1.activeFormCard as any).handSize ?? 6}
       />
 
       {/* 4. Slide-Out Combat Log & History Drawer */}

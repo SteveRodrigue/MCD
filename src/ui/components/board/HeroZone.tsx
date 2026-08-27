@@ -5,18 +5,51 @@ import { CardView } from '../cards/CardView';
 
 interface HeroZoneProps {
   player: PlayerState;
+  seatNumber?: number;
+  isFocused?: boolean;
+  isSideBySide?: boolean;
+  onFocus?: () => void;
 }
 
-export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
+export const HeroZone: React.FC<HeroZoneProps> = ({
+  player,
+  seatNumber,
+  isFocused = true,
+  isSideBySide = false,
+  onFocus,
+}) => {
   const healthPercent = Math.max(0, (player.health / player.maxHealth) * 100);
   const engagedMinions = player.engagedMinions || [];
 
   return (
-    <section className="comic-panel p-4 bg-white/95 relative shadow-comic space-y-4">
+    <section
+      className={`comic-panel p-4 bg-white/95 relative shadow-comic space-y-4 transition-all ${
+        !isFocused ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300' : 'ring-2 ring-comic-blue shadow-comic-lg'
+      }`}
+    >
       {/* Zone Title Ribbon */}
-      <div className="absolute -top-3 left-4 bg-comic-blue text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
-        <Shield className="w-3.5 h-3.5" />
-        <span>HERO PLAY AREA • {player.name}</span>
+      <div className="absolute -top-3 left-4 flex items-center gap-2">
+        <div
+          className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+            isFocused ? 'bg-comic-blue' : 'bg-slate-700'
+          }`}
+        >
+          <Shield className="w-3.5 h-3.5" />
+          <span>
+            {seatNumber ? `SEAT ${seatNumber}: ` : ''}
+            {player.name}
+            {isSideBySide && (isFocused ? ' • (ACTIVE HERO)' : ' • (UP NEXT)')}
+          </span>
+        </div>
+
+        {!isFocused && onFocus && (
+          <button
+            onClick={onFocus}
+            className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+          >
+            Switch Active Hand ➔
+          </button>
+        )}
       </div>
 
       {/* 1. Engaged Minions Row (Always Visible for this Hero Seat!) */}

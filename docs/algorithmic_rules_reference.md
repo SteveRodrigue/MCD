@@ -138,6 +138,30 @@ The MCD rules engine strictly partitions all card instances into deterministic, 
 
 ---
 
+### 3.1 Card Physical Orientation & Dimensions Model
+
+All normalized cards encapsulate their physical tabletop print orientation:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 CARD ORIENTATION HIERARCHY                  │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Explicit Override: card.enrichment.isLandscape           │
+│ 2. Default Landscape: type_code ∈ { main_scheme,            │
+│                       side_scheme, player_side_scheme }     │
+│ 3. Default Portrait:  All other card types                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+* **Aspect Ratios & Dimensions:**
+  * **Portrait Cards ($2.5 \times 3.5$):** Villains, Heroes, Alter-Egos, Allies, Events, Upgrades, Supports, Minions, Attachments, Treacheries, Obligations.
+  * **Landscape Cards ($3.5 \times 2.5$):** Main Schemes, Side Schemes, Player Side Schemes.
+* **Exhaustion Invariant (RR v1.8 p. 13–14):**
+  * When `card.exhausted = true`, the card rotates $90^\circ$ clockwise relative to its base orientation.
+  * Changing form preserves exhaustion state.
+
+---
+
 ## 4. The 7-Stage Timing Pipeline Algorithm
 
 Whenever an in-game event occurs, it passes through 7 distinct timing windows in strict sequential order:

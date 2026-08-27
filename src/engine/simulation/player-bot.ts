@@ -25,12 +25,25 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
   if (!player) return { type: 'END_PLAYER_TURN', playerId };
 
   const halfHpThreshold = Math.floor(player.maxHealth / 2);
+  const ninetyPercentHpThreshold = Math.ceil(player.maxHealth * 0.9);
   const halfThreatThreshold = Math.floor(state.mainScheme.targetThreat / 2);
   const isThreatHigh = state.mainScheme.threat >= halfThreatThreshold;
 
   // 1. If in Alter-Ego form:
   if (player.currentForm === 'alter_ego') {
-    // If not full HP, check Aunt May support first
+    // 1A. If HP is at 90% or higher, immediately flip to Hero side at turn start
+    if (player.health >= ninetyPercentHpThreshold && canChangeForm(state, playerId).allowed) {
+      const heroForm = player.availableForms.find((f) => f.type === CardType.HERO);
+      if (heroForm) {
+        return {
+          type: 'CHANGE_FORM',
+          playerId,
+          targetFormCode: heroForm.code,
+        };
+      }
+    }
+
+    // 1B. If damaged (< 90%), check Aunt May support first
     const auntMay = player.tableau.find((c) => c.card.code === '01006' && !c.exhausted);
     if (auntMay && player.health < player.maxHealth) {
       return {
@@ -41,7 +54,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       };
     }
 
-    // Recover if damaged and ready
+    // 1C. Recover if damaged and ready
     if (player.health < player.maxHealth && canBasicRecover(state, playerId).allowed) {
       return { type: 'BASIC_RECOVER', playerId };
     }

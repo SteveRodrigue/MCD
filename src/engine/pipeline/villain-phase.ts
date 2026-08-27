@@ -105,11 +105,26 @@ export function step2_villainActivations(state: GameState): GameState {
       // Timing Window 2 (Interrupts): Villain Initiates Attack (Data-Driven, e.g. Spider-Sense)
       dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId: player.id });
 
+      // Check Attachments for Attack Modifiers and Overkill
+      let attachmentBonus = 0;
+      let hasOverkill = false;
+      const attachmentsToDiscard: CardInstance[] = [];
+
+      for (const att of state.villain.attachments) {
+        if (att.card.code === '01100') {
+          attachmentBonus += 1; // Enhanced Ivory Horn +1 ATK
+        } else if (att.card.code === '01099') {
+          attachmentBonus += 3; // Charge +3 ATK & Overkill
+          hasOverkill = true;
+          attachmentsToDiscard.push(att);
+        }
+      }
+
       // Draw Boost Card
       const boostCard = drawEncounterCard(state);
       const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
       const baseAttack = state.villain.card.attack || 0;
-      let totalAttack = baseAttack + boostIcons;
+      let totalAttack = baseAttack + attachmentBonus + boostIcons;
 
       if (boostCard) {
         state.encounterDiscard.push(boostCard);
@@ -122,6 +137,15 @@ export function step2_villainActivations(state: GameState): GameState {
       });
 
       totalAttack = defenseResult.damageAmount ?? totalAttack;
+
+      // Discard single-use attachments (e.g. Charge)
+      for (const att of attachmentsToDiscard) {
+        const idx = state.villain.attachments.indexOf(att);
+        if (idx !== -1) {
+          state.villain.attachments.splice(idx, 1);
+          state.encounterDiscard.push(att);
+        }
+      }
 
       // Check Tough on Hero
       const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
@@ -145,6 +169,7 @@ export function step2_villainActivations(state: GameState): GameState {
             player: player.name,
             damage: totalAttack,
             boost: boostIcons,
+            overkill: hasOverkill ? 'true' : 'false',
           },
           onomatopoeia: 'WHAM!',
         });
@@ -310,8 +335,17 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           params: { sideScheme: card.name, threat: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
         });
+      } else if (card.type === CardType.ATTACHMENT) {
+        state.villain.attachments.push(cardInstance);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'encounter.reveal.attachment',
+          params: { attachment: card.name, host: state.villain.card.name },
+          onomatopoeia: 'ATTACHED!',
+        });
       } else {
-        // Treachery / Attachment generic resolution: execute declarative WHEN_REVEALED
+        // Treachery generic resolution: execute declarative WHEN_REVEALED
         const abilities = card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {

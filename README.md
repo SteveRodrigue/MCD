@@ -23,6 +23,7 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 ## 🏗️ Architecture & Decisions
 
 * **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan.
+* **[Coding Guidelines & Best Practices](docs/coding_guidelines.md)** — Strict architectural boundaries, typing standards, and TDD rules.
 * **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Tracking every major technical and design choice:
   * [ADR-0001: Record Architecture Decisions](docs/decisions/0001-record-architecture-decisions.md)
   * [ADR-0002: Decoupled Headless Rules Engine](docs/decisions/0002-decoupled-headless-rules-engine.md)

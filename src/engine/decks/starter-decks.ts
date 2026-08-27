@@ -7,7 +7,7 @@ import {
   parseMarvelCDBDeckMeta,
   CardType,
 } from '../models';
-import starterDecksJson from '../../../data/decks/starter_decks.json';
+import starterDecksJson from '../../../data/prebuilt_decks/starter_decks.json';
 
 export interface StarterDeckDefinition {
   id: string;

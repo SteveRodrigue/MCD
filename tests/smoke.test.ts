@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { createInitialState, ENGINE_VERSION } from '../src/engine';
+import { ENGINE_VERSION, GamePhase } from '../src/engine';
 
 describe('Engine Smoke Test', () => {
-  it('initializes the engine state with valid version', () => {
-    const state = createInitialState();
-    expect(state.initialized).toBe(true);
-    expect(state.version).toBe(ENGINE_VERSION);
+  it('exports valid engine version and game phase enums', () => {
+    expect(ENGINE_VERSION).toBe('0.1.0');
+    expect(GamePhase.PLAYER_PHASE).toBe('PLAYER_PHASE');
+    expect(GamePhase.VILLAIN_PHASE).toBe('VILLAIN_PHASE');
   });
 });

@@ -78,6 +78,7 @@ export interface CardUsesDefinition {
 export interface CardEnrichment {
   cardName?: string;
   comment?: string;
+  isLandscape?: boolean;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

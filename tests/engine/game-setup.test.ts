@@ -34,6 +34,22 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     return { identity: spiderManIdentity, deck: fullDeck };
   }
 
+  function createCaptainMarvelLeadershipDeck() {
+    const cmIdentity = catalog.getHeroIdentity('captain_marvel')!;
+    const signatureCards = catalog.getCardsBySet('captain_marvel').flatMap((c) => {
+      if (c.type === 'hero' || c.type === 'alter_ego') return [];
+      return Array(c.quantity).fill(c);
+    });
+    const leadershipCards = catalog
+      .getCardsByFaction('leadership' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const fullDeck = [...signatureCards, ...leadershipCards, ...basicCards].slice(0, 40);
+    return { identity: cmIdentity, deck: fullDeck };
+  }
+
   function createRhinoEncounterDeck() {
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
     const standardCards = catalog.getCardsBySet('standard');
@@ -123,24 +139,25 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
   });
 
   it('correctly scales hit points and threat for a 2-Player game', () => {
-    const { identity, deck } = createSpiderManJusticeDeck();
+    const sm = createSpiderManJusticeDeck();
+    const cm = createCaptainMarvelLeadershipDeck();
     const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
 
     const gameState = setupGame({
       players: [
         {
           id: 'player_1',
-          name: 'Player 1',
-          hero: identity.hero,
-          alterEgo: identity.alterEgo,
-          deckCards: deck,
+          name: 'Player 1 (Spider-Man)',
+          hero: sm.identity.hero,
+          alterEgo: sm.identity.alterEgo,
+          deckCards: sm.deck,
         },
         {
           id: 'player_2',
-          name: 'Player 2',
-          hero: identity.hero,
-          alterEgo: identity.alterEgo,
-          deckCards: deck,
+          name: 'Player 2 (Captain Marvel)',
+          hero: cm.identity.hero,
+          alterEgo: cm.identity.alterEgo,
+          deckCards: cm.deck,
         },
       ],
       villain,
@@ -198,5 +215,34 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     // 2. Obligation (Eviction Notice 01165) must be in the encounter deck
     const encounterDeckCodes = gameState.encounterDeck.map((c) => c.card.code);
     expect(encounterDeckCodes).toContain('01165');
+  });
+
+  it('strictly enforces Hero Unicity Constraint per RR v1.8 (no duplicate heroes in same game)', () => {
+    const { identity, deck } = createSpiderManJusticeDeck();
+    const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
+
+    expect(() =>
+      setupGame({
+        players: [
+          {
+            id: 'player_1',
+            name: 'Hero Seat 1 (Spider-Man)',
+            hero: identity.hero,
+            alterEgo: identity.alterEgo,
+            deckCards: deck,
+          },
+          {
+            id: 'player_2',
+            name: 'Hero Seat 2 (Spider-Man Clone)',
+            hero: identity.hero,
+            alterEgo: identity.alterEgo,
+            deckCards: deck,
+          },
+        ],
+        villain,
+        mainScheme,
+        encounterCards,
+      }),
+    ).toThrowError(/Unicity constraint violation/);
   });
 });

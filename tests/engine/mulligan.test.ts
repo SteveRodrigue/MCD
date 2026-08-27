@@ -78,9 +78,8 @@ describe('Mulligan Phase State Machine & Rules', () => {
     const scenario = getScenario('rhino')!;
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
-    const starterDeck = getStarterDeck('spider_man_justice')!;
-    const d1 = starterDeck.loadDeck(catalog);
-    const d2 = starterDeck.loadDeck(catalog);
+    const d1 = getStarterDeck('spider_man_justice')!.loadDeck(catalog);
+    const d2 = getStarterDeck('captain_marvel_leadership')!.loadDeck(catalog);
 
     const initialState = setupGame({
       players: [

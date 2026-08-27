@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Skull, AlertTriangle, Layers, Flame, X, Eye, ArrowDownUp, Filter } from 'lucide-react';
 import { VillainState, MainSchemeState, SideSchemeState, CardInstance, StatusCard, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface VillainZoneProps {
   villain: VillainState;
@@ -55,6 +56,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   encounterDiscard,
   accelerationTokens,
 }) => {
+  const { devMode } = useGameSettings();
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
 
@@ -128,11 +130,19 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           <div className="flex md:flex-col items-center justify-center gap-3 shrink-0">
             {/* Encounter Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
             <div
-              onClick={() => setShowDeckModal(true)}
-              className="flex flex-col items-center group cursor-pointer"
-              title="Inspect Encounter Deck (Dev Mode)"
+              onClick={() => devMode && setShowDeckModal(true)}
+              className={`flex flex-col items-center group ${devMode ? 'cursor-pointer' : 'cursor-default'}`}
+              title={
+                devMode
+                  ? 'Inspect Encounter Deck (Dev Mode Active)'
+                  : 'Encounter Draw Deck (Hidden Information • Enable Dev Mode to inspect)'
+              }
             >
-              <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-900 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots group-hover:border-comic-yellow transition-all">
+              <div
+                className={`w-18 h-26 sm:w-20 sm:h-28 bg-slate-900 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots transition-all ${
+                  devMode ? 'group-hover:border-comic-yellow' : ''
+                }`}
+              >
                 <Layers className="w-5 h-5 text-comic-yellow mb-1 group-hover:scale-110 transition-transform" />
                 <span className="font-comic text-lg text-white leading-none">{encounterDeck.length}</span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase">DECK</span>

@@ -31,6 +31,7 @@ Each record documents:
 | [ADR-0010](0010-scenario-catalog-and-multi-hero-setup.md) | 2026-08-26 | Scenario Catalog & Multi-Hero Solo Setup Architecture | **Accepted** | Decouple scenarios and starter decks into registries with automatic multi-hero (1–4) scaling and an interactive Mulligan state machine. |
 | [ADR-0011](0011-card-orientation-and-art-caching.md) | 2026-08-27 | Card Orientation Metadata & Cache-First Art Resolution | **Accepted** | Model card orientation (Portrait vs Landscape for Schemes), responsive UI dimensions, and cache-first MarvelCDB card art loading. |
 | [ADR-0012](0012-z-axis-hover-zoom-and-layering.md) | 2026-08-27 | Z-Axis Unconstrained Elevation & Hover-Zoom Architecture | **Accepted** | Maintain unconstrained Z-axis elevation (`z-50`) without overflow clipping or scrollbar spawning on interactive card docks. |
+| [ADR-0013](0013-game-settings-and-dev-mode.md) | 2026-08-27 | Game Settings & Developer Mode State Architecture | **Accepted** | Decouple UI settings into a persistent React Context with a top-bar Dev Mode indicator and Options Menu. |
 
 ---
 

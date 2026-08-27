@@ -14,6 +14,7 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
+  zoomOrigin?: 'bottom' | 'top' | 'center' | 'bottom-left' | 'bottom-right';
   className?: string;
 }
 
@@ -29,6 +30,7 @@ export const CardView: React.FC<CardViewProps> = ({
   onClick,
   showTokens = true,
   enableHoverZoom = true,
+  zoomOrigin = 'center',
   className = '',
 }) => {
   const { artUrl, loading, error } = useCardArt(card.code);
@@ -56,6 +58,14 @@ export const CardView: React.FC<CardViewProps> = ({
         xl: 'w-72 h-[410px] text-lg',
       }[size];
 
+  const originClass = {
+    bottom: 'origin-bottom',
+    top: 'origin-top',
+    center: 'origin-center',
+    'bottom-left': 'origin-bottom-left',
+    'bottom-right': 'origin-bottom-right',
+  }[zoomOrigin];
+
   const exhaustedState = instance?.exhausted || isExhausted;
   const showFallback = imageFailed || error || (!artUrl && !loading);
 
@@ -68,9 +78,9 @@ export const CardView: React.FC<CardViewProps> = ({
     >
       {/* Outer Comic Card Container with Dynamic Hover Zoom */}
       <div
-        className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${
+        className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
-            ? 'group-hover:scale-[1.9] group-hover:-translate-y-8 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
+            ? 'group-hover:scale-[1.9] group-hover:-translate-y-6 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
           isMulliganSelected

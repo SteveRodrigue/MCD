@@ -8,6 +8,7 @@ import {
   SideSchemeCard,
   MinionCard,
 } from '@engine/models';
+import { dispatchTrigger } from '../triggers';
 
 /**
  * Helper to draw the top card of the encounter deck.
@@ -100,21 +101,8 @@ export function step2_villainActivations(state: GameState): GameState {
         continue;
       }
 
-      // Timing Window 2 (Interrupt): Spider-Man's Spider-Sense (01001a)
-      // When villain initiates an attack against you, draw 1 card.
-      if (player.activeFormCard.code === '01001a') {
-        const drawnCard = player.deck.shift();
-        if (drawnCard) {
-          player.hand.push(drawnCard);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            key: 'ability.spiderSense.triggered',
-            params: { player: player.name },
-            onomatopoeia: 'SPIDER-SENSE TINGLES! (CARD DRAW)',
-          });
-        }
-      }
+      // Timing Window 2 (Interrupts): Villain Initiates Attack (Data-Driven, e.g. Spider-Sense)
+      dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId: player.id });
 
       // Draw Boost Card
       const boostCard = drawEncounterCard(state);
@@ -126,21 +114,13 @@ export function step2_villainActivations(state: GameState): GameState {
         state.encounterDiscard.push(boostCard);
       }
 
-      // Timing Window 2 (Defense Interrupt): Backflip (01003)
-      // When you would take any amount of damage from an attack, prevent all of that damage.
-      const backflipIdx = player.hand.findIndex((c) => c.card.code === '01003');
-      if (backflipIdx !== -1) {
-        const [backflip] = player.hand.splice(backflipIdx, 1);
-        player.discard.push(backflip);
-        totalAttack = 0; // All damage prevented!
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'card.backflip.preventedDamage',
-          params: { player: player.name },
-          onomatopoeia: 'BACKFLIP! (0 DAMAGE)',
-        });
-      }
+      // Timing Window 2 (Defense Interrupts): Take Attack Damage (Data-Driven, e.g. Backflip)
+      const defenseResult = dispatchTrigger(state, 'TAKE_ATTACK_DAMAGE', {
+        targetPlayerId: player.id,
+        damageAmount: totalAttack,
+      });
+
+      totalAttack = defenseResult.damageAmount ?? totalAttack;
 
       // Check Tough on Hero
       const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);

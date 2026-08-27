@@ -4,6 +4,7 @@ export type ActionType =
   | 'BASIC_ATTACK'
   | 'BASIC_THWART'
   | 'PLAY_CARD'
+  | 'USE_CARD_ABILITY'
   | 'END_PLAYER_TURN';
 
 export interface ChangeFormAction {
@@ -43,6 +44,14 @@ export interface PlayCardAction {
   targetInstanceId?: string; // For targeted events or attachments
 }
 
+export interface UseCardAbilityAction {
+  type: 'USE_CARD_ABILITY';
+  playerId: string;
+  cardInstanceId: string;
+  abilityId: string;
+  targetInstanceId?: string;
+}
+
 export interface EndPlayerTurnAction {
   type: 'END_PLAYER_TURN';
   playerId: string;
@@ -54,6 +63,7 @@ export type GameAction =
   | BasicAttackAction
   | BasicThwartAction
   | PlayCardAction
+  | UseCardAbilityAction
   | EndPlayerTurnAction;
 
 export interface ActionResult {

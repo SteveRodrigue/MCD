@@ -239,30 +239,34 @@ Step 6: First Player Token & End of Round Upkeep
 
 ---
 
-## 6. Card Effect Registry & Specific Ability Algorithms (`src/engine/cards/`)
+## 6. Data-Driven Trigger Dispatcher & Reusable Effect Primitives (`src/engine/triggers/` & `src/engine/effects/`)
 
-### Algorithm 6.1: Spider-Sense Interrupt (`01001a`) (RR v1.8 p. 14, 30)
-* **Trigger:** `ENEMY_ATTACK_INITIATED` (Step 2 of Villain Phase).
-* **Preconditions:** Active form is Spider-Man (`01001a`), player is the target of the attack.
-* **Mutation:** Shift top card of `player.deck` into `player.hand`.
+In accordance with **ADR-0008**, the rules engine operates with **ZERO hardcoded card codes**. All abilities are declared in `src/data/supplemental/card-effects.json`, enriched onto cards during normalization, and resolved via generic algorithms:
 
-### Algorithm 6.2: Backflip Defense Interrupt (`01003`) (RR v1.8 p. 12, 14)
-* **Trigger:** `TAKE_ATTACK_DAMAGE` (Step 2 of Villain Phase / Minion attack).
-* **Preconditions:** Card instance `01003` is in `player.hand`.
-* **Mutation:** Discard `01003` to `player.discard`; replace incoming attack damage with 0.
+### Algorithm 6.1: Generic `TriggerDispatcher` (`src/engine/triggers/trigger-dispatcher.ts`)
+```
+function DispatchTrigger(state, triggerType, context):
+  1. Scan Target Player's Active Identity for abilities matching triggerType
+     FOR EACH ability IN activeIdentity.abilities:
+       ExecuteEffect(state, ability, context)
+  2. Scan Target Player's In-Play Tableau cards (if ready)
+     FOR EACH card IN tableau WHERE NOT card.exhausted:
+       FOR EACH ability IN card.abilities WHERE ability.trigger == triggerType:
+         ExecuteEffect(state, ability, context)
+  3. Scan Target Player's Hand for Interrupt abilities (e.g. TAKE_ATTACK_DAMAGE)
+     FOR EACH card IN hand:
+       IF card has ability with (zone == 'HAND' AND trigger == triggerType):
+         PayCost(card.cost) // e.g. discardSelf
+         ExecuteEffect(state, ability, context)
+```
 
-### Algorithm 6.3: Swinging Web Kick Hero Action (`01005`) (RR v1.8 p. 5, 27)
-* **Trigger:** `PLAY_CARD` with cost 3.
-* **Preconditions:** Hero form.
-* **Mutation:** If target has `TOUGH` $\rightarrow$ discard `TOUGH` and deal 0 damage; else reduce target HP by 8.
-
-### Algorithm 6.4: Aunt May Alter-Ego Action (`01006`) (RR v1.8 p. 23)
-* **Preconditions:** Alter-Ego form, Aunt May instance is ready in `player.tableau`.
-* **Mutation:** Exhaust Aunt May; heal $\min(\text{maxHealth} - \text{health}, 4)$ from Peter Parker.
-
-### Algorithm 6.5: Web-Shooter Uses & Resource (`01008`) (RR v1.8 p. 30 "Uses", p. 24)
-* **Setup:** Enters play with `tokens.counters = 3`.
-* **Action:** Exhaust instance, decrement `counters` by 1 $\rightarrow$ generate 1 Wild resource. If `counters === 0` $\rightarrow$ discard to `player.discard`.
+### Algorithm 6.2: Reusable Effect Primitives (`src/engine/effects/index.ts`)
+* **`DRAW_CARDS`:** `player.deck.shift()` $\times$ `count` $\rightarrow$ `player.hand.push()`
+* **`DEAL_DAMAGE`:** Checks `TOUGH` status $\rightarrow$ reduces target HP $\rightarrow$ checks defeat / victory
+* **`PREVENT_DAMAGE`:** Replaces incoming attack damage with 0
+* **`HEAL_DAMAGE`:** Heals target character up to `maxHealth`
+* **`GENERATE_RESOURCE`:** Produces specified resource type (`wild`, `mental`, `physical`, `energy`)
+* **`REMOVE_THREAT`:** Reduces threat on target scheme (minimum 0)
 
 ---
 

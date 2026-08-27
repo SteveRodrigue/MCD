@@ -101,6 +101,7 @@ export interface NormalizedCard {
   boostIcons?: number;
   boostStar?: boolean;
   errata?: string;
+  enrichment?: import('./abilities').CardEnrichment;
   raw: RawUpstreamCard;
 }
 

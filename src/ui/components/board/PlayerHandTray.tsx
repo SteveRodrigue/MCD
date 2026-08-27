@@ -24,6 +24,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 }) => {
   const [showNemesisModal, setShowNemesisModal] = useState(false);
   const topDiscard = discard[discard.length - 1];
+  const nemesisMinion =
+    setAsideCards.find((c) => c.card.type === 'minion' || (c.card as any).type_code === 'minion') ||
+    setAsideCards[0];
 
   return (
     <>
@@ -101,24 +104,29 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             </div>
           </div>
 
-          {/* 3. Out of Play / Nemesis Set Area (Right of Hand!) */}
+          {/* 3. Out of Play / Nemesis Set Area (Right of Hand - Displays Nemesis Minion!) */}
           <div className="flex flex-col items-center gap-1 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
             <span className="text-[10px] font-bold text-slate-600 uppercase font-comic">
               OUT OF PLAY
             </span>
 
-            {setAsideCards.length > 0 ? (
-              <button
+            {nemesisMinion ? (
+              <div
                 onClick={() => setShowNemesisModal(true)}
-                className="flex flex-col items-center group cursor-pointer"
-                title="View Nemesis Set (Set Aside / Out of Play)"
+                className="relative cursor-pointer group flex flex-col items-center"
+                title="Click to view all Set-Aside Nemesis cards (Out of Play)"
               >
-                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-rose-950 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden group-hover:border-comic-red transition-all">
-                  <Skull className="w-5 h-5 text-comic-red mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="font-comic text-lg text-white leading-none">{setAsideCards.length}</span>
-                  <span className="text-[9px] font-bold text-rose-300 uppercase">NEMESIS</span>
-                </div>
-              </button>
+                <CardView
+                  card={nemesisMinion.card}
+                  size="sm"
+                  showTokens={false}
+                  enableHoverZoom={true}
+                  zoomOrigin="bottom"
+                />
+                <span className="absolute -bottom-2 -right-2 bg-rose-700 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                  {setAsideCards.length}
+                </span>
+              </div>
             ) : (
               <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
                 <span className="font-comic text-xs text-slate-400">EMPTY</span>

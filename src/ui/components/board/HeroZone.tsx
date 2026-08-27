@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Heart, Users, Layers, Zap, AlertOctagon } from 'lucide-react';
+import { Shield, Heart, Users, Zap, AlertOctagon } from 'lucide-react';
 import { PlayerState, StatusCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 
@@ -9,7 +9,6 @@ interface HeroZoneProps {
 
 export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
   const healthPercent = Math.max(0, (player.health / player.maxHealth) * 100);
-  const topDiscard = player.discard[player.discard.length - 1];
   const engagedMinions = player.engagedMinions || [];
 
   return (
@@ -17,10 +16,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
       {/* Zone Title Ribbon */}
       <div className="absolute -top-3 left-4 bg-comic-blue text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
         <Shield className="w-3.5 h-3.5" />
-        <span>HERO SEAT • {player.name}</span>
+        <span>HERO PLAY AREA • {player.name}</span>
       </div>
 
-      {/* 1. Engaged Minions Row (Directly attached to this Hero Seat!) */}
+      {/* 1. Engaged Minions Row (Per Player Hero Seat!) */}
       {engagedMinions.length > 0 && (
         <div className="bg-rose-50/90 p-3 rounded-lg border-2 border-comic-black shadow-comic-sm pt-2">
           <div className="flex items-center gap-1.5 mb-2 border-b border-rose-200 pb-1">
@@ -57,38 +56,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
         </div>
       )}
 
-      {/* 2. Main Hero Play Area Grid: Player Piles (Left), Hero Identity, Allies, Tableau */}
+      {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start pt-1">
-        {/* 1. Player Deck & Discard Piles (Left of Hero Card: 2 cols) */}
-        <div className="md:col-span-2 flex md:flex-col items-center justify-center gap-3">
-          {/* Player Draw Pile */}
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-28 bg-comic-blue border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots">
-              <Layers className="w-6 h-6 text-white mb-1" />
-              <span className="font-comic text-lg text-white leading-none">{player.deck.length}</span>
-              <span className="text-[9px] font-bold text-sky-200 uppercase">DECK</span>
-            </div>
-          </div>
-
-          {/* Player Discard Pile */}
-          <div className="flex flex-col items-center">
-            {topDiscard ? (
-              <div className="relative">
-                <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} />
-                <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black">
-                  {player.discard.length}
-                </span>
-              </div>
-            ) : (
-              <div className="w-20 h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
-                <span className="font-comic text-xs text-slate-400">DISCARD</span>
-                <span className="text-[10px] text-slate-400 font-bold">EMPTY</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 2. Hero Identity Station (Center-Left: 4 cols) */}
+        {/* Identity Station (Left: 4 cols) */}
         <div className="md:col-span-4 flex flex-col items-center sm:items-start gap-2.5 bg-sky-50/70 p-3 rounded-lg border border-comic-black">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-1.5">
@@ -159,12 +129,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
           </div>
         </div>
 
-        {/* 3. Allies Row (Center-Right: 3 cols) */}
-        <div className="md:col-span-3 bg-amber-50/60 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
+        {/* Allies Row (Center: 4 cols) */}
+        <div className="md:col-span-4 bg-amber-50/60 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-amber-200 pb-1">
             <span className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-comic-blue" />
-              Allies ({player.allies.length} / 3)
+              Allies in Play ({player.allies.length} / 3)
             </span>
           </div>
 
@@ -183,12 +153,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
           )}
         </div>
 
-        {/* 4. Tableau: Supports & Upgrades (Right: 3 cols) */}
-        <div className="md:col-span-3 bg-slate-50 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
+        {/* Tableau: Supports & Upgrades (Right: 4 cols) */}
+        <div className="md:col-span-4 bg-slate-50 p-3 rounded-lg border border-comic-black space-y-2 min-h-[220px]">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1">
             <span className="flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-comic-yellow" />
-              Tableau ({player.tableau.length})
+              Tableau: Upgrades & Supports ({player.tableau.length})
             </span>
           </div>
 

@@ -4,6 +4,7 @@ import {
   setupGame,
   resetInstanceCounter,
   dispatchAction,
+  step5_revealEncounterCards,
   StatusCard,
   VillainCard,
   MainSchemeCard,
@@ -211,6 +212,36 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       // Evaluated modal choice (hand was empty after paying 4 cards -> drew 3 cards)
       expect(playRes.state.players[0].hand.length).toBe(3);
       expect(playRes.state.players[0].deck.length).toBe(initialDeck - 3);
+    });
+
+    it('Caught Off Guard (01188) discards upgrade or surges if none', () => {
+      // Put a support card in player tableau
+      const shooterCard = catalog.getCard('01008')!;
+      const shooterInst = createCardInstance(shooterCard);
+      gameState.players[0].tableau.push(shooterInst);
+
+      const caughtOffGuardCard = catalog.getCard('01188')!;
+      const encounterInst = createCardInstance(caughtOffGuardCard);
+      gameState.players[0].dealtEncounterCards.push(encounterInst);
+
+      // Execute Step 5
+      const nextState = step5_revealEncounterCards(gameState);
+
+      // Shooter was discarded from tableau
+      expect(nextState.players[0].tableau.length).toBe(0);
+      expect(nextState.players[0].discard.some((c) => c.card.code === '01008')).toBe(true);
+    });
+
+    it('Hard to Keep Down (01104) heals Rhino or surges if already at max health', () => {
+      gameState.villain.health = 10; // Damaged from 14 max
+      const hardCard = catalog.getCard('01104')!;
+      const encInst = createCardInstance(hardCard);
+      gameState.players[0].dealtEncounterCards.push(encInst);
+
+      const nextState = step5_revealEncounterCards(gameState);
+
+      // Healed 4 HP: 10 + 4 = 14
+      expect(nextState.villain.health).toBe(14);
     });
   });
 });

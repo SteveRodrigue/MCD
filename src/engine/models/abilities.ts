@@ -47,7 +47,8 @@ export type EffectType =
   | 'SEARCH_AND_REVEAL_SIDE_SCHEME'
   | 'THW_BONUS_PER_SIDE_SCHEME'
   | 'NICK_FURY_CHOICE'
-  | 'DISCARD_SELF';
+  | 'DISCARD_SELF'
+  | 'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE';
 
 export interface AbilityCost {
   exhaustSelf?: boolean;

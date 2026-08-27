@@ -366,6 +366,48 @@
         }
       ]
     },
+    "01098": {
+      "cardName": "Armored Rhino Suit",
+      "comment": "Attachment: Attach to Rhino. When damage would be dealt to Rhino, place it here instead (absorbs up to 5 damage).",
+      "abilities": [
+        {
+          "id": "armored_rhino_suit_absorb",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "TAKE_ATTACK_DAMAGE",
+          "effect": "PREVENT_DAMAGE"
+        }
+      ]
+    },
+    "01099": {
+      "cardName": "Charge",
+      "comment": "Attachment: Attach to Rhino. When Rhino attacks -> +3 ATK and gains Overkill. Discard after attack.",
+      "abilities": [
+        {
+          "id": "charge_boost",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "VILLAIN_INITIATES_ATTACK",
+          "effect": "ADD_STATUS",
+          "params": { "bonusAttack": 3, "overkill": true }
+        }
+      ]
+    },
+    "01100": {
+      "cardName": "Enhanced Ivory Horn",
+      "comment": "Attachment: Attached Rhino gets +1 ATK.",
+      "abilities": [
+        {
+          "id": "ivory_horn_atk",
+          "timing": "CONSTANT",
+          "effect": "ADD_STATUS",
+          "params": { "bonusAttack": 1 }
+        }
+      ]
+    },
+    "01101": {
+      "cardName": "Hydra Mercenary",
+      "comment": "Minion: Guard (While engaged with you, you cannot attack the villain).",
+      "abilities": []
+    },
     "01102": {
       "cardName": "Sandman",
       "comment": "Minion: When Revealed / Enters play -> Gains Tough status.",
@@ -430,6 +472,37 @@
         }
       ]
     },
+    "01107": {
+      "cardName": "Breakin' & Takin'",
+      "comment": "Side Scheme: Hazard Icon (+1 encounter card). When Revealed -> place +1 threat per hero.",
+      "abilities": [
+        {
+          "id": "breakin_takin_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "REMOVE_THREAT",
+          "params": { "perHeroThreat": 1 }
+        }
+      ]
+    },
+    "01108": {
+      "cardName": "Crowd Control",
+      "comment": "Side Scheme: Crisis Icon (Cannot remove threat from Main Scheme while in play).",
+      "abilities": []
+    },
+    "01109": {
+      "cardName": "Bomb Scare",
+      "comment": "Side Scheme: Acceleration Icon (+1 threat per round). When Revealed -> place +1 threat per hero.",
+      "abilities": [
+        {
+          "id": "bomb_scare_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "REMOVE_THREAT",
+          "params": { "perHeroThreat": 1 }
+        }
+      ]
+    },
     "01110": {
       "cardName": "Hydra Bomber",
       "comment": "Minion: When Revealed -> Choose either take 2 damage or place 1 threat on main scheme.",
@@ -444,21 +517,8 @@
       ]
     },
     "01111": {
-      "cardName": "False Alarm",
-      "comment": "Treachery: When Revealed -> Confuse your hero.",
-      "abilities": [
-        {
-          "id": "false_alarm",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": { "status": "CONFUSED", "target": "HERO" }
-        }
-      ]
-    },
-    "01112": {
       "cardName": "Explosion",
-      "comment": "Treachery: When Revealed -> Deal 1 damage to each character and place 1 threat on main scheme.",
+      "comment": "Treachery: When Revealed -> If Bomb Scare is in play, deal damage equal to its threat among characters. Else gains Surge.",
       "abilities": [
         {
           "id": "explosion",
@@ -466,6 +526,19 @@
           "trigger": "WHEN_REVEALED",
           "effect": "EXPLOSION_EFFECT",
           "params": { "damage": 1, "threat": 1 }
+        }
+      ]
+    },
+    "01112": {
+      "cardName": "False Alarm",
+      "comment": "Treachery: When Revealed -> You are confused. If already confused, gains Surge.",
+      "abilities": [
+        {
+          "id": "false_alarm",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "CONFUSED", "target": "HERO" }
         }
       ]
     },
@@ -483,13 +556,49 @@
     },
     "01187": {
       "cardName": "Assault",
-      "comment": "Treachery: When Revealed -> The villain attacks you immediately.",
+      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> The villain attacks you immediately.",
       "abilities": [
         {
           "id": "assault_treachery",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+        }
+      ]
+    },
+    "01188": {
+      "cardName": "Caught Off Guard",
+      "comment": "Treachery: When Revealed -> Discard an upgrade or support you control. If none discarded, gains Surge.",
+      "abilities": [
+        {
+          "id": "caught_off_guard",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE"
+        }
+      ]
+    },
+    "01189": {
+      "cardName": "Gang-Up",
+      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Villain and each engaged minion attacks you.",
+      "abilities": [
+        {
+          "id": "gang_up",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+        }
+      ]
+    },
+    "01190": {
+      "cardName": "Shadow of the Past",
+      "comment": "Treachery: When Revealed -> Put your nemesis minion and side scheme into play. If none, gains Surge.",
+      "abilities": [
+        {
+          "id": "shadow_of_the_past",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
         }
       ]
     }

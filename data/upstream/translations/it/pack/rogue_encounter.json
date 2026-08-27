@@ -1,0 +1,68 @@
+[
+    {
+        "code": "38024",
+        "name": "Tocco Mortale",
+        "text": "<b><i>Fai ricevere al giocatore Anna Marie</i></b>\n- Se Toccato è assegnato a un personaggio amico, infliggi 2 danni a quel personaggio. Scarta questa carta.\n- Se Toccato è assegnato a un personaggio nemico, colloca 2 minacce sulla trama principale. Scarta questa carta."
+    },
+    {
+        "code": "38025",
+        "name": "Mystica",
+        "text": "Criminoso. Robustezza.\n<b>Risposta Obbligata</b>: Dopo che Mystica ti ha impegnato, ceerca nel mazzo degli incontri, nella pila degli scarti degli incontri e nelle carte messe da parte 1 insidia Tratto in Inganno e mescolala nel tuo mazzo.",
+        "traits": "Confraternita dei Mutanti. Elite."
+    },
+    {
+        "code": "38026",
+        "flavor": "Per quanto sappia di non potersi fidare di Mystica, Rogue continua ad avere difficoltà a respingere la donna che l'ha cresciuta.",
+        "name": "Manipolazione di Mystica",
+        "text": "<b>Quando Sconfitta</b>: Cerca nel mazzo degli incontri e nella pila degli scarti degli incontri 1 insidia Tratto in Inganno e mescolala nel tuo mazzo."
+    },
+    {
+        "code": "38027",
+        "name": "Tratto in Inganno",
+        "text": "<b>Quando Rivelata</b>: Mescola questa carta nel tuo mazzo. Questa carta ottiene Impulso.\n<b>Risposta Obbligata</b>: Dopo che questa carta è entrata nella tua mano, colloca 2 minacce sulla trama principale. <i>(Alla fine della Fase dei Giocatori, puoi scartare questa carta dalla tua mano come qualsiasi altra carta.)</i>",
+        "traits": "Mutaforma."
+    },
+    {
+        "code": "38029",
+        "name": "Donald Pierce",
+        "text": "Criminoso. Lavoro di Squadra ([[REAVER]]).\n<b>Risposta Obbligata</b>: Dopo che Donald Pierce ti ha impegnato, rivela il primo gregario [[REAVER]] dalla cima della pila degli scarti degli incontri.",
+        "traits": "Elite. Reaver."
+    },
+    {
+        "code": "38030",
+        "flavor": "\"Chi chiamerai adesso?\"",
+        "name": "Spaccacrani",
+        "text": "Lavoro di Squadra ([[REAVER]]). Robustezza.\n<b>Risposta Obbligata</b>:  Dopo che Spaccacrani ti ha impegnato, colloca 1 minaccia sulla trama principale per ogni gregario [[REAVER]] impegnato con te.",
+        "traits": "Reaver."
+    },
+    {
+        "code": "38031",
+        "flavor": "\"Spezzaossa a rapporto!\"",
+        "name": "Spezzaossa",
+        "text": "Lavoro di Squadra ([[REAVER]]). Robustezza.\n<b>Interruzione Obbligata</b>:  Dopo che Spezzaossa ti ha impegnato, subisci 1 danno indiretto per ogni gregario [[REAVER]] impegnato con te.",
+        "traits": "Reaver."
+    },
+    {
+        "code": "38032",
+        "name": "Wade Cole",
+        "text": "Lavoro di Squadra ([[REAVER]]).\n<b>Quando Rivelata</b>: Cerca nel mazzo degli incontri e nella pila degli scarti degli incontri 1 aggiunta Potenziamenti Cibernetici e assegnala a Wade Cole. (Mescola.)",
+        "traits": "Reaver."
+    },
+    {
+        "code": "38033",
+        "name": "Murray Reese",
+        "text": "Lavoro di Squadra ([[REAVER]]).\n<b>Quando Rivelata</b>: Cerca nel mazzo degli incontri 1 aggiunta Potenziamenti Cibernetici e assegnala a Murray Reese. <i>(Mescola.)</i>",
+        "traits": "Reaver."
+    },
+    {
+        "code": "38034",
+        "name": "I Reavers",
+        "text": "<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama scarta carte dalla cima del mazzo degli incontri finchè non scarta 1 gregario [[REAVER]] poi rivela quel gregario."
+    },
+    {
+        "code": "38035",
+        "name": "Potenziamenti Cibernetici",
+        "text": "[star]<b>Risposta Obbligata</b>: Dopo che il gregario con questa aggiunta ha attaccato, scarta Potenziamenti Cibernetici.\nAssegna a un gregario. Se non puoi farlo, questa carta ottiene Impulso.\nIl gregario con questa aggiunta non può subire danni.\n[star]<b> Risposta Obbligata</b>: Dopo che il gregario con questa aggiunta ha attaccato, scarta Potenziamenti Cibernetici.",
+        "traits": "Tecnologia."
+    }
+]

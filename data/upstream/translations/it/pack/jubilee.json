@@ -1,0 +1,186 @@
+[
+    {
+        "code": "47001a",
+        "flavor": "\"Dovresti saperlo che mi fa imbestialire essere ignorata!\"",
+        "name": "Jubilee",
+        "text": "<i>\"Cioè, di brutto!\"</i> — <b>Risorsa</b>: Esaurisci Jubilee → genera [wild].",
+        "traits": "X-Men."
+    },
+    {
+        "code": "47001b",
+        "flavor": "\"Questo posto era mooolto più figo quando ci vivevo!\"",
+        "name": "Jubilation Lee",
+        "text": "<i>Fashionista</i> — <b>Azione</b>: Cerca nel tuo mazzo la trama secondaria giocatore Shopping Sfrenato e mettila in gioco. (Limite di una volta per fase.)",
+        "traits": "Mutante."
+    },
+    {
+        "code": "47002",
+        "flavor": "\"Chiudi il becco, scricciolo. Non siamo qui in vacanza!\"",
+        "name": "Wolverine",
+        "subname": "Logan",
+        "text": "[star] Gli attacchi di Wolverine ottengono Perforante.\n<b>Risposta</b>: Dopo che hai assunto la sembianza di alter ego, cura 3 danni a Wolverine.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "47003",
+        "name": "Shopping Sfrenato",
+        "text": "Eroi o alleati non possono rimuovere minacce da questa trama.\n<b>Azione Alter Ego</b>: Esaurisci la tua identità → rimuovi una minaccia da questa carta. Qualsiasi giocatore può innescare questa capacità.\n<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama cerca nel suo mazzo e nella sua pila degli scarti 1 carta [[OGGETTO]] e la mette in gioco."
+    },
+    {
+        "code": "47004",
+        "name": "Cappotto di Jubilee",
+        "text": "Jubilee riceve +1 INT.\n<b>Risposta Eroe</b> <i>(intervento)</i>: Dopo che hai giocato un evento [[INTERVENTO]], esaurisci Cappotto di Jubilee e scegli 1 trama → rimuovi da quella trama 1 minaccia per ogni tipo di risorsa che hai usato per pagare quell'evento.",
+        "traits": "Oggetto."
+    },
+    {
+        "code": "47005",
+        "name": "Occhiali da Sole di Jubilee",
+        "text": "Jubilee riceve +1 ATT.\n<b>Risposta Eroe</b> <i>(attacco)</i>: Dopo che hai giocato un evento [[ATTACCO]], esaurisci Occhiali da Sole di Jubilee e scegli 1 nemico → infliggi a quel nemico 1 danno per ogni tipo di risorsa che hai usato per pagare quell'evento.",
+        "traits": "Oggetto."
+    },
+    {
+        "code": "47006",
+        "name": "Lampo Accecante",
+        "text": "<b>Azione Eroe</b>: Scegli X nemici, dove X è pari al numero di tipi di risorsa <i>([energy], [mental], [physical], e [wild])</i> usati per pagare questo evento. Stordisci e confondi ogni nemico scelto.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "47007a",
+        "flavor": "\"Ma dove li trovano tutti questi scagnozzi? Devono esserci i saldi da qualche parte.\" — Jubilee",
+        "name": "Petardi",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 4 danni ad un nemico. Se hai pagato questa carta usando 2 risorse di tipo diverso, stordisci quel nemico.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "47007b",
+        "flavor": "\"Ma dove li trovano tutti questi scagnozzi? Devono esserci i saldi da qualche parte.\" — Jubilee",
+        "name": "Petardi",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 4 danni ad un nemico. Se hai pagato questa carta usando 2 risorse di tipo diverso, stordisci quel nemico.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "47007c",
+        "flavor": "\"Ma dove li trovano tutti questi scagnozzi? Devono esserci i saldi da qualche parte.\" — Jubilee",
+        "name": "Petardi",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 4 danni ad un nemico. Se hai pagato questa carta usando 2 risorse di tipo diverso, stordisci quel nemico.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "47008a",
+        "flavor": "\"Io ne ho abbastanza, gente. Vi saluto!\" — Jubilee",
+        "name": "Lampo di Luce",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se hai pagato questa carta usando 2 risorse di tipo diverso, confondi 1 nemico..",
+        "traits": "Intervento. Superpotere. "
+    },
+    {
+        "code": "47008b",
+        "flavor": "\"Io ne ho abbastanza, gente. Vi saluto!\" — Jubilee",
+        "name": "Lampo di Luce",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se hai pagato questa carta usando 2 risorse di tipo diverso, confondi 1 nemico..",
+        "traits": "Intervento. Superpotere. "
+    },
+    {
+        "code": "47008c",
+        "flavor": "\"Io ne ho abbastanza, gente. Vi saluto!\" — Jubilee",
+        "name": "Lampo di Luce",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se hai pagato questa carta usando 2 risorse di tipo diverso, confondi 1 nemico..",
+        "traits": "Intervento. Superpotere. "
+    },
+    {
+        "code": "47009",
+        "name": "Gran Finale",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 2 danni a un nemico. Per ogni tipo di risorsa <i>([energy], [mental], [physical], e [wild])</i> che hai usato per pagare questa carta, scegli 1 nemico e infliggigli 2 danni.",
+        "traits": "Attacco. Superpotere."
+    },
+    {
+        "code": "47010a",
+        "flavor": "\"Copritevi gli occhi, squadra! Accendiamo l'atmosfera!\" — Jubilee",
+        "name": "Plasmoidi Energetici"
+    },
+    {
+        "code": "47010b",
+        "flavor": "\"Copritevi gli occhi, squadra! Accendiamo l'atmosfera!\" — Jubilee",
+        "name": "Plasmoidi Energetici"
+    },
+    {
+        "code": "47010c",
+        "flavor": "\"Copritevi gli occhi, squadra! Accendiamo l'atmosfera!\" — Jubilee",
+        "name": "Plasmoidi Energetici"
+    },
+    {
+        "code": "47011",
+        "flavor": "\"Non preoccuparti per me, tesoro. Ci penso io.\"",
+        "name": "Chamber",
+        "subname": "Jono Starsmore",
+        "text": "[star] Dopo che ha attaccato un nemico confuso, Chamber subisce -1 danno conseguente ([cost]).",
+        "traits": "Psionico. X-Men."
+    },
+    {
+        "code": "47012",
+        "name": "Husk",
+        "subname": "Paige Guthrie",
+        "text": "[star] <b>Interruzione</b>: Quando Husk usa un potere base, spendi fino a 3 risorse → se hai speso 1 o più:\n[energy] — Husk riceve +1 a quel potere base per questo uso.\n[mental] — Cura 1 danno a Husk.\n[physical] — Ripristina Husk dopo questo uso.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "47013",
+        "flavor": "\"Il mio nome è 'Guercio'. Solo 'Guercio'.\" — Wolverine",
+        "name": "Travestimento",
+        "text": "Gioca sotto il controllo di un qualsiasi giocatore. Massimo 1 per giocatore.\n<b>Azione</b> <i>(intervento)</i>: Esaurisci Travestimento e la tua identità → rimuovi 2 minacce da una trama.",
+        "traits": "Oggetto."
+    },
+    {
+        "code": "47014",
+        "flavor": "\"Hai fatto del male agli amici di me stesso! Ora la pagherai!\" — Warlock",
+        "name": "Intercettare",
+        "text": "<b>Risposta Eroe</b> <i>(attacco)</i>: Dopo che il tuo eroe è intervenuto, infliggi 4 danni a un nemico (7 danni se invece quell'intervento ha rimosso l'ultima minaccia da una trama).",
+        "traits": "Attacco."
+    },
+    {
+        "code": "47015",
+        "flavor": "\"Dovresti esserne fiera, Rogue! Io e Glob eravamo pronti già da un pezzo!\" — Anole",
+        "name": "Tre Passi Avanti",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Per ogni tipo di risorsa <i>([energy], [mental], [physical], e [wild])</i> che hai usato per pagare questa carta, scegli 1 trama e rimuovi 2 minacce da essa.",
+        "traits": "Intervento."
+    },
+    {
+        "code": "47016",
+        "name": "Generation X",
+        "text": "Vittoria 0.\nMentre effettua un intervento base contro questa trama, ogni personaggio [[X-MEN]] riceve +1 INT.\n<b>Quando Sconfitta</b>: Ogni giocatore può cercare nel suo mazzo e nella sua pila degli scarti 1 evento specifico di identità e aggiungerlo alla sua mano. <i>(Mescola.)</i>"
+    },
+    {
+        "code": "47018",
+        "name": "Synch",
+        "subname": "Everett Thomas",
+        "text": "Gioca solo se la tua identità possiede il tratto [[X-MEN]].\n<b>Interruzione</b>: Quando usi un potere base, esaurisci Synch → ricevi +1 a quel potere per questo uso.",
+        "traits": "X-Men."
+    },
+    {
+        "code": "47019",
+        "name": "Cellulare",
+        "text": "Utilizzo (3 gettoni carica).\n<b>Azione</b>: Esaurisci Cellulare, rimuovi 1 gettone carica da questa carta e scegli 1 giocatore → quel giocatore effettua un intervento base o un attacco base con un personaggio che controlla. Quel personaggio riceve +1 INT e +1 ATT per questo uso.",
+        "traits": "Oggetto."
+    },
+    {
+        "code": "47021",
+        "name": "Eclettico",
+        "text": "<b>Azione Eroe</b> <i>(attacco/intervento)</i>: Se hai pagato questo evento usando 1 o più:\n[physical] — Infliggi 2 danni a un nemico.\n[mental] — Rimuovi 2 minacce da una trama.\n[energy] — Cura 2 danni alla tua identità.",
+        "traits": "Attacco. Intervento."
+    },
+    {
+        "code": "47022",
+        "name": "Coppia Improbabile",
+        "text": "Team-Up (Jubilee e Wolverine). Massimo 1 per mazzo.\n<b>Azione Eroe</b> <i>(attacco)</i>: Confondi 1 nemico. Infliggi 4 danni a un nemico confuso.",
+        "traits": "Attacco."
+    },
+    {
+        "code": "47028",
+        "name": "Caos Mutante",
+        "text": "Alleanza.\n<b>Azione Eroe</b>: Scegli 1 alleato [[X-FORCE]] e 1 alleato [[X-MEN]] e rimettili nella mano dei rispettivi proprietari  → quei giocatori giocano quegli alleati, ignorando il loro costo in risorse."
+    },
+    {
+        "code": "47029",
+        "name": "Servire e Proteggere",
+        "text": "Alleanza.\n<b>Interruzione Eroe</b>: Quando un qualsiasi ammontare di minacce sta per essere collocato sulla trama principale, esaurisci 1 personaggio [[X-FORCE]] e 1 personaggio [[X-MEN]] → previeni quelle minacce e irrobustisci ognuno di quei personaggi."
+    }
+]

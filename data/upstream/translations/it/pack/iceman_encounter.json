@@ -1,0 +1,53 @@
+[
+    {
+        "code": "46024",
+        "name": "Testa Calda",
+        "text": "<b><i>Fai ricevere al giocatore Bobby Drake.</i></b>\n<b>Risposta Obbligata</b>: Dopo che hai assegnato una miglioria Assiderato a un nemico, subisci 1 danno.\n<b>Risposta Alter Ego</b>: Dopo che hai effettuato un recupero base, scarta questa carta."
+    },
+    {
+        "code": "46025",
+        "flavor": "\"Pensi che quelle sculture di ghiaccio possano fermarmi?!\"",
+        "name": "Pyro",
+        "text": "Colpo Rapido.\n[star] Gli attacchi di Pyro infliggono danni indiretti.",
+        "traits": "Confraternita dei Mutanti."
+    },
+    {
+        "code": "46026",
+        "name": "Giocare col Fuoco",
+        "text": "<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama scarta 3 carte dalla cima del suo mazzo e subisce 1 danno indiretto per ogni icona risorsa scartata in questo modo."
+    },
+    {
+        "code": "46027",
+        "name": "Lanciafiamme di Pyro",
+        "text": "Assegna a Pyro. Altrimenti, questa carta ottiene Impulso.\n[star] <b>Interruzione Obbligata</b>: Quando Pyro ti attacca, scarta 1 carta dalla cima del tuo mazzo. Pyro riceve +1 ATT per questo attacco per ogni icona risorsa su quella carta.",
+        "traits": "Arma."
+    },
+    {
+        "code": "46028",
+        "name": "Brucia!",
+        "text": "<b>Quando Rivelata</b>: Scarta 2 carte dalla cima del tuo mazzo (scarta invece 3 carte se Pyro è in gioco). Subisci 1 danno indiretto per ogni icona risorsa scartata in questo modo.\n<hr />\n[star] <b>Potenziamento</b>: Scarta 1 carta dalla cima del tuo mazzo. Questa carta riceve +1 icona potenziamento ([boost]) per ogni icona risorsa su quella carta."
+    },
+    {
+        "code": "46029",
+        "name": "Sauron",
+        "text": "<b>Quando Rivelata</b>: Cerca nel mazzo degli incontri e nella pila degli scarti degli incontri l'aggiunta Assorbimento Vitale e rivelala.\n<hr />\n[star] <b>Potenziamento</b>: Cura 3 danni al nemico che si sta attivando e irrobustiscilo.",
+        "traits": "Confraternita dei Mutanti."
+    },
+    {
+        "code": "46030",
+        "flavor": "Quando il dottor Lykos assorbe l'energia di un mutante, si trasforma nel terrificante Sauron!",
+        "name": "Sauron Vive!",
+        "text": "<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama cerca nel mazzo degli incontri e nella pila degli scarti degli incontri Sauron e lo distribuisce come carta incontro a faccia in giù a sé stesso."
+    },
+    {
+        "code": "46031",
+        "name": "Assorbimento Vitale",
+        "text": "Assegna al gregario con più punti ferita stampati. Si attiva contro di te. Se nessun gregario si è attivato in questo modo, questa carta ottiene Impulso.\n[star] <b>Interruzione Obbligata</b>: Quando il nemico con questa aggiunta ti attacca, subisci 2 danni e irrobustisci il nemico attaccante.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "46032",
+        "name": "L'Occhio di Sauron",
+        "text": "<b>Quando Rivelata</b>: Scarta 2 carte dalla cima del tuo mazzo (scarta invece 3 carte se Sauron è in gioco). Per ogni icona risorsa scartata in questo modo, risolvi l'effetto seguente:\n[energy] — Colloca 1 minaccia sulla trama principale.\n[mental] — Scarta 1 carta dalla tua mano.\n[physical] — Infliggi 1 danno alla tua identità.\n[wild] — Esaurisci 1 personaggio che controlli."
+    }
+]

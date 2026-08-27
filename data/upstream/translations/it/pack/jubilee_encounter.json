@@ -1,0 +1,64 @@
+[
+    {
+        "code": "47023",
+        "name": "In Punizione",
+        "text": "<b><i>Fai riceve al giocatore Jubilation Lee.</i></b>\nCome costo aggiuntivo per assumere la sembianza di eroe durante il tuo turno, devi spendere 2 risorse dello stesso tipo.\n<b>Quando Rivelata</b>: Assumi la sembianza di alter ego.\n<b>Risposta</b>: Dopo che hai giocato un evento del set Jubilee, rimuovi dal gioco questa carta."
+    },
+    {
+        "code": "47024",
+        "name": "Tata",
+        "text": "Robustezza.\n[star] <b>Risposta Obbligata</b>: Dopo che Tata ti ha attaccato, se controlli 1 o più alleati, cerca nel mazzo degli incontri, nella pila degli scarti degli incontri e nelle carte messe da parte 1 Bimbo \"Sperduto\" e rivelalo.",
+        "traits": "Mutante."
+    },
+    {
+        "code": "47025",
+        "flavor": "La Tata vive in bilico sul confine tra \"salvataggio\" e \"rapimento.\"",
+        "name": "Bambina Cattiva",
+        "text": "<b>Quando Rivelata</b>: Colloca 1 minaccia su questa carta per ogni tipo di risorsa <i>([energy], [mental], [physical], e [wild])</i> sulle carte nella tua mano."
+    },
+    {
+        "code": "47026",
+        "flavor": "La tuta da battaglia della Tata nasconde ciò di cui è capace davvero.",
+        "name": "Tuta da Battaglia",
+        "text": "Assegna al gregario con meno punti ferita rimanenti. Altrimenti, questa carta ottiene Impulso.\nIl gregario con questa aggiunta riceve +3 punti ferita e ottiene il tratto [[AEREO]].",
+        "traits": "Armatura."
+    },
+    {
+        "code": "47027",
+        "name": "Bimbo \"Sperduto\"",
+        "text": "Considera l'alleato con questa aggiunta come se fosse un gregario [[REGREDITO]] con un riquadro di testo vuoto. La TRA del gregario con questa aggiunta è pari al suo INT stampato e non subisce danni conseguenti.\n<b>Quando Rivelata</b>: Assegna all'alleato con il costo più alto e senza altri Bimbo \"Sperduto\" assegnati a esso. L'alleato con questa aggiunta impegna il suo controllore. Altrimenti, questa carta ottiene impulso.",
+        "traits": "Armatura."
+    },
+    {
+        "code": "47030",
+        "flavor": "\"Sono cosi felice che i miei mercenari vi abbiano convinti a venire!\"",
+        "name": "Arcade",
+        "text": "Mentre ci sono trame secondarie [[TRAPPOLA]] in gioco, Arcade non può subire danni.\n<b>Quando Rivelata</b>: Scarta carte dalla cima del mazzo degli incontri finché non scarti 1 trama secondaria [[TRAPPOLA]] e rivelala.",
+        "traits": "Assassino."
+    },
+    {
+        "code": "47031",
+        "flavor": "\"Queste attrazioni sono... belle da morire!\" — Arcade",
+        "name": "Benvenuti nel Mondo Assassino",
+        "text": "Ostacolo 1[per_hero].\n<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama secondaria subisce 2 danni.",
+        "traits": "Trappola."
+    },
+    {
+        "code": "47032",
+        "name": "Parco divertimenti di Arcade",
+        "text": "Ostacolo 1[per_hero].\n<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama secondaria è stordito. Se era già stordito, scarta 1 alleato o supporto che controlla.",
+        "traits": "Trappola."
+    },
+    {
+        "code": "47033",
+        "name": "Labirinto degli Specchi",
+        "text": "Ostacolo 1[per_hero].\n<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama secondaria è confuso. Se era già confuso, colloca 2 minacce sulla trama principale.",
+        "traits": "Trappola."
+    },
+    {
+        "code": "47034",
+        "flavor": "\"Perché esagerare è sottovalutato.\" — Arcade",
+        "name": "Trappola Elaborata",
+        "text": "<b>Quando Rivelata</b>: Risolvi la capacità \"<b>Quando Sconfitta</b>\" di ogni trama secondaria [[TRAPPOLA]] come se l'avessi sconfitta. Se nessuna capacità è stata risolta in questo modo, scarta carte dalla cima del mazzo degli incontri finché non scarti 1 trama secondaria [[TRAPPOLA]] e rivelala."
+    }
+]

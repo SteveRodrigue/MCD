@@ -1,0 +1,148 @@
+[
+	{
+		"code": "08001a",
+		"flavor": "\"Mein Name ist Madame Natasha. Aber du kannst mich Black Widow nennen!\"",
+		"name": "Black Widow",
+		"text": "\"Witwenmacher\" — <b>Reaktion</b>: Nachdem du die Fähigkeit einer [[Vorbereitung]]-Karte unter deiner Kontrolle ausgelöst hast, füge einem Gegner 1 Schaden zu.",
+		"traits": "Avenger. Spion."
+	},
+	{
+		"code": "08001b",
+		"flavor": "\"Dies ist meine Mission und ich werde sie erfüllen.\"",
+		"name": "Natasha Romanoff",
+		"text": "Missionsvorbereitung — <b>Reaktion</b>: Nachdem du eine [[Vorbereitung]]-Karte gespielt hast, ziehe 1 Karte. (Nur ein Mal pro Phase.)",
+		"traits": "S.H.I.E.L.D. Spion."
+	},
+	{
+		"code": "08002",
+		"flavor": "\"Du hast auf Natasha geschossen. Das war deine letzte Tat auf Erden, Kumpel.\"",
+		"name": "Winter Soldier",
+		"subname": "Bucky Barnes",
+		"text": " Senke die Kosten um Winter Soldier zu spielen, um 1 für jede [[Vorbereitung]]-Karte unter deiner Kontrolle.",
+		"traits": "Avenger. Spion."
+	},
+	{
+		"code": "08003",
+		"flavor": "\"Es geht nur darum herauszufinden, wie blind ein Mensch absichtlich sein will. Und dann darum, dass Ergebnis auszunutzen.\" -- Natasha Romanoff",
+		"name": "Verdeckter Einsatz",
+		"text": "<b>Aktion</b> <i>(Widerstand)</i>: Entferne 4 Bedrohung von einem Plan. Verwirre den Schurken",
+		"traits": "Widerstand."
+	},
+	{
+		"code": "08004",
+		"name": "Todestanz",
+		"text": "<b>Held Aktion</b>: Führe der Reihe nach die folgenden 3 Angriffe durch:\n- Füge einem Gegner 1 Schaden zu.\n- Füge einem Gegner 2 Schaden zu.\n- Füge einem Gegner 3 Schaden zu.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "08005",
+		"flavor": "\"Hier sollten wir sicher sein.\" -- Black Widow",
+		"name": "Safe House #29",
+		"text": "<b>Alter-Ego Aktion</b>: Erschöpfe Safe House #29 und wähle eine [[Vorbereitung]]-Karte in deinem Ablagestapel → nimm die Karte auf deine Hand.",
+		"traits": "Ort. S.H.I.E.L.D."
+	},
+	{
+		"code": "08006",
+		"name": "Angriffsakrobatik",
+		"text": "<b>Held Unterbrechung</b> <i>(Angriff)</i>: Sobald eine Boost-Karte auf ihre offene Seite gedreht wird, lege Angriffsakrobatik ab → hebe die Boost-Symbole auf der Karte auf. Füge dem Schurken für jedes auf diese Weise aufgehobene Boost-Symbol 1 Schaden zu.",
+		"traits": "Angriff. Fertigkeit. Vorbereitung."
+	},
+	{
+		"code": "08007",
+		"flavor": "\"Sie sind nicht nur tödlich, sondern sehen auch noch verdammt gut aus.\" -- Black Widow",
+		"name": "Black Widows Armreif",
+		"text": "<b>Ressource</b>: Erschöpfe Black Widows Armreif → erzeuge für eine [[Vorbereitung]]-Karte eine [wild]-Ressource.",
+		"traits": "Tech."
+	},
+	{
+		"code": "08008",
+		"flavor": "\"Bozhe moi!\" -- Black Widow",
+		"name": "Greifhaken",
+		"text": "<b>Held Unterbrechung</b>: Sobald du eine Verratskarte aufdeckst, lege Greifhaken ab → hebe die Effekte der Verratskarte auf und lege sie ab.",
+		"traits": "Tech. Vorbereitung."
+	},
+	{
+		"code": "08009",
+		"name": "Synth-Anzug",
+		"text": "Black Widow bekommt +1 VER.\n<b>Held Unterbrechung</b>: Nachdem du die Fähigkeit einer [[Vorbereitung]]-Karte unter deiner Kontrolle ausgelöst hast, erschöpfe Synth-Anzug → mache Black Widow spielbereit.",
+		"traits": "Rüstung. Tech."
+	},
+	{
+		"code": "08010",
+		"flavor": "\"Süße Träume.\" -- Black Widow",
+		"name": "Witwenbiss",
+		"text": "<b>Held Reaktion</b> <i>(Angriff)</i>: Nachdem ein Scherge ins Spiel gekommen ist, lege Witwenbiss ab → füge dem Schergen 2 Schaden zu und betäube ihn.",
+		"traits": "Tech. Vorbereitung."
+	},
+	{
+		"code": "08011",
+		"flavor": "\"Ich bin der Typ, der einen Plan hat.\"",
+		"name": "Agent Coulson",
+		"text": "<b>Reaktion</b>: Nachdem Agent Coulson ins Spiel gekommen ist, durchsuche dein Deck und deinen Ablagestapel nach einer [[Vorbereitung]]-Karte und nimm sie auf deine Hand. Mische dein Deck.",
+		"traits": "S.H.I.E.L.D. Spion."
+	},
+	{
+		"code": "08012",
+		"flavor": "\"Ich werde das Gebäude um dich herum dem Erdboden gleichmachen!\"",
+		"name": "Quake",
+		"subname": "Daisy Johnson",
+		"text": "<b>Reaktion</b>: Nachdem ein Scherge den Plan vorangetrieben hat, erschöpfe Quake → füge dem Schergen 2 Schaden zu.",
+		"traits": "Avenger. S.H.I.E.L.D."
+	},
+	{
+		"code": "08013",
+		"flavor": "\"Sie werden nie herausfinden, was sie getroffen hat.\" -- Black Widow",
+		"name": "Heimlicher Angriff",
+		"text": "<b>Held Aktion</b> <i>(Angriff)</i>: Füge einem Gegner 4 Schaden zu. Falls der Gegner durch diesen Angriff besiegt wird, entferne 2 Bedrohung von einem Plan.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "08017",
+		"name": "Gegenspionage",
+		"text": "Max. 1 pro Spieler.\n<b>Unterbrechung</b>: Sobald eine beliebige Menge an Bedrohung auf deinem Hauptplan platziert werden würde, lege Gegenspionage ab → verhindere 3 Bedrohung davon.",
+		"traits": "Fertigkeit. Vorbereitung."
+	},
+	{
+		"code": "08018",
+		"name": "Spionagehandwerk",
+		"text": "Spiele diese Karte nur, falls du einen [[Spion]]-Charakter kontrollierst.\n<b>Unterbrechung</b>: Sobald du eine Begegnungskarte aufdeckst, lege Spionagehandwerk ab → hebe die Effekte der Karte auf und lege sie ab. Decke dann eine weitere Karte vom Begegnungsdeck auf.",
+		"traits": "Fertigkeit. Vorbereitung."
+	},
+	{
+		"code": "08023",
+		"flavor": "\"Zu schade, dass wir davon nur einen bekommen haben.\" -- Hawkeye",
+		"name": "Quincarrier",
+		"text": "Spiele diese Karte nur, falls deine Identität das Merkmal [[Avenger]] hat.\n<b>Ressource</b>: Erschöpfe Quincarrier → erzeuge eine [wild]-Ressource.",
+		"traits": "Avenger. Fahrzeug."
+	},
+	{
+		"code": "08024",
+		"name": "Ziel erfasst",
+		"text": "Max. 1 pro Spieler.\n<b>Held Reaktion</b>: Nachdem eine Boost-Karte auf ihre offene Seite gedreht worden ist, lege Ziel erfasst ab → hebe die Boost-Fähigkeiten der Karte auf.",
+		"traits": "Fertigkeit. Vorbereitung."
+	},
+	{
+		"code": "08030",
+		"name": "Gegenangriff",
+		"text": "Max. 1 pro Spieler.\n<b>Held Reaktion</b> <i>(Angriff)</i>: Nachdem du Schaden durch einen Angriff eines Gegners genommen hast, lege Gegenangriff ab → füge dem Gegner die gleiche Menge an Schaden zu.",
+		"traits": "Taktik. Vorbereitung."
+	},
+	{
+		"code": "08031",
+		"name": "Schnelle Reaktion",
+		"text": "Max. 1 pro Spieler.\n<b>Held Reaktion</b>: Nachdem ein Verbündeter unter deiner Kontrolle besiegt worden ist, lege Schnelle Reaktion ab → bringe den Verbündeten aus deinem Ablagestapel ins Spiel und füge ihm 1 Schaden zu.",
+		"traits": "Taktik. Vorbereitung."
+	},
+	{
+		"code": "08032",
+		"name": "Verteidigungshaltung",
+		"text": "Max. 1 pro Spieler.\n<b>Held Unterbrechung</b>: Sobald du eine beliebige Menge an Schaden nehmen würdest, lege Verteidigungshaltung ab → verhindere 3 Schaden davon.",
+		"traits": "Taktik. Vorbereitung."
+	},
+	{
+		"code": "08033",
+		"name": "Spionage",
+		"text": "Spiele diese Karte nur, falls du einen Charakter mit dem Merkmal [[Spion]] kontrollierst.\n<b>Unterbrechung</b>: Sobald eine Begegnungskarte mit dem Schlüsselwort Nachrüsten abgehandelt wird, lege Spionage ab → ziehe 2 Karten.",
+		"traits": "Taktik. Vorbereitung."
+	}
+]

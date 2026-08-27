@@ -1,0 +1,53 @@
+[
+    {
+        "code": "35027",
+        "name": "Demoni del Passato",
+        "text": "<b><i>Fai ricevere al giocatore Logan</i></b>\nPuoi assumere la sembianza di alter ego. Scegli 1 effetto tra:\n- Esaurisci Logan → rimuovi dal gioco Demoni del Passato.\n- Sei stordito e confuso. Scarta questa carta."
+    },
+    {
+        "code": "35028",
+        "flavor": "\"Il mio fattore di morte prosciugherà la vita dal tuo corpo!\"",
+        "name": "Omega Red",
+        "text": "[star]<b>Interruzione Obbligata</b>: Quando Omega Red ti attacca, infliggi 1 danno a ogni personaggio che controlli.\nRitorsione 1. Tempra.",
+        "traits": "Bruto. Elite."
+    },
+    {
+        "code": "35029",
+        "flavor": "Omega Red ha bisogno del Sintetizzatore di Carbonadio per impedire al suo fattore di morte di ucciderlo.",
+        "name": "Sintetizzatore di Carbonadio",
+        "text": "Mentre Sintetizzatore di Carbonadio è in gioco, Omega Red non può essere sconfitto."
+    },
+    {
+        "code": "35030",
+        "name": "Fattore di Morte",
+        "text": "Assegna alla tua identità.\n<b>Risposta Obbligata:</b> Dopo che il tuo turno è terminato, subisci 1 danno.\n<b>Interruzione Alter Ego:</b> Quando effettui un recupero base, scarta questa carta invece di curarti."
+    },
+    {
+        "code": "35031",
+        "name": "Colpo di Tentacolo",
+        "text": "<b>Quando Rivelata</b>: Sei stordito. Subisci 1 danno (4 se invece eri già stordito).\n<hr />[star] <b>Boost</b>: Sei stordito. Subisci 1 danno (4 se invece eri già stordito)."
+    },
+    {
+        "code": "35034",
+        "flavor": "\"Questa volta ti strapperò il cuore dal petto!\"",
+        "name": "Lady Deathstrike",
+        "text": "[star]<b>Risposta Obbligata</b>: Dopo che Lady Deathstrike ha attaccato e danneggiato un personaggio, il proprietario di quel personaggio scarta 1 carta causale dalla sua mano.\nColpo Rapido. ",
+        "traits": "Elite. Reaver."
+    },
+    {
+        "code": "35035",
+        "name": "In Cerca di Vendetta",
+        "text": "<b>Quando Rivelata</b>: Se Lady Deathstrike è in gioco, si attiva contro di te. Altrimenti, cerca nel mazzo degli incontri e nella pila degli scarti degli incontri Lady Deathstrike e mettila in gioco impegnata con te."
+    },
+    {
+        "code": "35036",
+        "name": "Potenziamenti di Adamantio",
+        "text": "[star]Gli attacchi del nemico con questa aggiunta ottengono Perforante.\nAssegna a un nemico senza altri Potenziamenti di Adamantio assegnati a esso. Se non puoi farlo, questa carta ottiene Impulso. \r\n<b>Azione Eroe</b>: Spendi [energy][mental][physical] → scarta questa carta.",
+        "traits": "Tecnologia."
+    },
+    {
+        "code": "35037",
+        "name": "Squartatutto",
+        "text": "<b>Quando Rivelata</b>: Scarta 1 carta casuale dalla tua mano e subisci un ammontare di danni pari al numero di risorse stampate su di essa.\n<hr />[star] <b>Boost</b>: Scarta 1 carta casuale dalla tua mano e subisci un ammontare di danni pari al numero di risorse stampate su di essa."
+    }
+]

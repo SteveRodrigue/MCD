@@ -1,0 +1,156 @@
+[
+	{
+		"code": "03001a",
+		"flavor": "\"Meine Pflicht gegenüber meinem Land steht an erster Stelle, koste es was es wolle!\"",
+		"name": "Captain America",
+		"text": "\"Kann den ganzen Tag so weitergehen!\" — <b>Aktion</b>: Lege 1 Karte von deiner Hand ab → mache Captain America spielbereit. (Nur ein Mal pro Runde.)",
+		"traits": "Avenger. Soldat."
+	},
+	{
+		"code": "03001b",
+		"name": "Steve Rogers",
+		"text": "Lebende Legende — Senke die Kosten des ersten Verbündeten, der jede Runde gespielt wird, um 1.\n<b>Spielaufbau</b>: Durchsuche dein Deck und deinen Ablagestapel nach dem Upgrade Captain Americas Schild und nimm es auf deine Hand. Mische dein Deck.",
+		"traits": "S.H.I.E.L.D. Soldat."
+	},
+	{
+		"code": "03002",
+		"flavor": "\"Cap, du hast gesagt, wir würden als Team kämpfen! Ich will mitkommen!\"",
+		"name": "Agent 13",
+		"subname": "Sharon Carter",
+		"text": "<b>Reaktion</b>: Nachdem Agent 13 ins Spiel gekommen ist, entferne 2 Bedrohung von einem Plan.",
+		"traits": "S.H.I.E.L.D."
+	},
+	{
+		"code": "03003",
+		"flavor": "\"Niemand stirbt unter meinem Schutz.\" -- Captain America",
+		"name": "Furchtlose Entschlossenheit",
+		"text": "<b>Held Aktion</b>: Captain America bekommt bis zum Ende der Phase +1 WID. Ziehe 1 Karte.",
+		"traits": "Superkraft."
+	},
+	{
+		"code": "03004",
+		"flavor": "\"Nein , ihr geht beiseite.\" -- Captain America",
+		"name": "Heldenhafter Angriff",
+		"text": "<b>Held Aktion</b> <i>(Angriff)</i>: Füge einem Gegner 6 Schaden zu. Falls du für diese Karte mit einer [physical]-Ressource bezahlt hast, betäube den Gegner.",
+		"traits": "Angriff."
+	},
+	{
+		"code": "03005",
+		"flavor": "\"Ist das alles, was du drauf hast?\" -- Captain America",
+		"name": "Schildblock",
+		"text": "<b>Unterbrechung</b> <i>(Verteidigung)</i>: Sobald du eine beliebige Menge an Schaden nehmen würdest, erschöpfe Captain Americas Schild → verhindere allen Schaden davon.",
+		"traits": "Verteidigung."
+	},
+	{
+		"code": "03006",
+		"flavor": "\"Sharon! Kopf runter!\" -- Captain America",
+		"name": "Schildwurf",
+		"text": "<b>Held Aktion</b> <i>(attack)</i>: Lege X Karten von deiner Hand ab, dann schicke Captain Americas Schild aus dem Spiel zurück auf deine Hand → Füge X Gegnern je 4 Schaden zu.",
+		"traits": "Angriff. Superkraft."
+	},
+	{
+		"code": "03007",
+		"flavor": "Sogar Captain America braucht einen Ort, an dem er sich erholen und ausruhen kann.",
+		"name": "Steves Apartment",
+		"text": "<b>Alter-Ego Aktion</b>: Erschöpfe Steves Apartment → ziehe 1 Karte und heile 1 Schaden von Steve Rogers.",
+		"traits": "Ort."
+	},
+	{
+		"code": "03008",
+		"flavor": "\"Ein Soldat selbst ein Supersoldat, ist nur so stark wie seine Ideale.\" -- Steve Rogers",
+		"name": "Captain Americas Helm",
+		"text": "<b>Unterbrechung</b>: Sobald Captain America besiegt werden würde, stelle seinen Lebenspunktezähler stattdessen auf 1 ein. Dann lege diese Karte ab.",
+		"traits": "Rüstung."
+	},
+	{
+		"code": "03009",
+		"flavor": "\"Dieser Schild ist ein Symbol der Freiheit.\" -- Captain America",
+		"name": "Captain Americas Schild",
+		"text": "Eingeschränkt. <i>(Max. 2 eingeschränkte Karten pro Spieler.)</i>\nCaptain America bekommt +1 VER und erhält Vergeltung 1.",
+		"traits": "Gegenstand."
+	},
+	{
+		"code": "03010",
+		"flavor": "\"Das Serum hat Cap seine Superstärke verliehen. Aber sein Herz, seine unnachgiebige Entschlossenheit -- das gehörte schon zu Steve, lange bevor er den Schild in die Hand genommen hat.\" -- Sharon Carter",
+		"name": "Supersoldaten-Serum",
+		"text": "<b>Ressource</b>: Erschöpfe Supersoldaten-Serum → erzeuge eine [physical] Ressource.",
+		"traits": "Gegenstand."
+	},
+	{
+		"code": "03011",
+		"name": "Falcon",
+		"subname": "Sam Wilson",
+		"text": "<b>Reaktion</b>: Nachdem Falcon ins Spiel gekommen ist, sieh dir die obersten Karten des Begegnungsdecks an. Entferne für jeden Verrat, den du dir auf diese Weise angesehen hast, 1 Bedrohung von einem Plan.",
+		"traits": "Avenger. Fliegend."
+	},
+	{
+		"code": "03013",
+		"flavor": "Los, Eichhörnchen, den schnappen wir uns!",
+		"name": "Squirrel Girl",
+		"subname": "Doreen Green",
+		"text": "<b>Reaktion</b>: Nachdem Squirrel Girl ins Spiel gekommen ist, Füge jedem Gegner 1 Schaden zu.",
+		"traits": "Avenger."
+	},
+	{
+		"code": "03014",
+		"flavor": "Heute ist der Tag der Abrechnung!",
+		"name": "Wonder Man",
+		"subname": "Simon Williams",
+		"text": "[star] Als zusätzliche Kosten, damit Wonder Man angreifen kann, muss du 1 Karte von deiner Hand ablegen.",
+		"traits": "Avenger."
+	},
+	{
+		"code": "03015",
+		"name": "Avengers, Sammeln!",
+		"text": "Max. 1 pro Runde.\n<b>Held Aktion</b></i>: Mache jeden [[Avenger]] Charakter unter deiner Kontrolle spielbereit. Jeder [[Avenger]] Charakter im Spiel bekommt bis zum Ende der Phase +1 WID und +1 ANG."
+	},
+	{
+		"code": "03017",
+		"flavor": "\"Gut, dass ich Freunde mitgebracht habe.\" -- Captain America",
+		"name": "Gemeinsam sind wir stark",
+		"text": "<b>Aktion</b>: Erschöpfe beliebig viele Verbündete unter deiner Kontrolle → ziehe 1 Karte für jeden auf diese Weise erschöpften Verbündeten."
+	},
+	{
+		"code": "03019",
+		"name": "Quinjet",
+		"text": "<b>Reaktion:</b> Nachdem dein Zug begonnen hat, platziere 1 Zeitmarker auf Quinjet.\n <b>Aktion:</b> Bringe einen [[Avenger]]-Verbündeten, dessen aufgedruckte Kosten gleich oder weniger als die Anzahl an Zeitmarkern auf Quinjet sind, von deiner Hand ins Spiel. Lege dann Quinjet ab.",
+		"traits": "Avenger. Fahrzeug."
+	},
+	{
+		"code": "03024",
+		"name": "Avengers Tower",
+		"text": "Falls jeder deiner Verbündeten das Merkmal [[Avenger]] hat, erhöhe dein Verbündetenlimit um 1.\n<b>Action:</b> Erschöpfe Avengers Tower → senke die Kosten des nächsten [[Avenger]]-Verbündeten, der in dieser Phase gespielt wird, um 1.",
+		"traits": "Avenger. Ort."
+	},
+	{
+		"code": "03025",
+		"name": "Avenger Ehrenhalber",
+		"text": "Spiele diese Karte nur, falls deine Identität das Merkmal [[Avenger]] hat.\nHänge diese Karte an einen befreundeten Charakter an.\nMax. 1 pro Charakter.\n Der Charakter mit diesem Upgrade bekommt +1 Lebenspunkt und erhält das Merkmal [[Avenger]].",
+		"traits": "Titel."
+	},
+	{
+		"code": "03031",
+		"flavor": "\"Muss ich mir Sorgen um ihn machen?\" -- Spider-Man",
+		"name": "Wütend",
+		"text": "Hänge diese Karten an einen Verbündeten an. Max. 1 pro Verbündeten.\nDer Verbündete mit diesem Upgrade bekommt +2 ANG und nimmt +1 Folgeschaden, nachdem er angegriffen hat.",
+		"traits": "Zustand."
+	},
+	{
+		"code": "03032",
+		"name": "Auf der Spur",
+		"text": "Hänge diese Karte an einen Nebenplan an. Max. 1 pro Plan.\n<b>Unterbrechung</b>: Sobald der Plan, mit diesem Upgrade besiegt wird, füge einem Gegner 4 Schaden zu."
+	},
+	{
+		"code": "03033",
+		"flavor": "\"Geht diesen Typen denn nie die Munition aus?\" -- Captain America",
+		"name": "Gekonnte Verteidigung",
+		"text": "<b>Held Unterbrechung</b> <i>(Verteidigung)</i>: Sobald dein Held gegen einen Angriff verteidigt, bekommt er für den Angriff +3 VER.",
+		"traits": "Verteidigung."
+	},
+	{
+		"code": "03034",
+		"name": "Gesteigerte Wahrnehmung",
+		"text": "Anwendungen (3 Geistige Wahrnehmung).\n<b>Held Ressource</b>: Erschöpfe Gesteigerte Wahrnehmung und entferne 1 Geistmarker von dieser Karte → erzeuge eine [mental] Ressource.",
+		"traits": "Zustand."
+	}
+]

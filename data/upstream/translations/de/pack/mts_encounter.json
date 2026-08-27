@@ -1,0 +1,632 @@
+[
+	{
+		"code": "21026",
+		"name": "Kontrollverlust",
+		"text": "<b>Gib dies dem Spieler von Monica Rambeau.</b>\nDu kannst die Energiegestalt nicht wechseln.\n<b>Alter-Ego Aktion</b>: Erschöpfe Monica Rambeau → entferne Kontrollverlust aus dem Spiel."
+	},
+	{
+		"code": "21027",
+		"name": "Radioactive Man",
+		"text": "[star] <b>Erzwungene Reaktion</b>: Nachdem Radioactive Man gegen dich aktiviert worden ist, füge jedem Charakter unter deiner Kontrolle 1 Schaden zu.\n<hr />\n[star] <b>Boost</b>: Füge jedem Charakter unter deiner Kontrolle 1 Schaden zu.",
+		"traits": "Elite. Genie."
+	},
+	{
+		"code": "21028",
+		"flavor": "<b>Radioactive Man nutzt seine Kraft, um einen Atomreaktor zu überlasten!</b>",
+		"name": "Kernschmelze",
+		"text": "<b>Sobald besiegt</b>: Füge jedem befreundeten Charakter im Spiel 1 Schaden zu."
+	},
+	{
+		"code": "21029",
+		"name": "Kräfte aufzehren",
+		"text": "Hänge diese Karte an deine Identität an.\n<b>Erzwungene Reaktion:</b>Nachdem dein Zug beendet ist, nimm 1 Schaden.\n<b>Alter-Ego Aktion</b>: Gib [energy][energy] Ressourcen aus → lege diese Karte ab."
+	},
+	{
+		"code": "21030",
+		"flavor": "\"Du kannst diesen Kampf nicht gewinnen.\" -- Radioactive Man",
+		"name": "Radioactive Explosion",
+		"text": "<b>Sobald aufgedeckt (Alter-Ego)</b>: Platziere 2 Bedrohung auf dem Hauptplan.\n<b>Sobald aufgedeckt (Held)</b>: Nimm 2 Schaden."
+	},
+	{
+		"code": "21066",
+		"name": "Regenerationszyklus",
+		"text": "<b>Gib diese Karte dem Spieler von Adam Warlock.</b>\nDu darfst deine Identität auf deine Alter-Ego-Seite umdrehen. Wähle eines:\n-Erschöpfe dein Alter Ego → entferne diese Verpflichtung aus dem Spiel.\n-Lege die obersten 5 Karten deines Decks ab. Platziere für jeden auf diese Weise abgelegten unterschiedlichen Aspekt 1 Bedrohung auf dem Hauptplan. Lege diese Verpflichtung ab."
+	},
+	{
+		"code": "21067",
+		"name": "Magus",
+		"text": "Erstschlag. Zähigkeit.\n[star] <b>Erzwungene Reaktion</b>: Nachdem Magus gegen dich aktiviert worden ist, lege die obersten 5 Karten deines Decks ab.",
+		"traits": "Elite. Mystiker."
+	},
+	{
+		"code": "21068",
+		"name": "Kirche der universellen Wahrheit",
+		"text": "<b>Erzwungene Reaktion</b>: Nachdem ein Spieler sein Deck zurückgesetzt hat, erschöpfe die Identität des Spielers und betäube sie.\n<hr />\n[star] <b>Boost</b>: Decke diese Karte auf."
+	},
+	{
+		"code": "21069",
+		"name": "Zealot der Wahrheit",
+		"text": "Vom Nebenplan Kirche der universellen Wahrheit kann keine Bedrohung entfernt werden.\n<hr />\n[star] <b>Boost</b>: Bringe Zelot der Wahrheit mit dir im Kampf ins Spiel.",
+		"traits": "Mystiker"
+	},
+	{
+		"code": "21070",
+		"name": "Kosmische Inquisition",
+		"text": "Anstacheln 2.\n<b>Sobald aufgedeckt</b>: Falls der Nebenplan Kirche der universellen Wahrheit im Spiel ist, lege die obersten 10 Karten deines Decks ab. Durchsuche ansonsten das Begegnungsdeck, den Ablagestapel und die beiseitegelegten Karten nach der Kirche der universellen Wahrheit und decke sie auf. Mische das Begegnungsdeck."
+	},
+	{
+		"code": "21071",
+		"flavor": "<b><i>\"Your powers are quaint. Let me show you real magic.\"</i></b>",
+		"name": "Ebony Maw",
+		"text": "[star]<b>Forced Interrupt:</b> When Ebony Maw activates against you, remove an invocation counter from each [[Spell]] card in your play area.",
+		"traits": "Black Order. Mystic."
+	},
+	{
+		"code": "21072",
+		"name": "Ebony Maw",
+		"text": "[star]<b>Forced Interrupt:</b> When Ebony Maw activates against you, remove an invocation counter from each [[Spell]] card in your play area.\n<b>When Revealed:</b> Each player discards cards from the top of the encounter deck until they discard a [[Spell]] card and puts that card into play in their play area.",
+		"traits": "Black Order. Mystic."
+	},
+	{
+		"code": "21073",
+		"name": "Ebony Maw",
+		"text": "[star]<b>Forced Interrupt:</b> When Ebony Maw activates against you, remove an invocation counter from each [[Spell]] card in your play area.\n<b>When Revealed:</b> Each player discards cards from the top of the encounter deck until they discard a [[Spell]] card and puts that card into play in their play area.",
+		"traits": "Black Order. Mystic."
+	},
+	{
+		"code": "21074a",
+		"name": "Attack on Knowhere",
+		"text": "<b>Contents:</b> Ebony Maw (I) and Ebony Maw (II). <i>(Ebony Maw (II) and Ebony Maw (III) instead for expert mode.)</i> Ebony Maw and Standard encounter sets. Two modular encounter set <i>(Armies of Titan and Black Order).</i>"
+	},
+	{
+		"code": "21074b",
+		"name": "Attack on Knowhere",
+		"text": "<b>When Revealed:</b> Each player discards cards from the top of the encounter deck until they discard a [[Spell]] card and puts that card into play in their play area. Shuffle the encounter discard pile into the encounter deck."
+	},
+	{
+		"code": "21075a",
+		"name": "The Power Stone",
+		"text": "<b>When Revealed:</b> Shuffle the encounter discard pile into the encounter deck. Each player discards cards from the top of the encounter deck until they discard a [[Spell]] card and puts that card into play in their play area."
+	},
+	{
+		"code": "21075b",
+		"flavor": "<b>Ebony Maw uses his powerful magic to occupy you while his agents search for the Power Stone.</b>",
+		"name": "The Power Stone",
+		"text": "<b>If this stage is completed, the players lose the game.</b>"
+	},
+	{
+		"code": "21076",
+		"name": "Fireball",
+		"text": "Surge.\nEnters play with 4 invocation counters on it.\n<b>Forced Response:</b> After the last invocation counter is removed from Fireball, discard it → deal 4 damage to your identity.",
+		"traits": "Spell."
+	},
+	{
+		"code": "21077",
+		"name": "Manipulation",
+		"text": "Surge.\nEnters play with 2 invocation counters on it.\n<b>Forced Response:</b> After the last invocation counter is removed from Manipulation, discard it → discard 1 card at random from your hand. You are confused.",
+		"traits": "Spell."
+	},
+	{
+		"code": "21078",
+		"name": "Pacification",
+		"text": "Surge.\nEnters play with 3 invocation counters on it.\n<b>Forced Response:</b> After the last invocation counter is removed from Pacification, discard it → exhaust each upgrade you control. You are stunned.",
+		"traits": "Spell."
+	},
+	{
+		"code": "21079",
+		"name": "Rubblestorm",
+		"text": "Surge.\nEnters play with 3 invocation counters on it.\n<b>Forced Response:</b> After the last invocation counter is removed from Rubblestorm, discard it → deal 2 damage to each character you control.",
+		"traits": "Spell."
+	},
+	{
+		"code": "21080",
+		"name": "Agent of Thanos",
+		"text": "<b>When Revealed (Alter-Ego):</b> Place 1 threat on the main scheme for each [[Spell]] environment in your play area. If you place no threat this way, this card gains surge.\n<b>When Revealed (Hero):</b> Deal 1 damage to your hero for each [[Spell]] environment in your play area. If you take no damage this way, this card gains surge."
+	},
+	{
+		"code": "21081",
+		"name": "Channeling Trance",
+		"text": "<b>When Revealed:</b> Remove 1 invocation counter from each [[Spell]] environment in your play area. If you have no [[Spell]] environments in your play area, discard cards from the top of the encounter deck until a [[Spell]] environment is discarded. Put that card into play in your play area."
+	},
+	{
+		"code": "21082",
+		"name": "Abjuration",
+		"text": "Attach to Ebony Maw.\nPrevent all damage to Ebony Maw.\n<b>Forced Response:</b> After Abjuration prevents 2 or more damage from a single attack, discard it."
+	},
+	{
+		"code": "21083",
+		"flavor": "\"Shh. That's enough from you.\" - Ebony Maw",
+		"name": "Restrained",
+		"text": "Attach to a friendly character with the highest ATK and exhaust it.\nAttached character cannot ready.\n<b>Hero Action:</b> Spend [energy][physical] resources → discard this card."
+	},
+	{
+		"code": "21084",
+		"flavor": "<b><i>The Maw's troops have stormed Knowhere's engine room and set the station to overload.</i></b>",
+		"name": "Reactor Overload",
+		"text": "<b>When Revealed:</b> Each player must choose to either take 2 damage or place 2 threat here."
+	},
+	{
+		"code": "21085",
+		"name": "Black Dwarf",
+		"traits": "Black Order. Elite."
+	},
+	{
+		"code": "21086",
+		"name": "Supergiant",
+		"traits": "Black Order. Elite."
+	},
+	{
+		"code": "21087",
+		"name": "The Black Order"
+	},
+	{
+		"code": "21088",
+		"name": "Blood to Spare"
+	},
+	{
+		"code": "21089",
+		"name": "Black Order Infantry",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21090",
+		"name": "Outrider",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21091",
+		"name": "Landing Craft"
+	},
+	{
+		"code": "21092",
+		"name": "Proxima Midnight",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21093",
+		"name": "Proxima Midnight",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21094",
+		"name": "Proxima Midnight",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21095",
+		"name": "Corvus Glaive",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21096",
+		"name": "Corvus Glaive",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21097",
+		"name": "Corvus Glaive",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21098a",
+		"name": "Under Siege"
+	},
+	{
+		"code": "21098b",
+		"name": "Under Siege"
+	},
+	{
+		"code": "21099a",
+		"name": "The Armies of Thanos"
+	},
+	{
+		"code": "21099b",
+		"name": "The Armies of Thanos"
+	},
+	{
+		"back_text": "",
+		"code": "21100",
+		"name": "Avengers Tower",
+		"traits": "Damaged."
+	},
+	{
+		"code": "21101",
+		"name": "Focused Defense"
+	},
+	{
+		"code": "21102",
+		"name": "Black Order Besieger",
+		"traits": "Black Order."
+	},
+	{
+		"code": "21103",
+		"name": "Proxima's Spear",
+		"traits": "Weapon."
+	},
+	{
+		"code": "21104",
+		"name": "Corvus Glaive",
+		"traits": "Weapon."
+	},
+	{
+		"code": "21105",
+		"name": "Direct Assault",
+		"traits": "Tactic."
+	},
+	{
+		"code": "21106",
+		"name": "Proxima's Power"
+	},
+	{
+		"code": "21107",
+		"name": "Corvus's Cunning"
+	},
+	{
+		"code": "21108",
+		"name": "Bound by Blood"
+	},
+	{
+		"code": "21109",
+		"name": "Rain Fire"
+	},
+	{
+		"code": "21110",
+		"name": "City Under Attack",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21111",
+		"name": "Thanos",
+		"traits": "Black Order. Titan."
+	},
+	{
+		"code": "21112",
+		"name": "Thanos",
+		"traits": "Black Order. Titan."
+	},
+	{
+		"code": "21113",
+		"name": "Thanos",
+		"traits": "Black Order. Titan."
+	},
+	{
+		"code": "21114a",
+		"name": "The Infinity Stones"
+	},
+	{
+		"code": "21114b",
+		"name": "The Infinity Stones"
+	},
+	{
+		"code": "21115a",
+		"name": "Balance the Scales"
+	},
+	{
+		"code": "21115b",
+		"name": "Balance the Scales"
+	},
+	{
+		"code": "21116",
+		"name": "Sanctuary",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21117",
+		"name": "Thanos's Armor",
+		"traits": "Armor."
+	},
+	{
+		"code": "21118",
+		"name": "Thanos's Helmet",
+		"traits": "Armor."
+	},
+	{
+		"code": "21119",
+		"name": "Master of the Stones"
+	},
+	{
+		"code": "21120",
+		"name": "Avatar of Death"
+	},
+	{
+		"code": "21121",
+		"name": "Deviant Syndrome"
+	},
+	{
+		"code": "21122",
+		"name": "\"I Am Inevitable\""
+	},
+	{
+		"code": "21123",
+		"name": "The Mad Titan"
+	},
+	{
+		"code": "21124",
+		"name": "The Titan's Throne"
+	},
+	{
+		"code": "21125",
+		"name": "Corvus Glaive",
+		"traits": "Black Order. Elite."
+	},
+	{
+		"code": "21126",
+		"name": "Proxima Midnight",
+		"traits": "Black Order. Elite."
+	},
+	{
+		"code": "21127",
+		"name": "Ebony Maw",
+		"traits": "Black Order. Elite."
+	},
+	{
+		"code": "21128",
+		"name": "Tribute"
+	},
+	{
+		"code": "21129",
+		"name": "Infinity Gauntlet",
+		"traits": "Artifact. Weapon."
+	},
+	{
+		"code": "21130",
+		"name": "Mind Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21131",
+		"name": "Power Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21132",
+		"name": "Reality Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21133",
+		"name": "Soul Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21134",
+		"name": "Space Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21135",
+		"name": "Time Stone",
+		"traits": "Infinity Stone."
+	},
+	{
+		"code": "21136a",
+		"name": "Hela",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21136b",
+		"name": "Hela",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21137a",
+		"name": "Hela",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21137b",
+		"name": "Hela",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21138a",
+		"name": "Odin's Torment"
+	},
+	{
+		"code": "21138b",
+		"name": "Odin's Torment"
+	},
+	{
+		"code": "21139a",
+		"name": "Odin",
+		"traits": "Asgard. Captive."
+	},
+	{
+		"code": "21139b",
+		"name": "Odin",
+		"traits": "Asgard. King."
+	},
+	{
+		"code": "21140",
+		"name": "Gnipahellir",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21141",
+		"name": "Hall of Nastrond",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21142",
+		"name": "Gjallerbru",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21143",
+		"name": "Garm",
+		"traits": "Creature. Elite."
+	},
+	{
+		"code": "21144",
+		"name": "Skurge",
+		"traits": "Asgard. Elite."
+	},
+	{
+		"code": "21145",
+		"name": "Nidhogg",
+		"traits": "Creature. Elite."
+	},
+	{
+		"code": "21146",
+		"name": "Nightsword",
+		"traits": "Weapon."
+	},
+	{
+		"code": "21147",
+		"name": "Hela's Crown",
+		"traits": "Item."
+	},
+	{
+		"code": "21148",
+		"name": "Hela's Cloak",
+		"traits": "Armor."
+	},
+	{
+		"code": "21149",
+		"name": "Hela's Domain"
+	},
+	{
+		"code": "21150",
+		"name": "The Queen of Hel"
+	},
+	{
+		"code": "21151",
+		"name": "The Wastes of Niffleheim"
+	},
+	{
+		"code": "21152",
+		"name": "Draugr",
+		"traits": "Undead."
+	},
+	{
+		"code": "21153",
+		"name": "Fallen Warrior",
+		"traits": "Condition."
+	},
+	{
+		"code": "21154",
+		"name": "No Place for the Living"
+	},
+	{
+		"code": "21155",
+		"name": "Legions of Hel"
+	},
+	{
+		"code": "21156",
+		"name": "Laufey",
+		"traits": "Elite. Giant."
+	},
+	{
+		"code": "21157",
+		"name": "Frost Giant",
+		"traits": "Giant."
+	},
+	{
+		"code": "21158",
+		"name": "Frozen",
+		"traits": "Condition."
+	},
+	{
+		"code": "21159",
+		"name": "Unnatural Storm"
+	},
+	{
+		"code": "21160",
+		"name": "Loki",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21161",
+		"name": "Loki",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21162",
+		"name": "Loki",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21163",
+		"name": "Loki",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21164",
+		"name": "Loki",
+		"traits": "Asgard. Mystic."
+	},
+	{
+		"code": "21165a",
+		"name": "All Hail King Loki"
+	},
+	{
+		"code": "21165b",
+		"name": "All Hail King Loki"
+	},
+	{
+		"code": "21166",
+		"name": "Casket of Ancient Winters",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21167",
+		"name": "War in Asgard",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21168",
+		"name": "Madness on Midgard",
+		"text": "Hinder 1[per_hero]"
+	},
+	{
+		"code": "21169",
+		"name": "Open the Bifrost"
+	},
+	{
+		"code": "21170",
+		"name": "Loki's Staff",
+		"traits": "Weapon."
+	},
+	{
+		"code": "21171",
+		"name": "Loki's Crown",
+		"traits": "Item."
+	},
+	{
+		"code": "21172",
+		"name": "Loki's Cape",
+		"traits": "Armor."
+	},
+	{
+		"code": "21173",
+		"name": "Master of Illusions",
+		"traits": "Condition."
+	},
+	{
+		"code": "21174",
+		"name": "Devious Sorcery"
+	},
+	{
+		"code": "21175",
+		"name": "Inifinite Mischief"
+	},
+	{
+		"code": "21176",
+		"name": "The Trickster"
+	},
+	{
+		"code": "21177",
+		"name": "Enchantress",
+		"traits": "Asgard. Elite."
+	},
+	{
+		"code": "21178",
+		"name": "Beguiled",
+		"traits": "Condition."
+	},
+	{
+		"code": "21179",
+		"name": "Seduced",
+		"traits": "Condition."
+	}
+]

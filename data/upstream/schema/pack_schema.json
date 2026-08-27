@@ -1,0 +1,66 @@
+{
+	"additionalProperties": false,
+	"properties": {
+		"cgdb_id": {
+			"oneOf": [
+				{
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"code": {
+			"maxLength": 10,
+			"minLength": 2,
+			"type": "string"
+		},
+		"date_release": {
+			"oneOf": [
+				{
+					"type": "string"
+				},
+				{
+					"type": "null"
+				}
+			]
+		},
+		"name": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"octgn_id": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"pack_type_code": {
+			"minLength": 1,
+			"type": "string"
+		},
+		"position": {
+			"minimum": 1,
+			"type": "integer"
+		},
+		"size": {
+			"oneOf": [
+				{
+					"minimum": 1,
+					"type": "integer"
+				},
+				{
+					"type": "null"
+				}
+			]
+		}
+	},
+	"required": [
+		"code",
+		"name",
+		"pack_type_code",
+		"position",
+		"date_release",
+		"size"
+	],
+	"type": "object"
+}

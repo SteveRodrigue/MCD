@@ -1,0 +1,52 @@
+[
+    {
+        "code": "36030",
+        "name": "Claustrofobia",
+        "text": "<b><i>Fai ricevere al giocatore Ororo Munroe.</i></b>\nAssumi la sembianza di alter ego. \nNon puoi cambiare sembianza.\n<b>Azione Alter Ego:</b> Esaurisci Ororo Munroe → rimuovi dal gioco Claustrofobia."
+    },
+    {
+        "code": "36031",
+        "flavor": "\"Rovinerò quel tuo bel faccino!\"",
+        "name": "Callisto",
+        "text": "Colpo Rapido.\n<b>Interruzione Obbligata</b>: Quando viene rivelata un'insidia Lotta con i Coltelli, irrobustici Callisto.",
+        "traits": "Elite. Morlock."
+    },
+    {
+        "code": "36032",
+        "flavor": "Callisto protegge i Morlock, ma non permette a nessuno di mettere in dubbio la sua autorità.",
+        "name": "Capo dei Morlock",
+        "text": "<b>Quando Sconfitta</b>: Il giocatore che ha sconfitto questa trama cerca nel mazzo degli incontri, nella pila degli scarti degli incontri e nelle carte messe da parte 1 insidia Lotta con i Coltelli e la rivela."
+    },
+    {
+        "code": "36033",
+        "name": "Coltello a Serramanico",
+        "text": "[star]Gli attacchi del gregario con questa aggiunta ottengono Perforante.\nAssegna al gregario con più ATT stampato. Se non puoi farlo, questa carta ottiene Impulso.\n[star] Gli attacchi del gregario con questa aggiunta ottengono Perforante."
+    },
+    {
+        "code": "36034",
+        "name": "Lotta con i Coltelli",
+        "text": "<b>Quando Rivelata (Alter Ego)</b>: Questa carta ottiene Impulso.\n<b>Quando Rivelata (Eroe)</b>: Scegli 1 nemico con più ATT → subisci un ammontare di danni pari al suo ATT. Infliggi un ammontare di danni a quel nemico pari al tuo ATT."
+    },
+    {
+        "code": "36036",
+        "name": "Re delle Ombre",
+        "text": "Mentre ci sono gregari [[CONTROLLATO]] in gioco, Re delle Ombre non può subire danni.\n<b>Quando Rivelata</b>: Cerca nel mazzo degli incontri e nella pila degli scarti degli incontri 1 aggiunta Posseduto e rivelala. <i>(Mescola.)</i>",
+        "traits": "Elite. Psionico."
+    },
+    {
+        "code": "36037",
+        "name": "Monarca del Piano Astrale",
+        "text": "<b>Quando Sconfitta</b>: Scarta dal gioco 1 copia di Posseduto.\n[star]<b>Potenziamento</b>: Se sei impegnato con un gregario <b>CONTROLLATO</b>, rivela questa carta.\n<hr />[star] <b>Boost</b>: Se sei impegnato con un gregario [[Controllato]], rivela questa carta. "
+    },
+    {
+        "code": "36038",
+        "name": "Posseduto",
+        "text": "Considera l'alleato con questa aggiunta come se fosse un gregario [[CONTROLLATO]] con un riquadro di testo vuoto. La TRA del gregario con questa aggiunta è pari al suo INT stampato e non subisce danni conseguenti.\n<b>Quando Rivelata</b>: Assegna all'alleato con meno INT e senza altri Posseduto assegnati a esso. Se non puoi farlo, questa carta ottiene Impulso.",
+        "traits": "Condizione."
+    },
+    {
+        "code": "36039",
+        "name": "Attacco Astrale",
+        "text": "<b>Quando Rivelata</b>: Ogni gregario [[CONTROLLATO]] si attiva contro di te. Se non ci sono gregari [[CONTROLLATO]] in gioco, questa carta ottiene Impulso.\n[star]<b>Potenziamento</b>: Mescola nel mazzo degli incontri ogni carta del set Re delle Ombre dalla pila degli scarti degli Incontri.\n<hr />[star] <b>Boost</b>: Mescola nel mazzo degli incontri ogni carta del set Re delle Ombre dalla pila degli scarti degli Incontri."
+    }
+]

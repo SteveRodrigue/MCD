@@ -1,0 +1,170 @@
+[
+    {
+        "code": "31001a",
+        "flavor": "\"Il nostro nome è SP//dr e proteggiamo la città\"",
+        "name": "Tuta SP//dr",
+        "text": "<i>Coefficiente di Sincronizzazione</i> — <b>Risorsa:</b> Esaurisci 1 miglioria [[Interfaccia]] che controlli → genera le risorse di quella miglioria.",
+        "traits": "Attivo. Web-Warrior."
+    },
+    {
+        "code": "31001b",
+        "name": "SP//dr Suit",
+        "text": "Permanente. Il riquadro di testo di questa carta non può essere considerato come se fosse vuoto.\n<i>Ritorno alla Base</i> — <b>Interruzione Obbligata:</b> Quando giri questa carta su questo lato, gira SP//dr sul lato Peni Parker. Disassegna Peni Parker da questa carta, spostando tutti i gettoni da essa e dalle carte ad essa assegnate a questa carta.",
+        "traits": "Inattivo. Tecnologia."
+    },
+    {
+        "code": "31002a",
+        "name": "Peni Parker",
+        "text": "<i>Compatibilità Psicogenetica</i> — <b>Preparazione:</b> Metti in gioco tuta SP//dr con il lato [[Inattivo] a faccia in su.\n<i>Manutenzione</i> — <b>Azione Alter Ego:</b> Esaurisci Tuta SP//dr → pesca 2 carte.",
+        "traits": "Civile."
+    },
+    {
+        "code": "31002b",
+        "name": "SP//dr",
+        "text": "Permanente. Il riquadro di testo di questa carta non può essere considerato come se fosse vuoto.\n<i>In Azione!</i> — <b>Interruzione Obbligata:</b> Quando giri queta carta su questo lato, gira Tuta SP//dr sul suo lato [[Attivo]]. Assegna questa carta a Tuta SP//dr, spostando tutti i gettoni da questa carta e dalle carte ad essa assegnate a Tuta SP//dr.",
+        "traits": "Interfaccia. Pilota."
+    },
+    {
+        "code": "31003",
+        "name": "VEN#m",
+        "subname": "Addy Brock",
+        "text": "[star] VEN#m riceve +1 INT e +1 ATT per ogni gettone sym su di lei.\n<b>Risposta Eroe:</b> Dopo che VEN#m è entrata in gioco, colloca 1 gettone sym su di lei per ogni risorsa generata con la capacità  <i>\"Coefficiente di Sincronizzazione\"</i> di Tuta Sp//dr che hai usato per pagare questa carta."
+    },
+    {
+        "code": "31004",
+        "name": "Tutti i Sistemi Pronti!",
+        "text": "<b>Azione Eroe:</b> Scegli 1 effetto tra:\n- Ripristina ogni miglioria [[Interfaccia]] che controlli.\n- Cerca nel tuo mazzo e nella tua pila degli scarti 1 miglioria [[Interfaccia]] e aggiungila alla tua mano. <i>(Mescola.)</i>"
+    },
+    {
+        "code": "31005",
+        "flavor": "\"Proteggeremo questa città, costi quel che costi.\" — SP//dr",
+        "name": "Schieramento Rapido",
+        "text": "<b>Azione Eroe</b> <i>(intervento)</i>: Rimuovi 3 minacce da una trama. Se hai pagato questa carta usando una risorsa generata con la capacità <i>\"Coefficiente di Sincronizzazione\"</i> di Tuta SP//dr, rimuovi 3 minacce da una trama.",
+        "traits": "Intervento."
+    },
+    {
+        "code": "31006",
+        "flavor": "\"Molti volevano che SP//dr fosse migliore, che fosse il meglio in circolazione., Ecco perché ha sviluppato queste ragnatele intrappolanti!\"",
+        "name": "Ragnatela Intrappolante",
+        "text": "<b>Azione Eroe</b> <i>(attacco)</i>: Infliggi 5 danni a un nemico. Se hai pagato questa carta usando una risorsa generata con la capacità <i>\"Coefficiente di Sincronizzazione\"</i> di Tuta SP//dr, stordisci quel nemico.",
+        "traits": "Attacco."
+    },
+    {
+        "code": "31007",
+        "name": "Zia May e Zio Ben",
+        "text": "<b>Azione:</b> Esaurisci Zia May e Zio Ben e scarta 2 carte dalla cima del tuo mazzo (scarta invece 3 carte se sei nella sembianza di alter ego) → aggiungi alla tua mano ogni carta del set SP//dr scartata in questo modo.",
+        "traits": "Persona."
+    },
+    {
+        "code": "31008",
+        "flavor": "\"Attenzione! Pericolo Imminente!\"",
+        "name": "Protocollo di Espulsione",
+        "text": "<b>Azione Eroe:</b> Scarta Protocollo di Espulsione → esaurisci ogni miglioria [[Interfaccia]] che controlli, regola il tuo indicatore dei punti ferita a 6, irrobustici la tua identità e assumi la sembianza di alter ego.",
+        "traits": "Tattica."
+    },
+    {
+        "code": "31009",
+        "flavor": "\"Peni,ascolta i nostri ordini con molta attenzione\"",
+        "name": "Centro di Comando SP//dr ",
+        "text": "<b>Azione Eroe:</b> Esaurisci Centro di Comando SP//dr e 1 miglioria [[Interfaccia]]  → pesca 1 carta.\n<b>Azione Eroe:</b> Esaurisci Centro di Comando SP//dr, scegli e scarta 1 carta dalla tua mano → ripristina 1 miglioria [[Interfaccia]].",
+        "traits": "Luogo."
+    },
+    {
+        "code": "31010",
+        "flavor": "\"Se lui si fida di te...anche io mi fido..\" — Peni Parker",
+        "name": "Ragno Ospite",
+        "text": "<b>Azione Eroe:</b> Esaurisci Ragno Ospite → ripristina Tuta SP//dr.",
+        "traits": "Interfaccia. Ragno."
+    },
+    {
+        "code": "31011",
+        "flavor": "\"Possiamo ascoltare della musica? Ci aiuta a concentrarci.\" — Peni Parker",
+        "name": "Legame Psichico",
+        "text": "<b>Interruzione Eroe:</b> Quando Tuta SP//dr effettua un intervento base, esaurisci Legame Psichico → Tuta SP//dr riceve +2 INT per quell'intervento.",
+        "traits": "Interfaccia. Tecnologia."
+    },
+    {
+        "code": "31012",
+        "flavor": "\"Avevo capito fosse solo una tuta...ma questo è speed-metal!\" — Spider-Ham",
+        "name": "Lega di Speed-Metal",
+        "text": "<b>Interruzione Eroe:</b> Quando Tuta SP//dr Suit difende da un attacco, esaurisci Lega di Speed-Metal → Tuta SP//dr riceve +2 DIF per quella difesa.",
+        "traits": "Interfaccia. Tecnologia."
+    },
+    {
+        "code": "31013",
+        "flavor": "\"Il progresso richiede pazienza. Ecco perché dobbiamo continuare a lavorarci.\" — Zia May",
+        "name": "Compressore di Fluido di Ragnatela",
+        "text": "<b>Interruzione Eroe:</b> Quando Tuta SP//dr effettua un attacco base, esaurisci Compressore di Fluido di Ragnatela → Tuta SP//dr riceve +2 ATT per quell'attacco.",
+        "traits": "Interfaccia. Tecnologia."
+    },
+    {
+        "code": "31014",
+        "flavor": "\"Il silenzio si infrange e la città allunga la sua mano. Un'altra stazione in cerca di un segnale, in cui noi non siamo che un suono. Non essere solo rumore, Peni\"",
+        "name": "Daredevil",
+        "text": "<b>Risposta:</b> Dopo che Daredevil ha difeso da un attacco, sposta 1 danno da esso al nemico attaccante."
+    },
+    {
+        "code": "31015",
+        "name": "Spider-Man Noir",
+        "text": "X è pari al numero di carte a faccia in giù assegnate a Spider-Man Noir.\n<b>Risposta:</b> Dopo che hai risolto un'insidia, se controlli altre carte [[Web-Warrior]], assegna quell'insidia a faccia in giù a quetsa carta (fino a un massimo di 3).",
+        "traits": "Web-Warrior."
+    },
+    {
+        "code": "31016",
+        "name": "Riconversione",
+        "text": "<b>Azione Eroe:</b> Scarta 1 miglioria [[Tecnologia]] che controlli → ripristina il tuo eroe e scegli INT, ATT o DIF. Fino alla fine del round, il tuo eroe riceve +X al potere scelto, dove X è pari al costo stampato della miglioria scartata in questo modo.",
+        "traits": "Abilità."
+    },
+    {
+        "code": "31017",
+        "flavor": "\"Adesso avrai tutto il pomeriggio per poter riflettere sulle scelte che hai fatto nella vita. Non ringraziarmi.\" — Spider-Man",
+        "name": "Thwip! Thwip!",
+        "text": "<b>Azione Eroe:</b> Infliggi 1 danno a 1 personaggio [[Web-Warrior]] che controlli → stordisci un totale di 2 volte fino a 2 nemici.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "31019",
+        "name": "Generatore di Campo di Forza",
+        "text": "Utilizzo (6 gettoni energia) Massimo 1 per giocatore.\n<b>Interruzione Obbligata:</b> Quando stai per subire un qualsiasi ammontare di danni, rimuovi un pari ammontare di gettoni energia da questa carta. Per ogni gettone energia rimosso in questo modo, previene 1 di quei danni.",
+        "traits": "Tecnologia."
+    },
+    {
+        "code": "31020",
+        "name": "Prurito di Ragno",
+        "text": "<b>Interruzione:</b> Quando stai per rivelare una carta incontro, infliggi 1 danno a 1 personaggio [[Web-Warrior]] che controlli → se quella carta è un'insidia, annulla i suoi effetti <b>\"Quando Rivelata\"</b> e scarta Prurito di Ragno.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "31021",
+        "name": "Spider-Ham",
+        "subname": "Peter Porker",
+        "text": "Gioca solo se controlli carte [[Web-Warrior]].\n[star]<b>Risposta Obbligata:</b> Dopo che Spider-Ham ha attaccato o è intervenuto, scarta 1 carta dalla cima del mazzo degli incontri. Per ogni icona potenziamento ([boost]) scartata in questo modo, infliggi 1 danno a Spider-Ham.",
+        "traits": "Cartone Animato. Web-Warrior."
+    },
+    {
+        "code": "31022",
+        "name": "Spider-Man",
+        "subname": "Otto Octavius",
+        "text": "Gioca solo se controlli carte [[Web-Warrior]].\n<b>Risposta:</b> Dopo che hai giocato Spider-Man dalla tua mano, ripristina 1 miglioria che controlli. Se quella miglioria possiede il tratto [[Tecnologia]], pesca 1 carta.",
+        "traits": "Web-Warrior."
+    },
+    {
+        "code": "31023",
+        "flavor": "\"Pensavi che avessimo quasi finito?! Ci stavamo solo scaldando.\" — Thor",
+        "name": "Possanza Senza Limiti",
+        "text": "Gioca solo se la tua identità possiede 14 o più punti ferita stampati.\n<b>Azione Eroe:</b> Ripristina il tuo eroe.",
+        "traits": "Superpotere."
+    },
+    {
+        "code": "31024",
+        "name": "Inamovibile",
+        "text": "Gioca solo se la tua identità possiede 14 o più punti ferita stampati.\nLa tua identità ottiene Tempra.",
+        "traits": "Condizione. Superpotere."
+    },
+    {
+        "code": "31029",
+        "name": "Chiarezza di Intenti",
+        "text": "Assegna a un personaggio amico. Massimo 1 per personaggio.\n<b>Risorsa Eroe:</b> Esaurisci questa carta e infliggi 1 danno al personaggio con questa miglioria → genera [wild].",
+        "traits": "Condizione."
+    }
+]

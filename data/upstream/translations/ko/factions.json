@@ -1,0 +1,34 @@
+[
+	{
+		"code": "aggression",
+		"name": "용맹"
+	},
+	{
+		"code": "basic",
+		"name": "기본"
+	},
+	{
+		"code": "campaign",
+		"name": "캠페인"
+	},
+	{
+		"code": "encounter",
+		"name": "조우"
+	},
+	{
+		"code": "hero",
+		"name": "히어로"
+	},
+	{
+		"code": "justice",
+		"name": "정의"
+	},
+	{
+		"code": "leadership",
+		"name": "통솔"
+	},
+	{
+		"code": "protection",
+		"name": "Protection"
+	}
+]

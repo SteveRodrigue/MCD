@@ -172,9 +172,13 @@ function generateMatchMarkdown(matchId: string, result: any): string {
       formattedLogs.push(`\n#### 🦏 Villain Phase`);
     }
 
-    const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
-    const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
-    formattedLogs.push(`${i + 1}. \`${entry.key}\`${omo}${paramsStr}`);
+    if (entry.key === 'card.state.exhausted') {
+      formattedLogs.push(`   - ↳ *{{ card "${entry.params?.card}" exhausted }}*`);
+    } else {
+      const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
+      const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
+      formattedLogs.push(`${i + 1}. \`${entry.key}\`${omo}${paramsStr}`);
+    }
   }
 
   return `# Match Simulation Report — \`${matchId}\`

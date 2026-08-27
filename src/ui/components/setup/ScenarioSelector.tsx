@@ -138,7 +138,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               </div>
               <div className="flex items-center justify-center gap-4">
                 {/* Villain Stage I/II Card */}
-                <div className="text-center">
+                <div className="text-center relative hover:z-50">
                   <CardView
                     card={
                       {
@@ -170,7 +170,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 </div>
 
                 {/* Main Scheme 1B */}
-                <div className="text-center">
+                <div className="text-center relative hover:z-50">
                   <CardView
                     card={
                       {
@@ -268,7 +268,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 return (
                   <div
                     key={index}
-                    className={`p-3 rounded-lg border-2 transition-all ${
+                    className={`p-3 rounded-lg border-2 transition-all relative hover:z-40 ${
                       isAssigned
                         ? 'bg-amber-50/80 border-comic-black shadow-comic-sm'
                         : 'bg-slate-50 border-dashed border-slate-300 hover:border-slate-400'
@@ -278,14 +278,12 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                       /* Occupied Seat Card Tile */
                       <div className="flex items-start gap-3">
                         {/* Hero Card Miniature Thumbnail (Hero Form) */}
-                        <div className="shrink-0">
+                        <div className="shrink-0 relative z-10 hover:z-50">
                           {heroCard ? (
-                            <div className="border border-comic-black rounded overflow-hidden shadow-comic-sm">
-                              <CardView card={heroCard} size="sm" />
-                            </div>
+                            <CardView card={heroCard} size="sm" />
                           ) : (
-                            <div className="w-16 h-22 bg-slate-200 border border-comic-black rounded flex items-center justify-center font-comic text-xs">
-                              CARD
+                            <div className="w-28 h-40 bg-slate-200 border-2 border-comic-black rounded-xl flex items-center justify-center font-comic text-xs">
+                              HERO CARD
                             </div>
                           )}
                         </div>

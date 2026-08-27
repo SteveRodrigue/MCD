@@ -1,0 +1,319 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { CardCatalog } from '@data/importer/card-loader';
+import {
+  setupGame,
+  resetInstanceCounter,
+  dispatchAction,
+  StatusCard,
+  SideSchemeCard,
+  VillainCard,
+  MainSchemeCard,
+  createCardInstance,
+} from '@engine/index';
+
+import corePack from '../../data/upstream/pack/core.json';
+import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+
+describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
+  const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
+
+  let gameState: ReturnType<typeof setupGame>;
+
+  beforeEach(() => {
+    resetInstanceCounter();
+
+    const identity = catalog.getHeroIdentity('spider_man')!;
+    const signatureCards = catalog.getCardsBySet('spider_man').flatMap((c) => {
+      if (c.type === 'hero' || c.type === 'alter_ego') return [];
+      return Array(c.quantity).fill(c);
+    });
+    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
+
+    const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
+    const standardCards = catalog.getCardsBySet('standard');
+    const bombScareCards = catalog.getCardsBySet('bomb_scare');
+    const encounterCards = [...rhinoCards, ...standardCards, ...bombScareCards].flatMap((c) =>
+      Array(c.quantity).fill(c),
+    );
+
+    const villain = catalog.getCard('01094') as VillainCard;
+    const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
+
+    gameState = setupGame({
+      players: [
+        {
+          id: 'p1',
+          name: 'Peter Parker',
+          hero: identity.hero,
+          alterEgo: identity.alterEgo,
+          deckCards: deck,
+        },
+      ],
+      villain,
+      mainScheme,
+      encounterCards,
+      shuffleFn: (arr) => arr,
+    });
+  });
+
+  describe('Change Form (RR v1.8 p. 13-14)', () => {
+    it('flips from Alter-Ego to Hero form and enforces once-per-round limit', () => {
+      expect(gameState.players[0].currentForm).toBe('alter_ego');
+
+      // 1. Change Form to Hero (Spider-Man)
+      const res1 = dispatchAction(gameState, {
+        type: 'CHANGE_FORM',
+        playerId: 'p1',
+        targetFormCode: '01001a',
+      });
+      expect(res1.result.success).toBe(true);
+      expect(res1.result.onomatopoeia).toBe('SUIT UP!');
+      expect(res1.state.players[0].currentForm).toBe('hero');
+      expect(res1.state.players[0].activeFormCard.code).toBe('01001a');
+      expect(res1.state.players[0].formChangedThisRound).toBe(true);
+
+      // 2. Second Change Form in same round is rejected
+      const res2 = dispatchAction(res1.state, {
+        type: 'CHANGE_FORM',
+        playerId: 'p1',
+        targetFormCode: '01001b',
+      });
+      expect(res2.result.success).toBe(false);
+      expect(res2.result.error).toContain('Limit once per round');
+    });
+  });
+
+  describe('Basic Recover (RR v1.8 p. 23)', () => {
+    it('recovers HP in Alter-Ego form and exhausts character', () => {
+      // Damage player to 6 HP (out of 10)
+      gameState.players[0].health = 6;
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_RECOVER',
+        playerId: 'p1',
+      });
+
+      expect(res.result.success).toBe(true);
+      // Peter Parker has REC 3 -> 6 + 3 = 9 HP
+      expect(res.state.players[0].health).toBe(9);
+      expect(res.state.players[0].exhausted).toBe(true);
+
+      // Cannot recover again while exhausted
+      const res2 = dispatchAction(res.state, {
+        type: 'BASIC_RECOVER',
+        playerId: 'p1',
+      });
+      expect(res2.result.success).toBe(false);
+      expect(res2.result.error).toContain('exhausted');
+    });
+
+    it('prevents Recover while in Hero form', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_RECOVER',
+        playerId: 'p1',
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('Alter-Ego form');
+    });
+  });
+
+  describe('Basic Attack & Keyword Checks (RR v1.8 p. 5-6, 15, 26, 27)', () => {
+    beforeEach(() => {
+      // Put Spider-Man in Hero form
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+    });
+
+    it('deals basic attack damage to the Villain', () => {
+      const initialVillainHealth = gameState.villain.health; // 14
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toBe('POW!');
+      // Spider-Man has ATK 2 -> 14 - 2 = 12
+      expect(res.state.villain.health).toBe(initialVillainHealth - 2);
+      expect(res.state.players[0].exhausted).toBe(true);
+    });
+
+    it('discards Stunned status card instead of dealing damage', () => {
+      gameState.players[0].statusCards.push(StatusCard.STUNNED);
+      const initialVillainHealth = gameState.villain.health;
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toBe('STUN CLEARED!');
+      // Damage was cancelled, status removed
+      expect(res.state.villain.health).toBe(initialVillainHealth);
+      expect(res.state.players[0].statusCards).not.toContain(StatusCard.STUNNED);
+    });
+
+    it('discards Tough status card from target without dealing HP damage', () => {
+      gameState.villain.statusCards.push(StatusCard.TOUGH);
+      const initialVillainHealth = gameState.villain.health;
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toContain('TOUGH');
+      expect(res.state.villain.health).toBe(initialVillainHealth);
+      expect(res.state.villain.statusCards).not.toContain(StatusCard.TOUGH);
+    });
+
+    it('blocks attacking Villain when an engaged minion has Guard (RR v1.8 p. 15)', () => {
+      // Create a mock Armored Guard minion with Guard keyword in text
+      const guardMinionCard = catalog.getCard('01108')!; // Minion
+      const guardMinionInstance = createCardInstance({
+        ...guardMinionCard,
+        text: 'Guard. (Cannot attack villain).',
+      });
+
+      gameState.players[0].engagedMinions.push(guardMinionInstance);
+
+      // Attempt attack on villain -> BLOCKED
+      const res1 = dispatchAction(gameState, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+      });
+      expect(res1.result.success).toBe(false);
+      expect(res1.result.error).toContain('Guard');
+
+      // Attack on the Guard minion itself -> ALLOWED
+      const res2 = dispatchAction(gameState, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'minion',
+        targetInstanceId: guardMinionInstance.instanceId,
+      });
+      expect(res2.result.success).toBe(true);
+    });
+  });
+
+  describe('Basic Thwart & Crisis/Patrol Checks (RR v1.8 p. 29, 11, 10)', () => {
+    beforeEach(() => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+      gameState.mainScheme.threat = 3;
+    });
+
+    it('removes threat from the Main Scheme', () => {
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_THWART',
+        playerId: 'p1',
+        targetType: 'main_scheme',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toBe('FOILED!');
+      // Spider-Man has THW 1 -> 3 - 1 = 2
+      expect(res.state.mainScheme.threat).toBe(2);
+      expect(res.state.players[0].exhausted).toBe(true);
+    });
+
+    it('discards Confused status card instead of removing threat', () => {
+      gameState.players[0].statusCards.push(StatusCard.CONFUSED);
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_THWART',
+        playerId: 'p1',
+        targetType: 'main_scheme',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toBe('CONFUSION CLEARED!');
+      expect(res.state.mainScheme.threat).toBe(3); // Threat unchanged
+      expect(res.state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
+    });
+
+    it('blocks thwarting Main Scheme when a Side Scheme with Crisis icon is in play (RR v1.8 p. 11)', () => {
+      const crowdControlCard = catalog.getCard('01108') as SideSchemeCard; // Crowd Control with Crisis
+      gameState.sideSchemes.push({
+        instanceId: 'side_scheme_crisis',
+        card: { ...crowdControlCard, hasCrisis: true },
+        threat: 2,
+      });
+
+      const res = dispatchAction(gameState, {
+        type: 'BASIC_THWART',
+        playerId: 'p1',
+        targetType: 'main_scheme',
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('Crisis icon');
+    });
+  });
+
+  describe('Play Card & Payment (RR v1.8 p. 16, 20)', () => {
+    it('plays an Upgrade card by discarding payment resources from hand', () => {
+      const player = gameState.players[0];
+      const webShooterCard = catalog.getCard('01008')!; // Cost 1 Upgrade
+      const resourceCard = catalog.getCard('01003')!; // Backflip (1 physical resource)
+
+      const webShooterInstance = createCardInstance(webShooterCard);
+      const resourceInstance = createCardInstance(resourceCard);
+
+      player.hand = [webShooterInstance, resourceInstance];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: webShooterInstance.instanceId,
+        paymentCardInstanceIds: [resourceInstance.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      // Web-Shooter should be in tableau
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01008')).toBe(true);
+      // Payment card should be in discard pile
+      expect(res.state.players[0].discard.some((c) => c.card.code === '01003')).toBe(true);
+      // Hand should be empty
+      expect(res.state.players[0].hand.length).toBe(0);
+    });
+
+    it('rejects playing a card with insufficient resources', () => {
+      // Put in Hero form since Swinging Web Kick is a Hero Action
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      const player = gameState.players[0];
+      const kickCard = catalog.getCard('01005')!; // Swinging Web Kick (Cost 3)
+      const resourceCard = catalog.getCard('01003')!; // 1 resource
+
+      const kickInstance = createCardInstance(kickCard);
+      const resourceInstance = createCardInstance(resourceCard);
+
+      player.hand = [kickInstance, resourceInstance];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: kickInstance.instanceId,
+        paymentCardInstanceIds: [resourceInstance.instanceId], // Only 1 resource provided for cost 3
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('Insufficient resources: Need 3');
+    });
+  });
+});

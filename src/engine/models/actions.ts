@@ -1,0 +1,63 @@
+export type ActionType =
+  | 'CHANGE_FORM'
+  | 'BASIC_RECOVER'
+  | 'BASIC_ATTACK'
+  | 'BASIC_THWART'
+  | 'PLAY_CARD'
+  | 'END_PLAYER_TURN';
+
+export interface ChangeFormAction {
+  type: 'CHANGE_FORM';
+  playerId: string;
+  targetFormCode?: string; // Optional if only 2 forms exist
+}
+
+export interface BasicRecoverAction {
+  type: 'BASIC_RECOVER';
+  playerId: string;
+}
+
+export interface BasicAttackAction {
+  type: 'BASIC_ATTACK';
+  playerId: string;
+  targetType: 'villain' | 'minion';
+  targetInstanceId?: string; // Required if target is minion
+}
+
+export interface BasicThwartAction {
+  type: 'BASIC_THWART';
+  playerId: string;
+  targetType: 'main_scheme' | 'side_scheme';
+  targetInstanceId?: string; // Required if target is side scheme
+}
+
+export interface PaymentResource {
+  cardInstanceId: string;
+}
+
+export interface PlayCardAction {
+  type: 'PLAY_CARD';
+  playerId: string;
+  cardInstanceId: string;
+  paymentCardInstanceIds: string[]; // Hand cards to discard for resources
+  targetInstanceId?: string; // For targeted events or attachments
+}
+
+export interface EndPlayerTurnAction {
+  type: 'END_PLAYER_TURN';
+  playerId: string;
+}
+
+export type GameAction =
+  | ChangeFormAction
+  | BasicRecoverAction
+  | BasicAttackAction
+  | BasicThwartAction
+  | PlayCardAction
+  | EndPlayerTurnAction;
+
+export interface ActionResult {
+  success: boolean;
+  error?: string;
+  onomatopoeia?: string; // e.g. "POW!", "BAM!", "FOILED!", "THWIP!"
+}

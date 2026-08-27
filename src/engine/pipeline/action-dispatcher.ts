@@ -1,0 +1,348 @@
+import {
+  GameState,
+  GameAction,
+  ActionResult,
+  StatusCard,
+  CardType,
+  HeroCard,
+  AlterEgoCard,
+  MinionCard,
+} from '@engine/models';
+import {
+  getPlayer,
+  canChangeForm,
+  canBasicRecover,
+  canBasicAttack,
+  canBasicThwart,
+  canPlayCard,
+} from './legality-checker';
+
+/**
+ * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
+ */
+export function dispatchAction(
+  state: GameState,
+  action: GameAction,
+): { state: GameState; result: ActionResult } {
+  // Clone state immutably for pure state transition
+  const nextState: GameState = JSON.parse(JSON.stringify(state));
+
+  switch (action.type) {
+    case 'CHANGE_FORM': {
+      const check = canChangeForm(nextState, action.playerId, action.targetFormCode);
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
+
+      const player = getPlayer(nextState, action.playerId)!;
+      let nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
+
+      if (action.targetFormCode) {
+        nextFormCard = player.availableForms.find((f) => f.code === action.targetFormCode);
+      }
+
+      if (!nextFormCard) {
+        return { state, result: { success: false, error: 'Could not determine next form' } };
+      }
+
+      player.activeFormCard = nextFormCard;
+      player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
+      player.formChangedThisRound = true;
+
+      const onomatopoeia = player.currentForm === 'hero' ? 'SUIT UP!' : 'IDENTITY FLIP!';
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        key: 'player.action.changeForm',
+        params: {
+          player: player.name,
+          form: nextFormCard.name,
+        },
+        onomatopoeia,
+      });
+
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
+    case 'BASIC_RECOVER': {
+      const check = canBasicRecover(nextState, action.playerId);
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
+
+      const player = getPlayer(nextState, action.playerId)!;
+      const recValue = (player.activeFormCard as AlterEgoCard).recover || 0;
+      const healedAmount = Math.min(player.maxHealth - player.health, recValue);
+
+      player.health += healedAmount;
+      player.exhausted = true;
+      player.recoveryUsedThisRound = true;
+
+      const onomatopoeia = 'REST & RECOVER!';
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        key: 'player.action.recover',
+        params: {
+          player: player.name,
+          amount: healedAmount,
+          health: player.health,
+        },
+        onomatopoeia,
+      });
+
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
+    case 'BASIC_ATTACK': {
+      const check = canBasicAttack(
+        nextState,
+        action.playerId,
+        action.targetType,
+        action.targetInstanceId,
+      );
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
+
+      const player = getPlayer(nextState, action.playerId)!;
+      player.exhausted = true;
+
+      // 1. Stunned Status Replacement Check (RR v1.8 p. 26)
+      const stunIndex = player.statusCards.indexOf(StatusCard.STUNNED);
+      if (stunIndex !== -1) {
+        player.statusCards.splice(stunIndex, 1);
+        const onomatopoeia = 'STUN CLEARED!';
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'status.stunned.cleared',
+          params: { player: player.name },
+          onomatopoeia,
+        });
+        return { state: nextState, result: { success: true, onomatopoeia } };
+      }
+
+      const attackDamage = (player.activeFormCard as HeroCard).attack || 0;
+
+      // 2. Resolve Attack on Target
+      if (action.targetType === 'villain') {
+        const toughIndex = nextState.villain.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIndex !== -1) {
+          nextState.villain.statusCards.splice(toughIndex, 1);
+          const onomatopoeia = 'CLANG! (TOUGH)';
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            key: 'target.tough.absorbed',
+            params: { target: nextState.villain.card.name },
+            onomatopoeia,
+          });
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        }
+
+        nextState.villain.health = Math.max(0, nextState.villain.health - attackDamage);
+
+        const onomatopoeia = 'POW!';
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'player.action.attackVillain',
+          params: {
+            player: player.name,
+            damage: attackDamage,
+            remainingHealth: nextState.villain.health,
+          },
+          onomatopoeia,
+        });
+
+        // Check Villain Defeat
+        if (nextState.villain.health <= 0) {
+          // If stage I defeated and Stage II exists, can advance in future or win
+          nextState.winner = 'HEROES';
+        }
+
+        return { state: nextState, result: { success: true, onomatopoeia } };
+      }
+
+      if (action.targetType === 'minion' && action.targetInstanceId) {
+        let targetMinionPlayer = nextState.players.find((p) =>
+          p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
+        );
+
+        if (!targetMinionPlayer) {
+          return { state, result: { success: false, error: 'Minion not found' } };
+        }
+
+        const minionIndex = targetMinionPlayer.engagedMinions.findIndex(
+          (m) => m.instanceId === action.targetInstanceId,
+        );
+        const minion = targetMinionPlayer.engagedMinions[minionIndex];
+
+        // Check Tough on Minion
+        const toughIndex = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+        if (toughIndex !== -1) {
+          minion.statusCards!.splice(toughIndex, 1);
+          const onomatopoeia = 'CLANG!';
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        }
+
+        const currentDamage = minion.tokens?.damage || 0;
+        const newDamage = currentDamage + attackDamage;
+        const minionHealth = (minion.card as MinionCard).health || 1;
+
+        if (newDamage >= minionHealth) {
+          // Defeated minion -> discard
+          targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
+          nextState.encounterDiscard.push(minion);
+          const onomatopoeia = 'KAPOW! DEFEATED!';
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        } else {
+          minion.tokens = { ...minion.tokens, damage: newDamage };
+          const onomatopoeia = 'BAM!';
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        }
+      }
+
+      return { state: nextState, result: { success: true } };
+    }
+
+    case 'BASIC_THWART': {
+      const check = canBasicThwart(
+        nextState,
+        action.playerId,
+        action.targetType,
+        action.targetInstanceId,
+      );
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
+
+      const player = getPlayer(nextState, action.playerId)!;
+      player.exhausted = true;
+
+      // 1. Confused Status Replacement Check (RR v1.8 p. 10)
+      const confuseIndex = player.statusCards.indexOf(StatusCard.CONFUSED);
+      if (confuseIndex !== -1) {
+        player.statusCards.splice(confuseIndex, 1);
+        const onomatopoeia = 'CONFUSION CLEARED!';
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'status.confused.cleared',
+          params: { player: player.name },
+          onomatopoeia,
+        });
+        return { state: nextState, result: { success: true, onomatopoeia } };
+      }
+
+      const thwartValue = (player.activeFormCard as HeroCard).thwart || 0;
+
+      if (action.targetType === 'main_scheme') {
+        const removed = Math.min(nextState.mainScheme.threat, thwartValue);
+        nextState.mainScheme.threat -= removed;
+
+        const onomatopoeia = 'FOILED!';
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'player.action.thwartMainScheme',
+          params: {
+            player: player.name,
+            removed,
+            remainingThreat: nextState.mainScheme.threat,
+          },
+          onomatopoeia,
+        });
+
+        return { state: nextState, result: { success: true, onomatopoeia } };
+      }
+
+      if (action.targetType === 'side_scheme' && action.targetInstanceId) {
+        const schemeIndex = nextState.sideSchemes.findIndex(
+          (s) => s.instanceId === action.targetInstanceId,
+        );
+        const sideScheme = nextState.sideSchemes[schemeIndex];
+
+        const removed = Math.min(sideScheme.threat, thwartValue);
+        sideScheme.threat -= removed;
+
+        if (sideScheme.threat <= 0) {
+          // Defeated side scheme -> discard
+          nextState.sideSchemes.splice(schemeIndex, 1);
+          nextState.encounterDiscard.push({
+            instanceId: sideScheme.instanceId,
+            card: sideScheme.card,
+          });
+          const onomatopoeia = 'SCHEME DEFEATED!';
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        }
+
+        const onomatopoeia = 'THWART!';
+        return { state: nextState, result: { success: true, onomatopoeia } };
+      }
+
+      return { state: nextState, result: { success: true } };
+    }
+
+    case 'PLAY_CARD': {
+      const check = canPlayCard(
+        nextState,
+        action.playerId,
+        action.cardInstanceId,
+        action.paymentCardInstanceIds,
+      );
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
+
+      const player = getPlayer(nextState, action.playerId)!;
+
+      // 1. Discard Payment Cards from Hand
+      for (const pId of action.paymentCardInstanceIds) {
+        const pIndex = player.hand.findIndex((c) => c.instanceId === pId);
+        if (pIndex !== -1) {
+          const [discarded] = player.hand.splice(pIndex, 1);
+          player.discard.push(discarded);
+        }
+      }
+
+      // 2. Play Target Card from Hand
+      const targetIndex = player.hand.findIndex((c) => c.instanceId === action.cardInstanceId);
+      const [playedCardInstance] = player.hand.splice(targetIndex, 1);
+
+      const cardType = playedCardInstance.card.type;
+
+      if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
+        player.tableau.push(playedCardInstance);
+      } else if (cardType === CardType.ALLY) {
+        player.allies.push(playedCardInstance);
+      } else if (cardType === CardType.EVENT) {
+        player.discard.push(playedCardInstance);
+      }
+
+      const onomatopoeia = 'PLAY!';
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        key: 'player.action.playCard',
+        params: {
+          player: player.name,
+          card: playedCardInstance.card.name,
+        },
+        onomatopoeia,
+      });
+
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
+    case 'END_PLAYER_TURN': {
+      return { state: nextState, result: { success: true } };
+    }
+
+    default:
+      return { state, result: { success: false, error: 'Unknown action type' } };
+  }
+}

@@ -94,8 +94,22 @@ graph TD
 ---
 
 ## 📍 Phase 5: Ecosystem, Desktop Packaging & Future Features 🚀
-*Objective: Community connectivity and native distribution.*
+*Objective: Community connectivity, cross-device experience, and native distribution.*
 
+* **Adaptive Device & Viewport Orientation:**
+  * Fully responsive board layout dynamically adapting between **Portrait** (vertical column stack optimized for mobile phones/tablets) and **Landscape** (horizontal 2-tier tabletop for desktop and widescreen displays).
+* **Touch & Mobile/Tablet Compatibility:**
+  * Touch-optimized gestures: tap-to-inspect, swipe-to-scroll hand dock, long-press preview zoom, and enlarged touch targets for tablet/mobile web and Tauri mobile apps.
+* **Power-User Keyboard Shortcuts & Hotkeys:**
+  * Configurable hotkeys for rapid play and accessibility:
+    * `Space` / `Enter`: Pass Turn / Confirm Action
+    * `F`: Suit Up / Flip Identity Form (Spider-Man $\leftrightarrow$ Peter Parker)
+    * `A`: Trigger Basic Attack
+    * `T`: Trigger Basic Thwart
+    * `R`: Trigger Basic Recover
+    * `1`–`9`: Select / Play card at Hand index
+    * `L`: Toggle Slide-Out Combat Log Drawer
+    * `Esc`: Cancel Prompt / Close Active Modal
 * **MarvelsDB Public REST API Integration:**
   * 1-click **"Import Deck by MarvelsDB URL / ID"** button to load any community deck directly from `https://marvelcdb.com`.
 * **Native Desktop Executable (Tauri):**

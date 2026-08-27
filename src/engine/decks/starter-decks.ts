@@ -1,20 +1,13 @@
 import { CardCatalog } from '../../data/importer/card-loader';
-import { HeroCard, AlterEgoCard, NormalizedCard } from '../models';
+import {
+  HeroCard,
+  AlterEgoCard,
+  NormalizedCard,
+  MarvelCDBDeck,
+  parseMarvelCDBDeckMeta,
+  CardType,
+} from '../models';
 import starterDecksJson from '../../../data/decks/starter_decks.json';
-
-export interface RawDeckMetadata {
-  id: string;
-  hero_id: string;
-  hero_name: string;
-  aspect: string;
-  name: string;
-  description: string;
-  hero_code: string;
-  alter_ego_code: string;
-  obligation_code: string;
-  nemesis_set_code: string;
-  cards: Record<string, number>;
-}
 
 export interface StarterDeckDefinition {
   id: string;
@@ -23,6 +16,7 @@ export interface StarterDeckDefinition {
   aspect: string;
   name: string;
   description: string;
+  rawDeck: MarvelCDBDeck;
   loadDeck: (catalog: CardCatalog) => {
     hero: HeroCard;
     alterEgo: AlterEgoCard;
@@ -33,76 +27,108 @@ export interface StarterDeckDefinition {
 }
 
 /**
- * Creates a strongly typed StarterDeckDefinition from raw deck JSON metadata.
+ * Loads a playable deck from any MarvelCDB-compliant Deck object.
  */
-export function createStarterDeckFromMetadata(meta: RawDeckMetadata): StarterDeckDefinition {
+export function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog) {
+  const hero = catalog.getCard(deck.hero_code) as HeroCard | undefined;
+  if (!hero) {
+    throw new Error(`Hero card ${deck.hero_code} not found in catalog for deck ${deck.name}`);
+  }
+
+  const heroSetCode = hero.setCode || '';
+
+  // Find matching Alter-Ego card from hero set
+  const alterEgo = (hero.backLink
+    ? catalog.getCard(hero.backLink)
+    : catalog.getCardsBySet(heroSetCode).find((c) => c.type === CardType.ALTER_EGO)) as
+    | AlterEgoCard
+    | undefined;
+
+  if (!alterEgo) {
+    throw new Error(`Alter-Ego identity card not found in catalog for hero set ${heroSetCode}`);
+  }
+
+  // Expand slots into deck cards array
+  const deckCards: NormalizedCard[] = [];
+  for (const [code, quantity] of Object.entries(deck.slots)) {
+    const card = catalog.getCard(code);
+    if (!card) {
+      throw new Error(`Card code ${code} not found in catalog for deck ${deck.name}`);
+    }
+    for (let i = 0; i < quantity; i++) {
+      deckCards.push(card);
+    }
+  }
+
+  // Find Obligation card for this hero
+  const obligation = catalog
+    .getCardsByType(CardType.OBLIGATION)
+    .find(
+      (c) =>
+        (heroSetCode && c.setCode === heroSetCode) ||
+        (c.text && c.text.includes(alterEgo.name)) ||
+        (c.text && c.text.includes(hero.name)),
+    );
+
+  if (!obligation) {
+    throw new Error(`Obligation card not found in catalog for hero ${hero.name}`);
+  }
+
+  // Find 5-card Nemesis Set for this hero
+  const nemesisCards = catalog
+    .getCardsBySet(`${heroSetCode}_nemesis`)
+    .flatMap((c) => Array(c.quantity).fill(c));
+
+  if (nemesisCards.length === 0) {
+    throw new Error(
+      `Nemesis set ${heroSetCode}_nemesis not found in catalog for hero ${hero.name}`,
+    );
+  }
+
   return {
-    id: meta.id,
-    heroId: meta.hero_id,
-    heroName: meta.hero_name,
-    aspect: meta.aspect,
-    name: meta.name,
-    description: meta.description,
-    loadDeck: (catalog: CardCatalog) => {
-      const hero = catalog.getCard(meta.hero_code) as HeroCard | undefined;
-      const alterEgo = catalog.getCard(meta.alter_ego_code) as AlterEgoCard | undefined;
-
-      if (!hero || !alterEgo) {
-        throw new Error(
-          `Hero identity not found in catalog for ${meta.hero_name} (Hero: ${meta.hero_code}, Alter-Ego: ${meta.alter_ego_code})`,
-        );
-      }
-
-      // Resolve 40 deck cards from { [code]: quantity } map
-      const deckCards: NormalizedCard[] = [];
-      for (const [code, quantity] of Object.entries(meta.cards)) {
-        const card = catalog.getCard(code);
-        if (!card) {
-          throw new Error(`Card code ${code} not found in catalog for deck ${meta.name}`);
-        }
-        for (let i = 0; i < quantity; i++) {
-          deckCards.push(card);
-        }
-      }
-
-      // Resolve Obligation card
-      const obligation = catalog.getCard(meta.obligation_code);
-      if (!obligation) {
-        throw new Error(
-          `Obligation card ${meta.obligation_code} not found in catalog for ${meta.hero_name}`,
-        );
-      }
-
-      // Resolve 5-card Nemesis Set
-      const nemesisCards = catalog
-        .getCardsBySet(meta.nemesis_set_code)
-        .flatMap((c) => Array(c.quantity).fill(c));
-
-      if (nemesisCards.length === 0) {
-        throw new Error(
-          `Nemesis set ${meta.nemesis_set_code} not found in catalog for ${meta.hero_name}`,
-        );
-      }
-
-      return {
-        hero,
-        alterEgo,
-        deckCards,
-        obligation,
-        nemesisCards,
-      };
-    },
+    hero,
+    alterEgo,
+    deckCards,
+    obligation,
+    nemesisCards,
   };
 }
 
 /**
- * Registry of all prebuilt starter decks, dynamically populated from metadata.
+ * Creates a strongly typed StarterDeckDefinition from a MarvelCDBDeck object.
+ */
+export function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeckDefinition {
+  const meta = parseMarvelCDBDeckMeta(deck.meta);
+  const aspect =
+    meta.aspect_name ||
+    (meta.aspect ? meta.aspect.charAt(0).toUpperCase() + meta.aspect.slice(1) : 'Custom');
+  const heroSetCode = deck.hero_name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const id = `${heroSetCode}_${aspect.toLowerCase()}`;
+
+  return {
+    id,
+    heroId: heroSetCode,
+    heroName: deck.hero_name,
+    aspect,
+    name: deck.name,
+    description: deck.description_md || `Prebuilt ${aspect} deck for ${deck.hero_name}.`,
+    rawDeck: deck,
+    loadDeck: (catalog: CardCatalog) => loadDeckFromMarvelCDB(deck, catalog),
+  };
+}
+
+/**
+ * Registry of all prebuilt starter decks, dynamically populated from MarvelCDB deck JSON metadata.
  */
 export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {};
 
 // Load all starter decks from data/decks/starter_decks.json
-((starterDecksJson as unknown) as RawDeckMetadata[]).forEach((meta) => {
-  starterDeckCatalog[meta.id] = createStarterDeckFromMetadata(meta);
+((starterDecksJson as unknown) as MarvelCDBDeck[]).forEach((deck) => {
+  const definition = createStarterDeckFromMarvelCDB(deck);
+  starterDeckCatalog[definition.id] = definition;
 });
 
 export function getStarterDeck(id: string): StarterDeckDefinition | undefined {

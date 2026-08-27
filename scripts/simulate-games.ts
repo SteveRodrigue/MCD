@@ -7,8 +7,6 @@ import {
   runMatch,
   VillainCard,
   MainSchemeCard,
-  HeroCard,
-  AlterEgoCard,
 } from '../src/engine';
 
 import corePack from '../data/upstream/pack/core.json';
@@ -33,7 +31,7 @@ async function runAndLogSimulations() {
   const deckCards = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
   // Encounter Deck: Rhino + Standard + Bomb Scare
-  const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
+  const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
   const standardCards = catalog.getCardsBySet('standard');
   const bombScareCards = catalog.getCardsBySet('bomb_scare');
   const encounterCards = [...rhinoCards, ...standardCards, ...bombScareCards].flatMap((c) =>
@@ -74,8 +72,15 @@ async function runAndLogSimulations() {
     const filePath = path.join(logsDir, `simulation-game-${gameIdx}.md`);
     fs.writeFileSync(filePath, markdown, 'utf8');
 
+    const outcomeText =
+      result.winner === 'HEROES'
+        ? '🏆 HERO VICTORY'
+        : result.finalState.mainScheme.threat >= result.finalState.mainScheme.targetThreat
+          ? '💀 HERO DEFEAT (Scheme Overwhelmed)'
+          : '💀 HERO DEFEAT (Knocked Out)';
+
     console.log(
-      `  ✓ Game ${gameIdx}: Winner = ${result.winner} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}, Rhino HP: ${result.finalState.villain.health}, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`
+      `  ✓ Game ${gameIdx}: ${outcomeText} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}/10, Rhino HP: ${result.finalState.villain.health}/14, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`
     );
   }
 
@@ -120,13 +125,23 @@ function generateSummaryMarkdown(matchResults: any[]): string {
 
 ## 🎮 Match Breakdown
 
-| Match | Winner | Rounds | Final Hero HP | Final Rhino HP | Final Threat | Detailed Log |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Match | Result | Loss / Win Condition | Rounds | Final Hero HP | Final Rhino HP | Final Threat | Detailed Log |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 ${matchResults
-  .map(
-    (m) =>
-      `| Game #${m.gameIdx} | **${m.result.winner === 'HEROES' ? '🏆 HEROES' : '💀 VILLAIN'}** | ${m.result.roundsPlayed} | ${m.result.finalState.players[0].health}/10 | ${m.result.finalState.villain.health}/14 | ${m.result.finalState.mainScheme.threat}/${m.result.finalState.mainScheme.targetThreat} | [simulation-game-${m.gameIdx}.md](./simulation-game-${m.gameIdx}.md) |`
-  )
+  .map((m) => {
+    const outcome =
+      m.result.winner === 'HEROES'
+        ? '🏆 **HERO VICTORY**'
+        : '💀 **HERO DEFEAT**';
+    const condition =
+      m.result.winner === 'HEROES'
+        ? 'Rhino HP reduced to 0'
+        : m.result.finalState.mainScheme.threat >= m.result.finalState.mainScheme.targetThreat
+          ? 'Scheme threat reached limit (7)'
+          : 'Hero HP reduced to 0';
+
+    return `| Game #${m.gameIdx} | ${outcome} | ${condition} | ${m.result.roundsPlayed} | ${m.result.finalState.players[0].health}/10 | ${m.result.finalState.villain.health}/14 | ${m.result.finalState.mainScheme.threat}/${m.result.finalState.mainScheme.targetThreat} | [simulation-game-${m.gameIdx}.md](./simulation-game-${m.gameIdx}.md) |`;
+  })
   .join('\n')}
 
 ---
@@ -139,13 +154,39 @@ function generateMatchMarkdown(gameIdx: number, result: any): string {
   const { finalState, roundsPlayed, winner } = result;
   const player = finalState.players[0];
 
+  const outcomeTitle =
+    winner === 'HEROES'
+      ? '🏆 HERO VICTORY (Rhino HP reduced to 0)'
+      : finalState.mainScheme.threat >= finalState.mainScheme.targetThreat
+        ? `💀 HERO DEFEAT (Scheme Overwhelmed: Threat ${finalState.mainScheme.threat}/${finalState.mainScheme.targetThreat})`
+        : `💀 HERO DEFEAT (Hero Knocked Out: 0 HP)`;
+
+  // Group events chronologically
+  const formattedLogs: string[] = [];
+  let currentRound = 0;
+
+  for (let i = 0; i < finalState.log.length; i++) {
+    const entry = finalState.log[i];
+    if (entry.key === 'phase.player_phase.start') {
+      currentRound = entry.params?.round || currentRound + 1;
+      formattedLogs.push(`\n### 🔄 Round ${currentRound}`);
+      formattedLogs.push(`#### 🦸 Player Phase`);
+    } else if (entry.key === 'phase.villain_phase.start') {
+      formattedLogs.push(`\n#### 🦏 Villain Phase`);
+    }
+
+    const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
+    const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
+    formattedLogs.push(`${i + 1}. \`${entry.key}\`${omo}${paramsStr}`);
+  }
+
   return `# Match Simulation Report — Game #${gameIdx}
 
-* **Hero:** Spider-Man (Peter Parker) — Justice Aspect
-* **Villain:** Rhino (Stage I — 14 HP)
+* **Hero:** Spider-Man (Peter Parker) — Justice Aspect (10 Max HP)
+* **Villain:** Rhino (Stage I — 14 Max HP)
 * **Main Scheme:** The Break-In! (Target: 7 Threat)
 * **Modular Set:** Bomb Scare
-* **Outcome:** **${winner === 'HEROES' ? '🏆 HERO VICTORY' : '💀 VILLAIN DEFEAT'}**
+* **Final Outcome:** **${outcomeTitle}**
 * **Duration:** ${roundsPlayed} Rounds
 * **Final Hero HP:** ${player.health} / ${player.maxHealth}
 * **Final Rhino HP:** ${finalState.villain.health} / ${finalState.villain.maxHealth}
@@ -155,13 +196,7 @@ function generateMatchMarkdown(gameIdx: number, result: any): string {
 
 ## 📋 Full Game Action & Event Log
 
-${finalState.log
-  .map((entry: any, i: number) => {
-    const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
-    const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
-    return `${i + 1}. \`${entry.key}\`${omo}${paramsStr}`;
-  })
-  .join('\n')}
+${formattedLogs.join('\n')}
 
 ---
 
@@ -189,7 +224,7 @@ ${finalState.log
 
 ---
 
-*Report automatically generated by MCD Autonomous Engine Simulator (ADR-0008, RR v1.8).*
+*Report automatically generated by MCD Autonomous Engine Simulator (ADR-0008, ADR-0009, RR v1.8).*
 `;
 }
 

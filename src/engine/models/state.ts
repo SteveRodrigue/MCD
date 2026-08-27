@@ -52,7 +52,7 @@ export interface PlayerState {
   formChangedThisRound: boolean;
   recoveryUsedThisRound: boolean;
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
-  setAsideCards?: CardInstance[]; // Set-aside nemesis cards
+  setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }
 
 export interface VillainState {

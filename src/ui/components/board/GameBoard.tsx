@@ -47,9 +47,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
         <HeroZone player={activePlayer} />
       </main>
 
-      {/* 3. Sticky Bottom Player Hand Dock */}
+      {/* 3. Sticky Bottom Player Hand Dock (with Player Deck/Discard on the Left) */}
       <PlayerHandTray
         hand={activePlayer.hand}
+        deckCount={activePlayer.deck.length}
+        discard={activePlayer.discard}
         heroName={activePlayer.name}
         handSizeLimit={(activePlayer.activeFormCard as any).handSize ?? 6}
       />

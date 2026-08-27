@@ -24,20 +24,21 @@ To prevent conflicting interpretations and ensure strict rules accuracy across a
 ## Decision Outcome
 
 **Chosen Authority:** The official Fantasy Flight Games documents stored in `references/`:
-1. **Primary Authority for Complex Rules, Timing & Errata:**
+1. **Primary & Superseding Authority:**
    * **[Rules Reference v1.8](references/mc_rulesreference_v18_compressed.pdf)** (`references/mc_rulesreference_v18_compressed.pdf`)
-   * Defines: Trigger hierarchy (*Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses*), Cost Payment resolution, Attack/Defense/Thwart frameworks, Keyword mechanics, and official card errata.
-2. **Introductory Authority for Sequence & Terminology:**
+   * **The Rules Reference v1.8 supersedes and corrects the Learn to Play guide in all cases.**
+   * Defines: Precise timing hierarchies (*Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses*), Cost Payment resolution, Attack/Defense/Thwart frameworks, Keyword mechanics, and official card errata.
+2. **Introductory Tutorial & Sequence Guide:**
    * **[Learn to Play Guide](references/mvc01_learn_to_play_eng-compressed.pdf)** (`references/mvc01_learn_to_play_eng-compressed.pdf`)
-   * Defines: Core phase structure, turn sequence, and player board concepts.
+   * Used for initial tutorial flows, basic component anatomy, and introductory terminology. If any conflict exists between the Learn to Play guide and the Rules Reference, the Rules Reference v1.8 strictly prevails.
 
 ---
 
 ## Rules Hierarchy & Conflict Resolution
 
 Whenever a rules ambiguity or card interaction is implemented or tested:
-1. **The Golden Rule:** If the text of a card directly contradicts the text of the Rules Reference, the card text takes precedence.
-2. **Rules Authority:** If a card's interaction is ambiguous, the **Rules Reference v1.8** is the definitive law.
+1. **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, the Rules Reference v1.8 governs.
+2. **Document Hierarchy:** **Rules Reference v1.8 strictly supersedes and corrects the Learn to Play guide.**
 3. **Official Errata:** Any card text that has received an official FFG errata in Rules Reference v1.8 (Section: *Errata*) must be implemented with its errata text applied via `src/data/overrides/`.
 
 ---

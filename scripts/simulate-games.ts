@@ -20,6 +20,14 @@ async function runAndLogSimulations() {
     fs.mkdirSync(logsDir, { recursive: true });
   }
 
+  // Clean legacy simulation-game-*.md files if any
+  for (let i = 1; i <= 10; i++) {
+    const legacy = path.join(logsDir, `simulation-game-${i}.md`);
+    if (fs.existsSync(legacy)) {
+      fs.unlinkSync(legacy);
+    }
+  }
+
   // Load Cards for Learn to Play Scenario
   const identity = catalog.getHeroIdentity('spider_man')!;
   const signatureCards = catalog.getCardsBySet('spider_man').flatMap((c) => {
@@ -43,13 +51,18 @@ async function runAndLogSimulations() {
 
   const numGames = 3;
   const matchResults = [];
+  const batchTimestamp = Date.now();
 
   console.log(`\n🎲 Running ${numGames} End-to-End Match Simulations (Spider-Man vs. Rhino)...`);
 
   for (let gameIdx = 1; gameIdx <= numGames; gameIdx++) {
     resetInstanceCounter();
+    const matchId = `match_${batchTimestamp}_${gameIdx}`;
+    const isoTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `game_${isoTimestamp}_${matchId}.md`;
+
     const initialState = setupGame({
-      id: `match_sim_${gameIdx}`,
+      id: matchId,
       players: [
         {
           id: 'player_1',
@@ -65,11 +78,11 @@ async function runAndLogSimulations() {
     });
 
     const result = runMatch(initialState, { maxRounds: 25 });
-    matchResults.push({ gameIdx, result });
+    matchResults.push({ gameIdx, matchId, fileName, result });
 
     // Generate Markdown Log
-    const markdown = generateMatchMarkdown(gameIdx, result);
-    const filePath = path.join(logsDir, `simulation-game-${gameIdx}.md`);
+    const markdown = generateMatchMarkdown(matchId, result);
+    const filePath = path.join(logsDir, fileName);
     fs.writeFileSync(filePath, markdown, 'utf8');
 
     const outcomeText =
@@ -80,54 +93,38 @@ async function runAndLogSimulations() {
           : '💀 HERO DEFEAT (Knocked Out)';
 
     console.log(
-      `  ✓ Game ${gameIdx}: ${outcomeText} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}/10, Rhino HP: ${result.finalState.villain.health}/14, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`
+      `  ✓ Match [${matchId}]: ${outcomeText} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}/10, Rhino HP: ${result.finalState.villain.health}/14, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`
     );
   }
 
-  // Generate Global Summary Markdown
-  const summaryMarkdown = generateSummaryMarkdown(matchResults);
+  // Update Global Summary Markdown with all historical games
+  const summaryMarkdown = generateSummaryMarkdown(logsDir, matchResults);
   fs.writeFileSync(path.join(logsDir, 'SUMMARY.md'), summaryMarkdown, 'utf8');
 
-  console.log(`\n📄 Simulation logs successfully written to:`);
-  console.log(`   - ${path.join(logsDir, 'SUMMARY.md')}`);
-  for (let i = 1; i <= numGames; i++) {
-    console.log(`   - ${path.join(logsDir, `simulation-game-${i}.md`)}`);
+  console.log(`\n📄 Simulation logs written without overwriting to:`);
+  console.log(`   - Index: ${path.join(logsDir, 'SUMMARY.md')}`);
+  for (const m of matchResults) {
+    console.log(`   - ${path.join(logsDir, m.fileName)}`);
   }
 }
 
-function generateSummaryMarkdown(matchResults: any[]): string {
-  const totalGames = matchResults.length;
-  const heroWins = matchResults.filter((m) => m.result.winner === 'HEROES').length;
-  const villainWins = matchResults.filter((m) => m.result.winner === 'VILLAIN').length;
-  const avgRounds = (
-    matchResults.reduce((acc, m) => acc + m.result.roundsPlayed, 0) / totalGames
-  ).toFixed(1);
+function generateSummaryMarkdown(logsDir: string, currentBatchResults: any[]): string {
+  const allFiles = fs.readdirSync(logsDir).filter((f) => f.startsWith('game_') && f.endsWith('.md'));
+  
+  return `# Marvel Champions Match Simulator — History & Execution Index
 
-  return `# Marvel Champions Match Simulator — Batch Execution Summary
-
-**Generated:** ${new Date().toISOString()}  
+**Last Batch Run:** ${new Date().toISOString()}  
 **Scenario:** Rhino (Stage I) — *The Break-In!*  
 **Modular Set:** Bomb Scare  
 **Hero:** Spider-Man (Justice Aspect, 40-Card Deck)
 
 ---
 
-## 📊 High-Level Metrics
+## 🎮 Match Logs Index (${allFiles.length} Total Matches Recorded)
 
-| Metric | Result |
-| :--- | :--- |
-| **Total Matches Simulated** | ${totalGames} |
-| **Hero Win Rate** | **${((heroWins / totalGames) * 100).toFixed(0)}%** (${heroWins}/${totalGames}) |
-| **Villain Win Rate** | **${((villainWins / totalGames) * 100).toFixed(0)}%** (${villainWins}/${totalGames}) |
-| **Average Game Duration** | ${avgRounds} Rounds |
-
----
-
-## 🎮 Match Breakdown
-
-| Match | Result | Loss / Win Condition | Rounds | Final Hero HP | Final Rhino HP | Final Threat | Detailed Log |
+| Match File | Timestamp / ID | Winner | Loss / Win Condition | Rounds | Final Hero HP | Final Rhino HP | Final Threat |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-${matchResults
+${currentBatchResults
   .map((m) => {
     const outcome =
       m.result.winner === 'HEROES'
@@ -137,20 +134,20 @@ ${matchResults
       m.result.winner === 'HEROES'
         ? 'Rhino HP reduced to 0'
         : m.result.finalState.mainScheme.threat >= m.result.finalState.mainScheme.targetThreat
-          ? 'Scheme threat reached limit (7)'
+          ? 'Scheme reached limit (7)'
           : 'Hero HP reduced to 0';
 
-    return `| Game #${m.gameIdx} | ${outcome} | ${condition} | ${m.result.roundsPlayed} | ${m.result.finalState.players[0].health}/10 | ${m.result.finalState.villain.health}/14 | ${m.result.finalState.mainScheme.threat}/${m.result.finalState.mainScheme.targetThreat} | [simulation-game-${m.gameIdx}.md](./simulation-game-${m.gameIdx}.md) |`;
+    return `| [${m.fileName}](./${m.fileName}) | \`${m.matchId}\` | ${outcome} | ${condition} | ${m.result.roundsPlayed} | ${m.result.finalState.players[0].health}/10 | ${m.result.finalState.villain.health}/14 | ${m.result.finalState.mainScheme.threat}/${m.result.finalState.mainScheme.targetThreat} |`;
   })
   .join('\n')}
 
 ---
 
-*Generated by MCD Automated Match Engine (Rules Reference v1.8).*
+*Logs are preserved with immutable \`game_{timestamp}_{id}.md\` naming (ADR-0009).*
 `;
 }
 
-function generateMatchMarkdown(gameIdx: number, result: any): string {
+function generateMatchMarkdown(matchId: string, result: any): string {
   const { finalState, roundsPlayed, winner } = result;
   const player = finalState.players[0];
 
@@ -180,8 +177,10 @@ function generateMatchMarkdown(gameIdx: number, result: any): string {
     formattedLogs.push(`${i + 1}. \`${entry.key}\`${omo}${paramsStr}`);
   }
 
-  return `# Match Simulation Report — Game #${gameIdx}
+  return `# Match Simulation Report — \`${matchId}\`
 
+* **Match ID:** \`${matchId}\`
+* **Timestamp:** ${new Date().toISOString()}
 * **Hero:** Spider-Man (Peter Parker) — Justice Aspect (10 Max HP)
 * **Villain:** Rhino (Stage I — 14 Max HP)
 * **Main Scheme:** The Break-In! (Target: 7 Threat)

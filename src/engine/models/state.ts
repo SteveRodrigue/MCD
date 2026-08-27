@@ -52,6 +52,7 @@ export interface PlayerState {
   formChangedThisRound: boolean;
   recoveryUsedThisRound: boolean;
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
+  setAsideCards?: CardInstance[]; // Set-aside nemesis cards
 }
 
 export interface VillainState {
@@ -109,8 +110,11 @@ export interface GameState {
   villain: VillainState;
   mainScheme: MainSchemeState;
   sideSchemes: SideSchemeState[];
+  environments: CardInstance[];
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
+  victoryDisplay: CardInstance[];
+  removedFromGame: CardInstance[];
   accelerationTokens: number;
   activeBoostCard?: CardInstance;
   winner: 'HEROES' | 'VILLAIN' | null;

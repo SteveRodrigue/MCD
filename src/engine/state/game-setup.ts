@@ -111,6 +111,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       formChangedThisRound: false,
       recoveryUsedThisRound: false,
       dealtEncounterCards: [],
+      setAsideCards: [],
     };
   });
 
@@ -151,8 +152,11 @@ export function setupGame(options: GameSetupOptions): GameState {
     villain,
     mainScheme,
     sideSchemes: [],
+    environments: [],
     encounterDeck: shuffledEncounterDeck,
     encounterDiscard: [],
+    victoryDisplay: [],
+    removedFromGame: [],
     accelerationTokens: 0,
     winner: null,
     log: [

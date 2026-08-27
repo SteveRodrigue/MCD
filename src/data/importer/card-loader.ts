@@ -53,6 +53,13 @@ export function normalizeRawCard(
 ): NormalizedCard {
   const enrichment = supplementalEffects[raw.code];
 
+  const isLandscape =
+    raw.type_code === CardType.MAIN_SCHEME ||
+    raw.type_code === CardType.SIDE_SCHEME ||
+    raw.type_code === 'main_scheme' ||
+    raw.type_code === 'side_scheme' ||
+    raw.type_code === 'player_side_scheme';
+
   const base: NormalizedCard = {
     code: raw.code,
     name: raw.name,
@@ -76,6 +83,8 @@ export function normalizeRawCard(
     boostIcons: raw.boost,
     boostStar: !!raw.boost_star,
     errata: raw.errata,
+    isLandscape,
+    orientation: isLandscape ? 'landscape' : 'portrait',
     enrichment,
     raw,
   };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Layers, Sparkles, Skull, X, Eye } from 'lucide-react';
-import { CardInstance } from '../../../engine/models';
+import React, { useState, useMemo } from 'react';
+import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp } from 'lucide-react';
+import { CardInstance, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
@@ -12,6 +12,38 @@ interface PlayerHandTrayProps {
   heroName: string;
   handSizeLimit: number;
   onCardClick?: (cardInst: CardInstance) => void;
+}
+
+type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity';
+type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
+
+function getPlayerCardAffinity(card: NormalizedCard): string {
+  const faction = (card.faction || (card as any).faction_code || '').toLowerCase();
+  if (faction === 'justice') return 'Justice';
+  if (faction === 'aggression') return 'Aggression';
+  if (faction === 'leadership') return 'Leadership';
+  if (faction === 'protection') return 'Protection';
+  if (faction === 'basic') return 'Basic';
+  if (faction === 'hero' || card.setCode === 'spider_man' || (card as any).set_code === 'spider_man') {
+    return 'Hero Signature (Spider-Man)';
+  }
+  if (card.setCode) {
+    return card.setCode
+      .split('_')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+  return 'Basic';
+}
+
+function getPlayerCardTypeName(card: NormalizedCard): string {
+  const type = card.type || (card as any).type_code || 'card';
+  if (type === 'event') return 'Events';
+  if (type === 'ally') return 'Allies';
+  if (type === 'upgrade') return 'Upgrades';
+  if (type === 'support') return 'Supports';
+  if (type === 'resource') return 'Resources';
+  return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
@@ -28,10 +60,61 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [showNemesisModal, setShowNemesisModal] = useState(false);
 
+  // Inspector View Sort States
+  const [sortMode, setSortMode] = useState<PlayerSortMode>('deck_order');
+  const [deckDirection, setDeckDirection] = useState<DeckDirection>('top_to_bottom');
+
   const topDiscard = discard[discard.length - 1];
   const nemesisMinion =
     setAsideCards.find((c) => c.card.type === 'minion' || (c.card as any).type_code === 'minion') ||
     setAsideCards[0];
+
+  // Process and sort Player Deck for Inspector View
+  const processedDeckItems = useMemo(() => {
+    // Attach original deck index (0-based: 0 is top of deck)
+    const items = deck.map((instance, originalIndex) => ({
+      instance,
+      originalIndex,
+      affinity: getPlayerCardAffinity(instance.card),
+      cardType: getPlayerCardTypeName(instance.card),
+    }));
+
+    if (sortMode === 'deck_order') {
+      return deckDirection === 'top_to_bottom' ? items : [...items].reverse();
+    }
+
+    if (sortMode === 'card_type') {
+      return [...items].sort((a, b) => {
+        if (a.cardType !== b.cardType) return a.cardType.localeCompare(b.cardType);
+        return a.originalIndex - b.originalIndex;
+      });
+    }
+
+    if (sortMode === 'affinity') {
+      return [...items].sort((a, b) => {
+        if (a.affinity !== b.affinity) return a.affinity.localeCompare(b.affinity);
+        return a.originalIndex - b.originalIndex;
+      });
+    }
+
+    return items;
+  }, [deck, sortMode, deckDirection]);
+
+  // Group items by category if not in pure deck order
+  const groupedDeckItems = useMemo(() => {
+    if (sortMode === 'deck_order') return null;
+
+    const groupKey = sortMode === 'card_type' ? 'cardType' : 'affinity';
+    const groups: Record<string, typeof processedDeckItems> = {};
+
+    processedDeckItems.forEach((item) => {
+      const key = item[groupKey];
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+
+    return groups;
+  }, [processedDeckItems, sortMode]);
 
   return (
     <>
@@ -158,10 +241,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
         </div>
       </footer>
 
-      {/* Player Deck Inspector Modal (Dev Mode) */}
+      {/* Player Deck Inspector Modal (Dev Mode with Sorting & Card Names) */}
       {showDeckModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-6 h-6 text-comic-blue" />
@@ -175,7 +259,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-600">
-                    Cards are listed in exact draw order from Top of Deck (first) to Bottom of Deck (last).
+                    Sort view by Deck Order, Card Type, or Affinity (Aspect). Cards display their name below.
                   </p>
                 </div>
               </div>
@@ -187,21 +271,109 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 py-4">
-              {deck.map((cardInst, idx) => (
-                <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                  <div className="relative">
-                    <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
-                    <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
-                      #{idx + 1}
+            {/* Sorting Controls Bar */}
+            <div className="bg-slate-100 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-comic-blue" />
+                <span className="font-comic text-xs text-slate-700 uppercase">Sort View By:</span>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setSortMode('deck_order')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'deck_order'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Deck Order
+                  </button>
+                  <button
+                    onClick={() => setSortMode('card_type')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'card_type'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Card Type
+                  </button>
+                  <button
+                    onClick={() => setSortMode('affinity')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'affinity'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Affinity (Aspect)
+                  </button>
+                </div>
+              </div>
+
+              {sortMode === 'deck_order' && (
+                <div className="flex items-center gap-2">
+                  <ArrowDownUp className="w-4 h-4 text-slate-600" />
+                  <button
+                    onClick={() =>
+                      setDeckDirection((prev) =>
+                        prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom'
+                      )
+                    }
+                    className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
+                  >
+                    {deckDirection === 'top_to_bottom' ? '⬆️ Top to Bottom (#1 ⟶ #N)' : '⬇️ Bottom to Top (#N ⟶ #1)'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Cards Display Grid (Grouped or Flat) */}
+            {groupedDeckItems ? (
+              <div className="space-y-6 py-2">
+                {Object.entries(groupedDeckItems).map(([groupName, groupItems]) => (
+                  <div key={groupName} className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-300">
+                    <div className="flex items-center justify-between border-b border-slate-300 pb-1.5">
+                      <span className="font-comic text-sm text-comic-black uppercase">
+                        {groupName} ({groupItems.length} Cards)
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
+                      {groupItems.map(({ instance, originalIndex }) => (
+                        <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                          <div className="relative">
+                            <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                            <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                              #{originalIndex + 1}
+                            </span>
+                          </div>
+                          {/* Card Name as Bottom Label */}
+                          <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
+                            {instance.card.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-center gap-4 py-4">
+                {processedDeckItems.map(({ instance, originalIndex }) => (
+                  <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                      <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                        #{originalIndex + 1}
+                      </span>
+                    </div>
+                    {/* Card Name as Bottom Label */}
+                    <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
+                      {instance.card.name}
                     </span>
                   </div>
-                  <span className="font-comic text-[11px] text-slate-700 truncate max-w-[110px] text-center">
-                    {cardInst.card.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="text-center pt-2 border-t border-slate-200">
               <button
@@ -248,7 +420,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       #{idx + 1}
                     </span>
                   </div>
-                  <span className="font-comic text-[11px] text-slate-700 truncate max-w-[110px] text-center">
+                  <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
                     {cardInst.card.name}
                   </span>
                 </div>

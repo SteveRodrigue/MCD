@@ -29,7 +29,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     <>
       <footer className="w-full bg-amber-100/95 border-t-3 border-comic-black shadow-comic p-4 z-20 sticky bottom-0 overflow-visible">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6 overflow-visible">
-          {/* 1. Player Deck, Discard, and Nemesis Set Piles */}
+          {/* 1. Player Deck & Discard Piles (Left of Hand) */}
           <div className="flex items-center gap-3 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
             {/* Draw Pile */}
             <div className="flex flex-col items-center">
@@ -56,24 +56,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 </div>
               )}
             </div>
-
-            {/* Nemesis Set / Out of Play Pile */}
-            {setAsideCards.length > 0 && (
-              <button
-                onClick={() => setShowNemesisModal(true)}
-                className="flex flex-col items-center group cursor-pointer"
-                title="View Nemesis Set (Set Aside / Out of Play)"
-              >
-                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-rose-950 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden group-hover:border-comic-red transition-all">
-                  <Skull className="w-5 h-5 text-comic-red mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="font-comic text-lg text-white leading-none">{setAsideCards.length}</span>
-                  <span className="text-[9px] font-bold text-rose-300 uppercase">NEMESIS</span>
-                </div>
-              </button>
-            )}
           </div>
 
-          {/* 2. Hand Cards Area (Unconstrained Z-Axis Elevation) */}
+          {/* 2. Hand Cards Area (Center) */}
           <div className="flex-1 w-full space-y-2 overflow-visible">
             {/* Hand Header Bar */}
             <div className="flex items-center justify-between">
@@ -114,6 +99,32 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* 3. Out of Play / Nemesis Set Area (Right of Hand!) */}
+          <div className="flex flex-col items-center gap-1 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+            <span className="text-[10px] font-bold text-slate-600 uppercase font-comic">
+              OUT OF PLAY
+            </span>
+
+            {setAsideCards.length > 0 ? (
+              <button
+                onClick={() => setShowNemesisModal(true)}
+                className="flex flex-col items-center group cursor-pointer"
+                title="View Nemesis Set (Set Aside / Out of Play)"
+              >
+                <div className="w-18 h-26 sm:w-20 sm:h-28 bg-rose-950 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden group-hover:border-comic-red transition-all">
+                  <Skull className="w-5 h-5 text-comic-red mb-1 group-hover:scale-110 transition-transform" />
+                  <span className="font-comic text-lg text-white leading-none">{setAsideCards.length}</span>
+                  <span className="text-[9px] font-bold text-rose-300 uppercase">NEMESIS</span>
+                </div>
+              </button>
+            ) : (
+              <div className="w-18 h-26 sm:w-20 sm:h-28 bg-slate-100 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-center p-1">
+                <span className="font-comic text-xs text-slate-400">EMPTY</span>
+                <span className="text-[9px] text-slate-400 font-bold">OUT OF PLAY</span>
+              </div>
+            )}
           </div>
         </div>
       </footer>

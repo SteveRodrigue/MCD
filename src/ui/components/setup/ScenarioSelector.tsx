@@ -132,6 +132,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                         boostIcons: 0,
                         boostStar: false,
                         errata: undefined,
+                        isLandscape: false,
+                        orientation: 'portrait',
                         raw: {} as any,
                       }
                     }
@@ -162,6 +164,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
                         boostIcons: 0,
                         boostStar: false,
                         errata: undefined,
+                        isLandscape: true,
+                        orientation: 'landscape',
                         raw: {} as any,
                       }
                     }

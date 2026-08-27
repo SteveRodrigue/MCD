@@ -32,13 +32,22 @@ export const CardView: React.FC<CardViewProps> = ({
   const { artUrl, loading, error } = useCardArt(card.code);
   const [imageFailed, setImageFailed] = useState(false);
 
-  // Size Dimension Classes
-  const sizeClasses = {
-    sm: 'w-28 h-40 text-xs',
-    md: 'w-44 h-64 text-sm',
-    lg: 'w-56 h-80 text-base',
-    xl: 'w-72 h-[410px] text-lg',
-  }[size];
+  const isLandscape = card.isLandscape || card.orientation === 'landscape';
+
+  // Size Dimension Classes for Portrait vs Landscape Cards
+  const sizeClasses = isLandscape
+    ? {
+        sm: 'w-40 h-28 text-xs',
+        md: 'w-64 h-44 text-sm',
+        lg: 'w-80 h-56 text-base',
+        xl: 'w-[410px] h-72 text-lg',
+      }[size]
+    : {
+        sm: 'w-28 h-40 text-xs',
+        md: 'w-44 h-64 text-sm',
+        lg: 'w-56 h-80 text-base',
+        xl: 'w-72 h-[410px] text-lg',
+      }[size];
 
   const exhaustedState = instance?.exhausted || isExhausted;
   const showFallback = imageFailed || error || (!artUrl && !loading);

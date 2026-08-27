@@ -101,6 +101,8 @@ export interface NormalizedCard {
   boostIcons?: number;
   boostStar?: boolean;
   errata?: string;
+  isLandscape: boolean;
+  orientation: 'portrait' | 'landscape';
   enrichment?: import('./abilities').CardEnrichment;
   raw: RawUpstreamCard;
 }

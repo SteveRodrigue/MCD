@@ -114,8 +114,20 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
   }
 
-  // 4. If in Hero form: Perform Basic Actions (Thwart vs Attack)
+  // 4. If in Hero form: Perform Basic Actions or Flip to Alter-Ego if critically injured
   if (player.currentForm === 'hero') {
+    // If critical HP (<= 4) and scheme threat is safe (<= 4), flip to Alter-Ego to heal
+    if (player.health <= 4 && state.mainScheme.threat <= 4 && canChangeForm(state, playerId).allowed) {
+      const alterEgoForm = player.availableForms.find((f) => f.type === CardType.ALTER_EGO);
+      if (alterEgoForm) {
+        return {
+          type: 'CHANGE_FORM',
+          playerId,
+          targetFormCode: alterEgoForm.code,
+        };
+      }
+    }
+
     // If Main scheme threat is elevated (>= 2), prioritize Thwart
     if (state.mainScheme.threat >= 2 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
       return {

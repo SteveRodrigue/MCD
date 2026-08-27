@@ -8,7 +8,7 @@ interface OptionsMenuProps {
 }
 
 export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => {
-  const { devMode, toggleDevMode } = useGameSettings();
+  const { devMode, toggleDevMode, sideBySideLayout, toggleSideBySide } = useGameSettings();
 
   if (!isOpen) return null;
 
@@ -33,6 +33,37 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
 
         {/* Settings Body */}
         <div className="space-y-4">
+          {/* Side-by-Side Dual Hero Layout Toggle */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-comic text-base text-comic-black">
+                  Side-by-Side Dual Hero View
+                </span>
+              </div>
+
+              {/* Toggle Switch */}
+              <button
+                onClick={toggleSideBySide}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full border-2 border-comic-black transition-colors cursor-pointer shadow-comic-sm ${
+                  sideBySideLayout ? 'bg-amber-400' : 'bg-slate-300'
+                }`}
+                role="switch"
+                aria-checked={sideBySideLayout}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white border border-comic-black transition-transform ${
+                    sideBySideLayout ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              When playing with 2+ heroes on widescreen viewports, displays the Current Hero and the Next Hero side-by-side.
+            </p>
+          </div>
+
           {/* Developer Mode Toggle */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
             <div className="flex items-center justify-between">

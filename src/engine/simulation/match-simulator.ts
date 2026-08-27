@@ -31,6 +31,20 @@ export function runMatch(
   let state: GameState = JSON.parse(JSON.stringify(initialState));
   let totalActions = 0;
 
+  // 0. Auto-resolve mulligan if match starts in SETUP_PHASE
+  if (state.phase === GamePhase.SETUP_PHASE) {
+    for (const p of state.players) {
+      if (state.setupState && !state.setupState.mulliganCompleted[p.id]) {
+        const { state: nextState } = dispatchAction(state, {
+          type: 'RESOLVE_MULLIGAN',
+          playerId: p.id,
+          discardCardInstanceIds: [],
+        });
+        state = nextState;
+      }
+    }
+  }
+
   while (!state.winner && state.roundNumber <= maxRounds) {
     state.phase = GamePhase.PLAYER_PHASE;
 

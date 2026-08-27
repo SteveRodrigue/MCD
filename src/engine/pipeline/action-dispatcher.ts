@@ -8,6 +8,7 @@ import {
   AlterEgoCard,
   MinionCard,
   AllyCard,
+  GamePhase,
 } from '@engine/models';
 import {
   getPlayer,
@@ -30,6 +31,75 @@ export function dispatchAction(
   const nextState: GameState = JSON.parse(JSON.stringify(state));
 
   switch (action.type) {
+    case 'RESOLVE_MULLIGAN': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      if (!nextState.setupState || nextState.setupState.stage !== 'MULLIGAN_PHASE') {
+        return { state, result: { success: false, error: 'Game is not currently in the Mulligan Phase' } };
+      }
+
+      if (nextState.setupState.mulliganCompleted[action.playerId]) {
+        return { state, result: { success: false, error: 'Player has already completed their mulligan' } };
+      }
+
+      // 1. Separate chosen discards from hand
+      const discardIds = action.discardCardInstanceIds || [];
+      const keptHand: typeof player.hand = [];
+      const mulliganDiscards: typeof player.hand = [];
+
+      for (const card of player.hand) {
+        if (discardIds.includes(card.instanceId)) {
+          mulliganDiscards.push(card);
+        } else {
+          keptHand.push(card);
+        }
+      }
+
+      // 2. Draw replacements from deck
+      const replacementCount = mulliganDiscards.length;
+      const drawnReplacements = player.deck.splice(0, replacementCount);
+      player.hand = [...keptHand, ...drawnReplacements];
+
+      // 3. Shuffle discards back into player deck (RR v1.8 p. 23-24)
+      player.deck = [...player.deck, ...mulliganDiscards].sort(() => Math.random() - 0.5);
+
+      // 4. Mark player mulligan complete
+      nextState.setupState.mulliganCompleted[action.playerId] = true;
+
+      const onomatopoeia = 'MULLIGAN RESOLVED!';
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        phase: GamePhase.SETUP_PHASE,
+        key: 'player.setup.mulligan',
+        params: {
+          player: player.name,
+          discardedCount: replacementCount,
+          handSize: player.hand.length,
+        },
+        onomatopoeia,
+      });
+
+      // 5. Check if all players have completed mulligan
+      const allDone = nextState.players.every((p) => nextState.setupState?.mulliganCompleted[p.id]);
+      if (allDone) {
+        nextState.setupState.stage = 'GAME_READY';
+        nextState.phase = GamePhase.PLAYER_PHASE;
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: 1,
+          phase: GamePhase.PLAYER_PHASE,
+          key: 'phase.player_phase.start',
+          params: { round: 1 },
+          onomatopoeia: 'HEROES ACT!',
+        });
+      }
+
+      return { state: nextState, result: { success: true, onomatopoeia } };
+    }
+
     case 'CHANGE_FORM': {
       const check = canChangeForm(nextState, action.playerId, action.targetFormCode);
       if (!check.allowed) {

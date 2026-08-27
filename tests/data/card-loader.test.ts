@@ -1,0 +1,184 @@
+import { describe, it, expect } from 'vitest';
+import {
+  parseTraits,
+  parseResources,
+  CardCatalog,
+} from '@data/importer/card-loader';
+import {
+  CardType,
+  FactionCode,
+  HeroCard,
+  AlterEgoCard,
+  VillainCard,
+  SideSchemeCard,
+} from '@engine/models';
+
+// Import real upstream JSON datasets directly
+import corePack from '../../data/upstream/pack/core.json';
+import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
+
+describe('Card Loader & Normalizer Unit Tests', () => {
+  describe('Helper Parsers', () => {
+    it('correctly parses compound and single traits', () => {
+      expect(parseTraits('Avenger. Web-Warrior.')).toEqual(['Avenger', 'Web-Warrior']);
+      expect(parseTraits('Genius.')).toEqual(['Genius']);
+      expect(parseTraits('')).toEqual([]);
+      expect(parseTraits(undefined)).toEqual([]);
+    });
+
+    it('correctly aggregates resource yields', () => {
+      const singleMental = parseResources({
+        code: '01001',
+        name: 'Test',
+        type_code: 'event',
+        faction_code: 'basic',
+        pack_code: 'core',
+        position: 1,
+        quantity: 1,
+        resource_mental: 1,
+      });
+      expect(singleMental).toEqual({
+        physical: 0,
+        energy: 0,
+        mental: 1,
+        wild: 0,
+        total: 1,
+      });
+
+      const doublePhysical = parseResources({
+        code: '01002',
+        name: 'Strength',
+        type_code: 'resource',
+        faction_code: 'basic',
+        pack_code: 'core',
+        position: 2,
+        quantity: 1,
+        resource_physical: 2,
+      });
+      expect(doublePhysical.total).toBe(2);
+      expect(doublePhysical.physical).toBe(2);
+    });
+  });
+
+  describe('Core Set Hero Ingestion (Spider-Man)', () => {
+    const catalog = new CardCatalog(corePack);
+
+    it('normalizes Spider-Man (Hero form 01001a) correctly', () => {
+      const card = catalog.getCard('01001a') as HeroCard;
+      expect(card).toBeDefined();
+      expect(card.name).toBe('Spider-Man');
+      expect(card.type).toBe(CardType.HERO);
+      expect(card.faction).toBe(FactionCode.HERO);
+      expect(card.handSize).toBe(5);
+      expect(card.health).toBe(10);
+      expect(card.thwart).toBe(1);
+      expect(card.attack).toBe(2);
+      expect(card.defense).toBe(3);
+      expect(card.traits).toContain('Avenger');
+      expect(card.text).toContain('Spider-Sense');
+      expect(card.alterEgoCode).toBe('01001b');
+    });
+
+    it('normalizes Peter Parker (Alter-Ego form 01001b) correctly', () => {
+      const card = catalog.getCard('01001b') as AlterEgoCard;
+      expect(card).toBeDefined();
+      expect(card.name).toBe('Peter Parker');
+      expect(card.type).toBe(CardType.ALTER_EGO);
+      expect(card.handSize).toBe(6);
+      expect(card.health).toBe(10);
+      expect(card.recover).toBe(3);
+      expect(card.traits).toContain('Genius');
+      expect(card.text).toContain('Scientist');
+    });
+
+    it('retrieves the dual-sided identity via getHeroIdentity helper', () => {
+      const identity = catalog.getHeroIdentity('spider_man');
+      expect(identity).toBeDefined();
+      expect(identity?.hero.code).toBe('01001a');
+      expect(identity?.alterEgo.code).toBe('01001b');
+    });
+
+    it('loads signature cards for Spider-Man (10 unique cards, 15 total quantity)', () => {
+      const spiderManCards = catalog.getCardsBySet('spider_man');
+      expect(spiderManCards.length).toBe(10);
+
+      const totalCardCount = spiderManCards.reduce((acc, c) => acc + c.quantity, 0);
+      // Hero (1) + Alter-Ego (1) + 15 deck cards = 17 total cards
+      expect(totalCardCount).toBe(17);
+
+      // Web-Shooter Upgrade (01008, 2 copies)
+      const webShooter = catalog.getCard('01008');
+      expect(webShooter).toBeDefined();
+      expect(webShooter?.type).toBe(CardType.UPGRADE);
+      expect(webShooter?.cost).toBe(1);
+      expect(webShooter?.quantity).toBe(2);
+
+      // Backflip Event (01003, 2 copies)
+      const backflip = catalog.getCard('01003');
+      expect(backflip).toBeDefined();
+      expect(backflip?.type).toBe(CardType.EVENT);
+      expect(backflip?.cost).toBe(0);
+      expect(backflip?.quantity).toBe(2);
+
+      // Enhanced Spider-Sense (01004, 2 copies)
+      const spiderSense = catalog.getCard('01004');
+      expect(spiderSense).toBeDefined();
+      expect(spiderSense?.type).toBe(CardType.EVENT);
+      expect(spiderSense?.cost).toBe(1);
+      expect(spiderSense?.quantity).toBe(2);
+
+      // Swinging Web Kick (01005, 3 copies)
+      const kick = catalog.getCard('01005');
+      expect(kick).toBeDefined();
+      expect(kick?.type).toBe(CardType.EVENT);
+      expect(kick?.cost).toBe(3);
+      expect(kick?.quantity).toBe(3);
+      expect(kick?.traits).toContain('Attack');
+    });
+  });
+
+  describe('Core Encounter Ingestion (Rhino & Bomb Scare)', () => {
+    const catalog = new CardCatalog(coreEncounterPack);
+
+    it('normalizes Rhino Stage I (01094) correctly', () => {
+      const rhino1 = catalog.getCard('01094') as VillainCard;
+      expect(rhino1).toBeDefined();
+      expect(rhino1.name).toBe('Rhino');
+      expect(rhino1.type).toBe(CardType.VILLAIN);
+      expect(rhino1.stage).toBe('I');
+      expect(rhino1.health).toBe(14);
+      expect(rhino1.healthPerHero).toBe(true);
+      expect(rhino1.scheme).toBe(1);
+      expect(rhino1.attack).toBe(2);
+      expect(rhino1.traits).toContain('Brute');
+      expect(rhino1.traits).toContain('Criminal');
+    });
+
+    it('normalizes Rhino Stage II (01095) correctly', () => {
+      const rhino2 = catalog.getCard('01095') as VillainCard;
+      expect(rhino2).toBeDefined();
+      expect(rhino2.stage).toBe('II');
+      expect(rhino2.health).toBe(15);
+      expect(rhino2.scheme).toBe(1);
+      expect(rhino2.attack).toBe(3);
+      expect(rhino2.text).toContain("Breakin' & Takin'");
+    });
+
+    it('normalizes Bomb Scare modular encounter set cards', () => {
+      const bombScareCards = catalog.getCardsBySet('bomb_scare');
+      expect(bombScareCards.length).toBeGreaterThan(0);
+
+      // Bomb Scare Side Scheme (01109)
+      const sideScheme = catalog.getCard('01109') as SideSchemeCard;
+      expect(sideScheme).toBeDefined();
+      expect(sideScheme?.type).toBe(CardType.SIDE_SCHEME);
+      expect(sideScheme?.hasAcceleration).toBe(true);
+
+      // Hydra Bomber Minion (01110)
+      const bomber = catalog.getCard('01110');
+      expect(bomber).toBeDefined();
+      expect(bomber?.type).toBe(CardType.MINION);
+      expect(bomber?.traits).toContain('Hydra');
+    });
+  });
+});

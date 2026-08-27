@@ -14,7 +14,7 @@ interface PlayerHandTrayProps {
   onCardClick?: (cardInst: CardInstance) => void;
 }
 
-type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity';
+type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity' | 'cost';
 type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
 
 function getPlayerCardAffinity(card: NormalizedCard): string {
@@ -44,6 +44,19 @@ function getPlayerCardTypeName(card: NormalizedCard): string {
   if (type === 'support') return 'Supports';
   if (type === 'resource') return 'Resources';
   return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function getPlayerCardCostGroup(card: NormalizedCard): string {
+  if (card.type === 'resource' || (card as any).type_code === 'resource') {
+    return 'Resources (No Cost)';
+  }
+  const cost = card.cost ?? 0;
+  return `${cost} Cost`;
+}
+
+function getPlayerCardCostValue(card: NormalizedCard): number {
+  if (card.type === 'resource' || (card as any).type_code === 'resource') return -1;
+  return card.cost ?? 0;
 }
 
 export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
@@ -77,6 +90,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       originalIndex,
       affinity: getPlayerCardAffinity(instance.card),
       cardType: getPlayerCardTypeName(instance.card),
+      costGroup: getPlayerCardCostGroup(instance.card),
+      costValue: getPlayerCardCostValue(instance.card),
     }));
 
     if (sortMode === 'deck_order') {
@@ -97,6 +112,13 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       });
     }
 
+    if (sortMode === 'cost') {
+      return [...items].sort((a, b) => {
+        if (a.costValue !== b.costValue) return a.costValue - b.costValue;
+        return a.originalIndex - b.originalIndex;
+      });
+    }
+
     return items;
   }, [deck, sortMode, deckDirection]);
 
@@ -104,7 +126,13 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const groupedDeckItems = useMemo(() => {
     if (sortMode === 'deck_order') return null;
 
-    const groupKey = sortMode === 'card_type' ? 'cardType' : 'affinity';
+    const groupKey =
+      sortMode === 'card_type'
+        ? 'cardType'
+        : sortMode === 'affinity'
+          ? 'affinity'
+          : 'costGroup';
+
     const groups: Record<string, typeof processedDeckItems> = {};
 
     processedDeckItems.forEach((item) => {
@@ -259,7 +287,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-600">
-                    Sort view by Deck Order, Card Type, or Affinity (Aspect). Cards display their name below.
+                    Sort view by Deck Order, Card Type, Affinity (Aspect), or Cost. Cards display their name below.
                   </p>
                 </div>
               </div>
@@ -276,7 +304,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-comic-blue" />
                 <span className="font-comic text-xs text-slate-700 uppercase">Sort View By:</span>
-                <div className="flex gap-1.5">
+                <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => setSortMode('deck_order')}
                     className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
@@ -305,7 +333,17 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                         : 'bg-white text-slate-700 hover:bg-slate-200'
                     }`}
                   >
-                    Affinity (Aspect)
+                    Affinity
+                  </button>
+                  <button
+                    onClick={() => setSortMode('cost')}
+                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
+                      sortMode === 'cost'
+                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
+                        : 'bg-white text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Cost
                   </button>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 # ADR-0016: 1-File-Per-Deck Storage Strategy & Collision-Resistant Naming
 
-* **Status:** Proposed (Under Review)
+* **Status:** Accepted
 * **Date:** 2026-08-27
 * **Deciders:** Core Engineering Team & Project Maintainer
 * **Consulted:** Open Source Contributors & Filesystem Modding Guidelines

@@ -173,7 +173,9 @@ function generateMatchMarkdown(matchId: string, result: any): string {
     }
 
     if (entry.key === 'card.state.exhausted') {
-      formattedLogs.push(`   - ↳ *{{ card "${entry.params?.card}" exhausted }}*`);
+      const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}!]**` : ' **[EXHAUST!]**';
+      const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
+      formattedLogs.push(`   ↳ \`${entry.key}\`${omo}${paramsStr}`);
     } else {
       const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
       const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';

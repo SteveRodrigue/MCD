@@ -16,6 +16,7 @@ interface PlayerHandTrayProps {
 
 type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity' | 'cost';
 type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
+type CostDirection = 'low_to_high' | 'high_to_low';
 
 function getPlayerCardAffinity(card: NormalizedCard): string {
   const faction = (card.faction || (card as any).faction_code || '').toLowerCase();
@@ -90,6 +91,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   // Inspector View Sort States
   const [sortMode, setSortMode] = useState<PlayerSortMode>('deck_order');
   const [deckDirection, setDeckDirection] = useState<DeckDirection>('top_to_bottom');
+  const [costDirection, setCostDirection] = useState<CostDirection>('low_to_high');
 
   const topDiscard = discard[discard.length - 1];
   const nemesisMinion =
@@ -128,13 +130,23 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
     if (sortMode === 'cost') {
       return [...items].sort((a, b) => {
-        if (a.costValue !== b.costValue) return a.costValue - b.costValue;
+        // Keep No Cost / Resource Cards always at the bottom
+        const aIsNoCost = a.costGroup === 'No Cost / Resource Cards';
+        const bIsNoCost = b.costGroup === 'No Cost / Resource Cards';
+        if (aIsNoCost && !bIsNoCost) return 1;
+        if (!aIsNoCost && bIsNoCost) return -1;
+
+        if (a.costValue !== b.costValue) {
+          return costDirection === 'low_to_high'
+            ? a.costValue - b.costValue
+            : b.costValue - a.costValue;
+        }
         return a.originalIndex - b.originalIndex;
       });
     }
 
     return items;
-  }, [deck, sortMode, deckDirection]);
+  }, [deck, sortMode, deckDirection, costDirection]);
 
   // Group items by category if not in pure deck order
   const groupedDeckItems = useMemo(() => {
@@ -377,6 +389,24 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
                   >
                     {deckDirection === 'top_to_bottom' ? '⬆️ Top to Bottom (#1 ⟶ #N)' : '⬇️ Bottom to Top (#N ⟶ #1)'}
+                  </button>
+                </div>
+              )}
+
+              {sortMode === 'cost' && (
+                <div className="flex items-center gap-2">
+                  <ArrowDownUp className="w-4 h-4 text-slate-600" />
+                  <button
+                    onClick={() =>
+                      setCostDirection((prev) =>
+                        prev === 'low_to_high' ? 'high_to_low' : 'low_to_high'
+                      )
+                    }
+                    className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
+                  >
+                    {costDirection === 'low_to_high'
+                      ? '⬆️ Low to High (1 ⟶ 4+)'
+                      : '⬇️ High to Low (4+ ⟶ 1)'}
                   </button>
                 </div>
               )}

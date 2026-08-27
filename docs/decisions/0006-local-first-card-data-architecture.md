@@ -19,9 +19,10 @@ We need a robust, local-first data architecture that keeps all data locally vers
 
 ## Decision Drivers
 1. **100% Local & Offline Reliability:** All card data must be bundled directly in the codebase. The game engine and test suite must run 100% offline.
-2. **Immutability & Stability:** Upstream changes must NEVER automatically alter or break production code. Syncing from upstream is an explicit, opt-in development task.
-3. **Layered Override & Supplementation System:** Ability to enrich or override upstream card properties (e.g. adding engine effect handlers, custom fan content, or official FFG rules errata) without mutating upstream raw files.
-4. **Automated Validation on Sync:** Any sync from upstream must pass schema validation and test recursion before being accepted.
+2. **Strict Read-Only Immutability for Upstream Data:** Upstream `zzorba/marvelsdb-json-data` is treated as a **strictly READ-ONLY** reference snapshot. MCD application code, importers, and engine logic must **NEVER** write to, mutate, or alter upstream files.
+3. **Layered Override & Supplementation System:** Any errata, missing metadata, rules corrections, or engine effect hooks MUST be placed exclusively in `src/data/overrides/` or `src/data/supplemental/`.
+4. **Immutability & Stability:** Upstream changes must NEVER automatically alter or break production code. Syncing from upstream is an explicit, opt-in development task.
+5. **Automated Validation on Sync:** Any sync from upstream must pass schema validation and test recursion before being accepted.
 
 ---
 
@@ -29,12 +30,13 @@ We need a robust, local-first data architecture that keeps all data locally vers
 
 ```
 +-----------------------------------------------------------------------------------+
-|  1. Upstream Raw Layer (data/upstream/)                                           |
-|     - Local snapshot of zzorba/marvelsdb-json-data (packs, cards, translations)   |
+|  1. Upstream Raw Layer (data/upstream/) [STRICTLY READ-ONLY]                      |
+|     - Exact local mirror of zzorba/marvelsdb-json-data (packs, cards, locales)    |
+|     - NEVER modified or written to by MCD code. Read-only reference snapshot.     |
 |     - Updated ONLY via explicit manual command: `npm run data:sync`               |
 +-----------------------------------------+-----------------------------------------+
                                           |
-                                          v
+                                          v  [Read-Only Stream]
 +-----------------------------------------------------------------------------------+
 |  2. Supplemental & Override Layer (src/data/overrides/ & src/data/supplemental/)  |
 |     - Engine effect hooks (trigger conditions, payment logic, target filters)     |

@@ -100,19 +100,51 @@ export function step2_villainActivations(state: GameState): GameState {
         continue;
       }
 
+      // Timing Window 2 (Interrupt): Spider-Man's Spider-Sense (01001a)
+      // When villain initiates an attack against you, draw 1 card.
+      if (player.activeFormCard.code === '01001a') {
+        const drawnCard = player.deck.shift();
+        if (drawnCard) {
+          player.hand.push(drawnCard);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            key: 'ability.spiderSense.triggered',
+            params: { player: player.name },
+            onomatopoeia: 'SPIDER-SENSE TINGLES! (CARD DRAW)',
+          });
+        }
+      }
+
       // Draw Boost Card
       const boostCard = drawEncounterCard(state);
       const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
       const baseAttack = state.villain.card.attack || 0;
-      const totalAttack = baseAttack + boostIcons;
+      let totalAttack = baseAttack + boostIcons;
 
       if (boostCard) {
         state.encounterDiscard.push(boostCard);
       }
 
+      // Timing Window 2 (Defense Interrupt): Backflip (01003)
+      // When you would take any amount of damage from an attack, prevent all of that damage.
+      const backflipIdx = player.hand.findIndex((c) => c.card.code === '01003');
+      if (backflipIdx !== -1) {
+        const [backflip] = player.hand.splice(backflipIdx, 1);
+        player.discard.push(backflip);
+        totalAttack = 0; // All damage prevented!
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'card.backflip.preventedDamage',
+          params: { player: player.name },
+          onomatopoeia: 'BACKFLIP! (0 DAMAGE)',
+        });
+      }
+
       // Check Tough on Hero
       const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
-      if (toughIndex !== -1) {
+      if (toughIndex !== -1 && totalAttack > 0) {
         player.statusCards.splice(toughIndex, 1);
         state.log.push({
           id: `log_${Date.now()}`,
@@ -121,7 +153,7 @@ export function step2_villainActivations(state: GameState): GameState {
           params: { player: player.name },
           onomatopoeia: 'CLANG! (TOUGH)',
         });
-      } else {
+      } else if (totalAttack > 0) {
         player.health = Math.max(0, player.health - totalAttack);
         state.log.push({
           id: `log_${Date.now()}`,

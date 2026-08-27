@@ -111,6 +111,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
     it('Villain Attacks player in Hero form (drawing boost card)', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
+      gameState.players[0].hand = []; // Empty hand so no Backflip triggers
 
       const boostCard = createCardInstance({
         ...catalog.getCard('01107')!,

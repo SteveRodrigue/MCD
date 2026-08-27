@@ -24,14 +24,21 @@ export interface CardInstance {
   attachments?: CardInstance[];
 }
 
-export type IdentityForm = 'hero' | 'alter_ego';
+export type IdentityFormType = 'hero' | 'alter_ego';
 
 export interface PlayerState {
   id: string;
   name: string;
+  /** Primary hero card definition (for 2-form or primary identity) */
   hero: HeroCard;
+  /** Primary alter-ego card definition */
   alterEgo: AlterEgoCard;
-  currentForm: IdentityForm;
+  /** All available form cards for this identity (e.g. 2 for Spider-Man, 3 for Ant-Man/Wasp/Angel) */
+  availableForms: NormalizedCard[];
+  /** Currently active form card definition */
+  activeFormCard: NormalizedCard;
+  /** Whether the current active form is considered 'hero' or 'alter_ego' */
+  currentForm: IdentityFormType;
   health: number;
   maxHealth: number;
   exhausted: boolean;

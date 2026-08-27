@@ -85,11 +85,18 @@ export function setupGame(options: GameSetupOptions): GameState {
     const startingHandSize = pConfig.alterEgo.handSize;
     const hand = shuffledDeck.splice(0, startingHandSize);
 
+    // Available forms for this identity
+    const availableForms: NormalizedCard[] = (pConfig as any).additionalForms
+      ? [pConfig.alterEgo, pConfig.hero, ...(pConfig as any).additionalForms]
+      : [pConfig.alterEgo, pConfig.hero];
+
     return {
       id: pConfig.id,
       name: pConfig.name,
       hero: pConfig.hero,
       alterEgo: pConfig.alterEgo,
+      availableForms,
+      activeFormCard: pConfig.alterEgo,
       currentForm: 'alter_ego',
       health: pConfig.alterEgo.health,
       maxHealth: pConfig.alterEgo.health,

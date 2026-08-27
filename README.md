@@ -21,7 +21,31 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 ---
 
-## 🏗️ Architecture & Documentation
+## 🏗️ Architecture & Dataflow
+
+```mermaid
+flowchart TD
+    subgraph UI ["🎨 Presentation Layer (src/ui/)"]
+        UserAction["User Interaction<br/>(Click Card / Suit Up / Attack)"]
+        ReactViews["React Tabletop Components<br/>(VillainZone, HeroZone, HandTray)"]
+    end
+
+    subgraph Dispatch ["⚡ Action Dispatch"]
+        ActionPayload["Action Object<br/>{ type: 'PLAY_CARD', playerId, ... }"]
+    end
+
+    subgraph Engine ["🧠 Headless Rules Engine (src/engine/)"]
+        Pipeline["Trigger Pipeline & Priority Machine<br/>(Legality ➔ Interrupts ➔ Resolution ➔ Responses)"]
+        Reducers["State Reducers & Mechanics<br/>(Health, Threat, Status Tokens, Piles)"]
+        NewState["Immutable New GameState"]
+    end
+
+    UserAction -->|Dispatches| ActionPayload
+    ActionPayload --> Pipeline
+    Pipeline --> Reducers
+    Reducers --> NewState
+    NewState -->|Rerenders Tabletop| ReactViews
+```
 
 * **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 through ADR-0013+).
 * **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
@@ -79,6 +103,7 @@ npm run lint
 ```
 MCD/
 ├── .github/              # CI workflows, Issue & PR templates
+├── .vscode/              # Recommended IDE extensions and workspace settings
 ├── docs/                 # Architectural documentation and Decision Records
 │   ├── decisions/        # Architecture Decision Records (ADRs & Index)
 │   └── ...               # Roadmaps, rules specs, coding standards

@@ -20,13 +20,12 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Path Aliases */
-    "baseUrl": ".",
+    /* Path Aliases (resolved relative to tsconfig location) */
     "paths": {
-      "@engine/*": ["src/engine/*"],
-      "@data/*": ["src/data/*"],
-      "@ui/*": ["src/ui/*"],
-      "@assets/*": ["src/assets/*"]
+      "@engine/*": ["./src/engine/*"],
+      "@data/*": ["./src/data/*"],
+      "@ui/*": ["./src/ui/*"],
+      "@assets/*": ["./src/assets/*"]
     }
   },
   "include": ["src", "tests", "vite.config.ts", "vitest.config.ts"]

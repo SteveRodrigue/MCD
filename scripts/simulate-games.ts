@@ -175,7 +175,7 @@ function generateMatchMarkdown(matchId: string, result: any): string {
     if (entry.key === 'card.state.exhausted') {
       const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}!]**` : ' **[EXHAUST!]**';
       const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';
-      formattedLogs.push(`   ↳ \`${entry.key}\`${omo}${paramsStr}`);
+      formattedLogs.push(`\n   ↳ \`${entry.key}\`${omo}${paramsStr}\n`);
     } else {
       const omo = entry.onomatopoeia ? ` **[${entry.onomatopoeia}]**` : '';
       const paramsStr = entry.params ? ` \`${JSON.stringify(entry.params)}\`` : '';

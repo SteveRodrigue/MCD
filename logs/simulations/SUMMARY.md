@@ -1,6 +1,6 @@
 # Marvel Champions Match Simulator — History & Execution Index
 
-**Last Batch Run:** 2026-08-27T03:35:44.457Z  
+**Last Batch Run:** 2026-08-27T03:36:41.020Z  
 **Scenario:** Rhino (Stage I) — *The Break-In!*  
 **Modular Set:** Bomb Scare  
 **Hero:** Spider-Man (Justice Aspect, 40-Card Deck)
@@ -11,9 +11,9 @@
 
 | Match File | Timestamp / ID | Winner | Loss / Win Condition | Rounds | Final Hero HP | Final Rhino HP | Final Threat |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| [game_2026-08-27T03-35-44-346Z_match_1787801744345_1.md](./game_2026-08-27T03-35-44-346Z_match_1787801744345_1.md) | `match_1787801744345_1` | 💀 **HERO DEFEAT** | Scheme reached limit (7) | 7 | 5/10 | 12/14 | 7/7 |
-| [game_2026-08-27T03-35-44-392Z_match_1787801744345_2.md](./game_2026-08-27T03-35-44-392Z_match_1787801744345_2.md) | `match_1787801744345_2` | 💀 **HERO DEFEAT** | Scheme reached limit (7) | 5 | 6/10 | 12/14 | 7/7 |
-| [game_2026-08-27T03-35-44-424Z_match_1787801744345_3.md](./game_2026-08-27T03-35-44-424Z_match_1787801744345_3.md) | `match_1787801744345_3` | 💀 **HERO DEFEAT** | Scheme reached limit (7) | 5 | 10/10 | 4/14 | 7/7 |
+| [game_2026-08-27T03-36-40-900Z_match_1787801800899_1.md](./game_2026-08-27T03-36-40-900Z_match_1787801800899_1.md) | `match_1787801800899_1` | 💀 **HERO DEFEAT** | Scheme reached limit (7) | 8 | 10/10 | 10/14 | 7/7 |
+| [game_2026-08-27T03-36-40-967Z_match_1787801800899_2.md](./game_2026-08-27T03-36-40-967Z_match_1787801800899_2.md) | `match_1787801800899_2` | 💀 **HERO DEFEAT** | Hero HP reduced to 0 | 2 | 0/10 | 12/14 | 1/7 |
+| [game_2026-08-27T03-36-40-981Z_match_1787801800899_3.md](./game_2026-08-27T03-36-40-981Z_match_1787801800899_3.md) | `match_1787801800899_3` | 💀 **HERO DEFEAT** | Scheme reached limit (7) | 6 | 7/10 | 12/14 | 8/7 |
 
 ---
 

@@ -262,6 +262,22 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
+      const attackDmg = allyCard.attack || 1;
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        key: 'player.action.allyAttack',
+        params: {
+          player: player.name,
+          ally: allyCard.name,
+          damage: attackDmg,
+          target: action.targetType,
+        },
+        onomatopoeia: 'ALLY ATTACK!',
+      });
 
       nextState.log.push({
         id: `log_${Date.now()}`,
@@ -273,8 +289,6 @@ export function dispatchAction(
         params: { card: allyCard.name },
         onomatopoeia: 'EXHAUST',
       });
-
-      const attackDmg = allyCard.attack || 1;
 
       // Deal damage to target
       if (action.targetType === 'villain') {
@@ -314,6 +328,31 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
+      let thwValue = allyCard.thwart || 1;
+
+      // Jessica Jones THW boost: +1 for each side scheme in play
+      if (allyCard.code === '01059') {
+        thwValue += nextState.sideSchemes.length;
+      }
+
+      if (action.targetType === 'main_scheme') {
+        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - thwValue);
+      }
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        key: 'player.action.allyThwart',
+        params: {
+          player: player.name,
+          ally: allyCard.name,
+          threatRemoved: thwValue,
+          target: action.targetType,
+        },
+        onomatopoeia: 'ALLY THWART!',
+      });
 
       nextState.log.push({
         id: `log_${Date.now()}`,
@@ -325,17 +364,6 @@ export function dispatchAction(
         params: { card: allyCard.name },
         onomatopoeia: 'EXHAUST',
       });
-
-      let thwValue = allyCard.thwart || 1;
-
-      // Jessica Jones THW boost: +1 for each side scheme in play
-      if (allyCard.code === '01059') {
-        thwValue += nextState.sideSchemes.length;
-      }
-
-      if (action.targetType === 'main_scheme') {
-        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - thwValue);
-      }
 
       // Consequential damage to ally
       const consequential = allyCard.thwartCost ?? 1;

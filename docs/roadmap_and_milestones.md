@@ -4,6 +4,19 @@ This document outlines the phased development roadmap for **Marvel Champions Dig
 
 ---
 
+## 🎯 Feature Prioritization Framework
+
+All uncompleted and future roadmap items are categorized using the following priority scale:
+
+| Level | Badge | Description | Target |
+| :--- | :--- | :--- | :--- |
+| **P0** | `🔴 [Must-Have]` | **Critical Path / Core Playability:** Non-negotiable for a fully functional, playable game loop. | Immediate (Current Sprint) |
+| **P1** | `🟠 [Should-Have]` | **High Priority / Core Content:** Essential UX, complete Core Set cards, and key accessibility features. | Phase 3 & Phase 4 |
+| **P2** | `🟡 [Nice-to-Have]` | **Polish & Ergonomics:** Visual flourishes, audio, mobile layout adaptations, and developer tooling. | Phase 4 & Phase 5 |
+| **P3** | `🔵 [Future / Experimental]` | **Ecosystem & Distribution:** Native desktop binaries, multiplayer, and multi-language packs. | Phase 5+ |
+
+---
+
 ## 🗺️ Roadmap Overview
 
 ```mermaid
@@ -81,42 +94,53 @@ graph TD
   * Persistent `GameSettingsContext` with top bar Dev Mode indicator and Options Menu.
   * Encounter Deck Inspector with multi-tier sorting (Deck Order, Card Type, Encounter Set).
   * Player Deck Inspector with multi-tier sorting (Deck Order, Card Type, Affinity, Cost with direction toggle and separated Resource cards).
-* [ ] **Interactive Action Prompts & Tabletop Play (Next):**
-  * Card play payment modal with multi-resource selectors.
-  * Basic Hero actions (Suit Up / Flip, Basic Attack, Basic Thwart, Basic Recover).
-  * Interactive turn pass and Villain Phase step-through.
-* [ ] **Dynamic Onomatopoeia Overlays:**
+* [ ] 🔴 `[Must-Have]` **Interactive Card Play & Resource Payment Modal:**
+  * Clicking a card in hand opens the payment modal with resource selection from hand cards and exhausted generators (*Web-Shooter*, Peter Parker's Scientist ability).
+* [ ] 🔴 `[Must-Have]` **Hero Identity Basic Actions:**
+  * Interactive action buttons on Hero station: Suit Up / Flip form, Basic Attack, Basic Thwart, Basic Recover.
+* [ ] 🔴 `[Must-Have]` **Turn Pass & Step-by-Step Villain Phase Execution:**
+  * Pass turn button triggering sequential Villain Phase activations and upkeep card redraws.
+* [ ] 🔴 `[Must-Have]` **Win / Defeat Victory Banners:**
+  * Game-over modal overlay when Villain is defeated (Victory) or Hero HP reaches 0 / Scheme target reached (Defeat).
+* [ ] 🟠 `[Should-Have]` **Dynamic Onomatopoeia Overlays:**
   * Starburst spring-physics popups (*POW!*, *BAM!*, *KAPOW!*, *THWIP!*, *FOILED!*, *CLANG!*).
+* [ ] 🟡 `[Nice-to-Have]` **Audio & Sound Effects:**
+  * Retro comic action sounds, card dealing chimes, and punch impacts.
 
 ---
 
 ## 📍 Phase 4: Core Set Expansion & Deckbuilder 🃏 (Planned)
 *Objective: Complete all Core Set content and local deck management.*
 
-* **Heroes:** Captain Marvel, Iron Man, She-Hulk, Black Panther.
-* **Aspects:** Aggression, Leadership, Protection.
-* **Villains:** Klaw (Stage I & II + Weapons Runner), Ultron (Stage I & II + Drone mechanics).
-* **Modular Encounter Sets:** Masters of Evil, Under Attack, Legions of Hydra, The Doomsday Chair.
-* **In-Game Deckbuilder:** Filter cards by aspect, resource, trait; create and save custom decks to local storage.
+* 🔴 `[Must-Have]` **Remaining 4 Core Set Heroes:**
+  * Captain Marvel (Leadership), Iron Man (Aggression), She-Hulk (Aggression), Black Panther (Protection).
+* 🔴 `[Must-Have]` **Remaining 2 Core Set Villains:**
+  * Klaw (Stage I & II + Weapons Runner / Boost cards), Ultron (Stage I & II + Drone mechanics).
+* 🟠 `[Should-Have]` **Core Modular Encounter Sets:**
+  * Masters of Evil, Under Attack, Legions of Hydra, The Doomsday Chair.
+* 🟠 `[Should-Have]` **In-Game Custom Deckbuilder:**
+  * Filter cards by aspect, resource, trait; create, validate deck legality (40–50 cards), and save custom decks to `localStorage`.
+* 🟡 `[Nice-to-Have]` **Custom Scenario Builder:**
+  * Combine any villain with any modular encounter set and difficulty level.
 
 ---
 
 ## 📍 Phase 5: Ecosystem, Desktop Packaging & Future Features 🚀 (Planned)
 *Objective: Community connectivity, cross-device experience, and native distribution.*
 
-* **Adaptive Device & Viewport Orientation:**
-  * Fully responsive board layout dynamically adapting between **Portrait** (vertical column stack optimized for mobile phones/tablets) and **Landscape** (horizontal 2-tier tabletop for desktop and widescreen displays).
-* **Touch & Mobile/Tablet Compatibility:**
-  * Touch-optimized gestures: tap-to-inspect, swipe-to-scroll hand dock, long-press preview zoom, and enlarged touch targets for tablet/mobile web and Tauri mobile apps.
-* **Power-User Keyboard Shortcuts & Hotkeys:**
+* 🟠 `[Should-Have]` **Power-User Keyboard Shortcuts & Hotkeys:**
   * Configurable hotkeys for rapid play and accessibility (`Space`, `F`, `A`, `T`, `R`, `1`–`9`, `L`, `Esc`).
-* **MarvelsDB Public REST API Integration:**
+* 🟠 `[Should-Have]` **MarvelsDB Public REST API Integration:**
   * 1-click **"Import Deck by MarvelsDB URL / ID"** button to load any community deck directly from `https://marvelcdb.com`.
-* **Native Desktop Executable (Tauri):**
-  * Package standalone Windows `.exe` and installers with native file system access and ultra-low RAM footprint.
-* **Localization Packs:**
-  * Complete translations for French, Spanish, German, etc. via `i18next` and MarvelsDB multi-lingual sets.
-* **Developer State Presets (Debug Playground):**
+* 🟡 `[Nice-to-Have]` **Adaptive Device & Viewport Orientation:**
+  * Fully responsive board layout dynamically adapting between **Portrait** (vertical column stack optimized for mobile phones/tablets) and **Landscape** (horizontal 2-tier tabletop for desktop and widescreen displays).
+* 🟡 `[Nice-to-Have]` **Touch & Mobile/Tablet Compatibility:**
+  * Touch-optimized gestures: tap-to-inspect, swipe-to-scroll hand dock, long-press preview zoom, and enlarged touch targets for tablet/mobile web and Tauri mobile apps.
+* 🟡 `[Nice-to-Have]` **Developer State Presets (Debug Playground):**
   * Quick-switcher dropdown in Dev Mode offering pre-configured scenario states (e.g., *"Mid-game: 3 Engaged Minions"*, *"Main Scheme at 90% Threat"*, *"Villain Stage II with 3 Attachments"*) for instant edge-case testing and UI layout validation.
-* **Peer-to-Peer Network Multiplayer:**
+* 🔵 `[Future / Experimental]` **Native Desktop Executable (Tauri):**
+  * Package standalone Windows `.exe` and installers with native file system access and ultra-low RAM footprint.
+* 🔵 `[Future / Experimental]` **Localization Packs:**
+  * Complete translations for French, Spanish, German, etc. via `i18next` and MarvelsDB multi-lingual sets.
+* 🔵 `[Future / Experimental]` **Peer-to-Peer Network Multiplayer:**
   * Synchronized game state room for 2–4 players over WebRTC / WebSockets.

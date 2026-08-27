@@ -261,6 +261,37 @@ export function executeEffect(
       return { state, success: true, onomatopoeia: 'NICK FURY DEALS 4 DAMAGE!' };
     }
 
+    case 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE': {
+      if (player.currentForm === 'alter_ego') {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      } else {
+        // Villain attacks hero immediately (ATK damage)
+        const atkDmg = (state.villain.card as any).attack || 2;
+        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          player.statusCards.splice(toughIdx, 1);
+          return { state, success: true, onomatopoeia: 'CLANG! (TOUGH ABSORBS ATTACK)' };
+        }
+        player.health = Math.max(0, player.health - atkDmg);
+        if (player.health <= 0) state.winner = 'VILLAIN';
+        return { state, success: true, onomatopoeia: `VILLAIN ATTACKS! ${atkDmg} DAMAGE!` };
+      }
+    }
+
+    case 'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE': {
+      if (player.tableau.length > 0) {
+        const [discarded] = player.tableau.splice(0, 1);
+        player.discard.push(discarded);
+        return { state, success: true, onomatopoeia: `DISCARDED ${discarded.card.name}!` };
+      } else {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      }
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }

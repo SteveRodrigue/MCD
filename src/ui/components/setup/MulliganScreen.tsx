@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Play, Users, Check } from 'lucide-react';
+import { CheckCircle2, Play, Users, Check, Crown } from 'lucide-react';
 import { GameState, CardInstance } from '../../../engine';
 import { CardView } from '../cards/CardView';
 
@@ -72,6 +72,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
           {gameState.players.map((p, idx) => {
             const isDone = Boolean(mulliganCompletedMap[p.id]);
             const isSelected = activeSeatIndex === idx;
+            const isStartingPlayer = idx === 0;
 
             return (
               <button
@@ -96,6 +97,11 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                   Seat {idx + 1}: {p.activeFormCard.name}
                 </span>
                 <span className="text-[10px] opacity-75 uppercase">({p.hero.name})</span>
+                {isStartingPlayer && (
+                  <span className="text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded font-bold flex items-center gap-0.5">
+                    👑 STARTING
+                  </span>
+                )}
                 {isDone && (
                   <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
                     READY
@@ -111,7 +117,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
       <div className="comic-panel p-6 bg-white mb-6 relative">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b-2 border-comic-black pb-4 mb-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="w-7 h-7 rounded-full bg-comic-red text-white font-comic text-sm flex items-center justify-center font-bold border border-comic-black">
                 {activeSeatIndex + 1}
               </span>
@@ -121,6 +127,12 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
                   ({activePlayer.hero.name})
                 </span>
               </h2>
+              {activeSeatIndex === 0 && (
+                <span className="bg-comic-yellow text-comic-black font-comic text-xs px-2.5 py-0.5 rounded-full border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                  <Crown className="w-3.5 h-3.5 text-comic-red" />
+                  <span>STARTING PLAYER (ROUND 1)</span>
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-600 mt-0.5">
               Alter-Ego Form • Starting Hand Size: {activePlayer.alterEgo.handSize} Cards • Hit

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, BookOpen, Users, Sparkles, Settings, Wrench } from 'lucide-react';
+import { RefreshCw, BookOpen, Users, Sparkles, Settings, Wrench, Crown } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { OptionsMenu } from './OptionsMenu';
@@ -54,19 +54,24 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Users className="w-3.5 h-3.5" />
               Hero Seat:
             </span>
-            {gameState.players.map((p, idx) => (
-              <button
-                key={p.id}
-                onClick={() => onSelectSeat(idx)}
-                className={`px-3 py-1 font-comic text-xs rounded border transition-all cursor-pointer ${
-                  activeSeatIndex === idx
-                    ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
-                    : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
-                }`}
-              >
-                Seat {idx + 1}: {p.activeFormCard.name}
-              </button>
-            ))}
+            {gameState.players.map((p, idx) => {
+              const isFirstPlayer = gameState.firstPlayerIndex === idx;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => onSelectSeat(idx)}
+                  className={`px-3 py-1 font-comic text-xs rounded border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeSeatIndex === idx
+                      ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
+                      : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
+                  }`}
+                  title={isFirstPlayer ? `Holds First Player Token (Round ${gameState.roundNumber})` : undefined}
+                >
+                  {isFirstPlayer && <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />}
+                  <span>Seat {idx + 1}: {p.activeFormCard.name}</span>
+                </button>
+              );
+            })}
           </div>
         )}
 

@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Ben-Day Halftone Dot Pattern */
+  .bg-bendy-dots {
+    background-image: radial-gradient(#ED1D24 15%, transparent 16%), radial-gradient(#0284C7 15%, transparent 16%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.08;
+  }
+
+  /* Comic Panel Outline */
+  .comic-panel {
+    border: 3px solid #111111;
+    box-shadow: 5px 5px 0px 0px #111111;
+    background-color: #FFFFFF;
+  }
+
+  /* Comic Speech / Thought Bubble */
+  .comic-bubble {
+    border: 2px solid #111111;
+    border-radius: 12px;
+    box-shadow: 3px 3px 0px 0px #111111;
+    background-color: #FFFFFF;
+  }
+}

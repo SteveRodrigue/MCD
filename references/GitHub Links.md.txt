@@ -1,3 +1,3 @@
 This repo contains every card metadata for Marvel Champions
 
-https://github.com/SteveRodrigue/marvelsdb-json-data
+https://github.com/zzorba/marvelsdb-json-data

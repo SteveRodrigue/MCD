@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Users, Flame, Zap, Play, Info, Trash2 } from 'lucide-react';
+import { Users, Flame, Zap, Play, Info, Trash2, Crown } from 'lucide-react';
 import { listScenarios } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { CardCatalog } from '../../../data/importer/card-loader';
@@ -251,8 +251,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             </div>
 
             <p className="text-xs text-slate-600">
-              Assign heroes to any of the 4 seat slots below. The game scales automatically to the
-              number of assigned heroes.
+              Assign heroes to the seat slots below. <span className="font-bold text-comic-black">Hero Seat 1 is designated as the Starting Player</span> (holds the First Player Token in Round 1 per RR v1.8 Step 12).
             </p>
 
             {/* The 4 Hero Seat Slots */}
@@ -302,13 +301,19 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                         {/* Seat Info & Controls */}
                         <div className="flex-1 min-w-0 space-y-2">
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="w-5 h-5 rounded-full bg-comic-red text-white font-comic text-xs flex items-center justify-center font-bold border border-comic-black">
                                 {index + 1}
                               </span>
                               <span className="font-comic text-base text-comic-black font-bold truncate">
                                 {deckDef.heroName}
                               </span>
+                              {index === 0 && (
+                                <span className="bg-comic-yellow text-comic-black font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase flex items-center gap-1 shadow-comic-sm">
+                                  <Crown className="w-3 h-3 text-comic-red" />
+                                  <span>STARTING PLAYER (ROUND 1)</span>
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="bg-comic-blue text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
@@ -362,13 +367,19 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                     ) : (
                       /* Empty Seat Tile */
                       <div className="py-2 px-1 flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="w-5 h-5 rounded-full bg-slate-300 text-slate-700 font-comic text-xs flex items-center justify-center font-bold border border-slate-400">
                             {index + 1}
                           </span>
                           <span className="font-comic text-sm text-slate-600 font-bold">
                             Hero Seat {index + 1} (Empty)
                           </span>
+                          {index === 0 && (
+                            <span className="bg-amber-100 text-amber-900 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase flex items-center gap-1">
+                              <Crown className="w-3 h-3 text-amber-700" />
+                              <span>STARTING PLAYER</span>
+                            </span>
+                          )}
                         </div>
 
                         {/* Quick Assign Dropdown */}

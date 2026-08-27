@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { GameState } from '../../../engine/models';
 import { TopBar } from './TopBar';
 import { VillainZone } from './VillainZone';
-import { MinionAndSchemeZone } from './MinionAndSchemeZone';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
@@ -32,22 +31,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
 
       {/* 2. Main Play Areas Tabletop */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6 pb-8">
-        {/* Section 1: Villain & Main Scheme Zone */}
+        {/* Scenario Tier: Encounter Deck, Villain Card, Main Scheme, Side Schemes */}
         <VillainZone
           villain={gameState.villain}
           mainScheme={gameState.mainScheme}
+          sideSchemes={gameState.sideSchemes}
           encounterDeckCount={gameState.encounterDeck.length}
           encounterDiscard={gameState.encounterDiscard}
           accelerationTokens={gameState.accelerationTokens}
         />
 
-        {/* Section 2: Active Side Schemes & Engaged Minions Zone */}
-        <MinionAndSchemeZone
-          sideSchemes={gameState.sideSchemes}
-          engagedMinions={activePlayer.engagedMinions}
-        />
-
-        {/* Section 3: Hero Play Area (Identity, Allies, Tableau) */}
+        {/* Hero Tier: Engaged Minions (Per Player), Player Deck, Identity, Allies, Tableau */}
         <HeroZone player={activePlayer} />
       </main>
 

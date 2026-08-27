@@ -14,7 +14,9 @@ import { ScenarioSelector, SetupSelection } from './components/setup/ScenarioSel
 import { MulliganScreen } from './components/setup/MulliganScreen';
 import { GameBoard } from './components/board/GameBoard';
 
-export const App: React.FC = () => {
+import { GameSettingsProvider } from './context/GameSettingsContext';
+
+export const AppContent: React.FC = () => {
   const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME'>('SETUP');
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -98,6 +100,14 @@ export const App: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <GameSettingsProvider>
+      <AppContent />
+    </GameSettingsProvider>
   );
 };
 

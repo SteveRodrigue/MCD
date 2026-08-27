@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Layers, Sparkles, Skull, X, Eye } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -22,6 +23,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   handSizeLimit,
   onCardClick,
 }) => {
+  const { devMode } = useGameSettings();
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [showNemesisModal, setShowNemesisModal] = useState(false);
@@ -39,11 +41,19 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           <div className="flex items-center gap-3 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
             {/* Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
             <div
-              onClick={() => setShowDeckModal(true)}
-              className="flex flex-col items-center group cursor-pointer"
-              title="Inspect Player Deck (Dev Mode - Search/Scry)"
+              onClick={() => devMode && setShowDeckModal(true)}
+              className={`flex flex-col items-center group ${devMode ? 'cursor-pointer' : 'cursor-default'}`}
+              title={
+                devMode
+                  ? 'Inspect Player Deck (Dev Mode Active)'
+                  : 'Player Draw Deck (Hidden Information • Enable Dev Mode to inspect)'
+              }
             >
-              <div className="w-18 h-26 sm:w-20 sm:h-28 bg-comic-blue border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots group-hover:border-comic-yellow transition-all">
+              <div
+                className={`w-18 h-26 sm:w-20 sm:h-28 bg-comic-blue border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots transition-all ${
+                  devMode ? 'group-hover:border-comic-yellow' : ''
+                }`}
+              >
                 <Layers className="w-5 h-5 text-white mb-1 group-hover:scale-110 transition-transform" />
                 <span className="font-comic text-lg text-white leading-none">{deck.length}</span>
                 <span className="text-[9px] font-bold text-sky-200 uppercase">DECK</span>

@@ -7,30 +7,28 @@
 [![Vite](https://img.shields.io/badge/Vite-5.x-646cff.svg)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind-3.x-38bdf8.svg)](https://tailwindcss.com/)
 
-An open-source, faithful digital adaptation of **Marvel Champions: The Card Game** (by Fantasy Flight Games), featuring a **deterministic headless rules engine** and a **1960s Silver-Age Comic / Pop-Art aesthetic** (inspired by Batman '66 and vintage Marvel comic panels).
+An open-source, faithful digital adaptation of **Marvel Champions: The Card Game** (by Fantasy Flight Games), featuring a **deterministic headless rules engine** and a **1960s Silver-Age Comic / Pop-Art aesthetic** (inspired by vintage Marvel comic panels and Batman '66).
 
 ---
 
 ## 🌟 Key Features
 
 * **Headless & Deterministic Rules Engine:** 100% test-driven core engine decoupled from rendering, ensuring accurate execution of complex timing triggers, interrupts, forced responses, and replacement effects.
-* **60s Comic Pop-Art Aesthetic:** Ben-Day halftone patterns, comic book panel playmats, speech bubbles, and punchy onomatopoeia overlays (*POW!*, *BAM!*, *KAPOW!*, *THWIP!*).
+* **60s Comic Pop-Art Aesthetic:** Ben-Day halftone dot patterns, comic book panel playmats, speech bubbles, dynamic boundary-aware hover-zoom, and punchy onomatopoeia overlays (*POW!*, *BAM!*, *KAPOW!*, *THWIP!*).
 * **Data-Driven Architecture:** Ingests official card metadata directly from [`marvelsdb-json-data`](https://github.com/SteveRodrigue/marvelsdb-json-data).
+* **Developer Tooling & Inspectors:** Integrated Dev Mode with search, scrying, and multi-tier sorting for Player and Encounter decks.
 * **Cross-Platform:** Runs seamlessly in modern web browsers and packages into lightweight native desktop executables via **Tauri**.
 
 ---
 
-## 🏗️ Architecture & Decisions
+## 🏗️ Architecture & Documentation
 
-* **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine specifications for all timing pipelines, actions, and keyword reducers (derived from RR v1.8).
-* **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan.
-* **[Coding Guidelines & Best Practices](docs/coding_guidelines.md)** — Strict architectural boundaries, typing standards, and TDD rules.
-* **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Tracking every major technical and design choice:
-  * [ADR-0001: Record Architecture Decisions](docs/decisions/0001-record-architecture-decisions.md)
-  * [ADR-0002: Decoupled Headless Rules Engine](docs/decisions/0002-decoupled-headless-rules-engine.md)
-  * [ADR-0003: Technology Stack Selection (TS / React / Tauri)](docs/decisions/0003-technology-stack-selection.md)
-  * [ADR-0004: Visual Art Direction: 60s Comic Pop-Art & Batman '66 Aesthetic](docs/decisions/0004-visual-art-direction-comic-pop-art.md)
-  * [ADR-0005: Internationalization (i18n) & Multi-Language Localization](docs/decisions/0005-internationalization-i18n-localization.md)
+* **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Comprehensive centralized registry of all architectural, technical, and gameplay design decisions (ADR-0001 through ADR-0013+).
+* **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
+* **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
+* **[Coding Guidelines & Standards](docs/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
+* **[Technology Evaluation & Design](docs/technology_evaluation_and_architecture.md)** — Deep architectural analysis, engine evaluation, and state models.
+* **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log.
 
 ---
 
@@ -80,21 +78,22 @@ npm run lint
 
 ```
 MCD/
-├── docs/                 # Architectural documentation and Decision Records (ADRs)
-│   ├── decisions/        # Architecture Decision Records (ADRs)
-│   └── technology_...    # Technology evaluations & design specs
-├── references/           # Official rulebooks and JSON links
+├── .github/              # CI workflows, Issue & PR templates
+├── docs/                 # Architectural documentation and Decision Records
+│   ├── decisions/        # Architecture Decision Records (ADRs & Index)
+│   └── ...               # Roadmaps, rules specs, coding standards
+├── references/           # Official rulebooks and JSON schema references
 ├── src/
-│   ├── assets/           # Fonts, Ben-Day dot textures, resource/status icons
+│   ├── assets/           # Fonts, Ben-Day dot textures, comic style assets
 │   ├── data/             # MarvelsDB JSON importer and card metadata schemas
 │   ├── engine/           # 100% Headless Rules Engine (State tree, Triggers, Phases)
 │   │   ├── models/       # Core TypeScript interfaces (Card, Hero, Villain, Effect)
 │   │   ├── pipeline/     # Action pipeline & trigger resolution machine
 │   │   └── state/        # Immutable GameState and state reducers
 │   └── ui/               # React UI & 60s Comic Pop-Art presentation layer
-│       ├── components/   # Card components, tokens, dialogs
-│       ├── overlays/     # Onomatopoeia popups (POW!, BAM!, THWIP!)
-│       └── panels/       # Comic panel board layout (Villain, Threat, Player Playmat)
+│       ├── components/   # Card components, Tabletop zones, Modal dialogs
+│       ├── context/      # Persistent UI settings and Dev Mode state
+│       └── overlays/     # Onomatopoeia popups (POW!, BAM!, THWIP!)
 └── tests/                # Automated Vitest test suites (TDD rules validation)
 ```
 
@@ -102,7 +101,7 @@ MCD/
 
 ## 🤝 Contributing
 
-We welcome community contributions! Please read our **[Contributing Guide](CONTRIBUTING.md)** and **[Code of Conduct](CODE_OF_CONDUCT.md)** before submitting pull requests.
+We welcome community contributions! Please read our **[Contributing Guide](CONTRIBUTING.md)**, **[Code of Conduct](CODE_OF_CONDUCT.md)**, and **[Security Policy](SECURITY.md)** before submitting pull requests or reporting issues.
 
 ---
 

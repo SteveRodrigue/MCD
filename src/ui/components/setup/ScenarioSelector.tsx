@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Users, Flame, Zap, Play, Info } from 'lucide-react';
+import { Users, Flame, Zap, Play, Info } from 'lucide-react';
 import { listScenarios } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { CardView } from '../cards/CardView';
@@ -22,12 +22,20 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(scenarios[0]?.id || 'rhino');
   const [difficulty, setDifficulty] = useState<'standard' | 'expert'>('standard');
   const [playerCount, setPlayerCount] = useState<number>(1);
-  const [selectedDeckIds] = useState<string[]>([
+  const [selectedDeckIds, setSelectedDeckIds] = useState<string[]>([
     starterDecks[0]?.id || 'spider_man_justice',
+    starterDecks[1]?.id || 'captain_marvel_leadership',
     starterDecks[0]?.id || 'spider_man_justice',
-    starterDecks[0]?.id || 'spider_man_justice',
-    starterDecks[0]?.id || 'spider_man_justice',
+    starterDecks[1]?.id || 'captain_marvel_leadership',
   ]);
+
+  const handleSelectDeck = (seatIndex: number, deckId: string) => {
+    setSelectedDeckIds((prev) => {
+      const next = [...prev];
+      next[seatIndex] = deckId;
+      return next;
+    });
+  };
 
   const handleStart = () => {
     onStartSetup({
@@ -242,25 +250,48 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onStartSetup
               ))}
             </div>
 
-            {/* Hero Seat Lists */}
+            {/* Hero Seat Lists with Deck Selection */}
             <div className="space-y-3 pt-2">
-              {Array.from({ length: playerCount }).map((_, index) => (
-                <div
-                  key={index}
-                  className="p-3 bg-amber-50/60 border border-comic-black rounded flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-comic-red text-white font-comic text-sm flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <div className="font-bold text-sm text-comic-black">Spider-Man</div>
-                      <div className="text-xs text-slate-500 font-medium">Justice Starter (40 Cards)</div>
+              {Array.from({ length: playerCount }).map((_, index) => {
+                const currentDeckId =
+                  selectedDeckIds[index] ||
+                  (index % 2 === 0 ? 'spider_man_justice' : 'captain_marvel_leadership');
+                const currentDeck =
+                  starterDecks.find((d) => d.id === currentDeckId) || starterDecks[0];
+
+                return (
+                  <div
+                    key={index}
+                    className="p-3 bg-amber-50/70 border-2 border-comic-black rounded-lg shadow-comic-sm space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-comic-red text-white font-comic text-xs flex items-center justify-center font-bold border border-comic-black">
+                          {index + 1}
+                        </span>
+                        <span className="font-comic text-sm text-comic-black font-bold">
+                          Hero Seat {index + 1}
+                        </span>
+                      </div>
+                      <span className="bg-comic-blue text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
+                        {currentDeck?.aspect}
+                      </span>
                     </div>
+
+                    <select
+                      value={currentDeckId}
+                      onChange={(e) => handleSelectDeck(index, e.target.value)}
+                      className="w-full p-2 bg-white border-2 border-comic-black rounded font-comic text-xs text-slate-900 shadow-comic-sm focus:outline-none cursor-pointer"
+                    >
+                      {starterDecks.map((deck) => (
+                        <option key={deck.id} value={deck.id}>
+                          {deck.heroName} ({deck.aspect} Starter • 40 Cards)
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <Shield className="w-5 h-5 text-comic-blue" />
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Summary Stat Box */}

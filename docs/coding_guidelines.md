@@ -86,7 +86,39 @@ Each card implementation must follow a predictable, declarative pattern:
 
 ---
 
-## 4. Test-Driven Development (TDD) Rules
+## 4. Iterative Development & Test Recursion (Micro-Iterations)
+
+To ensure stability, prevent regressions, and maintain high velocity, all development must follow a **strict micro-iteration workflow**:
+
+```
++-------------------------------------------------------------------------+
+|                        The Micro-Iteration Loop                         |
+|                                                                         |
+|  1. Pick ONE small feature/card (e.g. "Spider-Man Backflip interrupt")  |
+|                                   │                                     |
+|                                   ▼                                     |
+|  2. Write the automated unit test (Arrange-Act-Assert)                  |
+|                                   │                                     |
+|                                   ▼                                     |
+|  3. Implement the minimal code to satisfy the test                      |
+|                                   │                                     |
+|                                   ▼                                     |
+|  4. RECURSIVE TEST RUN: Run the ENTIRE test suite (`npm test`)          |
+|     Ensure ZERO regressions across all previously implemented cards.    |
+|                                   │                                     |
+|                                   ▼                                     |
+|  5. Commit atomically (e.g. `feat(card): implement Backflip interrupt`) |
++-------------------------------------------------------------------------+
+```
+
+### Key Rules for Iterative Execution:
+1. **Small, Atomic Scope:** Never attempt to implement multiple cards or complex engine systems in a single unverified leap. Build one card, one keyword, or one phase step at a time.
+2. **Continuous Test Recursion:** Whenever changing core engine pipelines (trigger bus, payment resolution, threat calculations), the entire test suite must re-run recursively to guarantee that older cards and rules still function correctly.
+3. **No Dead Code / Unverified Logic:** Every function or card effect added must be immediately exercised by an active test.
+
+---
+
+## 5. Test-Driven Development (TDD) Standards
 
 1. **No Card Without a Test:**
    * Every hero ability, event card, upgrade, attachment, and villain activation must have automated tests in `tests/`.

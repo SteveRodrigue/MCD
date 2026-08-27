@@ -19,17 +19,22 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
         <span>HERO PLAY AREA • {player.name}</span>
       </div>
 
-      {/* 1. Engaged Minions Row (Per Player Hero Seat!) */}
-      {engagedMinions.length > 0 && (
-        <div className="bg-rose-50/90 p-3 rounded-lg border-2 border-comic-black shadow-comic-sm pt-2">
-          <div className="flex items-center gap-1.5 mb-2 border-b border-rose-200 pb-1">
+      {/* 1. Engaged Minions Row (Always Visible for this Hero Seat!) */}
+      <div className="bg-rose-50/80 p-3 rounded-lg border-2 border-comic-black shadow-comic-sm">
+        <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
+          <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
-            <span className="font-comic text-xs text-comic-red uppercase">
+            <span className="font-comic text-xs text-comic-red uppercase font-bold">
               Minions Engaged with {player.name} ({engagedMinions.length})
             </span>
           </div>
+          <span className="text-[10px] font-bold text-slate-500 uppercase">
+            Encounter Threat Zone
+          </span>
+        </div>
 
-          <div className="flex flex-wrap gap-4 items-center">
+        {engagedMinions.length > 0 ? (
+          <div className="flex flex-wrap gap-4 items-center pt-1">
             {engagedMinions.map((minion) => {
               const isGuard = minion.card.traits?.includes('Guard') || minion.card.text?.includes('Guard');
               const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
@@ -53,8 +58,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({ player }) => {
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="py-2.5 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2">
+            <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
+          </div>
+        )}
+      </div>
 
       {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start pt-1">

@@ -519,11 +519,25 @@ export function dispatchAction(
         };
       }
 
+      const onomatopoeia = 'PLAY!';
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        key: 'player.action.playCard',
+        params: {
+          player: player.name,
+          card: playedCardInstance.card.name,
+        },
+        onomatopoeia,
+      });
+
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
         player.tableau.push(playedCardInstance);
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
-        // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter)
+        // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter, Nick Fury)
         const abilities = playedCardInstance.card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'CARD_PLAYED' || ability.timing === 'FORCED_RESPONSE') {
@@ -543,22 +557,11 @@ export function dispatchAction(
             playerId: action.playerId,
             targetType: 'villain',
             targetInstanceId: action.targetInstanceId,
+            sourceCardInstance: playedCardInstance,
           });
         }
         player.discard.push(playedCardInstance);
       }
-
-      const onomatopoeia = 'PLAY!';
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        key: 'player.action.playCard',
-        params: {
-          player: player.name,
-          card: playedCardInstance.card.name,
-        },
-        onomatopoeia,
-      });
 
       return { state: nextState, result: { success: true, onomatopoeia } };
     }

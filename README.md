@@ -22,11 +22,13 @@ An open-source, faithful digital adaptation of **Marvel Champions: The Card Game
 
 ## 🏗️ Architecture & Decisions
 
-We document every technical and game design decision in our **[Architecture Decision Records (ADRs)](docs/decisions/README.md)**:
-* [ADR-0001: Record Architecture Decisions](docs/decisions/0001-record-architecture-decisions.md)
-* [ADR-0002: Decoupled Headless Rules Engine](docs/decisions/0002-decoupled-headless-rules-engine.md)
-* [ADR-0003: Technology Stack Selection (TS / React / Tauri)](docs/decisions/0003-technology-stack-selection.md)
-* [ADR-0004: Visual Art Direction: 60s Comic Pop-Art & Batman '66 Aesthetic](docs/decisions/0004-visual-art-direction-comic-pop-art.md)
+* **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan.
+* **[Architecture Decision Records (ADRs)](docs/decisions/README.md)** — Tracking every major technical and design choice:
+  * [ADR-0001: Record Architecture Decisions](docs/decisions/0001-record-architecture-decisions.md)
+  * [ADR-0002: Decoupled Headless Rules Engine](docs/decisions/0002-decoupled-headless-rules-engine.md)
+  * [ADR-0003: Technology Stack Selection (TS / React / Tauri)](docs/decisions/0003-technology-stack-selection.md)
+  * [ADR-0004: Visual Art Direction: 60s Comic Pop-Art & Batman '66 Aesthetic](docs/decisions/0004-visual-art-direction-comic-pop-art.md)
+  * [ADR-0005: Internationalization (i18n) & Multi-Language Localization](docs/decisions/0005-internationalization-i18n-localization.md)
 
 ---
 

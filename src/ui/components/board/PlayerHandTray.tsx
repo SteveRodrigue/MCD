@@ -23,8 +23,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const topDiscard = discard[discard.length - 1];
 
   return (
-    <footer className="w-full bg-amber-100/95 border-t-3 border-comic-black shadow-comic p-4 z-20 sticky bottom-0">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6">
+    <footer className="w-full bg-amber-100/95 border-t-3 border-comic-black shadow-comic p-4 z-20 sticky bottom-0 overflow-visible">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6 overflow-visible">
         {/* 1. Player Deck & Discard Piles (At the Left of Hand of Cards!) */}
         <div className="flex items-center gap-3 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
           {/* Draw Pile */}
@@ -54,8 +54,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           </div>
         </div>
 
-        {/* 2. Hand Cards Area (To the Right of Deck/Discard) */}
-        <div className="flex-1 w-full space-y-2">
+        {/* 2. Hand Cards Area (Unconstrained Z-Axis Elevation) */}
+        <div className="flex-1 w-full space-y-2 overflow-visible">
           {/* Hand Header Bar */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -73,8 +73,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             </div>
           </div>
 
-          {/* Horizontal Hand of Cards */}
-          <div className="flex items-center justify-center sm:justify-start gap-4 overflow-x-auto py-2 px-2 min-h-[290px]">
+          {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
             {hand.map((cardInst) => (
               <CardView
                 key={cardInst.instanceId}

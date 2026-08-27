@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "bradlc.vscode-tailwindcss",
+    "vitest.explorer",
+    "yoavbls.pretty-ts-errors",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "tauri-apps.tauri-vscode",
+    "yzhang.markdown-all-in-one",
+    "formulahendry.auto-rename-tag"
+  ]
+}

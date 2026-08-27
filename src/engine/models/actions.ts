@@ -3,6 +3,8 @@ export type ActionType =
   | 'BASIC_RECOVER'
   | 'BASIC_ATTACK'
   | 'BASIC_THWART'
+  | 'ALLY_ATTACK'
+  | 'ALLY_THWART'
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
   | 'END_PLAYER_TURN';
@@ -30,6 +32,22 @@ export interface BasicThwartAction {
   playerId: string;
   targetType: 'main_scheme' | 'side_scheme';
   targetInstanceId?: string; // Required if target is side scheme
+}
+
+export interface AllyAttackAction {
+  type: 'ALLY_ATTACK';
+  playerId: string;
+  allyInstanceId: string;
+  targetType: 'villain' | 'minion';
+  targetInstanceId?: string;
+}
+
+export interface AllyThwartAction {
+  type: 'ALLY_THWART';
+  playerId: string;
+  allyInstanceId: string;
+  targetType: 'main_scheme' | 'side_scheme';
+  targetInstanceId?: string;
 }
 
 export interface PaymentResource {
@@ -62,6 +80,8 @@ export type GameAction =
   | BasicRecoverAction
   | BasicAttackAction
   | BasicThwartAction
+  | AllyAttackAction
+  | AllyThwartAction
   | PlayCardAction
   | UseCardAbilityAction
   | EndPlayerTurnAction;

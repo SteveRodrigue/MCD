@@ -9,6 +9,7 @@ import {
   MainSchemeCard,
   SideSchemeCard,
   MinionCard,
+  AllyCard,
 } from '@engine/models';
 
 /**
@@ -142,6 +143,17 @@ export function normalizeRawCard(
         hasAcceleration: (raw.scheme_acceleration || 0) > 0,
         hasAmplify: (raw.scheme_amplify || 0) > 0,
       } as SideSchemeCard;
+    }
+    case CardType.ALLY: {
+      return {
+        ...base,
+        type: CardType.ALLY,
+        health: raw.health || 2,
+        thwart: raw.thwart ?? 1,
+        thwartCost: raw.thwart_cost !== undefined ? raw.thwart_cost : 1,
+        attack: raw.attack ?? 1,
+        attackCost: raw.attack_cost !== undefined ? raw.attack_cost : (raw.code === '01002' ? 0 : 1),
+      } as AllyCard;
     }
     case CardType.MINION: {
       return {

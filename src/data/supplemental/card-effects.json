@@ -23,6 +23,17 @@
         }
       ]
     },
+    "01002": {
+      "abilities": [
+        {
+          "id": "black_cat_when_played",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "DISCARD_TOP_DECK_FILTER",
+          "params": { "count": 2, "filterResource": "mental" }
+        }
+      ]
+    },
     "01003": {
       "abilities": [
         {
@@ -33,6 +44,18 @@
           "cost": { "discardSelf": true },
           "effect": "PREVENT_DAMAGE",
           "params": { "amount": "ALL" }
+        }
+      ]
+    },
+    "01004": {
+      "abilities": [
+        {
+          "id": "enhanced_spider_sense",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "zone": "HAND",
+          "cost": { "discardSelf": true, "resourceCost": 1 },
+          "effect": "CANCEL_WHEN_REVEALED"
         }
       ]
     },
@@ -58,6 +81,17 @@
         }
       ]
     },
+    "01007": {
+      "abilities": [
+        {
+          "id": "spider_tracer_defeated",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "ATTACHED_MINION_DEFEATED",
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 3, "target": "MAIN_SCHEME" }
+        }
+      ]
+    },
     "01008": {
       "uses": { "type": "counters", "count": 3, "discardOnEmpty": true },
       "abilities": [
@@ -67,6 +101,257 @@
           "cost": { "exhaustSelf": true, "removeCounter": 1 },
           "effect": "GENERATE_RESOURCE",
           "params": { "resource": "wild", "amount": 1 }
+        }
+      ]
+    },
+    "01009": {
+      "abilities": [
+        {
+          "id": "webbed_up_attack_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "ATTACHED_ENEMY_ATTACKS",
+          "cost": { "discardSelf": true },
+          "effect": "CANCEL_ATTACK_AND_STUN"
+        }
+      ]
+    },
+    "01059": {
+      "abilities": [
+        {
+          "id": "jessica_jones_thw_boost",
+          "timing": "CONSTANT",
+          "effect": "THW_BONUS_PER_SIDE_SCHEME",
+          "params": { "amountPerSideScheme": 1 }
+        }
+      ]
+    },
+    "01060": {
+      "abilities": [
+        {
+          "id": "for_justice",
+          "timing": "HERO_ACTION",
+          "tags": ["THWART"],
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 3, "bonusWithMental": 1, "target": "CHOSEN_SCHEME" }
+        }
+      ]
+    },
+    "01061": {
+      "abilities": [
+        {
+          "id": "great_responsibility",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
+          "zone": "HAND",
+          "cost": { "discardSelf": true },
+          "effect": "CONVERT_THREAT_TO_DAMAGE"
+        }
+      ]
+    },
+    "01063": {
+      "abilities": [
+        {
+          "id": "interrogation_room_response",
+          "timing": "RESPONSE",
+          "trigger": "MINION_DEFEATED",
+          "cost": { "exhaustSelf": true },
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 1, "target": "MAIN_SCHEME" }
+        }
+      ]
+    },
+    "01064": {
+      "uses": { "type": "snoop_counters", "count": 3, "discardOnEmpty": true },
+      "abilities": [
+        {
+          "id": "surveillance_team_action",
+          "timing": "ACTION",
+          "cost": { "exhaustSelf": true, "removeCounter": 1 },
+          "effect": "REMOVE_THREAT",
+          "params": { "amount": 1, "target": "CHOSEN_SCHEME" }
+        }
+      ]
+    },
+    "01083": {
+      "abilities": [
+        {
+          "id": "mockingbird_when_played",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "STUNNED", "target": "CHOSEN_ENEMY" }
+        }
+      ]
+    },
+    "01086": {
+      "abilities": [
+        {
+          "id": "first_aid",
+          "timing": "ACTION",
+          "effect": "HEAL_DAMAGE",
+          "params": { "amount": 2, "target": "CHOSEN_CHARACTER" }
+        }
+      ]
+    },
+    "01087": {
+      "abilities": [
+        {
+          "id": "haymaker",
+          "timing": "HERO_ACTION",
+          "tags": ["ATTACK"],
+          "effect": "DEAL_DAMAGE",
+          "params": { "amount": 3, "target": "CHOSEN_ENEMY" }
+        }
+      ]
+    },
+    "01091": {
+      "abilities": [
+        {
+          "id": "avengers_mansion",
+          "timing": "ACTION",
+          "cost": { "exhaustSelf": true },
+          "effect": "DRAW_CARDS",
+          "params": { "count": 1 }
+        }
+      ]
+    },
+    "01092": {
+      "abilities": [
+        {
+          "id": "helicarrier_action",
+          "timing": "ACTION",
+          "cost": { "exhaustSelf": true },
+          "effect": "REDUCE_NEXT_CARD_COST",
+          "params": { "amount": 1 }
+        }
+      ]
+    },
+    "01095": {
+      "abilities": [
+        {
+          "id": "rhino_2_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
+          "params": { "schemeCode": "01107" }
+        }
+      ]
+    },
+    "01096": {
+      "abilities": [
+        {
+          "id": "rhino_3_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "STUNNED", "target": "ALL_HEROES" }
+        }
+      ]
+    },
+    "01102": {
+      "abilities": [
+        {
+          "id": "sandman_toughness",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "TOUGH", "target": "SELF" }
+        }
+      ]
+    },
+    "01103": {
+      "abilities": [
+        {
+          "id": "shocker_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": { "amount": 1, "target": "ALL_HEROES" }
+        }
+      ]
+    },
+    "01104": {
+      "abilities": [
+        {
+          "id": "hard_to_keep_down",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "HEAL_DAMAGE_WITH_SURGE",
+          "params": { "amount": 4, "target": "VILLAIN" }
+        }
+      ]
+    },
+    "01105": {
+      "abilities": [
+        {
+          "id": "im_tough",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS_WITH_SURGE",
+          "params": { "status": "TOUGH", "target": "VILLAIN" }
+        }
+      ]
+    },
+    "01106": {
+      "abilities": [
+        {
+          "id": "stampede",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+        }
+      ]
+    },
+    "01186": {
+      "abilities": [
+        {
+          "id": "advance_treachery",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
+        }
+      ]
+    },
+    "01187": {
+      "abilities": [
+        {
+          "id": "assault_treachery",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
+        }
+      ]
+    },
+    "01110": {
+      "abilities": [
+        {
+          "id": "hydra_bomber_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "CHOICE_DAMAGE_OR_THREAT",
+          "params": { "damage": 2, "threat": 1 }
+        }
+      ]
+    },
+    "01111": {
+      "abilities": [
+        {
+          "id": "false_alarm",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": { "status": "CONFUSED", "target": "HERO" }
+        }
+      ]
+    },
+    "01112": {
+      "abilities": [
+        {
+          "id": "explosion",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "EXPLOSION_EFFECT",
+          "params": { "damage": 1, "threat": 1 }
         }
       ]
     }

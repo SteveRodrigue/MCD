@@ -85,7 +85,36 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
   }
 
-  // 3. If in Hero form: Perform Basic Actions (Thwart vs Attack)
+  // 3. Ally Actions: Activate ready in-play allies
+  for (const ally of player.allies) {
+    if (!ally.exhausted) {
+      if (state.mainScheme.threat >= 2) {
+        return {
+          type: 'ALLY_THWART',
+          playerId,
+          allyInstanceId: ally.instanceId,
+          targetType: 'main_scheme',
+        };
+      } else if (player.engagedMinions.length > 0) {
+        return {
+          type: 'ALLY_ATTACK',
+          playerId,
+          allyInstanceId: ally.instanceId,
+          targetType: 'minion',
+          targetInstanceId: player.engagedMinions[0].instanceId,
+        };
+      } else {
+        return {
+          type: 'ALLY_ATTACK',
+          playerId,
+          allyInstanceId: ally.instanceId,
+          targetType: 'villain',
+        };
+      }
+    }
+  }
+
+  // 4. If in Hero form: Perform Basic Actions (Thwart vs Attack)
   if (player.currentForm === 'hero') {
     // If Main scheme threat is elevated (>= 2), prioritize Thwart
     if (state.mainScheme.threat >= 2 && canBasicThwart(state, playerId, 'main_scheme').allowed) {

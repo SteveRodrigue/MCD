@@ -55,46 +55,40 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
   }
 
-  // 2. If in Hero form:
-  if (player.currentForm === 'hero') {
-    // A. Check if we can play Swinging Web Kick (01005, Cost 3)
-    const kickCard = player.hand.find((c) => c.card.code === '01005');
-    if (kickCard && player.hand.length >= 4) {
-      const paymentCards = player.hand
-        .filter((c) => c.instanceId !== kickCard.instanceId)
-        .slice(0, 3)
-        .map((c) => c.instanceId);
+  // 2. If in Hero or Alter-Ego form: Try to play any valid cards in hand
+  for (const cardInst of player.hand) {
+    const cost = cardInst.card.cost ?? 0;
+    // Find payment cards from other cards in hand
+    const otherCardsInHand = player.hand.filter((c) => c.instanceId !== cardInst.instanceId);
 
-      if (canPlayCard(state, playerId, kickCard.instanceId, paymentCards).allowed) {
+    // Sum available resources from other cards
+    let availableResources = 0;
+    const paymentIds: string[] = [];
+
+    for (const otherCard of otherCardsInHand) {
+      if (availableResources >= cost) break;
+      const resCount = otherCard.card.resources.total || 1;
+      availableResources += resCount;
+      paymentIds.push(otherCard.instanceId);
+    }
+
+    if (availableResources >= cost) {
+      const legality = canPlayCard(state, playerId, cardInst.instanceId, paymentIds);
+      if (legality.allowed) {
         return {
           type: 'PLAY_CARD',
           playerId,
-          cardInstanceId: kickCard.instanceId,
-          paymentCardInstanceIds: paymentCards,
-          targetInstanceId: undefined, // Hits villain
+          cardInstanceId: cardInst.instanceId,
+          paymentCardInstanceIds: paymentIds,
         };
       }
     }
+  }
 
-    // B. Check if we can play Web-Shooter (01008, Cost 1)
-    const shooterCard = player.hand.find((c) => c.card.code === '01008');
-    if (shooterCard && player.hand.length >= 2) {
-      const paymentCard = player.hand.find((c) => c.instanceId !== shooterCard.instanceId);
-      if (paymentCard) {
-        if (canPlayCard(state, playerId, shooterCard.instanceId, [paymentCard.instanceId]).allowed) {
-          return {
-            type: 'PLAY_CARD',
-            playerId,
-            cardInstanceId: shooterCard.instanceId,
-            paymentCardInstanceIds: [paymentCard.instanceId],
-          };
-        }
-      }
-    }
-
-    // C. Basic Actions (Thwart vs Attack)
-    // If Main scheme threat is high (>= 3), prioritize Thwart
-    if (state.mainScheme.threat >= 3 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
+  // 3. If in Hero form: Perform Basic Actions (Thwart vs Attack)
+  if (player.currentForm === 'hero') {
+    // If Main scheme threat is elevated (>= 2), prioritize Thwart
+    if (state.mainScheme.threat >= 2 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
       return {
         type: 'BASIC_THWART',
         playerId,
@@ -124,7 +118,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       };
     }
 
-    // Thwart Main Scheme if still ready
+    // Thwart Main Scheme if still ready and threat > 0
     if (state.mainScheme.threat > 0 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
       return {
         type: 'BASIC_THWART',

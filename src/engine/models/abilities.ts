@@ -10,6 +10,8 @@ export type AbilityTiming =
   | 'RESPONSE';
 
 export type TriggerType =
+  | 'WHEN_REVEALED'
+  | 'BOOST_STAR_RESOLVED'
   | 'VILLAIN_INITIATES_ATTACK'
   | 'TAKE_ATTACK_DAMAGE'
   | 'CARD_PLAYED'

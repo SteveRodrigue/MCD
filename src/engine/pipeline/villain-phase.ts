@@ -345,15 +345,29 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
 
   // 2. Ready all player cards & reset round flags
   for (const player of state.players) {
+    // Discard round-end allies (e.g. Nick Fury 01084)
+    const endRoundAllies = player.allies.filter((a) => a.card.code === '01084');
+    for (const ally of endRoundAllies) {
+      const idx = player.allies.indexOf(ally);
+      if (idx !== -1) {
+        player.allies.splice(idx, 1);
+        player.discard.push(ally);
+      }
+    }
+
+    // Ready identity
     player.exhausted = false;
     player.formChangedThisRound = false;
     player.recoveryUsedThisRound = false;
 
-    for (const card of player.tableau) {
-      card.exhausted = false;
-    }
+    // Ready allies
     for (const ally of player.allies) {
       ally.exhausted = false;
+    }
+
+    // Ready tableau
+    for (const card of player.tableau) {
+      card.exhausted = false;
     }
 
     // 3. Draw up to printed Hand Size (Hero vs Alter-Ego hand size)

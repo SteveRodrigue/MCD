@@ -21,7 +21,8 @@ export type TriggerType =
   | 'ATTACHED_MINION_DEFEATED'
   | 'ATTACHED_ENEMY_ATTACKS'
   | 'THREAT_WOULD_BE_PLACED'
-  | 'MAIN_SCHEME_ADVANCED';
+  | 'MAIN_SCHEME_ADVANCED'
+  | 'ROUND_END';
 
 export type EffectType =
   | 'DRAW_CARDS'
@@ -44,7 +45,9 @@ export type EffectType =
   | 'REDUCE_NEXT_CARD_COST'
   | 'CONVERT_THREAT_TO_DAMAGE'
   | 'SEARCH_AND_REVEAL_SIDE_SCHEME'
-  | 'THW_BONUS_PER_SIDE_SCHEME';
+  | 'THW_BONUS_PER_SIDE_SCHEME'
+  | 'NICK_FURY_CHOICE'
+  | 'DISCARD_SELF';
 
 export interface AbilityCost {
   exhaustSelf?: boolean;

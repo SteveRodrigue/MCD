@@ -13,6 +13,7 @@ export interface CardViewProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   onClick?: () => void;
   showTokens?: boolean;
+  enableHoverZoom?: boolean;
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export const CardView: React.FC<CardViewProps> = ({
   size = 'md',
   onClick,
   showTokens = true,
+  enableHoverZoom = true,
   className = '',
 }) => {
   const { artUrl, loading, error } = useCardArt(card.code);
@@ -55,13 +57,17 @@ export const CardView: React.FC<CardViewProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`relative inline-block transition-all duration-300 select-none group cursor-pointer ${
+      className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
         exhaustedState ? 'rotate-90 my-6 mx-4' : 'rotate-0'
       } ${className}`}
     >
-      {/* Outer Comic Card Container */}
+      {/* Outer Comic Card Container with Dynamic Hover Zoom */}
       <div
-        className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 transform group-hover:-translate-y-1 ${sizeClasses} ${
+        className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${
+          enableHoverZoom
+            ? 'group-hover:scale-[1.4] group-hover:-translate-y-4 group-hover:shadow-2xl'
+            : 'group-hover:-translate-y-1'
+        } ${sizeClasses} ${
           isMulliganSelected
             ? 'border-comic-red shadow-comic-lg ring-4 ring-rose-500'
             : isKeepSelected

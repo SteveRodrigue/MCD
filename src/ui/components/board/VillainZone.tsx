@@ -399,10 +399,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                               #{originalIndex + 1}
                             </span>
                           </div>
-                          {/* Encounter Set Label at the Bottom */}
-                          <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
-                            {encounterSet}
-                          </span>
+                          {/* Only show Encounter Set Label if NOT sorting by Encounter Set */}
+                          {sortMode !== 'encounter_set' && (
+                            <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
+                              {encounterSet}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -419,8 +421,8 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                         #{originalIndex + 1}
                       </span>
                     </div>
-                    {/* Encounter Set Label at the Bottom */}
-                    <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
+                    {/* Legible Encounter Set Label at the Bottom */}
+                    <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
                       {encounterSet}
                     </span>
                   </div>
@@ -473,7 +475,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                       #{idx + 1}
                     </span>
                   </div>
-                  <span className="bg-slate-200 text-slate-800 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded shadow-comic-sm font-bold truncate max-w-[115px] text-center">
+                  <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
                     {getEncounterSetName(cardInst.card)}
                   </span>
                 </div>

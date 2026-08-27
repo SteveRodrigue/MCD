@@ -68,6 +68,56 @@ export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {
       };
     },
   },
+  captain_marvel_leadership: {
+    id: 'captain_marvel_leadership',
+    heroId: 'captain_marvel',
+    heroName: 'Captain Marvel',
+    aspect: 'Leadership',
+    name: 'Captain Marvel (Leadership Starter)',
+    description:
+      'Official Core Set starter deck for Captain Marvel. Master energy manipulation and field iconic allies with Maria Hill, Hawkeye, and Make the Call.',
+    loadDeck: (catalog: CardCatalog) => {
+      const identity = catalog.getHeroIdentity('captain_marvel');
+      if (!identity) {
+        throw new Error('Captain Marvel identity not found in catalog');
+      }
+
+      // 15 Signature Cards (excluding Hero & Alter-Ego identity cards)
+      const signatureCards = catalog.getCardsBySet('captain_marvel').flatMap((c) => {
+        if (c.type === 'hero' || c.type === 'alter_ego' || c.type === 'obligation') return [];
+        return Array(c.quantity).fill(c);
+      });
+
+      // Leadership + Basic cards to fill 40-card deck
+      const leadershipCards = catalog
+        .getCardsByFaction('leadership' as any)
+        .flatMap((c) => Array(c.quantity).fill(c));
+      const basicCards = catalog
+        .getCardsByFaction('basic' as any)
+        .flatMap((c) => Array(c.quantity).fill(c));
+
+      const deckCards = [...signatureCards, ...leadershipCards, ...basicCards].slice(0, 40);
+
+      // Obligation (Family Emergency 01175)
+      const obligation = catalog.getCard('01175') || catalog.getCardsByType('obligation' as any)[0];
+      if (!obligation) {
+        throw new Error('Captain Marvel obligation (Family Emergency 01175) not found in catalog');
+      }
+
+      // 5-card Nemesis Set (The Psyche-Magnitron 01176, Yon-Rogg 01177, Kree Manipulator 01178 x2, Yon-Rogg's Treason 01179)
+      const nemesisCards = catalog
+        .getCardsBySet('captain_marvel_nemesis')
+        .flatMap((c) => Array(c.quantity).fill(c));
+
+      return {
+        hero: identity.hero,
+        alterEgo: identity.alterEgo,
+        deckCards,
+        obligation,
+        nemesisCards,
+      };
+    },
+  },
 };
 
 export function getStarterDeck(id: string): StarterDeckDefinition | undefined {

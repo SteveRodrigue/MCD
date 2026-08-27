@@ -31,9 +31,9 @@ export const AppContent: React.FC = () => {
       if (expertVillain) villain.health = expertVillain.health;
     }
 
-    const starterDeck = getStarterDeck('spider_man_justice')!;
-
     const players = Array.from({ length: selection.playerCount }).map((_, index) => {
+      const deckId = selection.deckIds[index] || 'spider_man_justice';
+      const starterDeck = getStarterDeck(deckId) || getStarterDeck('spider_man_justice')!;
       const deck = starterDeck.loadDeck(catalog);
       return {
         id: `player_${index + 1}`,

@@ -1,15 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { CardCatalog } from '../../src/data/importer/card-loader';
 import { getStarterDeck, listStarterDecks } from '../../src/engine/decks/starter-decks';
+import { slugify, generateDeckFilename } from '../../src/engine/decks/deck-utils';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { getScenario } from '../../src/engine/scenarios/catalog';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
-describe('Data-Driven Starter Deck Registry & Multi-Hero Integration', () => {
+describe('Data-Driven Starter Deck Registry & Multi-Hero Integration (ADR-0016)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
-  it('lists all 5 Core Set starter decks from metadata', () => {
+  it('lists all 5 individual Core Set starter decks from data/prebuilt_decks/', () => {
     const decks = listStarterDecks();
     expect(decks.length).toBe(5);
     const ids = decks.map((d) => d.id);
@@ -78,6 +79,24 @@ describe('Data-Driven Starter Deck Registry & Multi-Hero Integration', () => {
     expect(deck.obligation.name).toBe('Affairs of State');
     expect(deck.nemesisCards.length).toBe(5);
     expect(deck.nemesisCards.map((c) => c.name)).toContain('Killmonger');
+  });
+
+  it('generates collision-resistant filesystem-safe filenames per ADR-0016', () => {
+    expect(slugify('Spider-Man / Peter Parker: Heroic!')).toBe('spider-man-peter-parker-heroic');
+
+    const spideyDeck = getStarterDeck('spider_man_justice')!.rawDeck;
+
+    // Prebuilt naming
+    const prebuiltName = generateDeckFilename(spideyDeck, 'prebuilt');
+    expect(prebuiltName).toBe('core_spider_man_justice.json');
+
+    // MarvelCDB import naming
+    const mcdbName = generateDeckFilename(spideyDeck, 'marvelcdb');
+    expect(mcdbName).toBe('mcdb_5_spider-man-justice-starter-deck.json');
+
+    // User custom deck naming with suffix
+    const userName = generateDeckFilename(spideyDeck, 'user', 'a7f9');
+    expect(userName).toBe('user_spider_man_spider-man-justice-starter-deck_a7f9.json');
   });
 
   it('correctly sets up a 4-Hero game with 4 distinct Core Set starter decks', () => {

@@ -159,4 +159,44 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     // Main Scheme: 7 threat per hero = 14 target threat
     expect(gameState.mainScheme.targetThreat).toBe(14);
   });
+
+  it('correctly shuffles Obligation into encounter deck and sets aside Nemesis Set (Step 10 & 11 of Setup)', () => {
+    const { identity, deck } = createSpiderManJusticeDeck();
+    const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
+
+    const obligation = catalog.getCard('01165')!;
+    const nemesisCards = catalog.getCardsBySet('spider_man_nemesis').flatMap((c) => Array(c.quantity).fill(c));
+
+    const gameState = setupGame({
+      players: [
+        {
+          id: 'player_1',
+          name: 'Player 1',
+          hero: identity.hero,
+          alterEgo: identity.alterEgo,
+          deckCards: deck,
+          obligation,
+          nemesisCards,
+        },
+      ],
+      villain,
+      mainScheme,
+      encounterCards,
+      shuffleFn: (arr) => arr,
+    });
+
+    const player = gameState.players[0];
+
+    // 1. Nemesis Set must be set aside out of play (5 cards: Highway Robbery, Vulture, 2x Sweeping Swoop, The Vulture's Plans)
+    expect(player.setAsideCards.length).toBe(5);
+    const setAsideCodes = player.setAsideCards.map((c) => c.card.code);
+    expect(setAsideCodes).toContain('01166'); // Highway Robbery
+    expect(setAsideCodes).toContain('01167'); // Vulture
+    expect(setAsideCodes).toContain('01168'); // Sweeping Swoop
+    expect(setAsideCodes).toContain('01169'); // The Vulture's Plans
+
+    // 2. Obligation (Eviction Notice 01165) must be in the encounter deck
+    const encounterDeckCodes = gameState.encounterDeck.map((c) => c.card.code);
+    expect(encounterDeckCodes).toContain('01165');
+  });
 });

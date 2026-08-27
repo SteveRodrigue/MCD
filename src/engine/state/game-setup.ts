@@ -40,6 +40,8 @@ export interface PlayerSetupConfig {
   hero: HeroCard;
   alterEgo: AlterEgoCard;
   deckCards: NormalizedCard[];
+  obligation?: NormalizedCard;
+  nemesisCards?: NormalizedCard[];
 }
 
 export interface GameSetupOptions {
@@ -69,9 +71,10 @@ export function defaultShuffle<T>(array: T[]): T[] {
  * 1. Players begin in Alter-Ego form.
  * 2. Set Hit Points for Hero and Villain (scaled by player count).
  * 3. Main scheme initialized (The Break-In! starts at 0 threat).
- * 4. Encounter deck created from villain + standard + modular sets.
- * 5. Players draw starting hand equal to Alter-Ego hand size.
- * 6. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
+ * 4. Set aside each player's Nemesis Set (5 cards) out of play.
+ * 5. Shuffle each player's Obligation card into the encounter deck.
+ * 6. Players draw starting hand equal to Alter-Ego hand size.
+ * 7. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
  */
 export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
@@ -92,6 +95,9 @@ export function setupGame(options: GameSetupOptions): GameState {
     const availableForms: NormalizedCard[] = (pConfig as any).additionalForms
       ? [pConfig.alterEgo, pConfig.hero, ...(pConfig as any).additionalForms]
       : [pConfig.alterEgo, pConfig.hero];
+
+    // Set Aside Nemesis Set (Step 10 of Setup)
+    const setAsideCards = (pConfig.nemesisCards || []).map(createCardInstance);
 
     return {
       id: pConfig.id,
@@ -114,7 +120,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       formChangedThisRound: false,
       recoveryUsedThisRound: false,
       dealtEncounterCards: [],
-      setAsideCards: [],
+      setAsideCards,
     };
   });
 
@@ -140,8 +146,13 @@ export function setupGame(options: GameSetupOptions): GameState {
     stage: options.mainScheme.stage,
   };
 
-  // 4. Setup Encounter Deck
-  const encounterInstances = options.encounterCards.map(createCardInstance);
+  // 4. Setup Encounter Deck (Step 11: Shuffle player obligations into encounter deck)
+  const playerObligations = options.players
+    .map((p) => p.obligation)
+    .filter((c): c is NormalizedCard => Boolean(c));
+
+  const allEncounterCards = [...options.encounterCards, ...playerObligations];
+  const encounterInstances = allEncounterCards.map(createCardInstance);
   const shuffledEncounterDeck = shuffle(encounterInstances);
 
   // 5. Setup State

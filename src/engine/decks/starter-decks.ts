@@ -12,6 +12,8 @@ export interface StarterDeckDefinition {
     hero: HeroCard;
     alterEgo: AlterEgoCard;
     deckCards: NormalizedCard[];
+    obligation: NormalizedCard;
+    nemesisCards: NormalizedCard[];
   };
 }
 
@@ -32,7 +34,7 @@ export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {
 
       // 15 Signature Cards (excluding Hero & Alter-Ego identity cards)
       const signatureCards = catalog.getCardsBySet('spider_man').flatMap((c) => {
-        if (c.type === 'hero' || c.type === 'alter_ego') return [];
+        if (c.type === 'hero' || c.type === 'alter_ego' || c.type === 'obligation') return [];
         return Array(c.quantity).fill(c);
       });
 
@@ -46,10 +48,23 @@ export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {
 
       const deckCards = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
+      // Obligation (Eviction Notice 01165)
+      const obligation = catalog.getCard('01165') || catalog.getCardsByType('obligation' as any)[0];
+      if (!obligation) {
+        throw new Error('Spider-Man obligation (Eviction Notice 01165) not found in catalog');
+      }
+
+      // 5-card Nemesis Set (Highway Robbery 01166, Vulture 01167, Sweeping Swoop 01168 x2, The Vulture's Plans 01169)
+      const nemesisCards = catalog
+        .getCardsBySet('spider_man_nemesis')
+        .flatMap((c) => Array(c.quantity).fill(c));
+
       return {
         hero: identity.hero,
         alterEgo: identity.alterEgo,
         deckCards,
+        obligation,
+        nemesisCards,
       };
     },
   },

@@ -39,6 +39,8 @@ export const App: React.FC = () => {
         hero: deck.hero,
         alterEgo: deck.alterEgo,
         deckCards: deck.deckCards,
+        obligation: deck.obligation,
+        nemesisCards: deck.nemesisCards,
       };
     });
 

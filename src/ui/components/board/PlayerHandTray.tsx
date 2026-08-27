@@ -51,12 +51,11 @@ function getPlayerCardCostGroup(card: NormalizedCard): string {
   const isNoCost =
     card.type === 'resource' ||
     (card as any).type_code === 'resource' ||
-    card.cost === 0 ||
     card.cost === undefined ||
     card.cost === null;
 
   if (isNoCost) {
-    return 'No Cost / Resource Cards';
+    return 'Resource Cards (No Cost)';
   }
   return 'Cards with Cost';
 }
@@ -70,7 +69,6 @@ function getPlayerCardCostValue(card: NormalizedCard): number {
   ) {
     return 999;
   }
-  if (card.cost === 0) return 998;
   return card.cost;
 }
 
@@ -130,9 +128,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
     if (sortMode === 'cost') {
       return [...items].sort((a, b) => {
-        // Keep No Cost / Resource Cards always at the bottom
-        const aIsNoCost = a.costGroup === 'No Cost / Resource Cards';
-        const bIsNoCost = b.costGroup === 'No Cost / Resource Cards';
+        // Keep Resource Cards (No Cost) always at the bottom
+        const aIsNoCost = a.costGroup === 'Resource Cards (No Cost)';
+        const bIsNoCost = b.costGroup === 'Resource Cards (No Cost)';
         if (aIsNoCost && !bIsNoCost) return 1;
         if (!aIsNoCost && bIsNoCost) return -1;
 
@@ -154,10 +152,10 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
     if (sortMode === 'cost') {
       const withCost = processedDeckItems.filter((i) => i.costGroup === 'Cards with Cost');
-      const noCost = processedDeckItems.filter((i) => i.costGroup === 'No Cost / Resource Cards');
+      const noCost = processedDeckItems.filter((i) => i.costGroup === 'Resource Cards (No Cost)');
       const groups: Record<string, typeof processedDeckItems> = {};
       if (withCost.length > 0) groups['Cards with Cost'] = withCost;
-      if (noCost.length > 0) groups['No Cost / Resource Cards'] = noCost;
+      if (noCost.length > 0) groups['Resource Cards (No Cost)'] = noCost;
       return groups;
     }
 
@@ -405,8 +403,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
                   >
                     {costDirection === 'low_to_high'
-                      ? '⬆️ Low to High (1 ⟶ 4+)'
-                      : '⬇️ High to Low (4+ ⟶ 1)'}
+                      ? '⬆️ Low to High (0 ⟶ 4+)'
+                      : '⬇️ High to Low (4+ ⟶ 0)'}
                   </button>
                 </div>
               )}

@@ -1,5 +1,20 @@
 import { CardCatalog } from '../../data/importer/card-loader';
 import { HeroCard, AlterEgoCard, NormalizedCard } from '../models';
+import starterDecksJson from '../../../data/decks/starter_decks.json';
+
+export interface RawDeckMetadata {
+  id: string;
+  hero_id: string;
+  hero_name: string;
+  aspect: string;
+  name: string;
+  description: string;
+  hero_code: string;
+  alter_ego_code: string;
+  obligation_code: string;
+  nemesis_set_code: string;
+  cards: Record<string, number>;
+}
 
 export interface StarterDeckDefinition {
   id: string;
@@ -17,108 +32,78 @@ export interface StarterDeckDefinition {
   };
 }
 
-export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {
-  spider_man_justice: {
-    id: 'spider_man_justice',
-    heroId: 'spider_man',
-    heroName: 'Spider-Man',
-    aspect: 'Justice',
-    name: 'Spider-Man (Justice Starter)',
-    description:
-      'Official Core Set starter deck for Spider-Man. Balanced for threat removal with Great Responsibility, For Justice!, and Jessica Jones.',
+/**
+ * Creates a strongly typed StarterDeckDefinition from raw deck JSON metadata.
+ */
+export function createStarterDeckFromMetadata(meta: RawDeckMetadata): StarterDeckDefinition {
+  return {
+    id: meta.id,
+    heroId: meta.hero_id,
+    heroName: meta.hero_name,
+    aspect: meta.aspect,
+    name: meta.name,
+    description: meta.description,
     loadDeck: (catalog: CardCatalog) => {
-      const identity = catalog.getHeroIdentity('spider_man');
-      if (!identity) {
-        throw new Error('Spider-Man identity not found in catalog');
+      const hero = catalog.getCard(meta.hero_code) as HeroCard | undefined;
+      const alterEgo = catalog.getCard(meta.alter_ego_code) as AlterEgoCard | undefined;
+
+      if (!hero || !alterEgo) {
+        throw new Error(
+          `Hero identity not found in catalog for ${meta.hero_name} (Hero: ${meta.hero_code}, Alter-Ego: ${meta.alter_ego_code})`,
+        );
       }
 
-      // 15 Signature Cards (excluding Hero & Alter-Ego identity cards)
-      const signatureCards = catalog.getCardsBySet('spider_man').flatMap((c) => {
-        if (c.type === 'hero' || c.type === 'alter_ego' || c.type === 'obligation') return [];
-        return Array(c.quantity).fill(c);
-      });
+      // Resolve 40 deck cards from { [code]: quantity } map
+      const deckCards: NormalizedCard[] = [];
+      for (const [code, quantity] of Object.entries(meta.cards)) {
+        const card = catalog.getCard(code);
+        if (!card) {
+          throw new Error(`Card code ${code} not found in catalog for deck ${meta.name}`);
+        }
+        for (let i = 0; i < quantity; i++) {
+          deckCards.push(card);
+        }
+      }
 
-      // Justice + Basic cards to fill 40-card deck
-      const justiceCards = catalog
-        .getCardsByFaction('justice' as any)
-        .flatMap((c) => Array(c.quantity).fill(c));
-      const basicCards = catalog
-        .getCardsByFaction('basic' as any)
-        .flatMap((c) => Array(c.quantity).fill(c));
-
-      const deckCards = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
-
-      // Obligation (Eviction Notice 01165)
-      const obligation = catalog.getCard('01165') || catalog.getCardsByType('obligation' as any)[0];
+      // Resolve Obligation card
+      const obligation = catalog.getCard(meta.obligation_code);
       if (!obligation) {
-        throw new Error('Spider-Man obligation (Eviction Notice 01165) not found in catalog');
+        throw new Error(
+          `Obligation card ${meta.obligation_code} not found in catalog for ${meta.hero_name}`,
+        );
       }
 
-      // 5-card Nemesis Set (Highway Robbery 01166, Vulture 01167, Sweeping Swoop 01168 x2, The Vulture's Plans 01169)
+      // Resolve 5-card Nemesis Set
       const nemesisCards = catalog
-        .getCardsBySet('spider_man_nemesis')
+        .getCardsBySet(meta.nemesis_set_code)
         .flatMap((c) => Array(c.quantity).fill(c));
+
+      if (nemesisCards.length === 0) {
+        throw new Error(
+          `Nemesis set ${meta.nemesis_set_code} not found in catalog for ${meta.hero_name}`,
+        );
+      }
 
       return {
-        hero: identity.hero,
-        alterEgo: identity.alterEgo,
+        hero,
+        alterEgo,
         deckCards,
         obligation,
         nemesisCards,
       };
     },
-  },
-  captain_marvel_leadership: {
-    id: 'captain_marvel_leadership',
-    heroId: 'captain_marvel',
-    heroName: 'Captain Marvel',
-    aspect: 'Leadership',
-    name: 'Captain Marvel (Leadership Starter)',
-    description:
-      'Official Core Set starter deck for Captain Marvel. Master energy manipulation and field iconic allies with Maria Hill, Hawkeye, and Make the Call.',
-    loadDeck: (catalog: CardCatalog) => {
-      const identity = catalog.getHeroIdentity('captain_marvel');
-      if (!identity) {
-        throw new Error('Captain Marvel identity not found in catalog');
-      }
+  };
+}
 
-      // 15 Signature Cards (excluding Hero & Alter-Ego identity cards)
-      const signatureCards = catalog.getCardsBySet('captain_marvel').flatMap((c) => {
-        if (c.type === 'hero' || c.type === 'alter_ego' || c.type === 'obligation') return [];
-        return Array(c.quantity).fill(c);
-      });
+/**
+ * Registry of all prebuilt starter decks, dynamically populated from metadata.
+ */
+export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {};
 
-      // Leadership + Basic cards to fill 40-card deck
-      const leadershipCards = catalog
-        .getCardsByFaction('leadership' as any)
-        .flatMap((c) => Array(c.quantity).fill(c));
-      const basicCards = catalog
-        .getCardsByFaction('basic' as any)
-        .flatMap((c) => Array(c.quantity).fill(c));
-
-      const deckCards = [...signatureCards, ...leadershipCards, ...basicCards].slice(0, 40);
-
-      // Obligation (Family Emergency 01175)
-      const obligation = catalog.getCard('01175') || catalog.getCardsByType('obligation' as any)[0];
-      if (!obligation) {
-        throw new Error('Captain Marvel obligation (Family Emergency 01175) not found in catalog');
-      }
-
-      // 5-card Nemesis Set (The Psyche-Magnitron 01176, Yon-Rogg 01177, Kree Manipulator 01178 x2, Yon-Rogg's Treason 01179)
-      const nemesisCards = catalog
-        .getCardsBySet('captain_marvel_nemesis')
-        .flatMap((c) => Array(c.quantity).fill(c));
-
-      return {
-        hero: identity.hero,
-        alterEgo: identity.alterEgo,
-        deckCards,
-        obligation,
-        nemesisCards,
-      };
-    },
-  },
-};
+// Load all starter decks from data/decks/starter_decks.json
+((starterDecksJson as unknown) as RawDeckMetadata[]).forEach((meta) => {
+  starterDeckCatalog[meta.id] = createStarterDeckFromMetadata(meta);
+});
 
 export function getStarterDeck(id: string): StarterDeckDefinition | undefined {
   return starterDeckCatalog[id];

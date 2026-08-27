@@ -208,3 +208,17 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 * `docs:` Documentation or ADR updates (e.g. `docs(adr): add ADR-0006`)
 * `refactor:` Code restructuring without changing external behavior
 * `chore:` Build scripts, package updates, CI changes
+
+---
+
+## 8. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
+
+1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
+   * Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
+   * Never place `overflow-x: auto` or `overflow: hidden` on a container whose child elements perform scale transforms on hover (`hover:scale-[1.85]`).
+2. **Layering (Z-Index) Hierarchy:**
+   * Base Tabletop Layers: `z-0` to `z-10`
+   * Bottom Hand Tray Base: `z-20`
+   * Sticky Navigation / Header: `z-30`
+   * Hovered / Elevated Interactive Cards: `z-50` (with deep drop shadows)
+   * Modals & Drawers (Combat Log, Payment Modal): `z-50` to `z-60`

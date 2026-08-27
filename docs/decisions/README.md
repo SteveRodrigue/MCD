@@ -33,6 +33,7 @@ Each record documents:
 | [ADR-0012](0012-z-axis-hover-zoom-and-layering.md) | 2026-08-27 | Z-Axis Unconstrained Elevation & Hover-Zoom Architecture | **Accepted** | Maintain unconstrained Z-axis elevation (`z-50`) without overflow clipping or scrollbar spawning on interactive card docks. |
 | [ADR-0013](0013-game-settings-and-dev-mode.md) | 2026-08-27 | Game Settings & Developer Mode State Architecture | **Accepted** | Decouple UI settings into a persistent React Context with a top-bar Dev Mode indicator and Options Menu. |
 | [ADR-0014](0014-marvelcdb-deck-schema-and-metadata-decks.md) | 2026-08-27 | MarvelCDB-Compliant Deck Data Schema & Metadata-Driven Decks | **Accepted** | Standardize on official MarvelCDB JSON schema (`slots`, `hero_code`, `meta`) for 100% data-driven deck management without code coupling. |
+| [ADR-0015](0015-user-content-and-deck-storage-architecture.md) | 2026-08-27 | User Content & Deck Storage Architecture | **Proposed** | Establish segmented storage hierarchy (`prebuilt_decks/`, `decks/`, `marvelcdb/`, `fan_made_heroes/`, `fan_made_scenarios/`) with cross-environment driver. |
 
 ---
 

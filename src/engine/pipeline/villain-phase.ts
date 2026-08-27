@@ -9,6 +9,7 @@ import {
   MinionCard,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
+import { executeEffect } from '../effects';
 
 /**
  * Helper to draw the top card of the encounter deck.
@@ -310,7 +311,13 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           onomatopoeia: 'SIDE SCHEME!',
         });
       } else {
-        // Treachery / Attachment generic resolution for now
+        // Treachery / Attachment generic resolution: execute declarative WHEN_REVEALED
+        const abilities = card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+          }
+        }
         state.encounterDiscard.push(cardInstance);
         state.log.push({
           id: `log_${Date.now()}`,

@@ -7,7 +7,13 @@ import {
   parseMarvelCDBDeckMeta,
   CardType,
 } from '../models';
-import starterDecksJson from '../../../data/prebuilt_decks/starter_decks.json';
+
+// 1-File-Per-Deck prebuilt imports from data/prebuilt_decks/
+import spiderManDeck from '../../../data/prebuilt_decks/core_spider_man_justice.json';
+import captainMarvelDeck from '../../../data/prebuilt_decks/core_captain_marvel_leadership.json';
+import sheHulkDeck from '../../../data/prebuilt_decks/core_she_hulk_aggression.json';
+import ironManDeck from '../../../data/prebuilt_decks/core_iron_man_aggression.json';
+import blackPantherDeck from '../../../data/prebuilt_decks/core_black_panther_protection.json';
 
 export interface StarterDeckDefinition {
   id: string;
@@ -121,15 +127,28 @@ export function createStarterDeckFromMarvelCDB(deck: MarvelCDBDeck): StarterDeck
 }
 
 /**
- * Registry of all prebuilt starter decks, dynamically populated from MarvelCDB deck JSON metadata.
+ * Registry of all prebuilt starter decks, populated dynamically from individual deck files.
  */
 export const starterDeckCatalog: Record<string, StarterDeckDefinition> = {};
 
-// Load all starter decks from data/decks/starter_decks.json
-((starterDecksJson as unknown) as MarvelCDBDeck[]).forEach((deck) => {
+export const prebuiltDeckList: MarvelCDBDeck[] = [
+  spiderManDeck,
+  captainMarvelDeck,
+  sheHulkDeck,
+  ironManDeck,
+  blackPantherDeck,
+] as unknown as MarvelCDBDeck[];
+
+prebuiltDeckList.forEach((deck) => {
   const definition = createStarterDeckFromMarvelCDB(deck);
   starterDeckCatalog[definition.id] = definition;
 });
+
+export function registerPrebuiltDeck(deck: MarvelCDBDeck): StarterDeckDefinition {
+  const definition = createStarterDeckFromMarvelCDB(deck);
+  starterDeckCatalog[definition.id] = definition;
+  return definition;
+}
 
 export function getStarterDeck(id: string): StarterDeckDefinition | undefined {
   return starterDeckCatalog[id];

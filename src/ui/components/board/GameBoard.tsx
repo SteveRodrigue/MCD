@@ -37,7 +37,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
           villain={gameState.villain}
           mainScheme={gameState.mainScheme}
           sideSchemes={gameState.sideSchemes}
-          encounterDeckCount={gameState.encounterDeck.length}
+          encounterDeck={gameState.encounterDeck}
           encounterDiscard={gameState.encounterDiscard}
           accelerationTokens={gameState.accelerationTokens}
         />
@@ -47,10 +47,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
         <HeroZone player={activePlayer} />
       </main>
 
-      {/* 3. Sticky Bottom Player Hand Dock (with Player Deck/Discard/Nemesis on the Left) */}
+      {/* 3. Sticky Bottom Player Hand Dock (with Player Deck/Discard/Nemesis) */}
       <PlayerHandTray
         hand={activePlayer.hand}
-        deckCount={activePlayer.deck.length}
+        deck={activePlayer.deck}
         discard={activePlayer.discard}
         setAsideCards={activePlayer.setAsideCards}
         heroName={activePlayer.name}

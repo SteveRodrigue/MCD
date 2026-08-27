@@ -47,16 +47,30 @@ function getPlayerCardTypeName(card: NormalizedCard): string {
 }
 
 function getPlayerCardCostGroup(card: NormalizedCard): string {
-  if (card.type === 'resource' || (card as any).type_code === 'resource') {
-    return 'Resources (No Cost)';
+  const isNoCost =
+    card.type === 'resource' ||
+    (card as any).type_code === 'resource' ||
+    card.cost === 0 ||
+    card.cost === undefined ||
+    card.cost === null;
+
+  if (isNoCost) {
+    return 'No Cost / Resource Cards';
   }
-  const cost = card.cost ?? 0;
-  return `${cost} Cost`;
+  return 'Cards with Cost';
 }
 
 function getPlayerCardCostValue(card: NormalizedCard): number {
-  if (card.type === 'resource' || (card as any).type_code === 'resource') return -1;
-  return card.cost ?? 0;
+  if (
+    card.type === 'resource' ||
+    (card as any).type_code === 'resource' ||
+    card.cost === undefined ||
+    card.cost === null
+  ) {
+    return 999;
+  }
+  if (card.cost === 0) return 998;
+  return card.cost;
 }
 
 export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
@@ -126,13 +140,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const groupedDeckItems = useMemo(() => {
     if (sortMode === 'deck_order') return null;
 
-    const groupKey =
-      sortMode === 'card_type'
-        ? 'cardType'
-        : sortMode === 'affinity'
-          ? 'affinity'
-          : 'costGroup';
+    if (sortMode === 'cost') {
+      const withCost = processedDeckItems.filter((i) => i.costGroup === 'Cards with Cost');
+      const noCost = processedDeckItems.filter((i) => i.costGroup === 'No Cost / Resource Cards');
+      const groups: Record<string, typeof processedDeckItems> = {};
+      if (withCost.length > 0) groups['Cards with Cost'] = withCost;
+      if (noCost.length > 0) groups['No Cost / Resource Cards'] = noCost;
+      return groups;
+    }
 
+    const groupKey = sortMode === 'card_type' ? 'cardType' : 'affinity';
     const groups: Record<string, typeof processedDeckItems> = {};
 
     processedDeckItems.forEach((item) => {

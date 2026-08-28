@@ -1,21 +1,22 @@
 ---
-card_code: "01004"
-card_name: "Enhanced Spider-Sense"
+card_code: "01092"
+card_name: "Helicarrier"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T10:10"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: Helicarrier (`01092`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01092](https://marvelcdb.com/card/01092)
+* **Official Printed Text:** `Max 1 per player.
+Action: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
+1. **Effect primitive 'REDUCE_NEXT_CARD_COST' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
 
 ---

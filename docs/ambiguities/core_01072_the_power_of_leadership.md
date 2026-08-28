@@ -1,21 +1,22 @@
 ---
-card_code: "01004"
-card_name: "Enhanced Spider-Sense"
+card_code: "01072"
+card_name: "The Power of Leadership"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T10:10"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: The Power of Leadership (`01072`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01072](https://marvelcdb.com/card/01072)
+* **Official Printed Text:** `Max 2 per deck.
+Double the number of resources this card generates while paying for a Leadership (blue) card.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
+1. **Effect primitive 'DOUBLE_RESOURCE_FOR_ASPECT' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
 
 ---

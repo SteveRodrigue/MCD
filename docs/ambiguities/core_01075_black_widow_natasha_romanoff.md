@@ -1,21 +1,21 @@
 ---
-card_code: "01004"
-card_name: "Enhanced Spider-Sense"
+card_code: "01075"
+card_name: "Black Widow (Natasha Romanoff)"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T10:10"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: Black Widow (Natasha Romanoff) (`01075`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01075](https://marvelcdb.com/card/01075)
+* **Official Printed Text:** `Interrupt: When a card is revealed from the encounter deck, exhaust Black Widow and spend a [mental] resource → cancel the effects of that card and discard it. Then, reveal another card from the encounter deck.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
+1. **Effect primitive 'CANCEL_WHEN_REVEALED' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
 
 ---

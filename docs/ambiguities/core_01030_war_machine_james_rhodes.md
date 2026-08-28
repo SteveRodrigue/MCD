@@ -1,21 +1,21 @@
 ---
-card_code: "01004"
-card_name: "Enhanced Spider-Sense"
+card_code: "01030"
+card_name: "War Machine (James Rhodes)"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T10:10"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: War Machine (James Rhodes) (`01030`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01030](https://marvelcdb.com/card/01030)
+* **Official Printed Text:** `Action: Exhaust War Machine and deal 2 damage to him → deal 1 damage to each enemy.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
+1. **Effect primitive 'DEAL_DAMAGE_ALL_ENEMIES' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
 
 ---

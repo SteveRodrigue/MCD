@@ -1,21 +1,21 @@
 ---
-card_code: "01004"
-card_name: "Enhanced Spider-Sense"
+card_code: "01020"
+card_name: "Hellcat (Patsy Walker)"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T10:10"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: Hellcat (Patsy Walker) (`01020`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01020](https://marvelcdb.com/card/01020)
+* **Official Printed Text:** `Action: Return Hellcat to your hand.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
+1. **Effect primitive 'RETURN_TO_HAND' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
 
 ---

@@ -99,6 +99,8 @@ export interface CardEnrichment {
   cardName?: string;
   comment?: string;
   isLandscape?: boolean;
+  attackCost?: number;
+  thwartCost?: number;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

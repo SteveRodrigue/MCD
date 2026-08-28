@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Users, Flame, Zap, Play, Info, Trash2, Crown } from 'lucide-react';
-import { listScenarios } from '../../../engine/scenarios';
+import { listScenarios, getScenario } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { CardCatalog } from '../../../data/importer/card-loader';
 import corePack from '../../../../data/upstream/pack/core.json';
@@ -23,15 +23,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   catalog: providedCatalog,
   onStartSetup,
 }) => {
-  const catalog = useMemo(
-    () => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]),
-    [providedCatalog],
-  );
+  const [catalog] = useState(() => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]));
+  const scenarios = useMemo(() => listScenarios(), []);
+  const starterDecks = useMemo(() => listStarterDecks(), []);
 
-  const scenarios = listScenarios();
-  const starterDecks = listStarterDecks();
-
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string>(scenarios[0]?.id || 'rhino');
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
   const [difficulty, setDifficulty] = useState<'standard' | 'expert'>('standard');
 
   // 4 discrete hero seat slots (null = empty seat)
@@ -52,6 +48,13 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
       return next;
     });
   };
+
+  const selectedScenario = getScenario(selectedScenarioId) || getScenario('rhino')!;
+  const villainCode =
+    difficulty === 'standard' ? selectedScenario.stages.standard[0] : selectedScenario.stages.expert[0];
+  const villainPreviewCard = catalog.getCard(villainCode);
+  const mainSchemeCode = selectedScenario.mainSchemeCode;
+  const mainSchemePreviewCard = catalog.getCard(mainSchemeCode);
 
   const handleStart = () => {
     if (playerCount === 0) return;
@@ -136,71 +139,25 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                 Scenario Preview:
               </div>
-              <div className="flex items-center justify-center gap-4">
                 {/* Villain Stage I/II Card */}
-                <div className="text-center relative hover:z-50">
-                  <CardView
-                    card={
-                      {
-                        code: difficulty === 'standard' ? '01094' : '01095',
-                        name: `Rhino (Stage ${difficulty === 'standard' ? 'I' : 'II'})`,
-                        type: 'villain' as any,
-                        faction: 'encounter' as any,
-                        packCode: 'core',
-                        position: 94,
-                        quantity: 1,
-                        deckLimit: 1,
-                        isUnique: true,
-                        text: 'Rhino charges through the facility!',
-                        traits: ['Brute.', 'Criminal.'],
-                        resources: { physical: 0, energy: 0, mental: 0, wild: 0, total: 0 },
-                        boostIcons: 0,
-                        boostStar: false,
-                        errata: undefined,
-                        isLandscape: false,
-                        orientation: 'portrait',
-                        raw: {} as any,
-                      }
-                    }
-                    size="sm"
-                  />
-                  <span className="font-comic text-xs text-comic-black block mt-1">
-                    VILLAIN STAGE {difficulty === 'standard' ? 'I' : 'II'}
-                  </span>
-                </div>
+                {villainPreviewCard && (
+                  <div className="text-center relative hover:z-50">
+                    <CardView card={villainPreviewCard} size="sm" />
+                    <span className="font-comic text-xs text-comic-black block mt-1">
+                      VILLAIN STAGE {difficulty === 'standard' ? 'I' : 'II'}
+                    </span>
+                  </div>
+                )}
 
                 {/* Main Scheme 1B */}
-                <div className="text-center relative hover:z-50">
-                  <CardView
-                    card={
-                      {
-                        code: '01097b',
-                        name: 'The Break-In! (1B)',
-                        type: 'main_scheme' as any,
-                        faction: 'encounter' as any,
-                        packCode: 'core',
-                        position: 97,
-                        quantity: 1,
-                        deckLimit: 1,
-                        isUnique: false,
-                        text: 'If 7 threat per player is on this scheme, the players lose the game.',
-                        traits: [],
-                        resources: { physical: 0, energy: 0, mental: 0, wild: 0, total: 0 },
-                        boostIcons: 0,
-                        boostStar: false,
-                        errata: undefined,
-                        isLandscape: true,
-                        orientation: 'landscape',
-                        raw: {} as any,
-                      }
-                    }
-                    size="sm"
-                  />
-                  <span className="font-comic text-xs text-comic-black block mt-1">
-                    MAIN SCHEME 1B
-                  </span>
-                </div>
-              </div>
+                {mainSchemePreviewCard && (
+                  <div className="text-center relative hover:z-50">
+                    <CardView card={mainSchemePreviewCard} size="sm" />
+                    <span className="font-comic text-xs text-comic-black block mt-1">
+                      MAIN SCHEME {mainSchemePreviewCard.name}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
 

@@ -32,7 +32,8 @@
       ]
     },
     "01002": {
-      "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand.",
+      "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
+      "attackCost": 0,
       "abilities": [
         {
           "id": "black_cat_when_played",

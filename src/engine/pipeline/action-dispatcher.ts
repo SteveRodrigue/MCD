@@ -400,8 +400,11 @@ export function dispatchAction(
       const allyCard = ally.card as AllyCard;
       let thwValue = allyCard.thwart || 1;
 
-      // Jessica Jones THW boost: +1 for each side scheme in play
-      if (allyCard.code === '01059') {
+      // Dynamic THW boost from constant abilities (e.g. Jessica Jones: +1 THW per side scheme)
+      const thwBonusAbility = ally.card.enrichment?.abilities?.find(
+        (a) => a.timing === 'CONSTANT' && a.effect === 'THW_BONUS_PER_SIDE_SCHEME',
+      );
+      if (thwBonusAbility) {
         thwValue += nextState.sideSchemes.length;
       }
 
@@ -582,11 +585,11 @@ export function dispatchAction(
           const gCard = player.tableau[gIdx];
           gCard.exhausted = true;
 
-          // Web-Shooter: Decrement counter and discard if empty
-          if (gCard.card.code === '01008') {
+          // Generic counter decrement and discardOnEmpty handling (ADR-0018)
+          if (gCard.card.enrichment?.uses) {
             const currentCounters = gCard.tokens?.counters || 0;
             gCard.tokens = { ...gCard.tokens, counters: Math.max(0, currentCounters - 1) };
-            if ((gCard.tokens?.counters ?? 0) <= 0) {
+            if (gCard.card.enrichment.uses.discardOnEmpty && (gCard.tokens?.counters ?? 0) <= 0) {
               player.tableau.splice(gIdx, 1);
               player.discard.push(gCard);
             }

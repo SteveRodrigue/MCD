@@ -43,14 +43,27 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       }
     }
 
-    // 1B. If damaged (< 90%), check Aunt May support first
-    const auntMay = player.tableau.find((c) => c.card.code === '01006' && !c.exhausted);
-    if (auntMay && player.health < player.maxHealth) {
+    // 1B. If damaged (< 100%), check for ready healing support abilities in tableau (ADR-0018)
+    const healingSupport = player.tableau.find((c) => {
+      if (c.exhausted) return false;
+      const abilities = c.card.enrichment?.abilities || [];
+      return abilities.some(
+        (a) =>
+          (a.timing === 'ALTER_EGO_ACTION' || a.timing === 'ACTION') &&
+          a.effect === 'HEAL_DAMAGE',
+      );
+    });
+    if (healingSupport && player.health < player.maxHealth) {
+      const healAbility = healingSupport.card.enrichment!.abilities!.find(
+        (a) =>
+          (a.timing === 'ALTER_EGO_ACTION' || a.timing === 'ACTION') &&
+          a.effect === 'HEAL_DAMAGE',
+      )!;
       return {
         type: 'USE_CARD_ABILITY',
         playerId,
-        cardInstanceId: auntMay.instanceId,
-        abilityId: 'aunt_may',
+        cardInstanceId: healingSupport.instanceId,
+        abilityId: healAbility.id,
       };
     }
 

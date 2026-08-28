@@ -125,28 +125,16 @@
       ]
     },
     "01004": {
-      "comment": "Hero Event: Hero Interrupt when treachery revealed -> cancel its When Revealed effects.",
-      "abilities": [
-        {
-          "id": "enhanced_spider_sense",
-          "timing": "HERO_INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
-          "zone": "HAND",
-          "cost": {
-            "discardSelf": true,
-            "resourceCost": 1
-          },
-          "effect": "CANCEL_WHEN_REVEALED"
-        }
-      ],
+      "comment": "Hero Event: Blocked pending Tier 3 Treachery Cancel Interceptor primitive (see docs/ambiguities/core_01004_enhanced_spider_sense.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card, Spend ] -> CANCEL_WHEN_REVEALED"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card, Spend 1 resource] -> CANCEL_WHEN_REVEALED",
+        "ambiguityFile": "docs/ambiguities/core_01004_enhanced_spider_sense.md"
       },
       "mechanicSteps": [
         "Trigger: When a treachery card is revealed from the encounter deck (HERO_INTERRUPT @ TREACHERY_REVEALED)",
@@ -2626,30 +2614,16 @@
       ]
     },
     "01085": {
-      "comment": "Event: Interrupt when villain schemes -> reduce threat placed by 1.",
-      "abilities": [
-        {
-          "id": "emergency_interrupt",
-          "timing": "INTERRUPT",
-          "trigger": "THREAT_WOULD_BE_PLACED",
-          "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 1
-          }
-        }
-      ],
+      "comment": "Event: Blocked pending Tier 3 Optional Interrupt Prompt state machine (see docs/ambiguities/core_01085_emergency.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from a scheme"
+        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from a scheme",
+        "ambiguityFile": "docs/ambiguities/core_01085_emergency.md"
       },
       "mechanicSteps": [
         "Trigger: Interrupt when the villain schemes (INTERRUPT @ VILLAIN_SCHEMES)",

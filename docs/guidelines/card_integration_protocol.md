@@ -20,11 +20,12 @@
    * Compare against the printed upstream card text.
    * If the executable schema cannot recreate a comparable card text with 100% equivalent meaning and intent, confidence CANNOT be rated $\ge 95\%$.
    * If confidence remains $< 95\%$ after 3 refinement iterations, abort integration and isolate in `docs/ambiguities/{pack}_{code}_{slug}.md`.
-10. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`), confidence score, and **`reconstructedText`** (a machine-derived proof-of-work decompiled strictly from the `abilities: [...]` array to compare against original printed text).
-11. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
-12. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
-13. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
-14. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+10. **Active Abilities Isolation for Blocked Cards (ADR-0021):** If a card has an open ambiguity ($< 95\%$ confidence or Tier 3 blocker), the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/*.json`. The entry retains ONLY `comment`, `audit` (with `ambiguityFile` and `reconstructedText`), and `mechanicSteps`. This guarantees that unsupported or partial abilities are never executed by the rules engine.
+11. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`), confidence score, and **`reconstructedText`** (a machine-derived proof-of-work decompiled strictly from the `abilities: [...]` array to compare against original printed text).
+12. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
+13. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
+14. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
+15. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
 
 ---
 

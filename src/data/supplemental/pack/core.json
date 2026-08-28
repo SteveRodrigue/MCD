@@ -1,6 +1,34 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "cards": {
+    "01001a": {
+      "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
+      "audit": {
+        "createdAt": "2026-08-28T08:53",
+        "updatedAt": "2026-08-28T08:53",
+        "reviewedAt": "2026-08-28T08:53",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
+        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated (RR v1.8 p. 12)",
+        "Step 2: Draw 1 card from player draw deck into hand"
+      ],
+      "abilities": [
+        {
+          "id": "spider_sense",
+          "timing": "INTERRUPT",
+          "trigger": "VILLAIN_INITIATES_ATTACK",
+          "effect": "DRAW_CARDS",
+          "params": {
+            "count": 1,
+            "target": "SELF"
+          }
+        }
+      ]
+    },
     "01001b": {
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "audit": {
@@ -1163,30 +1191,6 @@
         }
       ]
     },
-    "01059": {
-      "comment": "Ally: Constant: Gets +1 THW for each side scheme in play.",
-      "abilities": [
-        {
-          "id": "jessica_jones_thw_boost",
-          "timing": "CONSTANT",
-          "effect": "THW_BONUS_PER_SIDE_SCHEME",
-          "params": {
-            "amountPerSideScheme": 1
-          }
-        }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 95
-      },
-      "mechanicSteps": [
-        "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
-      ]
-    },
     "01058": {
       "comment": "Ally: Response: After Daredevil thwarts, deal 1 damage to an enemy.",
       "abilities": [
@@ -1211,6 +1215,30 @@
       },
       "mechanicSteps": [
         "Response: After Daredevil thwarts, deal 1 damage to an enemy (RESPONSE @ THWART_RESOLVED)"
+      ]
+    },
+    "01059": {
+      "comment": "Ally: Constant: Gets +1 THW for each side scheme in play.",
+      "abilities": [
+        {
+          "id": "jessica_jones_thw_boost",
+          "timing": "CONSTANT",
+          "effect": "THW_BONUS_PER_SIDE_SCHEME",
+          "params": {
+            "amountPerSideScheme": 1
+          }
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
       ]
     },
     "01060": {
@@ -1922,34 +1950,6 @@
       "mechanicSteps": [
         "Play Condition: Attach to your hero. Max 1 per hero.",
         "Action: Hero Action. Spend 1 [physical] resource and discard Tenacity -> ready your hero."
-      ]
-    },
-    "01001a": {
-      "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
-      "audit": {
-        "createdAt": "2026-08-28T08:53",
-        "updatedAt": "2026-08-28T08:53",
-        "reviewedAt": "2026-08-28T08:53",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98
-      },
-      "mechanicSteps": [
-        "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
-        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated (RR v1.8 p. 12)",
-        "Step 2: Draw 1 card from player draw deck into hand"
-      ],
-      "abilities": [
-        {
-          "id": "spider_sense",
-          "timing": "INTERRUPT",
-          "trigger": "VILLAIN_INITIATES_ATTACK",
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "target": "SELF"
-          }
-        }
       ]
     }
   }

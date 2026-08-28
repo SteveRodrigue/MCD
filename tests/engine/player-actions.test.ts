@@ -527,24 +527,32 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(status.reasons).toContain('Requires Hero form');
       });
 
-      it('allows playing Upgrades like Tenacity in Alter-Ego form when affordable', () => {
+      it('marks Upgrades with Hero Action / Attach to your hero (Tenacity) as unplayable in Alter-Ego form', () => {
         // In Alter-Ego form (Peter Parker)
         gameState.players[0].currentForm = 'alter_ego';
         gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
 
-        const tenacityCard = catalog.getCard('01093')!; // Tenacity (Cost 2 Upgrade with Hero Action ability in play)
+        const tenacityCard = catalog.getCard('01093')!; // Tenacity (Cost 2 Upgrade: Attach to your hero. Hero Action)
         const tenacityInst = createCardInstance(tenacityCard);
         const resCard = catalog.getCard('01088')!;
-        // Tenacity costs 2: provided 2 resource cards
+        // Provided 2 resources for cost 2
         gameState.players[0].hand = [
           tenacityInst,
           createCardInstance(resCard),
           createCardInstance(resCard),
         ];
 
-        const status = evaluateCardPlayability(gameState, 'p1', tenacityInst);
-        expect(status.isPlayable).toBe(true);
-        expect(status.reasons.length).toBe(0);
+        const statusAlterEgo = evaluateCardPlayability(gameState, 'p1', tenacityInst);
+        expect(statusAlterEgo.isPlayable).toBe(false);
+        expect(statusAlterEgo.reasons).toContain('Requires Hero form');
+
+        // Switch to Hero form (Spider-Man) -> Tenacity becomes playable
+        gameState.players[0].currentForm = 'hero';
+        gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+        const statusHero = evaluateCardPlayability(gameState, 'p1', tenacityInst);
+        expect(statusHero.isPlayable).toBe(true);
+        expect(statusHero.reasons.length).toBe(0);
       });
 
       it('marks cards as unplayable when total potential resources are insufficient to pay cost', () => {

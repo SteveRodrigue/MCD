@@ -3,6 +3,11 @@
   "cards": {
     "01001a": {
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
+      "mechanicSteps": [
+        "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
+        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated",
+        "Step 2: Draw 1 card from player draw deck into hand"
+      ],
       "abilities": [
         {
           "id": "spider_sense",
@@ -18,6 +23,11 @@
     },
     "01001b": {
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
+      "mechanicSteps": [
+        "Action: Resource generation during card cost payment or resource window (RESOURCE)",
+        "Requirement: Limit 1 use per round",
+        "Effect: Generates 1 [mental] resource towards active cost payment or resource pool"
+      ],
       "abilities": [
         {
           "id": "scientist",
@@ -34,6 +44,14 @@
     "01002": {
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "attackCost": 0,
+      "mechanicSteps": [
+        "Trigger: After player plays Black Cat into play from hand (FORCED_RESPONSE @ CARD_PLAYED)",
+        "Step 1: Inspect top 2 cards from player's draw deck",
+        "Step 2: Check each of the 2 cards for printed [mental] resource icons",
+        "Step 3: Discard any of the 2 cards that do not have a printed [mental] resource",
+        "Step 4: Put any remaining matching card(s) directly into player's hand",
+        "Passive: Zero consequential damage taken when making basic attack (attackCost: 0)"
+      ],
       "abilities": [
         {
           "id": "black_cat_when_played",

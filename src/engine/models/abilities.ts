@@ -101,6 +101,7 @@ export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
   cardName?: string;
   comment?: string;
+  mechanicSteps?: string[];
   isLandscape?: boolean;
   attackCost?: number;
   thwartCost?: number;

@@ -36,7 +36,7 @@ Every card added or refined must follow these exact sequential steps:
    * **Max 3 Refinement Iterations:** If confidence remains $< 95\%$ after 3 attempts, **ABORT** integration and generate a blocked card report in `docs/ambiguities/{pack}_{code}_{slug}.md`.
 6. **Engine Reuse Check:** Check `src/engine/effects/` and `src/engine/triggers/` before authoring new logic.
 7. **Author Composable Generic Primitives & Blast-Radius Check:** If extending the engine, build generic reusable building blocks. If Tier 3 is required, gate behind approval or batch isolation.
-8. **Stamp Audit (HH:MM), Codify Specs & Prune Ambiguity:** Stamp ISO timestamps (`YYYY-MM-DDTHH:mm`), populate `mechanicSteps` in JSON, document specs in `docs/specs/card-mechanics-breakdown.md`, and **delete the corresponding ambiguity file** in `docs/ambiguities/` upon successful resolution (Inbox Zero).
+8. **Stamp Audit (HH:MM), Codify Specs, Sort Keys & Prune Ambiguity:** Stamp ISO timestamps (`YYYY-MM-DDTHH:mm`), populate `mechanicSteps` in JSON, sort supplemental JSON keys canonically by ascending card ID (`01001a` -> `01001b` -> `01002`), document specs in `docs/specs/card-mechanics-breakdown.md`, and **delete the corresponding ambiguity file** in `docs/ambiguities/` upon successful resolution (Inbox Zero).
 
 ### 3. Encapsulated Audit Metadata Schema
 ```json

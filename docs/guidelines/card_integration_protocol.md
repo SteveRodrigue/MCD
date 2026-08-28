@@ -15,8 +15,9 @@
 6. **Hard Circuit-Breaker on Refinement Loops (ADR-0021):** If round-trip confidence is $< 95\%$ after 3 refinement iterations, stop immediately and log to `docs/ambiguities/`.
 7. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`).
 8. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
-9. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
-10. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+9. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
+10. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
+11. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
 
 ---
 

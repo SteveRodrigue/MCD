@@ -135,9 +135,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
                       heroStationRefs.current[idx] = el;
                     }}
                     className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 transition-all duration-300 ${
-                      isFocused
-                        ? 'opacity-100 z-10 scale-100'
-                        : 'opacity-90 hover:opacity-100 z-0 scale-[0.98]'
+                      isFocused ? 'opacity-100 z-10' : 'opacity-90 hover:opacity-100 z-0'
                     }`}
                   >
                     {/* Hero Play Area */}

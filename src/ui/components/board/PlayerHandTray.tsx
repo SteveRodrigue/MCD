@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp } from 'lucide-react';
 import { CardInstance, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
@@ -410,277 +411,266 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       )}
 
       {/* Player Deck Inspector Modal (Dev Mode with Sorting & Card Names) */}
-      {showDeckModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-              <div className="flex items-center gap-2">
-                <Eye className="w-6 h-6 text-comic-blue" />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-comic text-xl text-comic-black uppercase">
-                      Player Deck Inspector ({deck.length} Cards)
-                    </h3>
-                    <span className="bg-comic-blue text-white border border-comic-black font-comic text-[10px] px-2 py-0.5 rounded font-bold">
-                      DEV MODE
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600">
-                    Sort view by Deck Order, Card Type, Affinity (Aspect), or Cost. Cards display their name below.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowDeckModal(false)}
-                className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Sorting Controls Bar */}
-            <div className="bg-slate-100 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-comic-blue" />
-                <span className="font-comic text-xs text-slate-700 uppercase">Sort View By:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    onClick={() => setSortMode('deck_order')}
-                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
-                      sortMode === 'deck_order'
-                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
-                        : 'bg-white text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    Deck Order
-                  </button>
-                  <button
-                    onClick={() => setSortMode('card_type')}
-                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
-                      sortMode === 'card_type'
-                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
-                        : 'bg-white text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    Card Type
-                  </button>
-                  <button
-                    onClick={() => setSortMode('affinity')}
-                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
-                      sortMode === 'affinity'
-                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
-                        : 'bg-white text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    Affinity
-                  </button>
-                  <button
-                    onClick={() => setSortMode('cost')}
-                    className={`font-comic text-xs px-3 py-1 rounded border border-comic-black transition-all cursor-pointer ${
-                      sortMode === 'cost'
-                        ? 'bg-comic-blue text-white shadow-comic-sm font-bold'
-                        : 'bg-white text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    Cost
-                  </button>
-                </div>
-              </div>
-
-              {sortMode === 'deck_order' && (
+      {showDeckModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
                 <div className="flex items-center gap-2">
-                  <ArrowDownUp className="w-4 h-4 text-slate-600" />
-                  <button
-                    onClick={() =>
-                      setDeckDirection((prev) =>
-                        prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom'
-                      )
-                    }
-                    className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
-                  >
-                    {deckDirection === 'top_to_bottom' ? '⬆️ Top to Bottom (#1 ⟶ #N)' : '⬇️ Bottom to Top (#N ⟶ #1)'}
-                  </button>
-                </div>
-              )}
-
-              {sortMode === 'cost' && (
-                <div className="flex items-center gap-2">
-                  <ArrowDownUp className="w-4 h-4 text-slate-600" />
-                  <button
-                    onClick={() =>
-                      setCostDirection((prev) =>
-                        prev === 'low_to_high' ? 'high_to_low' : 'low_to_high'
-                      )
-                    }
-                    className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
-                  >
-                    {costDirection === 'low_to_high'
-                      ? '⬆️ Low to High (0 ⟶ 4+)'
-                      : '⬇️ High to Low (4+ ⟶ 0)'}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Cards Display Grid (Grouped or Flat) */}
-            {groupedDeckItems ? (
-              <div className="space-y-6 py-2">
-                {Object.entries(groupedDeckItems).map(([groupName, groupItems]) => (
-                  <div key={groupName} className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-300">
-                    <div className="flex items-center justify-between border-b border-slate-300 pb-1.5">
-                      <span className="font-comic text-sm text-comic-black uppercase">
-                        {groupName} ({groupItems.length} Cards)
+                  <Eye className="w-6 h-6 text-comic-blue" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-comic text-xl text-comic-black uppercase">
+                        Player Deck Inspector ({deck.length} Cards)
+                      </h3>
+                      <span className="bg-comic-blue text-white border border-comic-black font-comic text-[10px] px-2 py-0.5 rounded font-bold">
+                        DEV MODE
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2">
-                      {groupItems.map(({ instance, originalIndex }) => (
-                        <div key={instance.instanceId} className="flex flex-col items-center gap-1">
-                          <div className="relative">
-                            <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
-                            <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
-                              #{originalIndex + 1}
+                    <p className="text-xs text-slate-600">
+                      Sort view by Deck Order, Card Type, Affinity (Aspect), or Cost. Cards display their name below.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDeckModal(false)}
+                  className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Inspector View Sorting & Ordering Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-amber-50 p-3 rounded-xl border-2 border-comic-black text-xs font-comic shadow-comic-sm">
+                {/* Left: Sort Category Selector */}
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-comic-blue" />
+                  <span className="font-bold text-slate-700 uppercase">Sort By:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {(
+                      [
+                        { id: 'deck_order', label: 'Deck Order' },
+                        { id: 'card_type', label: 'Card Type' },
+                        { id: 'affinity', label: 'Affinity (Aspect)' },
+                        { id: 'cost', label: 'Resource Cost' },
+                      ] as const
+                    ).map((btn) => (
+                      <button
+                        key={btn.id}
+                        onClick={() => setSortMode(btn.id)}
+                        className={`px-2.5 py-1 rounded border transition-all cursor-pointer ${
+                          sortMode === btn.id
+                            ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
+                            : 'bg-white text-slate-700 border-slate-300 hover:border-comic-black'
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: Direction / Reverse Toggle */}
+                <div className="flex items-center gap-2">
+                  <ArrowDownUp className="w-4 h-4 text-comic-red" />
+                  {sortMode === 'deck_order' && (
+                    <button
+                      onClick={() =>
+                        setDeckDirection((prev) =>
+                          prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom',
+                        )
+                      }
+                      className="px-2.5 py-1 rounded border-2 border-comic-black bg-comic-yellow text-comic-black hover:bg-amber-300 font-bold transition-all shadow-comic-sm cursor-pointer"
+                    >
+                      {deckDirection === 'top_to_bottom' ? '▼ Top to Bottom (Draw Order)' : '▲ Bottom to Top'}
+                    </button>
+                  )}
+
+                  {sortMode === 'cost' && (
+                    <button
+                      onClick={() =>
+                        setCostDirection((prev) =>
+                          prev === 'low_to_high' ? 'high_to_low' : 'low_to_high',
+                        )
+                      }
+                      className="px-2.5 py-1 rounded border-2 border-comic-black bg-comic-yellow text-comic-black hover:bg-amber-300 font-bold transition-all shadow-comic-sm cursor-pointer"
+                    >
+                      {costDirection === 'low_to_high' ? 'Low to High (0 ➔ 4)' : 'High to Low (4 ➔ 0)'}
+                    </button>
+                  )}
+
+                  {(sortMode === 'card_type' || sortMode === 'affinity') && (
+                    <span className="text-slate-500 font-sans italic text-[11px]">
+                      Grouped categorically
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Cards Grid Area */}
+              {groupedDeckItems ? (
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                  {Object.entries(groupedDeckItems).map(([groupTitle, groupItems]) => (
+                    <div key={groupTitle} className="bg-slate-50 p-3 rounded-xl border border-slate-300 space-y-2">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-1">
+                        <span className="font-comic text-sm text-comic-blue font-bold uppercase tracking-wider">
+                          {groupTitle} ({groupItems.length})
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-start gap-4 pt-1">
+                        {groupItems.map(({ instance, originalIndex }) => (
+                          <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                            <div className="relative">
+                              <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                              <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                                #{originalIndex + 1}
+                              </span>
+                            </div>
+                            {/* Card Name as Bottom Label */}
+                            <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
+                              {instance.card.name}
                             </span>
                           </div>
-                          {/* Card Name as Bottom Label */}
-                          <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
-                            {instance.card.name}
-                          </span>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center justify-center gap-4 py-4">
-                {processedDeckItems.map(({ instance, originalIndex }) => (
-                  <div key={instance.instanceId} className="flex flex-col items-center gap-1">
-                    <div className="relative">
-                      <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
-                      <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
-                        #{originalIndex + 1}
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-center gap-4 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                  {processedDeckItems.map(({ instance, originalIndex }) => (
+                    <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                      <div className="relative">
+                        <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                        <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                          #{originalIndex + 1}
+                        </span>
+                      </div>
+                      {/* Card Name as Bottom Label */}
+                      <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
+                        {instance.card.name}
                       </span>
                     </div>
-                    {/* Card Name as Bottom Label */}
+                  ))}
+                </div>
+              )}
+
+              <div className="text-center pt-2 border-t border-slate-200">
+                <button
+                  onClick={() => setShowDeckModal(false)}
+                  className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
+                >
+                  Close Inspector
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* Player Discard Pile Modal */}
+      {showDiscardModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-6 h-6 text-comic-blue" />
+                  <div>
+                    <h3 className="font-comic text-xl text-comic-black uppercase">
+                      Player Discard Pile ({discard.length} Cards)
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Discard piles are open information. Listed in discard order.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDiscardModal(false)}
+                  className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                {discard.map((cardInst, idx) => (
+                  <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
+                    <div className="relative">
+                      <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
+                      <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
+                        #{idx + 1}
+                      </span>
+                    </div>
                     <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
-                      {instance.card.name}
+                      {cardInst.card.name}
                     </span>
                   </div>
                 ))}
               </div>
-            )}
 
-            <div className="text-center pt-2 border-t border-slate-200">
-              <button
-                onClick={() => setShowDeckModal(false)}
-                className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
-              >
-                Close Inspector
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Player Discard Pile Modal */}
-      {showDiscardModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-5xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-              <div className="flex items-center gap-2">
-                <Layers className="w-6 h-6 text-comic-blue" />
-                <div>
-                  <h3 className="font-comic text-xl text-comic-black uppercase">
-                    Player Discard Pile ({discard.length} Cards)
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    Discard piles are open information. Listed in discard order.
-                  </p>
-                </div>
+              <div className="text-center pt-2 border-t border-slate-200">
+                <button
+                  onClick={() => setShowDiscardModal(false)}
+                  className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
+                >
+                  Close Discard Viewer
+                </button>
               </div>
-              <button
-                onClick={() => setShowDiscardModal(false)}
-                className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 py-4">
-              {discard.map((cardInst, idx) => (
-                <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                  <div className="relative">
-                    <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
-                    <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
-                      #{idx + 1}
-                    </span>
-                  </div>
-                  <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
-                    {cardInst.card.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="text-center pt-2 border-t border-slate-200">
-              <button
-                onClick={() => setShowDiscardModal(false)}
-                className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
-              >
-                Close Discard Viewer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
 
       {/* Nemesis Set / Out of Play Modal */}
-      {showNemesisModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-4xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-              <div className="flex items-center gap-2">
-                <Skull className="w-6 h-6 text-comic-red" />
-                <div>
-                  <h3 className="font-comic text-xl text-comic-black uppercase">
-                    Nemesis Set • Set Aside (Out of Play)
-                  </h3>
-                  <p className="text-xs text-slate-600">
-                    These 5 cards are set aside at game start and enter play if "Shadow of the Past" is revealed.
-                  </p>
+      {showNemesisModal &&
+        createPortal(
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-4xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
+                <div className="flex items-center gap-2">
+                  <Skull className="w-6 h-6 text-comic-red" />
+                  <div>
+                    <h3 className="font-comic text-xl text-comic-black uppercase">
+                      Nemesis Set • Set Aside (Out of Play)
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      These 5 cards are set aside at game start and enter play if "Shadow of the Past" is revealed.
+                    </p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setShowNemesisModal(false)}
+                  className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowNemesisModal(false)}
-                className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-5 py-4">
-              {setAsideCards.map((cardInst) => (
-                <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                  <CardView card={cardInst.card} instance={cardInst} size="md" enableHoverZoom={true} />
-                  <span className="font-comic text-xs text-slate-600 uppercase">
-                    {cardInst.card.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+              <div className="flex flex-wrap items-center justify-center gap-5 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                {setAsideCards.map((cardInst) => (
+                  <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
+                    <CardView card={cardInst.card} instance={cardInst} size="md" enableHoverZoom={true} />
+                    <span className="font-comic text-xs text-slate-600 uppercase">
+                      {cardInst.card.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-            <div className="text-center pt-2 border-t border-slate-200">
-              <button
-                onClick={() => setShowNemesisModal(false)}
-                className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
-              >
-                Close Out of Play Viewer
-              </button>
+              <div className="text-center pt-2 border-t border-slate-200">
+                <button
+                  onClick={() => setShowNemesisModal(false)}
+                  className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer"
+                >
+                  Close Out of Play Viewer
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

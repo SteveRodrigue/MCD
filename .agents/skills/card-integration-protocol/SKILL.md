@@ -74,6 +74,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * **Form Requirement:** Derived strictly from ability timing (`HERO_` vs `ALTER_EGO_` vs neutral).
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
+* **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
+* `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
 * Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
 ```json
 "{card_code}": {
@@ -120,9 +122,10 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 * **The Golden Rule (RR v1.8 p. 2):** If the printed card text explicitly contradicts a general rule in the Rules Reference, the card text takes precedence.
 
 ### Step 5: Bidirectional Round-Trip Validation & Circuit-Breaker Rule
-* **The Test:** Read your drafted JSON supplemental schema and translate it back into plain human language.
+* **The Test:** Read your drafted JSON `abilities: [...]` schema and translate it back into plain human language.
 * **Criterion:** Does the reconstructed description match 100% of the printed card's intended behavior without omissions, unintended side effects, or missing constraints?
 * **Confidence Target:** Must reach **$\ge 95\%$** before proceeding.
+* **Executable Completion Gate:** If a card has rules text but its `abilities: [...]` array is missing, empty, or cannot execute the printed mechanic, **confidence CANNOT exceed 50%**.
 * **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 3 $\rightarrow$ 4 $\rightarrow$ 5.
 * **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3):**
   1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.

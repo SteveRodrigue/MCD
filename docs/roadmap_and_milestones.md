@@ -23,7 +23,8 @@ All uncompleted and future roadmap items are categorized using the following pri
 graph TD
     P0["Phase 0: Foundation & Governance<br/>(Scaffolding, ADRs, Tooling, CI) ✅"] --> P1["Phase 1: Headless Engine & Data Model<br/>(State Tree, Trigger Bus, MarvelsDB Importer) ✅"]
     P1 --> P2["Phase 2: Vertical Slice Matchup<br/>(Spider-Man vs Rhino Core Loop & TDD) ✅"]
-    P2 --> P3["Phase 3: 60s Comic Pop-Art UI<br/>(Comic Panels, Tabletop Zones, Mulligan, Inspectors) ⏳"]
+    P2 --> P25["Phase 2.5: Rules Engine Robustness & Ambiguity Resolution<br/>(Rhino & Player Ambiguities, Multi-Card Testing, Scenario Plugin Architecture) 🚧"]
+    P25 --> P3["Phase 3: 60s Comic Pop-Art UI<br/>(Comic Panels, Tabletop Zones, Mulligan, Real Game Playtesting) ⏳"]
     P3 --> P4["Phase 4: Core Set Content & Deckbuilder<br/>(All 5 Core Heroes, Klaw, Ultron, Modular Sets) 📅"]
     P4 --> P5["Phase 5: Ecosystem & Future Features<br/>(MarvelsDB API Import, Tauri Desktop, Multiplayer) 🚀"]
 ```
@@ -78,8 +79,58 @@ graph TD
 
 ---
 
+## 📍 Phase 2.5: Rules Engine Robustness, Ambiguity Resolution & Scenario Plugins 🚧 (Current Sprint / Critical Path)
+*Objective: Fix all engine ambiguities and build a modular scenario plugin architecture BEFORE proceeding to live game testing.*
+
+### 1. 🔴 `[Must-Have]` Rhino Encounter Set Ambiguity Resolution (`docs/ambiguities/core_encounter_*.md`)
+* [ ] **Multi-Stage Villain Transition State Machine (Tier 3 Gate):**
+  * Implement automatic villain progression upon reaching 0 HP: Stage I $\rightarrow$ Stage II (`01095`) $\rightarrow$ Stage III (`01096`).
+  * Reset HP to `healthPerPlayer * players.length`, apply initial status/tokens (*Tough* on Stage III), and fire `WHEN_REVEALED` stage effects.
+* [ ] **Fully Qualified Game Zone Search & Shuffle Primitive:**
+  * Implement `SEARCH_AND_REVEAL_SIDE_SCHEME` to search across `["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]` for *Breakin' & Takin'* (`01107`), reveal it, and execute `shuffleDeck: "ENCOUNTER_DECK"`.
+* [ ] **Attachment Combat & Damage Absorption Pipeline:**
+  * Intercept incoming damage to villain with attachment armor counters (*Armored Rhino Suit* `01098`).
+  * Scan attachments during Step 2 activations to apply +3 ATK and *Overkill* (*Charge* `01099`) and +1 SCH (*Enhanced Ivory Horn* `01100`).
+* [ ] **Step 5 Reveal Trigger Dispatch for Minions & Side Schemes:**
+  * Wire declarative `WHEN_REVEALED` execution in `villain-phase.ts:step5` for *Shocker* (`01103`), *Hydra Bomber* (`01110`), *Bomb Scare* (`01109`), and *Breakin' & Takin'* (`01107`).
+* [ ] **Nemesis Search & Spawn Pipeline:**
+  * Implement *Shadow of the Past* (`01190`): search `SET_ASIDE_NEMESIS`, put Nemesis Minion and Side Scheme into play, and shuffle remaining Nemesis cards into `ENCOUNTER_DECK`.
+
+### 2. 🔴 `[Must-Have]` Core Player Cards Ambiguity Resolution (`docs/ambiguities/core_*.md`)
+* [ ] **Hero Signature Upgrade Subsystems:**
+  * *Iron Man* (`01029a`/`01029b`): Dynamic hand-size scaling from in-play *Tech* upgrades.
+  * *Black Panther* (`01040a`-`01049`): *Wakanda Forever!* execution pipeline triggering in-play *Special* upgrades in player-selected order.
+  * *Captain Marvel* (`01010a`-`01018`): Energy counter accumulation on *Energy Channel* and *Cosmic Flight*.
+  * *She-Hulk* (`01019a`-`01028`): Form change reaction (*Do You Even Lift?*) and *Gamma Slam* scaling from damage tokens.
+* [ ] **Context-Aware Aspect Resources:**
+  * Evaluate card aspect in `legality-checker.ts` to grant double resources for *The Power of Aggression* (`01055`), *The Power of Justice* (`01062`), *The Power of Leadership* (`01072`), and *The Power of Protection* (`01079`).
+* [ ] **Constant Stat Buff Modifiers:**
+  * Dynamically calculate hero/ally ATK, THW, and DEF including attached upgrades (*Combat Training* `01057`, *Heroic Intuition* `01065`, *Armored Vest* `01081`, *Inspired* `01074`).
+* [ ] **Discard & Deck Search/Play Primitives:**
+  * Implement *Make the Call* (`01071`), *Ancestral Knowledge* (`01042`), and *Shuri* (`01041`).
+* [ ] **Interactive Decision Prompt Modal State Machine (ADR-0020):**
+  * `pendingDecisionPrompt` on `GameState` for optional interrupts (*Emergency* `01085`, *Great Responsibility* `01061`) and multi-choice resolution (*Nick Fury* `01084` choose 1 of 3).
+
+### 3. 🔴 `[Must-Have]` Modular Scenario Plugin Architecture (`ScenarioPlugin`)
+* [ ] **Core `ScenarioPlugin` Interface:**
+  * Decouple scenario-specific setup and special rules from core pipeline files (`villain-phase.ts`, `action-dispatcher.ts`).
+  * Define lifecycle hooks: `onGameSetup`, `onVillainPhaseStep1`, `onStageAdvance`, `onMainSchemeComplete`, `evaluateWinLossConditions`.
+* [ ] **`RhinoScenarioPlugin`:**
+  * Encapsulate *The Break-In!* setup, 0-to-7 threat scaling, Stage I $\rightarrow$ II $\rightarrow$ III progression rules, and *Breakin' & Takin'* spawn logic.
+* [ ] **Scenario Plugin Registry:**
+  * Dynamic scenario resolver enabling seamless addition of future scenarios (Klaw, Ultron, Mutagen Formula) without modifying core rules engine code.
+
+### 4. 🔴 `[Must-Have]` Extensive Multi-Card Interaction Test Matrix
+* [ ] Dedicated test suites in `tests/engine/` verifying:
+  * Multi-stage villain transitions with stage When Revealed triggers.
+  * Reaction windows, interrupt prompts (Accept vs Decline), and defense timing.
+  * Multi-card combat modifiers (+ATK, Overkill, Damage Absorption).
+  * 100% Inbox Zero verification across `docs/ambiguities/`.
+
+---
+
 ## 📍 Phase 3: 60s Comic Pop-Art Presentation Layer ⏳ (In Progress)
-*Objective: Build the dynamic, comic-styled visual interface.*
+*Objective: Build the dynamic, comic-styled visual interface and live playtesting flows.*
 
 * [x] **Comic Tabletop Layout (ADR-0004):**
   * Top Panel: Scenario & Villain Zone (Encounter Piles $\rightarrow$ Villain & HP $\rightarrow$ Main Scheme Threat Meter $\rightarrow$ Side Schemes).

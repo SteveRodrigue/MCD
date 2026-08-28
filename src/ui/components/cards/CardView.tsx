@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { useCardArt } from '../../hooks/useCardArt';
+import { FormattedCardText } from './FormattedCardText';
 
 export interface CardViewProps {
   card: NormalizedCard;
@@ -200,7 +201,7 @@ export const CardView: React.FC<CardViewProps> = ({
 
             {/* Card Body Text */}
             <div className="my-1 text-[10px] text-slate-700 line-clamp-5 leading-tight bg-white/80 p-1 rounded border border-slate-200">
-              {card.text || 'No special text.'}
+              <FormattedCardText text={card.text} />
             </div>
 
             {/* Bottom Bar: Faction & Resources */}

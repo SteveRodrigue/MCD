@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard } from '../../../engine/models';
+import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -288,7 +289,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   {card.faction}
                 </span>
               </div>
-              <p className="text-xs text-comic-black/80 font-medium line-clamp-2">{card.text}</p>
+              <div className="text-xs text-comic-black/90 font-medium">
+                <FormattedCardText text={card.text} />
+              </div>
             </div>
 
             {/* Cost Badge */}

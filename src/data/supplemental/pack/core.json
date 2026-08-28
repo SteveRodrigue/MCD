@@ -5,8 +5,8 @@
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-28T08:53",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -33,8 +33,8 @@
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -61,8 +61,8 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -108,8 +108,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -137,8 +137,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-27T23:00",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80
@@ -167,8 +167,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -197,8 +197,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -225,8 +225,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -261,8 +261,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -290,8 +290,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -324,8 +324,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -350,8 +350,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -376,8 +376,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -405,8 +405,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -434,8 +434,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -449,8 +449,8 @@
       "comment": "RESOURCE: Energy Absorption",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -478,8 +478,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -515,8 +515,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -551,8 +551,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -600,8 +600,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -626,8 +626,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -652,8 +652,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -676,8 +676,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -704,8 +704,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -728,8 +728,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -752,8 +752,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -777,8 +777,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -798,8 +798,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -829,8 +829,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -857,8 +857,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -894,8 +894,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -922,8 +922,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -949,8 +949,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -977,8 +977,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1007,8 +1007,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1036,8 +1036,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1060,8 +1060,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1089,8 +1089,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1116,8 +1116,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1140,8 +1140,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1169,8 +1169,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1201,8 +1201,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1240,8 +1240,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1264,8 +1264,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1288,8 +1288,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1314,8 +1314,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1338,8 +1338,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1359,8 +1359,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1380,8 +1380,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1401,8 +1401,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1422,8 +1422,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1437,8 +1437,8 @@
       "comment": "RESOURCE: Vibranium",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1464,8 +1464,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1489,8 +1489,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1518,8 +1518,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1547,8 +1547,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1574,8 +1574,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1596,8 +1596,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1622,8 +1622,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1648,8 +1648,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1677,8 +1677,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1705,8 +1705,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1730,8 +1730,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1764,8 +1764,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1788,8 +1788,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1814,8 +1814,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1838,8 +1838,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1867,8 +1867,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1893,8 +1893,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1919,8 +1919,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1949,8 +1949,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1985,8 +1985,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2010,8 +2010,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2046,8 +2046,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2071,8 +2071,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2104,8 +2104,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2128,8 +2128,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2154,8 +2154,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2175,8 +2175,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2200,8 +2200,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2225,8 +2225,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2250,8 +2250,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2278,8 +2278,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2303,8 +2303,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2331,8 +2331,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2353,8 +2353,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2378,8 +2378,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2412,8 +2412,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2436,8 +2436,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2464,8 +2464,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2490,8 +2490,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2522,8 +2522,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2552,11 +2552,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-27T23:00",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 75
+        "confidence": 80
       },
       "mechanicSteps": [
         "Trigger: Interrupt when the villain schemes (INTERRUPT @ VILLAIN_SCHEMES)",
@@ -2579,8 +2579,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2607,8 +2607,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2621,11 +2621,11 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 100
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
@@ -2636,11 +2636,11 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 100
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
@@ -2651,11 +2651,11 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 100
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
@@ -2680,8 +2680,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2708,8 +2708,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -2738,8 +2738,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:03",
-        "reviewedAt": "2026-08-28T09:03",
+        "updatedAt": "2026-08-28T09:27",
+        "reviewedAt": "2026-08-28T09:27",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98

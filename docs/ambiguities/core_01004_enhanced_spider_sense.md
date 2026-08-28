@@ -3,8 +3,8 @@ card_code: "01004"
 card_name: "Enhanced Spider-Sense"
 pack: "core"
 confidence_reached: 80
-blocker_category: "TIER_3_STRUCTURAL_REFACTOR"
-date_logged: "2026-08-28T09:03"
+blocker_category: "INTERCEPTOR_CANCEL_WHEN_REVEALED"
+date_logged: "2026-08-28T09:27"
 ---
 
 # Card Ambiguity Report: Enhanced Spider-Sense (`#01004`)
@@ -14,14 +14,7 @@ date_logged: "2026-08-28T09:03"
 
 ---
 
-## 🔍 Why Tier 3 Structural Gate Was Triggered
-* **Architectural Blocker:** Requires Treachery When Revealed Cancellation Pipeline in encounter card resolution.
-* **Confidence Level:** 80% (Requires structural engine state machine or pipeline hooks).
-* **Action Taken:** Card isolated in ambiguity queue; active engine code remains stable without ad-hoc hacks.
-
----
-
-## 🛠️ Step-by-Step Resolution Requirements
-1. Implement the required structural pipeline / UI state machine.
-2. Verify with automated unit tests.
-3. Delete this file from `docs/ambiguities/` upon resolution (Inbox Zero).
+## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
+* **Trigger Window:** `HERO_INTERRUPT` when a treachery card is revealed from the encounter deck.
+* **Blocker Reason:** Requires `CANCEL_WHEN_REVEALED` interceptor in `step5_revealEncounterCards` (ADR-0020).
+* **Current Confidence:** 80% (Tier 3 Gate Fired).

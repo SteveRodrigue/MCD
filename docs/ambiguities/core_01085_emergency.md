@@ -2,9 +2,9 @@
 card_code: "01085"
 card_name: "Emergency"
 pack: "core"
-confidence_reached: 75
-blocker_category: "TIER_3_STRUCTURAL_REFACTOR"
-date_logged: "2026-08-28T09:03"
+confidence_reached: 80
+blocker_category: "INTERRUPT_PROMPT_VILLAIN_PHASE"
+date_logged: "2026-08-28T09:27"
 ---
 
 # Card Ambiguity Report: Emergency (`#01085`)
@@ -14,14 +14,7 @@ date_logged: "2026-08-28T09:03"
 
 ---
 
-## 🔍 Why Tier 3 Structural Gate Was Triggered
-* **Architectural Blocker:** Requires interactive optional interrupt decision modal (pendingInterruptPrompt) during Villain Scheme Step 2.
-* **Confidence Level:** 75% (Requires structural engine state machine or pipeline hooks).
-* **Action Taken:** Card isolated in ambiguity queue; active engine code remains stable without ad-hoc hacks.
-
----
-
-## 🛠️ Step-by-Step Resolution Requirements
-1. Implement the required structural pipeline / UI state machine.
-2. Verify with automated unit tests.
-3. Delete this file from `docs/ambiguities/` upon resolution (Inbox Zero).
+## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
+* **Trigger Window:** `INTERRUPT` when threat would be placed on a scheme.
+* **Blocker Reason:** Requires `pendingInterruptPrompt` in `GameState` and interactive UI prompt during Villain Phase Step 2 (ADR-0020).
+* **Current Confidence:** 80% (Tier 3 Gate Fired).

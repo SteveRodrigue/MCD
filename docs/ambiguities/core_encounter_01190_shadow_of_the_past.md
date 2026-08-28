@@ -7,7 +7,7 @@ blocker_category: "SET_ASIDE_NEMESIS_SPAWN_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Shadow of the Past (`#01190`)
+# Card Ambiguity Report: Shadow of the Past (`01190`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01190](https://marvelcdb.com/card/01190)
 * **Official Printed Text:** `When Revealed: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge.`

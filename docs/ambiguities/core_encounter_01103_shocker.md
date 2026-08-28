@@ -7,7 +7,7 @@ blocker_category: "MINION_WHEN_REVEALED_TRIGGER_DISPATCH"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Shocker (`#01103`)
+# Card Ambiguity Report: Shocker (`01103`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01103](https://marvelcdb.com/card/01103)
 * **Official Printed Text:** `When Revealed: Deal 1 damage to each hero.`

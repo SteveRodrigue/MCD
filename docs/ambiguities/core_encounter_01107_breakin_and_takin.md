@@ -7,7 +7,7 @@ blocker_category: "SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Breakin' & Takin' (`#01107`)
+# Card Ambiguity Report: Breakin' & Takin' (`01107`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01107](https://marvelcdb.com/card/01107)
 * **Official Printed Text:** `When Revealed: Place an additional 1 [per_hero] threat here.

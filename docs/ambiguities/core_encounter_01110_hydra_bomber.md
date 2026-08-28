@@ -7,7 +7,7 @@ blocker_category: "MINION_WHEN_REVEALED_TRIGGER_DISPATCH"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Hydra Bomber (`#01110`)
+# Card Ambiguity Report: Hydra Bomber (`01110`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01110](https://marvelcdb.com/card/01110)
 * **Official Printed Text:** `When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme.`

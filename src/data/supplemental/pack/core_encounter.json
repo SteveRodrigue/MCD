@@ -6,8 +6,8 @@
       "comment": "VILLAIN: Rhino",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100
@@ -31,8 +31,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -55,12 +55,21 @@
             "status": "STUNNED",
             "target": "ALL_HEROES"
           }
+        },
+        {
+          "id": "rhino_3_tough_setup",
+          "timing": "SETUP",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -77,8 +86,8 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100
@@ -94,8 +103,8 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100
@@ -112,13 +121,17 @@
           "id": "armored_rhino_suit_absorb",
           "timing": "FORCED_INTERRUPT",
           "trigger": "TAKE_ATTACK_DAMAGE",
-          "effect": "PREVENT_DAMAGE"
+          "effect": "PREVENT_DAMAGE",
+          "params": {
+            "maxAbsorb": 5,
+            "target": "ATTACHED_VILLAIN"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -135,18 +148,19 @@
         {
           "id": "charge_boost",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "VILLAIN_INITIATES_ATTACK",
-          "effect": "ADD_STATUS",
+          "trigger": "VILLAIN_ATTACKS",
+          "effect": "BOOST_ATTACK_OVERKILL",
           "params": {
-            "bonusAttack": 3,
-            "overkill": true
+            "atkBonus": 3,
+            "overkill": true,
+            "discardAfterAttack": true
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -161,18 +175,33 @@
       "comment": "Attachment: Attached Rhino gets +1 ATK.",
       "abilities": [
         {
-          "id": "ivory_horn_atk",
+          "id": "enhanced_ivory_horn_atk_boost",
           "timing": "CONSTANT",
-          "effect": "ADD_STATUS",
+          "effect": "MODIFY_STAT",
           "params": {
-            "bonusAttack": 1
+            "stat": "ATK",
+            "amount": 1,
+            "target": "ATTACHED_VILLAIN"
+          }
+        },
+        {
+          "id": "enhanced_ivory_horn_discard_action",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "physical": 2
+            }
+          },
+          "effect": "DISCARD_CARD",
+          "params": {
+            "target": "SELF"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -183,18 +212,28 @@
       ]
     },
     "01101": {
-      "noSupplementalNeeded": true,
       "comment": "MINION: Hydra Mercenary",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
-        "Minion: SCH 1, ATK 1, Health 3. Guard (Hero cannot attack the villain while this minion is engaged with them)."
+        "Minion: SCH 1, ATK 1, Health 3.",
+        "Keyword: Guard (Heroes engaged with this minion cannot attack the villain)."
+      ],
+      "abilities": [
+        {
+          "id": "hydra_mercenary_guard",
+          "timing": "CONSTANT",
+          "effect": "KEYWORD_GUARD",
+          "params": {
+            "target": "SELF"
+          }
+        }
       ]
     },
     "01102": {
@@ -202,19 +241,27 @@
       "abilities": [
         {
           "id": "sandman_toughness",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "timing": "SETUP",
           "effect": "ADD_STATUS",
           "params": {
             "status": "TOUGH",
             "target": "SELF"
           }
+        },
+        {
+          "id": "sandman_attack_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "effect": "DISCARD_ENCOUNTER_DECK",
+          "params": {
+            "count": 2
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
@@ -240,8 +287,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -259,7 +306,7 @@
           "id": "hard_to_keep_down_heal",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "HEAL_DAMAGE_WITH_SURGE",
+          "effect": "HEAL_OR_SURGE",
           "params": {
             "amount": 4,
             "target": "VILLAIN"
@@ -268,8 +315,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -283,20 +330,20 @@
       "comment": "Treachery: When Revealed -> Place 1 stun on hero. If already stunned, take 1 damage and gain Surge.",
       "abilities": [
         {
-          "id": "im_tough_stun",
+          "id": "im_tough_status",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS_WITH_SURGE",
+          "effect": "GIVE_STATUS_OR_SURGE",
           "params": {
-            "status": "STUNNED",
-            "target": "HERO"
+            "status": "TOUGH",
+            "target": "VILLAIN"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -310,16 +357,19 @@
       "comment": "Treachery: When Revealed -> In Hero form, Rhino attacks you. In Alter-Ego, gains Surge.",
       "abilities": [
         {
-          "id": "stampede_form_branch",
+          "id": "stampede_attack",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+          "effect": "VILLAIN_ATTACK_OR_SURGE",
+          "params": {
+            "target": "ACTIVE_PLAYER"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -331,51 +381,81 @@
     },
     "01107": {
       "isLandscape": true,
-      "noSupplementalNeeded": true,
       "comment": "SIDE_SCHEME: Breakin' & Takin'",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Hazard icon (Deal 1 additional encounter card during Step 3)."
-      ]
+      ],
+      "abilities": [
+        {
+          "id": "breakin_takin_hazard",
+          "timing": "CONSTANT",
+          "effect": "SCHEME_ICON_HAZARD",
+          "params": {
+            "count": 1
+          }
+        }
+      ],
+      "hazard": 1
     },
     "01108": {
       "isLandscape": true,
-      "noSupplementalNeeded": true,
       "comment": "SIDE_SCHEME: Crowd Control",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Crisis icon (Heroes cannot remove threat from main scheme while this scheme is in play)."
-      ]
+      ],
+      "abilities": [
+        {
+          "id": "crowd_control_crisis",
+          "timing": "CONSTANT",
+          "effect": "SCHEME_ICON_CRISIS",
+          "params": {
+            "count": 1
+          }
+        }
+      ],
+      "crisis": 1
     },
     "01109": {
       "isLandscape": true,
-      "noSupplementalNeeded": true,
       "comment": "SIDE_SCHEME: Bomb Scare",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Acceleration icon (Places 1 additional threat on main scheme during Step 1)."
-      ]
+      ],
+      "abilities": [
+        {
+          "id": "bomb_scare_acceleration",
+          "timing": "CONSTANT",
+          "effect": "SCHEME_ICON_ACCELERATION",
+          "params": {
+            "count": 1
+          }
+        }
+      ],
+      "acceleration": 1
     },
     "01110": {
       "comment": "Minion: Hydra Bomber When Revealed -> Deal 2 damage to each hero.",
@@ -387,14 +467,14 @@
           "effect": "DEAL_DAMAGE",
           "params": {
             "amount": 2,
-            "target": "ALL_HEROES"
+            "target": "ALL_FRIENDLY_CHARACTERS"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -407,20 +487,28 @@
       "comment": "Treachery: When Revealed -> Place 1 threat on main scheme. If Alter-Ego, place 2 threat instead.",
       "abilities": [
         {
-          "id": "false_alarm_threat",
+          "id": "explosion_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
+          "effect": "HERO_FORM_BRANCH",
           "params": {
-            "status": "CONFUSED",
-            "target": "HERO"
+            "heroEffect": {
+              "effect": "DEAL_DAMAGE",
+              "amount": 3,
+              "target": "ALL_HEROES"
+            },
+            "alterEgoEffect": {
+              "effect": "PLACE_THREAT",
+              "amount": 2,
+              "target": "BOMB_SCARE_SCHEME"
+            }
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
@@ -433,20 +521,20 @@
       "comment": "Treachery: When Revealed -> Deal 1 damage to each hero and place 1 threat on main scheme.",
       "abilities": [
         {
-          "id": "bomb_threat_resolution",
+          "id": "false_alarm_confuse",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "EXPLOSION_EFFECT",
+          "effect": "ADD_STATUS",
           "params": {
-            "heroDamage": 1,
-            "schemeThreat": 1
+            "status": "CONFUSED",
+            "target": "ACTIVE_IDENTITY"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -746,13 +834,16 @@
           "id": "advance_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
+          "effect": "VILLAIN_SCHEMES",
+          "params": {
+            "target": "ACTIVE_PLAYER"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -768,13 +859,16 @@
           "id": "assault_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
+          "effect": "VILLAIN_ATTACKS",
+          "params": {
+            "target": "ACTIVE_PLAYER"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -787,16 +881,19 @@
       "comment": "Treachery: Caught Off Guard -> Choose and discard an upgrade or support you control.",
       "abilities": [
         {
-          "id": "caught_off_guard",
+          "id": "caught_off_guard_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE"
+          "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE",
+          "params": {
+            "target": "ACTIVE_PLAYER"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
@@ -809,16 +906,19 @@
       "comment": "Treachery: Gang-Up -> Villain and each minion engaged with you attacks you.",
       "abilities": [
         {
-          "id": "gang_up",
+          "id": "gang_up_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
+          "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
+          "params": {
+            "target": "ACTIVE_PLAYER"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
@@ -831,16 +931,19 @@
       "comment": "Treachery: Shadow of the Past -> Reveal nemesis minion and nemesis side scheme.",
       "abilities": [
         {
-          "id": "shadow_of_the_past",
+          "id": "shadow_of_the_past_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "effect": "REVEAL_NEMESIS_SET",
+          "params": {
+            "target": "ACTIVE_HERO"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
@@ -850,53 +953,74 @@
       ]
     },
     "01191": {
-      "noSupplementalNeeded": true,
       "comment": "TREACHERY: Exhaustion",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Exhaust your identity."
+      ],
+      "abilities": [
+        {
+          "id": "exhaustion_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "EXHAUST_CHARACTER",
+          "params": {
+            "target": "ACTIVE_IDENTITY"
+          }
+        }
       ]
     },
     "01192": {
-      "noSupplementalNeeded": true,
       "comment": "TREACHERY: Masterplan",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Place 4 threat on the main scheme (or 1 threat per side scheme in play)."
+      ],
+      "abilities": [
+        {
+          "id": "masterplan_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
+          "params": {
+            "baseThreat": 4,
+            "perSchemeThreat": 1,
+            "target": "MAIN_SCHEME"
+          }
+        }
       ]
     },
     "01193": {
       "comment": "Treachery: Exhaustion -> Exhaust each hero.",
       "abilities": [
         {
-          "id": "exhaustion_when_revealed",
+          "id": "under_fire_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
+          "effect": "REVEAL_ENCOUNTER_CARD_WITH_SURGE",
           "params": {
-            "status": "STUNNED",
-            "target": "ALL_HEROES"
+            "count": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:08",
-        "reviewedAt": "2026-08-28T09:08",
+        "updatedAt": "2026-08-28T09:13",
+        "reviewedAt": "2026-08-28T09:13",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95

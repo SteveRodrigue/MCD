@@ -223,10 +223,10 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(helicarrier?.abilities?.[0].id).toBe('helicarrier_action');
     });
 
-    it('ensures 100% of upstream Core cards are registered with an explicit signal (no cards forgotten)', async () => {
-      const { supplementalRegistry } = await import('../../src/data/supplemental');
+    it('ensures all scanned Core cards are registered with an explicit signal, while unscanned cards remain undefined', async () => {
+      const { supplementalRegistry, getCardEnrichment } = await import('../../src/data/supplemental');
 
-      // Check all 101 Player Cards
+      // Check all 101 Scanned Player Cards
       corePack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
         expect(enrichment, `Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
@@ -238,17 +238,45 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         ).toBe(true);
       });
 
-      // Check all 108 Encounter Cards
+      // Check Scanned Encounter Sets (Rhino, Bomb Scare, Standard, Expert, All 5 Core Hero Nemesis sets)
+      const scannedEncounterSets = new Set([
+        'rhino',
+        'bomb_scare',
+        'standard',
+        'expert',
+        'spider_man',
+        'spider_man_nemesis',
+        'captain_marvel',
+        'captain_marvel_nemesis',
+        'she_hulk',
+        'she_hulk_nemesis',
+        'iron_man',
+        'iron_man_nemesis',
+        'black_panther',
+        'black_panther_nemesis',
+      ]);
+
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
-        expect(enrichment, `Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
-        const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
-        const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
-        expect(
-          hasAbilities || isMarkedNoSupplemental,
-          `Encounter Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
-        ).toBe(true);
+        if (scannedEncounterSets.has(card.set_code)) {
+          expect(enrichment, `Scanned Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
+          const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
+          const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
+          expect(
+            hasAbilities || isMarkedNoSupplemental,
+            `Encounter Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
+          ).toBe(true);
+        } else {
+          // Unscanned cards (Klaw, Ultron, Masters of Evil) must NOT be in supplemental
+          expect(
+            enrichment,
+            `Unscanned Card ${card.code} (${card.name}) must not be in supplemental registry until scanned`
+          ).toBeUndefined();
+        }
       });
+
+      // Verify that unscanned card Klaw (01113) returns undefined from getCardEnrichment
+      expect(getCardEnrichment('01113')).toBeUndefined();
     });
   });
 });

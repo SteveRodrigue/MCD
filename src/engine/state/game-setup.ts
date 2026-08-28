@@ -19,6 +19,9 @@ export function resetInstanceCounter(): void {
 }
 
 export function createCardInstance(card: NormalizedCard): CardInstance {
+  if (!card.enrichment) {
+    throw new Error(`Supplemental data is missing for card ${card.code} (${card.name})`);
+  }
   instanceCounter += 1;
   return {
     instanceId: `inst_${instanceCounter}_${card.code}`,
@@ -95,6 +98,13 @@ export function setupGame(options: GameSetupOptions): GameState {
 
   // 1. Setup Players
   const players: PlayerState[] = options.players.map((pConfig) => {
+    if (!pConfig.hero.enrichment) {
+      throw new Error(`Supplemental data is missing for card ${pConfig.hero.code} (${pConfig.hero.name})`);
+    }
+    if (!pConfig.alterEgo.enrichment) {
+      throw new Error(`Supplemental data is missing for card ${pConfig.alterEgo.code} (${pConfig.alterEgo.name})`);
+    }
+
     // Instantiate all deck cards
     const deckInstances = pConfig.deckCards.map(createCardInstance);
     const shuffledDeck = shuffle(deckInstances);
@@ -137,6 +147,10 @@ export function setupGame(options: GameSetupOptions): GameState {
   });
 
   // 2. Setup Villain
+  if (!options.villain.enrichment) {
+    throw new Error(`Supplemental data is missing for card ${options.villain.code} (${options.villain.name})`);
+  }
+
   const villainHealth = options.villain.healthPerHero
     ? options.villain.health * playerCount
     : options.villain.health;
@@ -151,6 +165,10 @@ export function setupGame(options: GameSetupOptions): GameState {
   };
 
   // 3. Setup Main Scheme
+  if (!options.mainScheme.enrichment) {
+    throw new Error(`Supplemental data is missing for card ${options.mainScheme.code} (${options.mainScheme.name})`);
+  }
+
   const mainScheme: MainSchemeState = {
     card: options.mainScheme,
     threat: options.mainScheme.baseThreat * (options.mainScheme.baseThreatFixed ? 1 : playerCount),

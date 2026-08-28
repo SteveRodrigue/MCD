@@ -5,7 +5,7 @@
       "noSupplementalNeeded": true
     },
     "01095": {
-      "comment": "Villain Stage: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
+      "comment": "Villain Stage II: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
       "abilities": [
         {
           "id": "rhino_2_when_revealed",
@@ -19,7 +19,7 @@
       ]
     },
     "01096": {
-      "comment": "Villain Stage: When Revealed -> Stun each hero. Enters play with Tough.",
+      "comment": "Villain Stage III: When Revealed -> Stun each hero. Enters play with Tough.",
       "abilities": [
         {
           "id": "rhino_3_when_revealed",
@@ -84,7 +84,7 @@
       "noSupplementalNeeded": true
     },
     "01102": {
-      "comment": "Minion: When Revealed / Enters play -> Gains Tough status.",
+      "comment": "Minion: Sandman enters play with Tough status.",
       "abilities": [
         {
           "id": "sandman_toughness",
@@ -99,7 +99,7 @@
       ]
     },
     "01103": {
-      "comment": "Minion: When Revealed -> Deal 1 damage to each hero.",
+      "comment": "Minion: Shocker When Revealed -> Deal 1 damage to each hero.",
       "abilities": [
         {
           "id": "shocker_when_revealed",
@@ -117,7 +117,7 @@
       "comment": "Treachery: When Revealed -> Rhino heals 4 HP. If 0 healed, gains Surge.",
       "abilities": [
         {
-          "id": "hard_to_keep_down",
+          "id": "hard_to_keep_down_heal",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
           "effect": "HEAL_DAMAGE_WITH_SURGE",
@@ -129,25 +129,25 @@
       ]
     },
     "01105": {
-      "comment": "Treachery: When Revealed -> Rhino gains Tough status. If already Tough, gains Surge.",
+      "comment": "Treachery: When Revealed -> Place 1 stun on hero. If already stunned, take 1 damage and gain Surge.",
       "abilities": [
         {
-          "id": "im_tough",
+          "id": "im_tough_stun",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
           "effect": "ADD_STATUS_WITH_SURGE",
           "params": {
-            "status": "TOUGH",
-            "target": "VILLAIN"
+            "status": "STUNNED",
+            "target": "HERO"
           }
         }
       ]
     },
     "01106": {
-      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Rhino attacks you.",
+      "comment": "Treachery: When Revealed -> In Hero form, Rhino attacks you. In Alter-Ego, gains Surge.",
       "abilities": [
         {
-          "id": "stampede",
+          "id": "stampede_form_branch",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
           "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
@@ -155,74 +155,37 @@
       ]
     },
     "01107": {
-      "comment": "Side Scheme: Hazard Icon (+1 encounter card). When Revealed -> place +1 threat per hero.",
       "isLandscape": true,
-      "abilities": [
-        {
-          "id": "breakin_takin_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "perHeroThreat": 1
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01108": {
       "isLandscape": true,
       "noSupplementalNeeded": true
     },
     "01109": {
-      "comment": "Side Scheme: Acceleration Icon (+1 threat per round). When Revealed -> place +1 threat per hero.",
       "isLandscape": true,
-      "abilities": [
-        {
-          "id": "bomb_scare_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "perHeroThreat": 1
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01110": {
-      "comment": "Minion: When Revealed -> Choose either take 2 damage or place 1 threat on main scheme.",
+      "comment": "Minion: Hydra Bomber When Revealed -> Deal 2 damage to each hero.",
       "abilities": [
         {
           "id": "hydra_bomber_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "CHOICE_DAMAGE_OR_THREAT",
+          "effect": "DEAL_DAMAGE",
           "params": {
-            "damage": 2,
-            "threat": 1
+            "amount": 2,
+            "target": "ALL_HEROES"
           }
         }
       ]
     },
     "01111": {
-      "comment": "Treachery: When Revealed -> If Bomb Scare is in play, deal damage equal to its threat among characters. Else gains Surge.",
+      "comment": "Treachery: When Revealed -> Place 1 threat on main scheme. If Alter-Ego, place 2 threat instead.",
       "abilities": [
         {
-          "id": "explosion",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "EXPLOSION_EFFECT",
-          "params": {
-            "damage": 1,
-            "threat": 1
-          }
-        }
-      ]
-    },
-    "01112": {
-      "comment": "Treachery: When Revealed -> You are confused. If already confused, gains Surge.",
-      "abilities": [
-        {
-          "id": "false_alarm",
+          "id": "false_alarm_threat",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
           "effect": "ADD_STATUS",
@@ -233,231 +196,156 @@
         }
       ]
     },
-    "01113": {
-      "noSupplementalNeeded": true
-    },
-    "01114": {
-      "noSupplementalNeeded": true
-    },
-    "01115": {
-      "noSupplementalNeeded": true
-    },
-    "01116a": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01116b": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01117a": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01117b": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01118": {
-      "noSupplementalNeeded": true
-    },
-    "01119": {
-      "noSupplementalNeeded": true
-    },
-    "01120": {
-      "noSupplementalNeeded": true
-    },
-    "01121": {
-      "noSupplementalNeeded": true
-    },
-    "01122": {
-      "noSupplementalNeeded": true
-    },
-    "01123": {
-      "noSupplementalNeeded": true
-    },
-    "01124": {
-      "noSupplementalNeeded": true
-    },
-    "01125": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01126": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01127": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01128": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01129": {
-      "noSupplementalNeeded": true
-    },
-    "01130": {
-      "noSupplementalNeeded": true
-    },
-    "01131": {
-      "noSupplementalNeeded": true
-    },
-    "01132": {
-      "noSupplementalNeeded": true
-    },
-    "01133": {
-      "noSupplementalNeeded": true
-    },
-    "01134": {
-      "noSupplementalNeeded": true
-    },
-    "01135": {
-      "noSupplementalNeeded": true
-    },
-    "01136": {
-      "noSupplementalNeeded": true
-    },
-    "01137a": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01137b": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01138a": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01138b": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01139a": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01139b": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01140": {
-      "noSupplementalNeeded": true
-    },
-    "01141": {
-      "noSupplementalNeeded": true
-    },
-    "01142": {
-      "noSupplementalNeeded": true
-    },
-    "01143": {
-      "noSupplementalNeeded": true
-    },
-    "01144a": {
-      "noSupplementalNeeded": true
-    },
-    "01144b": {
-      "noSupplementalNeeded": true
-    },
-    "01144c": {
-      "noSupplementalNeeded": true
-    },
-    "01145": {
-      "noSupplementalNeeded": true
-    },
-    "01146": {
-      "noSupplementalNeeded": true
-    },
-    "01147": {
-      "noSupplementalNeeded": true
-    },
-    "01148": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01149": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01150": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01151": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01152": {
-      "noSupplementalNeeded": true
-    },
-    "01153": {
-      "noSupplementalNeeded": true
-    },
-    "01154": {
-      "noSupplementalNeeded": true
+    "01112": {
+      "comment": "Treachery: When Revealed -> Deal 1 damage to each hero and place 1 threat on main scheme.",
+      "abilities": [
+        {
+          "id": "bomb_threat_resolution",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "EXPLOSION_EFFECT",
+          "params": {
+            "heroDamage": 1,
+            "schemeThreat": 1
+          }
+        }
+      ]
     },
     "01155": {
-      "noSupplementalNeeded": true
+      "comment": "Obligation: Affairs of State",
+      "abilities": [
+        {
+          "id": "affairs_of_state",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_SELF"
+        }
+      ]
     },
     "01156": {
       "isLandscape": true,
       "noSupplementalNeeded": true
     },
     "01157": {
-      "noSupplementalNeeded": true
+      "comment": "Minion: Killmonger",
+      "abilities": [
+        {
+          "id": "killmonger_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ]
     },
     "01158": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: Heart-Shaped Herb",
+      "abilities": [
+        {
+          "id": "heart_shaped_herb",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "HEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "VILLAIN"
+          }
+        }
+      ]
     },
     "01159": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: Ritual Combat",
+      "abilities": [
+        {
+          "id": "ritual_combat",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "HERO"
+          }
+        }
+      ]
     },
     "01160": {
-      "noSupplementalNeeded": true
+      "comment": "Obligation: Legal Work",
+      "abilities": [
+        {
+          "id": "legal_work",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_SELF"
+        }
+      ]
     },
     "01161": {
       "isLandscape": true,
       "noSupplementalNeeded": true
     },
     "01162": {
-      "noSupplementalNeeded": true
+      "comment": "Minion: Titania",
+      "abilities": [
+        {
+          "id": "titania_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ]
     },
     "01163": {
-      "noSupplementalNeeded": true
+      "comment": "Attachment: Genetically Enhanced",
+      "abilities": [
+        {
+          "id": "genetically_enhanced",
+          "timing": "CONSTANT",
+          "effect": "ADD_STATUS",
+          "params": {
+            "bonusAttack": 1
+          }
+        }
+      ]
     },
     "01164": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: Titania's Fury",
+      "abilities": [
+        {
+          "id": "titanias_fury",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "HERO"
+          }
+        }
+      ]
     },
     "01165": {
-      "comment": "Obligation: Give to Peter Parker player -> Exhaust Peter Parker or discard 1 random card (gains Surge).",
+      "comment": "Obligation: Eviction Notice",
       "abilities": [
         {
           "id": "eviction_notice",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+          "effect": "DISCARD_SELF"
         }
       ]
     },
     "01166": {
-      "comment": "Nemesis Side Scheme: Acceleration icon. When Revealed -> Each player places random hand card facedown here.",
       "isLandscape": true,
-      "abilities": [
-        {
-          "id": "highway_robbery_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 0
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01167": {
-      "comment": "Nemesis Minion: Quickstrike (attacks immediately after engaging hero).",
+      "comment": "Minion: Vulture (Quickstrike)",
       "abilities": [
         {
           "id": "vulture_quickstrike",
@@ -465,87 +353,153 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DEAL_DAMAGE",
           "params": {
-            "amount": 3,
+            "amount": 2,
             "target": "HERO"
           }
         }
       ]
     },
     "01168": {
-      "comment": "Nemesis Treachery: When Revealed -> Stun your hero. If Vulture is in play, gains Surge.",
+      "comment": "Treachery: Sweeping Swoop",
       "abilities": [
         {
           "id": "sweeping_swoop",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
+          "effect": "DEAL_DAMAGE",
           "params": {
-            "status": "STUNNED",
+            "amount": 2,
             "target": "HERO"
           }
         }
       ]
     },
     "01169": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: The Vulture's Plans",
+      "abilities": [
+        {
+          "id": "vultures_plans",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "CONFUSED",
+            "target": "HERO"
+          }
+        }
+      ]
     },
     "01170": {
-      "noSupplementalNeeded": true
+      "comment": "Obligation: Business Problems",
+      "abilities": [
+        {
+          "id": "business_problems",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_SELF"
+        }
+      ]
     },
     "01171": {
       "isLandscape": true,
       "noSupplementalNeeded": true
     },
     "01172": {
-      "noSupplementalNeeded": true
+      "comment": "Minion: Whiplash",
+      "abilities": [
+        {
+          "id": "whiplash_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ]
     },
     "01173": {
-      "noSupplementalNeeded": true
+      "comment": "Attachment: Electric Whip Attack",
+      "abilities": [
+        {
+          "id": "electric_whip_attack",
+          "timing": "CONSTANT",
+          "effect": "ADD_STATUS",
+          "params": {
+            "bonusAttack": 1
+          }
+        }
+      ]
     },
     "01174": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: Electromagnetic Backlash",
+      "abilities": [
+        {
+          "id": "electromagnetic_backlash",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "HERO"
+          }
+        }
+      ]
     },
     "01175": {
-      "noSupplementalNeeded": true
+      "comment": "Obligation: Family Emergency",
+      "abilities": [
+        {
+          "id": "family_emergency",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_SELF"
+        }
+      ]
     },
     "01176": {
       "isLandscape": true,
       "noSupplementalNeeded": true
     },
     "01177": {
-      "noSupplementalNeeded": true
+      "comment": "Minion: Yon-Rogg",
+      "abilities": [
+        {
+          "id": "yon_rogg_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ]
     },
     "01178": {
       "noSupplementalNeeded": true
     },
     "01179": {
-      "noSupplementalNeeded": true
-    },
-    "01180": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01181": {
-      "noSupplementalNeeded": true
-    },
-    "01182": {
-      "noSupplementalNeeded": true
-    },
-    "01183": {
-      "isLandscape": true,
-      "noSupplementalNeeded": true
-    },
-    "01184": {
-      "noSupplementalNeeded": true
-    },
-    "01185": {
-      "noSupplementalNeeded": true
-    },
-    "01186": {
-      "comment": "Treachery: When Revealed -> The villain schemes immediately.",
+      "comment": "Treachery: Yon-Rogg's Treason",
       "abilities": [
         {
-          "id": "advance_treachery",
+          "id": "yon_roggs_treason",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "HERO"
+          }
+        }
+      ]
+    },
+    "01186": {
+      "comment": "Treachery: Advance -> Villain schemes immediately.",
+      "abilities": [
+        {
+          "id": "advance_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
           "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
@@ -553,18 +507,18 @@
       ]
     },
     "01187": {
-      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> The villain attacks you immediately.",
+      "comment": "Treachery: Assault -> Villain attacks immediately.",
       "abilities": [
         {
-          "id": "assault_treachery",
+          "id": "assault_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
         }
       ]
     },
     "01188": {
-      "comment": "Treachery: When Revealed -> Discard an upgrade or support you control. If none discarded, gains Surge.",
+      "comment": "Treachery: Caught Off Guard -> Choose and discard an upgrade or support you control.",
       "abilities": [
         {
           "id": "caught_off_guard",
@@ -575,24 +529,24 @@
       ]
     },
     "01189": {
-      "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Villain and each engaged minion attacks you.",
+      "comment": "Treachery: Gang-Up -> Villain and each minion engaged with you attacks you.",
       "abilities": [
         {
           "id": "gang_up",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+          "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
         }
       ]
     },
     "01190": {
-      "comment": "Treachery: When Revealed -> Put your nemesis minion and side scheme into play. If none, gains Surge.",
+      "comment": "Treachery: Shadow of the Past -> Reveal nemesis minion and nemesis side scheme.",
       "abilities": [
         {
           "id": "shadow_of_the_past",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
+          "effect": "DISCARD_SELF"
         }
       ]
     },
@@ -603,7 +557,44 @@
       "noSupplementalNeeded": true
     },
     "01193": {
-      "noSupplementalNeeded": true
+      "comment": "Treachery: Exhaustion -> Exhaust each hero.",
+      "abilities": [
+        {
+          "id": "exhaustion_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "STUNNED",
+            "target": "ALL_HEROES"
+          }
+        }
+      ]
+    },
+    "01194": {
+      "comment": "Treachery: Masterplan -> Place 1 threat on main scheme for each side scheme in discard.",
+      "abilities": [
+        {
+          "id": "masterplan_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "target": "MAIN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01195": {
+      "comment": "Treachery: Under Fire -> Reveal additional encounter card.",
+      "abilities": [
+        {
+          "id": "under_fire_when_revealed",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DISCARD_SELF"
+        }
+      ]
     }
   }
 }

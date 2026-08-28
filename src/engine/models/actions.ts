@@ -8,7 +8,8 @@ export type ActionType =
   | 'ALLY_THWART'
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
-  | 'END_PLAYER_TURN';
+  | 'END_PLAYER_TURN'
+  | 'DEV_ADD_CARD_TO_HAND';
 
 export interface ResolveMulliganAction {
   type: 'RESOLVE_MULLIGAN';
@@ -83,6 +84,12 @@ export interface EndPlayerTurnAction {
   playerId: string;
 }
 
+export interface DevAddCardToHandAction {
+  type: 'DEV_ADD_CARD_TO_HAND';
+  playerId: string;
+  cardInstanceId: string;
+}
+
 export type GameAction =
   | ResolveMulliganAction
   | ChangeFormAction
@@ -93,7 +100,8 @@ export type GameAction =
   | AllyThwartAction
   | PlayCardAction
   | UseCardAbilityAction
-  | EndPlayerTurnAction;
+  | EndPlayerTurnAction
+  | DevAddCardToHandAction;
 
 export interface ActionResult {
   success: boolean;

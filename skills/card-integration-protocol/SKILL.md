@@ -60,8 +60,10 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
 ```
 
-### Step 1: Ingest & Read Upstream Card Text
-* Append `[INFO] Looking at card [card_name] #{card_code}` to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
+### Step 1: Ingest Upstream Card & Stream Real-Time Start Log
+* **REAL-TIME LOGGING MANDATE (NO BATCH LOGGING):** You **MUST** append to `logs/skills/card_integration_{YYYY-MM-DD}.log` in real-time as each card is processed. **Never buffer or defer log entries to the end of a batch run.** After-the-fact batch logging makes timestamps irrelevant and loses live progress telemetry.
+* Immediately append the start event to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
+  `{YYYY-MM-DDTHH:mm:ss.sssZ} [INFO] Looking at card [{card_name}] #{card_code}`
 * Fetch the exact printed card text from `data/upstream/pack/{pack_code}.json`.
 * Do not paraphrase, summarize, or alter the upstream text during analysis.
 
@@ -179,10 +181,10 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     * **Tier 3 (Structural Blocker):** If the fix requires new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/`.
 
 ### Step 7: Composable Generic Primitives & Blast-Radius Gate
-* Check change tier (Tier 1 vs Tier 2 vs Tier 3):
-  * **Tier 1 (No code change needed / Fast-track):** Log `[INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1, confidence {confidence}%).`
-  * **Tier 2 (Additive helper added):** Implement generic reusable building block and log `[INFO] Card [card_name] #{card_code} integrated with code change (Tier 2, confidence {confidence}%).`
-  * **Tier 3 (Structural):** Log `[WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3, confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
+* Check change tier (Tier 1 vs Tier 2 vs Tier 3) and **immediately stream append log entry** to `logs/skills/card_integration_{YYYY-MM-DD}.log` (never defer or batch log entries):
+  * **Tier 1 (No code change needed / Fast-track):** Append `{ISO_TIMESTAMP} [INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1, confidence {confidence}%).`
+  * **Tier 2 (Additive helper added):** Implement generic reusable building block and append `{ISO_TIMESTAMP} [INFO] Card [card_name] #{card_code} integrated with code change (Tier 2, confidence {confidence}%).`
+  * **Tier 3 (Structural):** Append `{ISO_TIMESTAMP} [WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3, confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 1. **Audit Timestamping:**

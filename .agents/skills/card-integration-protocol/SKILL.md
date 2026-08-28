@@ -3,9 +3,9 @@ name: card-integration-protocol
 description: >-
   Standard 8-step protocol for analyzing, translating, validating, and integrating
   Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
-  and rules engine. Enforces a 3-iteration circuit-breaker, encapsulated audit metadata
-  tracking (ISO timestamps with HH:MM), and 1-file-per-card ambiguity tracking in docs/ambiguities/ (Inbox Zero).
-  Use whenever adding or refining any card.
+  and rules engine. Enforces a 3-tier blast-radius refactor guardrail, 3-iteration circuit-breaker,
+  batch-resilient ambiguity isolation, encapsulated audit metadata (ISO timestamps with HH:MM),
+  and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero). Use whenever adding or refining any card.
 ---
 
 # Card Integration Protocol (8-Step Standard Workflow)
@@ -14,7 +14,19 @@ This skill guides the agent and developers through the rigorous, deterministic p
 
 ---
 
-## The 8-Step Integration Workflow
+## 🚦 Blast-Radius Refactor Guardrails (3-Tier Classification)
+
+Before modifying engine source code, classify the required change into one of three tiers:
+
+* **Tier 1 (Fast-Track — Direct Execution):** Supplemental JSON edits, adding enum/union literals (`TriggerType`, `EffectType`), adding `case` branches to existing switch dispatchers, adding unit tests.
+* **Tier 2 (Additive Generic Helpers — Permitted with 0 Regressions):** Adding pure generic utility functions in `src/engine/effects/` (e.g. deck inspection, stack filtering). All existing tests must pass with zero regressions.
+* **🛑 Tier 3 (Structural Refactor Gate — Mandatory Plan & User Approval):** Modifying core state schemas (`GameState`, `PlayerState`, `CardInstance`), refactoring phase loops in `villain-phase.ts`, altering action dispatch contracts, or rewriting major subsystems.
+  * **In Single-Card Mode:** Stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for explicit user approval before touching source code.
+  * **In Batch-Mode (Scanning multiple cards / sets):** **Do not halt the batch.** Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning all remaining cards in the set, and present a consolidated report + implementation plan at the end of the batch run.
+
+---
+
+## 🔄 The 8-Step Integration Workflow
 
 ```mermaid
 flowchart TD
@@ -25,9 +37,12 @@ flowchart TD
     S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
     S5 -- "No (< 95%, Attempts < 3)" --> S3
     S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
-Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
-    S6 --> S7["7. Author Composable Generic Primitives (if needed)"]
-    S7 --> S8["8. Populate mechanicSteps, Stamp Audit (HH:MM) & Prune Ambiguity"]
+Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
+    S6 --> S7{"7. Blast-Radius Tier Check"}
+    S7 -- "Tier 1 / Tier 2" --> S8["8. Author Composable Primitives, Stamp Audit & Prune Ambiguity"]
+    S7 -- "Tier 3 (Structural)" --> T3{"Single Card or Batch?"}
+    T3 -- "Single Card" --> T3S["Log Ambiguity, Write Implementation Plan & STOP for Approval"]
+    T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
 ```
 
 ### Step 1: Ingest & Read Upstream Card Text
@@ -97,23 +112,21 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
   1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
   3. Detail the exact blocker category, attempted drafts, and why confidence was not achieved.
-  4. Escalate to the developer/team for rules clarification or engine primitive authoring.
+  4. In batch mode: proceed to the next card; in single-card mode: report block to user.
 
 ### Step 6: Engine Primitive & Trigger Reuse Check
 * Verify whether existing effect primitives in `src/engine/effects/` or triggers in `src/engine/triggers/` already satisfy the card's requirements.
 * Avoid duplicating or creating card-specific one-off functions.
 
-### Step 7: Composable Generic Primitives (When Extending Engine)
-* If new engine functionality is needed, design it as a **generic, composable building block**:
-  * E.g. Deck Inspection: `INSPECT_DECK_CARDS(zone, position, count)`
-  * E.g. Stack Filtering: `FILTER_CARD_STACK(predicate)` $\rightarrow$ `{ matched, unmatched }`
-  * E.g. Destination Routing: Route cards to `HAND`, `DISCARD`, `TABLEAU`, or `DECK`.
-* Ensure the new primitive is generic enough that other cards with similar mechanics can reuse it immediately.
+### Step 7: Composable Generic Primitives & Blast-Radius Gate
+* Check change tier (Tier 1 vs Tier 2 vs Tier 3):
+  * **Tier 1 / Tier 2:** Implement generic reusable building blocks (e.g. `INSPECT_DECK_CARDS`, `FILTER_CARD_STACK`, `ROUTING`).
+  * **Tier 3 (Structural):** If in single-card mode, stop and request user approval; if in batch mode, isolate to `docs/ambiguities/` and continue batch.
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 1. **Audit Timestamping:**
-   * If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:20"`).
-   * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to the current timestamp.
+   * If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:35"`).
+   * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
    * If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
 2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
 3. **Document in Specs:** Add an entry to `docs/specs/card-mechanics-breakdown.md`.

@@ -181,4 +181,46 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(bomber?.traits).toContain('Hydra');
     });
   });
+
+  describe('Supplemental Rules Metadata Enrichment (ADR-0008)', () => {
+    it('provides rich ability metadata for Spider-Man signature cards', async () => {
+      const { getCardEnrichment } = await import('../../src/data/supplemental');
+      const spiderMan = getCardEnrichment('01001a');
+      expect(spiderMan).toBeDefined();
+      expect(spiderMan?.abilities?.[0].id).toBe('spider_sense');
+      expect(spiderMan?.abilities?.[0].timing).toBe('INTERRUPT');
+
+      const webShooter = getCardEnrichment('01008');
+      expect(webShooter?.uses?.count).toBe(3);
+      expect(webShooter?.abilities?.[0].effect).toBe('GENERATE_RESOURCE');
+    });
+
+    it('provides rich ability metadata for Captain Marvel & Leadership cards', async () => {
+      const { getCardEnrichment } = await import('../../src/data/supplemental');
+      const capMarvel = getCardEnrichment('01010a');
+      expect(capMarvel).toBeDefined();
+      expect(capMarvel?.abilities?.[0].id).toBe('rechannel');
+
+      const mariaHill = getCardEnrichment('01067');
+      expect(mariaHill?.abilities?.[0].id).toBe('maria_hill_enters_play');
+
+      const makeTheCall = getCardEnrichment('01071');
+      expect(makeTheCall?.abilities?.[0].id).toBe('make_the_call');
+
+      const hawkeye = getCardEnrichment('01066');
+      expect(hawkeye?.uses?.count).toBe(4);
+    });
+
+    it('provides rich ability metadata for Basic Resource and Support cards', async () => {
+      const { getCardEnrichment } = await import('../../src/data/supplemental');
+      const energy = getCardEnrichment('01088');
+      expect(energy?.abilities?.[0].params?.amount).toBe(2);
+
+      const mansion = getCardEnrichment('01091');
+      expect(mansion?.abilities?.[0].id).toBe('avengers_mansion');
+
+      const helicarrier = getCardEnrichment('01092');
+      expect(helicarrier?.abilities?.[0].id).toBe('helicarrier_action');
+    });
+  });
 });

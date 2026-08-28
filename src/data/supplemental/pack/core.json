@@ -10,7 +10,10 @@
           "timing": "INTERRUPT",
           "trigger": "VILLAIN_INITIATES_ATTACK",
           "effect": "DRAW_CARDS",
-          "params": { "count": 1, "target": "SELF" }
+          "params": {
+            "count": 1,
+            "target": "SELF"
+          }
         }
       ]
     },
@@ -23,7 +26,10 @@
           "timing": "RESOURCE",
           "limit": "ONCE_PER_ROUND",
           "effect": "GENERATE_RESOURCE",
-          "params": { "resource": "mental", "amount": 1 }
+          "params": {
+            "resource": "mental",
+            "amount": 1
+          }
         }
       ]
     },
@@ -36,7 +42,10 @@
           "timing": "FORCED_RESPONSE",
           "trigger": "CARD_PLAYED",
           "effect": "DISCARD_TOP_DECK_FILTER",
-          "params": { "count": 2, "filterResource": "mental" }
+          "params": {
+            "count": 2,
+            "filterResource": "mental"
+          }
         }
       ]
     },
@@ -49,9 +58,13 @@
           "timing": "INTERRUPT",
           "trigger": "TAKE_ATTACK_DAMAGE",
           "zone": "HAND",
-          "cost": { "discardSelf": true },
+          "cost": {
+            "discardSelf": true
+          },
           "effect": "PREVENT_DAMAGE",
-          "params": { "amount": "ALL" }
+          "params": {
+            "amount": "ALL"
+          }
         }
       ]
     },
@@ -64,7 +77,10 @@
           "timing": "HERO_INTERRUPT",
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
-          "cost": { "discardSelf": true, "resourceCost": 1 },
+          "cost": {
+            "discardSelf": true,
+            "resourceCost": 1
+          },
           "effect": "CANCEL_WHEN_REVEALED"
         }
       ]
@@ -76,9 +92,14 @@
         {
           "id": "swinging_web_kick",
           "timing": "HERO_ACTION",
-          "tags": ["ATTACK"],
+          "tags": [
+            "ATTACK"
+          ],
           "effect": "DEAL_DAMAGE",
-          "params": { "amount": 8, "target": "CHOSEN_ENEMY" }
+          "params": {
+            "amount": 8,
+            "target": "CHOSEN_ENEMY"
+          }
         }
       ]
     },
@@ -89,9 +110,14 @@
         {
           "id": "aunt_may",
           "timing": "ALTER_EGO_ACTION",
-          "cost": { "exhaustSelf": true },
+          "cost": {
+            "exhaustSelf": true
+          },
           "effect": "HEAL_DAMAGE",
-          "params": { "amount": 4, "target": "SELF" }
+          "params": {
+            "amount": 4,
+            "target": "SELF"
+          }
         }
       ]
     },
@@ -104,21 +130,34 @@
           "timing": "FORCED_INTERRUPT",
           "trigger": "ATTACHED_MINION_DEFEATED",
           "effect": "REMOVE_THREAT",
-          "params": { "amount": 3, "target": "MAIN_SCHEME" }
+          "params": {
+            "amount": 3,
+            "target": "MAIN_SCHEME"
+          }
         }
       ]
     },
     "01008": {
       "cardName": "Web-Shooter",
       "comment": "Upgrade: Enters play with 3 web counters -> Exhaust & remove 1 counter to generate a Wild resource.",
-      "uses": { "type": "counters", "count": 3, "discardOnEmpty": true },
+      "uses": {
+        "type": "counters",
+        "count": 3,
+        "discardOnEmpty": true
+      },
       "abilities": [
         {
           "id": "web_shooter_resource",
           "timing": "RESOURCE",
-          "cost": { "exhaustSelf": true, "removeCounter": 1 },
+          "cost": {
+            "exhaustSelf": true,
+            "removeCounter": 1
+          },
           "effect": "GENERATE_RESOURCE",
-          "params": { "resource": "wild", "amount": 1 }
+          "params": {
+            "resource": "wild",
+            "amount": 1
+          }
         }
       ]
     },
@@ -130,88 +169,1098 @@
           "id": "webbed_up_attack_interrupt",
           "timing": "FORCED_INTERRUPT",
           "trigger": "ATTACHED_ENEMY_ATTACKS",
-          "cost": { "discardSelf": true },
+          "cost": {
+            "discardSelf": true
+          },
           "effect": "CANCEL_ATTACK_AND_STUN"
+        }
+      ]
+    },
+    "01010a": {
+      "cardName": "Captain Marvel",
+      "comment": "Hero Identity: Rechannel — Hero Action: Spend 1 energy resource -> heal 1 damage and draw 1 card (limit 1/round).",
+      "abilities": [
+        {
+          "id": "rechannel",
+          "timing": "HERO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "HEAL_AND_DRAW",
+          "params": {
+            "healAmount": 1,
+            "drawCount": 1
+          }
+        }
+      ]
+    },
+    "01010b": {
+      "cardName": "Carol Danvers",
+      "comment": "Alter-Ego Identity: Commander — Alter-Ego Action: Choose a player -> that player draws 1 card (limit 1/round).",
+      "abilities": [
+        {
+          "id": "commander",
+          "timing": "ALTER_EGO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "effect": "DRAW_CARDS",
+          "params": {
+            "count": 1,
+            "target": "CHOSEN_PLAYER"
+          }
+        }
+      ]
+    },
+    "01011": {
+      "cardName": "Spider-Woman",
+      "comment": "Ally: After Spider-Woman enters play, confuse an enemy.",
+      "abilities": [
+        {
+          "id": "spider_woman_enters_play",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "CONFUSED",
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01012": {
+      "cardName": "Crisis Interdiction",
+      "comment": "Thwart Event: Hero Action: Remove 2 threat from a scheme. If paid with Energy, remove 2 threat from a different scheme.",
+      "abilities": [
+        {
+          "id": "crisis_interdiction",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "THWART"
+          ],
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "amount": 2,
+            "bonusEnergyThwart": 2,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01013": {
+      "cardName": "Photonic Blast",
+      "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy. If paid with Energy, draw 1 card.",
+      "abilities": [
+        {
+          "id": "photonic_blast",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 5,
+            "bonusEnergyDraw": 1,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01014": {
+      "cardName": "Energy Absorption",
+      "comment": "Resource Card: Generates 3 Energy resources.",
+      "abilities": [
+        {
+          "id": "energy_absorption_resource",
+          "timing": "RESOURCE",
+          "effect": "GENERATE_RESOURCE",
+          "params": {
+            "resource": "energy",
+            "amount": 3
+          }
+        }
+      ]
+    },
+    "01015": {
+      "cardName": "Alpha Flight Station",
+      "comment": "Support: Alter-Ego Action: Exhaust Alpha Flight Station -> choose and discard a card from hand, then draw 1 card (or 2 cards instead if Carol Danvers).",
+      "abilities": [
+        {
+          "id": "alpha_flight_station",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "discardFromHand": 1
+          },
+          "effect": "DRAW_CARDS",
+          "params": {
+            "count": 1,
+            "carolBonus": 1
+          }
+        }
+      ]
+    },
+    "01016": {
+      "cardName": "Captain Marvel's Helmet",
+      "comment": "Upgrade: While in Hero form, Captain Marvel gets +1 DEF. After you spend Energy, heal 1 damage.",
+      "abilities": [
+        {
+          "id": "helmet_def_boost",
+          "timing": "CONSTANT",
+          "effect": "DEF_BONUS",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "helmet_energy_heal",
+          "timing": "RESPONSE",
+          "trigger": "RESOURCE_SPENT",
+          "filter": {
+            "resource": "energy"
+          },
+          "effect": "HEAL_DAMAGE",
+          "params": {
+            "amount": 1,
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01017": {
+      "cardName": "Cosmic Flight",
+      "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
+      "abilities": [
+        {
+          "id": "cosmic_flight_aerial",
+          "timing": "CONSTANT",
+          "effect": "ADD_TRAIT",
+          "params": {
+            "trait": "Aerial"
+          }
+        },
+        {
+          "id": "cosmic_flight_prevent",
+          "timing": "INTERRUPT",
+          "trigger": "TAKE_DAMAGE",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "PREVENT_DAMAGE",
+          "params": {
+            "amount": 3
+          }
+        }
+      ]
+    },
+    "01018": {
+      "cardName": "Energy Channel",
+      "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
+      "uses": {
+        "type": "energy_counters",
+        "count": 0,
+        "max": 5
+      },
+      "abilities": [
+        {
+          "id": "energy_channel_charge",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "ADD_COUNTER",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "energy_channel_blast",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "DEAL_DAMAGE_PER_COUNTER",
+          "params": {
+            "multiplier": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01019a": {
+      "cardName": "She-Hulk",
+      "comment": "Hero Identity: Forced Response: After changing to this form, deal 15 damage (divided among enemies / 1 to an enemy).",
+      "abilities": [
+        {
+          "id": "she_hulk_form_change",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "FORM_CHANGED_TO_HERO",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01019b": {
+      "cardName": "Jennifer Walters",
+      "comment": "Alter-Ego Identity: Alter-Ego Action: Remove 1 threat from a scheme (limit 1/round).",
+      "abilities": [
+        {
+          "id": "jennifer_walters_thwart",
+          "timing": "ALTER_EGO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01020": {
+      "cardName": "Hellcat",
+      "comment": "Ally: Action: Return Hellcat to your hand.",
+      "abilities": [
+        {
+          "id": "hellcat_return_hand",
+          "timing": "ACTION",
+          "effect": "RETURN_TO_HAND",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01021": {
+      "cardName": "Gamma Slam",
+      "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
+      "abilities": [
+        {
+          "id": "gamma_slam",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE",
+          "params": {
+            "max": 15,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01022": {
+      "cardName": "Ground Stomp",
+      "comment": "Event: Hero Action: Deal 1 damage to each enemy in play.",
+      "abilities": [
+        {
+          "id": "ground_stomp",
+          "timing": "HERO_ACTION",
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "amount": 1
+          }
+        }
+      ]
+    },
+    "01023": {
+      "cardName": "Legal Practice",
+      "comment": "Event: Alter-Ego Action: Discard cards from hand -> remove 1 threat per card discarded.",
+      "abilities": [
+        {
+          "id": "legal_practice",
+          "timing": "ALTER_EGO_ACTION",
+          "effect": "DISCARD_CARDS_REMOVE_THREAT",
+          "params": {
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01024": {
+      "cardName": "One-Two Punch",
+      "comment": "Event: Hero Response: After She-Hulk makes a basic attack, ready She-Hulk.",
+      "abilities": [
+        {
+          "id": "one_two_punch",
+          "timing": "RESPONSE",
+          "trigger": "BASIC_ATTACK_PERFORMED",
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01025": {
+      "cardName": "Split Personality",
+      "comment": "Event: Action: Change form. Draw cards up to your new form's hand size limit.",
+      "abilities": [
+        {
+          "id": "split_personality",
+          "timing": "ACTION",
+          "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
+        }
+      ]
+    },
+    "01026": {
+      "cardName": "Superhuman Law Division",
+      "comment": "Support: Alter-Ego Action: Exhaust Superhuman Law Division and spend a Mental resource -> remove 2 threat from a scheme.",
+      "abilities": [
+        {
+          "id": "superhuman_law_division",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "amount": 2,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01027": {
+      "cardName": "Focused Rage",
+      "comment": "Upgrade: Hero Action: Exhaust Focused Rage and take 1 damage -> draw 1 card.",
+      "abilities": [
+        {
+          "id": "focused_rage",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "takeDamage": 1
+          },
+          "effect": "DRAW_CARDS",
+          "params": {
+            "count": 1
+          }
+        }
+      ]
+    },
+    "01028": {
+      "cardName": "Superhuman Strength",
+      "comment": "Upgrade: She-Hulk gets +2 ATK. Forced Response: After attacking, stun the target and discard Superhuman Strength.",
+      "abilities": [
+        {
+          "id": "superhuman_strength_atk",
+          "timing": "CONSTANT",
+          "effect": "ATK_BONUS",
+          "params": {
+            "amount": 2
+          }
+        },
+        {
+          "id": "superhuman_strength_stun",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "STUNNED",
+            "target": "ATTACK_TARGET"
+          }
+        }
+      ]
+    },
+    "01029a": {
+      "cardName": "Iron Man",
+      "comment": "Hero Identity: Hand size is 1 + number of Tech upgrades in play.",
+      "abilities": [
+        {
+          "id": "iron_man_hand_size",
+          "timing": "CONSTANT",
+          "effect": "DYNAMIC_HAND_SIZE",
+          "params": {
+            "base": 1,
+            "perTrait": {
+              "trait": "Tech",
+              "type": "upgrade"
+            }
+          }
+        }
+      ]
+    },
+    "01029b": {
+      "cardName": "Tony Stark",
+      "comment": "Alter-Ego Identity: Futurist — Alter-Ego Action: Look at top 3 cards of deck, add 1 Tech to hand, discard rest.",
+      "abilities": [
+        {
+          "id": "futurist",
+          "timing": "ALTER_EGO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "effect": "SCRY_AND_SELECT_TRAIT",
+          "params": {
+            "lookCount": 3,
+            "trait": "Tech",
+            "takeCount": 1
+          }
+        }
+      ]
+    },
+    "01030": {
+      "cardName": "War Machine",
+      "comment": "Ally: Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy.",
+      "abilities": [
+        {
+          "id": "war_machine_action",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "selfDamage": 2
+          },
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "amount": 1
+          }
+        }
+      ]
+    },
+    "01031": {
+      "cardName": "Repulsor Blast",
+      "comment": "Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
+      "abilities": [
+        {
+          "id": "repulsor_blast",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "REPULSOR_BLAST_DAMAGE",
+          "params": {
+            "baseDamage": 1,
+            "discardCount": 5,
+            "damagePerEnergy": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01032": {
+      "cardName": "Supersonic Punch",
+      "comment": "Attack Event: Hero Action: Deal 4 damage to an enemy (8 damage instead if you have Aerial trait).",
+      "abilities": [
+        {
+          "id": "supersonic_punch",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 4,
+            "aerialBonus": 4,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01033": {
+      "cardName": "Pepper Potts",
+      "comment": "Support: Resource: Exhaust Pepper Potts -> generate resources equal to printed resources on top card of discard pile.",
+      "abilities": [
+        {
+          "id": "pepper_potts_resource",
+          "timing": "RESOURCE",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "GENERATE_TOP_DISCARD_RESOURCES"
+        }
+      ]
+    },
+    "01034": {
+      "cardName": "Stark Tower",
+      "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player to return 1 Tech upgrade from discard to hand.",
+      "abilities": [
+        {
+          "id": "stark_tower",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "RETRIEVE_CARD_FROM_DISCARD",
+          "params": {
+            "trait": "Tech",
+            "type": "upgrade",
+            "target": "CHOSEN_PLAYER"
+          }
+        }
+      ]
+    },
+    "01035": {
+      "cardName": "Arc Reactor",
+      "comment": "Upgrade: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
+      "abilities": [
+        {
+          "id": "arc_reactor_ready",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01036": {
+      "cardName": "Mark V Armor",
+      "comment": "Upgrade: Tech. Iron Man gets +6 hit points.",
+      "abilities": [
+        {
+          "id": "mark_v_armor_hp",
+          "timing": "CONSTANT",
+          "effect": "HP_BONUS",
+          "params": {
+            "amount": 6
+          }
+        }
+      ]
+    },
+    "01037": {
+      "cardName": "Mark V Helmet",
+      "comment": "Upgrade: Tech. Hero Action: Exhaust Mark V Helmet -> remove 1 threat from a scheme (remove 1 from each scheme instead if Aerial).",
+      "abilities": [
+        {
+          "id": "mark_v_helmet",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "amount": 1,
+            "aerialAllSchemes": true,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01038": {
+      "cardName": "Powered Gauntlets",
+      "comment": "Upgrade: Tech. Hero Action: Exhaust Powered Gauntlets and spend Energy -> deal 1 damage to an enemy (2 damage instead if Aerial).",
+      "abilities": [
+        {
+          "id": "powered_gauntlets",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 1,
+            "aerialBonus": 1,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01039": {
+      "cardName": "Rocket Boots",
+      "comment": "Upgrade: Tech. Iron Man gains +1 hit point. Hero Action: Exhaust Rocket Boots and spend Mental -> gain Aerial trait until end of phase.",
+      "abilities": [
+        {
+          "id": "rocket_boots_hp",
+          "timing": "CONSTANT",
+          "effect": "HP_BONUS",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "rocket_boots_aerial",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "effect": "GRANT_TEMPORARY_TRAIT",
+          "params": {
+            "trait": "Aerial",
+            "duration": "PHASE_END"
+          }
+        }
+      ]
+    },
+    "01040a": {
+      "cardName": "Black Panther",
+      "comment": "Hero Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
+      "abilities": [
+        {
+          "id": "black_panther_setup",
+          "timing": "SETUP",
+          "effect": "SEARCH_AND_PLAY_UPGRADE",
+          "params": {
+            "trait": "Black Panther"
+          }
+        }
+      ]
+    },
+    "01040b": {
+      "cardName": "T'Challa",
+      "comment": "Alter-Ego Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
+      "abilities": [
+        {
+          "id": "tchalla_setup",
+          "timing": "SETUP",
+          "effect": "SEARCH_AND_PLAY_UPGRADE",
+          "params": {
+            "trait": "Black Panther"
+          }
+        }
+      ]
+    },
+    "01041": {
+      "cardName": "Shuri",
+      "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
+      "abilities": [
+        {
+          "id": "shuri_search_upgrade",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "SEARCH_DECK_FOR_CARD",
+          "params": {
+            "type": "upgrade",
+            "destination": "HAND"
+          }
+        }
+      ]
+    },
+    "01042": {
+      "cardName": "Ancestral Knowledge",
+      "comment": "Event: Alter-Ego Action: Shuffle up to 3 cards from your discard pile into your deck.",
+      "abilities": [
+        {
+          "id": "ancestral_knowledge",
+          "timing": "ALTER_EGO_ACTION",
+          "effect": "SHUFFLE_DISCARD_INTO_DECK",
+          "params": {
+            "count": 3
+          }
+        }
+      ]
+    },
+    "01043a": {
+      "cardName": "Wakanda Forever!",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_a",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ]
+    },
+    "01043b": {
+      "cardName": "Wakanda Forever!",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_b",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ]
+    },
+    "01043c": {
+      "cardName": "Wakanda Forever!",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_c",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ]
+    },
+    "01043d": {
+      "cardName": "Wakanda Forever!",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_d",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ]
+    },
+    "01044": {
+      "cardName": "Vibranium",
+      "comment": "Resource Card: Generates 2 Wild resources.",
+      "abilities": [
+        {
+          "id": "vibranium_resource",
+          "timing": "RESOURCE",
+          "effect": "GENERATE_RESOURCE",
+          "params": {
+            "resource": "wild",
+            "amount": 2
+          }
+        }
+      ]
+    },
+    "01045": {
+      "cardName": "The Golden City",
+      "comment": "Support: Alter-Ego Action: Exhaust The Golden City -> draw 2 cards.",
+      "abilities": [
+        {
+          "id": "golden_city",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "DRAW_CARDS",
+          "params": {
+            "count": 2
+          }
+        }
+      ]
+    },
+    "01046": {
+      "cardName": "Energy Daggers",
+      "comment": "Upgrade: Special: Deal 1 damage to each enemy (2 damage if triggered last).",
+      "abilities": [
+        {
+          "id": "energy_daggers_special",
+          "timing": "SPECIAL",
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "baseAmount": 1,
+            "finisherBonus": 1
+          }
+        }
+      ]
+    },
+    "01047": {
+      "cardName": "Panther Claws",
+      "comment": "Upgrade: Special: Deal 2 damage to an enemy (4 damage if triggered last).",
+      "abilities": [
+        {
+          "id": "panther_claws_special",
+          "timing": "SPECIAL",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "baseAmount": 2,
+            "finisherBonus": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01048": {
+      "cardName": "Tactical Genius",
+      "comment": "Upgrade: Special: Remove 1 threat from a scheme (2 threat if triggered last).",
+      "abilities": [
+        {
+          "id": "tactical_genius_special",
+          "timing": "SPECIAL",
+          "tags": [
+            "THWART"
+          ],
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "baseAmount": 1,
+            "finisherBonus": 1,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01049": {
+      "cardName": "Vibranium Suit",
+      "comment": "Upgrade: Special: Move 1 damage from Black Panther to an enemy (move 2 damage if triggered last).",
+      "abilities": [
+        {
+          "id": "vibranium_suit_special",
+          "timing": "SPECIAL",
+          "effect": "TRANSFER_DAMAGE",
+          "params": {
+            "baseAmount": 1,
+            "finisherBonus": 1,
+            "from": "SELF",
+            "to": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01050": {
+      "cardName": "Hulk",
+      "comment": "Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
+      "abilities": [
+        {
+          "id": "hulk_after_attack",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "effect": "HULK_DISCARD_RESOLUTION"
+        }
+      ]
+    },
+    "01051": {
+      "cardName": "Tigra",
+      "comment": "Ally: Response: After Tigra attacks and defeats a minion, heal 1 damage from Tigra.",
+      "abilities": [
+        {
+          "id": "tigra_defeat_heal",
+          "timing": "RESPONSE",
+          "trigger": "MINION_DEFEATED_BY_ATTACK",
+          "effect": "HEAL_DAMAGE",
+          "params": {
+            "amount": 1,
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01052": {
+      "cardName": "Chase Them Down",
+      "comment": "Event: Hero Response: After your hero attacks and defeats an enemy, remove 2 threat from a scheme.",
+      "abilities": [
+        {
+          "id": "chase_them_down",
+          "timing": "RESPONSE",
+          "trigger": "ENEMY_DEFEATED_BY_HERO_ATTACK",
+          "effect": "REMOVE_THREAT",
+          "params": {
+            "amount": 2,
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ]
+    },
+    "01053": {
+      "cardName": "Relentless Assault",
+      "comment": "Attack Event: Hero Action: Deal 5 damage to a minion. If paid with Physical resource, gains Overkill.",
+      "abilities": [
+        {
+          "id": "relentless_assault",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 5,
+            "target": "CHOSEN_MINION",
+            "overkillOnPhysical": true
+          }
+        }
+      ]
+    },
+    "01054": {
+      "cardName": "Uppercut",
+      "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy.",
+      "abilities": [
+        {
+          "id": "uppercut",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 5,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01055": {
+      "cardName": "The Power of Aggression",
+      "comment": "Resource Card: Double generated resources when paying for an Aggression card.",
+      "abilities": [
+        {
+          "id": "power_of_aggression",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "aggression",
+            "resource": "wild"
+          }
+        }
+      ]
+    },
+    "01056": {
+      "cardName": "Tac Team",
+      "comment": "Support: Enters play with 3 counters. Action: Exhaust and remove 1 counter -> deal 2 damage to an enemy.",
+      "uses": {
+        "type": "counters",
+        "count": 3,
+        "discardOnEmpty": true
+      },
+      "abilities": [
+        {
+          "id": "tac_team_action",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "removeCounter": 1
+          },
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01057": {
+      "cardName": "Combat Training",
+      "comment": "Upgrade: Attached hero gets +1 ATK.",
+      "abilities": [
+        {
+          "id": "combat_training_atk",
+          "timing": "CONSTANT",
+          "effect": "ATK_BONUS",
+          "params": {
+            "amount": 1
+          }
         }
       ]
     },
     "01058": {
       "cardName": "Daredevil",
-      "comment": "Ally: Response after Daredevil thwarts -> deal 1 damage to an enemy.",
+      "comment": "Ally: Response: After Daredevil thwarts, deal 1 damage to an enemy.",
       "abilities": [
         {
           "id": "daredevil_after_thwart",
           "timing": "RESPONSE",
-          "trigger": "CARD_PLAYED",
+          "trigger": "THWART_RESOLVED",
           "effect": "DEAL_DAMAGE",
-          "params": { "amount": 1, "target": "CHOSEN_ENEMY" }
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_ENEMY"
+          }
         }
       ]
     },
     "01059": {
       "cardName": "Jessica Jones",
-      "comment": "Ally: Constant -> Gets +1 THW for each side scheme in play.",
+      "comment": "Ally: Constant: Gets +1 THW for each side scheme in play.",
       "abilities": [
         {
           "id": "jessica_jones_thw_boost",
           "timing": "CONSTANT",
           "effect": "THW_BONUS_PER_SIDE_SCHEME",
-          "params": { "amountPerSideScheme": 1 }
+          "params": {
+            "amountPerSideScheme": 1
+          }
         }
       ]
     },
     "01060": {
       "cardName": "For Justice!",
-      "comment": "Event: Hero Action -> Remove 3 threat (4 threat instead if paid using a Mental resource).",
+      "comment": "Thwart Event: Hero Action: Remove 3 threat (4 threat if paid with Mental) from a scheme.",
       "abilities": [
         {
           "id": "for_justice",
           "timing": "HERO_ACTION",
-          "tags": ["THWART"],
+          "tags": [
+            "THWART"
+          ],
           "effect": "REMOVE_THREAT",
-          "params": { "amount": 3, "bonusWithMental": 1, "target": "CHOSEN_SCHEME" }
+          "params": {
+            "amount": 3,
+            "bonusWithMental": 1,
+            "target": "CHOSEN_SCHEME"
+          }
         }
       ]
     },
     "01061": {
       "cardName": "Great Responsibility",
-      "comment": "Event: Hero Interrupt when threat would be placed on a scheme -> take it as damage instead.",
+      "comment": "Defense Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
       "abilities": [
         {
           "id": "great_responsibility",
           "timing": "HERO_INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "zone": "HAND",
-          "cost": { "discardSelf": true },
+          "cost": {
+            "discardSelf": true
+          },
           "effect": "CONVERT_THREAT_TO_DAMAGE"
+        }
+      ]
+    },
+    "01062": {
+      "cardName": "The Power of Justice",
+      "comment": "Resource Card: Double generated resources when paying for a Justice card.",
+      "abilities": [
+        {
+          "id": "power_of_justice",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "justice",
+            "resource": "wild"
+          }
         }
       ]
     },
     "01063": {
       "cardName": "Interrogation Room",
-      "comment": "Support: Response after you defeat a minion -> exhaust to remove 1 threat from a scheme.",
+      "comment": "Support: Response: After you defeat a minion, exhaust to remove 1 threat from a scheme.",
       "abilities": [
         {
           "id": "interrogation_room_response",
           "timing": "RESPONSE",
           "trigger": "MINION_DEFEATED",
-          "cost": { "exhaustSelf": true },
+          "cost": {
+            "exhaustSelf": true
+          },
           "effect": "REMOVE_THREAT",
-          "params": { "amount": 1, "target": "MAIN_SCHEME" }
+          "params": {
+            "amount": 1,
+            "target": "MAIN_SCHEME"
+          }
         }
       ]
     },
     "01064": {
-      "uses": { "type": "snoop_counters", "count": 3, "discardOnEmpty": true },
       "cardName": "Surveillance Team",
-      "comment": "Support: Enters play with 3 snoop counters -> exhaust & remove 1 counter to remove 1 threat.",
+      "comment": "Support: Enters play with 3 snoop counters. Action: Exhaust and remove 1 counter -> remove 1 threat from a scheme.",
+      "uses": {
+        "type": "snoop_counters",
+        "count": 3,
+        "discardOnEmpty": true
+      },
       "abilities": [
         {
           "id": "surveillance_team_action",
           "timing": "ACTION",
-          "cost": { "exhaustSelf": true, "removeCounter": 1 },
+          "cost": {
+            "exhaustSelf": true,
+            "removeCounter": 1
+          },
           "effect": "REMOVE_THREAT",
-          "params": { "amount": 1, "target": "CHOSEN_SCHEME" }
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_SCHEME"
+          }
         }
       ]
     },
@@ -220,23 +1269,310 @@
       "comment": "Upgrade: Attached hero gets +1 THW.",
       "abilities": [
         {
-          "id": "heroic_intuition_buff",
+          "id": "heroic_intuition_thw",
           "timing": "CONSTANT",
-          "effect": "REMOVE_THREAT",
-          "params": { "amount": 1 }
+          "effect": "THW_BONUS",
+          "params": {
+            "amount": 1
+          }
+        }
+      ]
+    },
+    "01066": {
+      "cardName": "Hawkeye",
+      "comment": "Ally: Enters play with 4 arrow counters. Response: After a minion enters play, remove 1 arrow counter -> deal 2 damage to that minion.",
+      "uses": {
+        "type": "arrow_counters",
+        "count": 4,
+        "discardOnEmpty": false
+      },
+      "abilities": [
+        {
+          "id": "hawkeye_arrow_response",
+          "timing": "RESPONSE",
+          "trigger": "MINION_ENTERS_PLAY",
+          "cost": {
+            "removeCounter": 1
+          },
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "TRIGGERING_MINION"
+          }
+        }
+      ]
+    },
+    "01067": {
+      "cardName": "Maria Hill",
+      "comment": "Ally: Response: After Maria Hill enters play, each player draws 1 card.",
+      "abilities": [
+        {
+          "id": "maria_hill_enters_play",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "ALL_PLAYERS_DRAW_CARDS",
+          "params": {
+            "count": 1
+          }
+        }
+      ]
+    },
+    "01068": {
+      "cardName": "Vision",
+      "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase.",
+      "abilities": [
+        {
+          "id": "vision_boost",
+          "timing": "ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "BOOST_STAT_CHOICE",
+          "params": {
+            "amount": 2,
+            "options": [
+              "ATK",
+              "THW"
+            ]
+          }
+        }
+      ]
+    },
+    "01069": {
+      "cardName": "Get Ready",
+      "comment": "Event: Action: Ready an ally.",
+      "abilities": [
+        {
+          "id": "get_ready",
+          "timing": "ACTION",
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "CHOSEN_ALLY"
+          }
+        }
+      ]
+    },
+    "01070": {
+      "cardName": "Lead from the Front",
+      "comment": "Event: Hero Action: Each friendly character gets +1 ATK and +1 THW until end of phase.",
+      "abilities": [
+        {
+          "id": "lead_from_the_front",
+          "timing": "HERO_ACTION",
+          "effect": "BUFF_ALL_FRIENDLY_CHARACTERS",
+          "params": {
+            "atkBonus": 1,
+            "thwBonus": 1,
+            "duration": "PHASE_END"
+          }
+        }
+      ]
+    },
+    "01071": {
+      "cardName": "Make the Call",
+      "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
+      "abilities": [
+        {
+          "id": "make_the_call",
+          "timing": "ACTION",
+          "effect": "PLAY_ALLY_FROM_DISCARD"
+        }
+      ]
+    },
+    "01072": {
+      "cardName": "The Power of Leadership",
+      "comment": "Resource Card: Double generated resources when paying for a Leadership card.",
+      "abilities": [
+        {
+          "id": "power_of_leadership",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "leadership",
+            "resource": "wild"
+          }
+        }
+      ]
+    },
+    "01073": {
+      "cardName": "The Triskelion",
+      "comment": "Support: Each player's ally limit is increased by 1.",
+      "abilities": [
+        {
+          "id": "triskelion_ally_limit",
+          "timing": "CONSTANT",
+          "effect": "ALLY_LIMIT_BONUS",
+          "params": {
+            "amount": 1,
+            "target": "ALL_PLAYERS"
+          }
+        }
+      ]
+    },
+    "01074": {
+      "cardName": "Inspired",
+      "comment": "Upgrade: Attach to an ally. Attached ally gets +1 ATK and +1 THW.",
+      "abilities": [
+        {
+          "id": "inspired_buff",
+          "timing": "CONSTANT",
+          "effect": "ALLY_STAT_BUFF",
+          "params": {
+            "atkBonus": 1,
+            "thwBonus": 1
+          }
+        }
+      ]
+    },
+    "01075": {
+      "cardName": "Black Widow",
+      "comment": "Ally: Hero Interrupt: When a treachery card is revealed from encounter deck, exhaust Black Widow and spend 1 Mental resource -> cancel its When Revealed effects and discard it.",
+      "abilities": [
+        {
+          "id": "black_widow_treachery_cancel",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "effect": "CANCEL_WHEN_REVEALED"
+        }
+      ]
+    },
+    "01076": {
+      "cardName": "Luke Cage",
+      "comment": "Ally: Toughness. Luke Cage enters play with a tough status card.",
+      "abilities": [
+        {
+          "id": "luke_cage_tough",
+          "timing": "SETUP",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ]
+    },
+    "01077": {
+      "cardName": "Counter-Punch",
+      "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
+      "abilities": [
+        {
+          "id": "counter_punch",
+          "timing": "RESPONSE",
+          "trigger": "HERO_DEFENDED_ATTACK",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE_EQUAL_TO_HERO_ATK",
+          "params": {
+            "target": "ATTACKING_ENEMY"
+          }
+        }
+      ]
+    },
+    "01078": {
+      "cardName": "Get Behind Me!",
+      "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
+      "abilities": [
+        {
+          "id": "get_behind_me",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "effect": "CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
+        }
+      ]
+    },
+    "01079": {
+      "cardName": "The Power of Protection",
+      "comment": "Resource Card: Double generated resources when paying for a Protection card.",
+      "abilities": [
+        {
+          "id": "power_of_protection",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "protection",
+            "resource": "wild"
+          }
+        }
+      ]
+    },
+    "01080": {
+      "cardName": "Med Team",
+      "comment": "Support: Enters play with 3 medical counters. Action: Exhaust and remove 1 medical counter -> heal 2 damage from any friendly character.",
+      "uses": {
+        "type": "medical_counters",
+        "count": 3,
+        "discardOnEmpty": true
+      },
+      "abilities": [
+        {
+          "id": "med_team_heal",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "removeCounter": 1
+          },
+          "effect": "HEAL_DAMAGE",
+          "params": {
+            "amount": 2,
+            "target": "CHOSEN_CHARACTER"
+          }
+        }
+      ]
+    },
+    "01081": {
+      "cardName": "Armored Vest",
+      "comment": "Upgrade: Attached hero gets +1 DEF.",
+      "abilities": [
+        {
+          "id": "armored_vest_def",
+          "timing": "CONSTANT",
+          "effect": "DEF_BONUS",
+          "params": {
+            "amount": 1
+          }
+        }
+      ]
+    },
+    "01082": {
+      "cardName": "Indomitable",
+      "comment": "Upgrade: Hero Interrupt: After your hero defends against an attack, discard Indomitable -> ready your hero.",
+      "abilities": [
+        {
+          "id": "indomitable_ready",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "HERO_DEFENDED_ATTACK",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
         }
       ]
     },
     "01083": {
       "cardName": "Mockingbird",
-      "comment": "Ally: Forced Response after Mockingbird enters play -> stun an enemy.",
+      "comment": "Ally: Forced Response: After Mockingbird enters play, stun an enemy.",
       "abilities": [
         {
           "id": "mockingbird_when_played",
           "timing": "FORCED_RESPONSE",
           "trigger": "CARD_PLAYED",
           "effect": "ADD_STATUS",
-          "params": { "status": "STUNNED", "target": "CHOSEN_ENEMY" }
+          "params": {
+            "status": "STUNNED",
+            "target": "CHOSEN_ENEMY"
+          }
         }
       ]
     },
@@ -270,73 +1606,147 @@
           "timing": "INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "zone": "HAND",
-          "cost": { "discardSelf": true },
+          "cost": {
+            "discardSelf": true
+          },
           "effect": "REMOVE_THREAT",
-          "params": { "amount": 1 }
+          "params": {
+            "amount": 1
+          }
         }
       ]
     },
     "01086": {
       "cardName": "First Aid",
-      "comment": "Event: Action -> Heal 2 damage from any character.",
+      "comment": "Event: Action: Heal 2 damage from any character.",
       "abilities": [
         {
           "id": "first_aid",
           "timing": "ACTION",
           "effect": "HEAL_DAMAGE",
-          "params": { "amount": 2, "target": "CHOSEN_CHARACTER" }
+          "params": {
+            "amount": 2,
+            "target": "CHOSEN_CHARACTER"
+          }
         }
       ]
     },
     "01087": {
       "cardName": "Haymaker",
-      "comment": "Attack Event: Hero Action -> Deal 3 damage to an enemy.",
+      "comment": "Attack Event: Hero Action: Deal 3 damage to an enemy.",
       "abilities": [
         {
           "id": "haymaker",
           "timing": "HERO_ACTION",
-          "tags": ["ATTACK"],
+          "tags": [
+            "ATTACK"
+          ],
           "effect": "DEAL_DAMAGE",
-          "params": { "amount": 3, "target": "CHOSEN_ENEMY" }
+          "params": {
+            "amount": 3,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ]
+    },
+    "01088": {
+      "cardName": "Energy",
+      "comment": "Resource Card: Generates 2 Energy resources.",
+      "abilities": [
+        {
+          "id": "energy_resource",
+          "timing": "RESOURCE",
+          "effect": "GENERATE_RESOURCE",
+          "params": {
+            "resource": "energy",
+            "amount": 2
+          }
+        }
+      ]
+    },
+    "01089": {
+      "cardName": "Genius",
+      "comment": "Resource Card: Generates 2 Mental resources.",
+      "abilities": [
+        {
+          "id": "genius_resource",
+          "timing": "RESOURCE",
+          "effect": "GENERATE_RESOURCE",
+          "params": {
+            "resource": "mental",
+            "amount": 2
+          }
+        }
+      ]
+    },
+    "01090": {
+      "cardName": "Strength",
+      "comment": "Resource Card: Generates 2 Physical resources.",
+      "abilities": [
+        {
+          "id": "strength_resource",
+          "timing": "RESOURCE",
+          "effect": "GENERATE_RESOURCE",
+          "params": {
+            "resource": "physical",
+            "amount": 2
+          }
         }
       ]
     },
     "01091": {
       "cardName": "Avengers Mansion",
-      "comment": "Support: Action -> Exhaust Avengers Mansion to choose a player to draw 1 card.",
+      "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",
       "abilities": [
         {
           "id": "avengers_mansion",
           "timing": "ACTION",
-          "cost": { "exhaustSelf": true },
+          "cost": {
+            "exhaustSelf": true
+          },
           "effect": "DRAW_CARDS",
-          "params": { "count": 1 }
+          "params": {
+            "count": 1,
+            "target": "CHOSEN_PLAYER"
+          }
         }
       ]
     },
     "01092": {
       "cardName": "Helicarrier",
-      "comment": "Support: Action -> Exhaust Helicarrier to reduce the resource cost of the next card by 1.",
+      "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
       "abilities": [
         {
           "id": "helicarrier_action",
           "timing": "ACTION",
-          "cost": { "exhaustSelf": true },
+          "cost": {
+            "exhaustSelf": true
+          },
           "effect": "REDUCE_NEXT_CARD_COST",
-          "params": { "amount": 1 }
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_PLAYER"
+          }
         }
       ]
     },
     "01093": {
       "cardName": "Tenacity",
-      "comment": "Upgrade: Hero Action -> Spend a Physical resource and discard Tenacity to ready your hero.",
+      "comment": "Upgrade: Hero Action: Spend a Physical resource and discard Tenacity -> ready your hero.",
       "abilities": [
         {
           "id": "tenacity_ready",
           "timing": "HERO_ACTION",
-          "cost": { "discardSelf": true },
-          "effect": "HEAL_DAMAGE",
-          "params": { "amount": 0 }
+          "cost": {
+            "discardSelf": true,
+            "resourceCost": {
+              "physical": 1
+            }
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
         }
       ]
     }

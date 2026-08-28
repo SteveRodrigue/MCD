@@ -315,5 +315,153 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(false);
       expect(res.result.error).toContain('Insufficient resources: Need 3');
     });
+
+    it('plays an Event (Swinging Web Kick) dealing 8 damage to the villain', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      const player = gameState.players[0];
+      const kickCard = catalog.getCard('01005')!; // Swinging Web Kick (Cost 3, 8 damage)
+      const energyCard = catalog.getCard('01088')!; // Energy (2 resources)
+      const backflipCard = catalog.getCard('01004')!; // Backflip (1 resource)
+
+      const kickInstance = createCardInstance(kickCard);
+      const energyInstance = createCardInstance(energyCard);
+      const backflipInstance = createCardInstance(backflipCard);
+
+      player.hand = [kickInstance, energyInstance, backflipInstance];
+
+      const initialVillainHp = gameState.villain.health;
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: kickInstance.instanceId,
+        paymentCardInstanceIds: [energyInstance.instanceId, backflipInstance.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.result.onomatopoeia).toBe('POW!');
+      expect(res.state.villain.health).toBe(initialVillainHp - 8);
+      // Event goes to discard pile
+      expect(res.state.players[0].discard.some((c) => c.card.code === '01005')).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+    });
+
+    it('plays an Ally (Black Cat) which enters play in the allies zone', () => {
+      const player = gameState.players[0];
+      const blackCatCard = catalog.getCard('01002')!; // Black Cat (Cost 2)
+      const energyCard = catalog.getCard('01088')!; // Energy (2 resources)
+
+      const blackCatInstance = createCardInstance(blackCatCard);
+      const energyInstance = createCardInstance(energyCard);
+
+      player.hand = [blackCatInstance, energyInstance];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: blackCatInstance.instanceId,
+        paymentCardInstanceIds: [energyInstance.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].allies.some((a) => a.card.code === '01002')).toBe(true);
+    });
+
+    it('pays for a card using an in-play generator (Web-Shooter counters)', () => {
+      const player = gameState.players[0];
+      const webShooterInPlay = createCardInstance(catalog.getCard('01008')!);
+      webShooterInPlay.tokens = { counters: 3 };
+      player.tableau.push(webShooterInPlay);
+
+      const auntMayCard = catalog.getCard('01006')!; // Aunt May (Cost 1)
+      const auntMayInstance = createCardInstance(auntMayCard);
+      player.hand = [auntMayInstance];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: auntMayInstance.instanceId,
+        paymentCardInstanceIds: [],
+        generatorInstanceIds: [webShooterInPlay.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01006')).toBe(true);
+      // Web-Shooter should have 2 counters remaining
+      const shooter = res.state.players[0].tableau.find((c) => c.card.code === '01008')!;
+      expect(shooter.tokens?.counters).toBe(2);
+      expect(shooter.exhausted).toBe(true);
+    });
+
+    it('doubles resources for aspect cards using The Power of Leadership', () => {
+      const player = gameState.players[0];
+      const mariaHillCard = catalog.getCard('01067')!; // Maria Hill (Leadership Ally, Cost 2)
+      const powerOfLeadershipCard = catalog.getCard('01072')!; // The Power of Leadership
+
+      const mariaInstance = createCardInstance(mariaHillCard);
+      const powerInstance = createCardInstance(powerOfLeadershipCard);
+
+      player.hand = [mariaInstance, powerInstance];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: mariaInstance.instanceId,
+        paymentCardInstanceIds: [powerInstance.instanceId], // 1 card provides 2 resources because of matching aspect
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].allies.some((a) => a.card.code === '01067')).toBe(true);
+    });
+
+    it('enforces unicity and prevents duplicate unique allies in play (RR v1.8 p. 28)', () => {
+      const player = gameState.players[0];
+      const nickFury1 = createCardInstance(catalog.getCard('01084')!); // Unique Ally Nick Fury
+      const nickFury2 = createCardInstance(catalog.getCard('01084')!);
+      const energy1 = createCardInstance(catalog.getCard('01088')!);
+      const energy2 = createCardInstance(catalog.getCard('01088')!);
+
+      player.allies.push(nickFury1);
+      player.hand = [nickFury2, energy1, energy2];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: nickFury2.instanceId,
+        paymentCardInstanceIds: [energy1.instanceId, energy2.instanceId],
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('unique copy');
+    });
+
+    it('enforces default ally limit of 3 (RR v1.8 p. 3)', () => {
+      const player = gameState.players[0];
+      // Put 3 allies in play
+      player.allies = [
+        createCardInstance(catalog.getCard('01002')!), // Black Cat
+        createCardInstance(catalog.getCard('01053')!), // Hulk
+        createCardInstance(catalog.getCard('01054')!), // Tigra
+      ];
+
+      const mockingbirdCard = catalog.getCard('01083')!; // Mockingbird (Ally)
+      const mockingbirdInstance = createCardInstance(mockingbirdCard);
+      const energyCard = createCardInstance(catalog.getCard('01088')!);
+      const energyCard2 = createCardInstance(catalog.getCard('01088')!);
+
+      player.hand = [mockingbirdInstance, energyCard, energyCard2];
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: mockingbirdInstance.instanceId,
+        paymentCardInstanceIds: [energyCard.instanceId, energyCard2.instanceId],
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('Ally limit reached');
+    });
   });
 });

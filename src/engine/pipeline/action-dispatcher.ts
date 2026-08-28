@@ -558,6 +558,7 @@ export function dispatchAction(
         action.playerId,
         action.cardInstanceId,
         action.paymentCardInstanceIds,
+        action.generatorInstanceIds,
       );
       if (!check.allowed) {
         return { state, result: { success: false, error: check.reason } };
@@ -574,7 +575,26 @@ export function dispatchAction(
         }
       }
 
-      // 2. Play Target Card from Hand
+      // 2. Process In-Play Generator Activations (e.g. Web-Shooter, Helicarrier)
+      for (const gId of action.generatorInstanceIds || []) {
+        const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
+        if (gIdx !== -1) {
+          const gCard = player.tableau[gIdx];
+          gCard.exhausted = true;
+
+          // Web-Shooter: Decrement counter and discard if empty
+          if (gCard.card.code === '01008') {
+            const currentCounters = gCard.tokens?.counters || 0;
+            gCard.tokens = { ...gCard.tokens, counters: Math.max(0, currentCounters - 1) };
+            if ((gCard.tokens?.counters ?? 0) <= 0) {
+              player.tableau.splice(gIdx, 1);
+              player.discard.push(gCard);
+            }
+          }
+        }
+      }
+
+      // 3. Play Target Card from Hand
       const targetIndex = player.hand.findIndex((c) => c.instanceId === action.cardInstanceId);
       const [playedCardInstance] = player.hand.splice(targetIndex, 1);
 
@@ -589,7 +609,20 @@ export function dispatchAction(
         };
       }
 
-      const onomatopoeia = 'PLAY!';
+      // Determine onomatopoeia based on card tags / card type
+      let onomatopoeia = 'PLAY!';
+      const abilities = playedCardInstance.card.enrichment?.abilities || [];
+      const hasAttackTag = abilities.some((a) => a.tags?.includes('ATTACK'));
+      const hasThwartTag = abilities.some((a) => a.tags?.includes('THWART'));
+
+      if (hasAttackTag) {
+        onomatopoeia = 'POW!';
+      } else if (hasThwartTag) {
+        onomatopoeia = 'FOILED!';
+      } else if (cardType === CardType.ALLY) {
+        onomatopoeia = 'ALLY CALL!';
+      }
+
       nextState.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -603,17 +636,30 @@ export function dispatchAction(
         onomatopoeia,
       });
 
+      // Target determination (villain/minion/main_scheme/side_scheme)
+      let targetType: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' = 'villain';
+      if (action.targetInstanceId) {
+        const isMinion = nextState.players.some((p) =>
+          p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
+        );
+        const isSideScheme = nextState.sideSchemes.some(
+          (s) => s.instanceId === action.targetInstanceId,
+        );
+        if (isMinion) targetType = 'minion';
+        else if (isSideScheme) targetType = 'side_scheme';
+        else targetType = 'main_scheme';
+      }
+
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
         player.tableau.push(playedCardInstance);
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
         // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter, Nick Fury)
-        const abilities = playedCardInstance.card.enrichment?.abilities || [];
         for (const ability of abilities) {
-          if (ability.trigger === 'CARD_PLAYED' || ability.timing === 'FORCED_RESPONSE') {
+          if (ability.trigger === 'CARD_PLAYED' || ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE') {
             executeEffect(nextState, ability, {
               playerId: action.playerId,
-              targetType: 'villain',
+              targetType,
               targetInstanceId: action.targetInstanceId,
               sourceCardInstance: playedCardInstance,
             });
@@ -621,11 +667,10 @@ export function dispatchAction(
         }
       } else if (cardType === CardType.EVENT) {
         // Execute declarative event abilities
-        const abilities = playedCardInstance.card.enrichment?.abilities || [];
         for (const ability of abilities) {
           executeEffect(nextState, ability, {
             playerId: action.playerId,
-            targetType: 'villain',
+            targetType,
             targetInstanceId: action.targetInstanceId,
             sourceCardInstance: playedCardInstance,
           });

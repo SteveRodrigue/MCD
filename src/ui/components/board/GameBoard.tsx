@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { GameState } from '../../../engine/models';
+import { GameState, GameAction } from '../../../engine/models';
 import { TopBar } from './TopBar';
 import { VillainZone } from './VillainZone';
 import { HeroZone } from './HeroZone';
@@ -12,6 +12,7 @@ import { useGameSettings } from '../../context/GameSettingsContext';
 interface GameBoardProps {
   gameState: GameState;
   onReset: () => void;
+  onDispatchAction?: (action: GameAction) => void;
 }
 
 const SPEED_MAP: Record<string, number> = {
@@ -20,7 +21,7 @@ const SPEED_MAP: Record<string, number> = {
   fast: 90, // High-speed glide
 };
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
+export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [isLogOpen, setIsLogOpen] = useState<boolean>(false);
   const { edgeScrollSpeed } = useGameSettings();
@@ -158,6 +159,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
                       seatNumber={idx + 1}
                       isFocused={isFocused}
                       isMultiHero={true}
+                      player={player}
+                      gameState={gameState}
+                      onDispatchAction={onDispatchAction}
                       onFocus={() => handleSelectSeat(idx)}
                     />
                   </div>
@@ -190,6 +194,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
           seatNumber={1}
           isFocused={true}
           isMultiHero={false}
+          player={singlePlayer}
+          gameState={gameState}
+          onDispatchAction={onDispatchAction}
         />
       )}
 

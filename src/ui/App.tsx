@@ -88,6 +88,12 @@ export const AppContent: React.FC = () => {
     setStage('IN_GAME');
   };
 
+  const handleDispatchAction = (action: any) => {
+    if (!gameState) return;
+    const { state: nextState } = dispatchAction(gameState, action);
+    setGameState(nextState);
+  };
+
   const handleReset = () => {
     setGameState(null);
     setStage('SETUP');
@@ -113,7 +119,11 @@ export const AppContent: React.FC = () => {
         )}
 
         {stage === 'IN_GAME' && gameState && (
-          <GameBoard gameState={gameState} onReset={handleReset} />
+          <GameBoard
+            gameState={gameState}
+            onReset={handleReset}
+            onDispatchAction={handleDispatchAction}
+          />
         )}
       </div>
     </div>

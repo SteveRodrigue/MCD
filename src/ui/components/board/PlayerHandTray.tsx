@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp } from 'lucide-react';
-import { CardInstance, NormalizedCard } from '../../../engine/models';
+import { CardInstance, NormalizedCard, PlayerState, GameState, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
+import { CardPaymentModal } from './CardPaymentModal';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -15,8 +16,11 @@ interface PlayerHandTrayProps {
   seatNumber?: number;
   isFocused?: boolean;
   isMultiHero?: boolean;
+  player?: PlayerState;
+  gameState?: GameState;
   onFocus?: () => void;
   onCardClick?: (cardInst: CardInstance) => void;
+  onDispatchAction?: (action: GameAction) => void;
 }
 
 type PlayerSortMode = 'deck_order' | 'card_type' | 'affinity' | 'cost';
@@ -83,17 +87,30 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   discard,
   setAsideCards = [],
   heroName,
-  handSizeLimit,
+  handSizeLimit = 6,
   seatNumber,
   isFocused = true,
   isMultiHero = false,
+  player,
+  gameState,
   onFocus,
   onCardClick,
+  onDispatchAction,
 }) => {
   const { devMode } = useGameSettings();
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [showNemesisModal, setShowNemesisModal] = useState(false);
+  const [playingCard, setPlayingCard] = useState<CardInstance | null>(null);
+
+  const handleCardClick = (cardInst: CardInstance) => {
+    if (onCardClick) {
+      onCardClick(cardInst);
+    }
+    if (onDispatchAction && player && gameState) {
+      setPlayingCard(cardInst);
+    }
+  };
 
   // Inspector View Sort States
   const [sortMode, setSortMode] = useState<PlayerSortMode>('deck_order');
@@ -262,14 +279,14 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {/* Cards in Hand (Single 1 Row • Unconstrained Z-Axis Hover Zoom) */}
             <div className="flex flex-nowrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
               {hand.map((cardInst) => (
-                <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50">
+                <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50 cursor-pointer">
                   <CardView
                     card={cardInst.card}
                     instance={cardInst}
                     size="sm"
                     enableHoverZoom={true}
                     zoomOrigin="bottom"
-                    onClick={() => onCardClick && onCardClick(cardInst)}
+                    onClick={() => handleCardClick(cardInst)}
                   />
                 </div>
               ))}
@@ -355,15 +372,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
               <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
                 {hand.map((cardInst) => (
-                  <CardView
-                    key={cardInst.instanceId}
-                    card={cardInst.card}
-                    instance={cardInst}
-                    size="md"
-                    enableHoverZoom={true}
-                    zoomOrigin="bottom"
-                    onClick={() => onCardClick && onCardClick(cardInst)}
-                  />
+                  <div key={cardInst.instanceId} className="cursor-pointer">
+                    <CardView
+                      card={cardInst.card}
+                      instance={cardInst}
+                      size="md"
+                      enableHoverZoom={true}
+                      zoomOrigin="bottom"
+                      onClick={() => handleCardClick(cardInst)}
+                    />
+                  </div>
                 ))}
 
                 {hand.length === 0 && (
@@ -671,6 +689,28 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           </div>,
           document.body,
         )}
+
+      {/* Card Payment & Action Modal */}
+      {playingCard && player && gameState && onDispatchAction && (
+        <CardPaymentModal
+          isOpen={Boolean(playingCard)}
+          onClose={() => setPlayingCard(null)}
+          cardToPlay={playingCard}
+          player={player}
+          gameState={gameState}
+          onConfirmPlay={(paymentHandCardIds, generatorCardIds, targetInstanceId) => {
+            onDispatchAction({
+              type: 'PLAY_CARD',
+              playerId: player.id,
+              cardInstanceId: playingCard.instanceId,
+              paymentCardInstanceIds: paymentHandCardIds,
+              generatorInstanceIds: generatorCardIds,
+              targetInstanceId,
+            });
+            setPlayingCard(null);
+          }}
+        />
+      )}
     </>
   );
 };

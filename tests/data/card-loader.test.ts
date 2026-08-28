@@ -211,10 +211,17 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(hawkeye?.uses?.count).toBe(4);
     });
 
-    it('provides rich ability metadata for Basic Resource and Support cards', async () => {
+    it('provides rich ability metadata for Support cards and flags pure resources as noSupplementalNeeded', async () => {
       const { getCardEnrichment } = await import('../../src/data/supplemental');
       const energy = getCardEnrichment('01088');
-      expect(energy?.abilities?.[0].params?.amount).toBe(2);
+      expect(energy?.noSupplementalNeeded).toBe(true);
+      expect(energy?.abilities).toBeUndefined();
+
+      const vibranium = getCardEnrichment('01044');
+      expect(vibranium?.noSupplementalNeeded).toBe(true);
+
+      const powerOfLeadership = getCardEnrichment('01072');
+      expect(powerOfLeadership?.abilities?.[0].id).toBe('power_of_leadership');
 
       const mansion = getCardEnrichment('01091');
       expect(mansion?.abilities?.[0].id).toBe('avengers_mansion');

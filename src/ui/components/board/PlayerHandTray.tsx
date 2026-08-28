@@ -14,7 +14,7 @@ interface PlayerHandTrayProps {
   handSizeLimit: number;
   seatNumber?: number;
   isFocused?: boolean;
-  isSideBySide?: boolean;
+  isMultiHero?: boolean;
   onFocus?: () => void;
   onCardClick?: (cardInst: CardInstance) => void;
 }
@@ -86,7 +86,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   handSizeLimit,
   seatNumber,
   isFocused = true,
-  isSideBySide = false,
+  isMultiHero = false,
   onFocus,
   onCardClick,
 }) => {
@@ -182,8 +182,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
   return (
     <>
-      {isSideBySide ? (
-        /* Side-by-Side In-Column Hand Card Panel */
+      {isMultiHero ? (
+        /* Multi-Hero Panoramic In-Column Hand Card Panel */
         <section
           className={`comic-panel p-4 bg-amber-100/95 relative shadow-comic space-y-3 transition-all overflow-visible ${
             !isFocused
@@ -202,7 +202,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <span>
                 {seatNumber ? `SEAT ${seatNumber}: ` : ''}
                 {heroName}'s HAND ({hand.length} / {handSizeLimit})
-                {isFocused ? ' • (ACTIVE HAND)' : ' • (UP NEXT)'}
+                {isFocused ? ' • (ACTIVE HAND)' : ''}
               </span>
             </div>
 

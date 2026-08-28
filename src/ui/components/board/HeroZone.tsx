@@ -7,7 +7,7 @@ interface HeroZoneProps {
   player: PlayerState;
   seatNumber?: number;
   isFocused?: boolean;
-  isSideBySide?: boolean;
+  isMultiHero?: boolean;
   onFocus?: () => void;
 }
 
@@ -15,7 +15,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   player,
   seatNumber,
   isFocused = true,
-  isSideBySide = false,
+  isMultiHero = false,
   onFocus,
 }) => {
   const healthPercent = Math.max(0, (player.health / player.maxHealth) * 100);
@@ -38,7 +38,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           <span>
             {seatNumber ? `SEAT ${seatNumber}: ` : ''}
             {player.name}
-            {isSideBySide && (isFocused ? ' • (ACTIVE HERO)' : ' • (UP NEXT)')}
+            {isMultiHero && (isFocused ? ' • (ACTIVE HERO)' : '')}
           </span>
         </div>
 

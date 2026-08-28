@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Columns, Compass } from 'lucide-react';
+import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Compass } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { OptionsMenu } from './OptionsMenu';
@@ -22,7 +22,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onReset,
 }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const { devMode, toggleDevMode, sideBySideLayout, toggleSideBySide } = useGameSettings();
+  const { devMode, toggleDevMode } = useGameSettings();
 
   return (
     <>
@@ -79,24 +79,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         )}
 
-        {/* Right: Split View Toggle, Dev Mode, Combat Log, Options, Reset */}
+        {/* Right: Dev Mode, Combat Log, Options, Reset */}
         <div className="flex items-center gap-2.5">
-          {/* Side-by-Side 2-Hero Split View Toggle (when >= 2 Heroes) */}
-          {gameState.players.length >= 2 && (
-            <button
-              onClick={toggleSideBySide}
-              className={`px-2.5 py-1 font-comic text-xs rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 transition-all cursor-pointer ${
-                sideBySideLayout
-                  ? 'bg-amber-300 text-slate-950 font-bold hover:bg-amber-400'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-              title="Toggle Side-by-Side 2-Hero split view for widescreen displays"
-            >
-              <Columns className="w-3.5 h-3.5" />
-              <span>SIDE-BY-SIDE: {sideBySideLayout ? 'ON' : 'OFF'}</span>
-            </button>
-          )}
-
           {/* Visual Dev Mode Indicator Badge (In Menu Bar) */}
           <button
             onClick={toggleDevMode}

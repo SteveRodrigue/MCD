@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp } from 'lucide-react';
+import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
 import { CardInstance, NormalizedCard, PlayerState, GameState, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
@@ -134,6 +134,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       onDispatchAction({
         type: 'END_PLAYER_TURN',
         playerId: player.id,
+      });
+    }
+  };
+
+  const handleDevAddCard = (cardInstanceId: string) => {
+    if (onDispatchAction && player) {
+      onDispatchAction({
+        type: 'DEV_ADD_CARD_TO_HAND',
+        playerId: player.id,
+        cardInstanceId,
       });
     }
   };
@@ -282,19 +292,34 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {/* Top Row: Deck, Discard, Nemesis Piles */}
             <div className="flex items-center justify-between gap-2 bg-white/90 p-2 rounded-xl border-2 border-comic-black shadow-comic-sm">
               {/* Draw Pile */}
-              <div
-                onClick={() => devMode && setShowDeckModal(true)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm cursor-pointer ${
-                  devMode ? 'hover:bg-sky-600' : ''
-                }`}
-                title={
-                  devMode
-                    ? 'Inspect Player Deck (Dev Mode Active)'
-                    : 'Player Draw Deck'
-                }
-              >
-                <Layers className="w-3.5 h-3.5 text-comic-yellow" />
-                <span className="font-comic text-xs">DECK: {deck.length}</span>
+              <div className="flex items-center gap-1">
+                <div
+                  onClick={() => devMode && setShowDeckModal(true)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm ${
+                    devMode ? 'cursor-pointer hover:bg-sky-600' : 'cursor-default'
+                  }`}
+                  title={
+                    devMode
+                      ? 'Inspect & Tutor from Player Deck (Dev Mode Active)'
+                      : 'Player Draw Deck'
+                  }
+                >
+                  <Layers className="w-3.5 h-3.5 text-comic-yellow" />
+                  <span className="font-comic text-xs">DECK: {deck.length}</span>
+                </div>
+                {devMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeckModal(true);
+                    }}
+                    className="px-2 py-1 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm font-comic text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-transform hover:scale-105"
+                    title="Dev Mode: Select card from deck and add to hand"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>+ Add</span>
+                  </button>
+                )}
               </div>
 
               {/* Discard Pile */}
@@ -380,6 +405,19 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                   <span className="font-comic text-lg text-white leading-none">{deck.length}</span>
                   <span className="text-[9px] font-bold text-sky-200 uppercase">DECK</span>
                 </div>
+                {devMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeckModal(true);
+                    }}
+                    className="mt-1.5 w-full bg-comic-yellow text-comic-black hover:bg-amber-300 font-comic text-[10px] font-bold py-0.5 px-1 rounded border border-comic-black shadow-comic-sm flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-105"
+                    title="Dev Mode: Select card from deck and add to hand"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Tutor</span>
+                  </button>
+                )}
               </div>
 
               {/* Discard Pile (Open Information • Click to Inspect) */}
@@ -640,6 +678,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                             <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
                               {instance.card.name}
                             </span>
+                            {devMode && (
+                              <button
+                                onClick={() => handleDevAddCard(instance.instanceId)}
+                                className="w-full bg-comic-yellow hover:bg-amber-300 text-comic-black font-comic text-[10px] font-bold py-1 px-1.5 rounded border border-comic-black shadow-comic-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                                title={`Dev Mode: Add ${instance.card.name} to hand`}
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>+ Hand</span>
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -660,6 +708,16 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       <span className="bg-white/95 text-slate-900 border border-comic-black font-sans text-xs font-semibold px-2 py-0.5 rounded shadow-comic-sm truncate max-w-[120px] text-center">
                         {instance.card.name}
                       </span>
+                      {devMode && (
+                        <button
+                          onClick={() => handleDevAddCard(instance.instanceId)}
+                          className="w-full bg-comic-yellow hover:bg-amber-300 text-comic-black font-comic text-[10px] font-bold py-1 px-1.5 rounded border border-comic-black shadow-comic-sm transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                          title={`Dev Mode: Add ${instance.card.name} to hand`}
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>+ Hand</span>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

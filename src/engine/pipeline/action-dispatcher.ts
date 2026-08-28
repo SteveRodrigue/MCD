@@ -878,6 +878,41 @@ export function dispatchAction(
       }
     }
 
+    case 'DEV_ADD_CARD_TO_HAND': {
+      const player = nextState.players.find((p) => p.id === action.playerId);
+      if (!player) {
+        return { state, result: { success: false, error: 'Player not found' } };
+      }
+
+      const cardIdx = player.deck.findIndex((c) => c.instanceId === action.cardInstanceId);
+      if (cardIdx === -1) {
+        return { state, result: { success: false, error: 'Card not found in deck' } };
+      }
+
+      const [selectedCard] = player.deck.splice(cardIdx, 1);
+      player.hand.push(selectedCard);
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'ability',
+        actor: { name: player.name, type: player.currentForm },
+        key: 'dev.card.tutor',
+        params: { card: selectedCard.card.name, hero: player.name },
+        onomatopoeia: 'DEV TUTOR!',
+      });
+
+      return {
+        state: nextState,
+        result: {
+          success: true,
+          onomatopoeia: 'CARD ADDED!',
+        },
+      };
+    }
+
     default:
       return { state, result: { success: false, error: 'Unknown action type' } };
   }

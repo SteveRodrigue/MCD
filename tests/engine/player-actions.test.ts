@@ -602,5 +602,27 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(status.reasons.some((r) => r.includes('Not your turn'))).toBe(true);
       });
     });
+
+    describe('Dev Mode Actions (Tutor / Card Selection)', () => {
+      it('adds selected card from player deck into player hand with DEV_ADD_CARD_TO_HAND', () => {
+        const player = gameState.players[0];
+        const targetDeckCard = player.deck[3];
+        const initialDeckCount = player.deck.length;
+        const initialHandCount = player.hand.length;
+
+        const res = dispatchAction(gameState, {
+          type: 'DEV_ADD_CARD_TO_HAND',
+          playerId: 'p1',
+          cardInstanceId: targetDeckCard.instanceId,
+        });
+
+        expect(res.result.success).toBe(true);
+        expect(res.result.onomatopoeia).toBe('CARD ADDED!');
+        expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
+        expect(res.state.players[0].hand.length).toBe(initialHandCount + 1);
+        expect(res.state.players[0].hand.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(true);
+        expect(res.state.players[0].deck.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(false);
+      });
+    });
   });
 });

@@ -7,11 +7,21 @@ export interface UseEdgeScrollOptions {
 }
 
 export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptions = {}) {
-  const { edgeThreshold = 75, maxSpeed = 22, enabled = true } = options;
+  const { edgeThreshold = 90, maxSpeed = 45, enabled = true } = options;
 
   const containerRef = useRef<T | null>(null);
   const animationFrameId = useRef<number | null>(null);
   const scrollVelocity = useRef<number>(0);
+  const maxSpeedRef = useRef<number>(maxSpeed);
+  const edgeThresholdRef = useRef<number>(edgeThreshold);
+
+  useEffect(() => {
+    maxSpeedRef.current = maxSpeed;
+  }, [maxSpeed]);
+
+  useEffect(() => {
+    edgeThresholdRef.current = edgeThreshold;
+  }, [edgeThreshold]);
 
   const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
   const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
@@ -21,11 +31,11 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
     const el = containerRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 5);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 5);
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 10);
   }, []);
 
-  // Animation frame loop for smooth edge scrolling
+  // Animation frame loop for smooth, direct pixel scrolling without CSS smoothing lag
   const animateScroll = useCallback(() => {
     const el = containerRef.current;
     if (el && scrollVelocity.current !== 0) {
@@ -69,7 +79,7 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
       const el = containerRef.current;
       if (!el) return;
 
-      // Only edge-scroll if container has overflow to scroll
+      // Only edge-scroll if container has horizontal overflow to scroll
       if (el.scrollWidth <= el.clientWidth) {
         stopScrolling();
         return;
@@ -77,15 +87,20 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
       const clientX = e.clientX;
       const windowWidth = window.innerWidth;
+      const threshold = edgeThresholdRef.current;
+      const currentMaxSpeed = maxSpeedRef.current;
+      const minSpeed = Math.max(6, Math.round(currentMaxSpeed * 0.25));
 
-      if (clientX < edgeThreshold) {
-        // Near Left Edge: Scroll Left
-        const intensity = Math.max(0, 1 - clientX / edgeThreshold);
-        startScrolling(-Math.ceil(maxSpeed * intensity));
-      } else if (clientX > windowWidth - edgeThreshold) {
-        // Near Right Edge: Scroll Right
-        const intensity = Math.max(0, 1 - (windowWidth - clientX) / edgeThreshold);
-        startScrolling(Math.ceil(maxSpeed * intensity));
+      if (clientX < threshold) {
+        // Near Left Edge: Scroll Left (proportional velocity with baseline kick)
+        const intensity = Math.max(0, 1 - clientX / threshold);
+        const velocity = Math.ceil(minSpeed + (currentMaxSpeed - minSpeed) * intensity);
+        startScrolling(-velocity);
+      } else if (clientX > windowWidth - threshold) {
+        // Near Right Edge: Scroll Right (proportional velocity with baseline kick)
+        const intensity = Math.max(0, 1 - (windowWidth - clientX) / threshold);
+        const velocity = Math.ceil(minSpeed + (currentMaxSpeed - minSpeed) * intensity);
+        startScrolling(velocity);
       } else {
         stopScrolling();
       }
@@ -107,7 +122,7 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
       window.removeEventListener('mouseleave', handlePointerLeave);
       window.removeEventListener('blur', handlePointerLeave);
     };
-  }, [enabled, edgeThreshold, maxSpeed, startScrolling, stopScrolling]);
+  }, [enabled, startScrolling, stopScrolling]);
 
   // Monitor scroll and resize events on container
   useEffect(() => {

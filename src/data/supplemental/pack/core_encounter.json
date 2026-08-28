@@ -306,7 +306,7 @@
           "id": "hard_to_keep_down_heal",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "HEAL_OR_SURGE",
+          "effect": "HEAL_DAMAGE_WITH_SURGE",
           "params": {
             "amount": 4,
             "target": "VILLAIN"
@@ -327,13 +327,13 @@
       ]
     },
     "01105": {
-      "comment": "Treachery: When Revealed -> Place 1 stun on hero. If already stunned, take 1 damage and gain Surge.",
+      "comment": "Treachery: When Revealed -> Give Rhino Tough status card. If already Tough, gains Surge.",
       "abilities": [
         {
           "id": "im_tough_status",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "GIVE_STATUS_OR_SURGE",
+          "effect": "ADD_STATUS_WITH_SURGE",
           "params": {
             "status": "TOUGH",
             "target": "VILLAIN"
@@ -360,7 +360,7 @@
           "id": "stampede_attack",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACK_OR_SURGE",
+          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE",
           "params": {
             "target": "ACTIVE_PLAYER"
           }

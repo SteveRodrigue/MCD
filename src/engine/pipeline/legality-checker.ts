@@ -2,6 +2,7 @@ import {
   GameState,
   PlayerState,
   CardType,
+  CardInstance,
   NormalizedCard,
   SideSchemeCard,
   GamePhase,
@@ -265,15 +266,22 @@ export function canPlayCard(
     }
   }
 
-  // Form restrictions check (e.g. Alter-Ego Action / Hero Action)
-  const isHeroCard = card.type === CardType.HERO || (card.text || '').includes('Hero Action');
-  const isAlterEgoCard = card.type === CardType.ALTER_EGO || (card.text || '').includes('Alter-Ego Action');
+  // Form restrictions check (RR v1.8 p. 4, 13)
+  const isHeroFormRequired =
+    card.type === CardType.HERO ||
+    (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait');
 
-  if (isHeroCard && player.currentForm !== 'hero') {
+  const isAlterEgoFormRequired =
+    card.type === CardType.ALTER_EGO ||
+    (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait');
+
+  if (isHeroFormRequired && player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only play this card while in Hero form.' };
   }
 
-  if (isAlterEgoCard && player.currentForm !== 'alter_ego') {
+  if (isAlterEgoFormRequired && player.currentForm !== 'alter_ego') {
     return { allowed: false, reason: 'Can only play this card while in Alter-Ego form.' };
   }
 
@@ -376,4 +384,131 @@ export function canPlayCard(
   }
 
   return { allowed: true, cardToPlay: card };
+}
+
+export interface CardPlayabilityStatus {
+  isPlayable: boolean;
+  reasons: string[];
+  maxPotentialResources: number;
+}
+
+/**
+ * Evaluates whether a card in a player's hand can currently be played (ADR-0018).
+ * Checks all game conditions: active turn, identity form, maximum affordable resources,
+ * unicity constraints, ally limits, and custom play restrictions.
+ */
+export function evaluateCardPlayability(
+  state: GameState,
+  playerId: string,
+  cardInstance: CardInstance,
+): CardPlayabilityStatus {
+  const player = getPlayer(state, playerId);
+  if (!player) {
+    return { isPlayable: false, reasons: ['Player not found'], maxPotentialResources: 0 };
+  }
+
+  const card = cardInstance.card;
+  const reasons: string[] = [];
+
+  // 1. Player Turn Validation (RR v1.8 p. 19)
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    const isInterruptOrResponse =
+      card.type === CardType.EVENT &&
+      ((card.text || '').includes('Interrupt') || (card.text || '').includes('Response'));
+
+    if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
+      reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);
+    }
+  }
+
+  // 2. Identity Form Validation (RR v1.8 p. 13)
+  const isHeroFormRequired =
+    card.type === CardType.HERO ||
+    (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait');
+
+  const isAlterEgoFormRequired =
+    card.type === CardType.ALTER_EGO ||
+    (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait');
+
+  if (isHeroFormRequired && player.currentForm !== 'hero') {
+    reasons.push('Requires Hero form');
+  }
+
+  if (isAlterEgoFormRequired && player.currentForm !== 'alter_ego') {
+    reasons.push('Requires Alter-Ego form');
+  }
+
+  // 3. Dynamic Ally Limit Validation (RR v1.8 p. 3)
+  if (card.type === CardType.ALLY) {
+    const maxAllies = getPlayerAllyLimit(state, playerId);
+    if (player.allies.length >= maxAllies) {
+      reasons.push(`Ally limit reached (${maxAllies} allies max)`);
+    }
+  }
+
+  // 4. Unicity Constraint Check (RR v1.8 p. 28)
+  if (card.isUnique) {
+    const alreadyInPlay =
+      player.allies.some((a) => a.card.name === card.name) ||
+      player.tableau.some((t) => t.card.name === card.name);
+    if (alreadyInPlay) {
+      reasons.push(`A unique copy of '${card.name}' is already in play`);
+    }
+  }
+
+  // 5. Maximum Potential Resource Affordability Check
+  let maxPotentialResources = 0;
+
+  // A. Hand resources from other cards
+  for (const other of player.hand) {
+    if (other.instanceId === cardInstance.instanceId) continue;
+    const aspectDouble = other.card.enrichment?.abilities?.find(
+      (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+    );
+    const multiplier = aspectDouble && aspectDouble.params?.aspect === card.faction ? 2 : 1;
+    maxPotentialResources += (other.card.resources.total || 1) * multiplier;
+  }
+
+  // B. Identity Resource Ability
+  const idAbilities = player.activeFormCard.enrichment?.abilities || [];
+  for (const ab of idAbilities) {
+    if (ab.timing === 'RESOURCE' || ab.effect === 'GENERATE_RESOURCE') {
+      const isUsedRound = ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+      const isUsedPhase = ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+      if (!isUsedRound && !isUsedPhase) {
+        maxPotentialResources += Number(ab.params?.amount) || 1;
+      }
+    }
+  }
+
+  // C. In-Play Tableau Generators
+  for (const t of player.tableau) {
+    if (t.exhausted) continue;
+    if (t.card.enrichment?.uses) {
+      if ((t.tokens?.counters || 0) > 0) {
+        maxPotentialResources += 1;
+      }
+    } else {
+      const hasResAbility = t.card.enrichment?.abilities?.some(
+        (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+      );
+      if (hasResAbility) {
+        maxPotentialResources += 1;
+      }
+    }
+  }
+
+  const cost = card.cost ?? 0;
+  if (cost > 0 && maxPotentialResources < cost) {
+    reasons.push(`Cannot afford cost (Need ${cost}, max available ${maxPotentialResources})`);
+  }
+
+  return {
+    isPlayable: reasons.length === 0,
+    reasons,
+    maxPotentialResources,
+  };
 }

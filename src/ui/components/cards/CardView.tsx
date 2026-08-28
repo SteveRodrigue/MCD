@@ -7,6 +7,7 @@ export interface CardViewProps {
   instance?: CardInstance;
   isExhausted?: boolean;
   isPlayable?: boolean;
+  unplayableReason?: string;
   isSelected?: boolean;
   isMulliganSelected?: boolean;
   isKeepSelected?: boolean;
@@ -22,7 +23,8 @@ export const CardView: React.FC<CardViewProps> = ({
   card,
   instance,
   isExhausted = false,
-  isPlayable = false,
+  isPlayable,
+  unplayableReason,
   isSelected = false,
   isMulliganSelected = false,
   isKeepSelected = false,
@@ -130,17 +132,30 @@ export const CardView: React.FC<CardViewProps> = ({
             ? 'group-hover:scale-[1.9] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
+          isPlayable === false
+            ? 'filter grayscale contrast-75 brightness-95 opacity-65 group-hover:grayscale-0 group-hover:opacity-100'
+            : ''
+        } ${
           isMulliganSelected
             ? 'border-comic-red shadow-comic-lg ring-4 ring-rose-500'
             : isKeepSelected
               ? 'border-emerald-600 ring-4 ring-emerald-400'
-              : isPlayable
+              : isPlayable === true
                 ? 'ring-4 ring-comic-yellow animate-pulse'
                 : isSelected
                   ? 'border-comic-blue ring-4 ring-sky-400'
                   : 'hover:shadow-comic-lg'
         }`}
       >
+        {/* Unplayable Indicator Tag */}
+        {isPlayable === false && (
+          <div
+            className="absolute top-1.5 right-1.5 z-20 bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
+            title={unplayableReason ? `Cannot play: ${unplayableReason}` : undefined}
+          >
+            CANNOT PLAY
+          </div>
+        )}
         {/* 1. Real Card Art Image */}
         {!showFallback && (
           <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">

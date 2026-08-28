@@ -251,12 +251,18 @@ export function canPlayCard(
   const card = targetCardInstance.card;
   let cost = card.cost ?? 0;
 
+  const abilities = card.enrichment?.abilities || [];
+
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     const isInterruptOrResponse =
       card.type === CardType.EVENT &&
-      ((card.text || '').includes('Interrupt') || (card.text || '').includes('Response'));
+      abilities.some(
+        (a) =>
+          a.timing &&
+          (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+      );
 
     if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
       return {
@@ -266,20 +272,12 @@ export function canPlayCard(
     }
   }
 
-  // Form restrictions check (RR v1.8 p. 4, 13)
-  const isHeroFormRequired =
-    card.type === CardType.HERO ||
-    (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
-    (card.text || '').toLowerCase().includes('attach to your hero') ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait') ||
-    !!card.enrichment?.requiresHeroForm;
+  // Form restrictions check (RR v1.8 p. 4, 13) - 100% metadata driven (ADR-0018)
+  const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
+  const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
 
-  const isAlterEgoFormRequired =
-    card.type === CardType.ALTER_EGO ||
-    (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
-    (card.text || '').toLowerCase().includes('attach to your alter-ego') ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait') ||
-    !!card.enrichment?.requiresAlterEgoForm;
+  const isHeroFormRequired = card.type === CardType.HERO || hasHeroTiming;
+  const isAlterEgoFormRequired = card.type === CardType.ALTER_EGO || hasAlterEgoTiming;
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only play this card while in Hero form.' };
@@ -414,32 +412,30 @@ export function evaluateCardPlayability(
   const card = cardInstance.card;
   const reasons: string[] = [];
 
+  const abilities = card.enrichment?.abilities || [];
+
   // 1. Player Turn Validation (RR v1.8 p. 19)
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     const isInterruptOrResponse =
       card.type === CardType.EVENT &&
-      ((card.text || '').includes('Interrupt') || (card.text || '').includes('Response'));
+      abilities.some(
+        (a) =>
+          a.timing &&
+          (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+      );
 
     if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
       reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);
     }
   }
 
-  // 2. Identity Form Validation (RR v1.8 p. 13)
-  const isHeroFormRequired =
-    card.type === CardType.HERO ||
-    (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
-    (card.text || '').toLowerCase().includes('attach to your hero') ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait') ||
-    !!card.enrichment?.requiresHeroForm;
+  // 2. Identity Form Validation (RR v1.8 p. 13) - 100% metadata driven (ADR-0018)
+  const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
+  const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
 
-  const isAlterEgoFormRequired =
-    card.type === CardType.ALTER_EGO ||
-    (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
-    (card.text || '').toLowerCase().includes('attach to your alter-ego') ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait') ||
-    !!card.enrichment?.requiresAlterEgoForm;
+  const isHeroFormRequired = card.type === CardType.HERO || hasHeroTiming;
+  const isAlterEgoFormRequired = card.type === CardType.ALTER_EGO || hasAlterEgoTiming;
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     reasons.push('Requires Hero form');

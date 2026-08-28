@@ -1578,7 +1578,6 @@
     },
     "01093": {
       "comment": "Upgrade: Attach to your hero. Hero Action: Spend a Physical resource and discard Tenacity -> ready your hero.",
-      "requiresHeroForm": true,
       "abilities": [
         {
           "id": "tenacity_ready",

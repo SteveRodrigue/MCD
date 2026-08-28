@@ -396,27 +396,16 @@
       ]
     },
     "01110": {
-      "comment": "MINION: Hydra Bomber. When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme.",
-      "abilities": [
-        {
-          "id": "hydra_bomber_when_revealed",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "effect": "HYDRA_BOMBER_CHOICE",
-          "params": {
-            "damage": 2,
-            "threat": 1
-          }
-        }
-      ],
+      "comment": "MINION: Hydra Bomber. Blocked pending generic PLAYER_CHOICE interactive decision modal state machine (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:30",
-        "reviewedAt": "2026-08-28T12:30",
+        "updatedAt": "2026-08-28T12:43",
+        "reviewedAt": "2026-08-28T12:43",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "WHEN_REVEALED -> HYDRA_BOMBER_CHOICE (damage: 2, threat: 1)"
+        "confidence": 80,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01110_hydra_bomber.md",
+        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [DEAL_DAMAGE (amount: 2, target: ACTIVE_HERO), ADD_THREAT (amount: 1, target: MAIN_SCHEME)])"
       },
       "mechanicSteps": [
         "When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme."

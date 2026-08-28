@@ -422,22 +422,6 @@ export function executeEffect(
       return { state, success: true, onomatopoeia };
     }
 
-    case 'HYDRA_BOMBER_CHOICE': {
-      if (player.health > 2) {
-        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          player.statusCards.splice(toughIdx, 1);
-          return { state, success: true, onomatopoeia: 'CLANG! (TOUGH ABSORBS BOMBER)' };
-        }
-        player.health = Math.max(0, player.health - 2);
-        if (player.health <= 0) state.winner = 'VILLAIN';
-        return { state, success: true, onomatopoeia: 'BOOM! 2 DAMAGE TO HERO!' };
-      } else {
-        state.mainScheme.threat += 1;
-        return { state, success: true, onomatopoeia: 'HYDRA BOMBER ADDS 1 THREAT!' };
-      }
-    }
-
     case 'NICK_FURY_CHOICE': {
       // Dynamic AI evaluation: Threat -> Hand -> Damage
       if (state.mainScheme.threat >= 3) {

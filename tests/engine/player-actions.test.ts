@@ -486,6 +486,21 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau.some((c) => c.card.code === '01008')).toBe(true);
       expect(res.state.players[0].hand.length).toBe(0);
+
+      // Attempting to use Scientist a 2nd time in the same round must be rejected
+      const webShooter2 = createCardInstance(webShooterCard);
+      res.state.players[0].hand = [webShooter2];
+
+      const res2 = dispatchAction(res.state, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: webShooter2.instanceId,
+        paymentCardInstanceIds: [],
+        generatorInstanceIds: ['identity_ability'],
+      });
+
+      expect(res2.result.success).toBe(false);
+      expect(res2.result.error).toContain('once per round');
     });
   });
 });

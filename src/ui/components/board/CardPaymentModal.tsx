@@ -84,6 +84,12 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     const idAbilities = player.activeFormCard.enrichment?.abilities || [];
     for (const ab of idAbilities) {
       if (ab.timing === 'RESOURCE' || ab.effect === 'GENERATE_RESOURCE') {
+        const isUsedThisRound =
+          ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+        const isUsedThisPhase =
+          ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+        if (isUsedThisRound || isUsedThisPhase) continue;
+
         const resType = (ab.params?.resource as string) || 'resource';
         const amount = Number(ab.params?.amount) || 1;
         list.push({

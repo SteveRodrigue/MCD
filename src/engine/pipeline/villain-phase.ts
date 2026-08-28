@@ -403,6 +403,8 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
     player.exhausted = false;
     player.formChangedThisRound = false;
     player.recoveryUsedThisRound = false;
+    player.usedAbilitiesThisRound = {};
+    player.usedAbilitiesThisPhase = {};
 
     // Ready allies
     for (const ally of player.allies) {

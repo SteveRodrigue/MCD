@@ -5,7 +5,7 @@ description: >-
   Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
   and rules engine. Enforces a 3-tier blast-radius refactor guardrail, 3-iteration circuit-breaker,
   batch-resilient ambiguity isolation, encapsulated audit metadata (ISO timestamps with HH:MM),
-  progress logging in logs/skills/, and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero).
+  progress logging with confidence level in logs/skills/, and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero).
   Use whenever adding or refining any card.
 ---
 
@@ -17,14 +17,14 @@ This skill guides the agent and developers through the rigorous, deterministic p
 
 ## 📝 Execution Logging Requirement (`logs/skills/`)
 
-Whenever this skill executes (for a single card or a batch review), it must append timestamped progress entries to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
+Whenever this skill executes (for a single card or a batch review), it must append timestamped progress entries with the **confidence level** to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
 
 ```text
 YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Looking at card [card_name] #{card_code}
-YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1).
-YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated with code change (Tier 2).
-YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (<95% confidence after 3 attempts) -> docs/ambiguities/{pack}_{code}_{slug}.md
-YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3) -> docs/ambiguities/{pack}_{code}_{slug}.md
+YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1, confidence 98%).
+YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated with code change (Tier 2, confidence 98%).
+YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (confidence 70%) -> docs/ambiguities/{pack}_{code}_{slug}.md
+YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3, confidence 80%) -> docs/ambiguities/{pack}_{code}_{slug}.md
 ```
 
 ---
@@ -128,7 +128,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
   3. Log warning to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
-     `[WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (<95% confidence after 3 attempts) -> docs/ambiguities/{pack}_{code}_{slug}.md`
+     `[WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`
   4. In batch mode: proceed to the next card; in single-card mode: report block to user.
 
 ### Step 6: Engine Primitive & Trigger Reuse Check
@@ -137,13 +137,13 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ### Step 7: Composable Generic Primitives & Blast-Radius Gate
 * Check change tier (Tier 1 vs Tier 2 vs Tier 3):
-  * **Tier 1 (No code change needed / Fast-track):** Log `[INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1).`
-  * **Tier 2 (Additive helper added):** Implement generic reusable building block and log `[INFO] Card [card_name] #{card_code} integrated with code change (Tier 2).`
-  * **Tier 3 (Structural):** Log `[WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3) -> docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
+  * **Tier 1 (No code change needed / Fast-track):** Log `[INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1, confidence {confidence}%).`
+  * **Tier 2 (Additive helper added):** Implement generic reusable building block and log `[INFO] Card [card_name] #{card_code} integrated with code change (Tier 2, confidence {confidence}%).`
+  * **Tier 3 (Structural):** Log `[WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3, confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 1. **Audit Timestamping:**
-   * If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:41"`).
+   * If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:47"`).
    * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
    * If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
 2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.

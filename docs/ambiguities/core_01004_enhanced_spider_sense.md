@@ -3,24 +3,18 @@ card_code: "01004"
 card_name: "Enhanced Spider-Sense"
 pack: "core"
 confidence_reached: 80
-blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
-date_logged: "2026-08-28T10:10"
+blocker_category: "INTERCEPTOR_CANCEL_WHEN_REVEALED"
+date_logged: "2026-08-28T09:27"
 ---
 
-# Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
+# Card Ambiguity Report: Enhanced Spider-Sense (`#01004`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
-* **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
+* **Official Printed Text:** `<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its "<b>When Revealed</b>" effects.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Treachery Cancel Interceptor loop (CANCEL_WHEN_REVEALED) not implemented in villain-phase.ts step5.**
-2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
-
----
-
-## 🛠️ Required Architectural Implementation Plan
-* Implement missing TypeScript effect primitive or pipeline trigger dispatch in `src/engine/`.
-* Write regression unit test verifying end-to-end trigger dispatch and resolution.
-* Restore `abilities: [...]` in `src/data/supplemental/pack/core.json`, elevate confidence to >= 95%, and delete this report (Inbox Zero).
+* **Trigger Window:** `HERO_INTERRUPT` when a treachery card is revealed from the encounter deck.
+* **Blocker Reason:** Requires `CANCEL_WHEN_REVEALED` interceptor in `step5_revealEncounterCards` (ADR-0020).
+* **Current Confidence:** 80% (Tier 3 Gate Fired).

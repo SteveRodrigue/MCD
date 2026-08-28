@@ -7,7 +7,7 @@ blocker_category: "STRUCTURAL_STAGE_TRANSITION_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Rhino (Stage II) (`01095`)
+# Card Ambiguity Report: Rhino (Stage II) (`#01095`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01095](https://marvelcdb.com/card/01095)
 * **Official Printed Text:** `When Revealed: Search the encounter deck and discard pile for the Breakin' & Takin' side scheme and reveal it. Shuffle the encounter deck.`

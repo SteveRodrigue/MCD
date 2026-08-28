@@ -5,8 +5,8 @@
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-28T08:53",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -34,8 +34,8 @@
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -63,8 +63,8 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -111,8 +111,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -125,11 +125,11 @@
       ]
     },
     "01004": {
-      "comment": "Enhanced Spider-Sense: Blocked pending engine implementation (see docs/ambiguities/core_01004_enhanced_spider_sense.md).",
+      "comment": "Hero Event: Blocked pending Tier 3 Treachery Cancel Interceptor primitive (see docs/ambiguities/core_01004_enhanced_spider_sense.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -160,8 +160,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -191,8 +191,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -220,8 +220,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -257,8 +257,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -273,16 +273,26 @@
       ]
     },
     "01009": {
-      "comment": "Webbed Up: Blocked pending engine implementation (see docs/ambiguities/core_01009_webbed_up.md).",
+      "comment": "Upgrade: Attach to enemy. Forced Interrupt when attached enemy attacks -> discard Webbed Up & stun enemy.",
+      "abilities": [
+        {
+          "id": "webbed_up_attack_interrupt",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "ATTACHED_ENEMY_ATTACKS",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "CANCEL_ATTACK_AND_STUN"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: ATTACHED_ENEMY_ATTACKS) [Cost: Discard this card] -> CANCEL_ATTACK_AND_STUN",
-        "ambiguityFile": "docs/ambiguities/core_01009_webbed_up.md"
+        "confidence": 98,
+        "reconstructedText": "FORCED_INTERRUPT (Trigger: ATTACHED_ENEMY_ATTACKS) [Cost: Discard this card] -> CANCEL_ATTACK_AND_STUN"
       },
       "mechanicSteps": [
         "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
@@ -292,16 +302,32 @@
       ]
     },
     "01010a": {
-      "comment": "Captain Marvel: Blocked pending engine implementation (see docs/ambiguities/core_01010a_captain_marvel.md).",
+      "comment": "Hero Identity: Rechannel — Hero Action: Spend 1 energy resource -> heal 1 damage and draw 1 card (limit 1/round).",
+      "abilities": [
+        {
+          "id": "rechannel",
+          "timing": "HERO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "HEAL_AND_DRAW",
+          "params": {
+            "healAmount": 1,
+            "drawCount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION [Limit: once per round] [Cost: Spend 1 [energy]] -> HEAL_AND_DRAW ({\"healAmount\":1,\"drawCount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01010a_captain_marvel.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION [Limit: once per round] [Cost: Spend 1 [energy]] -> HEAL_AND_DRAW ({\"healAmount\":1,\"drawCount\":1})"
       },
       "mechanicSteps": [
         "Hero Identity ability/stats for Captain Marvel"
@@ -323,8 +349,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -350,8 +376,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -380,8 +406,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -410,8 +436,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -426,11 +452,11 @@
       "comment": "RESOURCE: Energy Absorption",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 98,
         "reconstructedText": "Vanilla card (no printed abilities)."
       },
       "mechanicSteps": [
@@ -456,8 +482,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -468,53 +494,125 @@
       ]
     },
     "01016": {
-      "comment": "Captain Marvel's Helmet: Blocked pending engine implementation (see docs/ambiguities/core_01016_captain_marvel_s_helmet.md).",
+      "comment": "Upgrade: While in Hero form, Captain Marvel gets +1 DEF. After you spend Energy, heal 1 damage.",
+      "abilities": [
+        {
+          "id": "helmet_def_boost",
+          "timing": "CONSTANT",
+          "effect": "DEF_BONUS",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "helmet_energy_heal",
+          "timing": "RESPONSE",
+          "trigger": "RESOURCE_SPENT",
+          "filter": {
+            "resource": "energy"
+          },
+          "effect": "HEAL_DAMAGE",
+          "params": {
+            "amount": 1,
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1}); RESPONSE (Trigger: RESOURCE_SPENT) -> Heal 1 damage from SELF",
-        "ambiguityFile": "docs/ambiguities/core_01016_captain_marvel_s_helmet.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1}); RESPONSE (Trigger: RESOURCE_SPENT) -> Heal 1 damage from SELF"
       },
       "mechanicSteps": [
         "Permanent/attached card: Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
       ]
     },
     "01017": {
-      "comment": "Cosmic Flight: Blocked pending engine implementation (see docs/ambiguities/core_01017_cosmic_flight.md).",
+      "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
+      "abilities": [
+        {
+          "id": "cosmic_flight_aerial",
+          "timing": "CONSTANT",
+          "effect": "ADD_TRAIT",
+          "params": {
+            "trait": "Aerial"
+          }
+        },
+        {
+          "id": "cosmic_flight_prevent",
+          "timing": "INTERRUPT",
+          "trigger": "TAKE_DAMAGE",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "PREVENT_DAMAGE",
+          "params": {
+            "amount": 3
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ADD_TRAIT ({\"trait\":\"Aerial\"}); INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":3})",
-        "ambiguityFile": "docs/ambiguities/core_01017_cosmic_flight.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ADD_TRAIT ({\"trait\":\"Aerial\"}); INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":3})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.\nHero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
       ]
     },
     "01018": {
-      "comment": "Energy Channel: Blocked pending engine implementation (see docs/ambiguities/core_01018_energy_channel.md).",
+      "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
       "uses": {
         "type": "energy_counters",
         "count": 0,
         "max": 5
       },
+      "abilities": [
+        {
+          "id": "energy_channel_charge",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "ADD_COUNTER",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "energy_channel_blast",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "DEAL_DAMAGE_PER_COUNTER",
+          "params": {
+            "multiplier": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTER ({\"amount\":1}); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE_PER_COUNTER ({\"multiplier\":2,\"target\":\"CHOSEN_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01018_energy_channel.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTER ({\"amount\":1}); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE_PER_COUNTER ({\"multiplier\":2,\"target\":\"CHOSEN_ENEMY\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
@@ -536,8 +634,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -563,8 +661,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -575,96 +673,152 @@
       ]
     },
     "01020": {
-      "comment": "Hellcat (Patsy Walker): Blocked pending engine implementation (see docs/ambiguities/core_01020_hellcat_patsy_walker.md).",
+      "comment": "Ally: Action: Return Hellcat to your hand.",
+      "abilities": [
+        {
+          "id": "hellcat_return_hand",
+          "timing": "ACTION",
+          "effect": "RETURN_TO_HAND",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION -> RETURN_TO_HAND ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01020_hellcat_patsy_walker.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION -> RETURN_TO_HAND ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Ally card with THW 2, ATK 1, and health 3"
       ]
     },
     "01021": {
-      "comment": "Gamma Slam: Blocked pending engine implementation (see docs/ambiguities/core_01021_gamma_slam.md).",
+      "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
+      "abilities": [
+        {
+          "id": "gamma_slam",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE",
+          "params": {
+            "max": 15,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE ({\"max\":15,\"target\":\"CHOSEN_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01021_gamma_slam.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE ({\"max\":15,\"target\":\"CHOSEN_ENEMY\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
       ]
     },
     "01022": {
-      "comment": "Ground Stomp: Blocked pending engine implementation (see docs/ambiguities/core_01022_ground_stomp.md).",
+      "comment": "Event: Hero Action: Deal 1 damage to each enemy in play.",
+      "abilities": [
+        {
+          "id": "ground_stomp",
+          "timing": "HERO_ACTION",
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01022_ground_stomp.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Deal 1 damage to each enemy."
       ]
     },
     "01023": {
-      "comment": "Legal Practice: Blocked pending engine implementation (see docs/ambiguities/core_01023_legal_practice.md).",
+      "comment": "Event: Alter-Ego Action: Discard cards from hand -> remove 1 threat per card discarded.",
+      "abilities": [
+        {
+          "id": "legal_practice",
+          "timing": "ALTER_EGO_ACTION",
+          "effect": "DISCARD_CARDS_REMOVE_THREAT",
+          "params": {
+            "target": "CHOSEN_SCHEME"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ALTER_EGO_ACTION -> DISCARD_CARDS_REMOVE_THREAT ({\"target\":\"CHOSEN_SCHEME\"})",
-        "ambiguityFile": "docs/ambiguities/core_01023_legal_practice.md"
+        "confidence": 98,
+        "reconstructedText": "ALTER_EGO_ACTION -> DISCARD_CARDS_REMOVE_THREAT ({\"target\":\"CHOSEN_SCHEME\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Alter-Ego Action (thwart): Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way."
       ]
     },
     "01024": {
-      "comment": "One-Two Punch: Blocked pending engine implementation (see docs/ambiguities/core_01024_one_two_punch.md).",
+      "comment": "Event: Hero Response: After She-Hulk makes a basic attack, ready She-Hulk.",
+      "abilities": [
+        {
+          "id": "one_two_punch",
+          "timing": "RESPONSE",
+          "trigger": "BASIC_ATTACK_PERFORMED",
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) -> READY_CHARACTER ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01024_one_two_punch.md"
+        "confidence": 98,
+        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) -> READY_CHARACTER ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Response: After you make a basic attack (using your ATK), ready She-Hulk."
       ]
     },
     "01025": {
-      "comment": "Split Personality: Blocked pending engine implementation (see docs/ambiguities/core_01025_split_personality.md).",
+      "comment": "Event: Action: Change form. Draw cards up to your new form's hand size limit.",
+      "abilities": [
+        {
+          "id": "split_personality",
+          "timing": "ACTION",
+          "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION -> CHANGE_FORM_DRAW_TO_HAND_SIZE",
-        "ambiguityFile": "docs/ambiguities/core_01025_split_personality.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION -> CHANGE_FORM_DRAW_TO_HAND_SIZE"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Change your form (flip your identity card). Then, draw up to your printed hand size."
@@ -691,8 +845,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -720,8 +874,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -732,80 +886,155 @@
       ]
     },
     "01028": {
-      "comment": "Superhuman Strength: Blocked pending engine implementation (see docs/ambiguities/core_01028_superhuman_strength.md).",
+      "comment": "Upgrade: She-Hulk gets +2 ATK. Forced Response: After attacking, stun the target and discard Superhuman Strength.",
+      "abilities": [
+        {
+          "id": "superhuman_strength_atk",
+          "timing": "CONSTANT",
+          "effect": "ATK_BONUS",
+          "params": {
+            "amount": 2
+          }
+        },
+        {
+          "id": "superhuman_strength_stun",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "STUNNED",
+            "target": "ATTACK_TARGET"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":2}); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> Give STUNNED status to ATTACK_TARGET",
-        "ambiguityFile": "docs/ambiguities/core_01028_superhuman_strength.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":2}); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> Give STUNNED status to ATTACK_TARGET"
       },
       "mechanicSteps": [
         "Permanent/attached card: She-Hulk gets +2 ATK.\nForced Response: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
       ]
     },
     "01029a": {
-      "comment": "Iron Man: Blocked pending engine implementation (see docs/ambiguities/core_01029a_iron_man.md).",
+      "comment": "Hero Identity: Hand size is 1 + number of Tech upgrades in play.",
+      "abilities": [
+        {
+          "id": "iron_man_hand_size",
+          "timing": "CONSTANT",
+          "effect": "DYNAMIC_HAND_SIZE",
+          "params": {
+            "base": 1,
+            "perTrait": {
+              "trait": "Tech",
+              "type": "upgrade"
+            }
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> DYNAMIC_HAND_SIZE ({\"base\":1,\"perTrait\":{\"trait\":\"Tech\",\"type\":\"upgrade\"}})",
-        "ambiguityFile": "docs/ambiguities/core_01029a_iron_man.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> DYNAMIC_HAND_SIZE ({\"base\":1,\"perTrait\":{\"trait\":\"Tech\",\"type\":\"upgrade\"}})"
       },
       "mechanicSteps": [
         "Hero Identity ability/stats for Iron Man"
       ]
     },
     "01029b": {
-      "comment": "Tony Stark: Blocked pending engine implementation (see docs/ambiguities/core_01029b_tony_stark.md).",
+      "comment": "Alter-Ego Identity: Futurist — Alter-Ego Action: Look at top 3 cards of deck, add 1 Tech to hand, discard rest.",
+      "abilities": [
+        {
+          "id": "futurist",
+          "timing": "ALTER_EGO_ACTION",
+          "limit": "ONCE_PER_ROUND",
+          "effect": "SCRY_AND_SELECT_TRAIT",
+          "params": {
+            "lookCount": 3,
+            "trait": "Tech",
+            "takeCount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> SCRY_AND_SELECT_TRAIT ({\"lookCount\":3,\"trait\":\"Tech\",\"takeCount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01029b_tony_stark.md"
+        "confidence": 98,
+        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> SCRY_AND_SELECT_TRAIT ({\"lookCount\":3,\"trait\":\"Tech\",\"takeCount\":1})"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for Tony Stark"
       ]
     },
     "01030": {
-      "comment": "War Machine (James Rhodes): Blocked pending engine implementation (see docs/ambiguities/core_01030_war_machine_james_rhodes.md).",
+      "comment": "Ally: Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy.",
+      "abilities": [
+        {
+          "id": "war_machine_action",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "selfDamage": 2
+          },
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION [Cost: Exhaust] -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01030_war_machine_james_rhodes.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION [Cost: Exhaust] -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 2, and health 4"
       ]
     },
     "01031": {
-      "comment": "Repulsor Blast: Blocked pending engine implementation (see docs/ambiguities/core_01031_repulsor_blast.md).",
+      "comment": "Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
+      "abilities": [
+        {
+          "id": "repulsor_blast",
+          "timing": "HERO_ACTION",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "REPULSOR_BLAST_DAMAGE",
+          "params": {
+            "baseDamage": 1,
+            "discardCount": 5,
+            "damagePerEnergy": 2,
+            "target": "CHOSEN_ENEMY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST_DAMAGE ({\"baseDamage\":1,\"discardCount\":5,\"damagePerEnergy\":2,\"target\":\"CHOSEN_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01031_repulsor_blast.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST_DAMAGE ({\"baseDamage\":1,\"discardCount\":5,\"damagePerEnergy\":2,\"target\":\"CHOSEN_ENEMY\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action (attack): Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
@@ -830,8 +1059,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -842,64 +1071,108 @@
       ]
     },
     "01033": {
-      "comment": "Pepper Potts: Blocked pending engine implementation (see docs/ambiguities/core_01033_pepper_potts.md).",
+      "comment": "Support: Resource: Exhaust Pepper Potts -> generate resources equal to printed resources on top card of discard pile.",
+      "abilities": [
+        {
+          "id": "pepper_potts_resource",
+          "timing": "RESOURCE",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "GENERATE_TOP_DISCARD_RESOURCES"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESOURCE [Cost: Exhaust] -> GENERATE_TOP_DISCARD_RESOURCES",
-        "ambiguityFile": "docs/ambiguities/core_01033_pepper_potts.md"
+        "confidence": 98,
+        "reconstructedText": "RESOURCE [Cost: Exhaust] -> GENERATE_TOP_DISCARD_RESOURCES"
       },
       "mechanicSteps": [
         "Permanent/attached card: Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."
       ]
     },
     "01034": {
-      "comment": "Stark Tower: Blocked pending engine implementation (see docs/ambiguities/core_01034_stark_tower.md).",
+      "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player to return 1 Tech upgrade from discard to hand.",
+      "abilities": [
+        {
+          "id": "stark_tower",
+          "timing": "ALTER_EGO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "RETRIEVE_CARD_FROM_DISCARD",
+          "params": {
+            "trait": "Tech",
+            "type": "upgrade",
+            "target": "CHOSEN_PLAYER"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_CARD_FROM_DISCARD ({\"trait\":\"Tech\",\"type\":\"upgrade\",\"target\":\"CHOSEN_PLAYER\"})",
-        "ambiguityFile": "docs/ambiguities/core_01034_stark_tower.md"
+        "confidence": 98,
+        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_CARD_FROM_DISCARD ({\"trait\":\"Tech\",\"type\":\"upgrade\",\"target\":\"CHOSEN_PLAYER\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Alter-Ego Action: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
       ]
     },
     "01035": {
-      "comment": "Arc Reactor: Blocked pending engine implementation (see docs/ambiguities/core_01035_arc_reactor.md).",
+      "comment": "Upgrade: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
+      "abilities": [
+        {
+          "id": "arc_reactor_ready",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_CHARACTER ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01035_arc_reactor.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_CHARACTER ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Hero Action: Exhaust Arc Reactor → ready Iron Man."
       ]
     },
     "01036": {
-      "comment": "Mark V Armor: Blocked pending engine implementation (see docs/ambiguities/core_01036_mark_v_armor.md).",
+      "comment": "Upgrade: Tech. Iron Man gets +6 hit points.",
+      "abilities": [
+        {
+          "id": "mark_v_armor_hp",
+          "timing": "CONSTANT",
+          "effect": "HP_BONUS",
+          "params": {
+            "amount": 6
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":6})",
-        "ambiguityFile": "docs/ambiguities/core_01036_mark_v_armor.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":6})"
       },
       "mechanicSteps": [
         "Permanent/attached card: You get +6 hit points."
@@ -924,8 +1197,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -957,8 +1230,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -969,144 +1242,230 @@
       ]
     },
     "01039": {
-      "comment": "Rocket Boots: Blocked pending engine implementation (see docs/ambiguities/core_01039_rocket_boots.md).",
+      "comment": "Upgrade: Tech. Iron Man gains +1 hit point. Hero Action: Exhaust Rocket Boots and spend Mental -> gain Aerial trait until end of phase.",
+      "abilities": [
+        {
+          "id": "rocket_boots_hp",
+          "timing": "CONSTANT",
+          "effect": "HP_BONUS",
+          "params": {
+            "amount": 1
+          }
+        },
+        {
+          "id": "rocket_boots_aerial",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "effect": "GRANT_TEMPORARY_TRAIT",
+          "params": {
+            "trait": "Aerial",
+            "duration": "PHASE_END"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":1}); HERO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> GRANT_TEMPORARY_TRAIT ({\"trait\":\"Aerial\",\"duration\":\"PHASE_END\"})",
-        "ambiguityFile": "docs/ambiguities/core_01039_rocket_boots.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":1}); HERO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> GRANT_TEMPORARY_TRAIT ({\"trait\":\"Aerial\",\"duration\":\"PHASE_END\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: You get +1 hit point.\nHero Action: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase."
       ]
     },
     "01040a": {
-      "comment": "Black Panther: Blocked pending engine implementation (see docs/ambiguities/core_01040a_black_panther.md).",
+      "comment": "Hero Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
+      "abilities": [
+        {
+          "id": "black_panther_setup",
+          "timing": "SETUP",
+          "effect": "SEARCH_AND_PLAY_UPGRADE",
+          "params": {
+            "trait": "Black Panther"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})",
-        "ambiguityFile": "docs/ambiguities/core_01040a_black_panther.md"
+        "confidence": 98,
+        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})"
       },
       "mechanicSteps": [
         "Hero Identity ability/stats for Black Panther"
       ]
     },
     "01040b": {
-      "comment": "T'Challa: Blocked pending engine implementation (see docs/ambiguities/core_01040b_t_challa.md).",
+      "comment": "Alter-Ego Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
+      "abilities": [
+        {
+          "id": "tchalla_setup",
+          "timing": "SETUP",
+          "effect": "SEARCH_AND_PLAY_UPGRADE",
+          "params": {
+            "trait": "Black Panther"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})",
-        "ambiguityFile": "docs/ambiguities/core_01040b_t_challa.md"
+        "confidence": 98,
+        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for T'Challa"
       ]
     },
     "01041": {
-      "comment": "Shuri: Blocked pending engine implementation (see docs/ambiguities/core_01041_shuri.md).",
+      "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
+      "abilities": [
+        {
+          "id": "shuri_search_upgrade",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "SEARCH_DECK_FOR_CARD",
+          "params": {
+            "type": "upgrade",
+            "destination": "HAND"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> SEARCH_DECK_FOR_CARD ({\"type\":\"upgrade\",\"destination\":\"HAND\"})",
-        "ambiguityFile": "docs/ambiguities/core_01041_shuri.md"
+        "confidence": 98,
+        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> SEARCH_DECK_FOR_CARD ({\"type\":\"upgrade\",\"destination\":\"HAND\"})"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 1, and health 3"
       ]
     },
     "01042": {
-      "comment": "Ancestral Knowledge: Blocked pending engine implementation (see docs/ambiguities/core_01042_ancestral_knowledge.md).",
+      "comment": "Event: Alter-Ego Action: Shuffle up to 3 cards from your discard pile into your deck.",
+      "abilities": [
+        {
+          "id": "ancestral_knowledge",
+          "timing": "ALTER_EGO_ACTION",
+          "effect": "SHUFFLE_DISCARD_INTO_DECK",
+          "params": {
+            "count": 3
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK ({\"count\":3})",
-        "ambiguityFile": "docs/ambiguities/core_01042_ancestral_knowledge.md"
+        "confidence": 98,
+        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK ({\"count\":3})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
       ]
     },
     "01043a": {
-      "comment": "Wakanda Forever!: Blocked pending engine implementation (see docs/ambiguities/core_01043a_wakanda_forever.md).",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_a",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
-        "ambiguityFile": "docs/ambiguities/core_01043a_wakanda_forever.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043b": {
-      "comment": "Wakanda Forever!: Blocked pending engine implementation (see docs/ambiguities/core_01043b_wakanda_forever.md).",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_b",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
-        "ambiguityFile": "docs/ambiguities/core_01043b_wakanda_forever.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043c": {
-      "comment": "Wakanda Forever!: Blocked pending engine implementation (see docs/ambiguities/core_01043c_wakanda_forever.md).",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_c",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
-        "ambiguityFile": "docs/ambiguities/core_01043c_wakanda_forever.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043d": {
-      "comment": "Wakanda Forever!: Blocked pending engine implementation (see docs/ambiguities/core_01043d_wakanda_forever.md).",
+      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "abilities": [
+        {
+          "id": "wakanda_forever_d",
+          "timing": "HERO_ACTION",
+          "effect": "TRIGGER_WAKANDA_UPGRADES"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
-        "ambiguityFile": "docs/ambiguities/core_01043d_wakanda_forever.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
@@ -1117,11 +1476,11 @@
       "comment": "RESOURCE: Vibranium",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 98,
         "reconstructedText": "Vanilla card (no printed abilities)."
       },
       "mechanicSteps": [
@@ -1145,8 +1504,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1157,16 +1516,26 @@
       ]
     },
     "01046": {
-      "comment": "Energy Daggers: Blocked pending engine implementation (see docs/ambiguities/core_01046_energy_daggers.md).",
+      "comment": "Upgrade: Special: Deal 1 damage to each enemy (2 damage if triggered last).",
+      "abilities": [
+        {
+          "id": "energy_daggers_special",
+          "timing": "SPECIAL",
+          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "params": {
+            "baseAmount": 1,
+            "finisherBonus": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES ({\"baseAmount\":1,\"finisherBonus\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01046_energy_daggers.md"
+        "confidence": 98,
+        "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES ({\"baseAmount\":1,\"finisherBonus\":1})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
@@ -1191,8 +1560,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1221,8 +1590,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1233,32 +1602,51 @@
       ]
     },
     "01049": {
-      "comment": "Vibranium Suit: Blocked pending engine implementation (see docs/ambiguities/core_01049_vibranium_suit.md).",
+      "comment": "Upgrade: Special: Move 1 damage from Black Panther to an enemy (move 2 damage if triggered last).",
+      "abilities": [
+        {
+          "id": "vibranium_suit_special",
+          "timing": "SPECIAL",
+          "effect": "TRANSFER_DAMAGE",
+          "params": {
+            "baseAmount": 1,
+            "finisherBonus": 1,
+            "from": "SELF",
+            "to": "CHOSEN_ENEMY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE ({\"baseAmount\":1,\"finisherBonus\":1,\"from\":\"SELF\",\"to\":\"CHOSEN_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01049_vibranium_suit.md"
+        "confidence": 98,
+        "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE ({\"baseAmount\":1,\"finisherBonus\":1,\"from\":\"SELF\",\"to\":\"CHOSEN_ENEMY\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Special (attack): Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
       ]
     },
     "01050": {
-      "comment": "Hulk (Bruce Banner): Blocked pending engine implementation (see docs/ambiguities/core_01050_hulk_bruce_banner.md).",
+      "comment": "Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
+      "abilities": [
+        {
+          "id": "hulk_after_attack",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "effect": "HULK_DISCARD_RESOLUTION"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) -> HULK_DISCARD_RESOLUTION",
-        "ambiguityFile": "docs/ambiguities/core_01050_hulk_bruce_banner.md"
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) -> HULK_DISCARD_RESOLUTION"
       },
       "mechanicSteps": [
         "Ally card with THW 0, ATK 3, and health 5"
@@ -1280,8 +1668,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1307,8 +1695,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1337,8 +1725,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1366,8 +1754,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1378,16 +1766,26 @@
       ]
     },
     "01055": {
-      "comment": "The Power of Aggression: Blocked pending engine implementation (see docs/ambiguities/core_01055_the_power_of_aggression.md).",
+      "comment": "Resource Card: Double generated resources when paying for an Aggression card.",
+      "abilities": [
+        {
+          "id": "power_of_aggression",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "aggression",
+            "resource": "wild"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"aggression\",\"resource\":\"wild\"})",
-        "ambiguityFile": "docs/ambiguities/core_01055_the_power_of_aggression.md"
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"aggression\",\"resource\":\"wild\"})"
       },
       "mechanicSteps": [
         "Resource generator card (provides resources for cost payment)"
@@ -1417,8 +1815,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1429,16 +1827,25 @@
       ]
     },
     "01057": {
-      "comment": "Combat Training: Blocked pending engine implementation (see docs/ambiguities/core_01057_combat_training.md).",
+      "comment": "Upgrade: Attached hero gets +1 ATK.",
+      "abilities": [
+        {
+          "id": "combat_training_atk",
+          "timing": "CONSTANT",
+          "effect": "ATK_BONUS",
+          "params": {
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01057_combat_training.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":1})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
@@ -1460,8 +1867,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1472,16 +1879,25 @@
       ]
     },
     "01059": {
-      "comment": "Jessica Jones: Blocked pending engine implementation (see docs/ambiguities/core_01059_jessica_jones.md).",
+      "comment": "Ally: Constant: Gets +1 THW for each side scheme in play.",
+      "abilities": [
+        {
+          "id": "jessica_jones_thw_boost",
+          "timing": "CONSTANT",
+          "effect": "THW_BONUS_PER_SIDE_SCHEME",
+          "params": {
+            "amountPerSideScheme": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> THW_BONUS_PER_SIDE_SCHEME ({\"amountPerSideScheme\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01059_jessica_jones.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> THW_BONUS_PER_SIDE_SCHEME ({\"amountPerSideScheme\":1})"
       },
       "mechanicSteps": [
         "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
@@ -1506,8 +1922,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1518,16 +1934,27 @@
       ]
     },
     "01061": {
-      "comment": "Great Responsibility: Blocked pending engine implementation (see docs/ambiguities/core_01061_great_responsibility.md).",
+      "comment": "Defense Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
+      "abilities": [
+        {
+          "id": "great_responsibility",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "CONVERT_THREAT_TO_DAMAGE"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONVERT_THREAT_TO_DAMAGE",
-        "ambiguityFile": "docs/ambiguities/core_01061_great_responsibility.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONVERT_THREAT_TO_DAMAGE"
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
@@ -1535,16 +1962,26 @@
       ]
     },
     "01062": {
-      "comment": "The Power of Justice: Blocked pending engine implementation (see docs/ambiguities/core_01062_the_power_of_justice.md).",
+      "comment": "Resource Card: Double generated resources when paying for a Justice card.",
+      "abilities": [
+        {
+          "id": "power_of_justice",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "justice",
+            "resource": "wild"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"justice\",\"resource\":\"wild\"})",
-        "ambiguityFile": "docs/ambiguities/core_01062_the_power_of_justice.md"
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"justice\",\"resource\":\"wild\"})"
       },
       "mechanicSteps": [
         "Setup: Uses (3 snoop counters). Discard on empty.",
@@ -1570,8 +2007,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1607,8 +2044,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1620,16 +2057,25 @@
       ]
     },
     "01065": {
-      "comment": "Heroic Intuition: Blocked pending engine implementation (see docs/ambiguities/core_01065_heroic_intuition.md).",
+      "comment": "Upgrade: Attached hero gets +1 THW.",
+      "abilities": [
+        {
+          "id": "heroic_intuition_thw",
+          "timing": "CONSTANT",
+          "effect": "THW_BONUS",
+          "params": {
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> THW_BONUS ({\"amount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01065_heroic_intuition.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> THW_BONUS ({\"amount\":1})"
       },
       "mechanicSteps": [
         "Play Condition: Attach to a side scheme. Max 1 per scheme.",
@@ -1661,8 +2107,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1673,144 +2119,241 @@
       ]
     },
     "01067": {
-      "comment": "Maria Hill: Blocked pending engine implementation (see docs/ambiguities/core_01067_maria_hill.md).",
+      "comment": "Ally: Response: After Maria Hill enters play, each player draws 1 card.",
+      "abilities": [
+        {
+          "id": "maria_hill_enters_play",
+          "timing": "RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "ALL_PLAYERS_DRAW_CARDS",
+          "params": {
+            "count": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> ALL_PLAYERS_DRAW_CARDS ({\"count\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01067_maria_hill.md"
+        "confidence": 98,
+        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> ALL_PLAYERS_DRAW_CARDS ({\"count\":1})"
       },
       "mechanicSteps": [
         "Ally card with THW 2, ATK 1, and health 2"
       ]
     },
     "01068": {
-      "comment": "Vision: Blocked pending engine implementation (see docs/ambiguities/core_01068_vision.md).",
+      "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase.",
+      "abilities": [
+        {
+          "id": "vision_boost",
+          "timing": "ACTION",
+          "cost": {
+            "resourceCost": {
+              "energy": 1
+            }
+          },
+          "effect": "BOOST_STAT_CHOICE",
+          "params": {
+            "amount": 2,
+            "options": [
+              "ATK",
+              "THW"
+            ]
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE ({\"amount\":2,\"options\":[\"ATK\",\"THW\"]})",
-        "ambiguityFile": "docs/ambiguities/core_01068_vision.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE ({\"amount\":2,\"options\":[\"ATK\",\"THW\"]})"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 2, and health 3"
       ]
     },
     "01069": {
-      "comment": "Get Ready: Blocked pending engine implementation (see docs/ambiguities/core_01069_get_ready.md).",
+      "comment": "Event: Action: Ready an ally.",
+      "abilities": [
+        {
+          "id": "get_ready",
+          "timing": "ACTION",
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "CHOSEN_ALLY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION -> READY_CHARACTER ({\"target\":\"CHOSEN_ALLY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01069_get_ready.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION -> READY_CHARACTER ({\"target\":\"CHOSEN_ALLY\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Ready an ally."
       ]
     },
     "01070": {
-      "comment": "Lead from the Front: Blocked pending engine implementation (see docs/ambiguities/core_01070_lead_from_the_front.md).",
+      "comment": "Event: Hero Action: Each friendly character gets +1 ATK and +1 THW until end of phase.",
+      "abilities": [
+        {
+          "id": "lead_from_the_front",
+          "timing": "HERO_ACTION",
+          "effect": "BUFF_ALL_FRIENDLY_CHARACTERS",
+          "params": {
+            "atkBonus": 1,
+            "thwBonus": 1,
+            "duration": "PHASE_END"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS ({\"atkBonus\":1,\"thwBonus\":1,\"duration\":\"PHASE_END\"})",
-        "ambiguityFile": "docs/ambiguities/core_01070_lead_from_the_front.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS ({\"atkBonus\":1,\"thwBonus\":1,\"duration\":\"PHASE_END\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
       ]
     },
     "01071": {
-      "comment": "Make the Call: Blocked pending engine implementation (see docs/ambiguities/core_01071_make_the_call.md).",
+      "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
+      "abilities": [
+        {
+          "id": "make_the_call",
+          "timing": "ACTION",
+          "effect": "PLAY_ALLY_FROM_DISCARD"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION -> PLAY_ALLY_FROM_DISCARD",
-        "ambiguityFile": "docs/ambiguities/core_01071_make_the_call.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION -> PLAY_ALLY_FROM_DISCARD"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
       ]
     },
     "01072": {
-      "comment": "The Power of Leadership: Blocked pending engine implementation (see docs/ambiguities/core_01072_the_power_of_leadership.md).",
+      "comment": "Resource Card: Double generated resources when paying for a Leadership card.",
+      "abilities": [
+        {
+          "id": "power_of_leadership",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "leadership",
+            "resource": "wild"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"leadership\",\"resource\":\"wild\"})",
-        "ambiguityFile": "docs/ambiguities/core_01072_the_power_of_leadership.md"
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"leadership\",\"resource\":\"wild\"})"
       },
       "mechanicSteps": [
         "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01073": {
-      "comment": "The Triskelion: Blocked pending engine implementation (see docs/ambiguities/core_01073_the_triskelion.md).",
+      "comment": "Support: Each player's ally limit is increased by 1.",
+      "abilities": [
+        {
+          "id": "triskelion_ally_limit",
+          "timing": "CONSTANT",
+          "effect": "ALLY_LIMIT_BONUS",
+          "params": {
+            "amount": 1,
+            "target": "ALL_PLAYERS"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ALLY_LIMIT_BONUS ({\"amount\":1,\"target\":\"ALL_PLAYERS\"})",
-        "ambiguityFile": "docs/ambiguities/core_01073_the_triskelion.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ALLY_LIMIT_BONUS ({\"amount\":1,\"target\":\"ALL_PLAYERS\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Increase your ally limit by 1. (This allows you to control more than 3 allies.)"
       ]
     },
     "01074": {
-      "comment": "Inspired: Blocked pending engine implementation (see docs/ambiguities/core_01074_inspired.md).",
+      "comment": "Upgrade: Attach to an ally. Attached ally gets +1 ATK and +1 THW.",
+      "abilities": [
+        {
+          "id": "inspired_buff",
+          "timing": "CONSTANT",
+          "effect": "ALLY_STAT_BUFF",
+          "params": {
+            "atkBonus": 1,
+            "thwBonus": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ALLY_STAT_BUFF ({\"atkBonus\":1,\"thwBonus\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01074_inspired.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ALLY_STAT_BUFF ({\"atkBonus\":1,\"thwBonus\":1})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK."
       ]
     },
     "01075": {
-      "comment": "Black Widow (Natasha Romanoff): Blocked pending engine implementation (see docs/ambiguities/core_01075_black_widow_natasha_romanoff.md).",
+      "comment": "Ally: Hero Interrupt: When a treachery card is revealed from encounter deck, exhaust Black Widow and spend 1 Mental resource -> cancel its When Revealed effects and discard it.",
+      "abilities": [
+        {
+          "id": "black_widow_treachery_cancel",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "cost": {
+            "exhaustSelf": true,
+            "resourceCost": {
+              "mental": 1
+            }
+          },
+          "effect": "CANCEL_WHEN_REVEALED"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED",
-        "ambiguityFile": "docs/ambiguities/core_01075_black_widow_natasha_romanoff.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED"
       },
       "mechanicSteps": [
         "Ally card with THW 2, ATK 1, and health 2"
@@ -1831,8 +2374,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1843,48 +2386,78 @@
       ]
     },
     "01077": {
-      "comment": "Counter-Punch: Blocked pending engine implementation (see docs/ambiguities/core_01077_counter_punch.md).",
+      "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
+      "abilities": [
+        {
+          "id": "counter_punch",
+          "timing": "RESPONSE",
+          "trigger": "HERO_DEFENDED_ATTACK",
+          "tags": [
+            "ATTACK"
+          ],
+          "effect": "DEAL_DAMAGE_EQUAL_TO_HERO_ATK",
+          "params": {
+            "target": "ATTACKING_ENEMY"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) -> DEAL_DAMAGE_EQUAL_TO_HERO_ATK ({\"target\":\"ATTACKING_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01077_counter_punch.md"
+        "confidence": 98,
+        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) -> DEAL_DAMAGE_EQUAL_TO_HERO_ATK ({\"target\":\"ATTACKING_ENEMY\"})"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Response (attack): After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK."
       ]
     },
     "01078": {
-      "comment": "Get Behind Me!: Blocked pending engine implementation (see docs/ambiguities/core_01078_get_behind_me.md).",
+      "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
+      "abilities": [
+        {
+          "id": "get_behind_me",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "effect": "CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) -> CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK",
-        "ambiguityFile": "docs/ambiguities/core_01078_get_behind_me.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) -> CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its \"When Revealed\" effects. The villain attacks you instead."
       ]
     },
     "01079": {
-      "comment": "The Power of Protection: Blocked pending engine implementation (see docs/ambiguities/core_01079_the_power_of_protection.md).",
+      "comment": "Resource Card: Double generated resources when paying for a Protection card.",
+      "abilities": [
+        {
+          "id": "power_of_protection",
+          "timing": "RESOURCE",
+          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+          "params": {
+            "aspect": "protection",
+            "resource": "wild"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"protection\",\"resource\":\"wild\"})",
-        "ambiguityFile": "docs/ambiguities/core_01079_the_power_of_protection.md"
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"protection\",\"resource\":\"wild\"})"
       },
       "mechanicSteps": [
         "Resource generator card (provides resources for cost payment)"
@@ -1914,8 +2487,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1926,32 +2499,54 @@
       ]
     },
     "01081": {
-      "comment": "Armored Vest: Blocked pending engine implementation (see docs/ambiguities/core_01081_armored_vest.md).",
+      "comment": "Upgrade: Attached hero gets +1 DEF.",
+      "abilities": [
+        {
+          "id": "armored_vest_def",
+          "timing": "CONSTANT",
+          "effect": "DEF_BONUS",
+          "params": {
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1})",
-        "ambiguityFile": "docs/ambiguities/core_01081_armored_vest.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
       ]
     },
     "01082": {
-      "comment": "Indomitable: Blocked pending engine implementation (see docs/ambiguities/core_01082_indomitable.md).",
+      "comment": "Upgrade: Hero Interrupt: After your hero defends against an attack, discard Indomitable -> ready your hero.",
+      "abilities": [
+        {
+          "id": "indomitable_ready",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "HERO_DEFENDED_ATTACK",
+          "cost": {
+            "discardSelf": true
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01082_indomitable.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Permanent/attached card: Response: After your hero defends, discard indomitable → ready your hero."
@@ -1973,8 +2568,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1986,16 +2581,32 @@
       ]
     },
     "01084": {
-      "comment": "Nick Fury: Blocked pending engine implementation (see docs/ambiguities/core_01084_nick_fury.md).",
+      "comment": "Ally: Forced Response after enters play -> choose: remove 2 threat, draw 3 cards, or deal 4 damage. Discard at end of round.",
+      "abilities": [
+        {
+          "id": "nick_fury_enters_play",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "CARD_PLAYED",
+          "effect": "NICK_FURY_CHOICE",
+          "params": {
+            "defaultChoice": "DRAW_CARDS"
+          }
+        },
+        {
+          "id": "nick_fury_round_end",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ROUND_END",
+          "effect": "DISCARD_SELF"
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> NICK_FURY_CHOICE ({\"defaultChoice\":\"DRAW_CARDS\"}); FORCED_RESPONSE (Trigger: ROUND_END) -> DISCARD_SELF",
-        "ambiguityFile": "docs/ambiguities/core_01084_nick_fury.md"
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> NICK_FURY_CHOICE ({\"defaultChoice\":\"DRAW_CARDS\"}); FORCED_RESPONSE (Trigger: ROUND_END) -> DISCARD_SELF"
       },
       "mechanicSteps": [
         "Trigger 1: Response after enters play (FORCED_RESPONSE @ CARD_PLAYED) -> Choose: remove 2 threat, draw 3 cards, or deal 4 damage.",
@@ -2003,11 +2614,11 @@
       ]
     },
     "01085": {
-      "comment": "Emergency: Blocked pending engine implementation (see docs/ambiguities/core_01085_emergency.md).",
+      "comment": "Event: Blocked pending Tier 3 Optional Interrupt Prompt state machine (see docs/ambiguities/core_01085_emergency.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -2035,8 +2646,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2064,8 +2675,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2079,8 +2690,8 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -2095,8 +2706,8 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -2111,8 +2722,8 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -2141,8 +2752,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2153,32 +2764,60 @@
       ]
     },
     "01092": {
-      "comment": "Helicarrier: Blocked pending engine implementation (see docs/ambiguities/core_01092_helicarrier.md).",
+      "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
+      "abilities": [
+        {
+          "id": "helicarrier_action",
+          "timing": "ACTION",
+          "cost": {
+            "exhaustSelf": true
+          },
+          "effect": "REDUCE_NEXT_CARD_COST",
+          "params": {
+            "amount": 1,
+            "target": "CHOSEN_PLAYER"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "ACTION [Cost: Exhaust] -> REDUCE_NEXT_CARD_COST ({\"amount\":1,\"target\":\"CHOSEN_PLAYER\"})",
-        "ambiguityFile": "docs/ambiguities/core_01092_helicarrier.md"
+        "confidence": 98,
+        "reconstructedText": "ACTION [Cost: Exhaust] -> REDUCE_NEXT_CARD_COST ({\"amount\":1,\"target\":\"CHOSEN_PLAYER\"})"
       },
       "mechanicSteps": [
         "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
       ]
     },
     "01093": {
-      "comment": "Tenacity: Blocked pending engine implementation (see docs/ambiguities/core_01093_tenacity.md).",
+      "comment": "Upgrade: Attach to your hero. Hero Action: Spend a Physical resource and discard Tenacity -> ready your hero.",
+      "abilities": [
+        {
+          "id": "tenacity_ready",
+          "timing": "HERO_ACTION",
+          "cost": {
+            "discardSelf": true,
+            "resourceCost": {
+              "physical": 1
+            }
+          },
+          "effect": "READY_CHARACTER",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:10",
-        "reviewedAt": "2026-08-28T10:10",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_CHARACTER ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01093_tenacity.md"
+        "confidence": 98,
+        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_CHARACTER ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Play Condition: Attach to your hero. Max 1 per hero.",

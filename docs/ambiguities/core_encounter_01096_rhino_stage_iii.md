@@ -7,7 +7,7 @@ blocker_category: "STRUCTURAL_STAGE_TRANSITION_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Rhino (Stage III) (`01096`)
+# Card Ambiguity Report: Rhino (Stage III) (`#01096`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01096](https://marvelcdb.com/card/01096)
 * **Official Printed Text:** `Toughness. (This character enter play with a tough status card.)

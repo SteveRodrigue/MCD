@@ -336,6 +336,12 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           params: { player: player.name, minion: card.name },
           onomatopoeia: 'MINION SPAWNS!',
         });
+        const abilities = card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+          }
+        }
       } else if (card.type === CardType.SIDE_SCHEME) {
         const sideSchemeCard = card as SideSchemeCard;
         const baseThreat = sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
@@ -351,6 +357,12 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           params: { sideScheme: card.name, threat: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
         });
+        const abilities = card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+          }
+        }
       } else if (card.type === CardType.ATTACHMENT) {
         state.villain.attachments.push(cardInstance);
         state.log.push({
@@ -360,6 +372,12 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           params: { attachment: card.name, host: state.villain.card.name },
           onomatopoeia: 'ATTACHED!',
         });
+        const abilities = card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+          }
+        }
       } else {
         // Treachery generic resolution: execute declarative WHEN_REVEALED
         const abilities = card.enrichment?.abilities || [];

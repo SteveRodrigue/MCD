@@ -70,14 +70,13 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     (c) => c.instanceId !== cardToPlay.instanceId,
   );
 
-  // Available tableau generators (ready generators with counters/ability)
+  // Available tableau generators (ready generators with counters or resource abilities - ADR-0018)
   const availableGenerators = player.tableau.filter((c) => {
     if (c.exhausted) return false;
-    // Web-Shooter: has counters
-    if (c.card.code === '01008') return (c.tokens?.counters || 0) > 0;
-    // Helicarrier / Generators
-    if (c.card.code === '01092') return true;
-    return false;
+    if (c.card.enrichment?.uses) return (c.tokens?.counters || 0) > 0;
+    return c.card.enrichment?.abilities?.some(
+      (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+    ) ?? true;
   });
 
   // Calculate generated resources and breakdown
@@ -113,11 +112,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     for (const gId of selectedGeneratorIds) {
       const gCard = availableGenerators.find((c) => c.instanceId === gId);
       if (!gCard) continue;
-      if (gCard.card.code === '01008') {
-        wildCount += 1;
-      } else {
-        wildCount += 1;
-      }
+      wildCount += 1;
       total += 1;
     }
 
@@ -379,9 +374,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       <div>
                         <div className="text-xs font-black text-comic-black">{gCard.card.name}</div>
                         <div className="text-[10px] text-comic-black/60 font-bold uppercase">
-                          {gCard.card.code === '01008'
-                            ? `${gCard.tokens?.counters || 0} Web Counters`
-                            : 'Cost Reducer'}
+                          {gCard.card.enrichment?.uses
+                            ? `${gCard.tokens?.counters || 0} Counters Remaining`
+                            : 'Cost Reducer / Generator'}
                         </div>
                       </div>
                       <span className="text-xs font-black px-2 py-0.5 bg-comic-paper border border-comic-black rounded">

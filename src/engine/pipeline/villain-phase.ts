@@ -111,12 +111,15 @@ export function step2_villainActivations(state: GameState): GameState {
       const attachmentsToDiscard: CardInstance[] = [];
 
       for (const att of state.villain.attachments) {
-        if (att.card.code === '01100') {
-          attachmentBonus += 1; // Enhanced Ivory Horn +1 ATK
-        } else if (att.card.code === '01099') {
-          attachmentBonus += 3; // Charge +3 ATK & Overkill
-          hasOverkill = true;
-          attachmentsToDiscard.push(att);
+        const abilities = att.card.enrichment?.abilities || [];
+        for (const ab of abilities) {
+          if (ab.timing === 'CONSTANT' && ab.params?.bonusAttack) {
+            attachmentBonus += Number(ab.params.bonusAttack);
+          } else if (ab.trigger === 'VILLAIN_INITIATES_ATTACK') {
+            if (ab.params?.bonusAttack) attachmentBonus += Number(ab.params.bonusAttack);
+            if (ab.params?.overkill) hasOverkill = true;
+            attachmentsToDiscard.push(att);
+          }
         }
       }
 
@@ -379,8 +382,15 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
 
   // 2. Ready all player cards & reset round flags
   for (const player of state.players) {
-    // Discard round-end allies (e.g. Nick Fury 01084)
-    const endRoundAllies = player.allies.filter((a) => a.card.code === '01084');
+    // Discard allies with ROUND_END / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
+    const endRoundAllies = player.allies.filter((a) => {
+      const abilities = a.card.enrichment?.abilities || [];
+      return abilities.some(
+        (ab) =>
+          (ab.trigger === 'ROUND_END' || ab.timing === 'FORCED_RESPONSE') &&
+          ab.effect === 'DISCARD_SELF',
+      );
+    });
     for (const ally of endRoundAllies) {
       const idx = player.allies.indexOf(ally);
       if (idx !== -1) {

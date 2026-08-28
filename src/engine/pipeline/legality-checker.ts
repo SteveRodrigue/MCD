@@ -175,6 +175,32 @@ export function canBasicThwart(
 }
 
 /**
+ * Computes the active maximum ally limit for a player dynamically (ADR-0018).
+ * Base: 3 allies (RR v1.8 p. 3).
+ * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
+ */
+export function getPlayerAllyLimit(state: GameState, playerId: string): number {
+  const BASE_ALLY_LIMIT = 3;
+  let bonus = 0;
+
+  for (const p of state.players) {
+    for (const item of p.tableau) {
+      const abilities = item.card.enrichment?.abilities || [];
+      for (const ab of abilities) {
+        if (ab.timing === 'CONSTANT' && ab.effect === 'ALLY_LIMIT_BONUS') {
+          const target = ab.params?.target || 'CONTROLLER';
+          if (target === 'ALL_PLAYERS' || p.id === playerId) {
+            bonus += Number(ab.params?.amount) || 1;
+          }
+        }
+      }
+    }
+  }
+
+  return BASE_ALLY_LIMIT + bonus;
+}
+
+/**
  * Validates whether hand cards specified for payment cover the cost of the card being played.
  */
 export function canPlayCard(
@@ -207,12 +233,9 @@ export function canPlayCard(
     return { allowed: false, reason: 'Can only play this card while in Alter-Ego form.' };
   }
 
-  // Ally Limit Check (RR v1.8 p. 3: default limit 3, +1 with The Triskelion)
+  // Dynamic Ally Limit Check (RR v1.8 p. 3, ADR-0018)
   if (card.type === CardType.ALLY) {
-    const hasTriskelion = state.players.some((p) =>
-      p.tableau.some((t) => t.card.code === '01073'),
-    );
-    const maxAllies = hasTriskelion ? 4 : 3;
+    const maxAllies = getPlayerAllyLimit(state, playerId);
     if (player.allies.length >= maxAllies) {
       return { allowed: false, reason: `Ally limit reached (${maxAllies} allies max).` };
     }
@@ -257,10 +280,13 @@ export function canPlayCard(
 
     // 2. Resources from Table Generators / Reducers
     for (const gId of generatorInstanceIds) {
-      // Check if identity ability (e.g. Peter Parker Scientist)
+      // Check if identity ability (e.g. Peter Parker Scientist / Carol Danvers Rechannel)
       if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
-        if (player.currentForm === 'alter_ego' && player.activeFormCard.code === '01001b') {
-          generatedResources += 1;
+        const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+          (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE',
+        );
+        if (idAbility) {
+          generatedResources += Number(idAbility.params?.amount) || 1;
         }
         continue;
       }
@@ -273,17 +299,14 @@ export function canPlayCard(
         return { allowed: false, reason: `Resource generator ${gCard.card.name} is already exhausted.` };
       }
 
-      // Web-Shooter: requires counter
-      if (gCard.card.code === '01008') {
+      // Check if generator relies on counters (uses)
+      if (gCard.card.enrichment?.uses) {
         if ((gCard.tokens?.counters || 0) <= 0) {
-          return { allowed: false, reason: 'Web-Shooter has no web counters remaining.' };
+          return { allowed: false, reason: `${gCard.card.name} has no counters remaining.` };
         }
         generatedResources += 1;
-      } else if (gCard.card.code === '01092') {
-        // Helicarrier: reduces cost or provides 1 resource
-        generatedResources += 1;
       } else {
-        // Generic generator
+        // Generic generator / cost reducer
         generatedResources += 1;
       }
     }

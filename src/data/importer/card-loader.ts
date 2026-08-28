@@ -156,14 +156,23 @@ export function normalizeRawCard(
       } as SideSchemeCard;
     }
     case CardType.ALLY: {
+      const enrichmentAttackCost = enrichment?.attackCost;
+      const enrichmentThwartCost = enrichment?.thwartCost;
       return {
         ...base,
         type: CardType.ALLY,
         health: raw.health || 2,
         thwart: raw.thwart ?? 1,
-        thwartCost: raw.thwart_cost !== undefined ? raw.thwart_cost : 1,
+        thwartCost: enrichmentThwartCost !== undefined ? enrichmentThwartCost : (raw.thwart_cost !== undefined ? raw.thwart_cost : 1),
         attack: raw.attack ?? 1,
-        attackCost: raw.attack_cost !== undefined ? raw.attack_cost : (raw.code === '01002' ? 0 : 1),
+        attackCost:
+          enrichmentAttackCost !== undefined
+            ? enrichmentAttackCost
+            : raw.attack_cost !== undefined
+              ? raw.attack_cost
+              : (raw.text || '').toLowerCase().includes('does not take consequential damage after attacking')
+                ? 0
+                : 1,
       } as AllyCard;
     }
     case CardType.MINION: {

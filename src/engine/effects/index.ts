@@ -351,9 +351,13 @@ export function executeEffect(
     }
 
     case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {
-      // Rhino Stage II (01095): Search for Breakin' & Takin' (01107) and reveal it
-      const schemeCode = (ability.params?.schemeCode as string) || '01107';
-      const deckIdx = state.encounterDeck.findIndex((c) => c.card.code === schemeCode);
+      const schemeCode = ability.params?.schemeCode as string | undefined;
+      const schemeName = ability.params?.schemeName as string | undefined;
+      const deckIdx = state.encounterDeck.findIndex(
+        (c) =>
+          (schemeCode && c.card.code === schemeCode) ||
+          (schemeName && c.card.name.toLowerCase() === schemeName.toLowerCase()),
+      );
       if (deckIdx !== -1) {
         const [scheme] = state.encounterDeck.splice(deckIdx, 1);
         const sideCard = scheme.card as SideSchemeCard;

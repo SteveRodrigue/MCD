@@ -5,6 +5,7 @@ import { CardInstance, NormalizedCard, PlayerState, GameState, GameAction } from
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { CardPaymentModal } from './CardPaymentModal';
+import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -111,14 +112,15 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       : true;
 
   const handleCardClick = (cardInst: CardInstance) => {
-    if (!isActivePlayerTurn) {
-      const activeHeroName = activePlayer?.name || 'the active hero';
-      setTurnWarning(
-        `It is currently ${activeHeroName}'s turn! Non-active heroes cannot play cards unless asked for an action (RR v1.8 p. 19).`,
-      );
-      setTimeout(() => setTurnWarning(null), 4000);
-      return;
+    if (player && gameState) {
+      const playability = evaluateCardPlayability(gameState, player.id, cardInst);
+      if (!playability.isPlayable) {
+        setTurnWarning(`Cannot play ${cardInst.card.name}: ${playability.reasons.join(' • ')}`);
+        setTimeout(() => setTurnWarning(null), 4500);
+        return;
+      }
     }
+
     if (onCardClick) {
       onCardClick(cardInst);
     }
@@ -321,18 +323,27 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
             {/* Cards in Hand (Single 1 Row • Unconstrained Z-Axis Hover Zoom) */}
             <div className="flex flex-nowrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
-              {hand.map((cardInst) => (
-                <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50 cursor-pointer">
-                  <CardView
-                    card={cardInst.card}
-                    instance={cardInst}
-                    size="sm"
-                    enableHoverZoom={true}
-                    zoomOrigin="bottom"
-                    onClick={() => handleCardClick(cardInst)}
-                  />
-                </div>
-              ))}
+              {hand.map((cardInst) => {
+                const playability =
+                  player && gameState
+                    ? evaluateCardPlayability(gameState, player.id, cardInst)
+                    : { isPlayable: true, reasons: [], maxPotentialResources: 0 };
+
+                return (
+                  <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50 cursor-pointer">
+                    <CardView
+                      card={cardInst.card}
+                      instance={cardInst}
+                      size="sm"
+                      isPlayable={playability.isPlayable}
+                      unplayableReason={playability.reasons[0]}
+                      enableHoverZoom={true}
+                      zoomOrigin="bottom"
+                      onClick={() => handleCardClick(cardInst)}
+                    />
+                  </div>
+                );
+              })}
 
               {hand.length === 0 && (
                 <div className="w-full py-6 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">
@@ -442,18 +453,27 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
               {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
               <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
-                {hand.map((cardInst) => (
-                  <div key={cardInst.instanceId} className="cursor-pointer">
-                    <CardView
-                      card={cardInst.card}
-                      instance={cardInst}
-                      size="md"
-                      enableHoverZoom={true}
-                      zoomOrigin="bottom"
-                      onClick={() => handleCardClick(cardInst)}
-                    />
-                  </div>
-                ))}
+                {hand.map((cardInst) => {
+                  const playability =
+                    player && gameState
+                      ? evaluateCardPlayability(gameState, player.id, cardInst)
+                      : { isPlayable: true, reasons: [], maxPotentialResources: 0 };
+
+                  return (
+                    <div key={cardInst.instanceId} className="cursor-pointer">
+                      <CardView
+                        card={cardInst.card}
+                        instance={cardInst}
+                        size="md"
+                        isPlayable={playability.isPlayable}
+                        unplayableReason={playability.reasons[0]}
+                        enableHoverZoom={true}
+                        zoomOrigin="bottom"
+                        onClick={() => handleCardClick(cardInst)}
+                      />
+                    </div>
+                  );
+                })}
 
                 {hand.length === 0 && (
                   <div className="w-full py-8 text-center border-2 border-dashed border-slate-300 rounded-xl bg-white/60">

@@ -9,6 +9,7 @@ import {
   VillainCard,
   MainSchemeCard,
   createCardInstance,
+  evaluateCardPlayability,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -501,6 +502,105 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       expect(res2.result.success).toBe(false);
       expect(res2.result.error).toContain('once per round');
+    });
+
+    describe('Declarative Card Playability Evaluation (Grayscale / Unplayable Checks)', () => {
+      it('marks Hero Action events as unplayable in Alter-Ego form', () => {
+        // In Alter-Ego form (Peter Parker)
+        gameState.players[0].currentForm = 'alter_ego';
+        gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
+
+        const kickCard = catalog.getCard('01005')!; // Swinging Web Kick (Hero Action)
+        const kickInst = createCardInstance(kickCard);
+        // Add 5 resource cards to hand so cost is easily met
+        const resCard = catalog.getCard('01088')!;
+        gameState.players[0].hand = [
+          kickInst,
+          createCardInstance(resCard),
+          createCardInstance(resCard),
+          createCardInstance(resCard),
+          createCardInstance(resCard),
+        ];
+
+        const status = evaluateCardPlayability(gameState, 'p1', kickInst);
+        expect(status.isPlayable).toBe(false);
+        expect(status.reasons).toContain('Requires Hero form');
+      });
+
+      it('allows playing Upgrades like Tenacity in Alter-Ego form when affordable', () => {
+        // In Alter-Ego form (Peter Parker)
+        gameState.players[0].currentForm = 'alter_ego';
+        gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
+
+        const tenacityCard = catalog.getCard('01093')!; // Tenacity (Cost 2 Upgrade with Hero Action ability in play)
+        const tenacityInst = createCardInstance(tenacityCard);
+        const resCard = catalog.getCard('01088')!;
+        // Tenacity costs 2: provided 2 resource cards
+        gameState.players[0].hand = [
+          tenacityInst,
+          createCardInstance(resCard),
+          createCardInstance(resCard),
+        ];
+
+        const status = evaluateCardPlayability(gameState, 'p1', tenacityInst);
+        expect(status.isPlayable).toBe(true);
+        expect(status.reasons.length).toBe(0);
+      });
+
+      it('marks cards as unplayable when total potential resources are insufficient to pay cost', () => {
+        gameState.players[0].currentForm = 'hero';
+        gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+        const kickCard = catalog.getCard('01005')!; // Cost 3
+        const kickInst = createCardInstance(kickCard);
+        const resCard = catalog.getCard('01088')!; // 1 resource
+        // Hand only has 1 extra card (1 resource), need 3
+        gameState.players[0].hand = [kickInst, createCardInstance(resCard)];
+
+        const status = evaluateCardPlayability(gameState, 'p1', kickInst);
+        expect(status.isPlayable).toBe(false);
+        expect(status.reasons.some((r) => r.includes('Cannot afford cost'))).toBe(true);
+      });
+
+      it('marks non-active player hand cards as unplayable during Player Phase', () => {
+        // Add a 2nd player to gameState
+        const p2Hero = catalog.getCard('01010a')!;
+        const p2AlterEgo = catalog.getCard('01010b')!;
+        gameState.players.push({
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: p2Hero as any,
+          alterEgo: p2AlterEgo as any,
+          availableForms: [p2Hero, p2AlterEgo],
+          activeFormCard: p2Hero,
+          currentForm: 'hero',
+          health: 9,
+          maxHealth: 9,
+          exhausted: false,
+          statusCards: [],
+          hand: [createCardInstance(catalog.getCard('01013')!)], // Crisis Intercursor
+          deck: [],
+          discard: [],
+          tableau: [],
+          allies: [],
+          engagedMinions: [],
+          formChangedThisRound: false,
+          recoveryUsedThisRound: false,
+          dealtEncounterCards: [],
+          setAsideCards: [],
+        });
+
+        // Set Player Phase and Player 0 (Spider-Man) as active player
+        gameState.phase = 'PLAYER_PHASE' as any;
+        gameState.activePlayerIndex = 0;
+
+        // Evaluate card in Player 1's hand
+        const p2Card = gameState.players[1].hand[0];
+        const status = evaluateCardPlayability(gameState, 'p2', p2Card);
+
+        expect(status.isPlayable).toBe(false);
+        expect(status.reasons.some((r) => r.includes('Not your turn'))).toBe(true);
+      });
     });
   });
 });

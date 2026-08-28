@@ -562,19 +562,28 @@
       ]
     },
     "01111": {
-      "comment": "Explosion: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01111_explosion.md).",
+      "comment": "TREACHERY: Explosion. When Revealed: If Bomb Scare is in play, deal X damage where X is threat on Bomb Scare. Otherwise surge.",
+      "abilities": [
+        {
+          "id": "explosion_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "EXPLOSION",
+          "params": {}
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> HERO_FORM_BRANCH ({\"heroEffect\":{\"effect\":\"DEAL_DAMAGE\",\"amount\":3,\"target\":\"ALL_HEROES\"},\"alterEgoEffect\":{\"effect\":\"PLACE_THREAT\",\"amount\":2,\"target\":\"BOMB_SCARE_SCHEME\"}})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01111_explosion.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> EXPLOSION (If Bomb Scare in play, deal threat damage; otherwise surge)"
       },
       "mechanicSteps": [
-        "Treachery: When revealed: Deal 3 damage to each hero in hero form (or place 2 threat on Bomb Scare if in alter-ego)."
+        "When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare.",
+        "If Bomb Scare is not in play, this card gains surge."
       ]
     },
     "01112": {
@@ -1064,35 +1073,52 @@
       }
     },
     "01186": {
-      "comment": "Advance: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01186_advance.md).",
+      "comment": "TREACHERY: Advance. When Revealed: The villain schemes.",
+      "abilities": [
+        {
+          "id": "advance_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_SCHEMES",
+          "params": {}
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_SCHEMES ({\"target\":\"ACTIVE_PLAYER\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01186_advance.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> VILLAIN_SCHEMES"
       },
       "mechanicSteps": [
-        "Treachery: When revealed: The villain schemes (if in Alter-Ego) or schemes against hero."
+        "When Revealed: The villain schemes against you."
       ]
     },
     "01187": {
-      "comment": "Assault: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01187_assault.md).",
+      "comment": "TREACHERY: Assault. When Revealed: Alter-Ego gains surge. Hero: The villain attacks you.",
+      "abilities": [
+        {
+          "id": "assault_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_ATTACKS",
+          "params": {}
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_ATTACKS ({\"target\":\"ACTIVE_PLAYER\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01187_assault.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> VILLAIN_ATTACKS (Alter-Ego: Surge, Hero: Villain attacks you)"
       },
       "mechanicSteps": [
-        "Treachery: When revealed: The villain attacks you."
+        "When Revealed (Alter-Ego): This card gains surge.",
+        "When Revealed (Hero): The villain attacks you."
       ]
     },
     "01188": {
@@ -1122,19 +1148,28 @@
       ]
     },
     "01189": {
-      "comment": "Gang-Up: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01189_gang_up.md).",
+      "comment": "TREACHERY: Gang-Up. When Revealed: Alter-Ego gains surge. Hero: The villain and each minion engaged with you attacks you.",
+      "abilities": [
+        {
+          "id": "gang_up_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
+          "params": {}
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK ({\"target\":\"ACTIVE_PLAYER\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01189_gang_up.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK"
       },
       "mechanicSteps": [
-        "Treachery: When revealed: The villain and each minion engaged with you attacks you."
+        "When Revealed (Alter-Ego): This card gains surge.",
+        "When Revealed (Hero): The villain and each minion engaged with you attacks you."
       ]
     },
     "01190": {
@@ -1200,35 +1235,55 @@
       ]
     },
     "01192": {
-      "comment": "Masterplan: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01192_masterplan.md).",
+      "comment": "TREACHERY: Masterplan. When Revealed: Place 4 threat on each side scheme. If none, discard until side scheme is found and reveal it.",
+      "abilities": [
+        {
+          "id": "masterplan_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
+          "params": {
+            "amount": 4
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> PLACE_THREAT_PER_SIDE_SCHEME ({\"baseThreat\":4,\"perSchemeThreat\":1,\"target\":\"MAIN_SCHEME\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01192_masterplan.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> PLACE_THREAT_PER_SIDE_SCHEME (amount: 4, fallback: discard until side scheme and reveal)"
       },
       "mechanicSteps": [
-        "Treachery (Expert): When revealed: Place 4 threat on the main scheme (or 1 threat per side scheme in play)."
+        "When Revealed: Place 4 threat on each side scheme.",
+        "If there are no side schemes in play, discard cards from the top of the encounter deck until a side scheme is discarded. Reveal that side scheme."
       ]
     },
     "01193": {
-      "comment": "Under Fire: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01193_under_fire.md).",
+      "comment": "TREACHERY: Under Fire. Surge. When Revealed: Reveal the top card of the encounter deck.",
+      "abilities": [
+        {
+          "id": "under_fire_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "REVEAL_ENCOUNTER_CARD_WITH_SURGE",
+          "params": {}
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:40",
+        "reviewedAt": "2026-08-28T14:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_ENCOUNTER_CARD_WITH_SURGE ({\"count\":1})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01193_under_fire.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> REVEAL_ENCOUNTER_CARD_WITH_SURGE"
       },
       "mechanicSteps": [
-        "Treachery (Expert): When revealed: Reveal the top card of the encounter deck with Surge."
+        "Keyword: Surge.",
+        "When Revealed: Reveal the top card of the encounter deck."
       ]
     },
     "01194": {

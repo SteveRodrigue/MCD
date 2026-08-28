@@ -97,10 +97,20 @@ export interface CardUsesDefinition {
   discardOnEmpty?: boolean;
 }
 
+export interface CardAuditMetadata {
+  createdAt?: string;
+  updatedAt: string;
+  reviewedAt: string;
+  reviewedBy?: string;
+  rulesVersion?: string;
+  confidence?: number;
+}
+
 export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
   cardName?: string;
   comment?: string;
+  audit?: CardAuditMetadata;
   mechanicSteps?: string[];
   isLandscape?: boolean;
   attackCost?: number;

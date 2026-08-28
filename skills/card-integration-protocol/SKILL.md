@@ -3,8 +3,9 @@ name: card-integration-protocol
 description: >-
   Standard 8-step protocol for analyzing, translating, validating, and integrating
   Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
-  and rules engine. Enforces a 3-iteration circuit-breaker and 1-file-per-card ambiguity
-  tracking in docs/ambiguities/ (Inbox Zero). Use whenever adding or refining any card.
+  and rules engine. Enforces a 3-iteration circuit-breaker, encapsulated audit metadata
+  tracking (ISO timestamps with HH:MM), and 1-file-per-card ambiguity tracking in docs/ambiguities/ (Inbox Zero).
+  Use whenever adding or refining any card.
 ---
 
 # Card Integration Protocol (8-Step Standard Workflow)
@@ -18,7 +19,7 @@ This skill guides the agent and developers through the rigorous, deterministic p
 ```mermaid
 flowchart TD
     S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
-    S2 --> S3["3. Draft Supplemental JSON Schema (src/data/supplemental/)"]
+    S2 --> S3["3. Draft Supplemental JSON Schema & Audit Block"]
     S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
     S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
     S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
@@ -26,7 +27,7 @@ flowchart TD
     S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
 Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
     S6 --> S7["7. Author Composable Generic Primitives (if needed)"]
-    S7 --> S8["8. Populate mechanicSteps, Document Specs & Prune Ambiguity"]
+    S7 --> S8["8. Populate mechanicSteps, Stamp Audit (HH:MM) & Prune Ambiguity"]
 ```
 
 ### Step 1: Ingest & Read Upstream Card Text
@@ -41,11 +42,19 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
   * **Target:** Exact entity (e.g. `the villain` $\neq$ `minions`; `an enemy` = `villain or minion`).
   * **Form Requirement:** Derived strictly from ability timing (`HERO_` vs `ALTER_EGO_` vs neutral).
 
-### Step 3: Draft Structured Supplemental Schema
+### Step 3: Draft Structured Supplemental Schema & Audit Block
 * Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
 ```json
 "{card_code}": {
   "comment": "<Brief human summary>",
+  "audit": {
+    "createdAt": "YYYY-MM-DDTHH:mm",
+    "updatedAt": "YYYY-MM-DDTHH:mm",
+    "reviewedAt": "YYYY-MM-DDTHH:mm",
+    "reviewedBy": "antigravity",
+    "rulesVersion": "v1.8",
+    "confidence": 98
+  },
   "mechanicSteps": [
     "Trigger: <Timing & Trigger event>",
     "Step 1: <Inspection/Cost>",
@@ -101,8 +110,12 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
   * E.g. Destination Routing: Route cards to `HAND`, `DISCARD`, `TABLEAU`, or `DECK`.
 * Ensure the new primitive is generic enough that other cards with similar mechanics can reuse it immediately.
 
-### Step 8: Codify `mechanicSteps`, Document Specs & Prune Ambiguity
-* Ensure `mechanicSteps` is populated in `src/data/supplemental/pack/{pack_code}.json`.
-* Add a detailed entry in `docs/specs/card-mechanics-breakdown.md`.
-* If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it** (Inbox Zero).
-* Run test suite: `npm test; npm run typecheck; npm run build`.
+### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
+1. **Audit Timestamping:**
+   * If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:20"`).
+   * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to the current timestamp.
+   * If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
+2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
+3. **Document in Specs:** Add an entry to `docs/specs/card-mechanics-breakdown.md`.
+4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
+5. **Verify:** Run test suite: `npm test; npm run typecheck; npm run build`.

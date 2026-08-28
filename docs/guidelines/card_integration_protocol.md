@@ -15,11 +15,12 @@
 6. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
 7. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
 8. **3-Tier Blast-Radius Guardrails (ADR-0021):** Tier 1 (fast-track) and Tier 2 (additive helpers) execute freely. Tier 3 (structural changes) requires formal implementation plan approval in single-card mode, or ambiguity queue isolation during batch mode.
-9. **Round-Trip Decompiler Feedback Loop & Circuit-Breaker:** 
+9. **Round-Trip Decompiler Feedback Loop & Pessimistic Confidence Rubric:** 
    * Decompile **strictly** the structured `abilities: [...]` array into natural language (ignoring `comment` / `mechanicSteps`).
    * Compare against the printed upstream card text.
-   * If the executable schema cannot recreate a comparable card text with 100% equivalent meaning and intent, confidence CANNOT be rated $\ge 95\%$.
-   * If confidence remains $< 95\%$ after 3 refinement iterations, abort integration and isolate in `docs/ambiguities/{pack}_{code}_{slug}.md`.
+   * **Pessimistic Engine Support Principle:** In early-stage development, the engine is presumed **incapable** of supporting mechanics unless line-by-line TypeScript implementations and active pipeline trigger dispatches are verified.
+   * If any trigger dispatch window is unverified (e.g. `WHEN_REVEALED` on attachments/minions), any secondary side-effect is unhandled (shuffling/exhaustion), or an interactive prompt is needed without UI state machines, confidence CANNOT exceed 80%.
+   * If confidence remains $< 95\%$ after 3 refinement iterations, abort integration, strip `abilities: [...]`, and isolate in `docs/ambiguities/{pack}_{code}_{slug}.md` with exhaustive line-by-line engine gap reasoning.
 10. **Active Abilities Isolation for Blocked Cards (ADR-0021):** If a card has an open ambiguity ($< 95\%$ confidence or Tier 3 blocker), the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/*.json`. The entry retains ONLY `comment`, `audit` (with `ambiguityFile` and `reconstructedText`), and `mechanicSteps`. This guarantees that unsupported or partial abilities are never executed by the rules engine.
 11. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`), confidence score, and **`reconstructedText`** (a machine-derived proof-of-work decompiled strictly from the `abilities: [...]` array to compare against original printed text).
 12. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.

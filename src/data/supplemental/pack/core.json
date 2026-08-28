@@ -5,8 +5,8 @@
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-28T08:53",
-        "updatedAt": "2026-08-28T08:53",
-        "reviewedAt": "2026-08-28T08:53",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -33,8 +33,8 @@
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -61,8 +61,8 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -70,11 +70,11 @@
       "attackCost": 0,
       "mechanicSteps": [
         "Trigger: After player plays Black Cat into play from hand (FORCED_RESPONSE @ CARD_PLAYED)",
-        "Step 1: Inspect top 2 cards from player's draw deck",
-        "Step 2: Check each of the 2 cards for printed [mental] resource icons",
-        "Step 3: Discard any of the 2 cards that do not have a printed [mental] resource",
-        "Step 4: Put any remaining matching card(s) directly into player's hand",
-        "Passive: Zero consequential damage taken when making basic attack (attackCost: 0)"
+        "Step 1: Inspect top 2 cards from player draw deck",
+        "Step 2: Check each card for printed [mental] resource icons",
+        "Step 3: Discard cards lacking printed [mental] resource",
+        "Step 4: Add remaining matching cards to player hand",
+        "Passive: Takes 0 consequential damage when making basic attack (attackCost: 0)"
       ],
       "abilities": [
         {
@@ -108,11 +108,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Trigger: When hero would take damage from an attack (INTERRUPT @ TAKE_ATTACK_DAMAGE)",
@@ -138,7 +138,7 @@
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-27T23:00",
-        "reviewedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80
@@ -167,8 +167,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -197,8 +197,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -225,11 +225,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Play Condition: Attach to a minion",
@@ -261,8 +261,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -290,11 +290,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
@@ -321,6 +321,17 @@
             "drawCount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Hero Identity ability/stats for Captain Marvel"
       ]
     },
     "01010b": {
@@ -336,6 +347,17 @@
             "target": "CHOSEN_PLAYER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Alter-Ego Identity ability/recovery for Carol Danvers"
       ]
     },
     "01011": {
@@ -351,6 +373,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 2, ATK 2, and health 2"
       ]
     },
     "01012": {
@@ -369,6 +402,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (thwart): Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme."
       ]
     },
     "01013": {
@@ -387,10 +431,33 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to an enemy. If you paid for this card using a [energy] resource, draw 1 card."
       ]
     },
     "01014": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "RESOURCE: Energy Absorption",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
+      ]
     },
     "01015": {
       "comment": "Support: Alter-Ego Action: Exhaust Alpha Flight Station -> choose and discard a card from hand, then draw 1 card (or 2 cards instead if Carol Danvers).",
@@ -408,6 +475,17 @@
             "carolBonus": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Action: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers)."
       ]
     },
     "01016": {
@@ -434,6 +512,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
       ]
     },
     "01017": {
@@ -459,6 +548,17 @@
             "amount": 3
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.\nHero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
       ]
     },
     "01018": {
@@ -497,6 +597,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
       ]
     },
     "01019a": {
@@ -512,6 +623,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Hero Identity ability/stats for She-Hulk"
       ]
     },
     "01019b": {
@@ -527,6 +649,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Alter-Ego Identity ability/recovery for Jennifer Walters"
       ]
     },
     "01020": {
@@ -540,6 +673,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 2, ATK 1, and health 3"
       ]
     },
     "01021": {
@@ -557,6 +701,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
       ]
     },
     "01022": {
@@ -570,6 +725,17 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Deal 1 damage to each enemy."
       ]
     },
     "01023": {
@@ -583,6 +749,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Alter-Ego Action (thwart): Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way."
       ]
     },
     "01024": {
@@ -597,6 +774,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Response: After you make a basic attack (using your ATK), ready She-Hulk."
       ]
     },
     "01025": {
@@ -607,6 +795,17 @@
           "timing": "ACTION",
           "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Action: Change your form (flip your identity card). Then, draw up to your printed hand size."
       ]
     },
     "01026": {
@@ -627,6 +826,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Alter-Ego Action: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme."
       ]
     },
     "01027": {
@@ -644,6 +854,17 @@
             "count": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Hero Action: Exhaust Focused Rage and take 1 damage → draw 1 card."
       ]
     },
     "01028": {
@@ -670,6 +891,17 @@
             "target": "ATTACK_TARGET"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: She-Hulk gets +2 ATK.\nForced Response: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
       ]
     },
     "01029a": {
@@ -687,6 +919,17 @@
             }
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Hero Identity ability/stats for Iron Man"
       ]
     },
     "01029b": {
@@ -703,6 +946,17 @@
             "takeCount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Alter-Ego Identity ability/recovery for Tony Stark"
       ]
     },
     "01030": {
@@ -720,6 +974,17 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 2, and health 4"
       ]
     },
     "01031": {
@@ -739,6 +1004,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
       ]
     },
     "01032": {
@@ -757,6 +1033,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait)."
       ]
     },
     "01033": {
@@ -770,6 +1057,17 @@
           },
           "effect": "GENERATE_TOP_DISCARD_RESOURCES"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."
       ]
     },
     "01034": {
@@ -788,6 +1086,17 @@
             "target": "CHOSEN_PLAYER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Alter-Ego Action: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
       ]
     },
     "01035": {
@@ -804,6 +1113,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Hero Action: Exhaust Arc Reactor → ready Iron Man."
       ]
     },
     "01036": {
@@ -817,6 +1137,17 @@
             "amount": 6
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: You get +6 hit points."
       ]
     },
     "01037": {
@@ -835,6 +1166,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Hero Action (thwart): Exhaust Mark V Helmet → remove 1 threat from a scheme (from each scheme instead if you have the [[Aerial]] trait)."
       ]
     },
     "01038": {
@@ -856,6 +1198,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Hero Action (attack): Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait)."
       ]
     },
     "01039": {
@@ -884,6 +1237,17 @@
             "duration": "PHASE_END"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: You get +1 hit point.\nHero Action: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase."
       ]
     },
     "01040a": {
@@ -897,6 +1261,17 @@
             "trait": "Black Panther"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Hero Identity ability/stats for Black Panther"
       ]
     },
     "01040b": {
@@ -910,6 +1285,17 @@
             "trait": "Black Panther"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Alter-Ego Identity ability/recovery for T'Challa"
       ]
     },
     "01041": {
@@ -925,6 +1311,17 @@
             "destination": "HAND"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 1, and health 3"
       ]
     },
     "01042": {
@@ -938,6 +1335,17 @@
             "count": 3
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
       ]
     },
     "01043a": {
@@ -948,6 +1356,17 @@
           "timing": "HERO_ACTION",
           "effect": "TRIGGER_WAKANDA_UPGRADES"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043b": {
@@ -958,6 +1377,17 @@
           "timing": "HERO_ACTION",
           "effect": "TRIGGER_WAKANDA_UPGRADES"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043c": {
@@ -968,6 +1398,17 @@
           "timing": "HERO_ACTION",
           "effect": "TRIGGER_WAKANDA_UPGRADES"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01043d": {
@@ -978,10 +1419,33 @@
           "timing": "HERO_ACTION",
           "effect": "TRIGGER_WAKANDA_UPGRADES"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
       ]
     },
     "01044": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "RESOURCE: Vibranium",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
+      ]
     },
     "01045": {
       "comment": "Support: Alter-Ego Action: Exhaust The Golden City -> draw 2 cards.",
@@ -997,6 +1461,17 @@
             "count": 2
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Alter-Ego Action: Exhaust The Golden City → draw 2 cards."
       ]
     },
     "01046": {
@@ -1011,6 +1486,17 @@
             "finisherBonus": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
       ]
     },
     "01047": {
@@ -1029,6 +1515,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Special (attack): Deal 2 damage to an enemy (4 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
       ]
     },
     "01048": {
@@ -1047,6 +1544,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Special (thwart): Remove 1 threat from a scheme (2 threat instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
       ]
     },
     "01049": {
@@ -1063,6 +1571,17 @@
             "to": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Special (attack): Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
       ]
     },
     "01050": {
@@ -1074,6 +1593,17 @@
           "trigger": "ATTACK_RESOLVED",
           "effect": "HULK_DISCARD_RESOLUTION"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 0, ATK 3, and health 5"
       ]
     },
     "01051": {
@@ -1089,6 +1619,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 2, and health 3"
       ]
     },
     "01052": {
@@ -1104,6 +1645,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Response (thwart): After your hero attacks and defeats an enemy, remove 2 threat from a scheme."
       ]
     },
     "01053": {
@@ -1122,6 +1674,17 @@
             "overkillOnPhysical": true
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. (Excess damage from this attack is dealt to the villain.)"
       ]
     },
     "01054": {
@@ -1139,6 +1702,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to an enemy."
       ]
     },
     "01055": {
@@ -1153,6 +1727,17 @@
             "resource": "wild"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01056": {
@@ -1176,6 +1761,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Uses (3 attack counters). (Enters play with 3 counters. When those are gone, discard this card)\nAction: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy."
       ]
     },
     "01057": {
@@ -1189,6 +1785,17 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
       ]
     },
     "01058": {
@@ -1207,11 +1814,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Response: After Daredevil thwarts, deal 1 damage to an enemy (RESPONSE @ THWART_RESOLVED)"
@@ -1231,11 +1838,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
@@ -1260,11 +1867,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Action: Hero Action (thwart). Remove 3 threat from a scheme (4 threat instead if paid with [mental] resource)."
@@ -1286,11 +1893,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 90
+        "confidence": 98
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
@@ -1312,11 +1919,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Setup: Uses (3 snoop counters). Discard on empty.",
@@ -1342,11 +1949,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Trigger: Response after you defeat a minion (RESPONSE @ MINION_DEFEATED)",
@@ -1378,11 +1985,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Play Condition: Attach to a hero. Max 1 per hero.",
@@ -1403,11 +2010,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Play Condition: Attach to a side scheme. Max 1 per scheme.",
@@ -1436,6 +2043,17 @@
             "target": "TRIGGERING_MINION"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 1, and health 3"
       ]
     },
     "01067": {
@@ -1450,6 +2068,17 @@
             "count": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 2, ATK 1, and health 2"
       ]
     },
     "01068": {
@@ -1472,6 +2101,17 @@
             ]
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 2, and health 3"
       ]
     },
     "01069": {
@@ -1485,6 +2125,17 @@
             "target": "CHOSEN_ALLY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Action: Ready an ally."
       ]
     },
     "01070": {
@@ -1500,6 +2151,17 @@
             "duration": "PHASE_END"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Action: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
       ]
     },
     "01071": {
@@ -1510,6 +2172,17 @@
           "timing": "ACTION",
           "effect": "PLAY_ALLY_FROM_DISCARD"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
       ]
     },
     "01072": {
@@ -1524,6 +2197,17 @@
             "resource": "wild"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01073": {
@@ -1538,6 +2222,17 @@
             "target": "ALL_PLAYERS"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Increase your ally limit by 1. (This allows you to control more than 3 allies.)"
       ]
     },
     "01074": {
@@ -1552,6 +2247,17 @@
             "thwBonus": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK."
       ]
     },
     "01075": {
@@ -1569,6 +2275,17 @@
           },
           "effect": "CANCEL_WHEN_REVEALED"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 2, ATK 1, and health 2"
       ]
     },
     "01076": {
@@ -1583,6 +2300,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Ally card with THW 1, ATK 2, and health 5"
       ]
     },
     "01077": {
@@ -1600,6 +2328,17 @@
             "target": "ATTACKING_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Response (attack): After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK."
       ]
     },
     "01078": {
@@ -1611,6 +2350,17 @@
           "trigger": "TREACHERY_REVEALED",
           "effect": "CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its \"When Revealed\" effects. The villain attacks you instead."
       ]
     },
     "01079": {
@@ -1625,6 +2375,17 @@
             "resource": "wild"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01080": {
@@ -1648,6 +2409,17 @@
             "target": "CHOSEN_CHARACTER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Uses (3 medical counters). (Enters play with 3 counters. When those are gone, discard this card.)\nAction: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character."
       ]
     },
     "01081": {
@@ -1661,6 +2433,17 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
       ]
     },
     "01082": {
@@ -1678,6 +2461,17 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Permanent/attached card: Response: After your hero defends, discard indomitable → ready your hero."
       ]
     },
     "01083": {
@@ -1696,8 +2490,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1728,11 +2522,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Trigger 1: Response after enters play (FORCED_RESPONSE @ CARD_PLAYED) -> Choose: remove 2 threat, draw 3 cards, or deal 4 damage.",
@@ -1759,7 +2553,7 @@
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-27T23:00",
-        "reviewedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 75
@@ -1785,8 +2579,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1813,8 +2607,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1827,43 +2621,46 @@
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 98
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ]
+      ],
+      "comment": "RESOURCE: Energy"
     },
     "01089": {
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 98
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ]
+      ],
+      "comment": "RESOURCE: Genius"
     },
     "01090": {
       "noSupplementalNeeded": true,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 98
       },
       "mechanicSteps": [
         "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ]
+      ],
+      "comment": "RESOURCE: Strength"
     },
     "01091": {
       "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",
@@ -1883,8 +2680,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -1911,11 +2708,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
@@ -1941,11 +2738,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:44",
-        "reviewedAt": "2026-08-28T08:44",
+        "updatedAt": "2026-08-28T09:03",
+        "reviewedAt": "2026-08-28T09:03",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 98
       },
       "mechanicSteps": [
         "Play Condition: Attach to your hero. Max 1 per hero.",

@@ -2,12 +2,15 @@ export type AbilityTiming =
   | 'FORCED_INTERRUPT'
   | 'INTERRUPT'
   | 'HERO_INTERRUPT'
+  | 'ALTER_EGO_INTERRUPT'
   | 'HERO_ACTION'
   | 'ALTER_EGO_ACTION'
   | 'ACTION'
   | 'RESOURCE'
   | 'FORCED_RESPONSE'
   | 'RESPONSE'
+  | 'HERO_RESPONSE'
+  | 'ALTER_EGO_RESPONSE'
   | 'CONSTANT'
   | 'SPECIAL'
   | 'SETUP';
@@ -101,8 +104,6 @@ export interface CardEnrichment {
   isLandscape?: boolean;
   attackCost?: number;
   thwartCost?: number;
-  requiresHeroForm?: boolean;
-  requiresAlterEgoForm?: boolean;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

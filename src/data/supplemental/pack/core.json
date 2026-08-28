@@ -2612,36 +2612,63 @@
       ]
     },
     "01084": {
-      "comment": "Ally: Forced Response after enters play -> choose: remove 2 threat, draw 3 cards, or deal 4 damage. Discard at end of round.",
+      "comment": "ALLY: Nick Fury. When Enters Play: Choose 1 of 3 effects. At end of round, discard Nick Fury.",
       "abilities": [
         {
           "id": "nick_fury_enters_play",
-          "timing": "FORCED_RESPONSE",
+          "timing": "CARD_PLAYED",
           "trigger": "CARD_PLAYED",
-          "effect": "NICK_FURY_CHOICE",
+          "effect": "PLAYER_CHOICE",
           "params": {
-            "defaultChoice": "DRAW_CARDS"
+            "title": "Nick Fury's Orders",
+            "description": "Choose one of Nick Fury's tactical abilities:",
+            "options": [
+              {
+                "id": "draw_3_cards",
+                "label": "Draw 3 Cards",
+                "description": "Draw 3 cards from your deck into your hand.",
+                "effect": "DRAW_CARDS",
+                "params": {
+                  "count": 3
+                }
+              },
+              {
+                "id": "remove_2_threat",
+                "label": "Remove 2 Threat",
+                "description": "Remove 2 threat from the active main scheme.",
+                "effect": "REMOVE_THREAT",
+                "params": {
+                  "amount": 2,
+                  "target": "MAIN_SCHEME"
+                }
+              },
+              {
+                "id": "deal_4_damage",
+                "label": "Deal 4 Damage",
+                "description": "Deal 4 damage to the villain.",
+                "effect": "DEAL_DAMAGE",
+                "params": {
+                  "amount": 4,
+                  "target": "VILLAIN"
+                }
+              }
+            ]
           }
-        },
-        {
-          "id": "nick_fury_round_end",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "ROUND_END",
-          "effect": "DISCARD_SELF"
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> NICK_FURY_CHOICE ({\"defaultChoice\":\"DRAW_CARDS\"}); FORCED_RESPONSE (Trigger: ROUND_END) -> DISCARD_SELF"
+        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage])"
       },
       "mechanicSteps": [
-        "Trigger 1: Response after enters play (FORCED_RESPONSE @ CARD_PLAYED) -> Choose: remove 2 threat, draw 3 cards, or deal 4 damage.",
-        "Trigger 2: Round End (FORCED_RESPONSE @ ROUND_END) -> Discard Nick Fury if in play."
+        "Ally: THW 2, ATK 2, Health 3.",
+        "Response: After Nick Fury enters play, choose 1: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy.",
+        "Forced Response: At the end of the round, discard Nick Fury if he is still in play."
       ]
     },
     "01085": {

@@ -121,12 +121,30 @@ export interface GameLogEntry {
   text?: string;
 }
 
+export interface DecisionPromptOption {
+  id: string;
+  label: string;
+  description?: string;
+  effect: string;
+  params?: Record<string, unknown>;
+}
+
+export interface PendingDecisionPrompt {
+  promptId: string;
+  playerId: string;
+  title: string;
+  description: string;
+  sourceCardName: string;
+  options: DecisionPromptOption[];
+}
+
 export interface GameState {
   id: string;
   roundNumber: number;
   phase: GamePhase;
   setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
+  pendingDecisionPrompt?: PendingDecisionPrompt;
   scenarioId?: string;
   scenarioCardCode?: string;
   difficulty?: DifficultyMode;

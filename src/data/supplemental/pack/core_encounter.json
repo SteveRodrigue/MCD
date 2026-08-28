@@ -257,16 +257,25 @@
       ]
     },
     "01101": {
-      "comment": "Hydra Mercenary: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01101_hydra_mercenary.md).",
+      "comment": "MINION: Hydra Mercenary. Keyword: Guard (Heroes cannot attack the villain while engaged).",
+      "abilities": [
+        {
+          "id": "hydra_mercenary_guard",
+          "timing": "CONSTANT",
+          "effect": "GRANT_KEYWORD",
+          "params": {
+            "keyword": "GUARD"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01101_hydra_mercenary.md"
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 1, Health 3.",
@@ -274,16 +283,35 @@
       ]
     },
     "01102": {
-      "comment": "Sandman: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01102_sandman.md).",
+      "comment": "MINION: Sandman. Enters with Toughness. Forced Response: After Sandman attacks, discard top 2 encounter cards.",
+      "abilities": [
+        {
+          "id": "sandman_toughness",
+          "timing": "SETUP",
+          "effect": "GIVE_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        },
+        {
+          "id": "sandman_attack_discard",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "MINION_ATTACKED",
+          "effect": "DISCARD_ENCOUNTER_DECK",
+          "params": {
+            "count": 2
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK ({\"count\":2})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01102_sandman.md"
+        "confidence": 98,
+        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK (count: 2)"
       },
       "mechanicSteps": [
         "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
@@ -428,22 +456,33 @@
       ]
     },
     "01108": {
+      "comment": "SIDE_SCHEME: Crowd Control. Crisis icon. When Revealed: Place 1 acceleration token or threat per player.",
       "isLandscape": true,
-      "comment": "Crowd Control: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01108_crowd_control.md).",
+      "abilities": [
+        {
+          "id": "crowd_control_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "WHEN_REVEALED_THREAT_PER_PLAYER",
+          "params": {
+            "amountPerPlayer": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "Crisis icon; CONSTANT -> SCHEME_ICON_CRISIS ({\"count\":1})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01108_crowd_control.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> WHEN_REVEALED_THREAT_PER_PLAYER (amountPerPlayer: 1)"
       },
       "mechanicSteps": [
-        "Side Scheme: Starting threat 2 per player. Crisis icon (Heroes cannot remove threat from main scheme while this scheme is in play)."
-      ],
-      "crisis": 1
+        "Side Scheme: 2 Threat per player.",
+        "Keyword Icon: Crisis (Players cannot remove threat from the main scheme).",
+        "When Revealed: Place 1 additional threat here per player."
+      ]
     },
     "01109": {
       "comment": "SIDE_SCHEME: Bomb Scare. Base threat 2. When Revealed: Place 1 threat per player.",
@@ -473,19 +512,53 @@
       ]
     },
     "01110": {
-      "comment": "Hydra Bomber: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
+      "comment": "MINION: Hydra Bomber. When Revealed: Choose to take 2 damage or place 1 threat on main scheme.",
+      "abilities": [
+        {
+          "id": "hydra_bomber_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "PLAYER_CHOICE",
+          "params": {
+            "title": "Hydra Bomber Attack",
+            "description": "Choose an effect to resolve for Hydra Bomber's When Revealed trigger:",
+            "options": [
+              {
+                "id": "take_damage",
+                "label": "Take 2 Damage",
+                "description": "Deal 2 damage to your identity.",
+                "effect": "DEAL_DAMAGE",
+                "params": {
+                  "target": "HERO",
+                  "amount": 2
+                }
+              },
+              {
+                "id": "place_threat",
+                "label": "Place 1 Threat on Main Scheme",
+                "description": "Place 1 threat on the active main scheme.",
+                "effect": "PLACE_THREAT",
+                "params": {
+                  "target": "MAIN_SCHEME",
+                  "amount": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01110_hydra_bomber.md",
-        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [DEAL_DAMAGE (amount: 2, target: ACTIVE_HERO), ADD_THREAT (amount: 1, target: MAIN_SCHEME)])"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [Take 2 damage, Place 1 threat on main scheme])"
       },
       "mechanicSteps": [
-        "When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme."
+        "Minion: SCH 1, ATK 1, Health 2.",
+        "When Revealed: The player must choose to either take 2 damage or place 1 threat on the main scheme."
       ]
     },
     "01111": {
@@ -1081,19 +1154,49 @@
       ]
     },
     "01191": {
-      "comment": "Exhaustion: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01191_exhaustion.md).",
+      "comment": "TREACHERY: Exhaustion. When Revealed: Choose to exhaust your identity or take 2 damage.",
+      "abilities": [
+        {
+          "id": "exhaustion_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "PLAYER_CHOICE",
+          "params": {
+            "title": "Exhaustion Treachery",
+            "description": "Choose to either exhaust your identity or take 2 damage:",
+            "options": [
+              {
+                "id": "exhaust_identity",
+                "label": "Exhaust Identity",
+                "description": "Exhaust your hero or alter-ego.",
+                "effect": "EXHAUST_IDENTITY",
+                "params": {}
+              },
+              {
+                "id": "take_2_damage",
+                "label": "Take 2 Damage",
+                "description": "Deal 2 damage to your identity.",
+                "effect": "DEAL_DAMAGE",
+                "params": {
+                  "target": "HERO",
+                  "amount": 2
+                }
+              }
+            ]
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T14:04",
+        "reviewedAt": "2026-08-28T14:04",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Exhaust ACTIVE_IDENTITY",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01191_exhaustion.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [Exhaust identity, Take 2 damage])"
       },
       "mechanicSteps": [
-        "Treachery (Expert): When revealed: Exhaust your identity."
+        "When Revealed: The player chooses to either exhaust their identity or take 2 damage."
       ]
     },
     "01192": {

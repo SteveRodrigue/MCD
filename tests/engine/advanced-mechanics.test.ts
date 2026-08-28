@@ -209,9 +209,19 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(playRes.result.success).toBe(true);
       // Nick Fury entered play in allies
       expect(playRes.state.players[0].allies.some((a) => a.card.code === '01084')).toBe(true);
-      // Evaluated modal choice (hand was empty after paying 4 cards -> drew 3 cards)
-      expect(playRes.state.players[0].hand.length).toBe(3);
-      expect(playRes.state.players[0].deck.length).toBe(initialDeck - 3);
+      expect(playRes.state.pendingDecisionPrompt).toBeDefined();
+
+      // Resolve decision prompt: Draw 3 cards
+      const resolveRes = dispatchAction(playRes.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'draw_3_cards',
+      });
+
+      expect(resolveRes.result.success).toBe(true);
+      // Hand had 0 cards after paying 4 cards -> drew 3 cards
+      expect(resolveRes.state.players[0].hand.length).toBe(3);
+      expect(resolveRes.state.players[0].deck.length).toBe(initialDeck - 3);
     });
 
     it('Caught Off Guard (01188) discards upgrade or surges if none', () => {

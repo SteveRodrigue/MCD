@@ -256,20 +256,32 @@ export function canPlayCard(
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
-    const isInterruptOrResponse =
-      card.type === CardType.EVENT &&
-      abilities.some(
-        (a) =>
-          a.timing &&
-          (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
-      );
-
-    if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
+    if (activePlayer && activePlayer.id !== playerId) {
       return {
         allowed: false,
         reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
       };
     }
+  }
+
+  // Reactive Event Restriction (RR v1.8 p. 12, 16, 19)
+  // An event card with Interrupt or Response timing can ONLY be played during its specific trigger window.
+  // It cannot be proactively played / paid for as a standard player action.
+  const isReactiveEvent =
+    card.type === CardType.EVENT &&
+    abilities.length > 0 &&
+    !abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION') &&
+    abilities.some(
+      (a) =>
+        a.timing &&
+        (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+    );
+
+  if (isReactiveEvent) {
+    return {
+      allowed: false,
+      reason: 'Interrupt/Response events can only be played when their trigger occurs.',
+    };
   }
 
   // Form restrictions check (RR v1.8 p. 4, 13) - 100% metadata driven (ADR-0018)
@@ -417,20 +429,28 @@ export function evaluateCardPlayability(
   // 1. Player Turn Validation (RR v1.8 p. 19)
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
-    const isInterruptOrResponse =
-      card.type === CardType.EVENT &&
-      abilities.some(
-        (a) =>
-          a.timing &&
-          (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
-      );
-
-    if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
+    if (activePlayer && activePlayer.id !== playerId) {
       reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);
     }
   }
 
-  // 2. Identity Form Validation (RR v1.8 p. 13) - 100% metadata driven (ADR-0018)
+  // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)
+  // An event card with Interrupt or Response timing can ONLY be played during its specific trigger window.
+  const isReactiveEvent =
+    card.type === CardType.EVENT &&
+    abilities.length > 0 &&
+    !abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION') &&
+    abilities.some(
+      (a) =>
+        a.timing &&
+        (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+    );
+
+  if (isReactiveEvent) {
+    reasons.push('Interrupt/Response: Can only be played when triggered');
+  }
+
+  // 3. Identity Form Validation (RR v1.8 p. 13) - 100% metadata driven (ADR-0018)
   const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
   const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
 

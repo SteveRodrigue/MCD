@@ -20,6 +20,7 @@ import {
 } from './legality-checker';
 import { executeEffect } from '../effects';
 import { executeVillainPhase } from './villain-phase';
+import { handleVillainDefeat } from './scenario-helpers';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -248,7 +249,8 @@ export function dispatchAction(
         nextState.villain.health = Math.max(0, nextState.villain.health - attackDamage);
 
         if (nextState.villain.health <= 0) {
-          nextState.winner = 'HEROES';
+          const defeatedState = handleVillainDefeat(nextState, nextState.villain.instanceId);
+          return { state: defeatedState, result: { success: true, onomatopoeia: 'POW!' } };
         }
 
         const onomatopoeia = 'POW!';
@@ -368,7 +370,9 @@ export function dispatchAction(
           nextState.villain.statusCards.splice(toughIdx, 1);
         } else {
           nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
-          if (nextState.villain.health <= 0) nextState.winner = 'HEROES';
+          if (nextState.villain.health <= 0) {
+            handleVillainDefeat(nextState, nextState.villain.instanceId);
+          }
         }
       }
 

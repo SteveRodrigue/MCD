@@ -10,6 +10,7 @@ import {
   VillainCard,
   MainSchemeCard,
   NormalizedCard,
+  DifficultyMode,
 } from '@engine/models';
 
 let instanceCounter = 0;
@@ -49,6 +50,8 @@ export interface PlayerSetupConfig {
 
 export interface GameSetupOptions {
   id?: string;
+  scenarioId?: string;
+  difficulty?: DifficultyMode;
   players: PlayerSetupConfig[];
   villain: VillainCard;
   mainScheme: MainSchemeCard;
@@ -83,6 +86,7 @@ export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
   const playerCount = options.players.length;
   const skipMulligan = options.skipMulligan ?? false;
+  const difficulty = options.difficulty || 'STANDARD';
 
   // Unicity Constraint (RR v1.8): No two players can share the same hero identity
   const seenHeroNames = new Set<string>();
@@ -98,27 +102,10 @@ export function setupGame(options: GameSetupOptions): GameState {
 
   // 1. Setup Players
   const players: PlayerState[] = options.players.map((pConfig) => {
-    if (!pConfig.hero.enrichment) {
-      throw new Error(`Supplemental data is missing for card ${pConfig.hero.code} (${pConfig.hero.name})`);
-    }
-    if (!pConfig.alterEgo.enrichment) {
-      throw new Error(`Supplemental data is missing for card ${pConfig.alterEgo.code} (${pConfig.alterEgo.name})`);
-    }
+    const handSize = pConfig.alterEgo.handSize;
+    const shuffledDeck = shuffle(pConfig.deckCards.map(createCardInstance));
+    const hand = shuffledDeck.splice(0, handSize);
 
-    // Instantiate all deck cards
-    const deckInstances = pConfig.deckCards.map(createCardInstance);
-    const shuffledDeck = shuffle(deckInstances);
-
-    // Draw starting hand equal to Alter-Ego hand size
-    const startingHandSize = pConfig.alterEgo.handSize;
-    const hand = shuffledDeck.splice(0, startingHandSize);
-
-    // Available forms for this identity
-    const availableForms: NormalizedCard[] = (pConfig as any).additionalForms
-      ? [pConfig.alterEgo, pConfig.hero, ...(pConfig as any).additionalForms]
-      : [pConfig.alterEgo, pConfig.hero];
-
-    // Set Aside Nemesis Set (Step 10 of Setup)
     const setAsideCards = (pConfig.nemesisCards || []).map(createCardInstance);
 
     return {
@@ -126,7 +113,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       name: pConfig.name,
       hero: pConfig.hero,
       alterEgo: pConfig.alterEgo,
-      availableForms,
+      availableForms: [pConfig.hero, pConfig.alterEgo],
       activeFormCard: pConfig.alterEgo,
       currentForm: 'alter_ego',
       health: pConfig.alterEgo.health,
@@ -156,6 +143,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     : options.villain.health;
 
   const villain: VillainState = {
+    instanceId: `villain_${Date.now()}_${options.villain.code}`,
     card: options.villain,
     health: villainHealth,
     maxHealth: villainHealth,
@@ -170,6 +158,7 @@ export function setupGame(options: GameSetupOptions): GameState {
   }
 
   const mainScheme: MainSchemeState = {
+    instanceId: `main_scheme_${Date.now()}_${options.mainScheme.code}`,
     card: options.mainScheme,
     threat: options.mainScheme.baseThreat * (options.mainScheme.baseThreatFixed ? 1 : playerCount),
     targetThreat: options.mainScheme.targetThreat * playerCount,
@@ -200,9 +189,15 @@ export function setupGame(options: GameSetupOptions): GameState {
     roundNumber: 1,
     phase: initialPhase,
     setupState,
+    scenarioId: options.scenarioId || 'rhino',
+    difficulty,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
     players,
+    villains: [villain],
+    activeVillainIndex: 0,
+    mainSchemes: [mainScheme],
+    activeMainSchemeIndex: 0,
     villain,
     mainScheme,
     sideSchemes: [],
@@ -222,6 +217,7 @@ export function setupGame(options: GameSetupOptions): GameState {
           villain: options.villain.name,
           scheme: options.mainScheme.name,
           playerCount,
+          difficulty,
         },
       },
     ],

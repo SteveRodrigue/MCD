@@ -18,38 +18,73 @@
       ]
     },
     "01095": {
-      "comment": "Rhino (Stage II): Blocked pending engine implementation (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
+      "comment": "VILLAIN: Rhino (Stage II). When Revealed: Search the encounter deck and discard pile for Breakin' & Takin' and reveal it. Shuffle the encounter deck.",
+      "abilities": [
+        {
+          "id": "rhino_stage_ii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
+          "params": {
+            "targetCardCode": "01107",
+            "searchZones": [
+              "ENCOUNTER_DECK",
+              "ENCOUNTER_DISCARD"
+            ],
+            "shuffleDeck": "ENCOUNTER_DECK"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T13:18",
+        "reviewedAt": "2026-08-28T13:18",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search ENCOUNTER_DECK and ENCOUNTER_DISCARD for Breakin' & Takin' [01107], reveal it, and shuffle ENCOUNTER_DECK.",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01095_rhino_stage_ii.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> SEARCH_AND_REVEAL_SIDE_SCHEME (target: Breakin' & Takin' [01107], zones: [ENCOUNTER_DECK, ENCOUNTER_DISCARD], shuffle: ENCOUNTER_DECK)"
       },
       "mechanicSteps": [
         "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",
-        "Trigger: When revealed (FORCED_RESPONSE @ WHEN_REVEALED)",
+        "Trigger: When revealed (WHEN_REVEALED)",
         "Effect: Search encounter deck and discard pile for Breakin' & Takin' side scheme (#01107) and reveal it. Shuffle encounter deck."
       ]
     },
     "01096": {
-      "comment": "Rhino (Stage III): Blocked pending engine implementation (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
+      "comment": "VILLAIN: Rhino (Stage III). When Revealed: Stun each hero. Rhino gains Tough.",
+      "abilities": [
+        {
+          "id": "rhino_stage_iii_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "STUNNED",
+            "target": "ALL_HEROES"
+          }
+        },
+        {
+          "id": "rhino_stage_iii_tough",
+          "timing": "SETUP",
+          "effect": "ADD_STATUS",
+          "params": {
+            "status": "TOUGH",
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T13:18",
+        "reviewedAt": "2026-08-28T13:18",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give STUNNED status to ALL_HEROES; SETUP -> Give TOUGH status to SELF",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01096_rhino_stage_iii.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_STATUS (status: STUNNED, target: ALL_HEROES); SETUP -> ADD_STATUS (status: TOUGH, target: SELF)"
       },
       "mechanicSteps": [
         "Villain Stage III: Base SCH 1, ATK 5, Health 16 per player.",
-        "Trigger: When revealed (FORCED_RESPONSE @ WHEN_REVEALED)",
+        "Trigger: When revealed (WHEN_REVEALED)",
         "Effect: Give Tough status card to Rhino and Stun each hero."
       ]
     },

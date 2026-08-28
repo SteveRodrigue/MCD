@@ -5,7 +5,7 @@ import {
   NormalizedCard,
 } from '../models';
 
-export interface ScenarioDefinition {
+export type LegacyScenarioDefinition = {
   id: string;
   name: string;
   subtitle: string;
@@ -25,7 +25,9 @@ export interface ScenarioDefinition {
     mainScheme: MainSchemeCard;
     encounterCards: NormalizedCard[];
   };
-}
+};
+
+export type ScenarioDefinition = LegacyScenarioDefinition;
 
 /**
  * Registry of Scenarios.

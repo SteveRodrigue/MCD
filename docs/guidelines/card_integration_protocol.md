@@ -57,7 +57,7 @@ flowchart TD
     S2 --> S3["3. Draft Supplemental JSON Schema & Audit Block"]
     S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
     S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
-    S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
+    S5 -- "Yes (>= 95%)" --> S6["6. Code-Level Implementation & Trigger Audit"]
     S5 -- "No (< 95%, Attempts < 3)" --> S3
     S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
 Log to docs/ambiguities/ & logs/skills/"]
@@ -67,3 +67,13 @@ Log to docs/ambiguities/ & logs/skills/"]
     T3 -- "Single Card" --> T3S["Log Ambiguity, Write Implementation Plan & STOP for Approval"]
     T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
 ```
+
+### Detailed Steps:
+1. **Ingest Upstream Text & Log:** Fetch exact printed text and append initial audit log in `logs/skills/`.
+2. **Literal Semantic Mapping:** Identify timing, triggers, costs, targets, and constraints without guessing.
+3. **Draft Supplemental Schema:** Mandate executable `abilities: [...]` for any active text.
+4. **Consult Ground Truth:** Review Rules Reference v1.8 and MarvelCDB FAQ/rulings.
+5. **Round-Trip Decompiler Feedback Loop:** Decompile `abilities` into natural language; assert 100% equivalence.
+6. **Code-Level Primitive & Trigger Path Audit:** Open `src/engine/effects/index.ts` and `src/engine/pipeline/` to verify code handles all zones (deck/discard), shuffling, scaling, and actual runtime trigger emission.
+7. **Composable Primitives & Blast-Radius Check:** If code gaps exist, apply Tier 2 generic fix or isolate as Tier 3 blocker.
+8. **Stamp Audit Metadata, Sort Keys & Prune Ambiguities:** Stamp `YYYY-MM-DDTHH:mm`, sort keys canonically, and prune resolved files.

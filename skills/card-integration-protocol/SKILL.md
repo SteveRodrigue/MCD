@@ -140,9 +140,21 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
      `[WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`
   4. In batch mode: proceed to the next card; in single-card mode: report block to user.
 
-### Step 6: Engine Primitive & Trigger Reuse Check
-* Verify whether existing effect primitives in `src/engine/effects/` or triggers in `src/engine/triggers/` already satisfy the card's requirements.
-* Avoid duplicating or creating card-specific one-off functions.
+### Step 6: Code-Level Primitive & Trigger Path Implementation Audit
+* **Never Assume a String Primitive Is Complete:** Do not simply check that `"effect": "PRIMITIVE_NAME"` exists in an enum or switch case. You **MUST** open and inspect the actual TypeScript source code.
+* **Sub-step 6A (Effect Primitive Code Audit):**
+  * Open `src/engine/effects/index.ts` and inspect the exact lines of code executing that effect.
+  * Audit every mechanical requirement against the TypeScript implementation:
+    * **Zones:** Does it check all relevant zones (e.g. deck **AND** discard pile for search effects)?
+    * **Mandatory Side-Effects:** Does it execute all required secondary rules (e.g. shuffling the deck after a search per RR v1.8 p. 25, exhausting targets, applying status cards)?
+    * **Targeting & Scaling:** Does it handle player scaling (e.g. `baseThreatFixed` vs `baseThreat * players`)?
+* **Sub-step 6B (Trigger Emission & Dispatch Window Trace):**
+  * Open `src/engine/pipeline/` (e.g. `villain-phase.ts`, `action-dispatcher.ts`, `damage-pipeline.ts`) and trace whether the trigger event (e.g. `WHEN_REVEALED`, `VILLAIN_STAGE_TRANSITION`, `MINION_ATTACKED`) is **actually dispatched for this specific card type and phase window**.
+  * If a trigger is not dispatched for that card type (e.g. `WHEN_REVEALED` on Minions / Side Schemes, or Villain Stage transitions), the mechanic is **inactive in the engine**.
+* **Sub-step 6C (Code-Level Gap Routing):**
+  * If the underlying TypeScript code has gaps, missing clauses, or un-emitted triggers:
+    * **Tier 2 (Additive Helper / Dispatch Fix):** If the fix is a localized generic helper or wiring a missing dispatch without architectural changes, implement the generic fix and write a regression unit test.
+    * **Tier 3 (Structural Blocker):** If the fix requires new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/`.
 
 ### Step 7: Composable Generic Primitives & Blast-Radius Gate
 * Check change tier (Tier 1 vs Tier 2 vs Tier 3):

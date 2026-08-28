@@ -463,5 +463,29 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.result.success).toBe(false);
       expect(res.result.error).toContain('Ally limit reached');
     });
+
+    it('uses Alter-Ego identity resource ability (Peter Parker: Scientist) to pay for a 1-cost card', () => {
+      // In Alter-Ego form (Peter Parker)
+      gameState.players[0].currentForm = 'alter_ego';
+      gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
+
+      const player = gameState.players[0];
+      const webShooterCard = catalog.getCard('01008')!; // Cost 1 Upgrade
+
+      const webShooterInstance = createCardInstance(webShooterCard);
+      player.hand = [webShooterInstance]; // No extra cards in hand
+
+      const res = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: webShooterInstance.instanceId,
+        paymentCardInstanceIds: [],
+        generatorInstanceIds: ['identity_ability'],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01008')).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+    });
   });
 });

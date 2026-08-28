@@ -30,9 +30,9 @@ We establish the **8-Step Card Integration Protocol**, **3-Tier Blast-Radius Gua
 Every card added or refined must follow these exact sequential steps:
 1. **Ingest Upstream Text:** Read exact printed text from `data/upstream/`.
 2. **Literal Semantic Mapping:** Identify timing, triggers, costs, targets, and form constraints without interpretation.
-3. **Draft Supplemental Schema & Audit Block:** Define explicit `audit` (`createdAt`, `updatedAt`, `reviewedAt`, `rulesVersion`, `confidence`), `abilities`, `timing`, `trigger`, `cost`, `effect`, `params`, and `tags`.
+3. **Draft Supplemental Schema & Audit Block:** Define explicit `audit` (`createdAt`, `updatedAt`, `reviewedAt`, `rulesVersion`, `confidence`), `mechanicSteps`, and **mandatory executable `abilities: [...]` array** (`id`, `timing`, `trigger`, `cost`, `effect`, `params`, `tags`). `noSupplementalNeeded: true` is strictly reserved for vanilla cards with 0 rules text.
 4. **Consult Ground Truth (`references/`):** Check `references/rules_reference_v18.md` and MarvelCDB FAQs (`https://marvelcdb.com/faqs`). Apply **The Golden Rule** (Card text overrules general rules).
-5. **Bidirectional Round-Trip Test & Circuit-Breaker:** Translate supplemental code back into human language. Proceed only if confidence is $\ge 95\%$.
+5. **Bidirectional Round-Trip Test & Circuit-Breaker:** Translate supplemental `abilities` array back into human language. Proceed only if confidence is $\ge 95\%$. If `abilities` is missing or incomplete for a card with rules text, confidence cannot exceed 50%.
    * **Max 3 Refinement Iterations:** If confidence remains $< 95\%$ after 3 attempts, **ABORT** integration and generate a blocked card report in `docs/ambiguities/{pack}_{code}_{slug}.md`.
 6. **Engine Reuse Check:** Check `src/engine/effects/` and `src/engine/triggers/` before authoring new logic.
 7. **Author Composable Generic Primitives & Blast-Radius Check:** If extending the engine, build generic reusable building blocks. If Tier 3 is required, gate behind approval or batch isolation.

@@ -1,6 +1,6 @@
-# External Card Game Rules & Rulings References
+# External Card Game Rules & Rulings References (Read-Only)
 
-This document captures primary authoritative links, community databases, and card-specific discussion resources for **Marvel Champions Digital (MCD)** developers.
+This directory contains external ground truth resources, official rules, and community databases for **Marvel Champions Digital (MCD)**.
 
 ---
 

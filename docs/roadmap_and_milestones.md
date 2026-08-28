@@ -94,10 +94,14 @@ graph TD
   * Persistent `GameSettingsContext` with top bar Dev Mode indicator and Options Menu.
   * Encounter Deck Inspector with multi-tier sorting (Deck Order, Card Type, Encounter Set).
   * Player Deck Inspector with multi-tier sorting (Deck Order, Card Type, Affinity, Cost with direction toggle and separated Resource cards).
-* [ ] 🔴 `[Must-Have]` **Multi-Handed Solo UI Layout & Second Core Hero Deck (Captain Marvel - Leadership):**
-  * Built-in multi-hero architectural baseline in engine and UI *before* advancing to complex card actions (prevents future refactoring and architectural debt).
-  * Addition of a second prebuilt Core Set starter deck: **Captain Marvel (Leadership)** (Carol Danvers / Captain Marvel, 15 signature cards, Leadership aspect cards like *Make the Call*, *Maria Hill*, *Lead from the Front*, *Family Emergency* obligation, and *Yon-Rogg* 5-card nemesis set).
-  * Multi-Handed Solo tabletop layout enhancements: persistent multi-seat switcher tabs, active seat indicator, independent per-hero hand dock/tableaus, and synchronized multi-hero state transitions.
+* [x] 🔴 `[Must-Have]` **Multi-Handed Solo UI Layout & Second Core Hero Deck (Captain Marvel - Leadership):**
+  * Built-in multi-hero architectural baseline in engine and UI supporting 1 to 4 heroes natively.
+  * Addition of second prebuilt Core Set starter deck: **Captain Marvel (Leadership)** (Carol Danvers / Captain Marvel, 15 signature cards, Leadership aspect cards like *Make the Call*, *Maria Hill*, *Lead from the Front*, *Family Emergency* obligation, and *Yon-Rogg* 5-card nemesis set).
+  * Multi-Hero Setup & Mulligan screen with Starting Player token indicator (RR v1.8 Step 12).
+* [x] 🔴 `[Must-Have]` **Panoramic Horizontal Tabletop & Edge Scrolling (ADR-0017):**
+  * Continuous horizontal tabletop canvas for 1–4 players with full-size 880px stations, single-row card hands, unconstrained $1.9\times$ hover-zoom, and full-screen portal modals.
+  * Real-time velocity-based edge-hover auto-panning (`useEdgeScroll`), drag-to-scroll readiness, and quick-jump compass navigation.
+  * User-adjustable Edge-Scroll Velocity controls (Slow, Normal Default, Fast).
 * [ ] 🔴 `[Must-Have]` **Interactive Card Play & Resource Payment Modal:**
   * Clicking a card in hand opens the payment modal with resource selection from hand cards and exhausted generators (*Web-Shooter*, Peter Parker's Scientist ability, Carol Danvers' Rechannel).
 * [ ] 🔴 `[Must-Have]` **Hero Identity Basic Actions:**

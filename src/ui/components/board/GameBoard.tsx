@@ -15,9 +15,9 @@ interface GameBoardProps {
 }
 
 const SPEED_MAP: Record<string, number> = {
-  slow: 24, // Slower baseline (previous default)
-  normal: 48, // Default (responsive)
-  fast: 75, // Rapid pan
+  slow: 18, // Slower baseline
+  normal: 45, // Responsive default
+  fast: 90, // High-speed glide
 };
 
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
@@ -36,8 +36,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
     scrollToChild,
     scrollByAmount,
   } = useEdgeScroll<HTMLDivElement>({
-    edgeThreshold: 85,
-    maxSpeed: SPEED_MAP[edgeScrollSpeed] || 48,
+    edgeThreshold: 95,
+    maxSpeed: SPEED_MAP[edgeScrollSpeed] || 45,
     enabled: isMultiHero,
   });
 
@@ -119,10 +119,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
               </button>
             )}
 
-            {/* Panoramic Horizontal Track */}
+            {/* Panoramic Horizontal Track (Direct frame-rate panning) */}
             <div
               ref={containerRef}
-              className="w-full overflow-x-auto overflow-y-visible px-6 md:px-12 py-3 flex items-start gap-8 select-none scroll-smooth"
+              className="w-full overflow-x-auto overflow-y-visible px-6 md:px-12 py-3 flex items-start gap-8 select-none"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {gameState.players.map((player, idx) => {

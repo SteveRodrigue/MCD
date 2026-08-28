@@ -18,11 +18,11 @@
       ]
     },
     "01095": {
-      "comment": "Villain Stage II: Blocked pending Tier 3 structural stage transition pipeline (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
+      "comment": "Rhino (Stage II): Blocked pending STRUCTURAL_STAGE_TRANSITION_PIPELINE (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-28T09:52",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -36,11 +36,11 @@
       ]
     },
     "01096": {
-      "comment": "Villain Stage III: Blocked pending Tier 3 structural stage transition pipeline (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
+      "comment": "Rhino (Stage III): Blocked pending STRUCTURAL_STAGE_TRANSITION_PIPELINE (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-28T09:52",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -90,27 +90,16 @@
       ]
     },
     "01098": {
-      "comment": "Attachment: Attach to Rhino. When damage would be dealt to Rhino, place it here instead (absorbs up to 5 damage).",
-      "abilities": [
-        {
-          "id": "armored_rhino_suit_absorb",
-          "timing": "FORCED_INTERRUPT",
-          "trigger": "TAKE_ATTACK_DAMAGE",
-          "effect": "PREVENT_DAMAGE",
-          "params": {
-            "maxAbsorb": 5,
-            "target": "ATTACHED_VILLAIN"
-          }
-        }
-      ],
+      "comment": "Armored Rhino Suit: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01098_armored_rhino_suit.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> PREVENT_DAMAGE ({\"maxAbsorb\":5,\"target\":\"ATTACHED_VILLAIN\"})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> PREVENT_DAMAGE ({\"maxAbsorb\":5,\"target\":\"ATTACHED_VILLAIN\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01098_armored_rhino_suit.md"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -119,28 +108,16 @@
       ]
     },
     "01099": {
-      "comment": "Attachment: Attach to Rhino. When Rhino attacks -> +3 ATK and gains Overkill. Discard after attack.",
-      "abilities": [
-        {
-          "id": "charge_boost",
-          "timing": "FORCED_INTERRUPT",
-          "trigger": "VILLAIN_ATTACKS",
-          "effect": "BOOST_ATTACK_OVERKILL",
-          "params": {
-            "atkBonus": 3,
-            "overkill": true,
-            "discardAfterAttack": true
-          }
-        }
-      ],
+      "comment": "Charge: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01099_charge.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: VILLAIN_ATTACKS) -> BOOST_ATTACK_OVERKILL ({\"atkBonus\":3,\"overkill\":true,\"discardAfterAttack\":true})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_INTERRUPT (Trigger: VILLAIN_ATTACKS) -> BOOST_ATTACK_OVERKILL ({\"atkBonus\":3,\"overkill\":true,\"discardAfterAttack\":true})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01099_charge.md"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -149,40 +126,16 @@
       ]
     },
     "01100": {
-      "comment": "Attachment: Attached Rhino gets +1 ATK.",
-      "abilities": [
-        {
-          "id": "enhanced_ivory_horn_atk_boost",
-          "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "ATK",
-            "amount": 1,
-            "target": "ATTACHED_VILLAIN"
-          }
-        },
-        {
-          "id": "enhanced_ivory_horn_discard_action",
-          "timing": "HERO_ACTION",
-          "cost": {
-            "resourceCost": {
-              "physical": 2
-            }
-          },
-          "effect": "DISCARD_CARD",
-          "params": {
-            "target": "SELF"
-          }
-        }
-      ],
+      "comment": "Enhanced Ivory Horn: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CONSTANT -> ATTACHED_VILLAIN gets +1 ATK; HERO_ACTION [Cost: Spend 2 [physical]] -> DISCARD_CARD ({\"target\":\"SELF\"})"
+        "confidence": 80,
+        "reconstructedText": "CONSTANT -> ATTACHED_VILLAIN gets +1 ATK; HERO_ACTION [Cost: Spend 2 [physical]] -> DISCARD_CARD ({\"target\":\"SELF\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -252,27 +205,16 @@
       ]
     },
     "01103": {
-      "comment": "Minion: Shocker When Revealed -> Deal 1 damage to each hero.",
-      "abilities": [
-        {
-          "id": "shocker_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "ALL_HEROES"
-          }
-        }
-      ],
+      "comment": "Shocker: Blocked pending MINION_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01103_shocker.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 1 damage to ALL_HEROES"
+        "confidence": 85,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 1 damage to ALL_HEROES",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01103_shocker.md"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 2, Health 3.",
@@ -365,28 +307,19 @@
     },
     "01107": {
       "isLandscape": true,
-      "comment": "SIDE_SCHEME: Breakin' & Takin'",
+      "comment": "Breakin' & Takin': Blocked pending SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01107_breakin_and_takin.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "Hazard icon (1); CONSTANT -> SCHEME_ICON_HAZARD ({\"count\":1})"
+        "confidence": 85,
+        "reconstructedText": "Hazard icon (1); CONSTANT -> SCHEME_ICON_HAZARD ({\"count\":1})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01107_breakin_and_takin.md"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Hazard icon (Deal 1 additional encounter card during Step 3)."
-      ],
-      "abilities": [
-        {
-          "id": "breakin_takin_hazard",
-          "timing": "CONSTANT",
-          "effect": "SCHEME_ICON_HAZARD",
-          "params": {
-            "count": 1
-          }
-        }
       ],
       "hazard": 1
     },
@@ -419,53 +352,33 @@
     },
     "01109": {
       "isLandscape": true,
-      "comment": "SIDE_SCHEME: Bomb Scare",
+      "comment": "Bomb Scare: Blocked pending SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01109_bomb_scare.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "Acceleration icon; CONSTANT -> SCHEME_ICON_ACCELERATION ({\"count\":1})"
+        "confidence": 85,
+        "reconstructedText": "Acceleration icon; CONSTANT -> SCHEME_ICON_ACCELERATION ({\"count\":1})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01109_bomb_scare.md"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Acceleration icon (Places 1 additional threat on main scheme during Step 1)."
       ],
-      "abilities": [
-        {
-          "id": "bomb_scare_acceleration",
-          "timing": "CONSTANT",
-          "effect": "SCHEME_ICON_ACCELERATION",
-          "params": {
-            "count": 1
-          }
-        }
-      ],
       "acceleration": 1
     },
     "01110": {
-      "comment": "Minion: Hydra Bomber When Revealed -> Deal 2 damage to each hero.",
-      "abilities": [
-        {
-          "id": "hydra_bomber_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "ALL_FRIENDLY_CHARACTERS"
-          }
-        }
-      ],
+      "comment": "Hydra Bomber: Blocked pending MINION_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to ALL_FRIENDLY_CHARACTERS"
+        "confidence": 85,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to ALL_FRIENDLY_CHARACTERS",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01110_hydra_bomber.md"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 1, Health 2. When revealed: Deal 2 damage to each friendly character."
@@ -1097,26 +1010,16 @@
       ]
     },
     "01190": {
-      "comment": "Treachery: Shadow of the Past -> Reveal nemesis minion and nemesis side scheme.",
-      "abilities": [
-        {
-          "id": "shadow_of_the_past_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "REVEAL_NEMESIS_SET",
-          "params": {
-            "target": "ACTIVE_HERO"
-          }
-        }
-      ],
+      "comment": "Shadow of the Past: Blocked pending SET_ASIDE_NEMESIS_SPAWN_PIPELINE (see docs/ambiguities/core_encounter_01190_shadow_of_the_past.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T10:00",
+        "reviewedAt": "2026-08-28T10:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_NEMESIS_SET ({\"target\":\"ACTIVE_HERO\"})"
+        "confidence": 85,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_NEMESIS_SET ({\"target\":\"ACTIVE_HERO\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01190_shadow_of_the_past.md"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Reveal your hero's nemesis minion and put their nemesis side scheme into play. Shuffle remaining nemesis cards into encounter deck."

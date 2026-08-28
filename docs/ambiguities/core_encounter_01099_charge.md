@@ -7,7 +7,7 @@ blocker_category: "ATTACHMENT_COMBAT_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Charge (`#01099`)
+# Card Ambiguity Report: Charge (`01099`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01099](https://marvelcdb.com/card/01099)
 * **Official Printed Text:** `Attach to Rhino.

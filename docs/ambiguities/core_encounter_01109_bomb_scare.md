@@ -7,7 +7,7 @@ blocker_category: "SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Bomb Scare (`#01109`)
+# Card Ambiguity Report: Bomb Scare (`01109`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01109](https://marvelcdb.com/card/01109)
 * **Official Printed Text:** `When Revealed: Place an additional 1 [per_hero] threat here.

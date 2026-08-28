@@ -7,7 +7,7 @@ blocker_category: "ATTACHMENT_COMBAT_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Enhanced Ivory Horn (`#01100`)
+# Card Ambiguity Report: Enhanced Ivory Horn (`01100`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01100](https://marvelcdb.com/card/01100)
 * **Official Printed Text:** `Attach to Rhino.

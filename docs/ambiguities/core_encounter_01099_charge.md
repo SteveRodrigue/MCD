@@ -3,11 +3,11 @@ card_code: "01099"
 card_name: "Charge"
 pack: "core_encounter"
 confidence_reached: 80
-blocker_category: "ATTACHMENT_COMBAT_PIPELINE"
-date_logged: "2026-08-28T10:00"
+blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
+date_logged: "2026-08-28T12:46"
 ---
 
-# Card Ambiguity Report: Charge (`#01099`)
+# Card Ambiguity Report: Charge (`01099`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01099](https://marvelcdb.com/card/01099)
 * **Official Printed Text:** `Attach to Rhino.
@@ -16,12 +16,12 @@ date_logged: "2026-08-28T10:00"
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Attachment Stat Modifiers & Keywords (Tier 3): villain-phase.ts step2 activations and combat resolution do not calculate +3 ATK from Charge, nor is the Overkill keyword handled on villain activations.
-2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
+1. **Attachment Stat Modifiers (Tier 3): Attachments in state.villain.attachments are not scanned for +3 ATK, Overkill, or +1 SCH during activations.**
+2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Active Abilities Stripped).
 
 ---
 
 ## 🛠️ Required Architectural Implementation Plan
-* Inspect and refactor the subsystem corresponding to category: `ATTACHMENT_COMBAT_PIPELINE`.
+* Refactor corresponding subsystem in `src/engine/`.
 * Write regression unit test verifying end-to-end trigger dispatch and resolution.
 * Restore `abilities: [...]` in `src/data/supplemental/pack/core_encounter.json`, elevate confidence to >= 95%, and delete this report (Inbox Zero).

@@ -1,0 +1,26 @@
+---
+card_code: "01068"
+card_name: "Vision"
+pack: "core"
+confidence_reached: 80
+blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
+date_logged: "2026-08-28T10:10"
+---
+
+# Card Ambiguity Report: Vision (`01068`)
+
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01068](https://marvelcdb.com/card/01068)
+* **Official Printed Text:** `Action: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)`
+
+---
+
+## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
+1. **Effect primitive 'BOOST_STAT_CHOICE' is not implemented in src/engine/effects/index.ts.**
+2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
+
+---
+
+## 🛠️ Required Architectural Implementation Plan
+* Implement missing TypeScript effect primitive or pipeline trigger dispatch in `src/engine/`.
+* Write regression unit test verifying end-to-end trigger dispatch and resolution.
+* Restore `abilities: [...]` in `src/data/supplemental/pack/core.json`, elevate confidence to >= 95%, and delete this report (Inbox Zero).

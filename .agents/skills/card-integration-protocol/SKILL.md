@@ -141,15 +141,23 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   * Can the schema express every clause of the printed card text without semantic loss?
   * If the decompiled text is missing key elements answered in the 8-Point Q&A Checklist (e.g. search zones or shuffle rules), **iterate and refine the schema**.
-* **Confidence Scoring Rubric:**
-  * **100%:** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction with all 8 Q&A dimensions declared.
-  * **95–98%:** Complete semantic equivalence; all clauses, costs, targets, zones, and side-effects fully modeled in `abilities`.
-  * **< 95% (🚨 Hard Rejection):** If the primitives or abilities cannot recreate a comparable card text (e.g. missing search zones, missing shuffle, unhandled fallback), **confidence CANNOT be rated high ($\ge 95\%$)**.
+* **Pessimistic Engine Support Rubric (Guilty Until Proven Innocent by Code & Tests):**
+  * **Core Principle:** In early-stage development, the engine is assumed **incapable** of supporting any non-trivial mechanic unless explicit TypeScript code and verified trigger dispatch paths are audited line-by-line.
+  * **100% (Vanilla or Tested Parity):** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction with active TypeScript handler and passing unit tests.
+  * **95–98% (Fully Verified Support):** Complete semantic equivalence; all clauses, costs, targets, zones, and side-effects fully modeled, with inspected code in `src/engine/effects/` and verified pipeline dispatch in `src/engine/pipeline/`.
+  * **< 95% (🚨 Hard Rejection / Pessimistic Default):**
+    * If the trigger dispatch window is unverified or missing for that card type (e.g. `WHEN_REVEALED` on Minions, Attachments, or Side Schemes).
+    * If any secondary clause is missing from code (e.g. deck shuffling after search, discarding attachments on defeat, surge fallback).
+    * If interactive player choice is required but no UI prompt state machine exists.
+    * If the effect primitive is a stub, placeholder, or only exists as a type name without execution logic.
   * **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 * **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
 * **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3 or Tier 3 Gate):**
   1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY `comment`, `audit` (with `ambiguityFile` path and `reconstructedText`), and `mechanicSteps`. This prevents the engine from attempting to execute unsupported logic.
-  2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
+  2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md` with clear, exhaustive reasoning detailing:
+     * Exact printed text and intended mechanics.
+     * Specific lines of code in `src/engine/effects/` or `src/engine/pipeline/` that are missing or incomplete.
+     * Architectural requirements to unlock full $\ge 95\%$ confidence.
   3. Log warning to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
      `[WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`
   4. In batch mode: proceed to the next card; in single-card mode: report block to user.

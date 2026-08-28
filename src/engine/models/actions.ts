@@ -8,6 +8,7 @@ export type ActionType =
   | 'ALLY_THWART'
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
+  | 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'
   | 'END_PLAYER_TURN'
   | 'DEV_ADD_CARD_TO_HAND';
 
@@ -79,6 +80,13 @@ export interface UseCardAbilityAction {
   targetInstanceId?: string;
 }
 
+export interface SpendResourcesToDiscardAttachmentAction {
+  type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT';
+  playerId: string;
+  attachmentInstanceId: string;
+  paymentCardInstanceIds?: string[];
+}
+
 export interface EndPlayerTurnAction {
   type: 'END_PLAYER_TURN';
   playerId: string;
@@ -100,6 +108,7 @@ export type GameAction =
   | AllyThwartAction
   | PlayCardAction
   | UseCardAbilityAction
+  | SpendResourcesToDiscardAttachmentAction
   | EndPlayerTurnAction
   | DevAddCardToHandAction;
 

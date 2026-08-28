@@ -8,6 +8,7 @@ import {
   AlterEgoCard,
   MinionCard,
   AllyCard,
+  CardInstance,
   GamePhase,
 } from '@engine/models';
 import {
@@ -21,6 +22,7 @@ import {
 import { executeEffect } from '../effects';
 import { executeVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
+import { getEffectiveAllyStats, getEffectiveHeroStats } from './stat-calculator';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -212,7 +214,8 @@ export function dispatchAction(
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
-      const attackDamage = (player.activeFormCard as HeroCard).attack || 0;
+      const heroStats = getEffectiveHeroStats(nextState, player);
+      const attackDamage = heroStats.attack;
 
       // 2. Resolve Attack on Target
       if (action.targetType === 'villain') {
@@ -231,6 +234,38 @@ export function dispatchAction(
               damage: 0,
               remainingHealth: nextState.villain.health,
             },
+            onomatopoeia,
+          });
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'status',
+            key: 'card.state.exhausted',
+            params: { card: player.activeFormCard.name },
+            onomatopoeia: 'EXHAUST',
+          });
+          return { state: nextState, result: { success: true, onomatopoeia } };
+        }
+
+        // Check Villain Attachments for Damage Shield (e.g. Armored Rhino Suit 01098)
+        const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
+          const abs = att.card.enrichment?.abilities || [];
+          return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+        });
+        if (armorIdx !== -1) {
+          const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
+          nextState.encounterDiscard.push(armor);
+          const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'combat',
+            key: 'attachment.damageShield.absorbed',
+            params: { villain: nextState.villain.card.name, attachment: armor.card.name, damage: attackDamage },
             onomatopoeia,
           });
           nextState.log.push({
@@ -311,6 +346,27 @@ export function dispatchAction(
           // Defeated minion -> discard
           targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
           nextState.encounterDiscard.push(minion);
+
+          // Trigger minion attachments (e.g. Spider-Tracer 01007)
+          for (const att of minion.attachments || []) {
+            const attAbs = att.card.enrichment?.abilities || [];
+            for (const ab of attAbs) {
+              if (ab.effect === 'WHEN_ATTACHED_HOST_DEFEATED') {
+                const removeAmount = (ab.params?.amount as number) || 3;
+                nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removeAmount);
+                nextState.log.push({
+                  id: `log_${Date.now()}`,
+                  timestamp: Date.now(),
+                  category: 'scheme',
+                  key: 'card.effect.removeThreat',
+                  params: { scheme: nextState.mainScheme.card.name, amount: removeAmount, source: att.card.name },
+                  onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
+                });
+              }
+            }
+            player.discard.push(att);
+          }
+
           const onomatopoeia = 'KAPOW! DEFEATED!';
           return { state: nextState, result: { success: true, onomatopoeia } };
         } else {
@@ -335,7 +391,8 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
-      const attackDmg = allyCard.attack || 1;
+      const allyStats = getEffectiveAllyStats(nextState, ally);
+      const attackDmg = allyStats.attack;
 
       nextState.log.push({
         id: `log_${Date.now()}`,
@@ -369,9 +426,19 @@ export function dispatchAction(
         if (toughIdx !== -1) {
           nextState.villain.statusCards.splice(toughIdx, 1);
         } else {
-          nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
-          if (nextState.villain.health <= 0) {
-            handleVillainDefeat(nextState, nextState.villain.instanceId);
+          // Check damage shield on villain
+          const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
+            const abs = att.card.enrichment?.abilities || [];
+            return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+          });
+          if (armorIdx !== -1) {
+            const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
+            nextState.encounterDiscard.push(armor);
+          } else {
+            nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
+            if (nextState.villain.health <= 0) {
+              handleVillainDefeat(nextState, nextState.villain.instanceId);
+            }
           }
         }
       }
@@ -403,15 +470,8 @@ export function dispatchAction(
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
-      let thwValue = allyCard.thwart || 1;
-
-      // Dynamic THW boost from constant abilities (e.g. Jessica Jones: +1 THW per side scheme)
-      const thwBonusAbility = ally.card.enrichment?.abilities?.find(
-        (a) => a.timing === 'CONSTANT' && a.effect === 'THW_BONUS_PER_SIDE_SCHEME',
-      );
-      if (thwBonusAbility) {
-        thwValue += nextState.sideSchemes.length;
-      }
+      const allyStats = getEffectiveAllyStats(nextState, ally);
+      const thwValue = allyStats.thwart;
 
       if (action.targetType === 'main_scheme') {
         nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - thwValue);
@@ -699,7 +759,38 @@ export function dispatchAction(
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
-        player.tableau.push(playedCardInstance);
+        const attachAbility = abilities.find((a) => a.effect === 'ATTACH_TO_HOST');
+        if (attachAbility) {
+          const targetHost = attachAbility.params?.target as string;
+          if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
+            const ally = player.allies.find((a) => a.instanceId === action.targetInstanceId) || player.allies[0];
+            if (ally) {
+              if (!ally.attachments) ally.attachments = [];
+              ally.attachments.push(playedCardInstance);
+            } else {
+              player.tableau.push(playedCardInstance);
+            }
+          } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
+            let foundMinion: CardInstance | undefined;
+            for (const p of nextState.players) {
+              foundMinion = p.engagedMinions.find((m) => m.instanceId === action.targetInstanceId) || p.engagedMinions[0];
+              if (foundMinion) break;
+            }
+            if (foundMinion) {
+              if (!foundMinion.attachments) foundMinion.attachments = [];
+              foundMinion.attachments.push(playedCardInstance);
+            } else {
+              player.tableau.push(playedCardInstance);
+            }
+          } else if (targetHost === 'ENEMY' || targetHost === 'VILLAIN') {
+            if (!nextState.villain.attachments) nextState.villain.attachments = [];
+            nextState.villain.attachments.push(playedCardInstance);
+          } else {
+            player.tableau.push(playedCardInstance);
+          }
+        } else {
+          player.tableau.push(playedCardInstance);
+        }
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
         // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter, Nick Fury)
@@ -775,20 +866,24 @@ export function dispatchAction(
 
       // Cost validation and execution
       if (targetCardInst) {
-        if (ability.cost?.exhaustSelf && targetCardInst.exhausted) {
+        const costObj = (ability.cost || {}) as any;
+        const isExhaust = costObj.exhaustSelf || costObj.exhaust;
+        const removeCount = costObj.removeCounter || costObj.spendCounter || 0;
+
+        if (isExhaust && targetCardInst.exhausted) {
           return { state, result: { success: false, error: 'Card is already exhausted' } };
         }
-        if (ability.cost?.removeCounter) {
+        if (removeCount > 0) {
           const currentCounters = targetCardInst.tokens?.counters || 0;
-          if (currentCounters < ability.cost.removeCounter) {
+          if (currentCounters < removeCount) {
             return { state, result: { success: false, error: 'Insufficient counters on card' } };
           }
           targetCardInst.tokens = {
             ...targetCardInst.tokens,
-            counters: currentCounters - ability.cost.removeCounter,
+            counters: currentCounters - removeCount,
           };
         }
-        if (ability.cost?.exhaustSelf) {
+        if (isExhaust) {
           targetCardInst.exhausted = true;
           nextState.log.push({
             id: `log_${Date.now()}`,
@@ -915,6 +1010,44 @@ export function dispatchAction(
           onomatopoeia: 'CARD ADDED!',
         },
       };
+    }
+
+    case 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const attIdx = (nextState.villain.attachments || []).findIndex(
+        (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+      );
+      if (attIdx === -1) return { state, result: { success: false, error: 'Attachment not found on villain' } };
+
+      // Discard payment cards from player hand if provided
+      if (action.paymentCardInstanceIds) {
+        for (const pId of action.paymentCardInstanceIds) {
+          const hIdx = player.hand.findIndex((c) => c.instanceId === pId);
+          if (hIdx !== -1) {
+            const [discarded] = player.hand.splice(hIdx, 1);
+            player.discard.push(discarded);
+          }
+        }
+      }
+
+      const [attachment] = nextState.villain.attachments.splice(attIdx, 1);
+      nextState.encounterDiscard.push(attachment);
+
+      const onomatopoeia = 'ATTACHMENT DISCARDED!';
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'ability',
+        key: 'attachment.discarded.byPlayer',
+        params: { player: player.name, attachment: attachment.card.name },
+        onomatopoeia,
+      });
+
+      return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
     default:

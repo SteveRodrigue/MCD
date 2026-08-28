@@ -205,14 +205,23 @@
       ]
     },
     "01007": {
-      "comment": "Upgrade: Attach to minion. Forced Interrupt when attached minion defeated -> remove 3 threat.",
+      "comment": "UPGRADE: Spider-Tracer. Attach to a minion. Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme.",
       "abilities": [
         {
-          "id": "spider_tracer_defeated",
-          "timing": "FORCED_INTERRUPT",
-          "trigger": "ATTACHED_MINION_DEFEATED",
-          "effect": "REMOVE_THREAT",
+          "id": "spider_tracer_attach",
+          "timing": "CARD_PLAYED",
+          "effect": "ATTACH_TO_HOST",
           "params": {
+            "target": "CHOSEN_MINION"
+          }
+        },
+        {
+          "id": "spider_tracer_defeat_trigger",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "MINION_DEFEATED",
+          "effect": "WHEN_ATTACHED_HOST_DEFEATED",
+          "params": {
+            "effect": "REMOVE_THREAT",
             "amount": 3,
             "target": "MAIN_SCHEME"
           }
@@ -220,85 +229,88 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: ATTACHED_MINION_DEFEATED) -> Remove 3 threat from MAIN_SCHEME"
+        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: MINION_DEFEATED) -> WHEN_ATTACHED_HOST_DEFEATED (effect: REMOVE_THREAT, amount: 3)"
       },
       "mechanicSteps": [
-        "Play Condition: Attach to a minion",
-        "Trigger: When attached minion is defeated (FORCED_INTERRUPT @ ATTACHED_MINION_DEFEATED)",
-        "Effect: Remove 3 threat from the main scheme"
+        "Play Condition: Attach to a minion.",
+        "Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme."
       ]
     },
     "01008": {
-      "comment": "Upgrade: Enters play with 3 web counters -> Exhaust & remove 1 counter to generate a Wild resource.",
-      "uses": {
-        "type": "counters",
-        "count": 3,
-        "discardOnEmpty": true
-      },
+      "comment": "UPGRADE: Web-Shooter. Enters with 3 counters. Exhaust & spend counter -> generate 1 wild resource.",
       "abilities": [
         {
           "id": "web_shooter_resource",
           "timing": "RESOURCE",
-          "cost": {
-            "exhaustSelf": true,
-            "removeCounter": 1
-          },
           "effect": "GENERATE_RESOURCE",
+          "cost": {
+            "exhaust": true,
+            "spendCounter": 1
+          },
           "params": {
             "resource": "wild",
             "amount": 1
           }
         }
       ],
+      "uses": {
+        "count": 3,
+        "type": "web",
+        "discardOnEmpty": true
+      },
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "RESOURCE [Cost: Exhaust, Remove 1 counter] -> Generate 1 [wild] resource"
+        "reconstructedText": "RESOURCE [Cost: Exhaust SELF, Spend 1 counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
       },
       "mechanicSteps": [
-        "Setup: Enters play with 3 web counters (uses: 3)",
-        "Action: Hero Resource (RESOURCE)",
-        "Cost: Exhaust Web-Shooter and remove 1 web counter",
-        "Effect: Generate 1 [wild] resource",
-        "Cleanup: When counters reach 0, discard Web-Shooter"
+        "Enters play with 3 web counters.",
+        "Hero Resource: Exhaust Web-Shooter and remove 1 web counter from it → generate a wild resource."
       ]
     },
     "01009": {
-      "comment": "Upgrade: Attach to enemy. Forced Interrupt when attached enemy attacks -> discard Webbed Up & stun enemy.",
+      "comment": "UPGRADE: Webbed Up. Attach to an enemy. Max 1 per enemy. Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
       "abilities": [
         {
-          "id": "webbed_up_attack_interrupt",
+          "id": "webbed_up_attach",
+          "timing": "CARD_PLAYED",
+          "effect": "ATTACH_TO_HOST",
+          "params": {
+            "target": "ENEMY",
+            "maxPerHost": 1
+          }
+        },
+        {
+          "id": "webbed_up_intercept",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "ATTACHED_ENEMY_ATTACKS",
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "CANCEL_ATTACK_AND_STUN"
+          "trigger": "VILLAIN_INITIATES_ATTACK",
+          "effect": "INTERCEPT_ATTACK",
+          "params": {
+            "effect": "CANCEL_ATTACK_AND_STUN_HOST"
+          }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: ATTACHED_ENEMY_ATTACKS) [Cost: Discard this card] -> CANCEL_ATTACK_AND_STUN"
+        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
       },
       "mechanicSteps": [
         "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
-        "Trigger: When attached enemy would attack (FORCED_INTERRUPT @ ATTACHED_ENEMY_ATTACKS)",
-        "Cost: Discard Webbed Up",
-        "Effect: Cancel that attack and give attached enemy a Stunned status card"
+        "Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy."
       ]
     },
     "01010a": {
@@ -2305,29 +2317,48 @@
       ]
     },
     "01074": {
-      "comment": "Upgrade: Attach to an ally. Attached ally gets +1 ATK and +1 THW.",
+      "comment": "UPGRADE: Inspired. Attach to an ally. Max 1 per ally. Attached ally gets +1 THW and +1 ATK.",
       "abilities": [
         {
-          "id": "inspired_buff",
-          "timing": "CONSTANT",
-          "effect": "ALLY_STAT_BUFF",
+          "id": "inspired_attach",
+          "timing": "CARD_PLAYED",
+          "effect": "ATTACH_TO_HOST",
           "params": {
-            "atkBonus": 1,
-            "thwBonus": 1
+            "target": "CHOSEN_ALLY",
+            "maxPerHost": 1
+          }
+        },
+        {
+          "id": "inspired_thw_bonus",
+          "timing": "CONSTANT",
+          "effect": "MODIFY_STAT",
+          "params": {
+            "stat": "THWART",
+            "amount": 1
+          }
+        },
+        {
+          "id": "inspired_atk_bonus",
+          "timing": "CONSTANT",
+          "effect": "MODIFY_STAT",
+          "params": {
+            "stat": "ATTACK",
+            "amount": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> ALLY_STAT_BUFF ({\"atkBonus\":1,\"thwBonus\":1})"
+        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_ALLY, maxPerHost: 1); CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK."
+        "Play Condition: Attach to an ally. Max 1 per ally.",
+        "Constant: Attached ally gets +1 THW and +1 ATK."
       ]
     },
     "01075": {

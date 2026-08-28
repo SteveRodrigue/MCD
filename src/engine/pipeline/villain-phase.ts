@@ -11,6 +11,7 @@ import {
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
 import { handleMainSchemeCompletion } from './scenario-helpers';
+import { getEffectiveVillainStats } from './stat-calculator';
 
 /**
  * Helper to draw the top card of the encounter deck.
@@ -89,7 +90,31 @@ export function step2_villainActivations(state: GameState): GameState {
     const player = state.players[playerIdx];
 
     if (player.currentForm === 'hero') {
-      // 1. Villain Attacks Hero
+      // 1. Check Pre-Attack Interceptors (e.g. Webbed Up 01009)
+      const webbedUpIdx = (state.villain.attachments || []).findIndex(
+        (att) => att.card.code === '01009' || att.card.enrichment?.abilities?.some((a) => a.effect === 'INTERCEPT_ATTACK'),
+      );
+      if (webbedUpIdx !== -1) {
+        const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);
+        const owner = state.players.find((p) => p.hero.code === '01001a') || player;
+        owner.discard.push(webbedUp);
+
+        if (!state.villain.statusCards.includes(StatusCard.STUNNED)) {
+          state.villain.statusCards.push(StatusCard.STUNNED);
+        }
+
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          category: 'combat',
+          key: 'villain.attack.cancelled',
+          params: { villain: state.villain.card.name, cancelledBy: 'Webbed Up' },
+          onomatopoeia: 'WEBBED UP! ATTACK CANCELLED & STUNNED!',
+        });
+        continue;
+      }
+
+      // 2. Villain Attacks Hero
       const stunIndex = state.villain.statusCards.indexOf(StatusCard.STUNNED);
       if (stunIndex !== -1) {
         state.villain.statusCards.splice(stunIndex, 1);
@@ -106,29 +131,15 @@ export function step2_villainActivations(state: GameState): GameState {
       // Timing Window 2 (Interrupts): Villain Initiates Attack (Data-Driven, e.g. Spider-Sense)
       dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId: player.id });
 
-      // Check Attachments for Attack Modifiers and Overkill
-      let attachmentBonus = 0;
-      let hasOverkill = false;
-      const attachmentsToDiscard: CardInstance[] = [];
-
-      for (const att of state.villain.attachments) {
-        const abilities = att.card.enrichment?.abilities || [];
-        for (const ab of abilities) {
-          if (ab.timing === 'CONSTANT' && ab.params?.bonusAttack) {
-            attachmentBonus += Number(ab.params.bonusAttack);
-          } else if (ab.trigger === 'VILLAIN_INITIATES_ATTACK') {
-            if (ab.params?.bonusAttack) attachmentBonus += Number(ab.params.bonusAttack);
-            if (ab.params?.overkill) hasOverkill = true;
-            attachmentsToDiscard.push(att);
-          }
-        }
-      }
+      // Compute Effective Attack and Keywords via stat-calculator (e.g. Charge +3 ATK / Overkill)
+      const villainStats = getEffectiveVillainStats(state, state.villain);
+      const hasOverkill = villainStats.keywords.includes('OVERKILL');
 
       // Draw Boost Card
       const boostCard = drawEncounterCard(state);
       const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
-      const baseAttack = state.villain.card.attack || 0;
-      let totalAttack = baseAttack + attachmentBonus + boostIcons;
+      const baseAttack = villainStats.attack;
+      let totalAttack = baseAttack + boostIcons;
 
       if (boostCard) {
         state.encounterDiscard.push(boostCard);
@@ -142,13 +153,11 @@ export function step2_villainActivations(state: GameState): GameState {
 
       totalAttack = defenseResult.damageAmount ?? totalAttack;
 
-      // Discard single-use attachments (e.g. Charge)
-      for (const att of attachmentsToDiscard) {
-        const idx = state.villain.attachments.indexOf(att);
-        if (idx !== -1) {
-          state.villain.attachments.splice(idx, 1);
-          state.encounterDiscard.push(att);
-        }
+      // Discard single-use attack attachments (e.g. Charge 01099)
+      const chargeIdx = (state.villain.attachments || []).findIndex((att) => att.card.code === '01099');
+      if (chargeIdx !== -1) {
+        const [chargeAtt] = state.villain.attachments.splice(chargeIdx, 1);
+        state.encounterDiscard.push(chargeAtt);
       }
 
       // Check Tough on Hero
@@ -200,7 +209,8 @@ export function step2_villainActivations(state: GameState): GameState {
       // Draw Boost Card
       const boostCard = drawEncounterCard(state);
       const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
-      const baseScheme = state.villain.card.scheme || 0;
+      const villainStats = getEffectiveVillainStats(state, state.villain);
+      const baseScheme = villainStats.scheme;
       const totalScheme = baseScheme + boostIcons;
 
       if (boostCard) {

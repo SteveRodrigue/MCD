@@ -125,56 +125,135 @@
       ]
     },
     "01098": {
-      "comment": "Armored Rhino Suit: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01098_armored_rhino_suit.md).",
+      "comment": "ATTACHMENT: Armored Rhino Suit. When any damage would be dealt to Rhino, absorbs damage up to 5 and discards.",
+      "abilities": [
+        {
+          "id": "armored_rhino_suit_attach",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ATTACH_TO_HOST",
+          "params": {
+            "target": "VILLAIN"
+          }
+        },
+        {
+          "id": "armored_rhino_suit_shield",
+          "timing": "FORCED_INTERRUPT",
+          "trigger": "TAKE_ATTACK_DAMAGE",
+          "effect": "ATTACHMENT_DAMAGE_SHIELD",
+          "params": {
+            "mode": "PREVENT_ALL_AND_DISCARD",
+            "maxAbsorb": 5,
+            "target": "ATTACHED_VILLAIN"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> PREVENT_DAMAGE ({\"maxAbsorb\":5,\"target\":\"ATTACHED_VILLAIN\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01098_armored_rhino_suit.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> ATTACHMENT_DAMAGE_SHIELD (mode: PREVENT_ALL_AND_DISCARD, maxAbsorb: 5)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
-        "Trigger: When Rhino would take damage (FORCED_INTERRUPT @ TAKE_ATTACK_DAMAGE)",
-        "Effect: Place damage on Armored Rhino Suit instead (absorbs up to 5 damage). When 5 damage is placed here, discard this attachment."
+        "Forced Interrupt: When any amount of damage would be dealt to Rhino, absorbs the hit and discards Armored Rhino Suit."
       ]
     },
     "01099": {
-      "comment": "Charge: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01099_charge.md).",
+      "comment": "ATTACHMENT: Charge. Rhino gets +3 ATK and Overkill. Discard after attack resolves.",
+      "abilities": [
+        {
+          "id": "charge_attach",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ATTACH_TO_HOST",
+          "params": {
+            "target": "VILLAIN"
+          }
+        },
+        {
+          "id": "charge_atk_bonus",
+          "timing": "CONSTANT",
+          "effect": "MODIFY_STAT",
+          "params": {
+            "stat": "ATTACK",
+            "amount": 3
+          }
+        },
+        {
+          "id": "charge_overkill",
+          "timing": "CONSTANT",
+          "effect": "GRANT_KEYWORD",
+          "params": {
+            "keyword": "OVERKILL"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_INTERRUPT (Trigger: VILLAIN_ATTACKS) -> BOOST_ATTACK_OVERKILL ({\"atkBonus\":3,\"overkill\":true,\"discardAfterAttack\":true})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01099_charge.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 3); CONSTANT -> GRANT_KEYWORD (keyword: OVERKILL)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
-        "Trigger: When Rhino attacks (FORCED_INTERRUPT @ VILLAIN_ATTACKS)",
-        "Effect: Rhino gains +3 ATK and Overkill for this attack. Discard Charge after this attack resolves."
+        "Constant: Rhino gains +3 ATK and Overkill for his next attack. Discard Charge after attack resolves."
       ]
     },
     "01100": {
-      "comment": "Enhanced Ivory Horn: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md).",
+      "comment": "ATTACHMENT: Enhanced Ivory Horn. Rhino gets +1 ATK. Hero Action: Spend 3 physical resources to discard.",
+      "abilities": [
+        {
+          "id": "ivory_horn_attach",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ATTACH_TO_HOST",
+          "params": {
+            "target": "VILLAIN"
+          }
+        },
+        {
+          "id": "ivory_horn_atk_bonus",
+          "timing": "CONSTANT",
+          "effect": "MODIFY_STAT",
+          "params": {
+            "stat": "ATTACK",
+            "amount": 1
+          }
+        },
+        {
+          "id": "ivory_horn_discard_action",
+          "timing": "ACTION",
+          "cost": {
+            "resourceCost": {
+              "physical": 3
+            }
+          },
+          "effect": "DISCARD_ATTACHMENT",
+          "params": {
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-28T13:36",
+        "reviewedAt": "2026-08-28T13:36",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ATTACHED_VILLAIN gets +1 ATK; HERO_ACTION [Cost: Spend 2 [physical]] -> DISCARD_CARD ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); HERO_ACTION [Cost: Spend 3 [physical]] -> DISCARD_ATTACHMENT (target: SELF)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
-        "Passive: Rhino gets +1 ATK (CONSTANT ➔ ATK_BONUS +1). Hero action: Spend [physical][physical] to discard Enhanced Ivory Horn."
+        "Constant: Attached villain gets +1 ATK.",
+        "Hero Action: Spend 3 physical resources to discard Enhanced Ivory Horn."
       ]
     },
     "01101": {

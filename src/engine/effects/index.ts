@@ -117,6 +117,28 @@ export function executeEffect(
           return { state, success: true, onomatopoeia };
         }
 
+        // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
+        const armorIdx = (state.villain.attachments || []).findIndex((att) => {
+          const abs = att.card.enrichment?.abilities || [];
+          return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+        });
+        if (armorIdx !== -1) {
+          const armor = state.villain.attachments.splice(armorIdx, 1)[0];
+          state.encounterDiscard.push(armor);
+          const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'attachment.damageShield.absorbed',
+            params: { villain: state.villain.card.name, attachment: armor.card.name, damage: amount },
+            onomatopoeia,
+          });
+          return { state, success: true, onomatopoeia };
+        }
+
         state.villain.health = Math.max(0, state.villain.health - amount);
         if (state.villain.health <= 0) {
           const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
@@ -176,6 +198,27 @@ export function executeEffect(
             if (newDmg >= minionHp) {
               p.engagedMinions.splice(minionIdx, 1);
               state.encounterDiscard.push(minion);
+
+              // Process attached cards on defeated minion (e.g. Spider-Tracer 01008)
+              for (const att of minion.attachments || []) {
+                const attAbs = att.card.enrichment?.abilities || [];
+                for (const ab of attAbs) {
+                  if (ab.effect === 'WHEN_ATTACHED_HOST_DEFEATED') {
+                    const removeAmount = (ab.params?.amount as number) || 3;
+                    state.mainScheme.threat = Math.max(0, state.mainScheme.threat - removeAmount);
+                    state.log.push({
+                      id: `log_${Date.now()}`,
+                      timestamp: Date.now(),
+                      category: 'scheme',
+                      key: 'card.effect.removeThreat',
+                      params: { scheme: state.mainScheme.card.name, amount: removeAmount, source: att.card.name },
+                      onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
+                    });
+                  }
+                }
+                player.discard.push(att);
+              }
+
               const onomatopoeia = 'SMASH! MINION DEFEATED!';
               state.log.push({
                 id: `log_${Date.now()}`,
@@ -540,6 +583,58 @@ export function executeEffect(
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
         return { state, success: true, onomatopoeia: 'SURGE!' };
       }
+    }
+
+    case 'ATTACH_TO_HOST': {
+      const targetHost = ability.params?.target as string;
+      const sourceCard = context.sourceCardInstance;
+      if (!sourceCard) return { state, success: true };
+
+      if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
+        if (!state.villain.attachments) state.villain.attachments = [];
+        state.villain.attachments.push(sourceCard);
+        return { state, success: true, onomatopoeia: 'ATTACHED TO VILLAIN!' };
+      } else if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
+        const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId) || player.allies[0];
+        if (ally) {
+          if (!ally.attachments) ally.attachments = [];
+          ally.attachments.push(sourceCard);
+          return { state, success: true, onomatopoeia: `ATTACHED TO ${ally.card.name}!` };
+        }
+      } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
+        let foundMinion: CardInstance | undefined;
+        for (const p of state.players) {
+          foundMinion = p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId) || p.engagedMinions[0];
+          if (foundMinion) break;
+        }
+        if (foundMinion) {
+          if (!foundMinion.attachments) foundMinion.attachments = [];
+          foundMinion.attachments.push(sourceCard);
+          return { state, success: true, onomatopoeia: `ATTACHED TO ${foundMinion.card.name}!` };
+        }
+      }
+      return { state, success: true, onomatopoeia: 'ATTACHED!' };
+    }
+
+    case 'MODIFY_STAT':
+    case 'GRANT_KEYWORD':
+    case 'ATTACHMENT_DAMAGE_SHIELD':
+    case 'INTERCEPT_ATTACK':
+    case 'WHEN_ATTACHED_HOST_DEFEATED': {
+      // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
+      return { state, success: true };
+    }
+
+    case 'DISCARD_ATTACHMENT': {
+      if (context.sourceCardInstance) {
+        const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
+        if (vIdx !== -1) {
+          state.villain.attachments.splice(vIdx, 1);
+          state.encounterDiscard.push(context.sourceCardInstance);
+          return { state, success: true, onomatopoeia: 'ATTACHMENT DISCARDED!' };
+        }
+      }
+      return { state, success: true };
     }
 
     default:

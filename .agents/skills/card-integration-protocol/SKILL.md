@@ -121,11 +121,17 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
 * **The Golden Rule (RR v1.8 p. 2):** If the printed card text explicitly contradicts a general rule in the Rules Reference, the card text takes precedence.
 
-### Step 5: Bidirectional Round-Trip Validation & Circuit-Breaker Rule
-* **The Test:** Read your drafted JSON `abilities: [...]` schema and translate it back into plain human language.
-* **Criterion:** Does the reconstructed description match 100% of the printed card's intended behavior without omissions, unintended side effects, or missing constraints?
-* **Confidence Target:** Must reach **$\ge 95\%$** before proceeding.
-* **Executable Completion Gate:** If a card has rules text but its `abilities: [...]` array is missing, empty, or cannot execute the printed mechanic, **confidence CANNOT exceed 50%**.
+### Step 5: Bidirectional Round-Trip Validation Feedback Loop & Circuit-Breaker
+* **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, `effect`, and `params`) and decompile it into natural card text.
+  * **Strict Rule:** Do **NOT** read `comment` or `mechanicSteps` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
+* **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
+  * Does the executable schema reproduce the exact same timing, triggers, costs, targets, constraints, and consequences?
+  * Can the schema express every clause of the printed card text without semantic loss?
+* **Confidence Scoring Rubric:**
+  * **100%:** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction.
+  * **95–98%:** Complete semantic equivalence; all clauses, costs, targets, and triggers fully modeled in `abilities`.
+  * **< 95% (🚨 Hard Rejection):** If the primitives or abilities cannot recreate a comparable card text (with the exact same meaning/intent), **confidence CANNOT be rated high ($\ge 95\%$)**.
+  * **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 * **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 3 $\rightarrow$ 4 $\rightarrow$ 5.
 * **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3):**
   1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.

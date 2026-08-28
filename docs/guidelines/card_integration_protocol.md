@@ -13,7 +13,11 @@
 4. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
 5. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
 6. **3-Tier Blast-Radius Guardrails (ADR-0021):** Tier 1 (fast-track) and Tier 2 (additive helpers) execute freely. Tier 3 (structural changes) requires formal implementation plan approval in single-card mode, or ambiguity queue isolation during batch mode.
-7. **Hard Circuit-Breaker on Refinement Loops (ADR-0021):** If round-trip confidence is $< 95\%$ after 3 refinement iterations, stop immediately and log to `docs/ambiguities/`.
+7. **Round-Trip Decompiler Feedback Loop & Circuit-Breaker:** 
+   * Decompile **strictly** the structured `abilities: [...]` array into natural language (ignoring `comment` / `mechanicSteps`).
+   * Compare against the printed upstream card text.
+   * If the executable schema cannot recreate a comparable card text with 100% equivalent meaning and intent, confidence CANNOT be rated $\ge 95\%$.
+   * If confidence remains $< 95\%$ after 3 refinement iterations, abort integration and isolate in `docs/ambiguities/{pack}_{code}_{slug}.md`.
 8. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`).
 9. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
 10. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.

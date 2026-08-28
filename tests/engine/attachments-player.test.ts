@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
-import { executeVillainPhase } from '@engine/pipeline/villain-phase';
+import { step2_villainActivations } from '@engine/pipeline/villain-phase';
 import { getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
 
 describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-Tracer)', () => {
@@ -75,8 +75,8 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     const initialHeroHp = state.players[0].health;
 
-    // Execute villain phase (Rhino would attack Spider-Man in hero form)
-    const nextState = executeVillainPhase(state);
+    // Execute step 2 villain activations (Rhino would attack Spider-Man in hero form)
+    const nextState = step2_villainActivations(state);
 
     // Attack must be cancelled
     expect(nextState.players[0].health).toBe(initialHeroHp);

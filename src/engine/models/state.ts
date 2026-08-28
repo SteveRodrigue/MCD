@@ -178,6 +178,28 @@ export interface GameState {
 }
 
 /**
+ * Accessor returning the currently active player from GameState (RR v1.8 p. 4).
+ */
+export function getActivePlayer(state: GameState): PlayerState {
+  if (state.players && state.players.length > 0) {
+    const idx = state.activePlayerIndex ?? 0;
+    return state.players[idx] || state.players[0];
+  }
+  throw new Error('GameState has no players initialized');
+}
+
+/**
+ * Accessor returning the first player from GameState (RR v1.8 p. 13).
+ */
+export function getFirstPlayer(state: GameState): PlayerState {
+  if (state.players && state.players.length > 0) {
+    const idx = state.firstPlayerIndex ?? 0;
+    return state.players[idx] || state.players[0];
+  }
+  throw new Error('GameState has no players initialized');
+}
+
+/**
  * Accessor returning the currently active villain from GameState.
  */
 export function getActiveVillain(state: GameState): VillainState {

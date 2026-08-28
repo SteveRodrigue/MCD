@@ -789,6 +789,123 @@ export function executeEffect(
       return { state, success: true, onomatopoeia: 'UNDER FIRE!' };
     }
 
+    case 'SPAWN_NEMESIS': {
+      const heroSetCode = player.hero.setCode || '';
+      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
+
+      // 1. Find all set-aside cards belonging specifically to this hero's nemesis set
+      const nemesisCards = player.setAsideCards.filter(
+        (c) => c.card.setCode === nemesisSetCode || (c.card.setCode && c.card.setCode.includes('nemesis')),
+      );
+
+      // 2. Find all nemesis minions in this subset (supports 1 or more minions)
+      const nemesisMinions = nemesisCards.filter((c) => c.card.type === CardType.MINION);
+
+      // If no nemesis minion is in the set-aside pool, the card gains surge
+      if (nemesisMinions.length === 0) {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'ability',
+          key: 'nemesis.spawn.surge',
+          params: { player: player.name },
+          onomatopoeia: 'SURGE! (NEMESIS UNAVAILABLE)',
+        });
+
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      }
+
+      // 3. Put all nemesis minions into play engaged with this player
+      for (const minion of nemesisMinions) {
+        // Check Toughness
+        const hasToughness =
+          (minion.card.traits || []).includes('Toughness') ||
+          (minion.card.text || '').toLowerCase().includes('toughness');
+        if (hasToughness) {
+          if (!minion.statusCards) minion.statusCards = [];
+          if (!minion.statusCards.includes(StatusCard.TOUGH)) {
+            minion.statusCards.push(StatusCard.TOUGH);
+          }
+        }
+
+        player.engagedMinions.push(minion);
+
+        // Check Quickstrike (attacks immediately if player is in Hero form)
+        const hasQuickstrike =
+          (minion.card.traits || []).includes('Quickstrike') ||
+          (minion.card.text || '').includes('Quickstrike');
+        if (hasQuickstrike && player.currentForm === 'hero') {
+          executeMinionAttackAgainstPlayer(state, minion, player);
+        }
+
+        // Execute minion When Revealed / Forced Response abilities
+        const abilities = minion.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
+          }
+        }
+      }
+
+      // 4. Reveal the Nemesis Side Scheme
+      const nemesisScheme = nemesisCards.find((c) => c.card.type === CardType.SIDE_SCHEME);
+      if (nemesisScheme) {
+        const sideCard = nemesisScheme.card as SideSchemeCard;
+        const baseThreat = sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+        state.sideSchemes.push({
+          instanceId: nemesisScheme.instanceId,
+          card: sideCard,
+          threat: baseThreat,
+        });
+
+        const schemeAbilities = sideCard.enrichment?.abilities || [];
+        for (const ability of schemeAbilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: nemesisScheme });
+          }
+        }
+      }
+
+      // 5. Shuffle remaining nemesis cards for this hero into the encounter deck
+      const spawnedInstanceIds = new Set([
+        ...nemesisMinions.map((m) => m.instanceId),
+        ...(nemesisScheme ? [nemesisScheme.instanceId] : []),
+      ]);
+      const remainingCards = nemesisCards.filter((c) => !spawnedInstanceIds.has(c.instanceId));
+      state.encounterDeck.push(...remainingCards);
+      state.encounterDeck.sort(() => Math.random() - 0.5);
+
+      // 6. Cleanly prune ONLY this hero's nemesis cards from player.setAsideCards (leaving other set-aside cards untouched)
+      player.setAsideCards = player.setAsideCards.filter(
+        (c) => c.card.setCode !== nemesisSetCode && !nemesisCards.some((nc) => nc.instanceId === c.instanceId),
+      );
+
+      const minionNames = nemesisMinions.map((m) => m.card.name).join(', ');
+      const onomatopoeia = `NEMESIS ARRIVES! ${minionNames.toUpperCase()}!`;
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'nemesis.spawn.success',
+        params: {
+          player: player.name,
+          minions: minionNames,
+          sideScheme: nemesisScheme?.card.name || 'None',
+        },
+        onomatopoeia,
+      });
+
+      return { state, success: true, onomatopoeia };
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }

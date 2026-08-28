@@ -238,6 +238,18 @@ export class CardCatalog {
     }
     return undefined;
   }
+
+  public getNemesisCardsForHero(heroSetCode: string): NormalizedCard[] {
+    const nemesisSetCode = `${heroSetCode}_nemesis`;
+    const setCards = this.getCardsBySet(nemesisSetCode);
+    const result: NormalizedCard[] = [];
+    for (const card of setCards) {
+      for (let q = 0; q < (card.quantity || 1); q++) {
+        result.push(card);
+      }
+    }
+    return result;
+  }
 }
 
 import coreCards from '../../../data/upstream/pack/core.json';

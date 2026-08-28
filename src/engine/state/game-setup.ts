@@ -12,6 +12,7 @@ import {
   NormalizedCard,
   DifficultyMode,
 } from '@engine/models';
+import { cardCatalog } from '../../data/importer/card-loader';
 
 let instanceCounter = 0;
 
@@ -106,7 +107,12 @@ export function setupGame(options: GameSetupOptions): GameState {
     const shuffledDeck = shuffle(pConfig.deckCards.map(createCardInstance));
     const hand = shuffledDeck.splice(0, handSize);
 
-    const setAsideCards = (pConfig.nemesisCards || []).map(createCardInstance);
+    const defaultNemesisCards = pConfig.hero.setCode
+      ? cardCatalog.getNemesisCardsForHero(pConfig.hero.setCode)
+      : [];
+    const setAsideCards = (
+      pConfig.nemesisCards && pConfig.nemesisCards.length > 0 ? pConfig.nemesisCards : defaultNemesisCards
+    ).map(createCardInstance);
 
     return {
       id: pConfig.id,

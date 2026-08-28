@@ -64,7 +64,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   };
 
   return (
-    <div className="relative max-w-5xl w-full mx-auto my-6 p-4 md:p-6">
+    <div className="relative max-w-5xl w-full mx-auto my-6 p-4 md:p-6 pb-24">
       {/* Top Banner */}
       <div className="text-center mb-8 relative">
         <div className="inline-block bg-comic-yellow border-comic border-comic-black px-6 py-2 font-comic text-2xl tracking-wider text-comic-red shadow-comic transform -rotate-1 mb-2">

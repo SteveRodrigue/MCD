@@ -94,7 +94,7 @@ export const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-hidden font-sans">
+    <div className="relative min-h-screen w-full bg-comic-paper flex flex-col items-center justify-start overflow-x-hidden overflow-y-auto font-sans">
       {/* Halftone Dot Overlay */}
       <div className="fixed inset-0 bg-bendy-dots pointer-events-none z-0" />
 

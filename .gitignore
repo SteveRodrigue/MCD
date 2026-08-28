@@ -13,6 +13,10 @@ dist-ssr/
 build/
 *.local
 
+# Scratch and Temporary Runner Scripts
+scratch/
+/scratch/
+
 # Tauri Native Builds
 src-tauri/target/
 src-tauri/Cargo.lock

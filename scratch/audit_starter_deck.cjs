@@ -313,11 +313,11 @@ date_logged: "${timestamp}"
 `;
     fs.writeFileSync(ambPath, ambContent, 'utf8');
     ambiguityEntries.push(ambFile);
-    logEntries.push(`${logTimestamp()} [WARN] Card [${name}] #${code} card ambiguity: ${blockerCategory} (Tier 3) -> docs/ambiguities/${ambFile}`);
+    logEntries.push(`${logTimestamp()} [WARN] Card [${name}] #${code} card ambiguity: ${blockerCategory} (Tier 3, confidence ${confidence}%) -> docs/ambiguities/${ambFile}`);
   } else if (tier === 'Tier 1') {
-    logEntries.push(`${logTimestamp()} [INFO] Card [${name}] #${code} integrated without any code change required (Tier 1).`);
+    logEntries.push(`${logTimestamp()} [INFO] Card [${name}] #${code} integrated without any code change required (Tier 1, confidence ${confidence}%).`);
   } else if (tier === 'Tier 2') {
-    logEntries.push(`${logTimestamp()} [INFO] Card [${name}] #${code} integrated with code change (Tier 2).`);
+    logEntries.push(`${logTimestamp()} [INFO] Card [${name}] #${code} integrated with code change (Tier 2, confidence ${confidence}%).`);
   }
 }
 
@@ -325,8 +325,8 @@ date_logged: "${timestamp}"
 supplemental.cards = updatedCards;
 fs.writeFileSync(path.join(__dirname, '../src/data/supplemental/pack/core.json'), JSON.stringify(supplemental, null, 2) + '\n', 'utf8');
 
-// Append to log file
-fs.appendFileSync(logFilePath, logEntries.join('\n') + '\n', 'utf8');
+// Write refreshed log file
+fs.writeFileSync(logFilePath, logEntries.join('\n') + '\n', 'utf8');
 
 console.log('--- Batch Audit Complete ---');
 console.log(`Total Cards Audited: ${deckCodes.length}`);

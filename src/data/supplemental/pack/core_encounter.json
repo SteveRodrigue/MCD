@@ -2,7 +2,19 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "cards": {
     "01094": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "VILLAIN: Rhino",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Villain Stage I: Base SCH 1, ATK 3, Health 14 per player (enters play without initial status unless scenario specifies)."
+      ]
     },
     "01095": {
       "comment": "Villain Stage II: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
@@ -16,6 +28,19 @@
             "schemeCode": "01107"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",
+        "Trigger: When revealed (FORCED_RESPONSE @ WHEN_REVEALED)",
+        "Effect: Search encounter deck and discard pile for Breakin' & Takin' side scheme (#01107) and reveal it. Shuffle encounter deck."
       ]
     },
     "01096": {
@@ -31,15 +56,54 @@
             "target": "ALL_HEROES"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Villain Stage III: Base SCH 1, ATK 5, Health 16 per player.",
+        "Trigger: When revealed (FORCED_RESPONSE @ WHEN_REVEALED)",
+        "Effect: Give Tough status card to Rhino and Stun each hero."
       ]
     },
     "01097a": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "MAIN_SCHEME: The Break-In!",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
+        "Escalation: Villain Phase Step 1 places 1 threat per player per round."
+      ]
     },
     "01097b": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "MAIN_SCHEME: The Break-In!",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
+        "Escalation: Villain Phase Step 1 places 1 threat per player per round."
+      ]
     },
     "01098": {
       "comment": "Attachment: Attach to Rhino. When damage would be dealt to Rhino, place it here instead (absorbs up to 5 damage).",
@@ -50,6 +114,19 @@
           "trigger": "TAKE_ATTACK_DAMAGE",
           "effect": "PREVENT_DAMAGE"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to Rhino.",
+        "Trigger: When Rhino would take damage (FORCED_INTERRUPT @ TAKE_ATTACK_DAMAGE)",
+        "Effect: Place damage on Armored Rhino Suit instead (absorbs up to 5 damage). When 5 damage is placed here, discard this attachment."
       ]
     },
     "01099": {
@@ -65,6 +142,19 @@
             "overkill": true
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to Rhino.",
+        "Trigger: When Rhino attacks (FORCED_INTERRUPT @ VILLAIN_ATTACKS)",
+        "Effect: Rhino gains +3 ATK and Overkill for this attack. Discard Charge after this attack resolves."
       ]
     },
     "01100": {
@@ -78,10 +168,34 @@
             "bonusAttack": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to Rhino.",
+        "Passive: Rhino gets +1 ATK (CONSTANT ➔ ATK_BONUS +1). Hero action: Spend [physical][physical] to discard Enhanced Ivory Horn."
       ]
     },
     "01101": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "MINION: Hydra Mercenary",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Minion: SCH 1, ATK 1, Health 3. Guard (Hero cannot attack the villain while this minion is engaged with them)."
+      ]
     },
     "01102": {
       "comment": "Minion: Sandman enters play with Tough status.",
@@ -96,6 +210,18 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
+        "Trigger: Forced Response after Sandman attacks, discard the top 2 cards of the encounter deck."
       ]
     },
     "01103": {
@@ -111,6 +237,19 @@
             "target": "ALL_HEROES"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Minion: SCH 1, ATK 2, Health 3.",
+        "Trigger: When revealed (WHEN_REVEALED)",
+        "Effect: Deal 1 damage to each hero character."
       ]
     },
     "01104": {
@@ -126,6 +265,18 @@
             "target": "VILLAIN"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed (WHEN_REVEALED)",
+        "Effect: Heal 4 damage from Rhino (if at full health, this card gains Surge)."
       ]
     },
     "01105": {
@@ -141,6 +292,18 @@
             "target": "HERO"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed (WHEN_REVEALED)",
+        "Effect: Give Rhino a Tough status card (if already tough, this card gains Surge)."
       ]
     },
     "01106": {
@@ -152,19 +315,67 @@
           "trigger": "WHEN_REVEALED",
           "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed (WHEN_REVEALED)",
+        "Effect: Rhino attacks the player (if in Alter-Ego form, this card gains Surge)."
       ]
     },
     "01107": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "SIDE_SCHEME: Breakin' & Takin'",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Side Scheme: Starting threat 2 per player. Hazard icon (Deal 1 additional encounter card during Step 3)."
+      ]
     },
     "01108": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "SIDE_SCHEME: Crowd Control",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Side Scheme: Starting threat 2 per player. Crisis icon (Heroes cannot remove threat from main scheme while this scheme is in play)."
+      ]
     },
     "01109": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "SIDE_SCHEME: Bomb Scare",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Side Scheme: Starting threat 2 per player. Acceleration icon (Places 1 additional threat on main scheme during Step 1)."
+      ]
     },
     "01110": {
       "comment": "Minion: Hydra Bomber When Revealed -> Deal 2 damage to each hero.",
@@ -179,6 +390,17 @@
             "target": "ALL_HEROES"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Minion: SCH 1, ATK 1, Health 2. When revealed: Deal 2 damage to each friendly character."
       ]
     },
     "01111": {
@@ -194,6 +416,17 @@
             "target": "HERO"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: Deal 3 damage to each hero in hero form (or place 2 threat on Bomb Scare if in alter-ego)."
       ]
     },
     "01112": {
@@ -209,6 +442,17 @@
             "schemeThreat": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: Confuse your identity character."
       ]
     },
     "01155": {
@@ -504,6 +748,17 @@
           "trigger": "WHEN_REVEALED",
           "effect": "VILLAIN_SCHEMES_IMMEDIATELY"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: The villain schemes (if in Alter-Ego) or schemes against hero."
       ]
     },
     "01187": {
@@ -515,6 +770,17 @@
           "trigger": "WHEN_REVEALED",
           "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: The villain attacks you."
       ]
     },
     "01188": {
@@ -526,6 +792,17 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: Discard an upgrade or support you control (if none, gain Surge)."
       ]
     },
     "01189": {
@@ -537,6 +814,17 @@
           "trigger": "WHEN_REVEALED",
           "effect": "VILLAIN_ATTACKS_IMMEDIATELY"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: The villain and each minion engaged with you attacks you."
       ]
     },
     "01190": {
@@ -548,13 +836,48 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery: When revealed: Reveal your hero's nemesis minion and put their nemesis side scheme into play. Shuffle remaining nemesis cards into encounter deck."
       ]
     },
     "01191": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "TREACHERY: Exhaustion",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Treachery (Expert): When revealed: Exhaust your identity."
+      ]
     },
     "01192": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "comment": "TREACHERY: Masterplan",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery (Expert): When revealed: Place 4 threat on the main scheme (or 1 threat per side scheme in play)."
+      ]
     },
     "01193": {
       "comment": "Treachery: Exhaustion -> Exhaust each hero.",
@@ -569,6 +892,17 @@
             "target": "ALL_HEROES"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T09:08",
+        "reviewedAt": "2026-08-28T09:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Treachery (Expert): When revealed: Reveal the top card of the encounter deck with Surge."
       ]
     },
     "01194": {

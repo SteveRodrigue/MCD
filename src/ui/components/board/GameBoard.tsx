@@ -143,7 +143,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
                       player={player}
                       seatNumber={idx + 1}
                       isFocused={isFocused}
-                      isSideBySide={true}
+                      isMultiHero={true}
                       onFocus={() => handleSelectSeat(idx)}
                     />
 
@@ -157,7 +157,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
                       handSizeLimit={(player.activeFormCard as any).handSize ?? 6}
                       seatNumber={idx + 1}
                       isFocused={isFocused}
-                      isSideBySide={true}
+                      isMultiHero={true}
                       onFocus={() => handleSelectSeat(idx)}
                     />
                   </div>
@@ -172,7 +172,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
               player={singlePlayer}
               seatNumber={1}
               isFocused={true}
-              isSideBySide={false}
+              isMultiHero={false}
             />
           </div>
         )}
@@ -189,7 +189,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
           handSizeLimit={(singlePlayer.activeFormCard as any).handSize ?? 6}
           seatNumber={1}
           isFocused={true}
-          isSideBySide={false}
+          isMultiHero={false}
         />
       )}
 

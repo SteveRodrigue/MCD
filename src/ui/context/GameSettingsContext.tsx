@@ -6,19 +6,15 @@ export interface GameSettings {
   devMode: boolean;
   soundEnabled: boolean;
   animationsSpeed: 'normal' | 'fast' | 'instant';
-  sideBySideLayout: boolean;
   edgeScrollSpeed: EdgeScrollSpeed;
 }
 
 interface GameSettingsContextType {
   settings: GameSettings;
   devMode: boolean;
-  sideBySideLayout: boolean;
   edgeScrollSpeed: EdgeScrollSpeed;
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
-  setSideBySideLayout: (enabled: boolean) => void;
-  toggleSideBySide: () => void;
   setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
 }
@@ -27,8 +23,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   devMode: true, // ON by default for development mode
   soundEnabled: true,
   animationsSpeed: 'normal',
-  sideBySideLayout: true,
-  edgeScrollSpeed: 'normal', // Default is faster than previous slow baseline
+  edgeScrollSpeed: 'normal', // Default fast responsive panning
 };
 
 const STORAGE_KEY = 'mcd_game_settings';
@@ -64,14 +59,6 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((prev) => ({ ...prev, devMode: !prev.devMode }));
   };
 
-  const setSideBySideLayout = (enabled: boolean) => {
-    setSettings((prev) => ({ ...prev, sideBySideLayout: enabled }));
-  };
-
-  const toggleSideBySide = () => {
-    setSettings((prev) => ({ ...prev, sideBySideLayout: !prev.sideBySideLayout }));
-  };
-
   const setEdgeScrollSpeed = (speed: EdgeScrollSpeed) => {
     setSettings((prev) => ({ ...prev, edgeScrollSpeed: speed }));
   };
@@ -85,12 +72,9 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       value={{
         settings,
         devMode: settings.devMode,
-        sideBySideLayout: settings.sideBySideLayout,
         edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
         setDevMode,
         toggleDevMode,
-        setSideBySideLayout,
-        toggleSideBySide,
         setEdgeScrollSpeed,
         updateSettings,
       }}

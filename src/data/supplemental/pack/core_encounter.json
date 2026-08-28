@@ -28,22 +28,22 @@
           "params": {
             "schemeCode": "01107",
             "searchZones": [
-              "DECK",
-              "DISCARD"
+              "ENCOUNTER_DECK",
+              "ENCOUNTER_DISCARD"
             ],
-            "shuffleDeck": true,
+            "shuffleDeck": "ENCOUNTER_DECK",
             "revealTarget": true
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:44",
-        "reviewedAt": "2026-08-28T09:44",
+        "updatedAt": "2026-08-28T09:47",
+        "reviewedAt": "2026-08-28T09:47",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search encounter deck and discard pile for Breakin' & Takin' [01107], reveal it, and shuffle encounter deck."
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search ENCOUNTER_DECK and ENCOUNTER_DISCARD for Breakin' & Takin' [01107], reveal it, and shuffle ENCOUNTER_DECK."
       },
       "mechanicSteps": [
         "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",

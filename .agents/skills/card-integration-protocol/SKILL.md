@@ -71,15 +71,18 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
   3. **Q3 (Primary Target/Subject):** What exact entity is affected or searched (e.g. `the villain`, `an enemy`, `a minion`, specific card code)?
-  4. **Q4 (Zones & Boundaries):** Where does this take place, or where do we search (`searchZones: ["DECK", "DISCARD"]`, `HAND`, `TABLEAU`)?
+  4. **Q4 (Zones & Boundaries):** Where does this take place, or where do we search? **MUST use Fully Qualified Game Zones (FQGZ)**:
+     * `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `SET_ASIDE_NEMESIS`, `SET_ASIDE_OUT_OF_PLAY`, `VICTORY_DISPLAY`
+     * `PLAYER_DECK`, `PLAYER_DISCARD`, `PLAYER_HAND`, `PLAYER_TABLEAU` (with `targetPlayer: "SELF" | "CHOSEN_PLAYER" | "ALL_PLAYERS"`)
+     * `ATTACHED_HOST`, `UNDER_CARD`
   5. **Q5 (State Mutation):** What exact state change occurs (deal damage, heal, remove threat, apply status, reveal, put into play)?
-  6. **Q6 (Post-Resolution Side-Effects):** What mandatory rules follow completion (e.g. `shuffleDeck: true`, `gainOverkill: true`)?
+  6. **Q6 (Post-Resolution Side-Effects):** What mandatory rules follow completion (e.g. `shuffleDeck: "ENCOUNTER_DECK" | "PLAYER_DECK"`, `gainOverkill: true`)?
   7. **Q7 (Source Destination):** What happens to the source card upon resolution (`DISCARD_SELF`, `ATTACH_TO_HOST`, `STAYS_IN_PLAY`)?
   8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
-* **100% PARAMETER COMPLETENESS:** Every parameter identified in the 8-point Q&A checklist (e.g. `searchZones`, `shuffleDeck`, `revealTarget`, `targetType`, `fallbackSurge`) **MUST** be explicitly declared in `params`. Omitting search zones, shuffle flags, or fallback conditions is a game-breaking schema error.
+* **100% PARAMETER COMPLETENESS & FULLY QUALIFIED ZONES:** Every parameter identified in the 8-point Q&A checklist **MUST** be explicitly declared in `params` with **Fully Qualified Game Zones** (e.g. `searchZones: ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`, `shuffleDeck: "ENCOUNTER_DECK"`, `revealTarget: true`). Generic unqualified strings like `["DECK", "DISCARD"]` are strictly prohibited as ambiguous and engine-breaking.
 * `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
 * Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
 ```json
@@ -115,8 +118,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
       },
       "effect": "<EFFECT_PRIMITIVE>",
       "params": {
-        "searchZones": ["DECK", "DISCARD"],
-        "shuffleDeck": true,
+        "searchZones": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+        "shuffleDeck": "ENCOUNTER_DECK",
         "revealTarget": true
       }
     }

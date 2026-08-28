@@ -216,6 +216,27 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       expect(gameState.phase).toBe(GamePhase.PLAYER_PHASE);
     });
 
+    it('triggers Emergency (01085) Interrupt when villain schemes against Alter-Ego to reduce threat placed by 1', () => {
+      const p1 = gameState.players[0];
+      p1.currentForm = 'alter_ego';
+      p1.activeFormCard = p1.alterEgo;
+
+      const emergencyCard = catalog.getCard('01085')!;
+      const emergencyInst = createCardInstance(emergencyCard);
+      p1.hand = [emergencyInst];
+
+      const initialDiscardCount = p1.discard.length;
+
+      // Execute Step 2 activations
+      step2_villainActivations(gameState);
+
+      // Threat should be placed, but reduced by 1 via Emergency Interrupt
+      expect(p1.hand.length).toBe(0); // Emergency was spent
+      expect(p1.discard.length).toBe(initialDiscardCount + 1); // Discarded
+      expect(p1.discard[p1.discard.length - 1].card.code).toBe('01085');
+      expect(gameState.log.some((l) => l.onomatopoeia === 'EMERGENCY!')).toBe(true);
+    });
+
     it('executes complete Villain Phase runner cleanly', () => {
       const nextState = executeVillainPhase(gameState);
 

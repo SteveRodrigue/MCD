@@ -9,12 +9,14 @@ export interface TriggerContext {
   sourceInstanceId?: string;
   damageAmount?: number;
   preventedDamage?: boolean;
+  threatAmount?: number;
 }
 
 export interface TriggerDispatchResult {
   state: GameState;
   preventedDamage?: boolean;
   damageAmount?: number;
+  threatAmount?: number;
 }
 
 /**
@@ -31,6 +33,7 @@ export function dispatchTrigger(
 
   let currentDamage = context.damageAmount ?? 0;
   let isPrevented = context.preventedDamage ?? false;
+  let currentThreat = context.threatAmount ?? 0;
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
   const identityAbilities = player.activeFormCard.enrichment?.abilities || [];
@@ -57,7 +60,7 @@ export function dispatchTrigger(
     }
   }
 
-  // 3. Scan in-hand cards for Hand triggers (e.g. Backflip for TAKE_ATTACK_DAMAGE)
+  // 3. Scan in-hand cards for Hand Damage triggers (e.g. Backflip for TAKE_ATTACK_DAMAGE)
   if (trigger === 'TAKE_ATTACK_DAMAGE' && currentDamage > 0) {
     const handInterruptIdx = player.hand.findIndex((c) => {
       const abilities = c.card.enrichment?.abilities || [];
@@ -90,9 +93,44 @@ export function dispatchTrigger(
     }
   }
 
+  // 4. Scan in-hand cards for Threat Placement triggers (e.g. Emergency 01085)
+  if (trigger === 'THREAT_WOULD_BE_PLACED' && currentThreat > 0) {
+    for (const p of state.players) {
+      const handInterruptIdx = p.hand.findIndex((c) => {
+        const abilities = c.card.enrichment?.abilities || [];
+        return abilities.some((a) => a.trigger === trigger && a.zone === 'HAND');
+      });
+
+      if (handInterruptIdx !== -1 && currentThreat > 0) {
+        const [interruptCard] = p.hand.splice(handInterruptIdx, 1);
+        const ability = interruptCard.card.enrichment!.abilities!.find(
+          (a) => a.trigger === trigger && a.zone === 'HAND',
+        )!;
+
+        // Discard self
+        if (ability.cost?.discardSelf !== false) {
+          p.discard.push(interruptCard);
+        }
+
+        if (ability.effect === 'REMOVE_THREAT') {
+          const reduction = Number(ability.params?.amount ?? 1);
+          currentThreat = Math.max(0, currentThreat - reduction);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            key: `card.${interruptCard.card.code}.threatReduced`,
+            params: { player: p.name, reduction },
+            onomatopoeia: 'EMERGENCY!',
+          });
+        }
+      }
+    }
+  }
+
   return {
     state,
     damageAmount: currentDamage,
     preventedDamage: isPrevented,
+    threatAmount: currentThreat,
   };
 }

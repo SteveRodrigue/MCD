@@ -104,6 +104,8 @@ export interface CardAuditMetadata {
   reviewedBy?: string;
   rulesVersion?: string;
   confidence?: number;
+  reconstructedText?: string;
+  ambiguityFile?: string;
 }
 
 export interface CardEnrichment {

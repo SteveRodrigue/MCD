@@ -38,6 +38,7 @@ Each record documents:
 | [ADR-0017](0017-panoramic-horizontal-tabletop-and-edge-scrolling.md) | 2026-08-27 | Panoramic Horizontal Tabletop with Edge and Drag Scrolling | **Accepted** | Panoramic horizontal row for 1–4 heroes with full-sized tableaus/hands, edge-hover auto-panning, and drag-to-scroll cross-table deployment. |
 | [ADR-0018](0018-declarative-state-modifiers-and-dynamic-board-limits.md) | 2026-08-27 | Declarative State Modifiers & Zero Card-Code Coupling | **Accepted** | Derive all board limits and state modifiers dynamically from declarative metadata without hardcoding card IDs in the engine. |
 | [ADR-0019](0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md) | 2026-08-27 | Strict Metadata-Driven Rules Execution & Zero Raw-Text Parsing | **Accepted** | Never parse raw card text strings for game rules or legality to prevent breaking on translations (i18n), upstream typos, or complex text edge cases. |
+| [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md) | 2026-08-27 | Optional vs Forced Triggers, Exact Event Scoping & Interactive Interrupts | **Accepted** | Differentiate mandatory forced abilities from optional player interrupts, isolate villain vs minion activations, and support interactive decision prompts per RR v1.8. |
 
 ---
 

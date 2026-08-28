@@ -4,7 +4,7 @@ card_name: "Enhanced Spider-Sense"
 pack: "core"
 confidence_reached: 80
 blocker_category: "TIER_3_STRUCTURAL_REFACTOR"
-date_logged: "2026-08-28T08:44"
+date_logged: "2026-08-28T09:03"
 ---
 
 # Card Ambiguity Report: Enhanced Spider-Sense (`#01004`)

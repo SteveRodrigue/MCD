@@ -4,7 +4,7 @@ card_name: "Emergency"
 pack: "core"
 confidence_reached: 75
 blocker_category: "TIER_3_STRUCTURAL_REFACTOR"
-date_logged: "2026-08-28T08:44"
+date_logged: "2026-08-28T09:03"
 ---
 
 # Card Ambiguity Report: Emergency (`#01085`)

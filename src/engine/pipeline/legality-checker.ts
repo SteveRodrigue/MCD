@@ -182,6 +182,7 @@ export function canPlayCard(
   playerId: string,
   cardInstanceId: string,
   paymentCardInstanceIds: string[],
+  generatorInstanceIds: string[] = [],
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
@@ -192,7 +193,7 @@ export function canPlayCard(
   }
 
   const card = targetCardInstance.card;
-  const cost = card.cost ?? 0;
+  let cost = card.cost ?? 0;
 
   // Form restrictions check (e.g. Alter-Ego Action / Hero Action)
   const isHeroCard = card.type === CardType.HERO || (card.text || '').includes('Hero Action');
@@ -206,6 +207,27 @@ export function canPlayCard(
     return { allowed: false, reason: 'Can only play this card while in Alter-Ego form.' };
   }
 
+  // Ally Limit Check (RR v1.8 p. 3: default limit 3, +1 with The Triskelion)
+  if (card.type === CardType.ALLY) {
+    const hasTriskelion = state.players.some((p) =>
+      p.tableau.some((t) => t.card.code === '01073'),
+    );
+    const maxAllies = hasTriskelion ? 4 : 3;
+    if (player.allies.length >= maxAllies) {
+      return { allowed: false, reason: `Ally limit reached (${maxAllies} allies max).` };
+    }
+  }
+
+  // Unicity Constraint Check (RR v1.8 p. 28)
+  if (card.isUnique) {
+    const alreadyInPlay =
+      player.allies.some((a) => a.card.name === card.name) ||
+      player.tableau.some((t) => t.card.name === card.name);
+    if (alreadyInPlay) {
+      return { allowed: false, reason: `A unique copy of '${card.name}' is already in play.` };
+    }
+  }
+
   // Cost payment validation
   if (cost > 0) {
     // Payment cards cannot include the card being played
@@ -214,13 +236,56 @@ export function canPlayCard(
     }
 
     let generatedResources = 0;
+
+    // 1. Resources from Hand Discards
     for (const pId of paymentCardInstanceIds) {
       const pCard = player.hand.find((c) => c.instanceId === pId);
       if (!pCard) {
         return { allowed: false, reason: `Payment card instance ${pId} not found in hand.` };
       }
-      // Sum printed resources (double resources yield 2)
-      generatedResources += pCard.card.resources.total || 1;
+
+      // Check aspect doubling cards (e.g. The Power of Leadership / Justice / Aggression / Protection)
+      const aspectDoubleAbility = pCard.card.enrichment?.abilities?.find(
+        (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+      );
+      if (aspectDoubleAbility && aspectDoubleAbility.params?.aspect === card.faction) {
+        generatedResources += 2;
+      } else {
+        generatedResources += pCard.card.resources.total || 1;
+      }
+    }
+
+    // 2. Resources from Table Generators / Reducers
+    for (const gId of generatorInstanceIds) {
+      // Check if identity ability (e.g. Peter Parker Scientist)
+      if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+        if (player.currentForm === 'alter_ego' && player.activeFormCard.code === '01001b') {
+          generatedResources += 1;
+        }
+        continue;
+      }
+
+      const gCard = player.tableau.find((c) => c.instanceId === gId);
+      if (!gCard) {
+        return { allowed: false, reason: `Resource generator instance ${gId} not found in tableau.` };
+      }
+      if (gCard.exhausted) {
+        return { allowed: false, reason: `Resource generator ${gCard.card.name} is already exhausted.` };
+      }
+
+      // Web-Shooter: requires counter
+      if (gCard.card.code === '01008') {
+        if ((gCard.tokens?.counters || 0) <= 0) {
+          return { allowed: false, reason: 'Web-Shooter has no web counters remaining.' };
+        }
+        generatedResources += 1;
+      } else if (gCard.card.code === '01092') {
+        // Helicarrier: reduces cost or provides 1 resource
+        generatedResources += 1;
+      } else {
+        // Generic generator
+        generatedResources += 1;
+      }
     }
 
     if (generatedResources < cost) {

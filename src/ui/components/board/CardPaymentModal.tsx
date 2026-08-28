@@ -70,14 +70,63 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     (c) => c.instanceId !== cardToPlay.instanceId,
   );
 
-  // Available tableau generators (ready generators with counters or resource abilities - ADR-0018)
-  const availableGenerators = player.tableau.filter((c) => {
-    if (c.exhausted) return false;
-    if (c.card.enrichment?.uses) return (c.tokens?.counters || 0) > 0;
-    return c.card.enrichment?.abilities?.some(
-      (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
-    ) ?? true;
-  });
+  // Available generators: Identity resource abilities + ready tableau generators (ADR-0018)
+  const availableGenerators = useMemo(() => {
+    const list: {
+      id: string;
+      name: string;
+      sublabel: string;
+      resourceType?: string;
+      amount: number;
+    }[] = [];
+
+    // 1. Identity Resource Abilities (e.g. Peter Parker: Scientist, Carol Danvers: Rechannel)
+    const idAbilities = player.activeFormCard.enrichment?.abilities || [];
+    for (const ab of idAbilities) {
+      if (ab.timing === 'RESOURCE' || ab.effect === 'GENERATE_RESOURCE') {
+        const resType = (ab.params?.resource as string) || 'resource';
+        const amount = Number(ab.params?.amount) || 1;
+        list.push({
+          id: 'identity_ability',
+          name: `${player.activeFormCard.name} (${ab.id.replace(/_/g, ' ').toUpperCase()})`,
+          sublabel: `Identity Ability • +${amount} ${resType.toUpperCase()}`,
+          resourceType: resType,
+          amount,
+        });
+      }
+    }
+
+    // 2. Tableau Generators & Counter Cards
+    for (const c of player.tableau) {
+      if (c.exhausted) continue;
+      const uses = c.card.enrichment?.uses;
+      const hasResAbility = c.card.enrichment?.abilities?.some(
+        (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+      );
+
+      if (uses) {
+        if ((c.tokens?.counters || 0) > 0) {
+          list.push({
+            id: c.instanceId,
+            name: c.card.name,
+            sublabel: `${c.tokens?.counters || 0} ${uses.type || 'Counters'} Remaining`,
+            resourceType: 'wild',
+            amount: 1,
+          });
+        }
+      } else if (hasResAbility) {
+        list.push({
+          id: c.instanceId,
+          name: c.card.name,
+          sublabel: 'Table Resource Generator / Reducer',
+          resourceType: 'wild',
+          amount: 1,
+        });
+      }
+    }
+
+    return list;
+  }, [player.activeFormCard, player.tableau]);
 
   // Calculate generated resources and breakdown
   const { totalGenerated, resourceBreakdown } = useMemo(() => {
@@ -108,12 +157,17 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       total += (res.total || 1) * multiplier;
     }
 
-    // 2. Generators
+    // 2. Generators (Identity abilities + Tableau generators)
     for (const gId of selectedGeneratorIds) {
-      const gCard = availableGenerators.find((c) => c.instanceId === gId);
-      if (!gCard) continue;
-      wildCount += 1;
-      total += 1;
+      const gen = availableGenerators.find((g) => g.id === gId);
+      if (!gen) continue;
+
+      if (gen.resourceType === 'energy') energyCount += gen.amount;
+      else if (gen.resourceType === 'mental') mentalCount += gen.amount;
+      else if (gen.resourceType === 'physical') physicalCount += gen.amount;
+      else wildCount += gen.amount;
+
+      total += gen.amount;
     }
 
     return {
@@ -351,20 +405,20 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             </div>
           )}
 
-          {/* Table Generators & Cost Reducers */}
+          {/* Generators & Cost Reducers */}
           {availableGenerators.length > 0 && (
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black uppercase text-comic-black tracking-wider">
-                Exhaust Table Generators & Reducers:
+                Identity & Table Resource Generators:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {availableGenerators.map((gCard) => {
-                  const isSelected = selectedGeneratorIds.includes(gCard.instanceId);
+                {availableGenerators.map((gen) => {
+                  const isSelected = selectedGeneratorIds.includes(gen.id);
                   return (
                     <button
-                      key={gCard.instanceId}
+                      key={gen.id}
                       type="button"
-                      onClick={() => toggleGenerator(gCard.instanceId)}
+                      onClick={() => toggleGenerator(gen.id)}
                       className={`flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected
                           ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
@@ -372,15 +426,13 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       }`}
                     >
                       <div>
-                        <div className="text-xs font-black text-comic-black">{gCard.card.name}</div>
+                        <div className="text-xs font-black text-comic-black">{gen.name}</div>
                         <div className="text-[10px] text-comic-black/60 font-bold uppercase">
-                          {gCard.card.enrichment?.uses
-                            ? `${gCard.tokens?.counters || 0} Counters Remaining`
-                            : 'Cost Reducer / Generator'}
+                          {gen.sublabel}
                         </div>
                       </div>
                       <span className="text-xs font-black px-2 py-0.5 bg-comic-paper border border-comic-black rounded">
-                        +1 Res
+                        +{gen.amount} {gen.resourceType ? gen.resourceType.toUpperCase() : 'RES'}
                       </span>
                     </button>
                   );

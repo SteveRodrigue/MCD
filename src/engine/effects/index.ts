@@ -637,6 +637,60 @@ export function executeEffect(
       return { state, success: true };
     }
 
+    case 'EXHAUST_IDENTITY':
+    case 'EXHAUST_HERO': {
+      player.exhausted = true;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'status',
+        key: 'card.state.exhausted',
+        params: { card: player.activeFormCard.name },
+        onomatopoeia: 'EXHAUST',
+      });
+      return { state, success: true, onomatopoeia: 'EXHAUSTED!' };
+    }
+
+    case 'DISCARD_ENCOUNTER_DECK': {
+      const count = (ability.params?.count as number) || 1;
+      for (let i = 0; i < count; i++) {
+        const card = state.encounterDeck.shift();
+        if (card) state.encounterDiscard.push(card);
+      }
+      return { state, success: true, onomatopoeia: `DISCARDED ${count} ENCOUNTER CARDS!` };
+    }
+
+    case 'PLAYER_CHOICE': {
+      const options = (ability.params?.options as any[]) || [];
+      const title = (ability.params?.title as string) || 'Choose an Option';
+      const description = (ability.params?.description as string) || '';
+      const sourceCardName = context.sourceCardInstance?.card.name || ability.id;
+
+      state.pendingDecisionPrompt = {
+        promptId: `prompt_${Date.now()}_${ability.id}`,
+        playerId: context.playerId || player.id,
+        title,
+        description,
+        sourceCardName,
+        options,
+      };
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'decision.prompt.opened',
+        params: { player: player.name, promptId: state.pendingDecisionPrompt.promptId, source: sourceCardName },
+        onomatopoeia: 'CHOICE REQUIRED!',
+      });
+
+      return { state, success: true, onomatopoeia: 'CHOOSE AN OPTION!' };
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }

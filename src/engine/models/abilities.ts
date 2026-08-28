@@ -38,6 +38,8 @@ export type TriggerType =
   | 'ATTACK_RESOLVED'
   | 'THWART_RESOLVED'
   | 'RESOURCE_SPENT'
+  | 'MINION_ATTACKED'
+  | 'ATTACK'
   | 'ROUND_END';
 
 export type EffectType =

@@ -6,6 +6,7 @@ import { VillainZone } from './VillainZone';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
+import { DecisionPromptModal } from './DecisionPromptModal';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
@@ -205,6 +206,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         isOpen={isLogOpen}
         onClose={() => setIsLogOpen(false)}
         logs={gameState.log}
+      />
+
+      {/* 5. Interactive Decision Prompt Modal (ADR-0020) */}
+      <DecisionPromptModal
+        prompt={gameState.pendingDecisionPrompt}
+        onSelectOption={(optionId) => {
+          if (gameState.pendingDecisionPrompt && onDispatchAction) {
+            onDispatchAction({
+              type: 'RESOLVE_DECISION_PROMPT',
+              playerId: gameState.pendingDecisionPrompt.playerId,
+              selectedOptionId: optionId,
+            });
+          }
+        }}
       />
     </div>
   );

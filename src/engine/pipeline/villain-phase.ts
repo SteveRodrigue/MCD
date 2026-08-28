@@ -269,6 +269,14 @@ export function step3_minionActivations(state: GameState): GameState {
             state.winner = 'VILLAIN';
           }
         }
+
+        // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
+        const abilities = minion.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
+            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
+          }
+        }
       } else {
         const schemeThreat = minionCard.scheme || 1;
         const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
@@ -338,6 +346,15 @@ export function step5_revealEncounterCards(state: GameState): GameState {
       const card = cardInstance.card;
 
       if (card.type === CardType.MINION) {
+        // Check Toughness keyword
+        const hasToughness = (card.traits || []).includes('Toughness') || (card.text || '').toLowerCase().includes('toughness');
+        if (hasToughness) {
+          if (!cardInstance.statusCards) cardInstance.statusCards = [];
+          if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {
+            cardInstance.statusCards.push(StatusCard.TOUGH);
+          }
+        }
+
         // Enters play engaged with this player
         player.engagedMinions.push(cardInstance);
         state.log.push({

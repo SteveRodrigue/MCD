@@ -9,6 +9,7 @@ export type ActionType =
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
   | 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'
+  | 'RESOLVE_DECISION_PROMPT'
   | 'END_PLAYER_TURN'
   | 'DEV_ADD_CARD_TO_HAND';
 
@@ -87,6 +88,12 @@ export interface SpendResourcesToDiscardAttachmentAction {
   paymentCardInstanceIds?: string[];
 }
 
+export interface ResolveDecisionPromptAction {
+  type: 'RESOLVE_DECISION_PROMPT';
+  playerId: string;
+  selectedOptionId: string;
+}
+
 export interface EndPlayerTurnAction {
   type: 'END_PLAYER_TURN';
   playerId: string;
@@ -109,6 +116,7 @@ export type GameAction =
   | PlayCardAction
   | UseCardAbilityAction
   | SpendResourcesToDiscardAttachmentAction
+  | ResolveDecisionPromptAction
   | EndPlayerTurnAction
   | DevAddCardToHandAction;
 

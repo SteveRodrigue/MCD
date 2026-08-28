@@ -258,18 +258,19 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               </div>
             </div>
 
-            {/* Cards in Hand (size="sm" with unconstrained hover zoom!) */}
-            <div className="flex flex-wrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
+            {/* Cards in Hand (Single 1 Row • Unconstrained Z-Axis Hover Zoom) */}
+            <div className="flex flex-nowrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
               {hand.map((cardInst) => (
-                <CardView
-                  key={cardInst.instanceId}
-                  card={cardInst.card}
-                  instance={cardInst}
-                  size="sm"
-                  enableHoverZoom={true}
-                  zoomOrigin="bottom"
-                  onClick={() => onCardClick && onCardClick(cardInst)}
-                />
+                <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50">
+                  <CardView
+                    card={cardInst.card}
+                    instance={cardInst}
+                    size="sm"
+                    enableHoverZoom={true}
+                    zoomOrigin="bottom"
+                    onClick={() => onCardClick && onCardClick(cardInst)}
+                  />
+                </div>
               ))}
 
               {hand.length === 0 && (

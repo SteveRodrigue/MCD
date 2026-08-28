@@ -134,7 +134,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
                     ref={(el) => {
                       heroStationRefs.current[idx] = el;
                     }}
-                    className={`w-[660px] lg:w-[740px] shrink-0 space-y-4 transition-all duration-300 ${
+                    className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 transition-all duration-300 ${
                       isFocused
                         ? 'opacity-100 z-10 scale-100'
                         : 'opacity-90 hover:opacity-100 z-0 scale-[0.98]'

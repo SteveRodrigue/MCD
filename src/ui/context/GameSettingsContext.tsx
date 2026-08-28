@@ -1,20 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
+
 export interface GameSettings {
   devMode: boolean;
   soundEnabled: boolean;
   animationsSpeed: 'normal' | 'fast' | 'instant';
   sideBySideLayout: boolean;
+  edgeScrollSpeed: EdgeScrollSpeed;
 }
 
 interface GameSettingsContextType {
   settings: GameSettings;
   devMode: boolean;
   sideBySideLayout: boolean;
+  edgeScrollSpeed: EdgeScrollSpeed;
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
   setSideBySideLayout: (enabled: boolean) => void;
   toggleSideBySide: () => void;
+  setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
 }
 
@@ -22,7 +27,8 @@ const DEFAULT_SETTINGS: GameSettings = {
   devMode: true, // ON by default for development mode
   soundEnabled: true,
   animationsSpeed: 'normal',
-  sideBySideLayout: true, // ON by default for widescreen multi-hero
+  sideBySideLayout: true,
+  edgeScrollSpeed: 'normal', // Default is faster than previous slow baseline
 };
 
 const STORAGE_KEY = 'mcd_game_settings';
@@ -66,6 +72,10 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((prev) => ({ ...prev, sideBySideLayout: !prev.sideBySideLayout }));
   };
 
+  const setEdgeScrollSpeed = (speed: EdgeScrollSpeed) => {
+    setSettings((prev) => ({ ...prev, edgeScrollSpeed: speed }));
+  };
+
   const updateSettings = (partial: Partial<GameSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
   };
@@ -76,10 +86,12 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         settings,
         devMode: settings.devMode,
         sideBySideLayout: settings.sideBySideLayout,
+        edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
         setDevMode,
         toggleDevMode,
         setSideBySideLayout,
         toggleSideBySide,
+        setEdgeScrollSpeed,
         updateSettings,
       }}
     >

@@ -79,6 +79,7 @@ You can use the following prompt templates to invoke specialized skills and work
 | **[`docs/specs/`](docs/specs/)** | **Read/Write** | Algorithmic step-by-step card mechanics breakdown (`card-mechanics-breakdown.md`). |
 | **[`docs/ambiguities/`](docs/ambiguities/)** | **Read/Write** | Active blocked cards queue (Inbox Zero target: 0 files). |
 | **[`docs/reports/`](docs/reports/)** | **Read/Write** | Full audit reports (`card-supplemental-audit-core-and-rhino.md`). |
+| **[`logs/skills/`](logs/skills/)** | **Logs** | Real-time progress and audit trail logs for skill execution. |
 | **[`src/data/supplemental/`](src/data/supplemental/)** | **Data** | Declarative rules enrichment JSON (`core.json`, `core_encounter.json`). |
 | **[`src/engine/`](src/engine/)** | **Code** | Pure headless TypeScript game rules engine. |
 | **[`src/ui/`](src/ui/)** | **Code** | React + Tailwind Comic Pop-Art tabletop user interface. |

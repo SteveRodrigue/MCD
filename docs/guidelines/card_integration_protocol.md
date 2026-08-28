@@ -15,7 +15,8 @@
 6. **Hard Circuit-Breaker on Refinement Loops (ADR-0021):** If round-trip confidence is $< 95\%$ after 3 refinement iterations, stop immediately and log to `docs/ambiguities/`.
 7. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`).
 8. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
-9. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+9. **Execution Logging (ADR-0021):** Every skill execution logs real-time audit trails to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
+10. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
 
 ---
 
@@ -29,37 +30,34 @@
 
 ---
 
-## 3. The 8-Step Integration Protocol
+## 3. 📝 Logging Protocol (`logs/skills/`)
+
+Every card inspection and resolution appends a structured entry:
+```text
+YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Looking at card [card_name] #{card_code}
+YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated without any code change required (Tier 1).
+YYYY-MM-DDTHH:mm:ss.sssZ [INFO] Card [card_name] #{card_code} integrated with code change (Tier 2).
+YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (<95% confidence after 3 attempts) -> docs/ambiguities/{pack}_{code}_{slug}.md
+YYYY-MM-DDTHH:mm:ss.sssZ [WARN] Card [card_name] #{card_code} card ambiguity: Structural Refactor Gate (Tier 3) -> docs/ambiguities/{pack}_{code}_{slug}.md
+```
+
+---
+
+## 4. The 8-Step Integration Protocol
 
 ```mermaid
 flowchart TD
-    S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
+    S1["1. Read Upstream Card Text & Log (logs/skills/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
     S2 --> S3["3. Draft Supplemental JSON Schema & Audit Block"]
     S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
     S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
     S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
     S5 -- "No (< 95%, Attempts < 3)" --> S3
     S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
-Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
+Log to docs/ambiguities/ & logs/skills/"]
     S6 --> S7{"7. Blast-Radius Tier Check"}
     S7 -- "Tier 1 / Tier 2" --> S8["8. Author Composable Primitives, Stamp Audit & Prune Ambiguity"]
     S7 -- "Tier 3 (Structural)" --> T3{"Single Card or Batch?"}
     T3 -- "Single Card" --> T3S["Log Ambiguity, Write Implementation Plan & STOP for Approval"]
     T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
 ```
-
-### Detailed Steps:
-
-1. **Ingest Upstream Text:** Fetch exact text from `data/upstream/pack/{pack}.json`.
-2. **Literal Semantic Mapping:** Identify ability timing, trigger condition, costs, target entities, and form requirements.
-3. **Draft Supplemental Schema:** Create structured entry with `comment`, `audit`, `mechanicSteps`, and `abilities`.
-4. **Consult Ground Truth:** Review `references/rules_reference_v18.md` and MarvelCDB FAQ (`https://marvelcdb.com/faqs`) and discussion (`https://marvelcdb.com/card/{code}`).
-5. **Round-Trip Test & Circuit-Breaker:** Translate JSON schema back into human language; verify 100% equivalence with printed card behavior.
-   * If confidence remains $< 95\%$ after 3 attempts, abort integration and write `docs/ambiguities/{pack}_{code}_{slug}.md`.
-6. **Engine Reuse Check:** Check `src/engine/effects/` and `src/engine/triggers/` before adding new code.
-7. **Composable Primitives & Blast-Radius Check:** Build generic building blocks. If Tier 3 is required, gate behind approval or batch isolation.
-8. **Stamp Audit Metadata, Codify Specs & Inbox Zero Pruning:**
-   * **Stamp Timestamps:** Update `updatedAt` / `reviewedAt` in ISO `YYYY-MM-DDTHH:mm` format.
-   * **Codify Specs:** Add entry in `docs/specs/card-mechanics-breakdown.md`.
-   * **Delete Ambiguity File:** If an issue existed in `docs/ambiguities/`, delete it.
-   * **Verify:** Run automated tests (`npm test`).

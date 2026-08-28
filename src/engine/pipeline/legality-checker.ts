@@ -270,12 +270,16 @@ export function canPlayCard(
   const isHeroFormRequired =
     card.type === CardType.HERO ||
     (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait');
+    (card.text || '').toLowerCase().includes('attach to your hero') ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait') ||
+    !!card.enrichment?.requiresHeroForm;
 
   const isAlterEgoFormRequired =
     card.type === CardType.ALTER_EGO ||
     (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait');
+    (card.text || '').toLowerCase().includes('attach to your alter-ego') ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait') ||
+    !!card.enrichment?.requiresAlterEgoForm;
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only play this card while in Hero form.' };
@@ -426,12 +430,16 @@ export function evaluateCardPlayability(
   const isHeroFormRequired =
     card.type === CardType.HERO ||
     (card.type === CardType.EVENT && (card.text || '').includes('Hero Action')) ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait');
+    (card.text || '').toLowerCase().includes('attach to your hero') ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the hero trait') ||
+    !!card.enrichment?.requiresHeroForm;
 
   const isAlterEgoFormRequired =
     card.type === CardType.ALTER_EGO ||
     (card.type === CardType.EVENT && (card.text || '').includes('Alter-Ego Action')) ||
-    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait');
+    (card.text || '').toLowerCase().includes('attach to your alter-ego') ||
+    (card.text || '').toLowerCase().includes('play only if your identity has the alter-ego trait') ||
+    !!card.enrichment?.requiresAlterEgoForm;
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     reasons.push('Requires Hero form');

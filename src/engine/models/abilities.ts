@@ -101,6 +101,8 @@ export interface CardEnrichment {
   isLandscape?: boolean;
   attackCost?: number;
   thwartCost?: number;
+  requiresHeroForm?: boolean;
+  requiresAlterEgoForm?: boolean;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

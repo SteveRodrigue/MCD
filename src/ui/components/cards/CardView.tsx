@@ -140,11 +140,9 @@ export const CardView: React.FC<CardViewProps> = ({
             ? 'border-comic-red shadow-comic-lg ring-4 ring-rose-500'
             : isKeepSelected
               ? 'border-emerald-600 ring-4 ring-emerald-400'
-              : isPlayable === true
-                ? 'ring-4 ring-comic-yellow animate-pulse'
-                : isSelected
-                  ? 'border-comic-blue ring-4 ring-sky-400'
-                  : 'hover:shadow-comic-lg'
+              : isSelected
+                ? 'border-comic-blue ring-4 ring-sky-400'
+                : 'hover:shadow-comic-lg'
         }`}
       >
         {/* Unplayable Indicator Tag */}

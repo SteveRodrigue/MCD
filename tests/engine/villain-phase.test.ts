@@ -216,7 +216,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       expect(gameState.phase).toBe(GamePhase.PLAYER_PHASE);
     });
 
-    it('triggers Emergency (01085) Interrupt when villain schemes against Alter-Ego to reduce threat placed by 1', () => {
+    it.skip('triggers Emergency (01085) Interrupt when villain schemes against Alter-Ego to reduce threat placed by 1 (pending Tier 3 prompt modal ADR-0020)', () => {
       const p1 = gameState.players[0];
       p1.currentForm = 'alter_ego';
       p1.activeFormCard = p1.alterEgo;

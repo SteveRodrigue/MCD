@@ -264,6 +264,14 @@ export function canPlayCard(
     }
   }
 
+  // Ambiguity / Blocked Card Check (ADR-0021)
+  if (card.enrichment?.audit?.ambiguityFile) {
+    return {
+      allowed: false,
+      reason: `Card mechanic is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile}).`,
+    };
+  }
+
   // Reactive Event Restriction (RR v1.8 p. 12, 16, 19)
   // An event card with Interrupt or Response timing can ONLY be played during its specific trigger window.
   // It cannot be proactively played / paid for as a standard player action.
@@ -432,6 +440,11 @@ export function evaluateCardPlayability(
     if (activePlayer && activePlayer.id !== playerId) {
       reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);
     }
+  }
+
+  // Ambiguity / Blocked Card Check (ADR-0021)
+  if (card.enrichment?.audit?.ambiguityFile) {
+    reasons.push(`Card is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile})`);
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)

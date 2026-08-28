@@ -239,9 +239,10 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         expect(enrichment, `Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
         const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
         const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
+        const isBlockedAmbiguity = Boolean(enrichment.audit?.ambiguityFile);
         expect(
-          hasAbilities || isMarkedNoSupplemental,
-          `Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
+          hasAbilities || isMarkedNoSupplemental || isBlockedAmbiguity,
+          `Card ${card.code} (${card.name}) must either define abilities, have "noSupplementalNeeded: true", or specify an "ambiguityFile"`
         ).toBe(true);
       });
 

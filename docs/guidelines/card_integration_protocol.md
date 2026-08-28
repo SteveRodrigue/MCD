@@ -9,20 +9,22 @@
 
 1. **Zero Text-Scraping / Zero Assumptions (ADR-0019):** Card text is purely presentation data. Rules engine logic must never scrape or parse `card.text`.
 2. **Zero Hardcoded Card IDs (ADR-0018):** Never write `if (card.code === '01002')` in the core engine. Always inspect declarative metadata, ability timings, and effect primitives.
-3. **Mandatory Executable Abilities Schema (ADR-0021):** `mechanicSteps` and `comment` are human documentation. Every card with printed rules text MUST have its logic fully encoded in `abilities: [...]`. If `abilities` is missing or incomplete, confidence CANNOT exceed 50%. `noSupplementalNeeded: true` is strictly reserved for vanilla cards with 0 rules text.
-4. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
-5. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
-6. **3-Tier Blast-Radius Guardrails (ADR-0021):** Tier 1 (fast-track) and Tier 2 (additive helpers) execute freely. Tier 3 (structural changes) requires formal implementation plan approval in single-card mode, or ambiguity queue isolation during batch mode.
-7. **Round-Trip Decompiler Feedback Loop & Circuit-Breaker:** 
+3. **8-Point Socratic Q&A Deconstruction (ADR-0021):** Every ability must answer 8 fundamental questions: (1) Trigger & Timing, (2) Costs & Prerequisites, (3) Primary Target, (4) Search Zones & Scope (`["DECK", "DISCARD"]`), (5) State Mutation, (6) Mandatory Post-Resolution Side-Effects (`shuffleDeck: true`), (7) Source Destination, (8) Contingencies & Fallback Branches.
+4. **100% Parameter Completeness (ADR-0021):** All parameters identified in the 8-point Q&A checklist MUST be explicitly encoded in `params`. Omitting search zones, shuffle flags, or fallback branches is an invalid schema error.
+5. **Mandatory Executable Abilities Schema (ADR-0021):** `mechanicSteps` and `comment` are human documentation. Every card with printed rules text MUST have its logic fully encoded in `abilities: [...]`. If `abilities` is missing or incomplete, confidence CANNOT exceed 50%. `noSupplementalNeeded: true` is strictly reserved for vanilla cards with 0 rules text.
+6. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
+7. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
+8. **3-Tier Blast-Radius Guardrails (ADR-0021):** Tier 1 (fast-track) and Tier 2 (additive helpers) execute freely. Tier 3 (structural changes) requires formal implementation plan approval in single-card mode, or ambiguity queue isolation during batch mode.
+9. **Round-Trip Decompiler Feedback Loop & Circuit-Breaker:** 
    * Decompile **strictly** the structured `abilities: [...]` array into natural language (ignoring `comment` / `mechanicSteps`).
    * Compare against the printed upstream card text.
    * If the executable schema cannot recreate a comparable card text with 100% equivalent meaning and intent, confidence CANNOT be rated $\ge 95\%$.
    * If confidence remains $< 95\%$ after 3 refinement iterations, abort integration and isolate in `docs/ambiguities/{pack}_{code}_{slug}.md`.
-8. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`), confidence score, and **`reconstructedText`** (a machine-derived proof-of-work decompiled strictly from the `abilities: [...]` array to compare against original printed text).
-9. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
-10. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
-11. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
-12. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+10. **Encapsulated Audit Tracking (ADR-0021):** Every card maintains an `audit` block with ISO timestamps including date and time (`YYYY-MM-DDTHH:mm`), confidence score, and **`reconstructedText`** (a machine-derived proof-of-work decompiled strictly from the `abilities: [...]` array to compare against original printed text).
+11. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
+12. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
+13. **Execution Logging with Confidence Level (ADR-0021):** Every skill execution logs real-time audit trails with confidence score to `logs/skills/card_integration_{YYYY-MM-DD}.log`.
+14. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
 
 ---
 

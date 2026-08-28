@@ -85,6 +85,11 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
+* **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
+  * **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
+  * ❌ *Anti-Patterns (Prohibited):* `HYDRA_BOMBER_CHOICE`, `NICK_FURY_CHOICE`, `PEPPER_POTTS_RESOURCE`, `BLACK_CAT_SEARCH`.
+  * ✅ *Composable Generic Patterns (Mandatory):* `PLAYER_CHOICE`, `DEAL_DAMAGE`, `ADD_THREAT_PER_PLAYER`, `DISCARD_TOP_DECK_FILTER`, `SEARCH_AND_REVEAL_SIDE_SCHEME`.
+  * Multi-choice cards MUST be modeled with a generic composable schema (e.g. `PLAYER_CHOICE` with nested `options: [{ id, label, effect, params }]`).
 * **100% PARAMETER COMPLETENESS & FULLY QUALIFIED ZONES:** Every parameter identified in the 8-point Q&A checklist **MUST** be explicitly declared in `params` with **Fully Qualified Game Zones** (e.g. `searchZones: ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`, `shuffleDeck: "ENCOUNTER_DECK"`, `revealTarget: true`). Generic unqualified strings like `["DECK", "DISCARD"]` are strictly prohibited as ambiguous and engine-breaking.
 * `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
 * Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
@@ -167,8 +172,9 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ### Step 6: Code-Level Primitive & Trigger Path Implementation Audit
 * **Never Assume a String Primitive Is Complete:** Do not simply check that `"effect": "PRIMITIVE_NAME"` exists in an enum or switch case. You **MUST** open and inspect the actual TypeScript source code.
-* **Sub-step 6A (Effect Primitive Code Audit):**
+* **Sub-step 6A (Effect Primitive Code Audit & Agnosticism Verification):**
   * Open `src/engine/effects/index.ts` and inspect the exact lines of code executing that effect.
+  * **Audit Primitive Agnosticism (Card Name Ban):** Verify that the effect primitive name does **NOT** reference a specific card name (e.g. `HYDRA_BOMBER_CHOICE` is an automatic failure).
   * Audit every mechanical requirement against the TypeScript implementation:
     * **Zones:** Does it check all relevant zones (e.g. deck **AND** discard pile for search effects)?
     * **Mandatory Side-Effects:** Does it execute all required secondary rules (e.g. shuffling the deck after a search per RR v1.8 p. 25, exhausting targets, applying status cards)?
@@ -177,9 +183,9 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * Open `src/engine/pipeline/` (e.g. `villain-phase.ts`, `action-dispatcher.ts`, `damage-pipeline.ts`) and trace whether the trigger event (e.g. `WHEN_REVEALED`, `VILLAIN_STAGE_TRANSITION`, `MINION_ATTACKED`) is **actually dispatched for this specific card type and phase window**.
   * If a trigger is not dispatched for that card type (e.g. `WHEN_REVEALED` on Minions / Side Schemes, or Villain Stage transitions), the mechanic is **inactive in the engine**.
 * **Sub-step 6C (Code-Level Gap Routing):**
-  * If the underlying TypeScript code has gaps, missing clauses, or un-emitted triggers:
-    * **Tier 2 (Additive Helper / Dispatch Fix):** If the fix is a localized generic helper or wiring a missing dispatch without architectural changes, implement the generic fix and write a regression unit test.
-    * **Tier 3 (Structural Blocker):** If the fix requires new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/`.
+  * If the underlying TypeScript code has gaps, missing clauses, un-emitted triggers, or card-specific anti-patterns:
+    * **Tier 2 (Additive Generic Helper / Dispatch Fix):** If the fix is a localized **card-agnostic generic helper** (e.g. composable `PLAYER_CHOICE`, `ADD_THREAT_PER_PLAYER`) or wiring a missing dispatch without architectural changes, implement the generic fix and write a regression unit test.
+    * **Tier 3 (Structural Blocker / Interactive UI Modal):** If the card requires interactive decision modals, new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/` and strip `abilities: [...]`.
 
 ### Step 7: Composable Generic Primitives & Blast-Radius Gate
 * Check change tier (Tier 1 vs Tier 2 vs Tier 3) and **immediately stream append log entry** to `logs/skills/card_integration_{YYYY-MM-DD}.log` (never defer or batch log entries):

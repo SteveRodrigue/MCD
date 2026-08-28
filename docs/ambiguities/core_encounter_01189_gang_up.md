@@ -1,22 +1,22 @@
 ---
-card_code: "01100"
-card_name: "Enhanced Ivory Horn"
+card_code: "01189"
+card_name: "Gang-Up"
 pack: "core_encounter"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
 date_logged: "2026-08-28T12:46"
 ---
 
-# Card Ambiguity Report: Enhanced Ivory Horn (`01100`)
+# Card Ambiguity Report: Gang-Up (`01189`)
 
-* **MarvelCDB Link:** [https://marvelcdb.com/card/01100](https://marvelcdb.com/card/01100)
-* **Official Printed Text:** `Attach to Rhino.
-Hero Action: Spend [physical] [physical] [physical] resources → discard this card`
+* **MarvelCDB Link:** [https://marvelcdb.com/card/01189](https://marvelcdb.com/card/01189)
+* **Official Printed Text:** `When Revealed (Alter-Ego): This card gains surge.
+When Revealed (Hero): The villain and each minion engaged with you attacks you.`
 
 ---
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
-1. **Attachment Stat Modifiers (Tier 3): Attachments in state.villain.attachments are not scanned for +3 ATK, Overkill, or +1 SCH during activations.**
+1. **Effect primitive 'VILLAIN_AND_ENGAGED_MINIONS_ATTACK' is not implemented in src/engine/effects/index.ts.**
 2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Active Abilities Stripped).
 
 ---

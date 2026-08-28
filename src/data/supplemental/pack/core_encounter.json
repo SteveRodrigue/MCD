@@ -6,8 +6,8 @@
       "comment": "VILLAIN: Rhino",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -18,11 +18,11 @@
       ]
     },
     "01095": {
-      "comment": "Rhino (Stage II): Blocked pending STRUCTURAL_STAGE_TRANSITION_PIPELINE (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
+      "comment": "Rhino (Stage II): Blocked pending engine implementation (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -36,11 +36,11 @@
       ]
     },
     "01096": {
-      "comment": "Rhino (Stage III): Blocked pending STRUCTURAL_STAGE_TRANSITION_PIPELINE (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
+      "comment": "Rhino (Stage III): Blocked pending engine implementation (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -59,8 +59,8 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -77,8 +77,8 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -90,11 +90,11 @@
       ]
     },
     "01098": {
-      "comment": "Armored Rhino Suit: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01098_armored_rhino_suit.md).",
+      "comment": "Armored Rhino Suit: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01098_armored_rhino_suit.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -108,11 +108,11 @@
       ]
     },
     "01099": {
-      "comment": "Charge: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01099_charge.md).",
+      "comment": "Charge: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01099_charge.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -126,11 +126,11 @@
       ]
     },
     "01100": {
-      "comment": "Enhanced Ivory Horn: Blocked pending ATTACHMENT_COMBAT_PIPELINE (see docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md).",
+      "comment": "Enhanced Ivory Horn: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01100_enhanced_ivory_horn.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -143,61 +143,33 @@
       ]
     },
     "01101": {
-      "comment": "MINION: Hydra Mercenary",
+      "comment": "Hydra Mercenary: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01101_hydra_mercenary.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)"
+        "confidence": 80,
+        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01101_hydra_mercenary.md"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 1, Health 3.",
         "Keyword: Guard (Heroes engaged with this minion cannot attack the villain)."
-      ],
-      "abilities": [
-        {
-          "id": "hydra_mercenary_guard",
-          "timing": "CONSTANT",
-          "effect": "KEYWORD_GUARD",
-          "params": {
-            "target": "SELF"
-          }
-        }
       ]
     },
     "01102": {
-      "comment": "Minion: Sandman enters play with Tough status.",
-      "abilities": [
-        {
-          "id": "sandman_toughness",
-          "timing": "SETUP",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
-        },
-        {
-          "id": "sandman_attack_response",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "MINION_ATTACKED",
-          "effect": "DISCARD_ENCOUNTER_DECK",
-          "params": {
-            "count": 2
-          }
-        }
-      ],
+      "comment": "Sandman: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01102_sandman.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK ({\"count\":2})"
+        "confidence": 80,
+        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK ({\"count\":2})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01102_sandman.md"
       },
       "mechanicSteps": [
         "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
@@ -220,8 +192,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:30",
-        "reviewedAt": "2026-08-28T12:30",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -247,8 +219,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -275,8 +247,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -302,8 +274,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -330,8 +302,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:30",
-        "reviewedAt": "2026-08-28T12:30",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -343,28 +315,19 @@
     },
     "01108": {
       "isLandscape": true,
-      "comment": "SIDE_SCHEME: Crowd Control",
+      "comment": "Crowd Control: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01108_crowd_control.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "Crisis icon; CONSTANT -> SCHEME_ICON_CRISIS ({\"count\":1})"
+        "confidence": 80,
+        "reconstructedText": "Crisis icon; CONSTANT -> SCHEME_ICON_CRISIS ({\"count\":1})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01108_crowd_control.md"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Crisis icon (Heroes cannot remove threat from main scheme while this scheme is in play)."
-      ],
-      "abilities": [
-        {
-          "id": "crowd_control_crisis",
-          "timing": "CONSTANT",
-          "effect": "SCHEME_ICON_CRISIS",
-          "params": {
-            "count": 1
-          }
-        }
       ],
       "crisis": 1
     },
@@ -384,8 +347,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:30",
-        "reviewedAt": "2026-08-28T12:30",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -396,11 +359,11 @@
       ]
     },
     "01110": {
-      "comment": "MINION: Hydra Bomber. Blocked pending generic PLAYER_CHOICE interactive decision modal state machine (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
+      "comment": "Hydra Bomber: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:43",
-        "reviewedAt": "2026-08-28T12:43",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -412,35 +375,16 @@
       ]
     },
     "01111": {
-      "comment": "Treachery: When Revealed -> Place 1 threat on main scheme. If Alter-Ego, place 2 threat instead.",
-      "abilities": [
-        {
-          "id": "explosion_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "HERO_FORM_BRANCH",
-          "params": {
-            "heroEffect": {
-              "effect": "DEAL_DAMAGE",
-              "amount": 3,
-              "target": "ALL_HEROES"
-            },
-            "alterEgoEffect": {
-              "effect": "PLACE_THREAT",
-              "amount": 2,
-              "target": "BOMB_SCARE_SCHEME"
-            }
-          }
-        }
-      ],
+      "comment": "Explosion: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01111_explosion.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> HERO_FORM_BRANCH ({\"heroEffect\":{\"effect\":\"DEAL_DAMAGE\",\"amount\":3,\"target\":\"ALL_HEROES\"},\"alterEgoEffect\":{\"effect\":\"PLACE_THREAT\",\"amount\":2,\"target\":\"BOMB_SCARE_SCHEME\"}})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> HERO_FORM_BRANCH ({\"heroEffect\":{\"effect\":\"DEAL_DAMAGE\",\"amount\":3,\"target\":\"ALL_HEROES\"},\"alterEgoEffect\":{\"effect\":\"PLACE_THREAT\",\"amount\":2,\"target\":\"BOMB_SCARE_SCHEME\"}})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01111_explosion.md"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Deal 3 damage to each hero in hero form (or place 2 threat on Bomb Scare if in alter-ego)."
@@ -462,8 +406,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -933,52 +877,32 @@
       }
     },
     "01186": {
-      "comment": "Treachery: Advance -> Villain schemes immediately.",
-      "abilities": [
-        {
-          "id": "advance_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_SCHEMES",
-          "params": {
-            "target": "ACTIVE_PLAYER"
-          }
-        }
-      ],
+      "comment": "Advance: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01186_advance.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_SCHEMES ({\"target\":\"ACTIVE_PLAYER\"})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_SCHEMES ({\"target\":\"ACTIVE_PLAYER\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01186_advance.md"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain schemes (if in Alter-Ego) or schemes against hero."
       ]
     },
     "01187": {
-      "comment": "Treachery: Assault -> Villain attacks immediately.",
-      "abilities": [
-        {
-          "id": "assault_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS",
-          "params": {
-            "target": "ACTIVE_PLAYER"
-          }
-        }
-      ],
+      "comment": "Assault: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01187_assault.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_ATTACKS ({\"target\":\"ACTIVE_PLAYER\"})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_ATTACKS ({\"target\":\"ACTIVE_PLAYER\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01187_assault.md"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain attacks you."
@@ -999,11 +923,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
+        "confidence": 98,
         "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
@@ -1011,40 +935,30 @@
       ]
     },
     "01189": {
-      "comment": "Treachery: Gang-Up -> Villain and each minion engaged with you attacks you.",
-      "abilities": [
-        {
-          "id": "gang_up_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
-          "params": {
-            "target": "ACTIVE_PLAYER"
-          }
-        }
-      ],
+      "comment": "Gang-Up: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01189_gang_up.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK ({\"target\":\"ACTIVE_PLAYER\"})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK ({\"target\":\"ACTIVE_PLAYER\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01189_gang_up.md"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain and each minion engaged with you attacks you."
       ]
     },
     "01190": {
-      "comment": "Shadow of the Past: Blocked pending SET_ASIDE_NEMESIS_SPAWN_PIPELINE (see docs/ambiguities/core_encounter_01190_shadow_of_the_past.md).",
+      "comment": "Shadow of the Past: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01190_shadow_of_the_past.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 85,
+        "confidence": 80,
         "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_NEMESIS_SET ({\"target\":\"ACTIVE_HERO\"})",
         "ambiguityFile": "docs/ambiguities/core_encounter_01190_shadow_of_the_past.md"
       },
@@ -1053,80 +967,48 @@
       ]
     },
     "01191": {
-      "comment": "TREACHERY: Exhaustion",
+      "comment": "Exhaustion: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01191_exhaustion.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Exhaust ACTIVE_IDENTITY"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Exhaust ACTIVE_IDENTITY",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01191_exhaustion.md"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Exhaust your identity."
-      ],
-      "abilities": [
-        {
-          "id": "exhaustion_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "EXHAUST_CHARACTER",
-          "params": {
-            "target": "ACTIVE_IDENTITY"
-          }
-        }
       ]
     },
     "01192": {
-      "comment": "TREACHERY: Masterplan",
+      "comment": "Masterplan: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01192_masterplan.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> PLACE_THREAT_PER_SIDE_SCHEME ({\"baseThreat\":4,\"perSchemeThreat\":1,\"target\":\"MAIN_SCHEME\"})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> PLACE_THREAT_PER_SIDE_SCHEME ({\"baseThreat\":4,\"perSchemeThreat\":1,\"target\":\"MAIN_SCHEME\"})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01192_masterplan.md"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Place 4 threat on the main scheme (or 1 threat per side scheme in play)."
-      ],
-      "abilities": [
-        {
-          "id": "masterplan_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
-          "params": {
-            "baseThreat": 4,
-            "perSchemeThreat": 1,
-            "target": "MAIN_SCHEME"
-          }
-        }
       ]
     },
     "01193": {
-      "comment": "Treachery: Exhaustion -> Exhaust each hero.",
-      "abilities": [
-        {
-          "id": "under_fire_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "REVEAL_ENCOUNTER_CARD_WITH_SURGE",
-          "params": {
-            "count": 1
-          }
-        }
-      ],
+      "comment": "Under Fire: Blocked pending engine implementation (see docs/ambiguities/core_encounter_01193_under_fire.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T12:46",
+        "reviewedAt": "2026-08-28T12:46",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_ENCOUNTER_CARD_WITH_SURGE ({\"count\":1})"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_ENCOUNTER_CARD_WITH_SURGE ({\"count\":1})",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01193_under_fire.md"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Reveal the top card of the encounter deck with Surge."

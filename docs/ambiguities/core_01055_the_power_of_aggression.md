@@ -4,7 +4,7 @@ card_name: "The Power of Aggression"
 pack: "core"
 confidence_reached: 80
 blocker_category: "PESSIMISTIC_CODE_AUDIT_GAP"
-date_logged: "2026-08-28T10:10"
+date_logged: "2026-08-28T12:46"
 ---
 
 # Card Ambiguity Report: The Power of Aggression (`01055`)
@@ -17,11 +17,11 @@ Double the number of resources this card generates while paying for a Aggression
 
 ## 🔍 Why Code-Level Implementation Audit (Step 6) Fails
 1. **Effect primitive 'DOUBLE_RESOURCE_FOR_ASPECT' is not implemented in src/engine/effects/index.ts.**
-2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Abilities Stripped).
+2. **Pessimistic Confidence Rating:** 80% (Circuit-Breaker Fired / Active Abilities Stripped).
 
 ---
 
 ## 🛠️ Required Architectural Implementation Plan
-* Implement missing TypeScript effect primitive or pipeline trigger dispatch in `src/engine/`.
+* Refactor corresponding subsystem in `src/engine/`.
 * Write regression unit test verifying end-to-end trigger dispatch and resolution.
 * Restore `abilities: [...]` in `src/data/supplemental/pack/core.json`, elevate confidence to >= 95%, and delete this report (Inbox Zero).

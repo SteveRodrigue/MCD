@@ -579,12 +579,52 @@ export function dispatchAction(
         }
       }
 
-      // 2. Process In-Play Generator Activations (e.g. Web-Shooter, Helicarrier)
+      // 2. Process In-Play & Identity Generator Activations (e.g. Web-Shooter, Helicarrier, Scientist)
       for (const gId of action.generatorInstanceIds || []) {
+        if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+          const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+            (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE',
+          );
+          if (idAbility) {
+            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+            player.usedAbilitiesThisRound[idAbility.id] =
+              (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
+
+            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+            player.usedAbilitiesThisPhase[idAbility.id] =
+              (player.usedAbilitiesThisPhase[idAbility.id] || 0) + 1;
+
+            nextState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: nextState.roundNumber,
+              phase: nextState.phase,
+              category: 'ability',
+              actor: { name: player.name, type: player.currentForm },
+              key: 'identity.ability.used',
+              params: { ability: idAbility.id, hero: player.activeFormCard.name },
+              onomatopoeia: 'SCIENTIST!',
+            });
+          }
+          continue;
+        }
+
         const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
         if (gIdx !== -1) {
           const gCard = player.tableau[gIdx];
           gCard.exhausted = true;
+
+          // Track limits on table abilities if configured
+          const tableAbility = gCard.card.enrichment?.abilities?.find(
+            (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+          );
+          if (tableAbility) {
+            const key = `${gCard.instanceId}_${tableAbility.id}`;
+            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+            player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
+            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+            player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
+          }
 
           // Generic counter decrement and discardOnEmpty handling (ADR-0018)
           if (gCard.card.enrichment?.uses) {
@@ -714,6 +754,21 @@ export function dispatchAction(
         return { state, result: { success: false, error: 'Can only use this ability in Alter-Ego form' } };
       }
 
+      // Limit validation (e.g. ONCE_PER_ROUND, ONCE_PER_PHASE)
+      const abilityKey = targetCardInst ? `${targetCardInst.instanceId}_${ability.id}` : ability.id;
+      if (ability.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1) {
+        return {
+          state,
+          result: { success: false, error: `Ability '${ability.id}' has already been used this round (Limit: once per round)` },
+        };
+      }
+      if (ability.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1) {
+        return {
+          state,
+          result: { success: false, error: `Ability '${ability.id}' has already been used this phase (Limit: once per phase)` },
+        };
+      }
+
       // Cost validation and execution
       if (targetCardInst) {
         if (ability.cost?.exhaustSelf && targetCardInst.exhausted) {
@@ -762,6 +817,13 @@ export function dispatchAction(
         sourceCardInstance: targetCardInst,
         targetInstanceId: action.targetInstanceId,
       });
+
+      if (effectRes.success) {
+        if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+        player.usedAbilitiesThisRound[abilityKey] = (player.usedAbilitiesThisRound[abilityKey] || 0) + 1;
+        if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+        player.usedAbilitiesThisPhase[abilityKey] = (player.usedAbilitiesThisPhase[abilityKey] || 0) + 1;
+      }
 
       return {
         state: nextState,

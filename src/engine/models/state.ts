@@ -51,6 +51,10 @@ export interface PlayerState {
   engagedMinions: CardInstance[]; // Minions engaged with this player
   formChangedThisRound: boolean;
   recoveryUsedThisRound: boolean;
+  /** Tracks ability IDs used during the current round (e.g. limit: ONCE_PER_ROUND) */
+  usedAbilitiesThisRound?: Record<string, number>;
+  /** Tracks ability IDs used during the current phase (e.g. limit: ONCE_PER_PHASE) */
+  usedAbilitiesThisPhase?: Record<string, number>;
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }

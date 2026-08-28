@@ -330,6 +330,18 @@ export function canPlayCard(
           (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE',
         );
         if (idAbility) {
+          if (idAbility.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1) {
+            return {
+              allowed: false,
+              reason: `Identity ability '${idAbility.id}' has already been used this round (Limit: once per round).`,
+            };
+          }
+          if (idAbility.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1) {
+            return {
+              allowed: false,
+              reason: `Identity ability '${idAbility.id}' has already been used this phase (Limit: once per phase).`,
+            };
+          }
           generatedResources += Number(idAbility.params?.amount) || 1;
         }
         continue;

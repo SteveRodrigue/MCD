@@ -253,18 +253,7 @@
       ]
     },
     "01014": {
-      "comment": "Resource Card: Generates 3 Energy resources.",
-      "abilities": [
-        {
-          "id": "energy_absorption_resource",
-          "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "energy",
-            "amount": 3
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01015": {
       "comment": "Support: Alter-Ego Action: Exhaust Alpha Flight Station -> choose and discard a card from hand, then draw 1 card (or 2 cards instead if Carol Danvers).",
@@ -855,18 +844,7 @@
       ]
     },
     "01044": {
-      "comment": "Resource Card: Generates 2 Wild resources.",
-      "abilities": [
-        {
-          "id": "vibranium_resource",
-          "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "wild",
-            "amount": 2
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01045": {
       "comment": "Support: Alter-Ego Action: Exhaust The Golden City -> draw 2 cards.",
@@ -1555,46 +1533,13 @@
       ]
     },
     "01088": {
-      "comment": "Resource Card: Generates 2 Energy resources.",
-      "abilities": [
-        {
-          "id": "energy_resource",
-          "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "energy",
-            "amount": 2
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01089": {
-      "comment": "Resource Card: Generates 2 Mental resources.",
-      "abilities": [
-        {
-          "id": "genius_resource",
-          "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "mental",
-            "amount": 2
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01090": {
-      "comment": "Resource Card: Generates 2 Physical resources.",
-      "abilities": [
-        {
-          "id": "strength_resource",
-          "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "physical",
-            "amount": 2
-          }
-        }
-      ]
+      "noSupplementalNeeded": true
     },
     "01091": {
       "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",

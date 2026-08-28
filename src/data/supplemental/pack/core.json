@@ -5,15 +5,15 @@
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:20",
-        "reviewedAt": "2026-08-28T08:20",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
       },
       "mechanicSteps": [
         "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
-        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated",
+        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated (RR v1.8 p. 12)",
         "Step 2: Draw 1 card from player draw deck into hand"
       ],
       "abilities": [
@@ -33,8 +33,8 @@
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:20",
-        "reviewedAt": "2026-08-28T08:20",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -61,8 +61,8 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T08:20",
-        "reviewedAt": "2026-08-28T08:20",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98
@@ -105,6 +105,19 @@
             "amount": "ALL"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Trigger: When hero would take damage from an attack (INTERRUPT @ TAKE_ATTACK_DAMAGE)",
+        "Cost: Discard Backflip from hand to discard pile",
+        "Effect: Prevent all attack damage (sets incoming damage to 0)"
       ]
     },
     "01004": {
@@ -121,6 +134,19 @@
           },
           "effect": "CANCEL_WHEN_REVEALED"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-27T23:00",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 80
+      },
+      "mechanicSteps": [
+        "Trigger: When a treachery card is revealed from the encounter deck (HERO_INTERRUPT @ TREACHERY_REVEALED)",
+        "Cost: Pay 1 resource and discard Enhanced Spider-Sense",
+        "Effect: Cancel the When Revealed effects of the revealed treachery card"
       ]
     },
     "01005": {
@@ -138,6 +164,19 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Action: Hero Action (attack)",
+        "Cost: Pay 3 resources and discard Swinging Web Kick",
+        "Effect: Deal 8 damage to chosen enemy (villain or minion)"
       ]
     },
     "01006": {
@@ -155,6 +194,19 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Action: Alter-Ego Action",
+        "Cost: Exhaust Aunt May",
+        "Effect: Heal 4 damage from Peter Parker"
       ]
     },
     "01007": {
@@ -170,6 +222,19 @@
             "target": "MAIN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to a minion",
+        "Trigger: When attached minion is defeated (FORCED_INTERRUPT @ ATTACHED_MINION_DEFEATED)",
+        "Effect: Remove 3 threat from the main scheme"
       ]
     },
     "01008": {
@@ -193,6 +258,21 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Setup: Enters play with 3 web counters (uses: 3)",
+        "Action: Hero Resource (RESOURCE)",
+        "Cost: Exhaust Web-Shooter and remove 1 web counter",
+        "Effect: Generate 1 [wild] resource",
+        "Cleanup: When counters reach 0, discard Web-Shooter"
       ]
     },
     "01009": {
@@ -207,6 +287,20 @@
           },
           "effect": "CANCEL_ATTACK_AND_STUN"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
+        "Trigger: When attached enemy would attack (FORCED_INTERRUPT @ ATTACHED_ENEMY_ATTACKS)",
+        "Cost: Discard Webbed Up",
+        "Effect: Cancel that attack and give attached enemy a Stunned status card"
       ]
     },
     "01010a": {
@@ -1108,6 +1202,17 @@
             "amountPerSideScheme": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
       ]
     },
     "01058": {
@@ -1123,6 +1228,17 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Response: After Daredevil thwarts, deal 1 damage to an enemy (RESPONSE @ THWART_RESOLVED)"
       ]
     },
     "01060": {
@@ -1141,6 +1257,17 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Action: Hero Action (thwart). Remove 3 threat from a scheme (4 threat instead if paid with [mental] resource)."
       ]
     },
     "01061": {
@@ -1156,6 +1283,18 @@
           },
           "effect": "CONVERT_THREAT_TO_DAMAGE"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 90
+      },
+      "mechanicSteps": [
+        "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
+        "Effect: Take that threat as damage on your hero instead of placing threat on the scheme"
       ]
     },
     "01062": {
@@ -1170,6 +1309,18 @@
             "resource": "wild"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Setup: Uses (3 snoop counters). Discard on empty.",
+        "Action: Exhaust Surveillance Team and remove 1 snoop counter -> remove 1 threat from a scheme."
       ]
     },
     "01063": {
@@ -1188,6 +1339,19 @@
             "target": "MAIN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Trigger: Response after you defeat a minion (RESPONSE @ MINION_DEFEATED)",
+        "Cost: Exhaust Interrogation Room",
+        "Effect: Remove 1 threat from a scheme (Limit once per round)."
       ]
     },
     "01064": {
@@ -1211,6 +1375,18 @@
             "target": "CHOSEN_SCHEME"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to a hero. Max 1 per hero.",
+        "Passive: Attached hero gets +1 THW (CONSTANT ➔ THW_BONUS +1)."
       ]
     },
     "01065": {
@@ -1224,6 +1400,19 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to a side scheme. Max 1 per scheme.",
+        "Trigger: Response when attached side scheme is defeated (FORCED_RESPONSE @ SCHEME_DEFEATED)",
+        "Effect: Deal 4 damage to an enemy."
       ]
     },
     "01066": {
@@ -1504,6 +1693,18 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Trigger: Response after Mockingbird enters play (FORCED_RESPONSE @ CARD_PLAYED)",
+        "Effect: Stun an enemy (villain or minion)."
       ]
     },
     "01084": {
@@ -1524,6 +1725,18 @@
           "trigger": "ROUND_END",
           "effect": "DISCARD_SELF"
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Trigger 1: Response after enters play (FORCED_RESPONSE @ CARD_PLAYED) -> Choose: remove 2 threat, draw 3 cards, or deal 4 damage.",
+        "Trigger 2: Round End (FORCED_RESPONSE @ ROUND_END) -> Discard Nick Fury if in play."
       ]
     },
     "01085": {
@@ -1542,6 +1755,19 @@
             "amount": 1
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-27T23:00",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 75
+      },
+      "mechanicSteps": [
+        "Trigger: Interrupt when the villain schemes (INTERRUPT @ VILLAIN_SCHEMES)",
+        "Condition: Player choice via optional decision prompt (Accept / Decline)",
+        "Effect: Reduce threat placed on the scheme by 1 and discard Emergency"
       ]
     },
     "01086": {
@@ -1556,6 +1782,17 @@
             "target": "CHOSEN_CHARACTER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Action: Action. Heal 2 damage from a character (hero, alter-ego, or ally)."
       ]
     },
     "01087": {
@@ -1573,16 +1810,60 @@
             "target": "CHOSEN_ENEMY"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Action: Hero Action (attack). Deal 3 damage to an enemy."
       ]
     },
     "01088": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
+      ]
     },
     "01089": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
+      ]
     },
     "01090": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100
+      },
+      "mechanicSteps": [
+        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
+      ]
     },
     "01091": {
       "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",
@@ -1599,6 +1880,17 @@
             "target": "CHOSEN_PLAYER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98
+      },
+      "mechanicSteps": [
+        "Action: Action. Exhaust Avengers Mansion -> choose a player to draw 1 card."
       ]
     },
     "01092": {
@@ -1616,6 +1908,17 @@
             "target": "CHOSEN_PLAYER"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
       ]
     },
     "01093": {
@@ -1635,6 +1938,18 @@
             "target": "SELF"
           }
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-28T08:44",
+        "reviewedAt": "2026-08-28T08:44",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 95
+      },
+      "mechanicSteps": [
+        "Play Condition: Attach to your hero. Max 1 per hero.",
+        "Action: Hero Action. Spend 1 [physical] resource and discard Tenacity -> ready your hero."
       ]
     }
   }

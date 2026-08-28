@@ -6,11 +6,12 @@
       "comment": "VILLAIN: Rhino",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 100,
+        "reconstructedText": "Vanilla card (no printed abilities)."
       },
       "mechanicSteps": [
         "Villain Stage I: Base SCH 1, ATK 3, Health 14 per player (enters play without initial status unless scenario specifies)."
@@ -31,11 +32,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> SEARCH_AND_REVEAL_SIDE_SCHEME ({\"schemeCode\":\"01107\"})"
       },
       "mechanicSteps": [
         "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",
@@ -68,11 +70,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give STUNNED status to ALL_HEROES; SETUP -> Give TOUGH status to SELF"
       },
       "mechanicSteps": [
         "Villain Stage III: Base SCH 1, ATK 5, Health 16 per player.",
@@ -86,11 +89,12 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 100,
+        "reconstructedText": "Passive/Vanilla: <b>Contents</b>: Rhino (I) and Rhino (II). (Rhino (II) and Rhino (III) instead for expert mode.) Rhino and Standard encounter sets. One modular encounter set <i>(recommended: Bomb Scare)</i>.\n<b>Setup</b>: Advance to stage 1B."
       },
       "mechanicSteps": [
         "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
@@ -103,11 +107,12 @@
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100
+        "confidence": 100,
+        "reconstructedText": "Passive/Vanilla: <b>If this stage is completed, the players lose the game.</b>"
       },
       "mechanicSteps": [
         "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
@@ -130,11 +135,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> PREVENT_DAMAGE ({\"maxAbsorb\":5,\"target\":\"ATTACHED_VILLAIN\"})"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -159,11 +165,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_INTERRUPT (Trigger: VILLAIN_ATTACKS) -> BOOST_ATTACK_OVERKILL ({\"atkBonus\":3,\"overkill\":true,\"discardAfterAttack\":true})"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -200,11 +207,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> ATTACHED_VILLAIN gets +1 ATK; HERO_ACTION [Cost: Spend 2 [physical]] -> DISCARD_CARD ({\"target\":\"SELF\"})"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -215,11 +223,12 @@
       "comment": "MINION: Hydra Mercenary",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 1, Health 3.",
@@ -260,11 +269,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK ({\"count\":2})"
       },
       "mechanicSteps": [
         "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
@@ -287,11 +297,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 1 damage to ALL_HEROES"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 2, Health 3.",
@@ -315,11 +326,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Heal 4 damage from VILLAIN. If 0 healed, gain Surge"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -342,11 +354,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH to VILLAIN. If already TOUGH, gain Surge"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -368,11 +381,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -384,11 +398,12 @@
       "comment": "SIDE_SCHEME: Breakin' & Takin'",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "Hazard icon (1); CONSTANT -> SCHEME_ICON_HAZARD ({\"count\":1})"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Hazard icon (Deal 1 additional encounter card during Step 3)."
@@ -410,11 +425,12 @@
       "comment": "SIDE_SCHEME: Crowd Control",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "Crisis icon; CONSTANT -> SCHEME_ICON_CRISIS ({\"count\":1})"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Crisis icon (Heroes cannot remove threat from main scheme while this scheme is in play)."
@@ -436,11 +452,12 @@
       "comment": "SIDE_SCHEME: Bomb Scare",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "Acceleration icon; CONSTANT -> SCHEME_ICON_ACCELERATION ({\"count\":1})"
       },
       "mechanicSteps": [
         "Side Scheme: Starting threat 2 per player. Acceleration icon (Places 1 additional threat on main scheme during Step 1)."
@@ -473,11 +490,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to ALL_FRIENDLY_CHARACTERS"
       },
       "mechanicSteps": [
         "Minion: SCH 1, ATK 1, Health 2. When revealed: Deal 2 damage to each friendly character."
@@ -507,11 +525,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> HERO_FORM_BRANCH ({\"heroEffect\":{\"effect\":\"DEAL_DAMAGE\",\"amount\":3,\"target\":\"ALL_HEROES\"},\"alterEgoEffect\":{\"effect\":\"PLACE_THREAT\",\"amount\":2,\"target\":\"BOMB_SCARE_SCHEME\"}})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Deal 3 damage to each hero in hero form (or place 2 threat on Bomb Scare if in alter-ego)."
@@ -533,11 +552,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give CONFUSED status to ACTIVE_IDENTITY"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Confuse your identity character."
@@ -552,11 +572,25 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     },
     "01156": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Vanilla card (no printed abilities)."
+      }
     },
     "01157": {
       "comment": "Minion: Killmonger",
@@ -571,7 +605,14 @@
             "target": "SELF"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+      }
     },
     "01158": {
       "comment": "Treachery: Heart-Shaped Herb",
@@ -586,7 +627,14 @@
             "target": "VILLAIN"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Heal 2 damage from VILLAIN"
+      }
     },
     "01159": {
       "comment": "Treachery: Ritual Combat",
@@ -601,7 +649,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01160": {
       "comment": "Obligation: Legal Work",
@@ -612,11 +667,25 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     },
     "01161": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
+      }
     },
     "01162": {
       "comment": "Minion: Titania",
@@ -631,7 +700,14 @@
             "target": "SELF"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+      }
     },
     "01163": {
       "comment": "Attachment: Genetically Enhanced",
@@ -644,7 +720,14 @@
             "bonusAttack": 1
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "CONSTANT -> Give undefined status to target"
+      }
     },
     "01164": {
       "comment": "Treachery: Titania's Fury",
@@ -659,7 +742,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01165": {
       "comment": "Obligation: Eviction Notice",
@@ -670,11 +760,25 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     },
     "01166": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Each player places a random card from their hand facedown here.\n<b>When Defeated</b>: Return each facedown card here to its owner's hand."
+      }
     },
     "01167": {
       "comment": "Minion: Vulture (Quickstrike)",
@@ -689,7 +793,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01168": {
       "comment": "Treachery: Sweeping Swoop",
@@ -704,7 +815,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01169": {
       "comment": "Treachery: The Vulture's Plans",
@@ -719,7 +837,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give CONFUSED status to HERO"
+      }
     },
     "01170": {
       "comment": "Obligation: Business Problems",
@@ -730,11 +855,25 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     },
     "01171": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
+      }
     },
     "01172": {
       "comment": "Minion: Whiplash",
@@ -749,7 +888,14 @@
             "target": "SELF"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+      }
     },
     "01173": {
       "comment": "Attachment: Electric Whip Attack",
@@ -762,7 +908,14 @@
             "bonusAttack": 1
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "CONSTANT -> Give undefined status to target"
+      }
     },
     "01174": {
       "comment": "Treachery: Electromagnetic Backlash",
@@ -777,7 +930,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01175": {
       "comment": "Obligation: Family Emergency",
@@ -788,11 +948,25 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     },
     "01176": {
       "isLandscape": true,
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1[per_hero] threat here."
+      }
     },
     "01177": {
       "comment": "Minion: Yon-Rogg",
@@ -807,10 +981,24 @@
             "target": "SELF"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+      }
     },
     "01178": {
-      "noSupplementalNeeded": true
+      "noSupplementalNeeded": true,
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "Passive/Vanilla: Surge. <i>(After this card resolves, reveal 1 additional encounter card.)</i>\n<b>When Revealed</b>: Place 1 threat on the main scheme.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, place 1 threat on the main scheme."
+      }
     },
     "01179": {
       "comment": "Treachery: Yon-Rogg's Treason",
@@ -825,7 +1013,14 @@
             "target": "HERO"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+      }
     },
     "01186": {
       "comment": "Treachery: Advance -> Villain schemes immediately.",
@@ -842,11 +1037,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_SCHEMES ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain schemes (if in Alter-Ego) or schemes against hero."
@@ -867,11 +1063,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_ATTACKS ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain attacks you."
@@ -892,11 +1089,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Discard an upgrade or support you control (if none, gain Surge)."
@@ -917,11 +1115,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK ({\"target\":\"ACTIVE_PLAYER\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: The villain and each minion engaged with you attacks you."
@@ -942,11 +1141,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_NEMESIS_SET ({\"target\":\"ACTIVE_HERO\"})"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Reveal your hero's nemesis minion and put their nemesis side scheme into play. Shuffle remaining nemesis cards into encounter deck."
@@ -956,11 +1156,12 @@
       "comment": "TREACHERY: Exhaustion",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98
+        "confidence": 98,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Exhaust ACTIVE_IDENTITY"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Exhaust your identity."
@@ -981,11 +1182,12 @@
       "comment": "TREACHERY: Masterplan",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> PLACE_THREAT_PER_SIDE_SCHEME ({\"baseThreat\":4,\"perSchemeThreat\":1,\"target\":\"MAIN_SCHEME\"})"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Place 4 threat on the main scheme (or 1 threat per side scheme in play)."
@@ -1019,11 +1221,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:26",
-        "reviewedAt": "2026-08-28T09:26",
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 95
+        "confidence": 95,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> REVEAL_ENCOUNTER_CARD_WITH_SURGE ({\"count\":1})"
       },
       "mechanicSteps": [
         "Treachery (Expert): When revealed: Reveal the top card of the encounter deck with Surge."
@@ -1041,7 +1244,14 @@
             "target": "MAIN_SCHEME"
           }
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give undefined status to MAIN_SCHEME"
+      }
     },
     "01195": {
       "comment": "Treachery: Under Fire -> Reveal additional encounter card.",
@@ -1052,7 +1262,14 @@
           "trigger": "WHEN_REVEALED",
           "effect": "DISCARD_SELF"
         }
-      ]
+      ],
+      "audit": {
+        "updatedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-28T09:34",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+      }
     }
   }
 }

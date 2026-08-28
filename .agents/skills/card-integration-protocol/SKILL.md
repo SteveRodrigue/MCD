@@ -86,7 +86,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     "reviewedAt": "YYYY-MM-DDTHH:mm",
     "reviewedBy": "antigravity",
     "rulesVersion": "v1.8",
-    "confidence": 98
+    "confidence": 98,
+    "reconstructedText": "<Proof-of-work: Decompiled text derived 100% from abilities array>"
   },
   "mechanicSteps": [
     "Trigger: <Timing & Trigger event>",

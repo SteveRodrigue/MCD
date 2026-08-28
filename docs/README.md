@@ -8,7 +8,9 @@ This directory contains all internal, project-authored architecture, developer s
 
 ```
 docs/
-├── decisions/                    # Architecture Decision Records (ADR-0001 to ADR-0020)
+├── decisions/                    # Architecture Decision Records (ADR-0001 to ADR-0021)
+├── guidelines/                   # Standard engineering protocols & procedures
+│   └── card_integration_protocol.md # 8-step card integration protocol
 ├── reports/                      # Supplemental rules audits & validation reports
 ├── specs/                        # Project-authored algorithmic developer specifications
 │   └── card-mechanics-breakdown.md # Step-by-step card resolution breakdowns

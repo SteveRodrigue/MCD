@@ -1,0 +1,40 @@
+# Card Integration Protocol & Developer Guidelines
+
+**Audience:** All engineers, AI pair programmers, and contributors to Marvel Champions Digital (MCD).  
+**Authority:** Marvel Champions Rules Reference v1.8, ADR-0018, ADR-0019, ADR-0020, ADR-0021.
+
+---
+
+## 1. Core Mandates
+
+1. **Zero Text-Scraping / Zero Assumptions (ADR-0019):** Card text is purely presentation data. Rules engine logic must never scrape or parse `card.text`.
+2. **Zero Hardcoded Card IDs (ADR-0018):** Never write `if (card.code === '01002')` in the core engine. Always inspect declarative metadata, ability timings, and effect primitives.
+3. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
+4. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
+5. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+
+---
+
+## 2. The 8-Step Integration Protocol
+
+```mermaid
+flowchart TD
+    S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
+    S2 --> S3["3. Draft Supplemental JSON Schema (src/data/supplemental/)"]
+    S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
+    S4 --> S5["5. Bidirectional Round-Trip Validation (Confidence >= 95%)"]
+    S5 --> S6["6. Engine Primitive & Trigger Reuse Check"]
+    S6 --> S7["7. Author Composable Generic Primitives (if needed)"]
+    S7 --> S8["8. Populate mechanicSteps & Document Specs (docs/specs/)"]
+```
+
+### Detailed Steps:
+
+1. **Ingest Upstream Text:** Fetch exact text from `data/upstream/pack/{pack}.json`.
+2. **Literal Semantic Mapping:** Identify ability timing, trigger condition, costs, target entities, and form requirements.
+3. **Draft Supplemental Schema:** Create structured entry with `comment`, `mechanicSteps`, and `abilities`.
+4. **Consult Ground Truth:** Review `references/rules_reference_v18.md` and MarvelCDB FAQ (`https://marvelcdb.com/faqs`) and discussion (`https://marvelcdb.com/card/{code}`).
+5. **Round-Trip Test:** Translate JSON schema back into human language; verify 100% equivalence with printed card behavior.
+6. **Engine Reuse Check:** Check `src/engine/effects/` and `src/engine/triggers/` before adding new code.
+7. **Composable Primitives:** Build generic building blocks (e.g. Deck Inspection, Card Stack Filtering, Routing).
+8. **Codify Specs & Tests:** Add entry in `docs/specs/card-mechanics-breakdown.md` and verify with automated tests (`npm test`).

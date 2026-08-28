@@ -65,16 +65,21 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 * Fetch the exact printed card text from `data/upstream/pack/{pack_code}.json`.
 * Do not paraphrase, summarize, or alter the upstream text during analysis.
 
-### Step 2: Literal Semantic Mapping (Zero Interpretation / Zero Guesswork)
+### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
 * Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
-* Identify the exact ability type:
-  * **Timing:** `ACTION`, `HERO_ACTION`, `ALTER_EGO_ACTION`, `RESOURCE`, `INTERRUPT`, `HERO_INTERRUPT`, `RESPONSE`, `HERO_RESPONSE`, `FORCED_INTERRUPT`, `FORCED_RESPONSE`, `CONSTANT`, `SETUP`.
-  * **Trigger:** Exact event (e.g. `VILLAIN_SCHEMES`, `VILLAIN_INITIATES_ATTACK`, `TAKE_ATTACK_DAMAGE`, `CARD_PLAYED`, `ROUND_END`).
-  * **Target:** Exact entity (e.g. `the villain` $\neq$ `minions`; `an enemy` = `villain or minion`).
-  * **Form Requirement:** Derived strictly from ability timing (`HERO_` vs `ALTER_EGO_` vs neutral).
+* Before drafting schema, rigorously answer the **8-Point Socratic Q&A Checklist**:
+  1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
+  2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
+  3. **Q3 (Primary Target/Subject):** What exact entity is affected or searched (e.g. `the villain`, `an enemy`, `a minion`, specific card code)?
+  4. **Q4 (Zones & Boundaries):** Where does this take place, or where do we search (`searchZones: ["DECK", "DISCARD"]`, `HAND`, `TABLEAU`)?
+  5. **Q5 (State Mutation):** What exact state change occurs (deal damage, heal, remove threat, apply status, reveal, put into play)?
+  6. **Q6 (Post-Resolution Side-Effects):** What mandatory rules follow completion (e.g. `shuffleDeck: true`, `gainOverkill: true`)?
+  7. **Q7 (Source Destination):** What happens to the source card upon resolution (`DISCARD_SELF`, `ATTACH_TO_HOST`, `STAYS_IN_PLAY`)?
+  8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
+* **100% PARAMETER COMPLETENESS:** Every parameter identified in the 8-point Q&A checklist (e.g. `searchZones`, `shuffleDeck`, `revealTarget`, `targetType`, `fallbackSurge`) **MUST** be explicitly declared in `params`. Omitting search zones, shuffle flags, or fallback conditions is a game-breaking schema error.
 * `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
 * Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
 ```json
@@ -109,7 +114,11 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
         "resourceCost": { "physical": 1 }
       },
       "effect": "<EFFECT_PRIMITIVE>",
-      "params": { ... }
+      "params": {
+        "searchZones": ["DECK", "DISCARD"],
+        "shuffleDeck": true,
+        "revealTarget": true
+      }
     }
   ]
 }
@@ -126,14 +135,15 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 * **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, `effect`, and `params`) and decompile it into natural card text.
   * **Strict Rule:** Do **NOT** read `comment` or `mechanicSteps` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
 * **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
-  * Does the executable schema reproduce the exact same timing, triggers, costs, targets, constraints, and consequences?
+  * Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   * Can the schema express every clause of the printed card text without semantic loss?
+  * If the decompiled text is missing key elements answered in the 8-Point Q&A Checklist (e.g. search zones or shuffle rules), **iterate and refine the schema**.
 * **Confidence Scoring Rubric:**
-  * **100%:** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction.
-  * **95–98%:** Complete semantic equivalence; all clauses, costs, targets, and triggers fully modeled in `abilities`.
-  * **< 95% (🚨 Hard Rejection):** If the primitives or abilities cannot recreate a comparable card text (with the exact same meaning/intent), **confidence CANNOT be rated high ($\ge 95\%$)**.
+  * **100%:** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction with all 8 Q&A dimensions declared.
+  * **95–98%:** Complete semantic equivalence; all clauses, costs, targets, zones, and side-effects fully modeled in `abilities`.
+  * **< 95% (🚨 Hard Rejection):** If the primitives or abilities cannot recreate a comparable card text (e.g. missing search zones, missing shuffle, unhandled fallback), **confidence CANNOT be rated high ($\ge 95\%$)**.
   * **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
-* **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 3 $\rightarrow$ 4 $\rightarrow$ 5.
+* **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
 * **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3):**
   1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.

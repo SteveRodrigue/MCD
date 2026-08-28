@@ -3,8 +3,8 @@ import { UseEdgeScrollOptions } from '../../src/ui/hooks/useEdgeScroll';
 
 describe('Edge Scroll Architecture & Utility Constraints (ADR-0017)', () => {
   it('correctly validates edge threshold boundaries for left and right panning', () => {
-    const edgeThreshold = 75;
-    const maxSpeed = 22;
+    const edgeThreshold = 85;
+    const maxSpeed = 48; // Normal (Default)
     const windowWidth = 1920;
 
     // Pointer near left edge (X = 15px)
@@ -35,15 +35,29 @@ describe('Edge Scroll Architecture & Utility Constraints (ADR-0017)', () => {
     expect(rightVelocity).toBeLessThanOrEqual(maxSpeed);
   });
 
+  it('validates velocity levels across Slow, Normal (Default), and Fast presets', () => {
+    const speedLevels = {
+      slow: 24,
+      normal: 48,
+      fast: 75,
+    };
+
+    expect(speedLevels.slow).toBe(24);
+    expect(speedLevels.normal).toBe(48);
+    expect(speedLevels.fast).toBe(75);
+    expect(speedLevels.normal).toBeGreaterThan(speedLevels.slow);
+    expect(speedLevels.fast).toBeGreaterThan(speedLevels.normal);
+  });
+
   it('verifies configuration options defaults for panoramic viewports', () => {
     const defaultOptions: UseEdgeScrollOptions = {
-      edgeThreshold: 75,
-      maxSpeed: 22,
+      edgeThreshold: 85,
+      maxSpeed: 48,
       enabled: true,
     };
 
-    expect(defaultOptions.edgeThreshold).toBe(75);
-    expect(defaultOptions.maxSpeed).toBe(22);
+    expect(defaultOptions.edgeThreshold).toBe(85);
+    expect(defaultOptions.maxSpeed).toBe(48);
     expect(defaultOptions.enabled).toBe(true);
   });
 });

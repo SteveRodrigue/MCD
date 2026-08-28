@@ -7,15 +7,23 @@ import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
+import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface GameBoardProps {
   gameState: GameState;
   onReset: () => void;
 }
 
+const SPEED_MAP: Record<string, number> = {
+  slow: 24, // Slower baseline (previous default)
+  normal: 48, // Default (responsive)
+  fast: 75, // Rapid pan
+};
+
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
   const [isLogOpen, setIsLogOpen] = useState<boolean>(false);
+  const { edgeScrollSpeed } = useGameSettings();
 
   const totalPlayers = gameState.players.length;
   const isMultiHero = totalPlayers >= 2;
@@ -28,8 +36,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset }) => {
     scrollToChild,
     scrollByAmount,
   } = useEdgeScroll<HTMLDivElement>({
-    edgeThreshold: 80,
-    maxSpeed: 24,
+    edgeThreshold: 85,
+    maxSpeed: SPEED_MAP[edgeScrollSpeed] || 48,
     enabled: isMultiHero,
   });
 

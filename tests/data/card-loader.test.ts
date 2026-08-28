@@ -223,25 +223,31 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(helicarrier?.abilities?.[0].id).toBe('helicarrier_action');
     });
 
-    it('ensures 100% of upstream Core cards are registered with an explicit status signal (no cards forgotten)', async () => {
+    it('ensures 100% of upstream Core cards are registered with an explicit signal (no cards forgotten)', async () => {
       const { supplementalRegistry } = await import('../../src/data/supplemental');
 
       // Check all 101 Player Cards
       corePack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
         expect(enrichment, `Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
-        expect(enrichment.status, `Card ${card.code} must have an explicit status`).toBeDefined();
-        expect(['ENRICHED', 'NO_SUPPLEMENTAL_NEEDED']).toContain(enrichment.status);
-        expect(enrichment.needsSupplemental).toBe(false);
+        const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
+        const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
+        expect(
+          hasAbilities || isMarkedNoSupplemental,
+          `Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
+        ).toBe(true);
       });
 
       // Check all 108 Encounter Cards
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
         expect(enrichment, `Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
-        expect(enrichment.status, `Encounter Card ${card.code} must have an explicit status`).toBeDefined();
-        expect(['ENRICHED', 'NO_SUPPLEMENTAL_NEEDED']).toContain(enrichment.status);
-        expect(enrichment.needsSupplemental).toBe(false);
+        const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
+        const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
+        expect(
+          hasAbilities || isMarkedNoSupplemental,
+          `Encounter Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
+        ).toBe(true);
       });
     });
   });

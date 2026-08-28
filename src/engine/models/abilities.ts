@@ -94,17 +94,11 @@ export interface CardUsesDefinition {
   discardOnEmpty?: boolean;
 }
 
-export type SupplementalStatus =
-  | 'ENRICHED'
-  | 'NO_SUPPLEMENTAL_NEEDED'
-  | 'PENDING';
-
 export interface CardEnrichment {
+  noSupplementalNeeded?: boolean;
   cardName?: string;
   comment?: string;
   isLandscape?: boolean;
-  status?: SupplementalStatus;
-  needsSupplemental?: boolean;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

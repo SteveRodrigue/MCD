@@ -2,19 +2,10 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "cards": {
     "01094": {
-      "cardName": "Rhino",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Rhino resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01095": {
-      "cardName": "Rhino",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Villain Stage: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "rhino_2_when_revealed",
@@ -28,11 +19,7 @@
       ]
     },
     "01096": {
-      "cardName": "Rhino",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Villain Stage: When Revealed -> Stun each hero. Enters play with Tough.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "rhino_3_when_revealed",
@@ -47,27 +34,15 @@
       ]
     },
     "01097a": {
-      "cardName": "The Break-In!",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: The Break-In! resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01097b": {
-      "cardName": "The Break-In!",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: The Break-In! resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01098": {
-      "cardName": "Armored Rhino Suit",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Attachment: Attach to Rhino. When damage would be dealt to Rhino, place it here instead (absorbs up to 5 damage).",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "armored_rhino_suit_absorb",
@@ -78,11 +53,7 @@
       ]
     },
     "01099": {
-      "cardName": "Charge",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Attachment: Attach to Rhino. When Rhino attacks -> +3 ATK and gains Overkill. Discard after attack.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "charge_boost",
@@ -97,11 +68,7 @@
       ]
     },
     "01100": {
-      "cardName": "Enhanced Ivory Horn",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Attachment: Attached Rhino gets +1 ATK.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "ivory_horn_atk",
@@ -114,19 +81,10 @@
       ]
     },
     "01101": {
-      "cardName": "Hydra Mercenary",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "Minion: Guard (While engaged with you, you cannot attack the villain).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01102": {
-      "cardName": "Sandman",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Minion: When Revealed / Enters play -> Gains Tough status.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "sandman_toughness",
@@ -141,11 +99,7 @@
       ]
     },
     "01103": {
-      "cardName": "Shocker",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Minion: When Revealed -> Deal 1 damage to each hero.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "shocker_when_revealed",
@@ -160,11 +114,7 @@
       ]
     },
     "01104": {
-      "cardName": "Hard to Keep Down",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> Rhino heals 4 HP. If 0 healed, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "hard_to_keep_down",
@@ -179,11 +129,7 @@
       ]
     },
     "01105": {
-      "cardName": "\"I'm Tough\"",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> Rhino gains Tough status. If already Tough, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "im_tough",
@@ -198,11 +144,7 @@
       ]
     },
     "01106": {
-      "cardName": "Stampede",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Rhino attacks you.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "stampede",
@@ -213,9 +155,6 @@
       ]
     },
     "01107": {
-      "cardName": "Breakin' & Takin'",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Side Scheme: Hazard Icon (+1 encounter card). When Revealed -> place +1 threat per hero.",
       "isLandscape": true,
       "abilities": [
@@ -231,17 +170,10 @@
       ]
     },
     "01108": {
-      "cardName": "Crowd Control",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "Side Scheme: Crisis Icon (Cannot remove threat from Main Scheme while in play).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01109": {
-      "cardName": "Bomb Scare",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Side Scheme: Acceleration Icon (+1 threat per round). When Revealed -> place +1 threat per hero.",
       "isLandscape": true,
       "abilities": [
@@ -257,11 +189,7 @@
       ]
     },
     "01110": {
-      "cardName": "Hydra Bomber",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Minion: When Revealed -> Choose either take 2 damage or place 1 threat on main scheme.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "hydra_bomber_when_revealed",
@@ -276,11 +204,7 @@
       ]
     },
     "01111": {
-      "cardName": "Explosion",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> If Bomb Scare is in play, deal damage equal to its threat among characters. Else gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "explosion",
@@ -295,11 +219,7 @@
       ]
     },
     "01112": {
-      "cardName": "False Alarm",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> You are confused. If already confused, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "false_alarm",
@@ -314,483 +234,204 @@
       ]
     },
     "01113": {
-      "cardName": "Klaw",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Klaw resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01114": {
-      "cardName": "Klaw",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Klaw resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01115": {
-      "cardName": "Klaw",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Klaw resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01116a": {
-      "cardName": "Underground Distribution",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Underground Distribution resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01116b": {
-      "cardName": "Underground Distribution",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Underground Distribution resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01117a": {
-      "cardName": "Secret Rendezvous",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Secret Rendezvous resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01117b": {
-      "cardName": "Secret Rendezvous",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Secret Rendezvous resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01118": {
-      "cardName": "Sonic Converter",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Sonic Converter resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01119": {
-      "cardName": "Solid-Sound Body",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Solid-Sound Body resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01120": {
-      "cardName": "Armored Guard",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Armored Guard resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01121": {
-      "cardName": "Weapons Runner",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Weapons Runner resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01122": {
-      "cardName": "Klaw's Vengeance",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Klaw's Vengeance resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01123": {
-      "cardName": "Sonic Boom",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Sonic Boom resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01124": {
-      "cardName": "Sound Manipulation",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Sound Manipulation resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01125": {
-      "cardName": "Defense Network",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Defense Network resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01126": {
-      "cardName": "Illegal Arms Factory",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Illegal Arms Factory resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01127": {
-      "cardName": "The \"Immortal\" Klaw",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: The \"Immortal\" Klaw resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01128": {
-      "cardName": "The Masters of Evil",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: The Masters of Evil resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01129": {
-      "cardName": "Radioactive Man",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Radioactive Man resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01130": {
-      "cardName": "Whirlwind",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Whirlwind resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01131": {
-      "cardName": "Tiger Shark",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Tiger Shark resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01132": {
-      "cardName": "Melter",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Melter resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01133": {
-      "cardName": "Masters of Mayhem",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Masters of Mayhem resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01134": {
-      "cardName": "Ultron",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Ultron resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01135": {
-      "cardName": "Ultron",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Ultron resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01136": {
-      "cardName": "Ultron",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "VILLAIN: Ultron resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01137a": {
-      "cardName": "The Crimson Cowl",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: The Crimson Cowl resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01137b": {
-      "cardName": "The Crimson Cowl",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: The Crimson Cowl resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01138a": {
-      "cardName": "Assault on NORAD",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Assault on NORAD resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01138b": {
-      "cardName": "Assault on NORAD",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Assault on NORAD resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01139a": {
-      "cardName": "Countdown to Oblivion",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Countdown to Oblivion resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01139b": {
-      "cardName": "Countdown to Oblivion",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MAIN_SCHEME: Countdown to Oblivion resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01140": {
-      "cardName": "Ultron Drones",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ENVIRONMENT: Ultron Drones resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01141": {
-      "cardName": "Program Transmitter",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Program Transmitter resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01142": {
-      "cardName": "Upgraded Drones",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Upgraded Drones resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01143": {
-      "cardName": "Advanced Ultron Drone",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Advanced Ultron Drone resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01144a": {
-      "cardName": "Android Efficiency",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Android Efficiency resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01144b": {
-      "cardName": "Android Efficiency",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Android Efficiency resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01144c": {
-      "cardName": "Android Efficiency",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Android Efficiency resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01145": {
-      "cardName": "Rage of Ultron",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Rage of Ultron resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01146": {
-      "cardName": "Repair Sequence",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Repair Sequence resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01147": {
-      "cardName": "Swarm Attack",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Swarm Attack resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01148": {
-      "cardName": "Drone Factory",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Drone Factory resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01149": {
-      "cardName": "Invasive AI",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Invasive AI resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01150": {
-      "cardName": "Ultron's Imperative",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Ultron's Imperative resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01151": {
-      "cardName": "Under Attack",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Under Attack resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01152": {
-      "cardName": "Vibranium Armor",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Vibranium Armor resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01153": {
-      "cardName": "Concussion Blasters",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Concussion Blasters resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01154": {
-      "cardName": "Concussive Blast",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Concussive Blast resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01155": {
-      "cardName": "Affairs of State",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "OBLIGATION: Affairs of State resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01156": {
-      "cardName": "Usurp The Throne",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Usurp The Throne resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01157": {
-      "cardName": "Killmonger",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Killmonger resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01158": {
-      "cardName": "Heart-Shaped Herb",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Heart-Shaped Herb resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01159": {
-      "cardName": "Ritual Combat",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Ritual Combat resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01160": {
-      "cardName": "Legal Work",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "OBLIGATION: Legal Work resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01161": {
-      "cardName": "Personal Challenge",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Personal Challenge resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01162": {
-      "cardName": "Titania",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Titania resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01163": {
-      "cardName": "Genetically Enhanced",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Genetically Enhanced resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01164": {
-      "cardName": "Titania's Fury",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Titania's Fury resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01165": {
-      "cardName": "Eviction Notice",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Obligation: Give to Peter Parker player -> Exhaust Peter Parker or discard 1 random card (gains Surge).",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "eviction_notice",
@@ -801,9 +442,6 @@
       ]
     },
     "01166": {
-      "cardName": "Highway Robbery",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Nemesis Side Scheme: Acceleration icon. When Revealed -> Each player places random hand card facedown here.",
       "isLandscape": true,
       "abilities": [
@@ -819,11 +457,7 @@
       ]
     },
     "01167": {
-      "cardName": "Vulture",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Nemesis Minion: Quickstrike (attacks immediately after engaging hero).",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "vulture_quickstrike",
@@ -838,11 +472,7 @@
       ]
     },
     "01168": {
-      "cardName": "Sweeping Swoop",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Nemesis Treachery: When Revealed -> Stun your hero. If Vulture is in play, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "sweeping_swoop",
@@ -857,147 +487,62 @@
       ]
     },
     "01169": {
-      "cardName": "The Vulture's Plans",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: The Vulture's Plans resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01170": {
-      "cardName": "Business Problems",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "OBLIGATION: Business Problems resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01171": {
-      "cardName": "Imminent Overload",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Imminent Overload resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01172": {
-      "cardName": "Whiplash",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Whiplash resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01173": {
-      "cardName": "Electric Whip Attack",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Electric Whip Attack resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01174": {
-      "cardName": "Electromagnetic Backlash",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Electromagnetic Backlash resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01175": {
-      "cardName": "Family Emergency",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "OBLIGATION: Family Emergency resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01176": {
-      "cardName": "The Psyche-Magnitron",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: The Psyche-Magnitron resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01177": {
-      "cardName": "Yon-Rogg",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Yon-Rogg resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01178": {
-      "cardName": "Kree Manipulator",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Kree Manipulator resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01179": {
-      "cardName": "Yon-Rogg's Treason",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Yon-Rogg's Treason resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01180": {
-      "cardName": "Legions of Hydra",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: Legions of Hydra resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01181": {
-      "cardName": "Madame Hydra",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Madame Hydra resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01182": {
-      "cardName": "Hydra Soldier",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: Hydra Soldier resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01183": {
-      "cardName": "The Doomsday Chair",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "SIDE_SCHEME: The Doomsday Chair resolved via standard encounter flow (no supplemental trigger required).",
       "isLandscape": true,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01184": {
-      "cardName": "M.O.D.O.K.",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "MINION: M.O.D.O.K. resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01185": {
-      "cardName": "Biomechanical Upgrades",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "ATTACHMENT: Biomechanical Upgrades resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01186": {
-      "cardName": "Advance",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> The villain schemes immediately.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "advance_treachery",
@@ -1008,11 +553,7 @@
       ]
     },
     "01187": {
-      "cardName": "Assault",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> The villain attacks you immediately.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "assault_treachery",
@@ -1023,11 +564,7 @@
       ]
     },
     "01188": {
-      "cardName": "Caught Off Guard",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> Discard an upgrade or support you control. If none discarded, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "caught_off_guard",
@@ -1038,11 +575,7 @@
       ]
     },
     "01189": {
-      "cardName": "Gang-Up",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed (Alter-Ego) -> Surge; When Revealed (Hero) -> Villain and each engaged minion attacks you.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "gang_up",
@@ -1053,11 +586,7 @@
       ]
     },
     "01190": {
-      "cardName": "Shadow of the Past",
-      "status": "ENRICHED",
-      "needsSupplemental": false,
       "comment": "Treachery: When Revealed -> Put your nemesis minion and side scheme into play. If none, gains Surge.",
-      "isLandscape": false,
       "abilities": [
         {
           "id": "shadow_of_the_past",
@@ -1068,28 +597,13 @@
       ]
     },
     "01191": {
-      "cardName": "Exhaustion",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Exhaustion resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01192": {
-      "cardName": "Masterplan",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Masterplan resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     },
     "01193": {
-      "cardName": "Under Fire",
-      "status": "NO_SUPPLEMENTAL_NEEDED",
-      "needsSupplemental": false,
-      "comment": "TREACHERY: Under Fire resolved via standard encounter flow (no supplemental trigger required).",
-      "isLandscape": false,
-      "abilities": []
+      "noSupplementalNeeded": true
     }
   }
 }

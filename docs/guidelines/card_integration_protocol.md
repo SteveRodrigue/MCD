@@ -27,6 +27,7 @@
 13. **Canonical Card ID Key Sorting (ADR-0021):** When saving supplemental JSON files (`src/data/supplemental/pack/*.json`), always preserve ascending card ID order (e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
 14. **Real-Time Streaming Execution Logging (ADR-0021):** Every skill execution MUST append real-time audit trails with exact confidence scores to `logs/skills/card_integration_{YYYY-MM-DD}.log` as each individual card is evaluated and processed. **Buffering or logging in batch at the end of a run is strictly prohibited**, ensuring accurate ISO timestamps and live telemetry.
 15. **Composable Generic Primitives & Strict Card Name Ban (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions. **Effect primitive names must NEVER contain card names** (e.g. `HYDRA_BOMBER_CHOICE` or `NICK_FURY_CHOICE` are prohibited; use composable `PLAYER_CHOICE` with nested option sub-effects). Cards requiring interactive UI modals must be isolated to `docs/ambiguities/` (Tier 3).
+16. **Scenario Plugin & Fan-Made Documentation Symmetry (ADR-0022):** Any addition, modification, schema change, or new lifecycle hook added to the Scenario Plugin Architecture (`src/engine/scenarios/`) MUST immediately trigger a corresponding update with explanations and examples in `docs/guidelines/scenario_creation_guide.md`. Community and third-party fan-made developer documentation must never drift from internal engine capabilities.
 
 ---
 

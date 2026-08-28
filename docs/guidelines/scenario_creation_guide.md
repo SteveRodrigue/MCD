@@ -1,5 +1,9 @@
 # Scenario Creation & Extensibility Guide
 
+> [!IMPORTANT]
+> **Synchronous Documentation Mandate (ADR-0022 / Mandate #16):**  
+> Any new lifecycle hook, parameter, manifest property, or capability added to `src/engine/scenarios/` **must immediately be documented in this guide** with copy-pasteable TypeScript and JSON examples. Official scenarios and community custom scenarios share 100% architectural symmetry.
+
 This guide explains how to author custom scenarios for **Marvel Champions Digital**. 
 
 The engine uses a **universal scenario package format** where official built-in scenarios (`rhino`, `klaw`, `ultron`) and custom community fan-made scenarios share the **exact same public API, manifest schema, folder structure, and lifecycle hooks**.

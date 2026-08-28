@@ -206,14 +206,21 @@ export function step2_villainActivations(state: GameState): GameState {
         state.encounterDiscard.push(boostCard);
       }
 
-      state.mainScheme.threat += totalScheme;
+      // Threat Placement Trigger (e.g. Emergency 01085 Interrupt)
+      const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+        targetPlayerId: player.id,
+        threatAmount: totalScheme,
+      });
+      const finalThreat = triggerRes.threatAmount ?? totalScheme;
+
+      state.mainScheme.threat += finalThreat;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         key: 'villain.scheme.threat',
         params: {
           villain: state.villain.card.name,
-          threat: totalScheme,
+          threat: finalThreat,
           boost: boostIcons,
         },
         onomatopoeia: 'SCHEME!',
@@ -253,7 +260,13 @@ export function step3_minionActivations(state: GameState): GameState {
         }
       } else {
         const schemeThreat = minionCard.scheme || 1;
-        state.mainScheme.threat += schemeThreat;
+        const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+          targetPlayerId: player.id,
+          threatAmount: schemeThreat,
+        });
+        const finalThreat = triggerRes.threatAmount ?? schemeThreat;
+
+        state.mainScheme.threat += finalThreat;
         if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
           state.winner = 'VILLAIN';
         }

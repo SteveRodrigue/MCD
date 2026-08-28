@@ -18,32 +18,16 @@
       ]
     },
     "01095": {
-      "comment": "Villain Stage II: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it. Shuffle encounter deck.",
-      "abilities": [
-        {
-          "id": "rhino_2_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
-          "params": {
-            "schemeCode": "01107",
-            "searchZones": [
-              "ENCOUNTER_DECK",
-              "ENCOUNTER_DISCARD"
-            ],
-            "shuffleDeck": "ENCOUNTER_DECK",
-            "revealTarget": true
-          }
-        }
-      ],
+      "comment": "Villain Stage II: Blocked pending Tier 3 structural stage transition pipeline (see docs/ambiguities/core_encounter_01095_rhino_stage_ii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:47",
-        "reviewedAt": "2026-08-28T09:47",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search ENCOUNTER_DECK and ENCOUNTER_DISCARD for Breakin' & Takin' [01107], reveal it, and shuffle ENCOUNTER_DECK."
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search ENCOUNTER_DECK and ENCOUNTER_DISCARD for Breakin' & Takin' [01107], reveal it, and shuffle ENCOUNTER_DECK.",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01095_rhino_stage_ii.md"
       },
       "mechanicSteps": [
         "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",
@@ -52,36 +36,16 @@
       ]
     },
     "01096": {
-      "comment": "Villain Stage III: When Revealed -> Stun each hero. Enters play with Tough.",
-      "abilities": [
-        {
-          "id": "rhino_3_when_revealed",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "STUNNED",
-            "target": "ALL_HEROES"
-          }
-        },
-        {
-          "id": "rhino_3_tough_setup",
-          "timing": "SETUP",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
-        }
-      ],
+      "comment": "Villain Stage III: Blocked pending Tier 3 structural stage transition pipeline (see docs/ambiguities/core_encounter_01096_rhino_stage_iii.md).",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-28T09:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give STUNNED status to ALL_HEROES; SETUP -> Give TOUGH status to SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give STUNNED status to ALL_HEROES; SETUP -> Give TOUGH status to SELF",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01096_rhino_stage_iii.md"
       },
       "mechanicSteps": [
         "Villain Stage III: Base SCH 1, ATK 5, Health 16 per player.",

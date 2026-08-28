@@ -147,8 +147,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * **< 95% (🚨 Hard Rejection):** If the primitives or abilities cannot recreate a comparable card text (e.g. missing search zones, missing shuffle, unhandled fallback), **confidence CANNOT be rated high ($\ge 95\%$)**.
   * **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 * **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
-* **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3):**
-  1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.
+* **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3 or Tier 3 Gate):**
+  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY `comment`, `audit` (with `ambiguityFile` path and `reconstructedText`), and `mechanicSteps`. This prevents the engine from attempting to execute unsupported logic.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
   3. Log warning to `logs/skills/card_integration_{YYYY-MM-DD}.log`:
      `[WARN] Card [card_name] #{card_code} card ambiguity: Circuit-Breaker fired (confidence {confidence}%) -> docs/ambiguities/{pack}_{code}_{slug}.md`

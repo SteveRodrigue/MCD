@@ -18,7 +18,7 @@
       ]
     },
     "01095": {
-      "comment": "Villain Stage II: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it.",
+      "comment": "Villain Stage II: When Revealed -> Search encounter deck/discard for Breakin' & Takin' side scheme and reveal it. Shuffle encounter deck.",
       "abilities": [
         {
           "id": "rhino_2_when_revealed",
@@ -26,18 +26,24 @@
           "trigger": "WHEN_REVEALED",
           "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
           "params": {
-            "schemeCode": "01107"
+            "schemeCode": "01107",
+            "searchZones": [
+              "DECK",
+              "DISCARD"
+            ],
+            "shuffleDeck": true,
+            "revealTarget": true
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-28T09:44",
+        "reviewedAt": "2026-08-28T09:44",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> SEARCH_AND_REVEAL_SIDE_SCHEME ({\"schemeCode\":\"01107\"})"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Search encounter deck and discard pile for Breakin' & Takin' [01107], reveal it, and shuffle encounter deck."
       },
       "mechanicSteps": [
         "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",

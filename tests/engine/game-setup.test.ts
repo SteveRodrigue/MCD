@@ -245,4 +245,34 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
       }),
     ).toThrowError(/Unicity constraint violation/);
   });
+
+  it('throws an error if any card in the game is missing supplemental data (unscanned card safety)', () => {
+    const { identity, deck } = createSpiderManJusticeDeck();
+    const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
+
+    // Create an artificial unscanned card without enrichment
+    const unscannedCard = {
+      ...deck[0],
+      code: 'unscanned_99999',
+      name: 'Unscanned Card',
+      enrichment: undefined,
+    };
+
+    expect(() =>
+      setupGame({
+        players: [
+          {
+            id: 'player_1',
+            name: 'Player 1',
+            hero: identity.hero,
+            alterEgo: identity.alterEgo,
+            deckCards: [unscannedCard, ...deck.slice(1)],
+          },
+        ],
+        villain,
+        mainScheme,
+        encounterCards,
+      }),
+    ).toThrowError(/Supplemental data is missing for card unscanned_99999 \(Unscanned Card\)/);
+  });
 });

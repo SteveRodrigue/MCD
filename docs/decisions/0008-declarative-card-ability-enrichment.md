@@ -1,7 +1,7 @@
 # ADR-0008: Declarative Card Ability & Effect Enrichment Architecture
 
 ## Status
-Accepted (Updated with 100% Card Registration & `noSupplementalNeeded` Signal)
+Accepted (Updated with Scanned-Only Policy, `noSupplementalNeeded` Signal & Engine Missing Supplemental Error)
 
 ## Context
 As the engine grows to support hundreds of Marvel Champions cards, hardcoding card IDs (e.g. `if (player.card.code === '01001a')`) directly into the rules engine loops creates tight coupling, severe duplication, and unmaintainable code.
@@ -13,13 +13,13 @@ Many cards share identical or parameterized mechanics:
 * Healing damage via actions (e.g. *Aunt May*, *First Aid*, *Med Team*).
 * Resource generation via counters or tapping (e.g. *Web-Shooter*, *Helicarrier*, *Enhanced Reflexes*).
 
-Furthermore, without an explicit registration requirement, it is impossible to distinguish between a card that **operates entirely on standard printed rules** vs. a card that was **accidentally forgotten or skipped**.
+Furthermore, without an explicit contract, it is easy to mistakenly assume an unscanned card requires no supplemental logic, leading to silent rules failures when un-implemented cards enter play.
 
 ---
 
 ## Decision
 
-We establish a **2-layer data-driven ability architecture** with **100% mandatory card registration**:
+We establish a **data-driven ability architecture with strict scanning criteria and runtime missing-supplemental validation**:
 
 ### 1. Supplemental Declarative Pack Data (`src/data/supplemental/pack/`)
 
@@ -29,19 +29,19 @@ Supplemental files mirror the upstream **zzorba pack datasets** 1-to-1:
 src/data/supplemental/
 ├── index.ts                     # Aggregates and exports supplementalRegistry
 └── pack/
-    ├── core.json                # Supplemental data for all core player cards (01001a..01093)
-    ├── core_encounter.json      # Supplemental data for all core encounter cards (01094..01185)
+    ├── core.json                # Supplemental data for scanned core player cards
+    ├── core_encounter.json      # Supplemental data for scanned core encounter sets (Rhino, Bomb Scare, Standard, Expert, Nemesis)
     ├── goblin.json              # Future scenario pack supplemental
     └── ...
 ```
 
-### 2. 100% Card Registration & Explicit `noSupplementalNeeded` Signal
+### 2. Scanned Cards Policy & Explicit `noSupplementalNeeded` Signal
 
-**Every single card in an upstream pack MUST be registered in its corresponding supplemental file.**
+**Cards are ONLY added to supplemental files if they have been actively scanned and evaluated.**
 
-To keep data files clean and readable without redundant fields:
-* Cards requiring custom engine triggers/effects include their declarative `abilities` array (and optional `uses` counters or `isLandscape`).
-* Cards that operate purely on standard printed rules/stats include an explicit `"noSupplementalNeeded": true` signal.
+* **Scanned Card with Custom Abilities:** Stores declarative `abilities` (and optional `uses` counters or `isLandscape`).
+* **Scanned Card with Standard Rules:** Stores an explicit `"noSupplementalNeeded": true` signal confirming it was scanned and requires no custom rules hooks.
+* **Unscanned Card:** Is **omitted entirely** from the supplemental files.
 
 ```typescript
 export interface CardEnrichment {
@@ -77,11 +77,15 @@ export interface CardEnrichment {
 }
 ```
 
-### 3. Automated Completeness Validation in CI
+### 3. Strict Engine Safety: Missing Supplemental Error
 
-Unit tests (`tests/data/card-loader.test.ts`) programmatically iterate over **100% of cards in upstream packs** and assert:
-1. Every card code is registered in `supplementalRegistry`.
-2. Every card either defines active `abilities` OR has `"noSupplementalNeeded": true`.
+The rules engine strictly enforces that **any card loaded or instantiated into a live game MUST have a corresponding supplemental entry**.
+
+If a card is not present in `supplementalRegistry`, the engine throws an error immediately:
+```
+Error: Supplemental data is missing for card <CODE> (<NAME>)
+```
+This guarantees that no unscanned card can silently enter a game and cause runtime bugs or missing triggers.
 
 ### 4. Generic Trigger Dispatcher & Reusable Effect Primitives (`src/engine/effects/` & `src/engine/triggers/`)
 
@@ -94,7 +98,7 @@ Unit tests (`tests/data/card-loader.test.ts`) programmatically iterate over **10
 ## Consequences
 
 ### Positive:
-* **Zero Forgotten Cards:** Automated test suites guarantee 100% coverage across all card packs; missing cards fail the test suite immediately.
-* **Visually Clean & Minimal:** No redundant boilerplate fields (`status`, `needsSupplemental`); a single `"noSupplementalNeeded": true` clearly documents standard cards.
-* **Infinite Scalability:** Adding new hero and encounter packs is purely additive with standardized validation.
-* **Clean Decoupling:** Complete separation between upstream datasets, MCD supplemental enrichment metadata, and headless rules execution.
+* **Fail-Safe Game Setup:** Attempting to play or load an unscanned card immediately halts with a descriptive error (`"Supplemental data is missing for card..."`).
+* **No False Positives:** `"noSupplementalNeeded": true` is exclusively reserved for cards that were actually reviewed and verified as standard.
+* **Clean & Readable Data:** Minimal JSON structure without redundant status fields.
+* **Clear Phased Milestones:** Unscanned encounter and hero sets are cleanly added only when their phase is being implemented.

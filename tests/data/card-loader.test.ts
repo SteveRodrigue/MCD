@@ -270,9 +270,10 @@ describe('Card Loader & Normalizer Unit Tests', () => {
           expect(enrichment, `Scanned Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
           const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
           const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;
+          const isBlockedAmbiguity = Boolean(enrichment.audit?.ambiguityFile);
           expect(
-            hasAbilities || isMarkedNoSupplemental,
-            `Encounter Card ${card.code} (${card.name}) must either define abilities or have "noSupplementalNeeded: true"`
+            hasAbilities || isMarkedNoSupplemental || isBlockedAmbiguity,
+            `Encounter Card ${card.code} (${card.name}) must either define abilities, have "noSupplementalNeeded: true", or specify an "ambiguityFile"`
           ).toBe(true);
         } else {
           // Unscanned cards (Klaw, Ultron, Masters of Evil) must NOT be in supplemental

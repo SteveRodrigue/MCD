@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "rhino",
+  "name": "Rhino",
+  "scenarioCardCode": "01094",
+  "author": "Fantasy Flight Games",
+  "version": "1.0.0",
+  "description": "Rhino is attacking the S.I.T. facility to steal Vibranium. Stop him before he breaches the facility!",
+  "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
+  
+  "villainSetup": {
+    "villainName": "Rhino",
+    "stages": {
+      "SKIRMISH": ["01094"],
+      "STANDARD": ["01094", "01095"],
+      "EXPERT": ["01095", "01096"]
+    },
+    "healthPerPlayer": {
+      "01094": 14,
+      "01095": 15,
+      "01096": 16
+    }
+  },
+
+  "mainSchemeSetup": {
+    "stages": ["01097a", "01097b"],
+    "startingThreat": 0,
+    "targetThreatPerPlayer": 7,
+    "escalationThreatPerPlayer": 1
+  },
+
+  "modularEncounterSets": {
+    "mandatory": ["rhino"],
+    "defaults": {
+      "SKIRMISH": ["standard", "bomb_scare"],
+      "STANDARD": ["standard", "bomb_scare"],
+      "EXPERT": ["standard", "expert", "bomb_scare"]
+    }
+  }
+}

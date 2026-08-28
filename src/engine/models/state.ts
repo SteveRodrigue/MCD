@@ -59,7 +59,10 @@ export interface PlayerState {
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }
 
+export type DifficultyMode = 'SKIRMISH' | 'STANDARD' | 'EXPERT';
+
 export interface VillainState {
+  instanceId?: string;
   card: VillainCard;
   health: number;
   maxHealth: number;
@@ -69,6 +72,7 @@ export interface VillainState {
 }
 
 export interface MainSchemeState {
+  instanceId?: string;
   card: MainSchemeCard;
   threat: number;
   targetThreat: number;
@@ -123,11 +127,26 @@ export interface GameState {
   phase: GamePhase;
   setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
+  scenarioId?: string;
+  scenarioCardCode?: string;
+  difficulty?: DifficultyMode;
   firstPlayerIndex: number;
   activePlayerIndex: number;
   players: PlayerState[];
+
+  /** Multi-Villain Collection & Active Pointer */
+  villains: VillainState[];
+  activeVillainIndex: number;
+
+  /** Multi-Main Scheme Collection & Active Pointer */
+  mainSchemes: MainSchemeState[];
+  activeMainSchemeIndex: number;
+
+  /** Legacy / direct reference to active villain for backwards-compatibility */
   villain: VillainState;
+  /** Legacy / direct reference to active main scheme for backwards-compatibility */
   mainScheme: MainSchemeState;
+
   sideSchemes: SideSchemeState[];
   environments: CardInstance[];
   encounterDeck: CardInstance[];
@@ -138,4 +157,46 @@ export interface GameState {
   activeBoostCard?: CardInstance;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
+}
+
+/**
+ * Accessor returning the currently active villain from GameState.
+ */
+export function getActiveVillain(state: GameState): VillainState {
+  if (state.villains && state.villains.length > 0) {
+    const idx = state.activeVillainIndex ?? 0;
+    return state.villains[idx] || state.villains[0];
+  }
+  return state.villain;
+}
+
+/**
+ * Accessor returning the currently active main scheme from GameState.
+ */
+export function getActiveMainScheme(state: GameState): MainSchemeState {
+  if (state.mainSchemes && state.mainSchemes.length > 0) {
+    const idx = state.activeMainSchemeIndex ?? 0;
+    return state.mainSchemes[idx] || state.mainSchemes[0];
+  }
+  return state.mainScheme;
+}
+
+/**
+ * Finds a villain by card code or instanceId across state.villains.
+ */
+export function getVillainById(state: GameState, idOrCode: string): VillainState | undefined {
+  return (
+    (state.villains || []).find((v) => v.card.code === idOrCode || v.instanceId === idOrCode) ||
+    (state.villain?.card.code === idOrCode ? state.villain : undefined)
+  );
+}
+
+/**
+ * Finds a main scheme by card code or instanceId across state.mainSchemes.
+ */
+export function getMainSchemeById(state: GameState, idOrCode: string): MainSchemeState | undefined {
+  return (
+    (state.mainSchemes || []).find((m) => m.card.code === idOrCode || m.instanceId === idOrCode) ||
+    (state.mainScheme?.card.code === idOrCode ? state.mainScheme : undefined)
+  );
 }

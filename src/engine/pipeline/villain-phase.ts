@@ -10,6 +10,7 @@ import {
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
+import { handleMainSchemeCompletion } from './scenario-helpers';
 
 /**
  * Helper to draw the top card of the encounter deck.
@@ -28,7 +29,7 @@ export function drawEncounterCard(state: GameState): CardInstance | undefined {
       onomatopoeia: 'ACCELERATION!',
     });
 
-    // Shuffle discard into deck
+    // Shuffle encounter discard into deck
     state.encounterDeck = [...state.encounterDiscard].sort(() => Math.random() - 0.5);
     state.encounterDiscard = [];
   }
@@ -69,7 +70,7 @@ export function step1_placeThreat(state: GameState): GameState {
 
   // Check Villain Victory condition (Main scheme threat overflow)
   if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-    state.winner = 'VILLAIN';
+    return handleMainSchemeCompletion(state, state.mainScheme.instanceId);
   }
 
   return state;

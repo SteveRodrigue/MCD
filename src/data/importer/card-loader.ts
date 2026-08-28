@@ -239,3 +239,10 @@ export class CardCatalog {
     return undefined;
   }
 }
+
+import coreCards from '../../../data/upstream/pack/core.json';
+import coreEncounterCards from '../../../data/upstream/pack/core_encounter.json';
+
+export const cardCatalog = new CardCatalog([...coreCards, ...coreEncounterCards] as any);
+
+

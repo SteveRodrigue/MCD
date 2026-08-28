@@ -5,6 +5,7 @@ import {
   MinionCard,
   CardAbility,
 } from '@engine/models';
+import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -118,7 +119,8 @@ export function executeEffect(
 
         state.villain.health = Math.max(0, state.villain.health - amount);
         if (state.villain.health <= 0) {
-          state.winner = 'HEROES';
+          const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
+          return { state: defeatedState, success: true, onomatopoeia: `KAPOW! ${amount} DAMAGE!` };
         }
 
         const onomatopoeia = `KAPOW! ${amount} DAMAGE!`;

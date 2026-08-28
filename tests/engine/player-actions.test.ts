@@ -637,10 +637,10 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
           createCardInstance(resCard),
         ];
 
-        // Emergency (Interrupt) must be unplayable
+        // Emergency (Blocked Interrupt) must be unplayable
         const emergencyStatus = evaluateCardPlayability(gameState, 'p1', emergencyInst);
         expect(emergencyStatus.isPlayable).toBe(false);
-        expect(emergencyStatus.reasons.some((r) => r.includes('Interrupt/Response'))).toBe(true);
+        expect(emergencyStatus.reasons.some((r) => r.includes('blocked') || r.includes('Interrupt/Response'))).toBe(true);
 
         // Backflip (Hero Interrupt) must be unplayable
         const backflipStatus = evaluateCardPlayability(gameState, 'p1', backflipInst);

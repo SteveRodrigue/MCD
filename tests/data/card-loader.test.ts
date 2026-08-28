@@ -222,5 +222,27 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       const helicarrier = getCardEnrichment('01092');
       expect(helicarrier?.abilities?.[0].id).toBe('helicarrier_action');
     });
+
+    it('ensures 100% of upstream Core cards are registered with an explicit status signal (no cards forgotten)', async () => {
+      const { supplementalRegistry } = await import('../../src/data/supplemental');
+
+      // Check all 101 Player Cards
+      corePack.forEach((card) => {
+        const enrichment = supplementalRegistry[card.code];
+        expect(enrichment, `Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
+        expect(enrichment.status, `Card ${card.code} must have an explicit status`).toBeDefined();
+        expect(['ENRICHED', 'NO_SUPPLEMENTAL_NEEDED']).toContain(enrichment.status);
+        expect(enrichment.needsSupplemental).toBe(false);
+      });
+
+      // Check all 108 Encounter Cards
+      coreEncounterPack.forEach((card) => {
+        const enrichment = supplementalRegistry[card.code];
+        expect(enrichment, `Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
+        expect(enrichment.status, `Encounter Card ${card.code} must have an explicit status`).toBeDefined();
+        expect(['ENRICHED', 'NO_SUPPLEMENTAL_NEEDED']).toContain(enrichment.status);
+        expect(enrichment.needsSupplemental).toBe(false);
+      });
+    });
   });
 });

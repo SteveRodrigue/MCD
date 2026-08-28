@@ -3,7 +3,8 @@ name: card-integration-protocol
 description: >-
   Standard 8-step protocol for analyzing, translating, validating, and integrating
   Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
-  and rules engine. Use whenever adding or refining any player, villain, minion, or encounter card.
+  and rules engine. Enforces a 3-iteration circuit-breaker and 1-file-per-card ambiguity
+  tracking in docs/ambiguities/ (Inbox Zero). Use whenever adding or refining any card.
 ---
 
 # Card Integration Protocol (8-Step Standard Workflow)
@@ -13,6 +14,20 @@ This skill guides the agent and developers through the rigorous, deterministic p
 ---
 
 ## The 8-Step Integration Workflow
+
+```mermaid
+flowchart TD
+    S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
+    S2 --> S3["3. Draft Supplemental JSON Schema (src/data/supplemental/)"]
+    S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
+    S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
+    S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
+    S5 -- "No (< 95%, Attempts < 3)" --> S3
+    S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
+Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
+    S6 --> S7["7. Author Composable Generic Primitives (if needed)"]
+    S7 --> S8["8. Populate mechanicSteps, Document Specs & Prune Ambiguity"]
+```
 
 ### Step 1: Ingest & Read Upstream Card Text
 * Fetch the exact printed card text from `data/upstream/pack/{pack_code}.json`.
@@ -64,10 +79,16 @@ This skill guides the agent and developers through the rigorous, deterministic p
   * Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
 * **The Golden Rule (RR v1.8 p. 2):** If the printed card text explicitly contradicts a general rule in the Rules Reference, the card text takes precedence.
 
-### Step 5: Bidirectional Round-Trip Confidence Validation
+### Step 5: Bidirectional Round-Trip Validation & Circuit-Breaker Rule
 * **The Test:** Read your drafted JSON supplemental schema and translate it back into plain human language.
-* **Verification:** Does the reconstructed description match 100% of the printed card's intended behavior without omissions, unintended side effects, or missing constraints?
-* Confidence must reach $\ge 95\%$ before implementation.
+* **Criterion:** Does the reconstructed description match 100% of the printed card's intended behavior without omissions, unintended side effects, or missing constraints?
+* **Confidence Target:** Must reach **$\ge 95\%$** before proceeding.
+* **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 3 $\rightarrow$ 4 $\rightarrow$ 5.
+* **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3):**
+  1. **DO NOT** commit or integrate incomplete supplemental logic into the active game engine.
+  2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md`.
+  3. Detail the exact blocker category, attempted drafts, and why confidence was not achieved.
+  4. Escalate to the developer/team for rules clarification or engine primitive authoring.
 
 ### Step 6: Engine Primitive & Trigger Reuse Check
 * Verify whether existing effect primitives in `src/engine/effects/` or triggers in `src/engine/triggers/` already satisfy the card's requirements.
@@ -80,7 +101,8 @@ This skill guides the agent and developers through the rigorous, deterministic p
   * E.g. Destination Routing: Route cards to `HAND`, `DISCARD`, `TABLEAU`, or `DECK`.
 * Ensure the new primitive is generic enough that other cards with similar mechanics can reuse it immediately.
 
-### Step 8: Codify `mechanicSteps` in Schema & Specs
+### Step 8: Codify `mechanicSteps`, Document Specs & Prune Ambiguity
 * Ensure `mechanicSteps` is populated in `src/data/supplemental/pack/{pack_code}.json`.
 * Add a detailed entry in `docs/specs/card-mechanics-breakdown.md`.
+* If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it** (Inbox Zero).
 * Run test suite: `npm test; npm run typecheck; npm run build`.

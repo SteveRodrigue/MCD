@@ -11,7 +11,9 @@
 2. **Zero Hardcoded Card IDs (ADR-0018):** Never write `if (card.code === '01002')` in the core engine. Always inspect declarative metadata, ability timings, and effect primitives.
 3. **Exact Event Scoping (ADR-0020):** Conflating distinct entities (e.g. *Villain Schemes* vs *Minion Schemes*) is strictly prohibited.
 4. **Mandatory vs. Optional Distinctions (ADR-0020):** `FORCED_` abilities resolve automatically; `INTERRUPT` and `RESPONSE` abilities are optional and require player choice.
-5. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
+5. **Hard Circuit-Breaker on Refinement Loops (ADR-0021):** If round-trip confidence is $< 95\%$ after 3 refinement iterations, stop immediately and log to `docs/ambiguities/`.
+6. **1-File-Per-Card Ambiguity Queue / Inbox Zero (ADR-0021):** Blocked cards live in `docs/ambiguities/{pack}_{code}_{slug}.md` and are deleted upon resolution.
+7. **Composable Generic Primitives (ADR-0021):** New mechanics must be implemented as composable, reusable primitives rather than single-use card functions.
 
 ---
 
@@ -22,10 +24,13 @@ flowchart TD
     S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
     S2 --> S3["3. Draft Supplemental JSON Schema (src/data/supplemental/)"]
     S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
-    S4 --> S5["5. Bidirectional Round-Trip Validation (Confidence >= 95%)"]
-    S5 --> S6["6. Engine Primitive & Trigger Reuse Check"]
+    S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
+    S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
+    S5 -- "No (< 95%, Attempts < 3)" --> S3
+    S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
+Log to docs/ambiguities/{pack}_{code}_{slug}.md & ABORT"]
     S6 --> S7["7. Author Composable Generic Primitives (if needed)"]
-    S7 --> S8["8. Populate mechanicSteps & Document Specs (docs/specs/)"]
+    S7 --> S8["8. Populate mechanicSteps, Document Specs & Prune Ambiguity"]
 ```
 
 ### Detailed Steps:
@@ -34,7 +39,8 @@ flowchart TD
 2. **Literal Semantic Mapping:** Identify ability timing, trigger condition, costs, target entities, and form requirements.
 3. **Draft Supplemental Schema:** Create structured entry with `comment`, `mechanicSteps`, and `abilities`.
 4. **Consult Ground Truth:** Review `references/rules_reference_v18.md` and MarvelCDB FAQ (`https://marvelcdb.com/faqs`) and discussion (`https://marvelcdb.com/card/{code}`).
-5. **Round-Trip Test:** Translate JSON schema back into human language; verify 100% equivalence with printed card behavior.
+5. **Round-Trip Test & Circuit-Breaker:** Translate JSON schema back into human language; verify 100% equivalence with printed card behavior.
+   * If confidence remains $< 95\%$ after 3 attempts, abort integration and write `docs/ambiguities/{pack}_{code}_{slug}.md`.
 6. **Engine Reuse Check:** Check `src/engine/effects/` and `src/engine/triggers/` before adding new code.
 7. **Composable Primitives:** Build generic building blocks (e.g. Deck Inspection, Card Stack Filtering, Routing).
-8. **Codify Specs & Tests:** Add entry in `docs/specs/card-mechanics-breakdown.md` and verify with automated tests (`npm test`).
+8. **Codify Specs, Tests & Inbox Zero Pruning:** Add entry in `docs/specs/card-mechanics-breakdown.md`, verify with automated tests (`npm test`), and **delete the card's file in `docs/ambiguities/`**.

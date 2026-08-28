@@ -8,6 +8,7 @@ This directory contains all internal, project-authored architecture, developer s
 
 ```
 docs/
+├── ambiguities/                  # Active ambiguity & blocker queue (Inbox Zero)
 ├── decisions/                    # Architecture Decision Records (ADR-0001 to ADR-0021)
 ├── guidelines/                   # Standard engineering protocols & procedures
 │   └── card_integration_protocol.md # 8-step card integration protocol

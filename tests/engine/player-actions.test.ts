@@ -609,6 +609,48 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(status.isPlayable).toBe(false);
         expect(status.reasons.some((r) => r.includes('Not your turn'))).toBe(true);
       });
+
+      it('marks reactive Interrupt/Response events (e.g. Emergency, Backflip) as unplayable during standard action windows', () => {
+        const p1 = gameState.players[0];
+        p1.currentForm = 'hero';
+        p1.activeFormCard = p1.hero;
+        gameState.phase = 'PLAYER_PHASE' as any;
+        gameState.activePlayerIndex = 0;
+
+        // Emergency (01085) - Interrupt: when threat placed
+        const emergencyCard = catalog.getCard('01085')!;
+        const emergencyInst = createCardInstance(emergencyCard);
+
+        // Backflip (01003) - Hero Interrupt: when take attack damage
+        const backflipCard = catalog.getCard('01003')!;
+        const backflipInst = createCardInstance(backflipCard);
+
+        // First Aid (01086) - Action: Heal 2
+        const firstAidCard = catalog.getCard('01086')!;
+        const firstAidInst = createCardInstance(firstAidCard);
+
+        const resCard = catalog.getCard('01088')!;
+        p1.hand = [
+          emergencyInst,
+          backflipInst,
+          firstAidInst,
+          createCardInstance(resCard),
+        ];
+
+        // Emergency (Interrupt) must be unplayable
+        const emergencyStatus = evaluateCardPlayability(gameState, 'p1', emergencyInst);
+        expect(emergencyStatus.isPlayable).toBe(false);
+        expect(emergencyStatus.reasons.some((r) => r.includes('Interrupt/Response'))).toBe(true);
+
+        // Backflip (Hero Interrupt) must be unplayable
+        const backflipStatus = evaluateCardPlayability(gameState, 'p1', backflipInst);
+        expect(backflipStatus.isPlayable).toBe(false);
+        expect(backflipStatus.reasons.some((r) => r.includes('Interrupt/Response'))).toBe(true);
+
+        // First Aid (Action) must be playable
+        const firstAidStatus = evaluateCardPlayability(gameState, 'p1', firstAidInst);
+        expect(firstAidStatus.isPlayable).toBe(true);
+      });
     });
 
     describe('Dev Mode Actions (Tutor / Card Selection)', () => {

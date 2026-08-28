@@ -4,8 +4,15 @@ import {
   StatusCard,
   MinionCard,
   CardAbility,
+  CardType,
+  SideSchemeCard,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
+import {
+  executeVillainAttackAgainstPlayer,
+  executeVillainSchemeAgainstPlayer,
+  executeMinionAttackAgainstPlayer,
+} from '../pipeline/villain-phase';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -689,6 +696,97 @@ export function executeEffect(
       });
 
       return { state, success: true, onomatopoeia: 'CHOOSE AN OPTION!' };
+    }
+
+    case 'VILLAIN_SCHEMES': {
+      executeVillainSchemeAgainstPlayer(state, player);
+      return { state, success: true, onomatopoeia: 'VILLAIN SCHEMES!' };
+    }
+
+    case 'VILLAIN_ATTACKS': {
+      if (player.currentForm === 'alter_ego') {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      } else {
+        executeVillainAttackAgainstPlayer(state, player);
+        return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
+      }
+    }
+
+    case 'VILLAIN_AND_ENGAGED_MINIONS_ATTACK': {
+      if (player.currentForm === 'alter_ego') {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      } else {
+        executeVillainAttackAgainstPlayer(state, player);
+        for (const minion of [...player.engagedMinions]) {
+          executeMinionAttackAgainstPlayer(state, minion, player);
+        }
+        return { state, success: true, onomatopoeia: 'GANG UP!' };
+      }
+    }
+
+    case 'EXPLOSION':
+    case 'HERO_FORM_BRANCH': {
+      const bombScare = state.sideSchemes.find(
+        (s) => s.card.code === '01109' || (s.card.name || '').includes('Bomb Scare'),
+      );
+      if (bombScare) {
+        const damage = bombScare.threat || 1;
+        player.health = Math.max(0, player.health - damage);
+        if (player.health <= 0) state.winner = 'VILLAIN';
+        return { state, success: true, onomatopoeia: 'EXPLOSION!' };
+      } else {
+        const surgeCard = state.encounterDeck.shift();
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, onomatopoeia: 'SURGE!' };
+      }
+    }
+
+    case 'PLACE_THREAT_PER_SIDE_SCHEME': {
+      const amount = (ability.params?.amount as number) || 4;
+      if (state.sideSchemes.length > 0) {
+        for (const s of state.sideSchemes) {
+          s.threat += amount;
+        }
+        return { state, success: true, onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!` };
+      } else {
+        // Discard until a side scheme is found, then reveal it
+        let foundSideScheme: CardInstance | undefined;
+        while (state.encounterDeck.length > 0) {
+          const card = state.encounterDeck.shift()!;
+          if (card.card.type === CardType.SIDE_SCHEME) {
+            foundSideScheme = card;
+            break;
+          }
+          state.encounterDiscard.push(card);
+        }
+        if (foundSideScheme) {
+          const sideCard = foundSideScheme.card as SideSchemeCard;
+          const baseThreat = sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+          state.sideSchemes.push({
+            instanceId: foundSideScheme.instanceId,
+            card: sideCard,
+            threat: baseThreat,
+          });
+          return { state, success: true, onomatopoeia: 'SIDE SCHEME REVEALED!' };
+        }
+        return { state, success: true, onomatopoeia: 'NO SIDE SCHEMES FOUND' };
+      }
+    }
+
+    case 'REVEAL_ENCOUNTER_CARD_WITH_SURGE': {
+      // 1. Surge: deal 1 card facedown to player
+      const surgeCard = state.encounterDeck.shift();
+      if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+
+      // 2. Extra card drawn to be revealed immediately
+      const extraCard = state.encounterDeck.shift();
+      if (extraCard) player.dealtEncounterCards.unshift(extraCard);
+
+      return { state, success: true, onomatopoeia: 'UNDER FIRE!' };
     }
 
     default:

@@ -7,6 +7,7 @@ import {
   CardInstance,
   SideSchemeCard,
   MinionCard,
+  PlayerState,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -78,6 +79,192 @@ export function step1_placeThreat(state: GameState): GameState {
 }
 
 /**
+ * Executes a single villain attack against a target hero (including triggers, boost cards, and defense).
+ */
+export function executeVillainAttackAgainstPlayer(state: GameState, player: PlayerState): void {
+  // 1. Check Pre-Attack Interceptors (e.g. Webbed Up 01009)
+  const webbedUpIdx = (state.villain.attachments || []).findIndex(
+    (att) => att.card.code === '01009' || att.card.enrichment?.abilities?.some((a) => a.effect === 'INTERCEPT_ATTACK'),
+  );
+  if (webbedUpIdx !== -1) {
+    const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);
+    const owner = state.players.find((p) => p.hero.code === '01001a') || player;
+    owner.discard.push(webbedUp);
+
+    if (!state.villain.statusCards.includes(StatusCard.STUNNED)) {
+      state.villain.statusCards.push(StatusCard.STUNNED);
+    }
+
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      category: 'combat',
+      key: 'villain.attack.cancelled',
+      params: { villain: state.villain.card.name, cancelledBy: 'Webbed Up' },
+      onomatopoeia: 'WEBBED UP! ATTACK CANCELLED & STUNNED!',
+    });
+    return;
+  }
+
+  // 2. Villain Attacks Hero
+  const stunIndex = state.villain.statusCards.indexOf(StatusCard.STUNNED);
+  if (stunIndex !== -1) {
+    state.villain.statusCards.splice(stunIndex, 1);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'villain.stunned.cancelled',
+      params: { villain: state.villain.card.name },
+      onomatopoeia: 'STUN CLEARED!',
+    });
+    return;
+  }
+
+  // Timing Window 2 (Interrupts): Villain Initiates Attack (Data-Driven, e.g. Spider-Sense)
+  dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId: player.id });
+
+  // Compute Effective Attack and Keywords via stat-calculator (e.g. Charge +3 ATK / Overkill)
+  const villainStats = getEffectiveVillainStats(state, state.villain);
+  const hasOverkill = villainStats.keywords.includes('OVERKILL');
+
+  // Draw Boost Card
+  const boostCard = drawEncounterCard(state);
+  const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
+  const baseAttack = villainStats.attack;
+  let totalAttack = baseAttack + boostIcons;
+
+  if (boostCard) {
+    state.encounterDiscard.push(boostCard);
+  }
+
+  // Timing Window 2 (Defense Interrupts): Take Attack Damage (Data-Driven, e.g. Backflip)
+  const defenseResult = dispatchTrigger(state, 'TAKE_ATTACK_DAMAGE', {
+    targetPlayerId: player.id,
+    damageAmount: totalAttack,
+  });
+
+  totalAttack = defenseResult.damageAmount ?? totalAttack;
+
+  // Discard single-use attack attachments (e.g. Charge 01099)
+  const chargeIdx = (state.villain.attachments || []).findIndex((att) => att.card.code === '01099');
+  if (chargeIdx !== -1) {
+    const [chargeAtt] = state.villain.attachments.splice(chargeIdx, 1);
+    state.encounterDiscard.push(chargeAtt);
+  }
+
+  // Check Tough on Hero
+  const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
+  if (toughIndex !== -1 && totalAttack > 0) {
+    player.statusCards.splice(toughIndex, 1);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'hero.tough.absorbed',
+      params: { player: player.name },
+      onomatopoeia: 'CLANG! (TOUGH)',
+    });
+  } else if (totalAttack > 0) {
+    player.health = Math.max(0, player.health - totalAttack);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'villain.attack.hit',
+      params: {
+        villain: state.villain.card.name,
+        player: player.name,
+        damage: totalAttack,
+        boost: boostIcons,
+        overkill: hasOverkill ? 'true' : 'false',
+      },
+      onomatopoeia: 'WHAM!',
+    });
+
+    if (player.health <= 0) {
+      state.winner = 'VILLAIN';
+    }
+  }
+}
+
+/**
+ * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
+ */
+export function executeVillainSchemeAgainstPlayer(state: GameState, player: PlayerState): void {
+  const confuseIndex = state.villain.statusCards.indexOf(StatusCard.CONFUSED);
+  if (confuseIndex !== -1) {
+    state.villain.statusCards.splice(confuseIndex, 1);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'villain.confused.cancelled',
+      params: { villain: state.villain.card.name },
+      onomatopoeia: 'CONFUSION CLEARED!',
+    });
+    return;
+  }
+
+  // Draw Boost Card
+  const boostCard = drawEncounterCard(state);
+  const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
+  const villainStats = getEffectiveVillainStats(state, state.villain);
+  const baseScheme = villainStats.scheme;
+  const totalScheme = baseScheme + boostIcons;
+
+  if (boostCard) {
+    state.encounterDiscard.push(boostCard);
+  }
+
+  // Threat Placement Trigger (e.g. Emergency 01085 Interrupt)
+  const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+    targetPlayerId: player.id,
+    threatAmount: totalScheme,
+  });
+  const finalThreat = triggerRes.threatAmount ?? totalScheme;
+
+  state.mainScheme.threat += finalThreat;
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'villain.scheme.threat',
+    params: {
+      villain: state.villain.card.name,
+      threat: finalThreat,
+      boost: boostIcons,
+    },
+    onomatopoeia: 'SCHEME!',
+  });
+
+  if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
+    state.winner = 'VILLAIN';
+  }
+}
+
+/**
+ * Executes a single minion attack against a hero.
+ */
+export function executeMinionAttackAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+  const minionCard = minion.card as MinionCard;
+  const attackDamage = minionCard.attack || 1;
+  const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
+
+  if (toughIndex !== -1) {
+    player.statusCards.splice(toughIndex, 1);
+  } else {
+    player.health = Math.max(0, player.health - attackDamage);
+    if (player.health <= 0) {
+      state.winner = 'VILLAIN';
+    }
+  }
+
+  // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
+  const abilities = minion.card.enrichment?.abilities || [];
+  for (const ability of abilities) {
+    if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
+      executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
+    }
+  }
+}
+
+/**
  * Step 2: Villain Activations (RR v1.8 p. 31, p. 7 "Attack", p. 25 "Scheme", p. 8 "Boost")
  */
 export function step2_villainActivations(state: GameState): GameState {
@@ -90,156 +277,9 @@ export function step2_villainActivations(state: GameState): GameState {
     const player = state.players[playerIdx];
 
     if (player.currentForm === 'hero') {
-      // 1. Check Pre-Attack Interceptors (e.g. Webbed Up 01009)
-      const webbedUpIdx = (state.villain.attachments || []).findIndex(
-        (att) => att.card.code === '01009' || att.card.enrichment?.abilities?.some((a) => a.effect === 'INTERCEPT_ATTACK'),
-      );
-      if (webbedUpIdx !== -1) {
-        const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);
-        const owner = state.players.find((p) => p.hero.code === '01001a') || player;
-        owner.discard.push(webbedUp);
-
-        if (!state.villain.statusCards.includes(StatusCard.STUNNED)) {
-          state.villain.statusCards.push(StatusCard.STUNNED);
-        }
-
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          category: 'combat',
-          key: 'villain.attack.cancelled',
-          params: { villain: state.villain.card.name, cancelledBy: 'Webbed Up' },
-          onomatopoeia: 'WEBBED UP! ATTACK CANCELLED & STUNNED!',
-        });
-        continue;
-      }
-
-      // 2. Villain Attacks Hero
-      const stunIndex = state.villain.statusCards.indexOf(StatusCard.STUNNED);
-      if (stunIndex !== -1) {
-        state.villain.statusCards.splice(stunIndex, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'villain.stunned.cancelled',
-          params: { villain: state.villain.card.name },
-          onomatopoeia: 'STUN CLEARED!',
-        });
-        continue;
-      }
-
-      // Timing Window 2 (Interrupts): Villain Initiates Attack (Data-Driven, e.g. Spider-Sense)
-      dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId: player.id });
-
-      // Compute Effective Attack and Keywords via stat-calculator (e.g. Charge +3 ATK / Overkill)
-      const villainStats = getEffectiveVillainStats(state, state.villain);
-      const hasOverkill = villainStats.keywords.includes('OVERKILL');
-
-      // Draw Boost Card
-      const boostCard = drawEncounterCard(state);
-      const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
-      const baseAttack = villainStats.attack;
-      let totalAttack = baseAttack + boostIcons;
-
-      if (boostCard) {
-        state.encounterDiscard.push(boostCard);
-      }
-
-      // Timing Window 2 (Defense Interrupts): Take Attack Damage (Data-Driven, e.g. Backflip)
-      const defenseResult = dispatchTrigger(state, 'TAKE_ATTACK_DAMAGE', {
-        targetPlayerId: player.id,
-        damageAmount: totalAttack,
-      });
-
-      totalAttack = defenseResult.damageAmount ?? totalAttack;
-
-      // Discard single-use attack attachments (e.g. Charge 01099)
-      const chargeIdx = (state.villain.attachments || []).findIndex((att) => att.card.code === '01099');
-      if (chargeIdx !== -1) {
-        const [chargeAtt] = state.villain.attachments.splice(chargeIdx, 1);
-        state.encounterDiscard.push(chargeAtt);
-      }
-
-      // Check Tough on Hero
-      const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
-      if (toughIndex !== -1 && totalAttack > 0) {
-        player.statusCards.splice(toughIndex, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'hero.tough.absorbed',
-          params: { player: player.name },
-          onomatopoeia: 'CLANG! (TOUGH)',
-        });
-      } else if (totalAttack > 0) {
-        player.health = Math.max(0, player.health - totalAttack);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'villain.attack.hit',
-          params: {
-            villain: state.villain.card.name,
-            player: player.name,
-            damage: totalAttack,
-            boost: boostIcons,
-            overkill: hasOverkill ? 'true' : 'false',
-          },
-          onomatopoeia: 'WHAM!',
-        });
-
-        if (player.health <= 0) {
-          state.winner = 'VILLAIN';
-        }
-      }
+      executeVillainAttackAgainstPlayer(state, player);
     } else {
-      // 2. Villain Schemes against Alter-Ego
-      const confuseIndex = state.villain.statusCards.indexOf(StatusCard.CONFUSED);
-      if (confuseIndex !== -1) {
-        state.villain.statusCards.splice(confuseIndex, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'villain.confused.cancelled',
-          params: { villain: state.villain.card.name },
-          onomatopoeia: 'CONFUSION CLEARED!',
-        });
-        continue;
-      }
-
-      // Draw Boost Card
-      const boostCard = drawEncounterCard(state);
-      const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
-      const villainStats = getEffectiveVillainStats(state, state.villain);
-      const baseScheme = villainStats.scheme;
-      const totalScheme = baseScheme + boostIcons;
-
-      if (boostCard) {
-        state.encounterDiscard.push(boostCard);
-      }
-
-      // Threat Placement Trigger (e.g. Emergency 01085 Interrupt)
-      const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
-        targetPlayerId: player.id,
-        threatAmount: totalScheme,
-      });
-      const finalThreat = triggerRes.threatAmount ?? totalScheme;
-
-      state.mainScheme.threat += finalThreat;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        key: 'villain.scheme.threat',
-        params: {
-          villain: state.villain.card.name,
-          threat: finalThreat,
-          boost: boostIcons,
-        },
-        onomatopoeia: 'SCHEME!',
-      });
-
-      if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-        state.winner = 'VILLAIN';
-      }
+      executeVillainSchemeAgainstPlayer(state, player);
     }
   }
 
@@ -258,25 +298,7 @@ export function step3_minionActivations(state: GameState): GameState {
       const minionCard = minion.card as MinionCard;
 
       if (player.currentForm === 'hero') {
-        const attackDamage = minionCard.attack || 1;
-        const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
-
-        if (toughIndex !== -1) {
-          player.statusCards.splice(toughIndex, 1);
-        } else {
-          player.health = Math.max(0, player.health - attackDamage);
-          if (player.health <= 0) {
-            state.winner = 'VILLAIN';
-          }
-        }
-
-        // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
-        const abilities = minion.card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
-          }
-        }
+        executeMinionAttackAgainstPlayer(state, minion, player);
       } else {
         const schemeThreat = minionCard.scheme || 1;
         const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {

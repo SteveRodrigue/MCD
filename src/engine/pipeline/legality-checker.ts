@@ -4,6 +4,7 @@ import {
   CardType,
   NormalizedCard,
   SideSchemeCard,
+  GamePhase,
 } from '@engine/models';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
@@ -21,6 +22,13 @@ export function canChangeForm(
 ): { allowed: boolean; reason?: string } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
+
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
 
   if (player.formChangedThisRound) {
     return { allowed: false, reason: 'Form has already been changed this round (Limit once per round).' };
@@ -50,6 +58,13 @@ export function canBasicRecover(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
+
   if (player.currentForm !== 'alter_ego') {
     return { allowed: false, reason: 'Can only recover while in Alter-Ego form.' };
   }
@@ -73,6 +88,13 @@ export function canBasicAttack(
 ): { allowed: boolean; reason?: string } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
+
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
 
   if (player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only attack while in Hero form.' };
@@ -124,6 +146,13 @@ export function canBasicThwart(
 ): { allowed: boolean; reason?: string } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
+
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
 
   if (player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only thwart while in Hero form.' };
@@ -220,6 +249,21 @@ export function canPlayCard(
 
   const card = targetCardInstance.card;
   let cost = card.cost ?? 0;
+
+  // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    const isInterruptOrResponse =
+      card.type === CardType.EVENT &&
+      ((card.text || '').includes('Interrupt') || (card.text || '').includes('Response'));
+
+    if (activePlayer && activePlayer.id !== playerId && !isInterruptOrResponse) {
+      return {
+        allowed: false,
+        reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
+      };
+    }
+  }
 
   // Form restrictions check (e.g. Alter-Ego Action / Hero Action)
   const isHeroCard = card.type === CardType.HERO || (card.text || '').includes('Hero Action');

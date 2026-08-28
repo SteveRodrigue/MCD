@@ -102,13 +102,37 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [showNemesisModal, setShowNemesisModal] = useState(false);
   const [playingCard, setPlayingCard] = useState<CardInstance | null>(null);
+  const [turnWarning, setTurnWarning] = useState<string | null>(null);
+
+  const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
+  const isActivePlayerTurn =
+    gameState?.phase === 'PLAYER_PHASE'
+      ? activePlayer?.id === player?.id
+      : true;
 
   const handleCardClick = (cardInst: CardInstance) => {
+    if (!isActivePlayerTurn) {
+      const activeHeroName = activePlayer?.name || 'the active hero';
+      setTurnWarning(
+        `It is currently ${activeHeroName}'s turn! Non-active heroes cannot play cards unless asked for an action (RR v1.8 p. 19).`,
+      );
+      setTimeout(() => setTurnWarning(null), 4000);
+      return;
+    }
     if (onCardClick) {
       onCardClick(cardInst);
     }
     if (onDispatchAction && player && gameState) {
       setPlayingCard(cardInst);
+    }
+  };
+
+  const handleEndTurn = () => {
+    if (onDispatchAction && player) {
+      onDispatchAction({
+        type: 'END_PLAYER_TURN',
+        playerId: player.id,
+      });
     }
   };
 
@@ -209,31 +233,50 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           }`}
         >
           {/* Zone Title Ribbon */}
-          <div className="absolute -top-3 left-4 flex items-center gap-2 z-10">
-            <div
-              className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
-                isFocused ? 'bg-comic-blue' : 'bg-slate-700'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
-              <span>
-                {seatNumber ? `SEAT ${seatNumber}: ` : ''}
-                {heroName}'s HAND ({hand.length} / {handSizeLimit})
-                {isFocused ? ' • (ACTIVE HAND)' : ''}
-              </span>
+          <div className="absolute -top-3 left-4 right-4 flex items-center justify-between z-10">
+            <div className="flex items-center gap-2">
+              <div
+                className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+                  isActivePlayerTurn ? 'bg-comic-red font-bold' : isFocused ? 'bg-comic-blue' : 'bg-slate-700'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
+                <span>
+                  {seatNumber ? `SEAT ${seatNumber}: ` : ''}
+                  {heroName}'s HAND ({hand.length} / {handSizeLimit})
+                  {isActivePlayerTurn ? ' • (ACTIVE TURN)' : ' • (WAITING)'}
+                </span>
+              </div>
+
+              {!isFocused && onFocus && (
+                <button
+                  onClick={onFocus}
+                  className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+                >
+                  Focus Hand ➔
+                </button>
+              )}
             </div>
 
-            {!isFocused && onFocus && (
+            {isActivePlayerTurn && (
               <button
-                onClick={onFocus}
-                className="bg-amber-300 hover:bg-amber-400 text-slate-950 font-comic text-[11px] px-2.5 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-bold"
+                onClick={handleEndTurn}
+                className="bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black animate-pulse flex items-center gap-1"
+                title="End your hero's turn and pass to the next hero (or begin Villain Phase)"
               >
-                Focus This Hand ➔
+                <span>END TURN ➔</span>
               </button>
             )}
           </div>
 
           <div className="flex flex-col gap-3 overflow-visible pt-1">
+            {/* Turn Warning Toast */}
+            {turnWarning && (
+              <div className="p-2 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse">
+                <span>⚠️ {turnWarning}</span>
+                <button onClick={() => setTurnWarning(null)} className="text-white hover:text-black font-bold ml-2">✕</button>
+              </div>
+            )}
             {/* Top Row: Deck, Discard, Nemesis Piles */}
             <div className="flex items-center justify-between gap-2 bg-white/90 p-2 rounded-xl border-2 border-comic-black shadow-comic-sm">
               {/* Draw Pile */}
@@ -358,16 +401,44 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                   <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-xs px-2.5 py-0.5 rounded shadow-comic-sm font-bold">
                     HAND ({hand.length} / {handSizeLimit})
                   </span>
-                  <span className="font-comic text-sm text-comic-blue">
+                  <span className="font-comic text-sm text-comic-blue font-bold">
                     {heroName}'s Hand
                   </span>
+                  {isActivePlayerTurn ? (
+                    <span className="bg-comic-red text-white font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
+                      ACTIVE TURN
+                    </span>
+                  ) : (
+                    <span className="bg-slate-300 text-slate-700 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-bold uppercase">
+                      WAITING
+                    </span>
+                  )}
                 </div>
 
-                <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-slate-600">
-                  <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
-                  <span>Hover card to zoom (1.9×)</span>
+                <div className="flex items-center gap-3">
+                  {isActivePlayerTurn && (
+                    <button
+                      onClick={handleEndTurn}
+                      className="bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3.5 py-1 rounded-lg border-2 border-comic-black shadow-comic font-black cursor-pointer animate-pulse hover:scale-105 transition-transform"
+                      title="End your hero turn and begin the Villain Phase"
+                    >
+                      END HERO TURN ➔
+                    </button>
+                  )}
+                  <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-slate-600">
+                    <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
+                    <span>Hover card to zoom (1.9×)</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Turn Warning Toast */}
+              {turnWarning && (
+                <div className="p-2.5 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse">
+                  <span>⚠️ {turnWarning}</span>
+                  <button onClick={() => setTurnWarning(null)} className="text-white hover:text-black font-bold ml-2">✕</button>
+                </div>
+              )}
 
               {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
               <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">

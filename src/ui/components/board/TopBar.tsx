@@ -56,23 +56,33 @@ export const TopBar: React.FC<TopBarProps> = ({
             </span>
             {gameState.players.map((p, idx) => {
               const isFirstPlayer = gameState.firstPlayerIndex === idx;
+              const isActiveTurn = gameState.activePlayerIndex === idx;
               return (
                 <button
                   key={p.id}
                   onClick={() => onSelectSeat(idx)}
                   className={`px-3 py-1 font-comic text-xs rounded border transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeSeatIndex === idx
-                      ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold scale-105'
-                      : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
+                    isActiveTurn
+                      ? 'bg-comic-red text-white border-comic-black shadow-comic-sm font-bold scale-105 ring-2 ring-comic-yellow'
+                      : activeSeatIndex === idx
+                        ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
+                        : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
                   }`}
                   title={
-                    isFirstPlayer
-                      ? `Jump to Seat ${idx + 1} (Holds First Player Token in Round ${gameState.roundNumber})`
-                      : `Jump to Seat ${idx + 1}`
+                    isActiveTurn
+                      ? `Seat ${idx + 1} is currently taking their turn!`
+                      : isFirstPlayer
+                        ? `Seat ${idx + 1} holds First Player Token`
+                        : `Jump to Seat ${idx + 1}`
                   }
                 >
                   {isFirstPlayer && <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />}
                   <span>Seat {idx + 1}: {p.activeFormCard.name}</span>
+                  {isActiveTurn && (
+                    <span className="text-[9px] bg-comic-yellow text-comic-black px-1 rounded font-black">
+                      TURN
+                    </span>
+                  )}
                 </button>
               );
             })}

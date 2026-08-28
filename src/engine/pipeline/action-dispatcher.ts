@@ -19,6 +19,7 @@ import {
   canPlayCard,
 } from './legality-checker';
 import { executeEffect } from '../effects';
+import { executeVillainPhase } from './villain-phase';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -773,7 +774,46 @@ export function dispatchAction(
     }
 
     case 'END_PLAYER_TURN': {
-      return { state: nextState, result: { success: true } };
+      if (nextState.players[nextState.activePlayerIndex]?.id !== action.playerId) {
+        return {
+          state,
+          result: { success: false, error: 'Cannot end turn when it is not your turn' },
+        };
+      }
+
+      const currentPlayer = nextState.players[nextState.activePlayerIndex];
+      const nextIndex = (nextState.activePlayerIndex + 1) % nextState.players.length;
+
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'phase',
+        actor: { name: currentPlayer.name, type: 'hero' },
+        key: 'player.turn.ended',
+        params: { player: currentPlayer.name },
+        onomatopoeia: 'PASS',
+      });
+
+      // If all players have taken their turns in this round -> execute Villain Phase!
+      if (nextIndex === nextState.firstPlayerIndex) {
+        const finalState = executeVillainPhase(nextState);
+        return {
+          state: finalState,
+          result: { success: true, onomatopoeia: 'NEW ROUND!' },
+        };
+      } else {
+        nextState.activePlayerIndex = nextIndex;
+        const nextPlayer = nextState.players[nextIndex];
+        return {
+          state: nextState,
+          result: {
+            success: true,
+            onomatopoeia: `${nextPlayer.name.toUpperCase()}'S TURN!`,
+          },
+        };
+      }
     }
 
     default:

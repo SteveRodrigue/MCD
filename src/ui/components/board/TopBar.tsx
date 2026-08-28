@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, BookOpen, Users, Sparkles, Settings, Wrench, Crown, Columns } from 'lucide-react';
+import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Columns, Compass } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { OptionsMenu } from './OptionsMenu';
@@ -51,8 +51,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         {gameState.players.length > 1 && (
           <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border-2 border-comic-black shadow-comic-sm">
             <span className="text-[11px] font-bold text-slate-500 uppercase px-2 flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" />
-              Focus Hero:
+              <Compass className="w-3.5 h-3.5 text-comic-blue" />
+              Jump to Hero:
             </span>
             {gameState.players.map((p, idx) => {
               const isFirstPlayer = gameState.firstPlayerIndex === idx;
@@ -62,10 +62,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                   onClick={() => onSelectSeat(idx)}
                   className={`px-3 py-1 font-comic text-xs rounded border transition-all cursor-pointer flex items-center gap-1.5 ${
                     activeSeatIndex === idx
-                      ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold'
+                      ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm font-bold scale-105'
                       : 'bg-slate-100 text-slate-700 border-transparent hover:border-slate-300'
                   }`}
-                  title={isFirstPlayer ? `Holds First Player Token (Round ${gameState.roundNumber})` : undefined}
+                  title={
+                    isFirstPlayer
+                      ? `Jump to Seat ${idx + 1} (Holds First Player Token in Round ${gameState.roundNumber})`
+                      : `Jump to Seat ${idx + 1}`
+                  }
                 >
                   {isFirstPlayer && <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />}
                   <span>Seat {idx + 1}: {p.activeFormCard.name}</span>

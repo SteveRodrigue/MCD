@@ -7,7 +7,7 @@ blocker_category: "ATTACHMENT_COMBAT_PIPELINE"
 date_logged: "2026-08-28T10:00"
 ---
 
-# Card Ambiguity Report: Armored Rhino Suit (`01098`)
+# Card Ambiguity Report: Armored Rhino Suit (`#01098`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01098](https://marvelcdb.com/card/01098)
 * **Official Printed Text:** `Attach to Rhino.

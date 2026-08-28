@@ -205,21 +205,30 @@
       ]
     },
     "01103": {
-      "comment": "Shocker: Blocked pending MINION_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01103_shocker.md).",
+      "comment": "MINION: Shocker. When Revealed: Deal 1 damage to each hero.",
+      "abilities": [
+        {
+          "id": "shocker_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "DEAL_DAMAGE",
+          "params": {
+            "target": "ALL_HEROES",
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:30",
+        "reviewedAt": "2026-08-28T12:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 85,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 1 damage to ALL_HEROES",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01103_shocker.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> DEAL_DAMAGE (amount: 1, target: ALL_HEROES)"
       },
       "mechanicSteps": [
-        "Minion: SCH 1, ATK 2, Health 3.",
-        "Trigger: When revealed (WHEN_REVEALED)",
-        "Effect: Deal 1 damage to each hero character."
+        "When Revealed: Deal 1 damage to each hero in play."
       ]
     },
     "01104": {
@@ -306,22 +315,31 @@
       ]
     },
     "01107": {
-      "isLandscape": true,
-      "comment": "Breakin' & Takin': Blocked pending SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01107_breakin_and_takin.md).",
+      "comment": "SIDE_SCHEME: Breakin' & Takin'. Base threat 2. When Revealed: Place 1 threat per player.",
+      "abilities": [
+        {
+          "id": "breakin_and_takin_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT_PER_PLAYER",
+          "params": {
+            "target": "THIS_SIDE_SCHEME",
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:30",
+        "reviewedAt": "2026-08-28T12:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 85,
-        "reconstructedText": "Hazard icon (1); CONSTANT -> SCHEME_ICON_HAZARD ({\"count\":1})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01107_breakin_and_takin.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amount: 1, target: THIS_SIDE_SCHEME)"
       },
       "mechanicSteps": [
-        "Side Scheme: Starting threat 2 per player. Hazard icon (Deal 1 additional encounter card during Step 3)."
-      ],
-      "hazard": 1
+        "When Revealed: Place an additional 1 threat per player on Breakin' & Takin'."
+      ]
     },
     "01108": {
       "isLandscape": true,
@@ -351,37 +369,57 @@
       "crisis": 1
     },
     "01109": {
-      "isLandscape": true,
-      "comment": "Bomb Scare: Blocked pending SIDE_SCHEME_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01109_bomb_scare.md).",
+      "comment": "SIDE_SCHEME: Bomb Scare. Base threat 2. When Revealed: Place 1 threat per player.",
+      "abilities": [
+        {
+          "id": "bomb_scare_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT_PER_PLAYER",
+          "params": {
+            "target": "THIS_SIDE_SCHEME",
+            "amount": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:30",
+        "reviewedAt": "2026-08-28T12:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 85,
-        "reconstructedText": "Acceleration icon; CONSTANT -> SCHEME_ICON_ACCELERATION ({\"count\":1})",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01109_bomb_scare.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amount: 1, target: THIS_SIDE_SCHEME)"
       },
       "mechanicSteps": [
-        "Side Scheme: Starting threat 2 per player. Acceleration icon (Places 1 additional threat on main scheme during Step 1)."
-      ],
-      "acceleration": 1
+        "When Revealed: Place an additional 1 threat per player on Bomb Scare."
+      ]
     },
     "01110": {
-      "comment": "Hydra Bomber: Blocked pending MINION_WHEN_REVEALED_TRIGGER_DISPATCH (see docs/ambiguities/core_encounter_01110_hydra_bomber.md).",
+      "comment": "MINION: Hydra Bomber. When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme.",
+      "abilities": [
+        {
+          "id": "hydra_bomber_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "HYDRA_BOMBER_CHOICE",
+          "params": {
+            "damage": 2,
+            "threat": 1
+          }
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T10:00",
-        "reviewedAt": "2026-08-28T10:00",
+        "updatedAt": "2026-08-28T12:30",
+        "reviewedAt": "2026-08-28T12:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 85,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to ALL_FRIENDLY_CHARACTERS",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01110_hydra_bomber.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> HYDRA_BOMBER_CHOICE (damage: 2, threat: 1)"
       },
       "mechanicSteps": [
-        "Minion: SCH 1, ATK 1, Health 2. When revealed: Deal 2 damage to each friendly character."
+        "When Revealed: Choose to either take 2 damage or place 1 threat on the main scheme."
       ]
     },
     "01111": {

@@ -176,7 +176,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
   describe('Step 4 & 5: Deal & Reveal Encounter Cards (RR v1.8 p. 32)', () => {
     it('deals 1 encounter card to player and reveals it in Step 5', () => {
-      const minionCard = catalog.getCard('01110')!;
+      const minionCard = catalog.getCard('01101')!; // Hydra Mercenary (vanilla guard minion)
       const minionInstance = createCardInstance(minionCard);
       gameState.encounterDeck.unshift(minionInstance);
 
@@ -190,6 +190,32 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       step5_revealEncounterCards(gameState);
       expect(gameState.players[0].dealtEncounterCards.length).toBe(0);
       expect(gameState.players[0].engagedMinions.length).toBe(1);
+    });
+
+    it('triggers Shocker (01103) When Revealed ability to deal 1 damage to each hero in Step 5', () => {
+      const shockerCard = catalog.getCard('01103')!;
+      const shockerInstance = createCardInstance(shockerCard);
+      gameState.players[0].dealtEncounterCards = [shockerInstance];
+      const initialHealth = gameState.players[0].health;
+
+      step5_revealEncounterCards(gameState);
+
+      expect(gameState.players[0].engagedMinions.length).toBe(1);
+      expect(gameState.players[0].engagedMinions[0].card.code).toBe('01103');
+      expect(gameState.players[0].health).toBe(initialHealth - 1);
+    });
+
+    it('triggers Bomb Scare (01109) When Revealed ability to place additional threat on side scheme in Step 5', () => {
+      const bombScareCard = catalog.getCard('01109')!;
+      const bombScareInstance = createCardInstance(bombScareCard);
+      gameState.players[0].dealtEncounterCards = [bombScareInstance];
+
+      step5_revealEncounterCards(gameState);
+
+      expect(gameState.sideSchemes.length).toBe(1);
+      expect(gameState.sideSchemes[0].card.code).toBe('01109');
+      // Base threat 2 + 1 per player = 3 total threat
+      expect(gameState.sideSchemes[0].threat).toBe(3);
     });
   });
 

@@ -3,7 +3,6 @@ import {
   CardInstance,
   StatusCard,
   MinionCard,
-  SideSchemeCard,
   CardAbility,
 } from '@engine/models';
 
@@ -66,7 +65,39 @@ export function executeEffect(
 
     case 'DEAL_DAMAGE': {
       const amount = (ability.params?.amount as number) || 0;
-      const targetType = context.targetType || 'villain';
+      const targetParam = ability.params?.target as string | undefined;
+      const targetType = (targetParam === 'ALL_HEROES' || targetParam === 'HERO') ? 'hero' : (context.targetType || 'villain');
+
+      if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {
+        for (const p of state.players) {
+          const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
+          if (toughIdx !== -1) {
+            p.statusCards.splice(toughIdx, 1);
+            state.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: state.roundNumber,
+              phase: state.phase,
+              key: 'card.effect.dealDamage',
+              params: { player: p.name, target: 'hero', amount: 0, toughAbsorbed: true },
+              onomatopoeia: 'CLANG! (TOUGH)',
+            });
+          } else {
+            p.health = Math.max(0, p.health - amount);
+            if (p.health <= 0) state.winner = 'VILLAIN';
+            state.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: state.roundNumber,
+              phase: state.phase,
+              key: 'card.effect.dealDamage',
+              params: { player: p.name, target: 'hero', amount, remainingHealth: p.health },
+              onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+            });
+          }
+        }
+        return { state, success: true, onomatopoeia: `SHOCK! ${amount} DAMAGE TO HEROES!` };
+      }
 
       if (targetType === 'villain') {
         const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
@@ -350,24 +381,61 @@ export function executeEffect(
       }
     }
 
-    case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {
-      const schemeCode = ability.params?.schemeCode as string | undefined;
-      const schemeName = ability.params?.schemeName as string | undefined;
-      const deckIdx = state.encounterDeck.findIndex(
-        (c) =>
-          (schemeCode && c.card.code === schemeCode) ||
-          (schemeName && c.card.name.toLowerCase() === schemeName.toLowerCase()),
-      );
-      if (deckIdx !== -1) {
-        const [scheme] = state.encounterDeck.splice(deckIdx, 1);
-        const sideCard = scheme.card as SideSchemeCard;
-        state.sideSchemes.push({
-          instanceId: scheme.instanceId,
-          card: sideCard,
-          threat: sideCard.baseThreat * state.players.length,
-        });
+    case 'ADD_THREAT_PER_PLAYER': {
+      const amountPerPlayer = (ability.params?.amount as number) || 1;
+      const totalToAdd = amountPerPlayer * state.players.length;
+      const target = (ability.params?.target as string) || 'THIS_SIDE_SCHEME';
+
+      if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
+        const scheme = state.sideSchemes.find(
+          (s) =>
+            s.instanceId === context.sourceCardInstance!.instanceId ||
+            s.card.code === context.sourceCardInstance!.card.code,
+        );
+        if (scheme) {
+          scheme.threat += totalToAdd;
+          const onomatopoeia = `SIDE SCHEME +${totalToAdd} THREAT!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.addThreat',
+            params: { target: scheme.card.name, amount: totalToAdd, currentThreat: scheme.threat },
+            onomatopoeia,
+          });
+          return { state, success: true, onomatopoeia };
+        }
       }
-      return { state, success: true, onomatopoeia: 'SIDE SCHEME REVEALED!' };
+
+      state.mainScheme.threat += totalToAdd;
+      const onomatopoeia = `MAIN SCHEME +${totalToAdd} THREAT!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.addThreat',
+        params: { target: state.mainScheme.card.name, amount: totalToAdd, currentThreat: state.mainScheme.threat },
+        onomatopoeia,
+      });
+      return { state, success: true, onomatopoeia };
+    }
+
+    case 'HYDRA_BOMBER_CHOICE': {
+      if (player.health > 2) {
+        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          player.statusCards.splice(toughIdx, 1);
+          return { state, success: true, onomatopoeia: 'CLANG! (TOUGH ABSORBS BOMBER)' };
+        }
+        player.health = Math.max(0, player.health - 2);
+        if (player.health <= 0) state.winner = 'VILLAIN';
+        return { state, success: true, onomatopoeia: 'BOOM! 2 DAMAGE TO HERO!' };
+      } else {
+        state.mainScheme.threat += 1;
+        return { state, success: true, onomatopoeia: 'HYDRA BOMBER ADDS 1 THREAT!' };
+      }
     }
 
     case 'NICK_FURY_CHOICE': {

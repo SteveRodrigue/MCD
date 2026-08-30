@@ -6,6 +6,7 @@ import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { CardPaymentModal } from './CardPaymentModal';
 import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
+import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -147,6 +148,21 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
       });
     }
   };
+
+  // Dynamic Fan-Out Stack Layout Hooks
+  const singleHandFan = useHandFanLayout({
+    cardCount: hand.length,
+    cardWidth: 176, // size="md" width ~176px
+    defaultGap: 16,
+    padding: 32,
+  });
+
+  const multiHandFan = useHandFanLayout({
+    cardCount: hand.length,
+    cardWidth: 128, // size="sm" width ~128px
+    defaultGap: 12,
+    padding: 24,
+  });
 
   // Inspector View Sort States
   const [sortMode, setSortMode] = useState<PlayerSortMode>('deck_order');
@@ -346,16 +362,26 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               </div>
             </div>
 
-            {/* Cards in Hand (Single 1 Row • Unconstrained Z-Axis Hover Zoom) */}
-            <div className="flex flex-nowrap items-center justify-start gap-3 overflow-visible py-2 px-1 min-h-[180px]">
-              {hand.map((cardInst) => {
+            {/* Cards in Hand (Fan-Out Stack • Leftmost Card on Top) */}
+            <div
+              ref={multiHandFan.containerRef}
+              className="flex items-center justify-start overflow-visible py-2 px-1 min-h-[180px] w-full"
+            >
+              {hand.map((cardInst, index) => {
                 const playability =
                   player && gameState
                     ? evaluateCardPlayability(gameState, player.id, cardInst)
                     : { isPlayable: true, reasons: [], maxPotentialResources: 0 };
 
                 return (
-                  <div key={cardInst.instanceId} className="shrink-0 relative hover:z-50 cursor-pointer">
+                  <div
+                    key={cardInst.instanceId}
+                    style={{
+                      zIndex: 30 - index,
+                      marginLeft: index === 0 ? 0 : `${multiHandFan.overlapMargin}px`,
+                    }}
+                    className="shrink-0 relative transition-all duration-200 hover:z-50 hover:-translate-y-3 cursor-pointer"
+                  >
                     <CardView
                       card={cardInst.card}
                       instance={cardInst}
@@ -489,16 +515,26 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 </div>
               )}
 
-              {/* Horizontal Hand of Cards (Unconstrained Z-Axis Elevation) */}
-              <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-4 overflow-visible py-2 px-2 min-h-[290px]">
-                {hand.map((cardInst) => {
+              {/* Horizontal Hand of Cards (Fan-Out Stack • Leftmost Card on Top) */}
+              <div
+                ref={singleHandFan.containerRef}
+                className="flex items-center justify-start overflow-visible py-2 px-2 min-h-[290px] w-full"
+              >
+                {hand.map((cardInst, index) => {
                   const playability =
                     player && gameState
                       ? evaluateCardPlayability(gameState, player.id, cardInst)
                       : { isPlayable: true, reasons: [], maxPotentialResources: 0 };
 
                   return (
-                    <div key={cardInst.instanceId} className="cursor-pointer">
+                    <div
+                      key={cardInst.instanceId}
+                      style={{
+                        zIndex: 30 - index,
+                        marginLeft: index === 0 ? 0 : `${singleHandFan.overlapMargin}px`,
+                      }}
+                      className="shrink-0 relative transition-all duration-200 hover:z-50 hover:-translate-y-4 cursor-pointer"
+                    >
                       <CardView
                         card={cardInst.card}
                         instance={cardInst}

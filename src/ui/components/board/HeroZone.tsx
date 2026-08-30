@@ -238,7 +238,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
           {/* Status Overlay Badges */}
           {player.statusCards.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap justify-center gap-1">
               {player.statusCards.map((st, i) => (
                 <span
                   key={i}
@@ -257,7 +257,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           )}
 
           {/* Identity Card */}
-          <div className="pt-0.5">
+          <div className="pt-0.5 flex justify-center items-center w-full">
             <CardView
               card={player.activeFormCard}
               isExhausted={player.exhausted}

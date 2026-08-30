@@ -1,6 +1,6 @@
 import React from 'react';
-import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles } from 'lucide-react';
-import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard } from '../../../engine/models';
+import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles, RefreshCw, Swords, Target } from 'lucide-react';
+import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import {
   getEffectiveMaxHealth,
@@ -15,6 +15,7 @@ interface HeroZoneProps {
   isFocused?: boolean;
   isMultiHero?: boolean;
   onFocus?: () => void;
+  onDispatchAction?: (action: GameAction) => void;
 }
 
 export const HeroZone: React.FC<HeroZoneProps> = ({
@@ -24,6 +25,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   isFocused = true,
   isMultiHero = false,
   onFocus,
+  onDispatchAction,
 }) => {
   const isHero = player.currentForm === 'hero';
   const heroCard = player.hero as HeroCard;
@@ -49,6 +51,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const thwBonus = effectiveStats.thwart - baseThw;
   const defBonus = effectiveStats.defense - baseDef;
   const handBonus = effectiveHandSize - baseHandSize;
+
+  // Action Permissions
+  const canFlip = !player.formChangedThisRound;
+  const canRecover = !isHero && !player.exhausted && !player.recoveryUsedThisRound && player.health < effectiveMaxHealth;
+  const canAttack = isHero && !player.exhausted;
+  const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;
 
   return (
     <section
@@ -127,15 +135,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         )}
       </div>
 
-      {/* 2. Main Hero Play Area Grid: Identity Station (Shrunk to card), Allies, Tableau */}
+      {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}
       <div className="flex flex-wrap items-start gap-4 pt-1">
         {/* Identity Station (Shrunk to exact width of card + borders) */}
-        <div className="w-fit flex flex-col gap-2 bg-sky-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+        <div className="w-fit min-w-[210px] flex flex-col gap-2 bg-sky-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
           {/* Header */}
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-1">
               <Shield className="w-4 h-4 text-comic-blue shrink-0" />
-              <span className="font-comic text-sm text-comic-black truncate max-w-[120px]">
+              <span className="font-comic text-sm text-comic-black truncate max-w-[110px]">
                 {player.activeFormCard.name}
               </span>
             </div>
@@ -258,6 +266,102 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               enableHoverZoom={true}
             />
           </div>
+
+          {/* Identity Action Console (Flip, Recover, Attack, Thwart) */}
+          {onDispatchAction && (
+            <div className="flex flex-col gap-1.5 pt-1 w-full border-t border-slate-200">
+              {/* 1. Change Form / Flip Button */}
+              <button
+                disabled={!canFlip}
+                onClick={() => onDispatchAction({ type: 'CHANGE_FORM', playerId: player.id })}
+                className={`w-full font-comic text-xs py-1.5 px-2 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1.5 transition-all shadow-comic-sm ${
+                  canFlip
+                    ? isHero
+                      ? 'bg-amber-300 hover:bg-amber-400 text-slate-950 font-bold active:translate-y-0.5'
+                      : 'bg-comic-red hover:bg-red-600 text-white font-bold active:translate-y-0.5'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                }`}
+                title={canFlip ? 'Change Form (Limit once per round)' : 'Already changed form this round'}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${canFlip ? 'animate-pulse' : ''}`} />
+                <span>{isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)'}</span>
+              </button>
+
+              {/* 2. Alter-Ego Basic Recover */}
+              {!isHero && (
+                <button
+                  disabled={!canRecover}
+                  onClick={() => onDispatchAction({ type: 'BASIC_RECOVER', playerId: player.id })}
+                  className={`w-full font-comic text-xs py-1.5 px-2 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1.5 transition-all shadow-comic-sm ${
+                    canRecover
+                      ? 'bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-bold active:translate-y-0.5'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                  }`}
+                  title={
+                    player.exhausted
+                      ? 'Identity is exhausted'
+                      : player.health >= effectiveMaxHealth
+                        ? 'Already at maximum health'
+                        : `Exhaust to recover ${effectiveStats.recovery} HP`
+                  }
+                >
+                  <Heart className="w-3.5 h-3.5 fill-rose-600 text-rose-600" />
+                  <span>Recover (+{effectiveStats.recovery} HP)</span>
+                </button>
+              )}
+
+              {/* 3. Hero Basic Attack & Thwart */}
+              {isHero && (
+                <div className="grid grid-cols-2 gap-1.5">
+                  <button
+                    disabled={!canAttack}
+                    onClick={() =>
+                      onDispatchAction({
+                        type: 'BASIC_ATTACK',
+                        playerId: player.id,
+                        targetType: 'villain',
+                      })
+                    }
+                    className={`font-comic text-xs py-1 px-1.5 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm ${
+                      canAttack
+                        ? 'bg-comic-red hover:bg-red-600 text-white font-bold active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={player.exhausted ? 'Hero is exhausted' : `Exhaust to attack for ${effectiveStats.attack} DMG`}
+                  >
+                    <Swords className="w-3 h-3" />
+                    <span>Attack ({effectiveStats.attack})</span>
+                  </button>
+
+                  <button
+                    disabled={!canThwart}
+                    onClick={() =>
+                      onDispatchAction({
+                        type: 'BASIC_THWART',
+                        playerId: player.id,
+                        targetType: 'main_scheme',
+                      })
+                    }
+                    className={`font-comic text-xs py-1 px-1.5 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm ${
+                      canThwart
+                        ? 'bg-comic-blue hover:bg-sky-600 text-white font-bold active:translate-y-0.5'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+                    }`}
+                    title={
+                      player.exhausted
+                        ? 'Hero is exhausted'
+                        : (gameState?.mainScheme?.threat || 0) <= 0
+                          ? 'No threat to thwart'
+                          : `Exhaust to remove ${effectiveStats.thwart} threat`
+                    }
+                  >
+                    <Target className="w-3 h-3" />
+                    <span>Thwart ({effectiveStats.thwart})</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Allies Row (Expands in remaining space) */}

@@ -148,6 +148,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                       isFocused={isFocused}
                       isMultiHero={true}
                       onFocus={() => handleSelectSeat(idx)}
+                      onDispatchAction={onDispatchAction}
                     />
 
                     {/* Hero Hand Tray */}
@@ -180,6 +181,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               seatNumber={1}
               isFocused={true}
               isMultiHero={false}
+              onDispatchAction={onDispatchAction}
             />
           </div>
         )}

@@ -44,17 +44,17 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
       <div className="relative w-full max-w-2xl max-h-[85vh] bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
         {/* Top Woodblock Masthead */}
         <div className="bg-[#f4ebd9] border-b-2 border-slate-900 p-3 relative select-none">
-          {/* Close Button */}
+          {/* Close Button (Solid non-transparent comic badge) */}
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 p-1 text-slate-700 hover:text-slate-950 hover:bg-amber-200/60 rounded border border-slate-700 transition-all cursor-pointer"
+            className="absolute top-2 right-2 p-1 bg-slate-900 text-white hover:bg-comic-red hover:text-white rounded border-2 border-slate-950 shadow-comic-sm transition-all cursor-pointer z-10 flex items-center justify-center"
             title="Close Newspaper"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
 
-          {/* Newspaper Sub-Header Line */}
-          <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1">
+          {/* Newspaper Sub-Header Line (Padded right to never overlap close button) */}
+          <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
             <span>VOL. LXVIII NO. 142</span>
             <span className="font-comic tracking-normal text-comic-red font-black">★ THE VOICE OF MARVELS ★</span>
             <span>PRICE: 10¢ IN COIN</span>

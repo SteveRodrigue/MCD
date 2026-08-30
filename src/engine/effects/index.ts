@@ -463,10 +463,9 @@ export function executeEffect(
     }
 
     case 'SCRY_AND_SELECT_TRAIT': {
-      // Tony Stark Futurist: Look at top lookCount (3) cards of deck, add takeCount (1) with trait ('Tech') to hand, discard rest.
+      // Tony Stark Futurist: Look at top lookCount (3) cards of deck, allow player to select 1 matching trait ('Tech') card to add to hand, discard rest.
       const lookCount = (ability.params?.lookCount as number) || 3;
       const trait = (ability.params?.trait as string) || 'Tech';
-      const takeCount = (ability.params?.takeCount as number) || 1;
 
       const scryedCards: CardInstance[] = [];
       for (let i = 0; i < lookCount; i++) {
@@ -474,22 +473,43 @@ export function executeEffect(
         if (c) scryedCards.push(c);
       }
 
-      const takenCards: CardInstance[] = [];
-      const discardedCards: CardInstance[] = [];
+      if (!player.setAsideCards) player.setAsideCards = [];
+      player.setAsideCards.push(...scryedCards);
 
-      for (let i = 0; i < scryedCards.length; i++) {
-        const cardInst = scryedCards[i];
-        const isMatch = (cardInst.card.traits || []).includes(trait);
-        if (isMatch && takenCards.length < takeCount) {
-          takenCards.push(cardInst);
-          player.hand.push(cardInst);
-        } else {
-          discardedCards.push(cardInst);
-          player.discard.push(cardInst);
-        }
-      }
+      const matchingCards = scryedCards.filter((c) => (c.card.traits || []).includes(trait));
 
-      const onomatopoeia = takenCards.length > 0 ? `FUTURIST! +${takenCards[0].card.name.toUpperCase()}` : 'FUTURIST (NO TECH FOUND)';
+      const options = matchingCards.map((c) => ({
+        id: `take_${c.instanceId}`,
+        label: `Take ${c.card.name} to Hand`,
+        description: `${c.card.type.toUpperCase()} • Cost: ${c.card.cost ?? 0} (Discard remaining ${scryedCards.length - 1} cards)`,
+        effect: 'RESOLVE_SCRY_SELECTION',
+        params: {
+          takeInstanceId: c.instanceId,
+          scryedInstanceIds: scryedCards.map((sc) => sc.instanceId),
+        },
+      }));
+
+      // Player always has the choice to take nothing / decline (RR v1.8 p. 19 "Player Choice")
+      options.push({
+        id: 'take_none',
+        label: 'Do not take any card',
+        description: `Discard all ${scryedCards.length} revealed cards to discard pile`,
+        effect: 'RESOLVE_SCRY_SELECTION',
+        params: {
+          takeInstanceId: '',
+          scryedInstanceIds: scryedCards.map((sc) => sc.instanceId),
+        },
+      });
+
+      state.pendingDecisionPrompt = {
+        promptId: `futurist_${Date.now()}`,
+        playerId: player.id,
+        title: 'FUTURIST (Tony Stark)',
+        description: `Revealed top ${scryedCards.length} cards: [${scryedCards.map((c) => c.card.name).join(', ')}]. Choose a ${trait} card to add to your hand, or choose to discard all:`,
+        sourceCardName: 'Tony Stark',
+        options,
+      };
+
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -497,11 +517,49 @@ export function executeEffect(
         phase: state.phase,
         category: 'ability',
         actor: { name: player.name, type: player.currentForm },
-        key: 'card.effect.futurist',
+        key: 'card.effect.futurist.prompt',
         params: {
           player: player.name,
-          taken: takenCards.map((c) => c.card.name).join(', ') || 'None',
-          discardedCount: discardedCards.length,
+          scryedCards: scryedCards.map((c) => c.card.name).join(', '),
+        },
+        onomatopoeia: 'FUTURIST SCAN!',
+      });
+
+      return { state, success: true, onomatopoeia: 'FUTURIST SCAN!' };
+    }
+
+    case 'RESOLVE_SCRY_SELECTION': {
+      const takeId = ability.params?.takeInstanceId as string | null | undefined;
+      const scryedIds = (ability.params?.scryedInstanceIds as string[]) || [];
+
+      let takenCardName = '';
+      if (!player.setAsideCards) player.setAsideCards = [];
+
+      for (const id of scryedIds) {
+        const idx = player.setAsideCards.findIndex((c) => c.instanceId === id);
+        if (idx !== -1) {
+          const [cardInst] = player.setAsideCards.splice(idx, 1);
+          if (takeId && cardInst.instanceId === takeId) {
+            player.hand.push(cardInst);
+            takenCardName = cardInst.card.name;
+          } else {
+            player.discard.push(cardInst);
+          }
+        }
+      }
+
+      const onomatopoeia = takenCardName ? `FUTURIST! +${takenCardName.toUpperCase()}` : 'FUTURIST (DISCARDED ALL)';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        actor: { name: player.name, type: player.currentForm },
+        key: 'card.effect.futurist.resolved',
+        params: {
+          player: player.name,
+          taken: takenCardName || 'None',
         },
         onomatopoeia,
       });

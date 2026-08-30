@@ -43,6 +43,12 @@ export interface LegalActionReport {
   allActions: LegalActionItem[];
 }
 
+export function formatTimingBadge(timing: string): string {
+  if (timing === 'ALTER_EGO_ACTION') return 'ALTER-EGO ACTION';
+  if (timing === 'HERO_ACTION') return 'HERO ACTION';
+  return timing.replace(/_/g, ' ');
+}
+
 /**
  * Pure generator that discovers every legal action currently available to the player (ADR-0018, ADR-0024).
  */
@@ -200,7 +206,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               cardInstanceId: player.activeFormCard.code,
               abilityId: ab.id,
             },
-            badge: ab.timing.replace('_', ' '),
+            badge: formatTimingBadge(ab.timing),
             iconType: 'ability',
           });
         }
@@ -250,7 +256,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
                 cardInstanceId: tableauItem.instanceId,
                 abilityId: ab.id,
               },
-              badge: ab.timing.replace('_', ' '),
+              badge: formatTimingBadge(ab.timing),
               iconType: 'ability',
               targetCardInstance: tableauItem,
             });

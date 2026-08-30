@@ -292,6 +292,17 @@ export function canPlayCard(
     };
   }
 
+  // Resource Card Restriction (RR v1.8 p. 24)
+  // Resource cards cannot be played as standalone actions; they are discarded to generate resources for payment.
+  const isResourceCard = card.type === CardType.RESOURCE;
+  const hasResourceAction = abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION');
+  if (isResourceCard && !hasResourceAction) {
+    return {
+      allowed: false,
+      reason: 'Resource cards cannot be played directly; they are discarded to pay costs.',
+    };
+  }
+
   // Form restrictions check (RR v1.8 p. 16, 28)
   // An event card with Hero/Alter-Ego timing requires the corresponding form to play.
   // Upgrades, Supports, and Allies can be played in either form unless a printed restriction exists.
@@ -472,6 +483,13 @@ export function evaluateCardPlayability(
 
   if (isReactiveEvent) {
     reasons.push('Interrupt/Response: Can only be played when triggered');
+  }
+
+  // Resource Card Restriction (RR v1.8 p. 24)
+  const isResourceCard = card.type === CardType.RESOURCE;
+  const hasResourceAction = abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION');
+  if (isResourceCard && !hasResourceAction) {
+    reasons.push('Resource card: Used to generate resources when paying costs');
   }
 
   // 3. Identity Form Validation (RR v1.8 p. 16, 28)

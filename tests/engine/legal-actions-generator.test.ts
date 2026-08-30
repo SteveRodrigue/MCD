@@ -111,4 +111,25 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     expect(report.boardActions).toHaveLength(0);
     expect(report.turnAction).toBeDefined(); // Only End Turn remains!
   });
+
+  it('excludes Resource cards (Energy, Genius, Strength) from playable hand actions (RR v1.8 p. 24)', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = true;
+    p1.formChangedThisRound = true;
+
+    // Hand contains ONLY resource cards
+    p1.hand = [
+      { instanceId: 'res1', card: cardCatalog.getCard('01088')!, exhausted: false }, // Energy
+      { instanceId: 'res2', card: cardCatalog.getCard('01089')!, exhausted: false }, // Genius
+      { instanceId: 'res3', card: cardCatalog.getCard('01090')!, exhausted: false }, // Strength
+    ];
+
+    const report = getLegalActionsForPlayer(state, p1.id);
+
+    // Resource cards should NOT be listed as playable hand actions!
+    expect(report.handCardActions).toHaveLength(0);
+    expect(report.activeActionCount).toBe(0);
+  });
 });

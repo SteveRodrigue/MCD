@@ -123,7 +123,7 @@ export const CardView: React.FC<CardViewProps> = ({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
-        exhaustedState ? 'rotate-90 my-6 mx-4' : 'rotate-0'
+        exhaustedState ? 'rotate-[15deg] opacity-85 filter brightness-95 hover:rotate-0 hover:opacity-100' : 'rotate-0'
       } ${className}`}
     >
       {/* Outer Comic Card Container with Dynamic Hover Zoom */}
@@ -146,6 +146,15 @@ export const CardView: React.FC<CardViewProps> = ({
                 : 'hover:shadow-comic-lg'
         }`}
       >
+        {/* Exhausted Indicator Tag */}
+        {exhaustedState && (
+          <div
+            className="absolute top-1.5 left-1.5 z-20 bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none"
+          >
+            EXHAUSTED
+          </div>
+        )}
+
         {/* Unplayable Indicator Tag */}
         {isPlayable === false && (
           <div

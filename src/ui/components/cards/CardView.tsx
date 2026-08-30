@@ -123,7 +123,7 @@ export const CardView: React.FC<CardViewProps> = ({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
-        exhaustedState ? 'rotate-[30deg] opacity-85 filter brightness-95 hover:rotate-0 hover:opacity-100' : 'rotate-0'
+        exhaustedState ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100' : 'rotate-0'
       } ${className}`}
     >
       {/* Outer Comic Card Container with Dynamic Hover Zoom */}
@@ -134,7 +134,7 @@ export const CardView: React.FC<CardViewProps> = ({
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
           isPlayable === false
-            ? 'filter grayscale contrast-75 brightness-95 opacity-65 group-hover:grayscale-0 group-hover:opacity-100'
+            ? 'filter grayscale contrast-75 brightness-90 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100'
             : ''
         } ${
           isMulliganSelected

@@ -252,45 +252,50 @@ export const CardView: React.FC<CardViewProps> = ({
 
         {/* 4. Active Token & Status Badges Overlay */}
         {showTokens && instance && (
-          <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1 pointer-events-none">
-            {/* Damage Tokens */}
-            {(instance.tokens?.damage ?? 0) > 0 && (
-              <span className="bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                💥 {instance.tokens?.damage}
-              </span>
-            )}
-
-            {/* Threat Tokens */}
-            {(instance.tokens?.threat ?? 0) > 0 && (
-              <span className="bg-comic-yellow text-comic-black font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                ⚠️ {instance.tokens?.threat}
-              </span>
-            )}
-
-            {/* General Counters (e.g. Snoop / Web Counters) */}
-            {(instance.tokens?.counters ?? 0) > 0 && (
-              <span className="bg-comic-blue text-white font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
-                ⚡ {instance.tokens?.counters}
-              </span>
-            )}
-
-            {/* Status Cards (Tough, Stunned, Confused) */}
-            {instance.statusCards &&
-              instance.statusCards.map((st, i) => (
-                <span
-                  key={i}
-                  className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm ${
-                    st === StatusCard.TOUGH
-                      ? 'bg-sky-300 text-slate-950'
-                      : st === StatusCard.STUNNED
-                        ? 'bg-amber-300 text-slate-950'
-                        : 'bg-fuchsia-300 text-slate-950'
-                  }`}
-                >
-                  {st}
+          <>
+            {/* Left Badges: Damage, Threat, Status Cards */}
+            <div className="absolute bottom-1.5 left-1.5 flex flex-wrap items-center gap-1 pointer-events-none z-20">
+              {/* Damage Tokens */}
+              {(instance.tokens?.damage ?? 0) > 0 && (
+                <span className="bg-comic-red text-white font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                  💥 {instance.tokens?.damage}
                 </span>
-              ))}
-          </div>
+              )}
+
+              {/* Threat Tokens */}
+              {(instance.tokens?.threat ?? 0) > 0 && (
+                <span className="bg-comic-yellow text-comic-black font-comic text-xs px-2 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
+                  ⚠️ {instance.tokens?.threat}
+                </span>
+              )}
+
+              {/* Status Cards (Tough, Stunned, Confused) */}
+              {instance.statusCards &&
+                instance.statusCards.map((st, i) => (
+                  <span
+                    key={i}
+                    className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
+                      st === StatusCard.TOUGH
+                        ? 'bg-sky-300 text-slate-950'
+                        : st === StatusCard.STUNNED
+                          ? 'bg-amber-300 text-slate-950'
+                          : 'bg-fuchsia-300 text-slate-950'
+                    }`}
+                  >
+                    {st}
+                  </span>
+                ))}
+            </div>
+
+            {/* Right Badge: General Counter Tokens (All-Purpose Green Game Counter: Tac Team, Web-Shooter) */}
+            {(instance.tokens?.counters ?? 0) > 0 && (
+              <div className="absolute bottom-1.5 right-1.5 z-20 pointer-events-none">
+                <div className="bg-emerald-600 text-white font-comic text-xs font-black min-w-[22px] h-[22px] px-1 rounded-md border-2 border-comic-black shadow-comic-sm flex items-center justify-center">
+                  {instance.tokens?.counters}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

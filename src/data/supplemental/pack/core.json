@@ -739,28 +739,29 @@
       ]
     },
     "01022": {
-      "comment": "Event: Hero Action: Deal 1 damage to each enemy in play.",
+      "comment": "EVENT: Ground Stomp. Hero Action (attack): Deal 1 damage to each enemy.",
       "abilities": [
         {
-          "id": "ground_stomp",
+          "id": "ground_stomp_action",
           "timing": "HERO_ACTION",
-          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "effect": "DEAL_DAMAGE",
           "params": {
-            "amount": 1
+            "amount": 1,
+            "target": "ALL_ENEMIES"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T16:35",
+        "reviewedAt": "2026-08-30T16:35",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})"
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Deal 1 damage to each enemy."
+        "Hero Action (attack): Deal 1 damage to each enemy (the villain and each minion in play)."
       ]
     },
     "01023": {
@@ -2131,29 +2132,30 @@
       ]
     },
     "01067": {
-      "comment": "Ally: Response: After Maria Hill enters play, each player draws 1 card.",
+      "comment": "ALLY: Maria Hill. Response: After Maria Hill enters play, each player draws 1 card.",
       "abilities": [
         {
           "id": "maria_hill_enters_play",
           "timing": "RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "ALL_PLAYERS_DRAW_CARDS",
+          "effect": "DRAW_CARDS",
           "params": {
-            "count": 1
+            "count": 1,
+            "target": "ALL_PLAYERS"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T16:35",
+        "reviewedAt": "2026-08-30T16:35",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> ALL_PLAYERS_DRAW_CARDS ({\"count\":1})"
+        "reconstructedText": "RESPONSE (CARD_PLAYED) -> DRAW_CARDS (count: 1, target: ALL_PLAYERS)"
       },
       "mechanicSteps": [
-        "Ally card with THW 2, ATK 1, and health 2"
+        "Response: After you play Maria Hill from your hand, each player draws 1 card."
       ]
     },
     "01068": {
@@ -2291,29 +2293,29 @@
       ]
     },
     "01073": {
-      "comment": "Support: Each player's ally limit is increased by 1.",
+      "comment": "SUPPORT: The Triskelion. Constant: Increase your ally limit by 1.",
       "abilities": [
         {
           "id": "triskelion_ally_limit",
           "timing": "CONSTANT",
-          "effect": "ALLY_LIMIT_BONUS",
+          "effect": "MODIFY_ALLY_LIMIT",
           "params": {
             "amount": 1,
-            "target": "ALL_PLAYERS"
+            "target": "SELF_IDENTITY"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T16:35",
+        "reviewedAt": "2026-08-30T16:35",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> ALLY_LIMIT_BONUS ({\"amount\":1,\"target\":\"ALL_PLAYERS\"})"
+        "reconstructedText": "CONSTANT -> MODIFY_ALLY_LIMIT (amount: 1)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: Increase your ally limit by 1. (This allows you to control more than 3 allies.)"
+        "Constant: Increase your maximum ally limit by 1 while The Triskelion is in play."
       ]
     },
     "01074": {

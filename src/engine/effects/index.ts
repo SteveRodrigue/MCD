@@ -42,28 +42,36 @@ export function executeEffect(
   switch (ability.effect) {
     case 'DRAW_CARDS': {
       const count = (ability.params?.count as number) || 1;
-      let drawnCount = 0;
-      for (let i = 0; i < count; i++) {
-        const drawn = player.deck.shift();
-        if (drawn) {
-          player.hand.push(drawn);
-          drawnCount += 1;
+      const targetParam = ability.params?.target as string | undefined;
+      const targetPlayers = targetParam === 'ALL_PLAYERS' ? state.players : [player];
+      let totalDrawn = 0;
+
+      for (const p of targetPlayers) {
+        let drawnForP = 0;
+        for (let i = 0; i < count; i++) {
+          const drawn = p.deck.shift();
+          if (drawn) {
+            p.hand.push(drawn);
+            drawnForP += 1;
+            totalDrawn += 1;
+          }
         }
+        state.log.push({
+          id: `log_${Date.now()}_${p.id}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.drawCards',
+          params: {
+            player: p.name,
+            count: drawnForP,
+            handSize: p.hand.length,
+          },
+          onomatopoeia: `DRAW +${drawnForP}!`,
+        });
       }
-      const onomatopoeia = `DRAW +${drawnCount}!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.drawCards',
-        params: {
-          player: player.name,
-          count: drawnCount,
-          handSize: player.hand.length,
-        },
-        onomatopoeia,
-      });
+
+      const onomatopoeia = `DRAW +${totalDrawn}!`;
       return {
         state,
         success: true,
@@ -74,6 +82,54 @@ export function executeEffect(
     case 'DEAL_DAMAGE': {
       const amount = (ability.params?.amount as number) || 0;
       const targetParam = ability.params?.target as string | undefined;
+
+      if (targetParam === 'ALL_ENEMIES') {
+        // Deal damage to villain
+        const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+        if (villainToughIdx !== -1) {
+          state.villain.statusCards.splice(villainToughIdx, 1);
+        } else {
+          state.villain.health = Math.max(0, state.villain.health - amount);
+          if (state.villain.health <= 0) {
+            state = handleVillainDefeat(state, state.villain.instanceId);
+          }
+        }
+
+        // Deal damage to all minions across all players
+        for (const p of state.players) {
+          for (let i = p.engagedMinions.length - 1; i >= 0; i--) {
+            const minion = p.engagedMinions[i];
+            const minionToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+            if (minionToughIdx !== -1) {
+              minion.statusCards!.splice(minionToughIdx, 1);
+            } else {
+              const currentDmg = minion.tokens?.damage || 0;
+              const newDmg = currentDmg + amount;
+              const minionHp = (minion.card as MinionCard).health || 1;
+              if (newDmg >= minionHp) {
+                p.engagedMinions.splice(i, 1);
+                state.encounterDiscard.push(minion);
+              } else {
+                minion.tokens = { ...minion.tokens, damage: newDmg };
+              }
+            }
+          }
+        }
+
+        const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL ENEMIES!`;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: { player: player.name, target: 'all_enemies', amount },
+          onomatopoeia,
+        });
+
+        return { state, success: true, onomatopoeia };
+      }
+
       const targetType = (targetParam === 'ALL_HEROES' || targetParam === 'HERO') ? 'hero' : (context.targetType || 'villain');
 
       if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {

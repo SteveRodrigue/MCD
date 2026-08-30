@@ -1,10 +1,16 @@
 import React from 'react';
-import { Shield, Heart, Users, Zap, AlertOctagon } from 'lucide-react';
-import { PlayerState, StatusCard } from '../../../engine/models';
+import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles } from 'lucide-react';
+import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import {
+  getEffectiveMaxHealth,
+  getEffectiveHeroStats,
+  getEffectiveHandSize,
+} from '../../../engine/pipeline/stat-calculator';
 
 interface HeroZoneProps {
   player: PlayerState;
+  gameState?: GameState;
   seatNumber?: number;
   isFocused?: boolean;
   isMultiHero?: boolean;
@@ -13,13 +19,36 @@ interface HeroZoneProps {
 
 export const HeroZone: React.FC<HeroZoneProps> = ({
   player,
+  gameState,
   seatNumber,
   isFocused = true,
   isMultiHero = false,
   onFocus,
 }) => {
-  const healthPercent = Math.max(0, (player.health / player.maxHealth) * 100);
+  const isHero = player.currentForm === 'hero';
+  const heroCard = player.hero as HeroCard;
+  const alterEgoCard = player.alterEgo as AlterEgoCard;
+
+  // Dynamic Stat & Health Calculations
+  const effectiveMaxHealth = getEffectiveMaxHealth(player, gameState);
+  const baseMaxHealth = heroCard.health || player.maxHealth || 10;
+  const hpBonus = Math.max(0, effectiveMaxHealth - baseMaxHealth);
+
+  const healthPercent = Math.max(0, Math.min(100, (player.health / effectiveMaxHealth) * 100));
   const engagedMinions = player.engagedMinions || [];
+
+  const effectiveStats = getEffectiveHeroStats(gameState || ({ sideSchemes: [], players: [] } as any), player);
+  const effectiveHandSize = getEffectiveHandSize(player, gameState);
+
+  const baseAtk = isHero ? heroCard.attack || 0 : 0;
+  const baseThw = isHero ? heroCard.thwart || 0 : 0;
+  const baseDef = isHero ? heroCard.defense || 0 : 0;
+  const baseHandSize = isHero ? heroCard.handSize || 5 : alterEgoCard.handSize || 6;
+
+  const atkBonus = effectiveStats.attack - baseAtk;
+  const thwBonus = effectiveStats.thwart - baseThw;
+  const defBonus = effectiveStats.defense - baseDef;
+  const handBonus = effectiveHandSize - baseHandSize;
 
   return (
     <section
@@ -112,25 +141,30 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             </div>
             <span
               className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold shrink-0 ${
-                player.currentForm === 'hero'
-                  ? 'bg-comic-red text-white'
-                  : 'bg-amber-300 text-slate-950'
+                isHero ? 'bg-comic-red text-white' : 'bg-amber-300 text-slate-950'
               }`}
             >
-              {player.currentForm === 'hero' ? 'HERO' : 'ALTER-EGO'}
+              {isHero ? 'HERO' : 'ALTER-EGO'}
             </span>
           </div>
 
           {/* Health Bar (Exact width of card) */}
           <div className="w-full space-y-0.5">
-            <div className="flex justify-between text-[11px] font-bold">
+            <div className="flex justify-between items-center text-[11px] font-bold">
               <span className="text-slate-600 flex items-center gap-1">
                 <Heart className="w-3 h-3 text-comic-red fill-comic-red" />
                 Health:
               </span>
-              <span className="text-comic-blue font-comic text-xs">
-                {player.health} / {player.maxHealth} HP
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-comic-blue font-comic text-xs">
+                  {player.health} / {effectiveMaxHealth} HP
+                </span>
+                {hpBonus > 0 && (
+                  <span className="bg-emerald-400 text-slate-950 font-comic text-[9px] px-1 py-0.2 rounded border border-comic-black font-bold shadow-comic-sm flex items-center gap-0.5">
+                    <Sparkles className="w-2.5 h-2.5" />+{hpBonus}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-comic-black shadow-comic-sm">
               <div
@@ -138,6 +172,60 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 style={{ width: `${healthPercent}%` }}
               />
             </div>
+          </div>
+
+          {/* Dynamic Combat & Aura Stat Strip */}
+          <div className="flex items-center justify-between gap-1 bg-white/90 p-1.5 rounded-lg border border-comic-black text-[10px] font-comic font-bold shadow-comic-sm">
+            {isHero ? (
+              <>
+                <div className="flex flex-col items-center">
+                  <span className="text-slate-500 text-[8px] uppercase">THW</span>
+                  <span className={`flex items-center ${thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'}`}>
+                    {effectiveStats.thwart}
+                    {thwBonus > 0 && <span className="text-[8px] text-emerald-500 ml-0.5">+{thwBonus}</span>}
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-slate-300" />
+                <div className="flex flex-col items-center">
+                  <span className="text-slate-500 text-[8px] uppercase">ATK</span>
+                  <span className={`flex items-center ${atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'}`}>
+                    {effectiveStats.attack}
+                    {atkBonus > 0 && <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>}
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-slate-300" />
+                <div className="flex flex-col items-center">
+                  <span className="text-slate-500 text-[8px] uppercase">DEF</span>
+                  <span className={`flex items-center ${defBonus > 0 ? 'text-blue-600 font-black' : 'text-slate-900'}`}>
+                    {effectiveStats.defense}
+                    {defBonus > 0 && <span className="text-[8px] text-blue-500 ml-0.5">+{defBonus}</span>}
+                  </span>
+                </div>
+                <div className="h-4 w-px bg-slate-300" />
+                <div className="flex flex-col items-center">
+                  <span className="text-slate-500 text-[8px] uppercase">HAND</span>
+                  <span className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}>
+                    {effectiveHandSize}
+                    {handBonus > 0 && <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center px-2">
+                  <span className="text-slate-500 text-[8px] uppercase">REC</span>
+                  <span className="text-slate-900">{effectiveStats.recovery}</span>
+                </div>
+                <div className="h-4 w-px bg-slate-300" />
+                <div className="flex flex-col items-center px-2">
+                  <span className="text-slate-500 text-[8px] uppercase">HAND SIZE</span>
+                  <span className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}>
+                    {effectiveHandSize}
+                    {handBonus > 0 && <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Status Overlay Badges */}

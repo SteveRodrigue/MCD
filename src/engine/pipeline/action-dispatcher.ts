@@ -23,7 +23,7 @@ import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect } from '../effects';
 import { executeVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
-import { getEffectiveAllyStats, getEffectiveHeroStats } from './stat-calculator';
+import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -791,6 +791,17 @@ export function dispatchAction(
           }
         } else {
           player.tableau.push(playedCardInstance);
+        }
+
+        // Apply immediate max health expansion (RR v1.8 p. 11: Current HP increases by same amount)
+        for (const ability of abilities) {
+          if (ability.timing === 'CONSTANT' && (ability.effect === 'MODIFY_MAX_HEALTH' || (ability.effect === 'MODIFY_STAT' && ability.params?.stat === 'HEALTH'))) {
+            const hpBonus = (ability.params?.amount as number) || (ability.params?.healthBonus as number) || 0;
+            if (hpBonus > 0) {
+              player.health += hpBonus;
+              player.maxHealth = getEffectiveMaxHealth(player, nextState);
+            }
+          }
         }
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);

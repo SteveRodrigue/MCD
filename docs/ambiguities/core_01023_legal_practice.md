@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Legal Practice (`01023`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01023](https://marvelcdb.com/card/01023)
+* **GitHub Issue:** [#6 - Cost of action (discard)](https://github.com/SteveRodrigue/MCD/issues/6)
 * **Official Printed Text:** `Alter-Ego Action (thwart): Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way.`
 
 ---

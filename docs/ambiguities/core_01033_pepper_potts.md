@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Pepper Potts (`01033`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01033](https://marvelcdb.com/card/01033)
+* **GitHub Issue:** [#13 - Read from the top card on the discard pile.](https://github.com/SteveRodrigue/MCD/issues/13)
 * **Official Printed Text:** `Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile.`
 
 ---

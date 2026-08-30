@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: T'Challa (`01040b`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01040b](https://marvelcdb.com/card/01040b)
+* **GitHub Issue:** [#16 - Setup Action](https://github.com/SteveRodrigue/MCD/issues/16)
 * **Official Printed Text:** `Foresight — Setup: Search your deck for a [[Black Panther]] upgrade and add it to your hand. Shuffle your deck.`
 
 ---

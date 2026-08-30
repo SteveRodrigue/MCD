@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Energy Daggers (`01046`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01046](https://marvelcdb.com/card/01046)
+* **GitHub Issue:** [#19 - Special Not Implemented.](https://github.com/SteveRodrigue/MCD/issues/19)
 * **Official Printed Text:** `Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).
 (Play the "Wakanda Forever!" event to use this ability.)`
 

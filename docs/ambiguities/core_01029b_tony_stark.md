@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Tony Stark (`01029b`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01029b](https://marvelcdb.com/card/01029b)
+* **GitHub Issue:** [#10 - Card draw/search/look function -> 2 piles output with destinations.](https://github.com/SteveRodrigue/MCD/issues/10)
 * **Official Printed Text:** `Futurist — Action: Look at the top 3 cards of your deck. Add 1 to your hand and discard the others. (Limit once per round.)`
 
 ---

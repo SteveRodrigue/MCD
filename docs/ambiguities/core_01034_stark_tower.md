@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Stark Tower (`01034`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01034](https://marvelcdb.com/card/01034)
+* **GitHub Issue:** [#14 - Reference: select a player](https://github.com/SteveRodrigue/MCD/issues/14)
 * **Official Printed Text:** `Alter-Ego Action: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand.`
 
 ---

@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Gamma Slam (`01021`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01021](https://marvelcdb.com/card/01021)
+* **GitHub Issue:** [#5 - Suffered Damage](https://github.com/SteveRodrigue/MCD/issues/5)
 * **Official Printed Text:** `Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained.`
 
 ---

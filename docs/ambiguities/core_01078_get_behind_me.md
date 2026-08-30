@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Get Behind Me! (`01078`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01078](https://marvelcdb.com/card/01078)
+* **GitHub Issue:** [#26 - Sequence of actions...](https://github.com/SteveRodrigue/MCD/issues/26)
 * **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects. The villain attacks you instead.`
 
 ---

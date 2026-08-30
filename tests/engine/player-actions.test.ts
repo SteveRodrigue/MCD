@@ -527,30 +527,31 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(status.reasons).toContain('Requires Hero form');
       });
 
-      it('marks Upgrades with Hero Action / Attach to your hero (Tenacity) as unplayable in Alter-Ego form', () => {
+      it('marks Events with Hero Action (e.g. Swinging Web Kick) as unplayable in Alter-Ego form', () => {
         // In Alter-Ego form (Peter Parker)
         gameState.players[0].currentForm = 'alter_ego';
         gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
 
-        const tenacityCard = catalog.getCard('01093')!; // Tenacity (Cost 2 Upgrade: Attach to your hero. Hero Action)
-        const tenacityInst = createCardInstance(tenacityCard);
+        const webKickCard = catalog.getCard('01005')!; // Swinging Web Kick (Cost 3 Event: Hero Action)
+        const webKickInst = createCardInstance(webKickCard);
         const resCard = catalog.getCard('01088')!;
-        // Provided 2 resources for cost 2
+        // Provide 3 resources for cost 3
         gameState.players[0].hand = [
-          tenacityInst,
+          webKickInst,
+          createCardInstance(resCard),
           createCardInstance(resCard),
           createCardInstance(resCard),
         ];
 
-        const statusAlterEgo = evaluateCardPlayability(gameState, 'p1', tenacityInst);
+        const statusAlterEgo = evaluateCardPlayability(gameState, 'p1', webKickInst);
         expect(statusAlterEgo.isPlayable).toBe(false);
         expect(statusAlterEgo.reasons).toContain('Requires Hero form');
 
-        // Switch to Hero form (Spider-Man) -> Tenacity becomes playable
+        // Switch to Hero form (Spider-Man) -> Swinging Web Kick becomes playable
         gameState.players[0].currentForm = 'hero';
         gameState.players[0].activeFormCard = gameState.players[0].hero;
 
-        const statusHero = evaluateCardPlayability(gameState, 'p1', tenacityInst);
+        const statusHero = evaluateCardPlayability(gameState, 'p1', webKickInst);
         expect(statusHero.isPlayable).toBe(true);
         expect(statusHero.reasons.length).toBe(0);
       });

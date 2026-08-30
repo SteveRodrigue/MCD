@@ -8,6 +8,7 @@ import {
   getEffectiveHeroStats,
   getEffectiveAllyStats,
 } from '../../src/engine/pipeline/stat-calculator';
+import { evaluateCardPlayability, canPlayCard } from '../../src/engine/pipeline/legality-checker';
 import { step6_passFirstPlayerAndRoundUpkeep } from '../../src/engine/pipeline/villain-phase';
 
 describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
@@ -162,6 +163,31 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
         threat: 2,
       } as any);
       expect(getEffectiveAllyStats(state, jessicaInstance).thwart).toBe(3); // Base 1 + 2
+    });
+  });
+
+  describe('Alter-Ego Form Upgrade Playability (RR v1.8 p. 16, 28)', () => {
+    it('allows Tony Stark in Alter-Ego form to play Arc Reactor, Mark V Armor, and Rocket Boots', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'alter_ego';
+      p1.activeFormCard = tonyStarkAlterEgo;
+
+      const arcReactor = cardCatalog.getCard('01035')!;
+
+      // Put Arc Reactor in hand with payment cards
+      p1.hand = [
+        { instanceId: 'arc_inst', card: arcReactor, exhausted: false },
+        { instanceId: 'pay1', card: cardCatalog.getCard('01005')!, exhausted: false },
+        { instanceId: 'pay2', card: cardCatalog.getCard('01005')!, exhausted: false },
+      ];
+
+      // Evaluate playability: should be playable in Alter-Ego!
+      const status = evaluateCardPlayability(state, p1.id, p1.hand[0]);
+      expect(status.isPlayable).toBe(true);
+      expect(status.reasons).toEqual([]);
+
+      const playRes = canPlayCard(state, p1.id, 'arc_inst', ['pay1', 'pay2']);
+      expect(playRes.allowed).toBe(true);
     });
   });
 });

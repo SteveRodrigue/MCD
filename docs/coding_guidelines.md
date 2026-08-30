@@ -57,17 +57,29 @@ src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> 
 
 ## 2. Rules Authority, Algorithmic Specification & Errata Standards
 
-* **Authoritative Source:** When designing engine logic or unit tests, always cite and verify against the **Rules Reference v1.8** (`references/mc_rulesreference_v18_compressed.pdf`).
-* **Algorithmic Specification:** Consult and update **[docs/algorithmic_rules_reference.md](docs/algorithmic_rules_reference.md)** as the living pseudocode and state-machine blueprint for all game pipelines.
-* **Superseding Rule:** If any contradiction or discrepancy exists between the *Learn to Play Guide* and the *Rules Reference*, the **Rules Reference v1.8 strictly supersedes and prevails**.
-* **Search & Verification Requirement:** Thoroughly search the PDF text for exact keywords (e.g. *Form*, *Change Form*, *Guard*, *Patrol*, *Crisis*, *Boost*, *Interrupt*, *Replacement*, *Defend*, *Surge*, *Overkill*, *Piercing*, *Villain Phase*, *Consequential Damage*) before coding mechanics.
 * **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
-* **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior implemented via `src/data/overrides/`.
+* **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior declared via `errata: "..."` in `src/data/supplemental/`.
 * **Clarifications & Ambiguities:** If any rule or card interaction is ambiguous or underspecified, proactively ask the user.
 
 ---
 
-## 3. TypeScript & Type Safety Standards
+## 3. Architectural Subsystem Completion & Supplemental Review Pipeline
+
+Whenever an architectural subsystem, engine pipeline, or effect primitive is implemented, refactored, or fixed (e.g. Action Costs, Dynamic Stat Calculator, Search Pipeline, Nested Stack):
+
+### 1. Mandatory Supplemental Review Trigger
+* The developer or AI agent **MUST immediately run a review pass** using the `card-integration-protocol` skill across all cards in `docs/ambiguities/` whose blocker was related to that subsystem.
+* Developers must **NOT** defer reviewing blocked cards to later sprints once the enabling engine feature is in place.
+
+### 2. Standardized 4-Step Resolution Workflow:
+1. **Supplemental Translation:** Update the card's entry in `src/data/supplemental/pack/*.json` using the newly implemented primitive, ensuring it passes `SupplementalPackSchema` validation (`npm test`).
+2. **Automated Unit Tests:** Add regression unit tests in `tests/engine/` verifying the card's mechanics end-to-end.
+3. **Inbox Zero Pruning:** Elevate the card's audit confidence to $\ge 95\%$ and delete the corresponding file in `docs/ambiguities/` (Inbox Zero).
+4. **GitHub Issue Closure:** Close the tracking GitHub Issue via `gh issue close <id>` referencing the commit and test file.
+
+---
+
+## 4. TypeScript & Type Safety Standards
 
 1. **Strict Typing Always:**
    * No `any` types. If a type is truly unknown until runtime, use `unknown` with a custom type guard function.
@@ -89,7 +101,7 @@ src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> 
 
 ---
 
-## 4. Card Implementation Standards (Declarative Card DSL)
+## 5. Card Implementation Standards (Declarative Card DSL)
 
 Each card implementation must follow a predictable, declarative pattern:
 

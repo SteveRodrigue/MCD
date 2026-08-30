@@ -19,6 +19,7 @@ import {
   canBasicThwart,
   canPlayCard,
 } from './legality-checker';
+import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect } from '../effects';
 import { executeVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
@@ -864,54 +865,50 @@ export function dispatchAction(
         };
       }
 
-      // Cost validation and execution
-      if (targetCardInst) {
-        const costObj = (ability.cost || {}) as any;
-        const isExhaust = costObj.exhaustSelf || costObj.exhaust;
-        const removeCount = costObj.removeCounter || costObj.spendCounter || 0;
+      // Cost validation and pre-check
+      const costCheck = canPayAbilityCost(nextState, player, ability, targetCardInst, {
+        discardCardInstanceIds: (action as any).discardCardInstanceIds,
+        paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
+        targetInstanceId: action.targetInstanceId,
+      });
+      if (!costCheck.allowed) {
+        return { state, result: { success: false, error: costCheck.reason } };
+      }
 
-        if (isExhaust && targetCardInst.exhausted) {
-          return { state, result: { success: false, error: 'Card is already exhausted' } };
-        }
-        if (removeCount > 0) {
-          const currentCounters = targetCardInst.tokens?.counters || 0;
-          if (currentCounters < removeCount) {
-            return { state, result: { success: false, error: 'Insufficient counters on card' } };
-          }
-          targetCardInst.tokens = {
-            ...targetCardInst.tokens,
-            counters: currentCounters - removeCount,
-          };
-        }
-        if (isExhaust) {
-          targetCardInst.exhausted = true;
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'status',
-            key: 'card.state.exhausted',
-            params: { card: targetCardInst.card.name },
-            onomatopoeia: 'EXHAUST',
-          });
-        }
+      // Execute cost payment
+      const { discardedCount } = executeAbilityCost(nextState, player, ability, targetCardInst, {
+        discardCardInstanceIds: (action as any).discardCardInstanceIds,
+        paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
+        targetInstanceId: action.targetInstanceId,
+      });
 
-        // Discard on empty counters if configured
-        if (
-          targetCardInst.card.enrichment?.uses?.discardOnEmpty &&
-          (targetCardInst.tokens?.counters || 0) <= 0
-        ) {
-          const idx = player.tableau.findIndex((c) => c.instanceId === targetCardInst!.instanceId);
-          if (idx !== -1) {
-            const [discarded] = player.tableau.splice(idx, 1);
-            player.discard.push(discarded);
-          }
+      // Discard on empty counters if configured
+      if (
+        targetCardInst &&
+        targetCardInst.card.enrichment?.uses?.discardOnEmpty &&
+        (targetCardInst.tokens?.counters || 0) <= 0
+      ) {
+        const idx = player.tableau.findIndex((c) => c.instanceId === targetCardInst!.instanceId);
+        if (idx !== -1) {
+          const [discarded] = player.tableau.splice(idx, 1);
+          player.discard.push(discarded);
         }
       }
 
+      // Dynamic parameter scaling (e.g. Legal Practice 01023: Remove 1 threat per discarded card)
+      let effectiveAbility = ability;
+      if (ability.params?.scaling === 'PER_DISCARDED_CARD') {
+        effectiveAbility = {
+          ...ability,
+          params: {
+            ...ability.params,
+            amount: discardedCount * ((ability.params?.multiplier as number) || 1),
+          },
+        };
+      }
+
       // Execute effect primitive
-      const effectRes = executeEffect(nextState, ability, {
+      const effectRes = executeEffect(nextState, effectiveAbility, {
         playerId: action.playerId,
         sourceCardInstance: targetCardInst,
         targetInstanceId: action.targetInstanceId,

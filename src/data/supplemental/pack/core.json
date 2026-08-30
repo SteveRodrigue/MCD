@@ -314,35 +314,38 @@
       ]
     },
     "01010a": {
-      "comment": "Hero Identity: Rechannel — Hero Action: Spend 1 energy resource -> heal 1 damage and draw 1 card (limit 1/round).",
+      "comment": "ALTER_EGO: Carol Danvers. Action (Rechannel): Exhaust Carol Danvers to heal 1 damage from her (if damaged).",
       "abilities": [
         {
           "id": "rechannel",
-          "timing": "HERO_ACTION",
+          "timing": "ALTER_EGO_ACTION",
           "limit": "ONCE_PER_ROUND",
           "cost": {
-            "resourceCost": {
-              "energy": 1
-            }
+            "exhaustSelf": true,
+            "costCheck": "CURRENT_HEALTH < MAX_HEALTH"
           },
-          "effect": "HEAL_AND_DRAW",
+          "effect": "HEAL_DAMAGE",
           "params": {
-            "healAmount": 1,
-            "drawCount": 1
+            "amount": 1,
+            "target": "SELF_IDENTITY"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:09",
+        "reviewedAt": "2026-08-30T17:09",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "HERO_ACTION [Limit: once per round] [Cost: Spend 1 [energy]] -> HEAL_AND_DRAW ({\"healAmount\":1,\"drawCount\":1})"
+        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Pre-check: Health < MaxHealth, Limit: 1/round] -> HEAL_DAMAGE (amount: 1, target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
-        "Hero Identity ability/stats for Captain Marvel"
+        "Action: Alter-Ego Action (Rechannel)",
+        "Cost: Exhaust Carol Danvers",
+        "Pre-check: Cannot be used if Carol Danvers is already at maximum health",
+        "Effect: Heal 1 damage from Carol Danvers",
+        "Limit: Once per round"
       ]
     },
     "01010b": {
@@ -765,28 +768,38 @@
       ]
     },
     "01023": {
-      "comment": "Event: Alter-Ego Action: Discard cards from hand -> remove 1 threat per card discarded.",
+      "comment": "EVENT: Legal Practice. Alter-Ego Action: Discard up to 5 cards from your hand -> remove 1 threat from a scheme for each card discarded this way.",
       "abilities": [
         {
-          "id": "legal_practice",
+          "id": "legal_practice_action",
           "timing": "ALTER_EGO_ACTION",
-          "effect": "DISCARD_CARDS_REMOVE_THREAT",
+          "cost": {
+            "discardCard": {
+              "from": "HAND",
+              "maxCount": 5
+            }
+          },
+          "effect": "REMOVE_THREAT",
           "params": {
-            "target": "CHOSEN_SCHEME"
+            "target": "MAIN_SCHEME",
+            "scaling": "PER_DISCARDED_CARD",
+            "multiplier": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:09",
+        "reviewedAt": "2026-08-30T17:09",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "ALTER_EGO_ACTION -> DISCARD_CARDS_REMOVE_THREAT ({\"target\":\"CHOSEN_SCHEME\"})"
+        "reconstructedText": "ALTER_EGO_ACTION [Cost: Discard up to 5 cards from hand] -> REMOVE_THREAT (target: MAIN_SCHEME, scaling: PER_DISCARDED_CARD)"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Alter-Ego Action (thwart): Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way."
+        "Action: Alter-Ego Action",
+        "Cost: Discard up to 5 cards from your hand",
+        "Effect: Remove 1 threat from a scheme for each card discarded this way"
       ]
     },
     "01024": {
@@ -994,32 +1007,35 @@
       ]
     },
     "01030": {
-      "comment": "Ally: Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy.",
+      "comment": "ALLY: War Machine. Action: Exhaust War Machine and deal 2 damage to him -> deal 2 damage to each enemy.",
       "abilities": [
         {
           "id": "war_machine_action",
-          "timing": "ACTION",
+          "timing": "HERO_ACTION",
           "cost": {
             "exhaustSelf": true,
-            "selfDamage": 2
+            "damageHero": 2
           },
-          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+          "effect": "DEAL_DAMAGE",
           "params": {
-            "amount": 1
+            "amount": 2,
+            "target": "ALL_ENEMIES"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:09",
+        "reviewedAt": "2026-08-30T17:09",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust] -> DEAL_DAMAGE_ALL_ENEMIES ({\"amount\":1})"
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust + 2 Damage to Self] -> DEAL_DAMAGE (amount: 2, target: ALL_ENEMIES)"
       },
       "mechanicSteps": [
-        "Ally card with THW 1, ATK 2, and health 4"
+        "Action: Hero Action",
+        "Cost: Exhaust War Machine and deal 2 damage to him",
+        "Effect: Deal 2 damage to each enemy (villain and each minion in play)"
       ]
     },
     "01031": {

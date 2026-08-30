@@ -71,12 +71,18 @@ export type EffectType =
 
 export interface AbilityCost {
   exhaustSelf?: boolean;
+  exhaustCard?: string;
   discardSelf?: boolean;
   removeCounter?: number;
+  spendTokens?: { type: string; count: number };
   resourceCost?: number | Record<string, number>;
+  resources?: string[];
+  discardCard?: { count?: number; maxCount?: number; from: 'HAND' | 'DECK' | 'PLAY' };
   discardFromHand?: number;
+  damageHero?: number;
   takeDamage?: number;
   selfDamage?: number;
+  costCheck?: string;
 }
 
 export interface CardAbility {

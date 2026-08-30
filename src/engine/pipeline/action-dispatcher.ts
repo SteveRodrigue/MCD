@@ -150,7 +150,8 @@ export function dispatchAction(
 
       const player = getPlayer(nextState, action.playerId)!;
       const recValue = (player.activeFormCard as AlterEgoCard).recover || 0;
-      const healedAmount = Math.min(player.maxHealth - player.health, recValue);
+      const maxHp = getEffectiveMaxHealth(player, nextState);
+      const healedAmount = Math.min(maxHp - player.health, recValue);
 
       player.health += healedAmount;
       player.exhausted = true;

@@ -61,13 +61,13 @@ export function dispatchAction(
         }
       }
 
-      // 2. Draw replacements from deck
+      // 2. Draw replacements from top of player deck
       const replacementCount = mulliganDiscards.length;
       const drawnReplacements = player.deck.splice(0, replacementCount);
       player.hand = [...keptHand, ...drawnReplacements];
 
-      // 3. Shuffle discards back into player deck (RR v1.8 p. 23-24)
-      player.deck = [...player.deck, ...mulliganDiscards].sort(() => Math.random() - 0.5);
+      // 3. Rejected cards move directly to the player discard pile (RR v1.8 p. 23 - NO DECK SHUFFLE)
+      player.discard.push(...mulliganDiscards);
 
       // 4. Mark player mulligan complete
       nextState.setupState.mulliganCompleted[action.playerId] = true;

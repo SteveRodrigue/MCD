@@ -292,12 +292,23 @@ export function canPlayCard(
     };
   }
 
-  // Form restrictions check (RR v1.8 p. 4, 13) - 100% metadata driven (ADR-0018)
+  // Form restrictions check (RR v1.8 p. 16, 28)
+  // An event card with Hero/Alter-Ego timing requires the corresponding form to play.
+  // Upgrades, Supports, and Allies can be played in either form unless a printed restriction exists.
+  const isEvent = card.type === CardType.EVENT;
   const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
   const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
+  const playRestriction = (card.enrichment as any)?.playRestriction;
 
-  const isHeroFormRequired = card.type === CardType.HERO || hasHeroTiming;
-  const isAlterEgoFormRequired = card.type === CardType.ALTER_EGO || hasAlterEgoTiming;
+  const isHeroFormRequired =
+    card.type === CardType.HERO ||
+    (isEvent && hasHeroTiming) ||
+    playRestriction === 'HERO_FORM';
+
+  const isAlterEgoFormRequired =
+    card.type === CardType.ALTER_EGO ||
+    (isEvent && hasAlterEgoTiming) ||
+    playRestriction === 'ALTER_EGO_FORM';
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     return { allowed: false, reason: 'Can only play this card while in Hero form.' };
@@ -463,12 +474,23 @@ export function evaluateCardPlayability(
     reasons.push('Interrupt/Response: Can only be played when triggered');
   }
 
-  // 3. Identity Form Validation (RR v1.8 p. 13) - 100% metadata driven (ADR-0018)
+  // 3. Identity Form Validation (RR v1.8 p. 16, 28)
+  // Events with Hero/Alter-Ego actions require the corresponding form.
+  // Upgrades, Supports, and Allies are playable in either form unless explicit playRestriction is set.
+  const isEvent = card.type === CardType.EVENT;
   const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
   const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
+  const playRestriction = (card.enrichment as any)?.playRestriction;
 
-  const isHeroFormRequired = card.type === CardType.HERO || hasHeroTiming;
-  const isAlterEgoFormRequired = card.type === CardType.ALTER_EGO || hasAlterEgoTiming;
+  const isHeroFormRequired =
+    card.type === CardType.HERO ||
+    (isEvent && hasHeroTiming) ||
+    playRestriction === 'HERO_FORM';
+
+  const isAlterEgoFormRequired =
+    card.type === CardType.ALTER_EGO ||
+    (isEvent && hasAlterEgoTiming) ||
+    playRestriction === 'ALTER_EGO_FORM';
 
   if (isHeroFormRequired && player.currentForm !== 'hero') {
     reasons.push('Requires Hero form');

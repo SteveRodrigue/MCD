@@ -4,8 +4,9 @@ import {
   CardInstance,
   AllyCard,
   HeroCard,
+  AlterEgoCard,
   PlayerState,
-} from '@engine/models';
+} from '../models';
 
 export interface EffectiveVillainStats {
   attack: number;
@@ -68,9 +69,23 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   let attack = allyCard.attack || 0;
   const keywords: string[] = [];
 
-  // Special card abilities (e.g. Jessica Jones 01059: gets +1 THW for each side scheme in play)
-  if (allyCard.code === '01059') {
-    thwart += (state.sideSchemes || []).length;
+  // Check constant abilities on the ally itself
+  const selfAbilities = ally.card.enrichment?.abilities || [];
+  for (const ab of selfAbilities) {
+    if (ab.timing === 'CONSTANT' && ab.effect === 'MODIFY_STAT') {
+      if (ab.params?.stat === 'THWART') {
+        if (ab.params.scaling === 'PER_SIDE_SCHEME') {
+          const sideSchemeCount = (state.sideSchemes || []).length;
+          const maxBonus = (ab.params.maxBonus as number) || 4;
+          thwart += Math.min(maxBonus, sideSchemeCount * ((ab.params.multiplier as number) || 1));
+        } else if (ab.params.amount) {
+          thwart += (ab.params.amount as number) || 0;
+        }
+      }
+      if (ab.params?.stat === 'ATTACK') {
+        attack += (ab.params.amount as number) || 0;
+      }
+    }
   }
 
   // Sum attachments on this ally (e.g. Inspired 01074: +1 THW / +1 ATK)
@@ -98,14 +113,14 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
 
 /**
  * Computes dynamic effective stats for a player's hero or alter-ego,
- * aggregating base card stats and in-play upgrades (e.g. Combat Training +1 ATK, Armored Vest +1 DEF).
+ * aggregating base card stats and in-play upgrades (e.g. Combat Training +1 ATK, Armored Vest +1 DEF, Heroic Intuition +1 THW).
  */
 export function getEffectiveHeroStats(_state: GameState, player: PlayerState): EffectiveHeroStats {
   const isHero = player.currentForm === 'hero';
   let thwart = isHero ? (player.hero as HeroCard).thwart || 0 : 0;
   let attack = isHero ? (player.hero as HeroCard).attack || 0 : 0;
   let defense = isHero ? (player.hero as HeroCard).defense || 0 : 0;
-  let recovery = !isHero ? player.alterEgo.recover || 0 : 0;
+  let recovery = !isHero ? (player.alterEgo as AlterEgoCard).recover || 0 : 0;
   const keywords: string[] = [];
 
   // Inspect in-play upgrades in player tableau
@@ -133,4 +148,83 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
     recovery,
     keywords,
   };
+}
+
+/**
+ * Computes dynamic effective Hand Size for a player, aggregating base form hand size
+ * and continuous aura modifiers (e.g. Iron Man 01029a scaled by in-play Tech upgrades).
+ */
+export function getEffectiveHandSize(player: PlayerState, _state?: GameState): number {
+  const isHero = player.currentForm === 'hero';
+  
+  // Base printed hand size
+  let baseHandSize = isHero
+    ? (player.hero as HeroCard).handSize || 5
+    : (player.alterEgo as AlterEgoCard).handSize || 6;
+
+  let bonus = 0;
+
+  // Scan constant abilities on identity and tableau cards
+  const allCards = [
+    { card: player.activeFormCard, enrichment: player.activeFormCard.enrichment },
+    ...(player.tableau || []).map((t) => ({ card: t.card, enrichment: t.card.enrichment })),
+  ];
+
+  for (const item of allCards) {
+    const abilities = item.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.timing === 'CONSTANT' && ab.effect === 'MODIFY_HAND_SIZE') {
+        if (ab.params?.scaling === 'PER_MATCHING_CARD') {
+          // Count matching cards in player's tableau
+          const filter = ab.filter || {};
+          let matches = 0;
+          for (const tableauItem of player.tableau || []) {
+            const card = tableauItem.card;
+            let match = true;
+            if (filter.trait) {
+              const trait = filter.trait as string;
+              if (!card.traits || !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())) {
+                match = false;
+              }
+            }
+            if (filter.type_code && card.type !== (filter.type_code as string) && card.raw?.type_code !== filter.type_code) {
+              match = false;
+            }
+            if (match) matches++;
+          }
+          bonus += matches * ((ab.params.multiplier as number) || 1);
+        } else if (ab.params?.amount) {
+          bonus += (ab.params.amount as number) || 0;
+        }
+      }
+    }
+  }
+
+  // Clamp effective hand size between 1 and 10
+  return Math.max(1, Math.min(10, baseHandSize + bonus));
+}
+
+/**
+ * Computes dynamic effective Maximum Health for a player, aggregating base identity health
+ * and continuous upgrade modifiers (e.g. Mark V Armor +6 HP, Rocket Boots +1 HP).
+ */
+export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): number {
+  const heroCard = player.hero as HeroCard;
+  const baseHealth = heroCard.health || player.maxHealth || 10;
+  let bonus = 0;
+
+  for (const item of player.tableau || []) {
+    const abilities = item.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.timing === 'CONSTANT') {
+        if (ab.effect === 'MODIFY_MAX_HEALTH') {
+          bonus += (ab.params?.amount as number) || (ab.params?.healthBonus as number) || 0;
+        } else if (ab.effect === 'MODIFY_STAT' && (ab.params?.stat === 'HEALTH' || ab.params?.stat === 'MAX_HEALTH')) {
+          bonus += (ab.params?.amount as number) || 0;
+        }
+      }
+    }
+  }
+
+  return Math.max(1, baseHealth + bonus);
 }

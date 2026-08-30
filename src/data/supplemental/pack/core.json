@@ -950,32 +950,35 @@
       ]
     },
     "01029a": {
-      "comment": "Hero Identity: Hand size is 1 + number of Tech upgrades in play.",
+      "comment": "HERO: Iron Man. Hand size is increased by 1 for each Tech upgrade you control.",
       "abilities": [
         {
           "id": "iron_man_hand_size",
           "timing": "CONSTANT",
-          "effect": "DYNAMIC_HAND_SIZE",
+          "effect": "MODIFY_HAND_SIZE",
+          "filter": {
+            "trait": "Tech",
+            "type_code": "upgrade"
+          },
           "params": {
-            "base": 1,
-            "perTrait": {
-              "trait": "Tech",
-              "type": "upgrade"
-            }
+            "scaling": "PER_MATCHING_CARD",
+            "multiplier": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> DYNAMIC_HAND_SIZE ({\"base\":1,\"perTrait\":{\"trait\":\"Tech\",\"type\":\"upgrade\"}})"
+        "reconstructedText": "CONSTANT -> MODIFY_HAND_SIZE (scaling: PER_MATCHING_CARD, filter: { trait: Tech, type_code: upgrade })"
       },
       "mechanicSteps": [
-        "Hero Identity ability/stats for Iron Man"
+        "Constant: Continuous aura active while in Hero form",
+        "Filter: Scan player tableau for cards with trait 'Tech' and type 'upgrade'",
+        "Effect: Add +1 to effective hand size for each matching upgrade"
       ]
     },
     "01029b": {
@@ -1155,7 +1158,7 @@
       ]
     },
     "01035": {
-      "comment": "Upgrade: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
+      "comment": "UPGRADE: Arc Reactor. Trait: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
       "abilities": [
         {
           "id": "arc_reactor_ready",
@@ -1163,32 +1166,34 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "READY_CHARACTER",
+          "effect": "READY_IDENTITY",
           "params": {
-            "target": "SELF"
+            "target": "SELF_IDENTITY"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_CHARACTER ({\"target\":\"SELF\"})"
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_IDENTITY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: Hero Action: Exhaust Arc Reactor → ready Iron Man."
+        "Action: Hero Action",
+        "Cost: Exhaust Arc Reactor",
+        "Effect: Ready Iron Man"
       ]
     },
     "01036": {
-      "comment": "Upgrade: Tech. Iron Man gets +6 hit points.",
+      "comment": "UPGRADE: Mark V Armor. Trait: Tech. You get +6 hit points.",
       "abilities": [
         {
           "id": "mark_v_armor_hp",
           "timing": "CONSTANT",
-          "effect": "HP_BONUS",
+          "effect": "MODIFY_MAX_HEALTH",
           "params": {
             "amount": 6
           }
@@ -1196,15 +1201,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":6})"
+        "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 6)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: You get +6 hit points."
+        "Constant: While in play, increase player's maximum health by 6",
+        "Rule Invariant: Current health increases by 6 when entering play; clamped to new max when leaving play"
       ]
     },
     "01037": {
@@ -1271,12 +1277,12 @@
       ]
     },
     "01039": {
-      "comment": "Upgrade: Tech. Iron Man gains +1 hit point. Hero Action: Exhaust Rocket Boots and spend Mental -> gain Aerial trait until end of phase.",
+      "comment": "UPGRADE: Rocket Boots. Trait: Tech. You get +1 hit point. Hero Action: Exhaust Rocket Boots and spend an Energy resource -> Iron Man gains Aerial trait until the end of the phase.",
       "abilities": [
         {
           "id": "rocket_boots_hp",
           "timing": "CONSTANT",
-          "effect": "HP_BONUS",
+          "effect": "MODIFY_MAX_HEALTH",
           "params": {
             "amount": 1
           }
@@ -1286,28 +1292,30 @@
           "timing": "HERO_ACTION",
           "cost": {
             "exhaustSelf": true,
-            "resourceCost": {
-              "mental": 1
-            }
+            "resources": [
+              "energy"
+            ]
           },
-          "effect": "GRANT_TEMPORARY_TRAIT",
+          "effect": "GRANT_KEYWORD",
           "params": {
-            "trait": "Aerial",
-            "duration": "PHASE_END"
+            "keyword": "Aerial",
+            "duration": "END_OF_PHASE"
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> HP_BONUS ({\"amount\":1}); HERO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> GRANT_TEMPORARY_TRAIT ({\"trait\":\"Aerial\",\"duration\":\"PHASE_END\"})"
+        "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 1); HERO_ACTION [Cost: Exhaust + Energy] -> GRANT_KEYWORD (keyword: Aerial)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: You get +1 hit point.\nHero Action: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase."
+        "Constant: +1 Maximum Health",
+        "Action: Hero Action [Cost: Exhaust + Energy resource]",
+        "Effect: Gain Aerial keyword until end of phase"
       ]
     },
     "01040a": {
@@ -1856,28 +1864,29 @@
       ]
     },
     "01057": {
-      "comment": "Upgrade: Attached hero gets +1 ATK.",
+      "comment": "UPGRADE: Combat Training. You get +1 ATK.",
       "abilities": [
         {
           "id": "combat_training_atk",
           "timing": "CONSTANT",
-          "effect": "ATK_BONUS",
+          "effect": "MODIFY_STAT",
           "params": {
+            "stat": "ATTACK",
             "amount": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":1})"
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
+        "Constant: While attached to hero, grants +1 ATK to hero"
       ]
     },
     "01058": {
@@ -1908,28 +1917,31 @@
       ]
     },
     "01059": {
-      "comment": "Ally: Constant: Gets +1 THW for each side scheme in play.",
+      "comment": "ALLY: Jessica Jones. Jessica Jones gets +1 THW for each side scheme in play (to a maximum of +4 THW).",
       "abilities": [
         {
-          "id": "jessica_jones_thw_boost",
+          "id": "jessica_jones_thw_bonus",
           "timing": "CONSTANT",
-          "effect": "THW_BONUS_PER_SIDE_SCHEME",
+          "effect": "MODIFY_STAT",
           "params": {
-            "amountPerSideScheme": 1
+            "stat": "THWART",
+            "scaling": "PER_SIDE_SCHEME",
+            "multiplier": 1,
+            "maxBonus": 4
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> THW_BONUS_PER_SIDE_SCHEME ({\"amountPerSideScheme\":1})"
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, scaling: PER_SIDE_SCHEME, maxBonus: 4)"
       },
       "mechanicSteps": [
-        "Passive: Jessica Jones gets +1 THW for each side scheme in play (CONSTANT ➔ THW_BONUS_PER_SIDE_SCHEME)"
+        "Constant: While Jessica Jones is in play, add +1 THW for each active side scheme (clamped to max +4)"
       ]
     },
     "01060": {
@@ -2086,30 +2098,29 @@
       ]
     },
     "01065": {
-      "comment": "Upgrade: Attached hero gets +1 THW.",
+      "comment": "UPGRADE: Heroic Intuition. You get +1 THW.",
       "abilities": [
         {
           "id": "heroic_intuition_thw",
           "timing": "CONSTANT",
-          "effect": "THW_BONUS",
+          "effect": "MODIFY_STAT",
           "params": {
+            "stat": "THWART",
             "amount": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-30T17:28",
+        "reviewedAt": "2026-08-30T17:28",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> THW_BONUS ({\"amount\":1})"
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1)"
       },
       "mechanicSteps": [
-        "Play Condition: Attach to a side scheme. Max 1 per scheme.",
-        "Trigger: Response when attached side scheme is defeated (FORCED_RESPONSE @ SCHEME_DEFEATED)",
-        "Effect: Deal 4 damage to an enemy."
+        "Constant: While attached to hero, grants +1 THW to hero"
       ]
     },
     "01066": {

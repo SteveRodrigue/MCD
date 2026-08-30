@@ -12,7 +12,10 @@ import {
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
 import { handleMainSchemeCompletion } from './scenario-helpers';
-import { getEffectiveVillainStats } from './stat-calculator';
+import {
+  getEffectiveVillainStats,
+  getEffectiveHandSize,
+} from './stat-calculator';
 
 /**
  * Helper to draw the top card of the encounter deck.
@@ -497,11 +500,10 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       card.exhausted = false;
     }
 
-    // 3. Draw up to printed Hand Size (Hero vs Alter-Ego hand size)
-    const printedHandSize =
-      player.currentForm === 'hero' ? player.hero.handSize : player.alterEgo.handSize;
+    // 3. Draw up to effective Hand Size (Hero vs Alter-Ego + constant auras e.g. Iron Man Tech upgrades)
+    const targetHandSize = getEffectiveHandSize(player, state);
 
-    const cardsToDraw = Math.max(0, printedHandSize - player.hand.length);
+    const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
     for (let d = 0; d < cardsToDraw; d++) {
       if (player.deck.length === 0) {
         // Player deck cycle rule (RR v1.8 p. 12): Shuffle discard into deck + deal 1 facedown encounter card

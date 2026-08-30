@@ -12,7 +12,7 @@ import {
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
-describe('Mulligan Phase State Machine & Rules', () => {
+describe('Mulligan Phase State Machine & Rules (RR v1.8 p. 23)', () => {
   let catalog: CardCatalog;
 
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe('Mulligan Phase State Machine & Rules', () => {
     catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   });
 
-  it('allows a player to discard 2 cards and redraw 2 cards, shuffling discards back into deck', () => {
+  it('moves rejected cards directly into player discard pile and draws replacements from deck (NO shuffle)', () => {
     const scenario = getScenario('rhino')!;
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
@@ -45,9 +45,12 @@ describe('Mulligan Phase State Machine & Rules', () => {
     const player = initialState.players[0];
     expect(player.hand).toHaveLength(6);
     expect(player.deck).toHaveLength(34);
+    expect(player.discard).toHaveLength(0);
 
     // Choose 2 cards to mulligan
-    const discardIds = [player.hand[0].instanceId, player.hand[1].instanceId];
+    const discardedCard0 = player.hand[0];
+    const discardedCard1 = player.hand[1];
+    const discardIds = [discardedCard0.instanceId, discardedCard1.instanceId];
 
     const { state: nextState, result } = dispatchAction(initialState, {
       type: 'RESOLVE_MULLIGAN',
@@ -61,20 +64,21 @@ describe('Mulligan Phase State Machine & Rules', () => {
     // Hand size remains 6
     expect(updatedPlayer.hand).toHaveLength(6);
 
-    // Deck size remains 34 (discards are shuffled back into deck)
-    expect(updatedPlayer.deck).toHaveLength(34);
+    // Deck size decreases by 2 (drawn replacements from top of deck)
+    expect(updatedPlayer.deck).toHaveLength(32);
 
-    // Discard pile remains 0 (mulligan cards are NOT in the discard pile)
-    expect(updatedPlayer.discard).toHaveLength(0);
+    // Discard pile now contains the 2 rejected mulligan cards
+    expect(updatedPlayer.discard).toHaveLength(2);
+    expect(updatedPlayer.discard.map((c) => c.instanceId)).toEqual(discardIds);
 
-    // Mulligan is marked complete and game transitions to PLAYER_PHASE Round 1
+    // Mulligan is marked complete and game transitions to PLAYER_PHASE Round 1 with discard intact
     expect(nextState.setupState?.mulliganCompleted['player_1']).toBe(true);
     expect(nextState.setupState?.stage).toBe('GAME_READY');
     expect(nextState.phase).toBe(GamePhase.PLAYER_PHASE);
     expect(nextState.roundNumber).toBe(1);
   });
 
-  it('handles multi-player sequential/parallel mulligan before transitioning to Round 1', () => {
+  it('handles multi-player mulligan and preserves each player discard pile into Round 1', () => {
     const scenario = getScenario('rhino')!;
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
@@ -115,18 +119,25 @@ describe('Mulligan Phase State Machine & Rules', () => {
     expect(step1.state.phase).toBe(GamePhase.SETUP_PHASE);
     expect(step1.state.setupState?.mulliganCompleted['player_1']).toBe(true);
     expect(step1.state.setupState?.mulliganCompleted['player_2']).toBeUndefined();
+    expect(step1.state.players[0].discard).toHaveLength(0);
 
     // Player 2 completes mulligan with 3 cards discarded
     const p2Hand = step1.state.players[1].hand;
+    const p2DiscardIds = [p2Hand[0].instanceId, p2Hand[1].instanceId, p2Hand[2].instanceId];
     const step2 = dispatchAction(step1.state, {
       type: 'RESOLVE_MULLIGAN',
       playerId: 'player_2',
-      discardCardInstanceIds: [p2Hand[0].instanceId, p2Hand[1].instanceId, p2Hand[2].instanceId],
+      discardCardInstanceIds: p2DiscardIds,
     });
 
     expect(step2.result.success).toBe(true);
     // Now all players done -> Transition to PLAYER_PHASE Round 1
     expect(step2.state.phase).toBe(GamePhase.PLAYER_PHASE);
     expect(step2.state.setupState?.stage).toBe('GAME_READY');
+
+    // Verify Player 1 has 0 in discard and Player 2 has 3 in discard
+    expect(step2.state.players[0].discard).toHaveLength(0);
+    expect(step2.state.players[1].discard).toHaveLength(3);
+    expect(step2.state.players[1].deck).toHaveLength(31); // 40 - 6 - 3 = 31
   });
 });

@@ -121,7 +121,7 @@ graph TD
 ### 3. 🟠 `[Should-Have]` Comic Tabletop UI Polish & Visual Ergonomics
 * [ ] **Discard Pile Inspectors with Multi-Tier Sorting Options:**
   * Interactive modal to inspect Player Discard and Encounter Discard piles with sorting toggles (Discard Chronological Order, Card Type, Aspect/Faction, Cost, Alphabetical) while preserving underlying state order.
-* [ ] **Card Exhaustion Visuals:** Subtle 15-degree tilt and greyed-out interactive overlay (replacing 90-degree rotation to eliminate board sprawl).
+* [x] **Card Exhaustion Visuals:** Subtle 15-degree tilt (`rotate-[15deg]`) with desaturated overlay and `EXHAUSTED` badge (replacing 90-degree rotation to eliminate board sprawl).
 * [ ] **Interactive Card Play & Resource Payment Modal:** Select resources from hand cards and exhausted generators (*Web-Shooter*, *Helicarrier*, *Rechannel*).
 * [ ] **Turn Pass & Step-by-Step Activation Banners.**
 

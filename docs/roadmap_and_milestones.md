@@ -100,6 +100,10 @@ graph TD
   * Fire discrete engine events for `OVERKILL_OCCURRED` (tracking excess overkill damage), `ALLY_CONSEQUENTIAL_DAMAGE`, `THWART_COMPLETED`, and `RECOVER_COMPLETED`.
 * [ ] **Action Frequency Limits:**
   * Enforce `maxPerRound` and `maxPerPhase` tracking in `GameState`.
+* [ ] 🟠 `[Should-Have]` **Rules Review & Implementation of Information Visibility (RR v1.8 p. 8, 9):**
+  * Formalize inspection rights in UI and engine:
+    * **Discard Piles (Open Information):** Any player may inspect any discard pile (Player Discard, Encounter Discard) at any time during the game without altering the physical card order.
+    * **Draw Decks (Hidden Information):** Draw decks may only be inspected when a card effect instructs the player to search/look, or via Dev Mode toggles.
 
 ---
 
@@ -115,6 +119,8 @@ graph TD
 * [ ] In-game deck validation checking aspect and unicity rules (40–50 cards).
 
 ### 3. 🟠 `[Should-Have]` Comic Tabletop UI Polish & Visual Ergonomics
+* [ ] **Discard Pile Inspectors with Multi-Tier Sorting Options:**
+  * Interactive modal to inspect Player Discard and Encounter Discard piles with sorting toggles (Discard Chronological Order, Card Type, Aspect/Faction, Cost, Alphabetical) while preserving underlying state order.
 * [ ] **Card Exhaustion Visuals:** Subtle 15-degree tilt and greyed-out interactive overlay (replacing 90-degree rotation to eliminate board sprawl).
 * [ ] **Interactive Card Play & Resource Payment Modal:** Select resources from hand cards and exhausted generators (*Web-Shooter*, *Helicarrier*, *Rechannel*).
 * [ ] **Turn Pass & Step-by-Step Activation Banners.**

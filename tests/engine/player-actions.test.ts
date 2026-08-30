@@ -675,7 +675,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res.state.players[0].deck.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(false);
       });
 
-      it('executes Tony Stark Futurist ability: scrys top 3 cards, takes 1 Tech upgrade, discards others', () => {
+      it('executes Tony Stark Futurist ability: prompts player to choose Tech card or decline', () => {
         const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
         gameState.players[0].alterEgo = ironManIdentity.alterEgo;
         gameState.players[0].hero = ironManIdentity.hero;
@@ -692,20 +692,71 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         const initialHandLength = player.hand.length;
         const initialDiscardLength = player.discard.length;
 
-        const res = dispatchAction(gameState, {
+        // 1. Trigger Futurist
+        const res1 = dispatchAction(gameState, {
           type: 'USE_CARD_ABILITY',
           playerId: 'p1',
           cardInstanceId: ironManIdentity.alterEgo.code,
           abilityId: 'futurist',
         });
 
-        expect(res.result.success).toBe(true);
-        expect(res.result.onomatopoeia).toContain('FUTURIST');
+        expect(res1.result.success).toBe(true);
+        expect(res1.state.pendingDecisionPrompt).toBeDefined();
+        expect(res1.state.pendingDecisionPrompt?.title).toContain('FUTURIST');
+        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(2); // Arc Reactor + Do not take any card
+
+        // 2. Select the Tech card
+        const techOptionId = res1.state.pendingDecisionPrompt!.options[0].id;
+        const res2 = dispatchAction(res1.state, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: 'p1',
+          selectedOptionId: techOptionId,
+        });
+
+        expect(res2.result.success).toBe(true);
+        expect(res2.state.pendingDecisionPrompt).toBeUndefined();
         // Arc Reactor should now be in hand
-        expect(res.state.players[0].hand.length).toBe(initialHandLength + 1);
-        expect(res.state.players[0].hand.some((c) => c.card.code === '01035')).toBe(true);
+        expect(res2.state.players[0].hand.length).toBe(initialHandLength + 1);
+        expect(res2.state.players[0].hand.some((c) => c.card.code === '01035')).toBe(true);
         // The other 2 cards should be discarded
-        expect(res.state.players[0].discard.length).toBe(initialDiscardLength + 2);
+        expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 2);
+      });
+
+      it('executes Tony Stark Futurist ability with decline option: discards all 3 revealed cards', () => {
+        const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
+        gameState.players[0].alterEgo = ironManIdentity.alterEgo;
+        gameState.players[0].hero = ironManIdentity.hero;
+        gameState.players[0].activeFormCard = ironManIdentity.alterEgo;
+        gameState.players[0].currentForm = 'alter_ego';
+
+        const player = gameState.players[0];
+        const arcReactor = createCardInstance(catalog.getCard('01035')!);
+        const nonTech1 = createCardInstance(catalog.getCard('01005')!);
+        const nonTech2 = createCardInstance(catalog.getCard('01005')!);
+        player.deck = [arcReactor, nonTech1, nonTech2, ...player.deck];
+
+        const initialHandLength = player.hand.length;
+        const initialDiscardLength = player.discard.length;
+
+        const res1 = dispatchAction(gameState, {
+          type: 'USE_CARD_ABILITY',
+          playerId: 'p1',
+          cardInstanceId: ironManIdentity.alterEgo.code,
+          abilityId: 'futurist',
+        });
+
+        // Decline / take none option
+        const res2 = dispatchAction(res1.state, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: 'p1',
+          selectedOptionId: 'take_none',
+        });
+
+        expect(res2.result.success).toBe(true);
+        // Hand size unchanged
+        expect(res2.state.players[0].hand.length).toBe(initialHandLength);
+        // All 3 cards discarded
+        expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 3);
       });
     });
   });

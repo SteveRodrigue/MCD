@@ -84,6 +84,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
+* **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../docs/specifications/supplemental_data_schema.md) and [Hero Creation Guide](../../docs/guidelines/hero_creation_guide.md).
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 * **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   * **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
@@ -203,3 +204,10 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
 6. **Verify:** Run test suite: `npm test; npm run typecheck; npm run build`.
+
+---
+
+## 📚 Related Documentation & Authoritative Standards
+* [Supplemental Data Schema Specification](../../docs/specifications/supplemental_data_schema.md)
+* [Hero & Identity Creation Guide](../../docs/guidelines/hero_creation_guide.md)
+* [Scenario Creation Guide](../../docs/guidelines/scenario_creation_guide.md)

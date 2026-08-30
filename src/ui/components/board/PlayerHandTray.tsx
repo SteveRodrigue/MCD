@@ -164,6 +164,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     padding: 24,
   });
 
+  const [hoveredHandCardId, setHoveredHandCardId] = useState<string | null>(null);
+
   // Inspector View Sort States
   const [sortMode, setSortMode] = useState<PlayerSortMode>('deck_order');
   const [deckDirection, setDeckDirection] = useState<DeckDirection>('top_to_bottom');
@@ -368,6 +370,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               className="flex items-center justify-start overflow-visible py-2 px-1 min-h-[180px] w-full"
             >
               {hand.map((cardInst, index) => {
+                const isHovered = hoveredHandCardId === cardInst.instanceId;
                 const playability =
                   player && gameState
                     ? evaluateCardPlayability(gameState, player.id, cardInst)
@@ -376,11 +379,15 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 return (
                   <div
                     key={cardInst.instanceId}
+                    onMouseEnter={() => setHoveredHandCardId(cardInst.instanceId)}
+                    onMouseLeave={() => setHoveredHandCardId(null)}
                     style={{
-                      zIndex: 30 - index,
+                      zIndex: isHovered ? 60 : 30 - index,
                       marginLeft: index === 0 ? 0 : `${multiHandFan.overlapMargin}px`,
                     }}
-                    className="shrink-0 relative transition-all duration-200 hover:z-50 hover:-translate-y-3 cursor-pointer"
+                    className={`shrink-0 relative transition-all duration-200 cursor-pointer ${
+                      isHovered ? '-translate-y-8 z-[60]' : 'hover:-translate-y-2'
+                    }`}
                   >
                     <CardView
                       card={cardInst.card}
@@ -521,6 +528,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 className="flex items-center justify-start overflow-visible py-2 px-2 min-h-[290px] w-full"
               >
                 {hand.map((cardInst, index) => {
+                  const isHovered = hoveredHandCardId === cardInst.instanceId;
                   const playability =
                     player && gameState
                       ? evaluateCardPlayability(gameState, player.id, cardInst)
@@ -529,11 +537,15 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                   return (
                     <div
                       key={cardInst.instanceId}
+                      onMouseEnter={() => setHoveredHandCardId(cardInst.instanceId)}
+                      onMouseLeave={() => setHoveredHandCardId(null)}
                       style={{
-                        zIndex: 30 - index,
+                        zIndex: isHovered ? 60 : 30 - index,
                         marginLeft: index === 0 ? 0 : `${singleHandFan.overlapMargin}px`,
                       }}
-                      className="shrink-0 relative transition-all duration-200 hover:z-50 hover:-translate-y-4 cursor-pointer"
+                      className={`shrink-0 relative transition-all duration-200 cursor-pointer ${
+                        isHovered ? '-translate-y-12 z-[60]' : 'hover:-translate-y-2'
+                      }`}
                     >
                       <CardView
                         card={cardInst.card}

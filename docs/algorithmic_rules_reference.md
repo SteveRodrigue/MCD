@@ -35,14 +35,14 @@ stateDiagram-v2
     
     state PlayerPhase {
         [*] --> PlayerTurn
-        PlayerTurn --> ChangeForm: Limit 1/round
-        PlayerTurn --> BasicRecover: Alter-Ego
-        PlayerTurn --> BasicAttack: Hero (Guard check)
+        PlayerTurn --> ChangeForm: basicChangeFormUsedThisRound = true (1/round)
+        PlayerTurn --> BasicRecover: Alter-Ego (Clamped to Dynamic Max HP)
+        PlayerTurn --> BasicAttack: Hero (Guard check, Attack Damage)
         PlayerTurn --> BasicThwart: Hero (Crisis/Patrol check)
-        PlayerTurn --> AllyAttack: Ready Ally (Consequential Dmg)
-        PlayerTurn --> AllyThwart: Ready Ally (Consequential Dmg)
-        PlayerTurn --> PlayCard: Pay resources
-        PlayerTurn --> UseCardAbility: Actions / Resources
+        PlayerTurn --> AllyAttack: Ready Ally (Consequential Dmg Event)
+        PlayerTurn --> AllyThwart: Ready Ally (Consequential Dmg Event)
+        PlayerTurn --> PlayCard: Pay resources (CARD_PLAYED Event)
+        PlayerTurn --> UseCardAbility: Actions / Resources (Max Per Round Check)
         PlayerTurn --> NextPlayer: End Turn
         NextPlayer --> PlayerTurn: More players
         NextPlayer --> RoundEnd: All players passed
@@ -52,9 +52,8 @@ stateDiagram-v2
     
     state VillainPhase {
         [*] --> Step1_ThreatPlacement
-        Step1_ThreatPlacement --> Step2_VillainActivations: If not lost
-        Step2_VillainActivations --> Step3_MinionActivations
-        Step3_MinionActivations --> Step4_DealEncounterCards
+        Step1_ThreatPlacement --> Step2_Step3_InterleavedActivations: For each player (First Player order)
+        Step2_Step3_InterleavedActivations --> Step4_DealEncounterCards: Sequential Hazard distribution
         Step4_DealEncounterCards --> Step5_RevealEncounterCards
         Step5_RevealEncounterCards --> Step6_PassFirstPlayerAndUpkeep
     }
@@ -77,15 +76,18 @@ stateDiagram-v2
     OpeningHands --> MulliganPhase: Setup State = MULLIGAN_PHASE
     
     state MulliganPhase {
-        [*] --> SelectDiscards: Choose 0 to 6 cards
-        SelectDiscards --> DrawReplacements: Draw equal replacements from deck
-        DrawReplacements --> ShuffleDiscards: Shuffle discards into deck
-        ShuffleDiscards --> MarkSeatComplete: mulliganCompleted[playerId] = true
+        [*] --> SelectDiscards: Choose 0 to printed hand size cards
+        SelectDiscards --> DiscardRejected: Move rejected cards to player.discard
+        DiscardRejected --> DrawReplacements: Draw equal replacements from top of player.deck
+        DrawReplacements --> MarkSeatComplete: mulliganCompleted[playerId] = true
         MarkSeatComplete --> NextSeat: If pending seats remain
     }
     
     MulliganPhase --> PlayerPhase: All Seats Done (Game Ready)
 ```
+
+> [!IMPORTANT]
+> **Mulligan Rule Invariant (RR v1.8 p. 23):** On mulligan, rejected cards are placed directly into the player's **discard pile** and replacement cards are drawn from the top of the draw deck. The player deck is **NOT** shuffled during mulligan.
 
 * **Multi-Hero Scaling Formulae ($N = \text{playerCount}$):**
   * $\text{Villain.MaxHealth} = \begin{cases} N \times \text{Card.Health} & \text{if } \text{healthPerHero} = \text{true} \\ \text{Card.Health} & \text{otherwise} \end{cases}$
@@ -96,7 +98,8 @@ stateDiagram-v2
 
 ## 3. Formal Play Areas & Zones Architecture (RR v1.8 p. 22-23)
 
-The MCD rules engine strictly partitions all card instances into deterministic, immutable zones:
+> [!NOTE]
+> This represents the **standard base game layout**. Complex modular scenarios (e.g. Tower Defense, Kang, Mutagen Formula) may dynamically register additional custom zones, decks, and side displays via the `ScenarioPlugin` interface.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -129,338 +132,127 @@ The MCD rules engine strictly partitions all card instances into deterministic, 
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Zone Transition Invariants:
-1. **Entering Play:** Upgrades & Supports $\rightarrow$ `player.tableau`; Allies $\rightarrow$ `player.allies`; Minions $\rightarrow$ `player.engagedMinions`; Side Schemes $\rightarrow$ `state.sideSchemes`.
-2. **Defeat / Discard:** Player cards $\rightarrow$ `player.discard`; Encounter cards $\rightarrow$ `state.encounterDiscard`; Cards with Victory $\rightarrow$ `state.victoryDisplay`.
-3. **Empty Deck Recycling:**
-   * **Player Deck empty:** Immediately shuffle `player.discard` $\rightarrow$ `player.deck` and deal 1 facedown encounter card to player (RR v1.8 p. 12).
-   * **Encounter Deck empty:** Immediately shuffle `state.encounterDiscard` $\rightarrow$ `state.encounterDeck` and place 1 Acceleration token on Main Scheme (RR v1.8 p. 13).
+### 3.1 Card Physical Orientation & Exhaustion Visuals
+
+* **Exhaustion State vs Visual Layout:**
+  * In the game engine state, `card.exhausted = true`.
+  * In the UI presentation layer, exhausted cards use a **subtle 15-degree tilt and/or a desaturated (greyed-out) overlay** with interactive disabled state, rather than an intrusive $90^\circ$ rotation that causes board horizontal sprawl.
 
 ---
 
-### 3.1 Card Physical Orientation & Dimensions Model
+## 4. The 7-Stage Timing Pipeline & Nested Resolution Stack
 
-All normalized cards encapsulate their physical tabletop print orientation:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 CARD ORIENTATION HIERARCHY                  │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Explicit Override: card.enrichment.isLandscape           │
-│ 2. Default Landscape: type_code ∈ { main_scheme,            │
-│                       side_scheme, player_side_scheme }     │
-│ 3. Default Portrait:  All other card types                  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-* **Aspect Ratios & Dimensions:**
-  * **Portrait Cards ($2.5 \times 3.5$):** Villains, Heroes, Alter-Egos, Allies, Events, Upgrades, Supports, Minions, Attachments, Treacheries, Obligations.
-  * **Landscape Cards ($3.5 \times 2.5$):** Main Schemes, Side Schemes, Player Side Schemes.
-* **Exhaustion Invariant (RR v1.8 p. 13–14):**
-  * When `card.exhausted = true`, the card rotates $90^\circ$ clockwise relative to its base orientation.
-  * Changing form preserves exhaustion state.
-
----
-
-## 4. The 7-Stage Timing Pipeline Algorithm
-
-Whenever an in-game event occurs, it passes through 7 distinct timing windows in strict sequential order:
+Whenever an in-game event or activation occurs, it executes within a **Nested Resolution Stack** to ensure uninterrupted state tracking:
 
 ```typescript
 function ProcessEventPipeline(event: GameEvent, state: GameState): GameState {
-  // 1. FORCED INTERRUPTS (Mandatory, executed in First Player order)
+  // 1. FORCED INTERRUPTS (Mandatory, executed in First Player order / Player-selected order if simultaneous)
   state = ExecuteForcedInterrupts(event, state);
   if (event.cancelled) return state;
 
-  // 2. INTERRUPTS (Optional player decision windows)
+  // 2. VOLUNTARY INTERRUPTS (Player decision prompt with explicit "Pass / Do Nothing" option)
   state = ExecuteInterrupts(event, state); // e.g. Spider-Sense, Backflip
   if (event.cancelled) return state;
 
   // 3. EVENT RESOLUTION (Primary action or effect executes)
   state = ExecuteEventResolution(event, state);
 
-  // 4. REPLACEMENT EFFECTS (Substitutes the outcome)
-  state = ApplyReplacementEffects(event, state); // e.g. Tough replaces taking damage
+  // 4. REPLACEMENT EFFECTS (e.g. Tough status card absorption)
+  state = ExecuteReplacementEffects(event, state);
 
-  // 5. FORCED RESPONSES (Mandatory, executed immediately post-resolution)
+  // 5. POST-RESOLUTION STATE MUTATION (Check character defeat, threat thresholds)
+  state = CheckStateBasedEffects(event, state);
+
+  // 6. FORCED RESPONSES (Mandatory reactions to event completion)
   state = ExecuteForcedResponses(event, state);
 
-  // 6. RESPONSES (Optional player post-resolution triggers)
+  // 7. VOLUNTARY RESPONSES (Player decision prompt with "Pass / Do Nothing")
   state = ExecuteResponses(event, state);
-
-  // 7. CONSTANT RE-EVALUATION (Recalculate Guard, Patrol, Crisis, Hazard)
-  state = ReevaluateActiveInvariants(state);
 
   return state;
 }
 ```
 
----
-
-## 5. Formal Player Action State Reducers (`src/engine/pipeline/action-dispatcher.ts`)
-
-### Algorithm 5.0: `RESOLVE_MULLIGAN` (RR v1.8 p. 23–24)
-* **Preconditions:**
-  1. `state.setupState.stage === 'MULLIGAN_PHASE'`
-  2. `state.setupState.mulliganCompleted[action.playerId] !== true`
-  3. `discardCardInstanceIds` $\subseteq \text{player.hand}$
-* **State Mutations:**
-  1. $\text{mulliganDiscards} \leftarrow \{ c \in \text{player.hand} \mid c.\text{instanceId} \in \text{discardCardInstanceIds} \}$
-  2. $\text{keptCards} \leftarrow \text{player.hand} \setminus \text{mulliganDiscards}$
-  3. $\text{drawnReplacements} \leftarrow \text{player.deck}.\text{splice}(0, |\text{mulliganDiscards}|)$
-  4. $\text{player.hand} \leftarrow \text{keptCards} \cup \text{drawnReplacements}$
-  5. $\text{player.deck} \leftarrow \text{shuffle}(\text{player.deck} \cup \text{mulliganDiscards})$
-  6. $\text{state.setupState.mulliganCompleted}[\text{player.id}] \leftarrow \text{true}$
-  7. **All Players Check:** If all players have completed mulligan:
-     * $\text{state.setupState.stage} \leftarrow \text{'GAME\_READY'}$
-     * $\text{state.phase} \leftarrow \text{GamePhase.PLAYER\_PHASE}$
-     * Emit Event: `phase.player_phase.start` (Round 1)
+### Simultaneous Trigger Ordering (RR v1.8 p. 16)
+If multiple `FORCED` triggers or multiple voluntary reactions are eligible at the same step, the active/first player chooses the sequence of resolution.
 
 ---
 
-### Algorithm 5.1: `CHANGE_FORM` (RR v1.8 p. 13–14)
-* **Preconditions:**
-  1. `state.phase === GamePhase.PLAYER_PHASE`
-  2. `player.formChangedThisRound === false`
-  3. `targetFormCode` exists in `player.availableForms` and $\neq \text{activeFormCard.code}$.
-* **State Mutations:**
-  1. `player.activeFormCard = targetFormCard`
-  2. `player.currentForm = (targetFormCard.type === 'hero') ? 'hero' : 'alter_ego'`
-  3. `player.formChangedThisRound = true`
-  4. Emit Event: `IDENTITY_FORM_CHANGED`
+## 5. Algorithmic Player Turn Actions (RR v1.8)
+
+### Algorithm 5.0: RESOLVE_MULLIGAN (RR v1.8 p. 23–24)
+1. Player selects $k$ cards from opening hand to reject ($0 \le k \le \text{hand.length}$).
+2. Rejected cards move to `player.discard` (**NOT shuffled into deck**).
+3. Draw $k$ cards from the top of `player.deck`.
+4. Set `player.mulliganCompleted = true`.
+
+### Algorithm 5.1: CHANGE_FORM (RR v1.8 p. 13–14)
+* A player may flip their identity form **once per round as a basic turn action**:
+  $$\text{if } \text{player.basicChangeFormUsedThisRound} = \text{false} \rightarrow \text{Flip Form}, \text{basicChangeFormUsedThisRound} = \text{true}.$$
+* Card effects that instruct the player to change form (e.g. *Split Personality*) do **NOT** count against or require `basicChangeFormUsedThisRound`.
+
+### Algorithm 5.2: BASIC_RECOVER (RR v1.8 p. 23)
+* Alter-Ego exhausts to heal $\text{REC}$ points.
+* Health is strictly clamped to dynamic maximum health:
+  $$\text{player.health} = \min(\text{player.maxHealth}, \text{player.health} + \text{player.activeFormCard.rec}).$$
+
+### Algorithm 5.3: BASIC_ATTACK vs DIRECT_DAMAGE (RR v1.8 p. 5–6, 26)
+* **Attack Action (`isAttack: true`):**
+  * Target must be a legal enemy (checks `Guard` keyword on engaged minions).
+  * Triggers Defense reactions, *Retaliate* keywords, and *Overkill* calculations.
+  * Emits `ENEMY_ATTACKED` and `OVERKILL_OCCURRED(excessDamage)` events.
+* **Direct Damage (`isAttack: false`):**
+  * Ignores `Guard` and does not trigger *Retaliate* or attack-specific interrupts (e.g. *Ground Stomp*, *Energy Channel*).
 
 ---
 
-### Algorithm 5.2: `BASIC_RECOVER` (RR v1.8 p. 23)
-* **Preconditions:**
-  1. `player.currentForm === 'alter_ego'`
-  2. `player.exhausted === false`
-* **State Mutations:**
-  1. `player.exhausted = true`
-  2. `player.recoveryUsedThisRound = true`
-  3. $\text{healedAmount} = \min(\text{player.maxHealth} - \text{player.health}, \text{player.alterEgo.recover})$
-  4. $\text{player.health} \leftarrow \text{player.health} + \text{healedAmount}$
-  5. Emit Event: `CHARACTER_HEALED`
+## 6. The 6-Step Villain Phase State Machine (RR v1.8 p. 22)
 
----
-
-### Algorithm 5.3: `BASIC_ATTACK` (RR v1.8 p. 5–6, 15, 26, 27)
-* **Preconditions:**
-  1. `player.currentForm === 'hero'`
-  2. `player.exhausted === false`
-  3. Target is `villain` OR an engaged `minion`.
-  4. **Guard Check:** If target is `villain`, `player.engagedMinions` must contain **0** minions with the `Guard` keyword.
-* **State Mutations:**
-  1. `player.exhausted = true`
-  2. **Stun Replacement Check:** If `player.statusCards` contains `STUNNED`:
-     * Discard 1 `STUNNED` card.
-     * Attack ends (0 damage dealt).
-  3. **Damage Calculation:** $\text{damage} = \text{player.hero.attack}$
-  4. **Tough Replacement Check on Target:** If target has `TOUGH`:
-     * Discard 1 `TOUGH` card from target.
-     * Damage dealt is replaced by 0.
-  5. **Apply Damage:**
-     * Target HP $\leftarrow \text{Target HP} - \text{damage}$.
-     * If Minion HP $\le 0 \rightarrow$ Move minion to `state.encounterDiscard`.
-     * If Villain HP $\le 0 \rightarrow$ Advance Villain Stage or trigger `state.winner = 'HEROES'`.
-
----
-
-### Algorithm 5.4: `BASIC_THWART` (RR v1.8 p. 29, 11, 20, 10)
-* **Preconditions:**
-  1. `player.currentForm === 'hero'`
-  2. `player.exhausted === false`
-  3. Target is `main_scheme` OR a `side_scheme`.
-  4. **Crisis Check:** If target is `main_scheme`, `state.sideSchemes` must contain **0** schemes with the `Crisis` icon.
-  5. **Patrol Check:** If target is `main_scheme`, `player.engagedMinions` must contain **0** minions with the `Patrol` keyword.
-* **State Mutations:**
-  1. `player.exhausted = true`
-  2. **Confused Replacement Check:** If `player.statusCards` contains `CONFUSED`:
-     * Discard 1 `CONFUSED` card.
-     * Thwart ends (0 threat removed).
-  3. **Threat Removal:** $\text{threatToRemove} = \text{player.hero.thwart}$
-  4. **Apply Threat Removal:**
-     * If Main Scheme: $\text{threat} \leftarrow \max(0, \text{threat} - \text{threatToRemove})$.
-     * If Side Scheme: $\text{threat} \leftarrow \text{threat} - \text{threatToRemove}$. If threat $\le 0 \rightarrow$ Discard side scheme to `encounterDiscard`.
-
----
-
-### Algorithm 5.5: `ALLY_ATTACK` (RR v1.8 p. 6, 9)
-* **Preconditions:**
-  1. Ally instance is in `player.allies` and `ally.exhausted === false`.
-  2. Guard Check satisfied if targeting Villain.
-* **State Mutations:**
-  1. `ally.exhausted = true`
-  2. Deal `ally.card.attack` damage to target (evaluating target Tough status).
-  3. **Consequential Damage:** Apply `ally.card.attackCost` (default 1) damage to ally.
-  4. **Ally Defeat Check:** If `ally.tokens.damage >= ally.card.health` $\rightarrow$ discard to `player.discard`.
-
----
-
-### Algorithm 5.6: `ALLY_THWART` (RR v1.8 p. 6, 9)
-* **Preconditions:**
-  1. Ally instance is in `player.allies` and `ally.exhausted === false`.
-  2. Crisis / Patrol Check satisfied if targeting Main Scheme.
-* **State Mutations:**
-  1. `ally.exhausted = true`
-  2. Compute thwart value (including bonuses like Jessica Jones +1 per Side Scheme).
-  3. Remove threat from target scheme.
-  4. **Consequential Damage:** Apply `ally.card.thwartCost` (default 1) damage to ally.
-  5. **Ally Defeat Check:** If `ally.tokens.damage >= ally.card.health` $\rightarrow$ discard to `player.discard`.
-
----
-
-### Algorithm 5.7: `PLAY_CARD` & Cost Payment (RR v1.8 p. 16, 20, 24)
-* **Preconditions:**
-  1. Card instance is in `player.hand`.
-  2. Form requirement satisfied (Hero card $\rightarrow$ in Hero form; Alter-Ego card $\rightarrow$ in Alter-Ego form).
-  3. Selected payment cards $\text{totalResources} \ge \text{card.cost}$.
-* **State Mutations:**
-  1. Remove payment cards from `player.hand` $\rightarrow$ move to `player.discard`.
-  2. Remove played card from `player.hand`:
-     * If `Upgrade` or `Support` $\rightarrow$ move to `player.tableau` (initializing counters if `uses` declared).
-     * If `Ally` $\rightarrow$ move to `player.allies` $\rightarrow$ trigger `CARD_PLAYED` abilities (e.g. Mockingbird stun).
-     * If `Event` $\rightarrow$ resolve declarative effect $\rightarrow$ move to `player.discard`.
-
----
-
-### Algorithm 5.8: `USE_CARD_ABILITY` (RR v1.8 p. 24, 30)
-* **Preconditions:**
-  1. Card instance is ready in `player.tableau` (or active Identity).
-  2. Form requirements met (e.g. Alter-Ego Action $\rightarrow$ Alter-Ego form).
-  3. Ability costs available (e.g. `exhaustSelf`, `removeCounter >= 1`).
-* **State Mutations:**
-  1. Apply costs (`card.exhausted = true`, `card.tokens.counters -= 1`).
-  2. Execute attached declarative effect primitive.
-  3. If `discardOnEmpty === true` and `counters === 0` $\rightarrow$ discard card to `player.discard`.
-
----
-
-## 6. The 6-Step Villain Phase State Machine (`src/engine/pipeline/villain-phase.ts`)
-
-```
-Step 1: Main Scheme Threat
-   threatToAdd = (EscalationThreat * playerCount) + AccelerationTokens + SideSchemeAccelerationIcons
-   MainScheme.threat += threatToAdd
-   IF MainScheme.threat >= MainScheme.targetThreat THEN state.winner = 'VILLAIN'
-
-Step 2: Villain Activations (In player order)
-   FOR EACH player IN players (starting at firstPlayerIndex):
-     IF player.currentForm == 'hero' THEN
-        // Villain Attacks
-        DispatchTrigger(VILLAIN_INITIATES_ATTACK) // Spider-Sense draws 1 card
-        IF Villain has STUNNED THEN Discard STUNNED; End Activation
-        Draw BoostCard; totalAttack = Villain.attack + BoostCard.boostIcons; Discard BoostCard
-        DispatchTrigger(TAKE_ATTACK_DAMAGE) // Backflip damage prevention
-        IF player has TOUGH THEN Discard TOUGH; 0 damage
-        ELSE player.health -= totalAttack; IF player.health <= 0 THEN state.winner = 'VILLAIN'
-     ELSE
-        // Villain Schemes
-        IF Villain has CONFUSED THEN Discard CONFUSED; End Activation
-        Draw BoostCard; totalThreat = Villain.scheme + BoostCard.boostIcons; Discard BoostCard
-        MainScheme.threat += totalThreat
-        IF MainScheme.threat >= MainScheme.targetThreat THEN state.winner = 'VILLAIN'
-
-Step 3: Minion Activations
-   FOR EACH player IN players:
-     FOR EACH minion IN player.engagedMinions:
-        IF player.currentForm == 'hero' THEN
-           player.health -= minion.attack
-        ELSE
-           MainScheme.threat += minion.scheme
-
-Step 4: Deal Encounter Cards
-   hazardCount = Count of Hazard icons across active side schemes & attachments
-   FOR EACH player: Deal 1 face-down encounter card to player.dealtEncounterCards
-   Deal hazardCount additional face-down cards to First Player
-
-Step 5: Reveal Encounter Cards
-   FOR EACH player (in player order):
-     WHILE player.dealtEncounterCards.length > 0:
-        card = player.dealtEncounterCards.pop()
-        IF card is MINION -> Enter play engaged with player
-        IF card is SIDE_SCHEME -> Enter play with baseThreat * playerCount
-        IF card is TREACHERY / ATTACHMENT -> Execute WHEN_REVEALED declarative effect -> Discard
-
-Step 6: First Player Token & End of Round Upkeep
-   firstPlayerIndex = (firstPlayerIndex + 1) % playerCount
-   FOR EACH player:
-     Discard round-end allies (e.g. Nick Fury 01084)
-     player.exhausted = false
-     player.formChangedThisRound = false
-     player.recoveryUsedThisRound = false
-     Ready all tableau cards & allies
-     Draw cards until player.hand.length == player.printedHandSize
-   roundNumber += 1
-   phase = 'PLAYER_PHASE'
+```mermaid
+flowchart TD
+    S1["Step 1: Main Scheme Threat Placement<br/>(1 threat per player + acceleration)"] --> S23["Step 2 & 3: Interleaved Villain & Minion Activations<br/>(Executed player-by-player in turn order)"]
+    S23 --> S4["Step 4: Deal Encounter Cards<br/>(1 per player + Hazard icons distributed sequentially)"]
+    S4 --> S5["Step 5: Reveal & Resolve Encounter Cards<br/>(In First Player turn order)"]
+    S5 --> S6["Step 6: End of Round Upkeep<br/>(Ready all cards, draw to dynamic hand size, pass First Player token)"]
 ```
 
----
+### Interleaved Step 2 & 3 Activation Algorithm:
+```typescript
+for (const player of state.playersInTurnOrder) {
+  // 1. Villain activates against player
+  if (player.currentForm === 'alter_ego') {
+    executeVillainSchemeAgainstPlayer(state, player);
+  } else {
+    executeVillainAttackAgainstPlayer(state, player);
+  }
 
-## 7. Data-Driven Trigger Dispatcher & Reusable Effect Primitives
-
-In accordance with **ADR-0008**, the rules engine operates with **ZERO hardcoded card codes**. All abilities are declared in `src/data/supplemental/pack/`, enriched onto cards during normalization, and resolved via generic algorithms:
-
-### Algorithm 7.1: Generic `TriggerDispatcher` (`src/engine/triggers/trigger-dispatcher.ts`)
-```
-function DispatchTrigger(state, triggerType, context):
-  1. Scan Target Player's Active Identity for abilities matching triggerType
-     FOR EACH ability IN activeIdentity.abilities:
-       ExecuteEffect(state, ability, context)
-  2. Scan Target Player's In-Play Tableau & Allies (if ready)
-     FOR EACH card IN tableau + allies WHERE NOT card.exhausted:
-       FOR EACH ability IN card.abilities WHERE ability.trigger == triggerType:
-         ExecuteEffect(state, ability, context)
-  3. Scan Target Player's Hand for Interrupt abilities (e.g. TAKE_ATTACK_DAMAGE)
-     FOR EACH card IN hand:
-       IF card has ability with (zone == 'HAND' AND trigger == triggerType):
-         PayCost(card.cost) // e.g. discardSelf
-         ExecuteEffect(state, ability, context)
+  // 2. All minions engaged with player activate against player
+  for (const minion of player.engagedMinions) {
+    if (player.currentForm === 'alter_ego') {
+      executeMinionSchemeAgainstPlayer(state, minion, player);
+    } else {
+      executeMinionAttackAgainstPlayer(state, minion, player);
+    }
+  }
+}
 ```
 
-### Algorithm 7.2: Reusable Effect Primitives (`src/engine/effects/index.ts`)
-* **`DRAW_CARDS`:** `player.deck.shift()` $\times$ `count` $\rightarrow$ `player.hand.push()`
-* **`DEAL_DAMAGE`:** Checks `TOUGH` status $\rightarrow$ reduces target HP $\rightarrow$ checks defeat / victory
-* **`PREVENT_DAMAGE`:** Replaces incoming attack damage with 0
-* **`HEAL_DAMAGE`:** Heals target character up to `maxHealth`
-* **`GENERATE_RESOURCE`:** Produces specified resource type (`wild`, `mental`, `physical`, `energy`)
-* **`REMOVE_THREAT`:** Reduces threat on target scheme (minimum 0)
-* **`ADD_STATUS`:** Adds `TOUGH`, `STUNNED`, or `CONFUSED` to target character
-* **`DISCARD_TOP_DECK_FILTER`:** Discards top $N$ cards and filters matching resources into hand
-* **`FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`:** Executes Villain Attack if Hero, or Surges if Alter-Ego
-* **`NICK_FURY_CHOICE`:** Evaluates dynamic 3-option choice (threat removal, card draw, or 4 damage)
-* **`DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE`:** Discards 1 tableau card, or Surges if none
+### Sequential Hazard Icon Distribution (Step 4):
+Encounter cards from Hazard icons are distributed sequentially in turn order starting from the First Player:
+$$\text{Extra Card } i \rightarrow \text{Player } ((\text{firstPlayerIndex} + i - 1) \pmod{\text{playerCount}}).$$
 
 ---
 
-## 8. Keywords & Status Cards Rules Reference
+## 7. Reusable Effect Primitives Reference (`src/engine/effects/index.ts`)
 
-| Keyword / Status | Exact RR v1.8 Rule Behavior |
-| :--- | :--- |
-| **Tough (Status)** | Replaces taking any amount of damage by discarding the Tough card (0 damage dealt). |
-| **Stunned (Status)** | Replaces the character's next attack by discarding the Stunned card (0 damage dealt). |
-| **Confused (Status)** | Replaces the character's next thwart or scheme by discarding the Confused card (0 threat modified). |
-| **Guard (Keyword)** | While engaged with a player, that player cannot target the Villain with basic attacks or attack events. |
-| **Patrol (Keyword)** | While engaged with a player, that player cannot remove threat from the Main Scheme. |
-| **Crisis (Icon)** | While active on any Side Scheme, threat cannot be removed from the Main Scheme by any player. |
-| **Hazard (Icon)** | During Step 4 of the Villain Phase, deals +1 additional encounter card to the first player per Hazard icon. |
-| **Acceleration (Icon/Token)** | During Step 1 of the Villain Phase, places +1 additional threat on the Main Scheme per icon/token. |
-| **Overkill (Keyword)** | Excess damage beyond a minion's/ally's remaining HP is dealt to the enemy controller/Hero. |
-| **Piercing (Keyword)** | Discards a Tough status card from the target *before* damage is calculated and dealt. |
-| **Retaliate X (Keyword)** | After this character is attacked and takes damage, deal X damage to the attacking character. |
-| **Surge (Keyword)** | After resolving this encounter card, the player draws and reveals an additional encounter card. |
-| **Permanent (Keyword)** | This card cannot leave play and cannot be discarded by card effects. |
-
----
-
-## 9. Mapping to MCD Codebase
-
-* 📁 **Models & Enums:** [`src/engine/models/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/models/)
-* 📁 **Supplemental Pack Data:** [`src/data/supplemental/pack/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/pack/)
-* 📁 **Legality Checker:** [`src/engine/pipeline/legality-checker.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts)
-* 📁 **Action Dispatcher:** [`src/engine/pipeline/action-dispatcher.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/action-dispatcher.ts)
-* 📁 **Villain Phase Automation:** [`src/engine/pipeline/villain-phase.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/villain-phase.ts)
-* 📁 **Effect Primitives:** [`src/engine/effects/index.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts)
-* 📁 **Trigger Dispatcher:** [`src/engine/triggers/trigger-dispatcher.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/triggers/trigger-dispatcher.ts)
-* 📁 **Simulation Runner:** [`src/engine/simulation/match-simulator.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/simulation/match-simulator.ts)
-* 📁 **Automated Test Suites:** [`tests/engine/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/)
+| Primitive Name | Target Selector | Description |
+| :--- | :--- | :--- |
+| `DEAL_DAMAGE` | `CHOSEN_ENEMY` \| `ALL_ENEMIES` \| `ALL_HEROES` | Damage resolution with Tough card discard, armor counters, and overkill. |
+| `REMOVE_THREAT` | `MAIN_SCHEME` \| `CHOSEN_SCHEME` | Threat removal enforcing Crisis keyword restrictions. |
+| `DRAW_CARDS` | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand. |
+| `MODIFY_HAND_SIZE` | `SELF_IDENTITY` | Dynamic aura modifying hand size based on in-play tableau upgrades. |
+| `PLAYER_CHOICE` | `SELF_IDENTITY` | Renders Pop-Art decision prompt modal (*Nick Fury* `01084` choose 1 of 3, *Hydra Bomber*). |
+| `SPAWN_NEMESIS` | `ACTIVE_PLAYER` | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (*Shadow of the Past* `01190`). |
+| `VILLAIN_SCHEMES` | `ACTIVE_PLAYER` | Immediate villain scheme activation against player (*Advance* `01186`). |
+| `VILLAIN_ATTACKS` | `ACTIVE_PLAYER` | Immediate villain attack activation against player (*Assault* `01187`). |
+| `ALLY_LIMIT_BONUS` | `SELF_IDENTITY` \| `ALL_PLAYERS` | Increases maximum ally limit by $N$ (*The Triskelion* `01073`). |

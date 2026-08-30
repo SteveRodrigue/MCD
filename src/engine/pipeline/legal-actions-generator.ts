@@ -281,7 +281,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           targetCardInstance: ally,
         });
 
-        // Ally Thwart
+        // Ally Thwart (Main Scheme)
         if ((state.mainScheme?.threat || 0) > 0) {
           boardActions.push({
             id: `action_ally_thwart_${ally.instanceId}`,
@@ -298,6 +298,28 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             iconType: 'thwart',
             targetCardInstance: ally,
           });
+        }
+
+        // Ally Thwart (Side Schemes)
+        for (const sideScheme of state.sideSchemes || []) {
+          if (sideScheme.threat > 0) {
+            boardActions.push({
+              id: `action_ally_thwart_side_${ally.instanceId}_${sideScheme.instanceId}`,
+              category: 'board',
+              headline: `Ally Thwart (${ally.card.name} ➔ ${sideScheme.card.name})`,
+              subtext: `Exhaust ${ally.card.name} to remove ${allyStats.thwart} threat from ${sideScheme.card.name}`,
+              action: {
+                type: 'ALLY_THWART',
+                playerId: player.id,
+                allyInstanceId: ally.instanceId,
+                targetType: 'side_scheme',
+                targetInstanceId: sideScheme.instanceId,
+              },
+              badge: `${allyStats.thwart} THW`,
+              iconType: 'thwart',
+              targetCardInstance: ally,
+            });
+          }
         }
       }
     }

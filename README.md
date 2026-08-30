@@ -106,20 +106,26 @@ MCD/
 ├── .vscode/              # Recommended IDE extensions and workspace settings
 ├── docs/                 # Architectural documentation and Decision Records
 │   ├── decisions/        # Architecture Decision Records (ADRs & Index)
-│   └── ...               # Roadmaps, rules specs, coding standards
+│   ├── guidelines/       # Hero Creation Guide & Scenario Plugin Creation Guide
+│   ├── specifications/   # Modular Supplemental Data Schema Specification Suite
+│   └── ambiguities/      # Isolated card ambiguity reports & tracking issues
 ├── references/           # Official rulebooks and JSON schema references
 ├── src/
 │   ├── assets/           # Fonts, Ben-Day dot textures, comic style assets
-│   ├── data/             # MarvelsDB JSON importer and card metadata schemas
+│   ├── data/             # Upstream importer & declarative supplemental packs
+│   │   ├── supplemental/ # Enriched executable card abilities & Zod validation schema
+│   │   └── importer/     # Normalized Card Catalog loader
 │   ├── engine/           # 100% Headless Rules Engine (State tree, Triggers, Phases)
+│   │   ├── effects/      # Reusable composable effect primitives
 │   │   ├── models/       # Core TypeScript interfaces (Card, Hero, Villain, Effect)
-│   │   ├── pipeline/     # Action pipeline & trigger resolution machine
-│   │   └── state/        # Immutable GameState and state reducers
+│   │   ├── pipeline/     # Action pipeline, Legality checker & Villain phase
+│   │   ├── scenario/     # Modular Scenario Plugin Architecture (Official & Fan-Made)
+│   │   └── state/        # Immutable GameState, Reducers & Setup
 │   └── ui/               # React UI & 60s Comic Pop-Art presentation layer
 │       ├── components/   # Card components, Tabletop zones, Modal dialogs
 │       ├── context/      # Persistent UI settings and Dev Mode state
-│       └── overlays/     # Onomatopoeia popups (POW!, BAM!, THWIP!)
-└── tests/                # Automated Vitest test suites (TDD rules validation)
+│       └── overlays/     # Decision Prompt modals and Onomatopoeia popups
+└── tests/                # Automated Vitest test suites (TDD rules & schema validation)
 ```
 
 ---

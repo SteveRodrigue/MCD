@@ -37,9 +37,19 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 
 ### Golden Rules:
 1. **`src/engine/` must be 100% headless.** You should be able to run the entire game from a Node.js CLI script or a Vitest test runner without loading a browser.
-2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be written into `src/data/overrides/` or `src/data/supplemental/`.
-3. **Official Rules Authority is Rules Reference v1.8.** All game mechanics, timing trigger hierarchies, keyword resolutions, and official card errata must strictly adhere to the official FFG **[Rules Reference v1.8](references/mc_rulesreference_v18_compressed.pdf)**. **The Rules Reference v1.8 strictly supersedes and corrects the Learn to Play Guide in all cases.**
-4. **Algorithmic Rules Reference Maintenance:** All timing pipelines, state machine transitions, and keyword reducers are formally specified in **[docs/algorithmic_rules_reference.md](docs/algorithmic_rules_reference.md)**. Whenever engine rules or card mechanics are added or modified, developers must ensure `docs/algorithmic_rules_reference.md` is updated in lockstep to keep the algorithmic specification 100% synchronized.
+2. **`data/upstream/` is strictly READ-ONLY.** MCD application code, importers, and scripts must NEVER write to, modify, or delete raw upstream files. Any corrections, errata, or engine hooks must be declared in `src/data/supplemental/`.
+
+3. **Dependency Direction (Strict Invariant):**
+```
+src/ui/ ──> src/engine/ ──> src/data/ (supplemental + importer) ──> data/upstream/ (read-only)
+```
+* `src/data/` has **ZERO** dependencies on `src/engine/` or `src/ui/`.
+* `src/engine/` has **ZERO** dependencies on React, DOM, or `src/ui/`.
+* `src/ui/` imports state and actions from `src/engine/` and never mutates state directly.
+
+4. **Official Rules Fidelity & Errata Enforcement:**
+* **The Golden Rule:** Card text overrides general rules; when card text is ambiguous, RR v1.8 governs.
+* **Official Errata Enforcement:** Any card with an official FFG errata in RR v1.8 must have its corrected text and behavior declared via `errata: "..."` in `src/data/supplemental/`. This automatically renders an **[ERRATA]** indicator in the UI. Whenever engine rules or card mechanics are added or modified, developers must ensure `docs/algorithmic_rules_reference.md` is updated in lockstep to keep the algorithmic specification 100% synchronized.
 5. **Documentation-First Rule Search:** Before implementing any game rule, action, or card interaction, developers and AI agents must thoroughly search and cross-reference the official rulebooks for exact keyword definitions, edge cases, and rulings. Never rely on generic assumptions or mechanics from other card games.
 6. **Proactive User Consultation:** Whenever a rule, card interaction, or design choice has ambiguity or multiple possible interpretations, stop and consult the user for clarification before making assumptions.
 

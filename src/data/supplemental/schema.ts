@@ -163,9 +163,12 @@ export const AbilityCostSchema = z.object({
   resources: z.array(ResourceTypeSchema).optional(),
   resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
   damageHero: z.number().optional(),
+  removeCounter: z.number().optional(),
+  spendCounter: z.number().optional(),
   discardCard: z
     .object({
-      count: z.number(),
+      count: z.number().optional(),
+      maxCount: z.number().optional(),
       from: z.enum(['HAND', 'DECK', 'PLAY']),
     })
     .optional(),

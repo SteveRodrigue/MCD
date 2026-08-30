@@ -70,6 +70,13 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
 * Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
+* **MANDATORY SPECIFICATION CONSULTATION:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../docs/guidelines/):
+  * `01_metadata_and_audit.md` (Metadata & Audit standards)
+  * `02_timings_and_triggers.md` (Timings & Triggers matrix)
+  * `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
+  * `04_effects_combat_threat.md` / `05_effects_zones_cards.md` / `06_effects_status_economy.md` / `07_effects_villain_nemesis.md` (Effect primitives)
+  * `08_dynamic_formulas.md` (Formulas & Math tokens)
+  * `09_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
 * Before drafting schema, rigorously answer the **8-Point Socratic Q&A Checklist**:
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
@@ -84,7 +91,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
-* **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../docs/specifications/supplemental_data_schema.md) and [Hero Creation Guide](../../docs/guidelines/hero_creation_guide.md).
+* **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../docs/guidelines/scenario_creation_guide.md).
+* **DEDUCTIVE SCHEMA MODELING:** If a card's mechanics match a documented schema in `docs/specifications/supplemental/`, translate the card strictly using that documented structure. If no documented schema exists or if it is marked 🟡 `ROADMAP`, the card requires specification refinement or engine addition.
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 * **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   * **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
@@ -143,21 +151,24 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   * Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
 * **The Golden Rule (RR v1.8 p. 2):** If the printed card text explicitly contradicts a general rule in the Rules Reference, the card text takes precedence.
 
-### Step 5: Bidirectional Round-Trip Validation Feedback Loop & Circuit-Breaker
+### Step 5: Bidirectional Round-Trip Validation & Specification-Tied Confidence
 * **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, `effect`, and `params`) and decompile it into natural card text.
   * **Strict Rule:** Do **NOT** read `comment` or `mechanicSteps` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
 * **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
   * Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   * Can the schema express every clause of the printed card text without semantic loss?
   * If the decompiled text is missing key elements answered in the 8-Point Q&A Checklist (e.g. search zones or shuffle rules), **iterate and refine the schema**.
-* **Pessimistic Engine Support Rubric (Guilty Until Proven Innocent by Code & Tests):**
-  * **Core Principle:** In early-stage development, the engine is assumed **incapable** of supporting any non-trivial mechanic unless explicit TypeScript code and verified trigger dispatch paths are audited line-by-line.
-  * **100% (Vanilla or Tested Parity):** Pure vanilla card (zero rules text) or mathematically exact 1:1 behavioral deconstruction with active TypeScript handler and passing unit tests.
-  * **95–98% (Fully Verified Support):** Complete semantic equivalence; all clauses, costs, targets, zones, and side-effects fully modeled, with inspected code in `src/engine/effects/` and verified pipeline dispatch in `src/engine/pipeline/`.
-  * **< 95% (🚨 Hard Rejection / Pessimistic Default):**
+* **Specification & Implementation Maturity Rubric:**
+  * **🟢 100% (Vanilla Parity):** Pure vanilla card (zero rules text) marked `noSupplementalNeeded: true`.
+  * **🟢 95–98% (Fully Implemented & Verified Parity):**
+    * Every required timing, trigger, cost, and effect primitive is marked 🟢 `IMPLEMENTED (v1.0)` in `docs/specifications/supplemental/`.
+    * Inspected source code exists in `src/engine/effects/` and verified trigger dispatch paths exist in `src/engine/pipeline/`.
+    * Regression unit tests in `tests/engine/` pass 100% and schema test `tests/data/supplemental-schema.test.ts` passes.
+  * **🟡 < 95% (🚨 Hard Rejection / Roadmap / Specification Gap):**
+    * If any required effect or parameter is marked 🟡 `ROADMAP / SPECIFIED` or is not yet defined in `docs/specifications/supplemental/`.
     * If the trigger dispatch window is unverified or missing for that card type (e.g. `WHEN_REVEALED` on Minions, Attachments, or Side Schemes).
-    * If any secondary clause is missing from code (e.g. deck shuffling after search, discarding attachments on defeat, surge fallback).
-    * If interactive player choice is required but no UI prompt state machine exists.
+    * If the underlying engine code has gaps, missing clauses, or requires UI state machines that do not yet exist.
+    * **Action on < 95%:** Trigger Circuit-Breaker, strip `abilities: [...]`, set confidence (70–80%), and log/update `docs/ambiguities/{pack}_{code}_{slug}.md` linking the relevant GitHub Issue or proposing the specification addition.
     * If the effect primitive is a stub, placeholder, or only exists as a type name without execution logic.
   * **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 * **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
@@ -200,7 +211,10 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
    * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
    * If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
 2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
-3. **Document in Specs:** Add an entry to `docs/specs/card-mechanics-breakdown.md`.
+3. **Synchronous Specification Feedback Loop:**
+   * Whenever an engine primitive, trigger, or parameter is implemented or refactored:
+     1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
+     2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
 6. **Verify:** Run test suite: `npm test; npm run typecheck; npm run build`.
@@ -208,6 +222,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ---
 
 ## 📚 Related Documentation & Authoritative Standards
-* [Supplemental Data Schema Specification](../../docs/specifications/supplemental_data_schema.md)
+* [Supplemental Data Schema Specification (Modular Hub)](../../docs/specifications/supplemental/README.md)
 * [Hero & Identity Creation Guide](../../docs/guidelines/hero_creation_guide.md)
 * [Scenario Creation Guide](../../docs/guidelines/scenario_creation_guide.md)
+

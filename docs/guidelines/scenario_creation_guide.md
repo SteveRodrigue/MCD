@@ -114,3 +114,11 @@ import { customPlugin } from './plugin';
 
 ScenarioRegistry.register(customPlugin);
 ```
+
+---
+
+## 📚 Related References
+* [Supplemental Data Schema Specification](../specifications/supplemental_data_schema.md)
+* [Hero & Identity Creation Guide](./hero_creation_guide.md)
+* [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
+

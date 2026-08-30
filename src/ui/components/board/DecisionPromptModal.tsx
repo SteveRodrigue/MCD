@@ -75,7 +75,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   className={`flex flex-col items-center gap-1.5 transition-all ${
                     rc.isSelectable
                       ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
-                      : 'opacity-40 filter grayscale pointer-events-none'
+                      : 'filter grayscale brightness-90 contrast-95 pointer-events-none ring-2 ring-slate-400/80 rounded-xl p-0.5'
                   }`}
                 >
                   <CardView card={rc.card} size="sm" enableHoverZoom={true} />

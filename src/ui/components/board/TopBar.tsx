@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Compass } from 'lucide-react';
+import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Compass, Newspaper } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { OptionsMenu } from './OptionsMenu';
@@ -7,19 +7,25 @@ import { OptionsMenu } from './OptionsMenu';
 interface TopBarProps {
   gameState: GameState;
   activeSeatIndex: number;
+  legalActionCount?: number;
   onSelectSeat: (index: number) => void;
   onToggleLog: () => void;
   isLogOpen: boolean;
   onReset: () => void;
+  onOpenNewspaper?: () => void;
+  onHoverNewspaper?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   gameState,
   activeSeatIndex,
+  legalActionCount = 0,
   onSelectSeat,
   onToggleLog,
   isLogOpen,
   onReset,
+  onOpenNewspaper,
+  onHoverNewspaper,
 }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const { devMode, toggleDevMode } = useGameSettings();
@@ -89,8 +95,30 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         )}
 
-        {/* Right: Dev Mode, Combat Log, Options, Reset */}
+        {/* Right: Daily Bugle Newspaper, Dev Mode, Combat Log, Options, Reset */}
         <div className="flex items-center gap-2.5">
+          {/* 1960s Daily Bugle Newspaper Action Sheet Button */}
+          {onOpenNewspaper && (
+            <button
+              onClick={onOpenNewspaper}
+              onMouseEnter={onHoverNewspaper}
+              className="px-2.5 py-1.5 font-comic text-xs bg-[#fbf7ee] hover:bg-amber-200 text-slate-900 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
+              title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Hover or Click)"
+            >
+              <Newspaper className="w-4 h-4 text-slate-900" />
+              <span className="hidden md:inline font-serif font-black uppercase tracking-tight">DAILY BUGLE</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold border border-slate-900 ${
+                  legalActionCount > 0
+                    ? 'bg-comic-red text-white'
+                    : 'bg-slate-300 text-slate-700'
+                }`}
+              >
+                {legalActionCount}
+              </span>
+            </button>
+          )}
+
           {/* Visual Dev Mode Indicator Badge (In Menu Bar) */}
           <button
             onClick={toggleDevMode}

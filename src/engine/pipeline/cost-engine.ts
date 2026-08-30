@@ -1,4 +1,5 @@
-import { GameState, PlayerState, CardInstance, CardAbility, AlterEgoCard, HeroCard } from '../models';
+import { GameState, PlayerState, CardInstance, CardAbility } from '../models';
+import { getEffectiveMaxHealth } from './stat-calculator';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -22,8 +23,7 @@ export function canPayAbilityCost(
   // 1. Cost Check / Pre-Condition Validation
   if (cost.costCheck) {
     if (cost.costCheck === 'CURRENT_HEALTH < MAX_HEALTH') {
-      const activeCard = player.activeFormCard as AlterEgoCard | HeroCard;
-      const maxHp = activeCard.health || player.maxHealth || 10;
+      const maxHp = getEffectiveMaxHealth(player, _state);
       if (player.health >= maxHp) {
         return { allowed: false, reason: 'Identity is already at maximum health.' };
       }

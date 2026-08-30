@@ -129,6 +129,14 @@ export interface DecisionPromptOption {
   params?: Record<string, unknown>;
 }
 
+export interface RevealedCardDisplay {
+  instanceId: string;
+  card: NormalizedCard;
+  isSelectable: boolean;
+  selectableOptionId?: string;
+  dimmedReason?: string;
+}
+
 export interface PendingDecisionPrompt {
   promptId: string;
   playerId: string;
@@ -136,6 +144,7 @@ export interface PendingDecisionPrompt {
   description: string;
   sourceCardName: string;
   options: DecisionPromptOption[];
+  revealedCards?: RevealedCardDisplay[];
 }
 
 export interface GameState {

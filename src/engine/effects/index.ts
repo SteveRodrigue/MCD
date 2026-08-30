@@ -501,13 +501,25 @@ export function executeEffect(
         },
       });
 
+      const revealedCards = scryedCards.map((c) => {
+        const isMatch = (c.card.traits || []).includes(trait);
+        return {
+          instanceId: c.instanceId,
+          card: c.card,
+          isSelectable: isMatch,
+          selectableOptionId: isMatch ? `take_${c.instanceId}` : undefined,
+          dimmedReason: isMatch ? undefined : `Non-${trait}`,
+        };
+      });
+
       state.pendingDecisionPrompt = {
         promptId: `futurist_${Date.now()}`,
         playerId: player.id,
         title: 'FUTURIST (Tony Stark)',
-        description: `Revealed top ${scryedCards.length} cards: [${scryedCards.map((c) => c.card.name).join(', ')}]. Choose a ${trait} card to add to your hand, or choose to discard all:`,
+        description: `Revealed top ${scryedCards.length} cards from your deck. Select a ${trait} card to add to your hand, or choose to discard all:`,
         sourceCardName: 'Tony Stark',
         options,
+        revealedCards,
       };
 
       state.log.push({

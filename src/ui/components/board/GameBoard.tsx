@@ -143,6 +143,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                     {/* Hero Play Area */}
                     <HeroZone
                       player={player}
+                      gameState={gameState}
                       seatNumber={idx + 1}
                       isFocused={isFocused}
                       isMultiHero={true}
@@ -175,6 +176,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           <div className="max-w-7xl w-full mx-auto px-4 md:px-6 space-y-6">
             <HeroZone
               player={singlePlayer}
+              gameState={gameState}
               seatNumber={1}
               isFocused={true}
               isMultiHero={false}

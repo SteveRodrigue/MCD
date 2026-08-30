@@ -6,7 +6,9 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
   getEffectiveHandSize,
+  getEffectiveAllyStats,
 } from '../../../engine/pipeline/stat-calculator';
+import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
 
 interface HeroZoneProps {
   player: PlayerState;
@@ -28,6 +30,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   onDispatchAction,
 }) => {
   const isHero = player.currentForm === 'hero';
+  const isPlayerTurn = gameState
+    ? gameState.phase === 'PLAYER_PHASE' && gameState.players[gameState.activePlayerIndex]?.id === player.id
+    : true;
   const heroCard = player.hero as HeroCard;
   const alterEgoCard = player.alterEgo as AlterEgoCard;
 
@@ -375,11 +380,75 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
           {player.allies.length > 0 ? (
             <div className="flex flex-wrap gap-3 items-center pt-1">
-              {player.allies.map((ally) => (
-                <div key={ally.instanceId} className="flex flex-col items-center gap-1">
-                  <CardView card={ally.card} instance={ally} size="sm" enableHoverZoom={true} />
-                </div>
-              ))}
+              {player.allies.map((ally) => {
+                const allyStats = gameState ? getEffectiveAllyStats(gameState, ally) : { attack: (ally.card as any).attack ?? 1, thwart: (ally.card as any).thwart ?? 1 };
+                const canAct = isPlayerTurn && !ally.exhausted;
+                const canThw = canAct && ((gameState?.mainScheme?.threat || 0) > 0 || (gameState?.sideSchemes || []).some(s => s.threat > 0));
+
+                return (
+                  <div key={ally.instanceId} className="flex flex-col items-center gap-1">
+                    <CardView
+                      card={ally.card}
+                      instance={ally}
+                      size="sm"
+                      enableHoverZoom={true}
+                      onClick={() => {
+                        if (canAct && onDispatchAction) {
+                          // Default action: Thwart if threat > 0, else attack villain
+                          if (canThw) {
+                            onDispatchAction({
+                              type: 'ALLY_THWART',
+                              playerId: player.id,
+                              allyInstanceId: ally.instanceId,
+                              targetType: 'main_scheme',
+                            });
+                          } else {
+                            onDispatchAction({
+                              type: 'ALLY_ATTACK',
+                              playerId: player.id,
+                              allyInstanceId: ally.instanceId,
+                              targetType: 'villain',
+                            });
+                          }
+                        }
+                      }}
+                    />
+                    {/* Ally Action Mini-Console */}
+                    <div className="flex items-center gap-1 w-full justify-center">
+                      <button
+                        onClick={() =>
+                          onDispatchAction?.({
+                            type: 'ALLY_ATTACK',
+                            playerId: player.id,
+                            allyInstanceId: ally.instanceId,
+                            targetType: 'villain',
+                          })
+                        }
+                        disabled={!canAct}
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        title={canAct ? `Attack villain for ${allyStats.attack} damage` : 'Ally exhausted'}
+                      >
+                        ⚔️ {allyStats.attack}
+                      </button>
+                      <button
+                        onClick={() =>
+                          onDispatchAction?.({
+                            type: 'ALLY_THWART',
+                            playerId: player.id,
+                            allyInstanceId: ally.instanceId,
+                            targetType: 'main_scheme',
+                          })
+                        }
+                        disabled={!canThw}
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        title={canThw ? `Thwart main scheme for ${allyStats.thwart} threat` : 'No threat on schemes or ally exhausted'}
+                      >
+                        🛡️ {allyStats.thwart}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="h-36 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-xs text-slate-400 font-semibold bg-white/50">
@@ -399,11 +468,64 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
           {player.tableau.length > 0 ? (
             <div className="flex flex-wrap gap-3 items-center pt-1">
-              {player.tableau.map((cardInst) => (
-                <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                  <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
-                </div>
-              ))}
+              {player.tableau.map((cardInst) => {
+                const abilities = cardInst.card.enrichment?.abilities || [];
+                const activeAbility = abilities.find(
+                  (ab) =>
+                    ab.timing === 'ACTION' ||
+                    (isHero && ab.timing === 'HERO_ACTION') ||
+                    (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
+                );
+                const canUse =
+                  isPlayerTurn &&
+                  activeAbility &&
+                  gameState &&
+                  canPayAbilityCost(gameState, player, activeAbility, cardInst, {}).allowed;
+
+                return (
+                  <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
+                    <CardView
+                      card={cardInst.card}
+                      instance={cardInst}
+                      size="sm"
+                      enableHoverZoom={true}
+                      onClick={() => {
+                        if (activeAbility && canUse && onDispatchAction) {
+                          onDispatchAction({
+                            type: 'USE_CARD_ABILITY',
+                            playerId: player.id,
+                            cardInstanceId: cardInst.instanceId,
+                            abilityId: activeAbility.id,
+                          });
+                        }
+                      }}
+                    />
+                    {activeAbility && (
+                      <button
+                        onClick={() =>
+                          onDispatchAction?.({
+                            type: 'USE_CARD_ABILITY',
+                            playerId: player.id,
+                            cardInstanceId: cardInst.instanceId,
+                            abilityId: activeAbility.id,
+                          })
+                        }
+                        disabled={!canUse}
+                        className="w-full font-comic text-[10px] bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        title={
+                          canUse
+                            ? `Trigger ${activeAbility.id}`
+                            : cardInst.exhausted
+                              ? 'Card is exhausted'
+                              : 'Cannot trigger ability'
+                        }
+                      >
+                        ⚡ USE
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="h-36 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-xs text-slate-400 font-semibold bg-white/50">

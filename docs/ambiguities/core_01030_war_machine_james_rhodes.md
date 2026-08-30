@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: War Machine (James Rhodes) (`01030`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01030](https://marvelcdb.com/card/01030)
+* **GitHub Issue:** [#11 - Cost Arrow War Machine](https://github.com/SteveRodrigue/MCD/issues/11)
 * **Official Printed Text:** `Action: Exhaust War Machine and deal 2 damage to him → deal 1 damage to each enemy.`
 
 ---

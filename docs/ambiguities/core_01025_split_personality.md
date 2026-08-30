@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Split Personality (`01025`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01025](https://marvelcdb.com/card/01025)
+* **GitHub Issue:** [#7 - Decompose](https://github.com/SteveRodrigue/MCD/issues/7)
 * **Official Printed Text:** `Action: Change your form (flip your identity card). Then, draw up to your printed hand size.`
 
 ---

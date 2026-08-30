@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Black Panther (`01040a`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01040a](https://marvelcdb.com/card/01040a)
+* **GitHub Issue:** [#15 - Skill is mixing hero and alter-ego form.](https://github.com/SteveRodrigue/MCD/issues/15)
 * **Official Printed Text:** `Retaliate 1. (After this character is attacked, deal 1 damage to the attacking character.)`
 
 ---

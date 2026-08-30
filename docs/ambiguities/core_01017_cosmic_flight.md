@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Cosmic Flight (`01017`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01017](https://marvelcdb.com/card/01017)
+* **GitHub Issue:** [#4 - Traits: Mouseover](https://github.com/SteveRodrigue/MCD/issues/4)
 * **Official Printed Text:** `Captain Marvel gains the [[Aerial]] trait.
 Hero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage.`
 

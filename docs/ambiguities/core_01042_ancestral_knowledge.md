@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Ancestral Knowledge (`01042`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01042](https://marvelcdb.com/card/01042)
+* **GitHub Issue:** [#17 - Select from...](https://github.com/SteveRodrigue/MCD/issues/17)
 * **Official Printed Text:** `Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck.`
 
 ---

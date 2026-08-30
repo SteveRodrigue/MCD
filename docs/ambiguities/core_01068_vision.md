@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Vision (`01068`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01068](https://marvelcdb.com/card/01068)
+* **GitHub Issue:** [#24 - End Of Phase](https://github.com/SteveRodrigue/MCD/issues/24)
 * **Official Printed Text:** `Action: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)`
 
 ---

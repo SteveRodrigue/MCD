@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: The Power of Justice (`01062`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01062](https://marvelcdb.com/card/01062)
+* **GitHub Issue:** [#22 - Generic resource doubler effect](https://github.com/SteveRodrigue/MCD/issues/22)
 * **Official Printed Text:** `Max 2 per deck.
 Double the number of resources this card generates while paying for a Justice (yellow) card.`
 

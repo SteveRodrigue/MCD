@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Superhuman Strength (`01028`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01028](https://marvelcdb.com/card/01028)
+* **GitHub Issue:** [#8 - Cost Arrow Icon](https://github.com/SteveRodrigue/MCD/issues/8)
 * **Official Printed Text:** `She-Hulk gets +2 ATK.
 Forced Response: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy.`
 

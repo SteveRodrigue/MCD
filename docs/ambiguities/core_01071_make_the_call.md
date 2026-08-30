@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Make the Call (`01071`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01071](https://marvelcdb.com/card/01071)
+* **GitHub Issue:** [#25 - Play card from discard](https://github.com/SteveRodrigue/MCD/issues/25)
 * **Official Printed Text:** `Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control.`
 
 ---

@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Vibranium Suit (`01049`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01049](https://marvelcdb.com/card/01049)
+* **GitHub Issue:** [#20 - Special not implemented.](https://github.com/SteveRodrigue/MCD/issues/20)
 * **Official Printed Text:** `Special (attack): Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).
 (Play the "Wakanda Forever!" event to use this ability.)`
 

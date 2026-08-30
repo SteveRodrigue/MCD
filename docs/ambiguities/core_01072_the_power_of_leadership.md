@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: The Power of Leadership (`01072`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01072](https://marvelcdb.com/card/01072)
+* **GitHub Issue:** [#22 - Generic resource doubler effect](https://github.com/SteveRodrigue/MCD/issues/22)
 * **Official Printed Text:** `Max 2 per deck.
 Double the number of resources this card generates while paying for a Leadership (blue) card.`
 

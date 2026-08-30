@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Combat Training (`01057`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01057](https://marvelcdb.com/card/01057)
+* **GitHub Issue:** [#23 - Can be played on any player tableau](https://github.com/SteveRodrigue/MCD/issues/23)
 * **Official Printed Text:** `Play under any player's control. Max 1 per player.
 Your hero gets +1 ATK.`
 

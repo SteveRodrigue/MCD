@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Wakanda Forever! (`01043a`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01043a](https://marvelcdb.com/card/01043a)
+* **GitHub Issue:** [#18 - Special not implemented](https://github.com/SteveRodrigue/MCD/issues/18)
 * **Official Printed Text:** `Hero Action: Resolve the "Special" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)`
 
 ---

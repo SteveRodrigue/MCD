@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Energy Channel (`01018`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01018](https://marvelcdb.com/card/01018)
+* **GitHub Issue:** [#3 - Card: Max 1 per player](https://github.com/SteveRodrigue/MCD/issues/3)
 * **Official Printed Text:** `Max 1 per player.
 Action: Spend X [energy] resources → put X energy counters here.
 Hero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here.`

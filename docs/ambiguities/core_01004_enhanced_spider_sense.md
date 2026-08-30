@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Enhanced Spider-Sense (`01004`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01004](https://marvelcdb.com/card/01004)
+* **GitHub Issue:** [#1 - CANCEL_WHEN_REVEALED](https://github.com/SteveRodrigue/MCD/issues/1)
 * **Official Printed Text:** `Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its "When Revealed" effects.`
 
 ---

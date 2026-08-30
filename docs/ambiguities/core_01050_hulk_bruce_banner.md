@@ -10,6 +10,7 @@ date_logged: "2026-08-28T12:46"
 # Card Ambiguity Report: Hulk (Bruce Banner) (`01050`)
 
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01050](https://marvelcdb.com/card/01050)
+* **GitHub Issue:** [#21 - Conditional choice effect](https://github.com/SteveRodrigue/MCD/issues/21)
 * **Official Printed Text:** `Forced Response: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:
 [physical] - Deal 2 damage to an enemy.
 [energy] - Deal 1 damage to each character.

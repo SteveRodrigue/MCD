@@ -462,6 +462,53 @@ export function executeEffect(
       return { state, success: true, onomatopoeia };
     }
 
+    case 'SCRY_AND_SELECT_TRAIT': {
+      // Tony Stark Futurist: Look at top lookCount (3) cards of deck, add takeCount (1) with trait ('Tech') to hand, discard rest.
+      const lookCount = (ability.params?.lookCount as number) || 3;
+      const trait = (ability.params?.trait as string) || 'Tech';
+      const takeCount = (ability.params?.takeCount as number) || 1;
+
+      const scryedCards: CardInstance[] = [];
+      for (let i = 0; i < lookCount; i++) {
+        const c = player.deck.shift();
+        if (c) scryedCards.push(c);
+      }
+
+      const takenCards: CardInstance[] = [];
+      const discardedCards: CardInstance[] = [];
+
+      for (let i = 0; i < scryedCards.length; i++) {
+        const cardInst = scryedCards[i];
+        const isMatch = (cardInst.card.traits || []).includes(trait);
+        if (isMatch && takenCards.length < takeCount) {
+          takenCards.push(cardInst);
+          player.hand.push(cardInst);
+        } else {
+          discardedCards.push(cardInst);
+          player.discard.push(cardInst);
+        }
+      }
+
+      const onomatopoeia = takenCards.length > 0 ? `FUTURIST! +${takenCards[0].card.name.toUpperCase()}` : 'FUTURIST (NO TECH FOUND)';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        actor: { name: player.name, type: player.currentForm },
+        key: 'card.effect.futurist',
+        params: {
+          player: player.name,
+          taken: takenCards.map((c) => c.card.name).join(', ') || 'None',
+          discardedCount: discardedCards.length,
+        },
+        onomatopoeia,
+      });
+
+      return { state, success: true, onomatopoeia };
+    }
+
     case 'HEAL_DAMAGE_WITH_SURGE': {
       // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
       const amount = (ability.params?.amount as number) || 4;

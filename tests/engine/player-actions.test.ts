@@ -674,6 +674,39 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res.state.players[0].hand.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(true);
         expect(res.state.players[0].deck.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(false);
       });
+
+      it('executes Tony Stark Futurist ability: scrys top 3 cards, takes 1 Tech upgrade, discards others', () => {
+        const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
+        gameState.players[0].alterEgo = ironManIdentity.alterEgo;
+        gameState.players[0].hero = ironManIdentity.hero;
+        gameState.players[0].activeFormCard = ironManIdentity.alterEgo;
+        gameState.players[0].currentForm = 'alter_ego';
+
+        const player = gameState.players[0];
+        // Prepare deck with 1 Tech card (Arc Reactor 01035) and 2 non-Tech cards
+        const arcReactor = createCardInstance(catalog.getCard('01035')!);
+        const nonTech1 = createCardInstance(catalog.getCard('01005')!);
+        const nonTech2 = createCardInstance(catalog.getCard('01005')!);
+        player.deck = [arcReactor, nonTech1, nonTech2, ...player.deck];
+
+        const initialHandLength = player.hand.length;
+        const initialDiscardLength = player.discard.length;
+
+        const res = dispatchAction(gameState, {
+          type: 'USE_CARD_ABILITY',
+          playerId: 'p1',
+          cardInstanceId: ironManIdentity.alterEgo.code,
+          abilityId: 'futurist',
+        });
+
+        expect(res.result.success).toBe(true);
+        expect(res.result.onomatopoeia).toContain('FUTURIST');
+        // Arc Reactor should now be in hand
+        expect(res.state.players[0].hand.length).toBe(initialHandLength + 1);
+        expect(res.state.players[0].hand.some((c) => c.card.code === '01035')).toBe(true);
+        // The other 2 cards should be discarded
+        expect(res.state.players[0].discard.length).toBe(initialDiscardLength + 2);
+      });
     });
   });
 });

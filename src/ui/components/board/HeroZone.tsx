@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles, RefreshCw, Swords, Target } from 'lucide-react';
 import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { IdentityActionModal } from './IdentityActionModal';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -29,6 +30,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   onFocus,
   onDispatchAction,
 }) => {
+  const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
+
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState
     ? gameState.phase === 'PLAYER_PHASE' && gameState.players[gameState.activePlayerIndex]?.id === player.id
@@ -269,6 +272,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               size="sm"
               showTokens={false}
               enableHoverZoom={true}
+              onClick={() => setIsIdentityModalOpen(true)}
             />
           </div>
 
@@ -534,6 +538,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           )}
         </div>
       </div>
+
+      {/* Identity Action Selector Modal */}
+      <IdentityActionModal
+        isOpen={isIdentityModalOpen}
+        player={player}
+        gameState={gameState}
+        onClose={() => setIsIdentityModalOpen(false)}
+        onDispatchAction={onDispatchAction}
+      />
     </section>
   );
 };

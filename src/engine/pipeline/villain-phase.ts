@@ -14,7 +14,6 @@ import { executeEffect } from '../effects';
 import { handleMainSchemeCompletion } from './scenario-helpers';
 import {
   getEffectiveVillainStats,
-  getEffectiveHandSize,
 } from './stat-calculator';
 
 /**
@@ -538,110 +537,25 @@ export function step5_revealEncounterCards(state: GameState): GameState {
   return state;
 }
 
-/**
- * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32)
- */
-export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState {
-  state.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
-
-  // Dispatch Round Ended triggers across players
-  for (const player of state.players) {
-    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
-    dispatchTrigger(state, 'ROUND_END', { targetPlayerId: player.id });
-  }
-
-  // 1. Pass First Player Token
-  state.firstPlayerIndex = (state.firstPlayerIndex + 1) % state.players.length;
-  state.activePlayerIndex = state.firstPlayerIndex;
-
-  // 2. Ready all player cards & reset round flags
-  for (const player of state.players) {
-    // Discard allies with ROUND_END / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
-    const endRoundAllies = player.allies.filter((a) => {
-      const abilities = a.card.enrichment?.abilities || [];
-      return abilities.some(
-        (ab) =>
-          (ab.trigger === 'ROUND_END' || ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
-          ab.effect === 'DISCARD_SELF',
-      );
-    });
-    for (const ally of endRoundAllies) {
-      const idx = player.allies.indexOf(ally);
-      if (idx !== -1) {
-        player.allies.splice(idx, 1);
-        player.discard.push(ally);
-      }
-    }
-
-    // Ready identity
-    player.exhausted = false;
-    player.basicChangeFormUsedThisRound = false;
-    player.formChangedThisRound = false;
-    player.recoveryUsedThisRound = false;
-    player.usedAbilitiesThisRound = {};
-    player.usedAbilitiesThisPhase = {};
-
-    // Ready allies
-    for (const ally of player.allies) {
-      ally.exhausted = false;
-    }
-
-    // Ready tableau
-    for (const card of player.tableau) {
-      card.exhausted = false;
-    }
-
-    // 3. Draw up to effective Hand Size (Hero vs Alter-Ego + constant auras e.g. Iron Man Tech upgrades)
-    const targetHandSize = getEffectiveHandSize(player, state);
-
-    const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
-    for (let d = 0; d < cardsToDraw; d++) {
-      if (player.deck.length === 0) {
-        // Player deck cycle rule (RR v1.8 p. 12): Shuffle discard into deck + deal 1 facedown encounter card
-        if (player.discard.length > 0) {
-          player.deck = [...player.discard].sort(() => Math.random() - 0.5);
-          player.discard = [];
-          const extraEncounter = drawEncounterCard(state);
-          if (extraEncounter) {
-            player.dealtEncounterCards.push(extraEncounter);
-          }
-        }
-      }
-      const drawn = player.deck.shift();
-      if (drawn) {
-        player.hand.push(drawn);
-      }
-    }
-  }
-
-  // 4. Increment Round & return to Player Phase
-  state.roundNumber += 1;
-  state.phase = GamePhase.PLAYER_PHASE;
-  delete state.villainPhaseStep;
-
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    key: 'round.upkeep.complete',
-    params: { round: state.roundNumber },
-    onomatopoeia: 'NEW ROUND!',
-  });
-
-  // Dispatch Round Began & Player Phase Began lifecycle triggers
-  for (const player of state.players) {
-    dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
-    dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', { targetPlayerId: player.id });
-  }
-
-  return state;
-}
+import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';
+export { step6_passFirstPlayerAndRoundUpkeep };
 
 /**
- * Complete Villain Phase Automation Runner
+ * Complete Villain Phase Automation Runner (RR v1.8 p. 22)
+ * 1. Sets phase to VILLAIN_PHASE and resets usedAbilitiesThisPhase for all players.
+ * 2. Dispatches VILLAIN_PHASE_BEGAN.
+ * 3. Executes Steps 1 through 5 sequentially.
+ * 4. Dispatches VILLAIN_PHASE_ENDED.
+ * 5. Passes execution to Step 6 (Round Upkeep & Token Rotation).
  */
 export function executeVillainPhase(state: GameState): GameState {
   const nextState: GameState = JSON.parse(JSON.stringify(state));
   nextState.phase = GamePhase.VILLAIN_PHASE;
+
+  // Reset phase-level ability limits for all players during Villain Phase
+  for (const player of nextState.players) {
+    player.usedAbilitiesThisPhase = {};
+  }
 
   nextState.log.push({
     id: `log_${Date.now()}`,
@@ -653,7 +567,7 @@ export function executeVillainPhase(state: GameState): GameState {
     onomatopoeia: 'VILLAIN PHASE!',
   });
 
-  // Dispatch Villain Phase Began triggers
+  // Dispatch Villain Phase Began triggers across all players
   for (const player of nextState.players) {
     dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
   }
@@ -673,11 +587,10 @@ export function executeVillainPhase(state: GameState): GameState {
   step5_revealEncounterCards(nextState);
   if (nextState.winner) return nextState;
 
-  // Dispatch Villain Phase Ended triggers
+  // Dispatch Villain Phase Ended triggers across all players
   for (const player of nextState.players) {
     dispatchTrigger(nextState, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
   }
 
-  step6_passFirstPlayerAndRoundUpkeep(nextState);
-  return nextState;
+  return step6_passFirstPlayerAndRoundUpkeep(nextState);
 }

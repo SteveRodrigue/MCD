@@ -1,0 +1,110 @@
+import {
+  GameState,
+  VillainPhaseStep,
+} from '@engine/models';
+import { dispatchTrigger } from '../triggers';
+import { getEffectiveHandSize } from './stat-calculator';
+import { drawEncounterCard } from './villain-phase';
+import { startPlayerPhase } from './player-phase';
+
+/**
+ * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32)
+ * 1. Dispatches ROUND_ENDED and ROUND_END triggers.
+ * 2. Discards allies with round-end forced discard abilities (e.g. Nick Fury 01084).
+ * 3. Readies all player cards (identities, allies, tableau upgrades/supports).
+ * 4. Resets once-per-round limits and form change flags.
+ * 5. Refills player hands up to effective hand size, handling player deck recycling.
+ * 6. Passes the First Player token clockwise.
+ * 7. Increments roundNumber, dispatches ROUND_BEGAN, and starts the new Player Phase.
+ */
+export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState {
+  state.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
+
+  // 1. Dispatch Round Ended triggers across players
+  for (const player of state.players) {
+    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
+    dispatchTrigger(state, 'ROUND_END', { targetPlayerId: player.id });
+  }
+
+  // 2. Pass First Player Token
+  state.firstPlayerIndex = (state.firstPlayerIndex + 1) % state.players.length;
+  state.activePlayerIndex = state.firstPlayerIndex;
+
+  // 3. Ready all player cards & reset round flags
+  for (const player of state.players) {
+    // Discard allies with ROUND_END / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
+    const endRoundAllies = player.allies.filter((a) => {
+      const abilities = a.card.enrichment?.abilities || [];
+      return abilities.some(
+        (ab) =>
+          (ab.trigger === 'ROUND_END' || ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
+          ab.effect === 'DISCARD_SELF',
+      );
+    });
+    for (const ally of endRoundAllies) {
+      const idx = player.allies.indexOf(ally);
+      if (idx !== -1) {
+        player.allies.splice(idx, 1);
+        player.discard.push(ally);
+      }
+    }
+
+    // Ready identity
+    player.exhausted = false;
+    player.basicChangeFormUsedThisRound = false;
+    player.formChangedThisRound = false;
+    player.recoveryUsedThisRound = false;
+    player.usedAbilitiesThisRound = {};
+
+    // Ready allies
+    for (const ally of player.allies) {
+      ally.exhausted = false;
+    }
+
+    // Ready tableau
+    for (const card of player.tableau) {
+      card.exhausted = false;
+    }
+
+    // 4. Draw up to effective Hand Size (Hero vs Alter-Ego + constant auras e.g. Iron Man Tech upgrades)
+    const targetHandSize = getEffectiveHandSize(player, state);
+
+    const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
+    for (let d = 0; d < cardsToDraw; d++) {
+      if (player.deck.length === 0) {
+        // Player deck cycle rule (RR v1.8 p. 12): Shuffle discard into deck + deal 1 facedown encounter card
+        if (player.discard.length > 0) {
+          player.deck = [...player.discard].sort(() => Math.random() - 0.5);
+          player.discard = [];
+          const extraEncounter = drawEncounterCard(state);
+          if (extraEncounter) {
+            player.dealtEncounterCards.push(extraEncounter);
+          }
+        }
+      }
+      const drawn = player.deck.shift();
+      if (drawn) {
+        player.hand.push(drawn);
+      }
+    }
+  }
+
+  // 5. Increment Round Number
+  state.roundNumber += 1;
+
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'round.upkeep.complete',
+    params: { round: state.roundNumber },
+    onomatopoeia: 'NEW ROUND!',
+  });
+
+  // 6. Dispatch Round Began triggers
+  for (const player of state.players) {
+    dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
+  }
+
+  // 7. Transition to and initialize the new Player Phase
+  return startPlayerPhase(state);
+}

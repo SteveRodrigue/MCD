@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Users, Flame, Zap, Play, Info, Trash2, Crown } from 'lucide-react';
+import { Users, Flame, Zap, Play, Info, Trash2, Crown, Award } from 'lucide-react';
 import { listScenarios, getScenario } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { CardCatalog } from '../../../data/importer/card-loader';
+import { DifficultyMode } from '../../../engine/models';
+import { useGameSettings } from '../../context/GameSettingsContext';
 import corePack from '../../../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../../../data/upstream/pack/core_encounter.json';
 import { CardView } from '../cards/CardView';
 
 export interface SetupSelection {
   scenarioId: string;
-  difficulty: 'standard' | 'expert';
+  difficulty: DifficultyMode;
+  heroicLevel: number;
   playerCount: number;
   deckIds: string[];
 }
@@ -23,12 +26,14 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   catalog: providedCatalog,
   onStartSetup,
 }) => {
+  const { defaultDifficulty, defaultHeroicLevel } = useGameSettings();
   const [catalog] = useState(() => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]));
   const scenarios = useMemo(() => listScenarios(), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
 
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
-  const [difficulty, setDifficulty] = useState<'standard' | 'expert'>('standard');
+  const [difficulty, setDifficulty] = useState<DifficultyMode>(() => defaultDifficulty || 'STANDARD');
+  const [heroicLevel, setHeroicLevel] = useState<number>(() => defaultHeroicLevel || 0);
 
   // 4 discrete hero seat slots (null = empty seat)
   const [seats, setSeats] = useState<(string | null)[]>([
@@ -51,7 +56,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
 
   const selectedScenario = getScenario(selectedScenarioId) || getScenario('rhino')!;
   const villainCode =
-    difficulty === 'standard' ? selectedScenario.stages.standard[0] : selectedScenario.stages.expert[0];
+    difficulty === 'EXPERT' ? selectedScenario.stages.expert[0] : selectedScenario.stages.standard[0];
   const villainPreviewCard = catalog.getCard(villainCode);
   const mainSchemeCode = selectedScenario.mainSchemeCode;
   const mainSchemePreviewCard = catalog.getCard(mainSchemeCode);
@@ -61,6 +66,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     onStartSetup({
       scenarioId: selectedScenarioId,
       difficulty,
+      heroicLevel,
       playerCount,
       deckIds: activeDecks,
     });
@@ -115,7 +121,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                       <p className="font-medium text-sm text-comic-red">{scenario.subtitle}</p>
                     </div>
                     <span className="bg-slate-900 text-white font-bold text-xs px-2 py-1 rounded">
-                      STAGE {difficulty === 'standard' ? 'I' : 'II'}
+                      STAGE {difficulty === 'EXPERT' ? 'II' : 'I'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-2 line-clamp-2">
@@ -144,7 +150,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                   <div className="text-center relative hover:z-50">
                     <CardView card={villainPreviewCard} size="sm" />
                     <span className="font-comic text-xs text-comic-black block mt-1">
-                      VILLAIN STAGE {difficulty === 'standard' ? 'I' : 'II'}
+                      VILLAIN STAGE {difficulty === 'EXPERT' ? 'II' : 'I'}
                     </span>
                   </div>
                 )}
@@ -161,35 +167,106 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             </div>
           </div>
 
-          {/* Difficulty Mode Selection */}
-          <div className="comic-panel p-6">
-            <div className="flex items-center gap-2 border-b-2 border-comic-black pb-3 mb-4">
-              <Zap className="w-5 h-5 text-comic-yellow" />
-              <h2 className="font-comic text-2xl text-comic-black">2. Select Difficulty</h2>
+          {/* Difficulty Mode & Optional Heroic Variant Selection */}
+          <div className="comic-panel p-6 space-y-4">
+            <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-comic-yellow" />
+                <h2 className="font-comic text-2xl text-comic-black">2. Select Difficulty</h2>
+              </div>
+              <span className="bg-amber-100 border border-comic-black px-2 py-0.5 text-xs font-bold uppercase rounded">
+                {difficulty}
+              </span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            {/* Base Difficulty Modes */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <button
-                onClick={() => setDifficulty('standard')}
-                className={`p-3 rounded border-2 text-center transition-all cursor-pointer ${
-                  difficulty === 'standard'
+                type="button"
+                onClick={() => setDifficulty('SKIRMISH')}
+                className={`p-2.5 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                  difficulty === 'SKIRMISH'
+                    ? 'border-comic-black bg-sky-300 text-comic-black shadow-comic font-bold'
+                    : 'border-slate-300 bg-white hover:border-comic-black'
+                }`}
+              >
+                <div className="font-comic text-sm sm:text-base">SKIRMISH</div>
+                <div className="text-[10px] text-slate-700 leading-tight mt-0.5">Stage I Only</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDifficulty('STANDARD')}
+                className={`p-2.5 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                  difficulty === 'STANDARD'
                     ? 'border-comic-black bg-comic-yellow text-comic-black shadow-comic font-bold'
                     : 'border-slate-300 bg-white hover:border-comic-black'
                 }`}
               >
-                <div className="font-comic text-lg">STANDARD</div>
-                <div className="text-xs text-slate-700">Stage I (14 HP / Hero)</div>
+                <div className="font-comic text-sm sm:text-base">STANDARD</div>
+                <div className="text-[10px] text-slate-700 leading-tight mt-0.5">Stage I ➔ II</div>
               </button>
+
               <button
-                onClick={() => setDifficulty('expert')}
-                className={`p-3 rounded border-2 text-center transition-all cursor-pointer ${
-                  difficulty === 'expert'
+                type="button"
+                onClick={() => setDifficulty('EXPERT')}
+                className={`p-2.5 rounded-xl border-2 text-center transition-all cursor-pointer ${
+                  difficulty === 'EXPERT'
                     ? 'border-comic-black bg-comic-red text-white shadow-comic font-bold'
                     : 'border-slate-300 bg-white hover:border-comic-black'
                 }`}
               >
-                <div className="font-comic text-lg">EXPERT</div>
-                <div className="text-xs text-slate-200">Stage II (15 HP / Hero)</div>
+                <div className="font-comic text-sm sm:text-base">EXPERT</div>
+                <div className="text-[10px] text-slate-200 leading-tight mt-0.5">Stage II ➔ III</div>
               </button>
+            </div>
+
+            {/* Heroic Mode Variant (Optional Rule) */}
+            <div className="bg-amber-50/80 border-2 border-comic-black rounded-xl p-3.5 space-y-2 shadow-comic-sm">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-comic-red" />
+                  <span className="font-comic text-sm text-comic-black uppercase">
+                    Heroic Mode (Optional Rule)
+                  </span>
+                </div>
+
+                {heroicLevel > 0 && (
+                  <span
+                    className={`font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black font-black uppercase ${
+                      difficulty === 'EXPERT'
+                        ? 'bg-emerald-400 text-slate-950'
+                        : 'bg-amber-300 text-slate-900'
+                    }`}
+                  >
+                    {difficulty === 'EXPERT' ? '⭐ OFFICIAL FFG MODE' : '⚡ CUSTOM VARIANT'}
+                  </span>
+                )}
+              </div>
+
+              {/* Segmented Heroic Selector */}
+              <div className="grid grid-cols-4 gap-1.5 bg-white rounded-lg border-2 border-comic-black p-1 shadow-comic-sm">
+                {[0, 1, 2, 3].map((lvl) => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setHeroicLevel(lvl)}
+                    className={`py-1 text-center font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                      heroicLevel === lvl
+                        ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {lvl === 0 ? 'Off (0)' : `Heroic ${lvl} (+${lvl})`}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                {heroicLevel === 0
+                  ? 'Standard encounter dealing: 1 encounter card dealt per player during Step 4.'
+                  : `Heroic ${heroicLevel} active: Deals ${1 + heroicLevel} encounter cards (+${heroicLevel} extra) to each player during Step 4.`}
+              </p>
             </div>
           </div>
         </div>
@@ -385,7 +462,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               <div className="flex justify-between">
                 <span className="text-slate-600">Total Villain HP:</span>
                 <span className="font-bold text-comic-red">
-                  {(difficulty === 'standard' ? 14 : 15) * Math.max(1, playerCount)} HP
+                  {(difficulty === 'EXPERT' ? 15 : 14) * Math.max(1, playerCount)} HP
                 </span>
               </div>
               <div className="flex justify-between">

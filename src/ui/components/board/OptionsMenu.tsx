@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Wrench, X, ShieldAlert, Check, Gauge } from 'lucide-react';
+import { Settings, Wrench, X, ShieldAlert, Check, Gauge, Zap } from 'lucide-react';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface OptionsMenuProps {
@@ -13,13 +13,17 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
     toggleDevMode,
     edgeScrollSpeed,
     setEdgeScrollSpeed,
+    defaultDifficulty,
+    setDefaultDifficulty,
+    defaultHeroicLevel,
+    setDefaultHeroicLevel,
   } = useGameSettings();
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-lg w-full p-6 space-y-6">
+      <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-lg w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
           <div className="flex items-center gap-2">
@@ -71,6 +75,72 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
             </p>
           </div>
 
+          {/* Optional Rules: Default Difficulty Setting */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="w-5 h-5 text-comic-red" />
+                <span className="font-comic text-base text-comic-black">
+                  Default Difficulty Mode
+                </span>
+              </div>
+
+              {/* Segmented Difficulty Controls */}
+              <div className="flex items-center bg-white rounded-lg border-2 border-comic-black p-0.5 shadow-comic-sm">
+                {(['SKIRMISH', 'STANDARD', 'EXPERT'] as const).map((diff) => (
+                  <button
+                    key={diff}
+                    onClick={() => setDefaultDifficulty(diff)}
+                    className={`px-3 py-1 font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                      defaultDifficulty === diff
+                        ? 'bg-comic-yellow text-comic-black border border-comic-black shadow-comic-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {diff === 'SKIRMISH' ? 'Skirmish' : diff === 'STANDARD' ? 'Standard' : 'Expert'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Sets default villain stages and encounter sets. Skirmish = Stage I only; Standard = Stage I $\rightarrow$ II; Expert = Stage II $\rightarrow$ III + Expert cards.
+            </p>
+          </div>
+
+          {/* Optional Rules: Heroic Mode Variant */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-comic-yellow" />
+                <span className="font-comic text-base text-comic-black">
+                  Heroic Mode Variant
+                </span>
+              </div>
+
+              {/* Segmented Heroic Level Controls */}
+              <div className="flex items-center bg-white rounded-lg border-2 border-comic-black p-0.5 shadow-comic-sm">
+                {[0, 1, 2, 3].map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => setDefaultHeroicLevel(lvl)}
+                    className={`px-2.5 py-1 font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                      defaultHeroicLevel === lvl
+                        ? 'bg-comic-red text-white border border-comic-black shadow-comic-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {lvl === 0 ? 'Off (0)' : `Heroic ${lvl} (+${lvl})`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Official FFG difficulty variant: Deals $+L$ additional encounter cards to each player during Step 4. Available across all modes (Official on Expert, Custom variant on Standard/Skirmish).
+            </p>
+          </div>
+
           {/* Developer Mode Toggle */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
             <div className="flex items-center justify-between">
@@ -101,15 +171,6 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
             <p className="text-xs text-slate-600">
               Enables hidden information inspectors (face-down draw deck inspection, search & debug scrying) for development and rules testing.
             </p>
-
-            <div className="pt-1 flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
-              <ShieldAlert className="w-3.5 h-3.5 text-comic-blue" />
-              <span>
-                {devMode
-                  ? 'Active: Draw decks can be clicked to inspect card ordering.'
-                  : 'Inactive: Draw decks are strictly hidden per standard game rules.'}
-              </span>
-            </div>
           </div>
         </div>
 

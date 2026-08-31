@@ -25,7 +25,7 @@ export const AppContent: React.FC = () => {
     const { villain, mainScheme, encounterCards } = scenario.createEncounterDeck(catalog);
 
     // Override villain stage for Expert difficulty if selected
-    if (selection.difficulty === 'expert') {
+    if (selection.difficulty === 'EXPERT') {
       const expertVillain = catalog.getCard(scenario.stages.expert[0]) as any;
       if (expertVillain) villain.health = expertVillain.health;
     }
@@ -50,6 +50,8 @@ export const AppContent: React.FC = () => {
       villain,
       mainScheme,
       encounterCards,
+      difficulty: selection.difficulty,
+      heroicLevel: selection.heroicLevel,
     });
 
     setGameState(newGameState);

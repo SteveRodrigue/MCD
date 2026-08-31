@@ -10,28 +10,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Game Settings & Developer Mode (ADR-0013):**
-  - Persistent `GameSettingsContext` in local storage.
-  - Interactive `OptionsMenu` dialog with toggle switches.
-  - Visual `🛠️ DEV MODE: ON/OFF` indicator badge in top navigation bar with 1-click toggling.
-- **Encounter Deck Dev Mode Inspector:**
-  - Multi-tier sorting: `Deck Order` (with `Top to Bottom` / `Bottom to Top` toggles), `Card Type`, and `Encounter Set`.
-  - Canonical Encounter Set labels displayed under each card using high-legibility sans-serif typography.
-  - Smart redundancy removal (set labels automatically hidden when grouping by Encounter Set).
-  - Unified grouping of all player obligations across 1–4 players under `Player Obligations`.
-- **Player Deck Dev Mode Inspector:**
-  - Multi-tier sorting: `Deck Order`, `Card Type`, `Affinity (Aspect)`, and `Cost`.
-  - Cost sorting with `⬆️ Low to High (0 ⟶ 4+)` and `⬇️ High to Low (4+ ⟶ 0)` direction toggles.
-  - Strict separation of numeric 0-cost cards vs. non-cost Resource cards (*Energy*, *Genius*, *Strength*) placed at the bottom.
-- **Tabletop Stations & Layout Sizing:**
-  - Shrunk Villain Station, Main Scheme Station, and Hero Identity Station to exact physical card dimensions (`w-fit shrink-0`).
-  - Sized Health bars and Threat Limit gauges to fit physical card widths.
-  - Dynamic horizontal expansion for Side Schemes, Allies, and Tableau cards.
-- **Official Setup Pipeline (Steps 10 & 11):**
-  - Automatic shuffling of player Obligation cards (*Eviction Notice*) into the encounter deck.
-  - 5-card Nemesis Set (*Vulture*) isolated out of play on the right of the hand dock with click-to-inspect viewer modal.
-- **Z-Axis Hover-Zoom (ADR-0012):**
-  - Boundary-aware dynamic anchor detection (`useRef` + `getBoundingClientRect()`) preventing viewport clipping across all 4 edges.
+- **1960s Daily Bugle Action Dispatcher & Auto End-Turn Flow (ADR-0021):**
+  - Built pure engine evaluator `legal-actions-generator.ts` discovering legal basic attacks, thwarts, card plays, and ability activations.
+  - Interactive retro newspaper broadsheet `DailyBugleActionNewspaper.tsx` with woodblock masthead, columnar action dispatches, and click-to-execute controls.
+  - Automatic `EndTurnConfirmationModal.tsx` prompting confirmation when only "End Turn" remains.
+  - Top navigation bar hover/click button `📰 DAILY BUGLE [N]` displaying live actionable count badge.
+- **Identity Action Console & Modal:**
+  - Interactive `IdentityActionModal.tsx` opened by clicking Identity card (Tony Stark / Iron Man).
+  - Lists form-aware actions: Recover (greyed out when at full health with HP explanation), Identity Abilities (e.g. *Futurist*), Basic Attacks/Thwarts, and Suit Up/Flip.
+- **Interactive Player Decision Prompt for Scrying (*Futurist*):**
+  - Strict RR v1.8 p. 19 ("Player Choice") implementation for scrying abilities in `src/engine/effects/index.ts`.
+  - Visual **DECISION REQUIRED** prompt (`DecisionPromptModal.tsx`) showing top 3 revealed cards side-by-side with non-matching cards cleanly grayed out and selectable Tech cards highlighted.
+  - Explicit option to decline and discard all revealed cards.
+- **Dynamic Fan-Out Stack Hand Layout (Zero Overflow):**
+  - Responsive `useHandFanLayout.ts` hook measuring container width and dynamically tightening negative margins to prevent hand overflow across any hand size (6, 7, 8+ cards).
+  - Leftmost card in hand stacked on top (`z-index: 30 - index`).
+  - Active hovered card elevated to `z-index: 60` with upward float elevation (`-translate-y-12`) and unconstrained 1.9× Comic Zoom.
+  - Hardware-accelerated `transition-transform duration-150` eliminating sluggish accordion compression on card additions.
+
+### Changed
+- **Physical Game Counter Token Styling:**
+  - Standard game counters rendered as solid green rounded-squares in the bottom-right corner of cards (`CardView.tsx`) replicating physical tabletop tokens.
+
+### Fixed
+- **Resource Card Play Legality (RR v1.8 p. 24):**
+  - Enforced in `legality-checker.ts` that standalone Resource cards (*Energy*, *Genius*, *Strength*) cannot be played as independent actions; they are discarded strictly during resource payment.
+- **Interactive Tableau & Ally Triggers:**
+  - Added click handlers and action mini-bars (`[⚡ USE]`, `[⚔️ ATK]`, `[🛡️ THW]`) for tableau upgrades/supports and allies in `HeroZone.tsx`.
+- **Solid Matte Grayscale Rendering (No Transparency):**
+  - Removed `opacity-40` and `opacity-65` from unplayable/non-matching cards across `DecisionPromptModal.tsx` and `CardView.tsx`, ensuring 100% solid, opaque cards without background bleed.
+- **Modal Z-Axis and Clipping:**
+  - Removed `overflow-hidden` from `DecisionPromptModal.tsx` and elevated hovered card wrapper z-index so zoomed cards never get cropped.
 
 ---
 

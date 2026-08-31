@@ -44,6 +44,7 @@ Each record documents:
 | [ADR-0023](0023-modular-supplemental-specification-suite-and-implementation-status-badges.md) | 2026-08-30 | Modular Supplemental Specification Suite & Implementation Status Badges | **Accepted** | Decompose monolithic schema documentation into a 10-part modular suite with explicit 🟢 IMPLEMENTED vs 🟡 ROADMAP status badges. |
 | [ADR-0024](0024-declarative-action-cost-engine-and-state-mutation-pre-checks.md) | 2026-08-30 | Declarative Action Cost Engine & State Mutation Pre-Checks | **Accepted** | Centralize cost validation and atomic execution (exhaustion, direct damage, hand discard, tokens, and mutation pre-checks) in `cost-engine.ts`. |
 | [ADR-0025](0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md) | 2026-08-30 | Architectural Subsystem Completion & Mandatory Supplemental Review Pipeline | **Accepted** | Mandate an immediate card review pass upon completing any engine subsystem, promoting blocked cards with unit tests, Inbox Zero pruning, and closing GitHub issues. |
+| [ADR-0026](0026-daily-bugle-action-dispatcher-and-dynamic-fan-out-hand.md) | 2026-08-30 | 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture | **Accepted** | Provide centralized legal move discovery via retro Daily Bugle newspaper broadsheet, automatic turn-end verification, and responsive zero-overflow fan-out hand stacking. |
 
 ---
 

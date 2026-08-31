@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-08-31T03:37:28.658Z`  
+> **Generated:** `2026-08-31T03:39:02.259Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -12,7 +12,7 @@
 | **Total Cards Registered** | **156** | Total cards present in `src/data/supplemental/` |
 | **Active Declared Cards** | **140** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **14** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
-| **Blocked / Ambiguity Cards** | **2** | Cards isolated in `docs/ambiguities/` |
+| **Open Ambiguity Reports** | **39** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **Total Abilities Declared** | **156** | Total individual ability definitions declared |
 | **Unique Effects In Use** | **66** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **18** | Distinct trigger window types actively declared |
@@ -21,7 +21,55 @@
 
 ---
 
-## 🟢 2. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive)
+## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 39 Cards)
+
+These **39 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
+
+| Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `01004` | **Enhanced Spider-Sense** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01004_enhanced_spider_sense.md`](../ambiguities/core_01004_enhanced_spider_sense.md) |
+| `01016` | **Captain Marvel** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01016_captain_marvel_s_helmet.md`](../ambiguities/core_01016_captain_marvel_s_helmet.md) |
+| `01017` | **Cosmic Flight** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01017_cosmic_flight.md`](../ambiguities/core_01017_cosmic_flight.md) |
+| `01018` | **Energy Channel** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01018_energy_channel.md`](../ambiguities/core_01018_energy_channel.md) |
+| `01020` | **Hellcat (Patsy Walker)** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01020_hellcat_patsy_walker.md`](../ambiguities/core_01020_hellcat_patsy_walker.md) |
+| `01021` | **Gamma Slam** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01021_gamma_slam.md`](../ambiguities/core_01021_gamma_slam.md) |
+| `01024` | **One-Two Punch** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01024_one_two_punch.md`](../ambiguities/core_01024_one_two_punch.md) |
+| `01028` | **Superhuman Strength** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01028_superhuman_strength.md`](../ambiguities/core_01028_superhuman_strength.md) |
+| `01031` | **Repulsor Blast** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01031_repulsor_blast.md`](../ambiguities/core_01031_repulsor_blast.md) |
+| `01033` | **Pepper Potts** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01033_pepper_potts.md`](../ambiguities/core_01033_pepper_potts.md) |
+| `01034` | **Stark Tower** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01034_stark_tower.md`](../ambiguities/core_01034_stark_tower.md) |
+| `01040a` | **Black Panther** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01040a_black_panther.md`](../ambiguities/core_01040a_black_panther.md) |
+| `01040b` | **T** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01040b_t_challa.md`](../ambiguities/core_01040b_t_challa.md) |
+| `01041` | **Shuri** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01041_shuri.md`](../ambiguities/core_01041_shuri.md) |
+| `01042` | **Ancestral Knowledge** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01042_ancestral_knowledge.md`](../ambiguities/core_01042_ancestral_knowledge.md) |
+| `01043a` | **Wakanda Forever!** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01043a_wakanda_forever.md`](../ambiguities/core_01043a_wakanda_forever.md) |
+| `01043b` | **Wakanda Forever!** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01043b_wakanda_forever.md`](../ambiguities/core_01043b_wakanda_forever.md) |
+| `01043c` | **Wakanda Forever!** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01043c_wakanda_forever.md`](../ambiguities/core_01043c_wakanda_forever.md) |
+| `01043d` | **Wakanda Forever!** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01043d_wakanda_forever.md`](../ambiguities/core_01043d_wakanda_forever.md) |
+| `01046` | **Energy Daggers** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01046_energy_daggers.md`](../ambiguities/core_01046_energy_daggers.md) |
+| `01049` | **Vibranium Suit** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01049_vibranium_suit.md`](../ambiguities/core_01049_vibranium_suit.md) |
+| `01050` | **Hulk (Bruce Banner)** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01050_hulk_bruce_banner.md`](../ambiguities/core_01050_hulk_bruce_banner.md) |
+| `01055` | **The Power of Aggression** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01055_the_power_of_aggression.md`](../ambiguities/core_01055_the_power_of_aggression.md) |
+| `01061` | **Great Responsibility** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01061_great_responsibility.md`](../ambiguities/core_01061_great_responsibility.md) |
+| `01062` | **The Power of Justice** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01062_the_power_of_justice.md`](../ambiguities/core_01062_the_power_of_justice.md) |
+| `01068` | **Vision** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01068_vision.md`](../ambiguities/core_01068_vision.md) |
+| `01069` | **Get Ready** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01069_get_ready.md`](../ambiguities/core_01069_get_ready.md) |
+| `01070` | **Lead from the Front** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01070_lead_from_the_front.md`](../ambiguities/core_01070_lead_from_the_front.md) |
+| `01071` | **Make the Call** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01071_make_the_call.md`](../ambiguities/core_01071_make_the_call.md) |
+| `01072` | **The Power of Leadership** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01072_the_power_of_leadership.md`](../ambiguities/core_01072_the_power_of_leadership.md) |
+| `01075` | **Black Widow (Natasha Romanoff)** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01075_black_widow_natasha_romanoff.md`](../ambiguities/core_01075_black_widow_natasha_romanoff.md) |
+| `01077` | **Counter-Punch** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01077_counter_punch.md`](../ambiguities/core_01077_counter_punch.md) |
+| `01078` | **Get Behind Me!** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01078_get_behind_me.md`](../ambiguities/core_01078_get_behind_me.md) |
+| `01079` | **The Power of Protection** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01079_the_power_of_protection.md`](../ambiguities/core_01079_the_power_of_protection.md) |
+| `01081` | **Armored Vest** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01081_armored_vest.md`](../ambiguities/core_01081_armored_vest.md) |
+| `01082` | **Indomitable** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01082_indomitable.md`](../ambiguities/core_01082_indomitable.md) |
+| `01085` | **Emergency** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01085_emergency.md`](../ambiguities/core_01085_emergency.md) |
+| `01092` | **Helicarrier** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01092_helicarrier.md`](../ambiguities/core_01092_helicarrier.md) |
+| `01093` | **Tenacity** | `core` | `80%` | `PESSIMISTIC_CODE_AUDIT_GAP` | [`core_01093_tenacity.md`](../ambiguities/core_01093_tenacity.md) |
+
+---
+
+## 🟢 3. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive — 14 Cards)
 
 These **14 cards** have been audited and explicitly verified as `"noSupplementalNeeded": true` (standard double resource generators, vanilla baseline minions, basic identity cards, or schemes with no custom trigger hooks):
 
@@ -44,7 +92,7 @@ These **14 cards** have been audited and explicitly verified as `"noSupplemental
 
 ---
 
-## 💥 3. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
+## 💥 4. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
 
 Changing these primitives will affect many cards across the entire game engine:
 
@@ -63,7 +111,7 @@ Changing these primitives will affect many cards across the entire game engine:
 
 ---
 
-## 🔍 4. Single-Use & Unique Primitives (Card Count = 1)
+## 🔍 5. Single-Use & Unique Primitives (Card Count = 1)
 
 These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:
 
@@ -129,7 +177,7 @@ These primitives are only declared on a single card. They represent high special
 
 ---
 
-## ⚠️ 5. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
+## ⚠️ 6. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
 
 These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:
 
@@ -166,7 +214,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 📑 6. Complete Effects Inventory
+## 📑 7. Complete Effects Inventory
 
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -239,7 +287,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## ⏱️ 7. Complete Triggers Inventory
+## ⏱️ 8. Complete Triggers Inventory
 
 | Trigger Window | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -264,7 +312,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 🎯 8. Timings, Costs & Target Selectors Inventory
+## 🎯 9. Timings, Costs & Target Selectors Inventory
 
 ### Ability Timings:
 | Timing | Occurrences | Cards |

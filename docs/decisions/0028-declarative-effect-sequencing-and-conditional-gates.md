@@ -1,7 +1,7 @@
 # ADR-0028: Declarative Effect Sequencing, Conditional Gates, and Contextual Entity Passing
 
 ## Status
-**ACCEPTED** (2026-08-31)
+**SUPERSEDED** by [ADR-0030](0030-unified-ability-step-sequence-architecture.md) (2026-08-31)
 
 ## Context
 In Marvel Champions rules (RR v1.8), many card abilities consist of multiple distinct steps chained together, often with conditional dependencies such as the **"Then"** keyword (RR v1.8 p. 24), fallback surge triggers (e.g. "If no damage was healed, this card gains surge"), or sequential operations (e.g. "Change form, then draw up to hand size").

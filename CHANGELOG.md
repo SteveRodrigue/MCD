@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+- **Interleaved Villain & Minion Activations (RR v1.8 p. 22):**
+  - Restructured Step 2 of the Villain Phase in `src/engine/pipeline/villain-phase.ts` to follow the official player-by-player activation loop starting from the First Player.
+  - For each player in player order: the villain activates against the player (Attacks if hero, Schemes if alter-ego), followed immediately by all minions engaged with that player activating against them.
+  - Implemented `executeMinionSchemeAgainstPlayer` so that minions add threat equal to their SCH stat when their engaged player is in Alter-Ego form.
+  - Added unit test coverage for multi-player interleaved activation sequences and first player rotation.
 - **1960s Daily Bugle Action Dispatcher & Auto End-Turn Flow (ADR-0021):**
   - Built pure engine evaluator `legal-actions-generator.ts` discovering legal basic attacks, thwarts, card plays, and ability activations.
   - Interactive retro newspaper broadsheet `DailyBugleActionNewspaper.tsx` with woodblock masthead, columnar action dispatches, and click-to-execute controls.

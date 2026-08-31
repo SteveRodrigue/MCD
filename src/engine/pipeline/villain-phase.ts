@@ -251,8 +251,27 @@ export function executeMinionAttackAgainstPlayer(state: GameState, minion: CardI
 
   if (toughIndex !== -1) {
     player.statusCards.splice(toughIndex, 1);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'hero.tough.absorbed',
+      params: { player: player.name, source: minion.card.name },
+      onomatopoeia: 'CLANG! (TOUGH)',
+    });
   } else {
     player.health = Math.max(0, player.health - attackDamage);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'minion.attack.hit',
+      params: {
+        minion: minion.card.name,
+        player: player.name,
+        damage: attackDamage,
+      },
+      onomatopoeia: 'MINION ATTACK!',
+    });
+
     if (player.health <= 0) {
       state.winner = 'VILLAIN';
     }
@@ -268,9 +287,53 @@ export function executeMinionAttackAgainstPlayer(state: GameState, minion: CardI
 }
 
 /**
- * Step 2: Villain Activations (RR v1.8 p. 31, p. 7 "Attack", p. 25 "Scheme", p. 8 "Boost")
+ * Executes a single minion scheme against an alter-ego.
  */
-export function step2_villainActivations(state: GameState): GameState {
+export function executeMinionSchemeAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+  const minionCard = minion.card as MinionCard;
+  const schemeThreat = minionCard.scheme || 1;
+  const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+    targetPlayerId: player.id,
+    threatAmount: schemeThreat,
+  });
+  const finalThreat = triggerRes.threatAmount ?? schemeThreat;
+
+  state.mainScheme.threat += finalThreat;
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'minion.scheme.threat',
+    params: {
+      minion: minion.card.name,
+      player: player.name,
+      threat: finalThreat,
+    },
+    onomatopoeia: 'MINION SCHEMES!',
+  });
+
+  if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
+    state.winner = 'VILLAIN';
+  }
+}
+
+/**
+ * Executes a single minion activation against a player (Attack if hero, Scheme if alter-ego).
+ */
+export function executeMinionActivationAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+  if (player.currentForm === 'hero') {
+    executeMinionAttackAgainstPlayer(state, minion, player);
+  } else {
+    executeMinionSchemeAgainstPlayer(state, minion, player);
+  }
+}
+
+/**
+ * Step 2: Villain & Minion Activations (RR v1.8 p. 22: Interleaved Player-by-Player Activation Loop)
+ * In player order starting from firstPlayerIndex:
+ * 1. The villain activates against the player (Attack if hero, Scheme if alter-ego).
+ * 2. Each minion engaged with that player activates against the player (Attack if hero, Scheme if alter-ego).
+ */
+export function step2_villainAndMinionActivations(state: GameState): GameState {
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 
@@ -279,18 +342,31 @@ export function step2_villainActivations(state: GameState): GameState {
     const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
     const player = state.players[playerIdx];
 
+    // 1. Villain activates against this player
     if (player.currentForm === 'hero') {
       executeVillainAttackAgainstPlayer(state, player);
     } else {
       executeVillainSchemeAgainstPlayer(state, player);
+    }
+
+    if (state.winner) return state;
+
+    // 2. Each minion engaged with this player activates against this player
+    for (const minion of player.engagedMinions) {
+      executeMinionActivationAgainstPlayer(state, minion, player);
+      if (state.winner) return state;
     }
   }
 
   return state;
 }
 
+// Backward-compatible alias for Step 2
+export const step2_villainActivations = step2_villainAndMinionActivations;
+
 /**
- * Step 3: Minion Activations (RR v1.8 p. 31)
+ * Step 3: Minion Activations (Deprecated standalone step; now interleaved in Step 2 per RR v1.8 p. 22).
+ * Kept as an optional direct-call helper if needed by legacy tests.
  */
 export function step3_minionActivations(state: GameState): GameState {
   if (state.winner) return state;
@@ -298,23 +374,8 @@ export function step3_minionActivations(state: GameState): GameState {
 
   for (const player of state.players) {
     for (const minion of player.engagedMinions) {
-      const minionCard = minion.card as MinionCard;
-
-      if (player.currentForm === 'hero') {
-        executeMinionAttackAgainstPlayer(state, minion, player);
-      } else {
-        const schemeThreat = minionCard.scheme || 1;
-        const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
-          targetPlayerId: player.id,
-          threatAmount: schemeThreat,
-        });
-        const finalThreat = triggerRes.threatAmount ?? schemeThreat;
-
-        state.mainScheme.threat += finalThreat;
-        if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-          state.winner = 'VILLAIN';
-        }
-      }
+      executeMinionActivationAgainstPlayer(state, minion, player);
+      if (state.winner) return state;
     }
   }
 

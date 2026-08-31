@@ -727,14 +727,28 @@
       }
     },
     "01161": {
+      "comment": "Side Scheme: Personal Challenge. When Revealed: Place an additional 1 [per_hero] threat here.",
       "isLandscape": true,
-      "noSupplementalNeeded": true,
+      "abilities": [
+        {
+          "id": "personal_challenge_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT_PER_PLAYER",
+          "params": {
+            "amountPerPlayer": 1,
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:52",
+        "reviewedAt": "2026-08-31T03:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
       }
     },
     "01162": {
@@ -820,14 +834,17 @@
       }
     },
     "01166": {
+      "comment": "Side Scheme: Highway Robbery. When Revealed: Each player places a random card from hand facedown here. When Defeated: Return each facedown card here to its owner's hand.",
       "isLandscape": true,
-      "noSupplementalNeeded": true,
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:52",
+        "reviewedAt": "2026-08-31T03:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Each player places a random card from their hand facedown here.\n<b>When Defeated</b>: Return each facedown card here to its owner's hand."
+        "confidence": 80,
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; WHEN_DEFEATED -> RETURN_FACEDOWN_CARDS_TO_OWNERS",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01166_highway_robbery.md"
       }
     },
     "01167": {
@@ -915,14 +932,28 @@
       }
     },
     "01171": {
+      "comment": "Side Scheme: Imminent Overload. When Revealed: Place an additional 1 [per_hero] threat here.",
       "isLandscape": true,
-      "noSupplementalNeeded": true,
+      "abilities": [
+        {
+          "id": "imminent_overload_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT_PER_PLAYER",
+          "params": {
+            "amountPerPlayer": 1,
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:52",
+        "reviewedAt": "2026-08-31T03:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
       }
     },
     "01172": {
@@ -1008,14 +1039,28 @@
       }
     },
     "01176": {
+      "comment": "Side Scheme: The Psyche-Magnitron. When Revealed: Place an additional 1 [per_hero] threat here.",
       "isLandscape": true,
-      "noSupplementalNeeded": true,
+      "abilities": [
+        {
+          "id": "psyche_magnitron_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT_PER_PLAYER",
+          "params": {
+            "amountPerPlayer": 1,
+            "target": "SELF"
+          }
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:52",
+        "reviewedAt": "2026-08-31T03:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "Passive/Vanilla: <b>When Revealed</b>: Place an additional 1[per_hero] threat here."
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
       }
     },
     "01177": {
@@ -1041,13 +1086,38 @@
       }
     },
     "01178": {
-      "noSupplementalNeeded": true,
+      "comment": "Treachery: Kree Manipulator. Surge. When Revealed: Place 1 threat on main scheme. Boost: If undefended, place 1 threat on main scheme.",
+      "abilities": [
+        {
+          "id": "kree_manipulator_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "effect": "ADD_THREAT",
+          "params": {
+            "amount": 1,
+            "target": "MAIN_SCHEME"
+          }
+        },
+        {
+          "id": "kree_manipulator_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST_STAR_RESOLVED",
+          "effect": "ADD_THREAT",
+          "params": {
+            "amount": 1,
+            "target": "MAIN_SCHEME",
+            "condition": "UNDEFENDED_ATTACK"
+          }
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:52",
+        "reviewedAt": "2026-08-31T03:52",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "Passive/Vanilla: Surge. <i>(After this card resolves, reveal 1 additional encounter card.)</i>\n<b>When Revealed</b>: Place 1 threat on the main scheme.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, place 1 threat on the main scheme."
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: MAIN_SCHEME); BOOST (Trigger: BOOST_STAR_RESOLVED) -> ADD_THREAT (amount: 1, target: MAIN_SCHEME, condition: UNDEFENDED_ATTACK)"
       }
     },
     "01179": {

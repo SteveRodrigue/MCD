@@ -92,8 +92,13 @@ graph TD
 ### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0033)
 * [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**
   * Refactor scenario initialization into declarative plug-in modules (`createGame(scenarioConfig, playerConfigs)`).
-  * Executes Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).
-  * Standardizes scenario plugins for Rhino, Klaw, and Ultron with plug-and-play modular encounter sets (*Bomb Scare*, *Masters of Evil*, *Under Attack*, *Legions of Hydra*, *The Doomsday Chair*).
+  * Enforce strict encounter set taxonomy: Scenario-Mandatory Sets (Villain set, Standard/Expert set, scenario-required secondary sets like *Prelates*) vs. Customizable Modular Slots.
+  * Execute Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).
+  * Standardize scenario plugins for Rhino, Klaw, and Ultron with plug-and-play modular encounter sets (*Bomb Scare*, *Masters of Evil*, *Under Attack*, *Legions of Hydra*, *The Doomsday Chair*).
+* [ ] **Scenario Selection Screen & Modular Set Customizer (`ScenarioSelector.tsx`):**
+  * Update `ScenarioSelector.tsx` to display locked scenario-mandatory set badges (`[🔒 MANDATORY]`).
+  * Add modular encounter set slot selectors pre-populated with scenario default recommendations (e.g. *Bomb Scare* for Rhino, *Masters of Evil* for Klaw, *Under Attack* for Ultron), allowing players to replace optional sets with any modular set in their collection.
+  * Provide a "Reset to Defaults" button and pass `selectedModularSetCodes` in `SetupSelection`.
 
 ### 5. 🔴 `[Must-Have]` Milestone 2D: The Great Core Set Promotion Pass (Inbox Zero)
 * [ ] **Promote 100% of Ambiguity Cards in `docs/ambiguities/`:**

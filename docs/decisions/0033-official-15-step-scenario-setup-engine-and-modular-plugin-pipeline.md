@@ -1,6 +1,6 @@
 # [ADR-0033] Official 15-Step Scenario Setup Engine & Modular Plugin Pipeline
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity

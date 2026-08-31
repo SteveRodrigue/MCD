@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Authored `docs/decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md` (Accepted) to support 318 Interrupt cards and 451 Response cards across all official packs.
 - **Official 15-Step Scenario Setup Engine & Modular Plugin Pipeline (ADR-0033 / RR v1.8 p. 27–28):**
   - Formulated the declarative `ScenarioPlugin` interface and standardized 15-step setup protocol (`createGame(scenarioConfig, playerConfigs)`).
-  - Authored `docs/decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md` (Proposed) supporting all 62 official scenario Stage 1A setups and modular encounter mixing.
+  - Authored `docs/decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md` (Accepted) supporting all 62 official scenario Stage 1A setups, modular encounter customization, and `ScenarioSelector.tsx` UI integration.
 - **Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031 / RR v1.8 p. 4, 7, 11, 24):**
   - Formulated the 5-phase reactive enemy attack state machine: Phase 1 (Initiation/Spider-Sense), Phase 2 (Defender Declaration / Basic Hero DEF / Ally blocks / Co-op), Phase 3 (Boost resolution / Boost cancellations), Phase 4 (Damage calculation / DEF subtraction / Damage prevention / Tough / Overkill), and Phase 5 (Post-defense responses / Retaliate).
   - Established the Direct Damage Invariant: non-attack damage bypasses DEF and ally blocks, prohibiting attack-specific defense cards while preserving universal prevention (*Cosmic Flight*, *Tough*).

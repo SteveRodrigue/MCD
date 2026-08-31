@@ -117,8 +117,19 @@ ScenarioRegistry.register(customPlugin);
 
 ---
 
+## 🧪 Step 4: Verify & Run Declarations Audit
+
+After authoring and registering scenario cards:
+```bash
+npm run report:declarations   # Regenerates docs/reports/supplemental_declarations_usage_report.md
+npm test                      # Runs full test suite
+npm run typecheck             # Verifies TypeScript types
+```
+
+---
+
 ## 📚 Related References
-* [Supplemental Data Schema Specification](../specifications/supplemental_data_schema.md)
+* [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
 * [Hero & Identity Creation Guide](./hero_creation_guide.md)
 * [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)
 

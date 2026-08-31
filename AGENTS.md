@@ -16,4 +16,4 @@ After executing automated tests and code verification (`npm test && npm run type
 4. **Check Guidelines:** Update guidelines documentation (e.g. `docs/coding_guidelines.md`) when development standards, conventions, or design patterns change.
 5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed.
 6. **Check Git Issues & Ambiguities:** Check if an issue or `docs/ambiguities/` file can be closed/resolved.
-7. **Check Card Integration Protocol:** Check if card supplemental definitions were altered and validate supplemental schemas.
+7. **Check Card Integration Protocol & Usage Report:** Check if card supplemental definitions were altered and validate supplemental schemas. **ALWAYS run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`)** whenever cards, abilities, effects, or ambiguity reports are modified to ensure `docs/reports/supplemental_declarations_usage_report.md` provides an accurate, up-to-date view of card integration metrics and open ambiguities.

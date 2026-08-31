@@ -69,14 +69,13 @@ graph TD
 * [x] **Turn-Gated Form Changes (RR v1.8 p. 8):**
   * Basic 1/round form change limit tracked via `basicChangeFormUsedThisRound` with automatic reset on `ROUND_BEGAN`.
 
-### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue (ADR-0032)
-* [ ] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24):**
-  * Support interruption windows opening inside active action/activation windows without state corruption.
-  * Support player-ordered resolution when multiple `FORCED` triggers fire simultaneously (RR v1.8 p. 16).
-* [ ] **Decision Prompt Queue Management:**
-  * Transition from single prompt overwrite to structured FIFO/LIFO queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially.
-  * Allow voluntary reactions with explicit "Pass / Do Nothing" options in prompts.
-* [ ] **Unlocks 10 Ambiguity Cards:** *Great Responsibility* (`01061`), *Emergency* (`01085`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`), *Energy Channel* (`01018`), *Black Widow* (`01075`), *Enhanced Spider-Sense* (`01004`), *Captain Marvel's Helmet* (`01016`), *Cosmic Flight* (`01017`).
+### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue (ADR-0032) ✅ (Completed)
+* [x] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24):**
+  * Supported interruption windows and execution frames (`ExecutionFrame`, `executionStack`) without state corruption.
+  * Supported voluntary reaction windows with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
+* [x] **Decision Prompt Queue Management:**
+  * Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.
+* [x] **Promoted 5 Ambiguity Cards to 100% Confidence:** *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`).
 
 ### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031)
 * [ ] **5-Phase Reactive Attack State Machine (RR v1.8 p. 4, 7, 11, 24):**

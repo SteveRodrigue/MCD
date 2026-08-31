@@ -223,7 +223,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
      2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
-6. **Verify:** Run test suite: `npm test; npm run typecheck; npm run build`.
+6. **Regenerate Usage Audit & Verification:** **ALWAYS** run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md) with up-to-date integration metrics, sequence telemetry, and pruned ambiguity counts. Run full verification suite: `npm test; npm run typecheck; npm run build`.
 
 ---
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Mandatory Usage Audit Protocol Enforcement (`AGENTS.md` & `SKILL.md`):**
+  - Updated Point 7 of the Mandatory Post-Task Protocol in `AGENTS.md` to require running `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) whenever cards, abilities, effects, or ambiguity reports change.
+  - Updated Step 8 Verification Protocol in `.agents/skills/card-integration-protocol/SKILL.md` to mandate running the declarations analyzer on every card modification.
+  - Added audit verification instructions and updated schema specification links in `docs/guidelines/hero_creation_guide.md` and `docs/guidelines/scenario_creation_guide.md`.
+- **Milestone 2A Implementation: Universal Resolution Stack & Decision Prompt Queue (ADR-0032):**
+  - Implemented `ExecutionFrame` resolution stack (`executionStack`) and serializable FIFO prompt queue (`pendingDecisionQueue`) in `src/engine/pipeline/prompt-queue.ts`.
+  - Added support for voluntary reaction windows with dedicated "Pass / Do Nothing" options in `DecisionPromptModal.tsx` and visual queue depth badges (`QUEUE: 1 OF 2`).
+  - Added `READY_IDENTITY`, `CANCEL_WHEN_REVEALED_AND_ATTACK`, and `TAKE_THREAT_AS_DAMAGE` composable generic effect primitives in `src/engine/effects/index.ts`.
+  - Promoted 5 Core Set ambiguity cards to 100% confidence with full ability declarations: *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), and *Counter-Punch* (`01077`).
+  - Pruned 5 ambiguity reports in `docs/ambiguities/` (reduced open ambiguities from 32 down to 27).
+  - Added comprehensive test suite `tests/engine/resolution-stack-and-prompt-queue.test.ts` (8 new tests, 181 total tests passing).
 - **ADR Lifecycle & Lineage Evolution Registry (`docs/decisions/README.md`):**
   - Added visual Mermaid Lineage & Evolution graph mapping relationships across Foundation, Declarative Data, Combat, and Setup pipelines.
   - Formally updated superseded status on `ADR-0010` (superseded by `ADR-0033`), `ADR-0020` (superseded by `ADR-0032`), and `ADR-0028` (superseded by `ADR-0030`).

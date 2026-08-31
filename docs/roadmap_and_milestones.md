@@ -65,12 +65,17 @@ graph TD
    * [x] Nemesis Spawning pipeline (*Shadow of the Past* `01190` with set-aside isolation and Surge fallback).
 2. 🔴 `[Must-Have]` **Mulligan Rules Alignment (RR v1.8 p. 23):**
    * [x] Ensure rejected mulligan cards are placed in player **discard pile** (not shuffled into deck), and replacement cards drawn from top.
-3. 🔴 `[Must-Have]` **Dynamic Hand Size & Tech Upgrades (Issue #9):**
-   * [ ] Continuous aura modifying live effective hand size dynamically during round upkeep and UI rendering (*Iron Man* `01029a`, *Arc Reactor*, *Mark V Armor*, *Rocket Boots*).
+3. 🔴 `[Must-Have]` **Dynamic Hand Size & Tech Upgrades (Issue #9) (Completed):**
+   * [x] Continuous aura modifying live effective hand size dynamically during round upkeep and UI rendering (*Iron Man* `01029a`, *Arc Reactor*, *Mark V Armor*, *Rocket Boots*).
+   * [x] Tony Stark *Futurist* scrying ability with interactive player choice prompt (`DecisionPromptModal.tsx`).
 4. 🔴 `[Must-Have]` **Captain Marvel & Spider-Man Card Parity:**
    * [x] Spider-Man signature cards: *Spider-Sense*, *Backflip*, *Swinging Web Kick*, *Spider-Tracer*, *Aunt May*, *Web-Shooter*.
    * [ ] Captain Marvel signature cards: *Rechannel*, *Crisis Intervenor*, *Photonic Blast*, *Energy Channel* (energy token accumulation), *Cosmic Flight*, *Captain Marvel's Helmet*.
-5. 🔴 `[Must-Have]` **2-Hero Multi-Handed Solo Automated Match Simulation:**
+5. 🔴 `[Must-Have]` **Ergonomics & Action Engine (Completed):**
+   * [x] 1960s Daily Bugle Action Dispatcher (`DailyBugleActionNewspaper.tsx`) & Legal Actions Engine (`legal-actions-generator.ts`).
+   * [x] Form-aware Identity Action Modal on card click (`IdentityActionModal.tsx`).
+   * [x] Dynamic Fan-Out Stack Hand layout with zero-overflow auto-tightening and instant repositioning (`useHandFanLayout.ts`).
+6. 🔴 `[Must-Have]` **2-Hero Multi-Handed Solo Automated Match Simulation:**
    * [ ] Automated end-to-end game simulation verifying full win/loss conditions with 2 heroes collaborating against Rhino across multiple rounds.
 
 ---

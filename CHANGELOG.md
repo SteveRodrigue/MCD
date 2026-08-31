@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **False-Vanilla Encounter Cards Remediation & Quality Gate Gate:**
+  - Audited `core_encounter.json` to eliminate invalid `"noSupplementalNeeded": true` flags on cards with active printed rules text.
+  - Implemented and promoted active declarations for *Personal Challenge* (`01161`), *Imminent Overload* (`01171`), *The Psyche-Magnitron* (`01176`), and *Kree Manipulator* (`01178`).
+  - Isolated *Highway Robbery* (`01166`) with Circuit-Breaker into `docs/ambiguities/core_encounter_01166_highway_robbery.md` pending facedown scheme attachment engine mechanics.
+  - Added automated CI unit test in `tests/data/supplemental-schema.test.ts` ensuring no card with printed rules text can ever be marked `noSupplementalNeeded: true`.
 - **Card Integration Protocol Ambiguity Alignment & Promotions:**
   - Ran Card Integration Protocol across all 39 cards in `docs/ambiguities/`.
   - Promoted 8 fully implemented cards to $\ge 98\%$ confidence and pruned their ambiguity reports (Inbox Zero): *Armored Vest* (`01081`), *Indomitable* (`01082`), *Helicarrier* (`01092`), *Make the Call* (`01071`), *The Power of Aggression* (`01055`), *The Power of Justice* (`01062`), *The Power of Leadership* (`01072`), and *The Power of Protection* (`01079`).

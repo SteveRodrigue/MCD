@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { DifficultyMode } from '../../engine/models';
 
 export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
 
@@ -7,15 +8,21 @@ export interface GameSettings {
   soundEnabled: boolean;
   animationsSpeed: 'normal' | 'fast' | 'instant';
   edgeScrollSpeed: EdgeScrollSpeed;
+  defaultDifficulty: DifficultyMode;
+  defaultHeroicLevel: number;
 }
 
 interface GameSettingsContextType {
   settings: GameSettings;
   devMode: boolean;
   edgeScrollSpeed: EdgeScrollSpeed;
+  defaultDifficulty: DifficultyMode;
+  defaultHeroicLevel: number;
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
   setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
+  setDefaultDifficulty: (difficulty: DifficultyMode) => void;
+  setDefaultHeroicLevel: (level: number) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
 }
 
@@ -24,6 +31,8 @@ const DEFAULT_SETTINGS: GameSettings = {
   soundEnabled: true,
   animationsSpeed: 'normal',
   edgeScrollSpeed: 'normal', // Default fast responsive panning
+  defaultDifficulty: 'STANDARD',
+  defaultHeroicLevel: 0,
 };
 
 const STORAGE_KEY = 'mcd_game_settings';
@@ -63,6 +72,14 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((prev) => ({ ...prev, edgeScrollSpeed: speed }));
   };
 
+  const setDefaultDifficulty = (difficulty: DifficultyMode) => {
+    setSettings((prev) => ({ ...prev, defaultDifficulty: difficulty }));
+  };
+
+  const setDefaultHeroicLevel = (level: number) => {
+    setSettings((prev) => ({ ...prev, defaultHeroicLevel: Math.max(0, level) }));
+  };
+
   const updateSettings = (partial: Partial<GameSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
   };
@@ -73,9 +90,13 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         settings,
         devMode: settings.devMode,
         edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
+        defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
+        defaultHeroicLevel: settings.defaultHeroicLevel || 0,
         setDevMode,
         toggleDevMode,
         setEdgeScrollSpeed,
+        setDefaultDifficulty,
+        setDefaultHeroicLevel,
         updateSettings,
       }}
     >

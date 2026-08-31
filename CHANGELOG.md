@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Heroic Mode & Difficulty Controls in UI Settings & Scenario Selector:**
+  - Added dedicated difficulty selection buttons (`SKIRMISH`, `STANDARD`, `EXPERT`) and **Heroic Mode Variant** level selectors (`Off`, `Heroic 1`, `Heroic 2`, `Heroic 3`) to `ScenarioSelector.tsx`.
+  - Added visual badges distinguishing `⭐ OFFICIAL FFG HEROIC MODE` (on Expert) from `⚡ CUSTOM VARIANT` (on Standard / Skirmish).
+  - Added persistent default difficulty and Heroic level preferences in `GameSettingsContext.tsx` and `OptionsMenu.tsx`.
+  - Connected `App.tsx` $\rightarrow$ `setupGame` to seamlessly pass `difficulty` and `heroicLevel` into the live game state.
 - **Sequential Hazard Icon Distribution & Heroic Mode (RR v1.8 p. 11, p. 22):**
   - Refactored Step 4 of the Villain Phase in `src/engine/pipeline/villain-phase.ts` to implement official two-pass encounter card dealing.
   - **Pass 1 (Base & Heroic):** Deals $1 + \text{heroicLevel}$ encounter cards to each player in player order starting with the First Player.

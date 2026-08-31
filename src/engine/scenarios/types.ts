@@ -6,6 +6,7 @@ import {
 export interface ScenarioGameSetupOptions {
   scenarioId: string;
   difficulty?: DifficultyMode;
+  heroicLevel?: number;
   heroIds?: string[];
   deckOverrides?: Record<string, string[]>;
   modularSetCodes?: string[];

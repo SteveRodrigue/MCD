@@ -157,6 +157,7 @@ export interface GameState {
   scenarioId?: string;
   scenarioCardCode?: string;
   difficulty?: DifficultyMode;
+  heroicLevel?: number;
   firstPlayerIndex: number;
   activePlayerIndex: number;
   players: PlayerState[];

@@ -192,7 +192,7 @@ describe('Card Loader & Normalizer Unit Tests', () => {
 
       const webShooter = getCardEnrichment('01008');
       expect(webShooter?.uses?.count).toBe(3);
-      expect(webShooter?.abilities?.[0].effect).toBe('GENERATE_RESOURCE');
+      expect(webShooter?.abilities?.[0].steps?.[0].effect).toBe('GENERATE_RESOURCE');
     });
 
     it('provides rich ability metadata for Captain Marvel & Leadership cards', async () => {

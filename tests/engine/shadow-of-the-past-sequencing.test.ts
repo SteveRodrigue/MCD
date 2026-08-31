@@ -141,10 +141,9 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
       id: 'shadow_of_the_past_when_revealed',
       timing: 'WHEN_REVEALED' as const,
       trigger: 'WHEN_REVEALED' as const,
-      sequence: [
+      steps: [
         {
           id: 'step_1_spawn_nemesis_minion',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'PUT_INTO_PLAY',
           params: {
             from: 'SET_ASIDE',
@@ -154,7 +153,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_2_spawn_nemesis_scheme',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'PUT_INTO_PLAY',
           params: {
             from: 'SET_ASIDE',
@@ -164,7 +162,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_3_shuffle_remaining_cards',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'SHUFFLE_INTO_DECK',
           params: {
             from: 'SET_ASIDE',
@@ -174,7 +171,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_4_fallback_surge',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'TRIGGER_SURGE',
           gate: 'IF_FAILED' as const,
           params: {
@@ -226,10 +222,9 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
       id: 'shadow_of_the_past_when_revealed',
       timing: 'WHEN_REVEALED' as const,
       trigger: 'WHEN_REVEALED' as const,
-      sequence: [
+      steps: [
         {
           id: 'step_1_spawn_nemesis_minion',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'PUT_INTO_PLAY',
           params: {
             from: 'SET_ASIDE',
@@ -239,7 +234,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_2_spawn_nemesis_scheme',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'PUT_INTO_PLAY',
           params: {
             from: 'SET_ASIDE',
@@ -249,7 +243,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_3_shuffle_remaining_cards',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'SHUFFLE_INTO_DECK',
           params: {
             from: 'SET_ASIDE',
@@ -259,7 +252,6 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         },
         {
           id: 'step_4_fallback_surge',
-          timing: 'WHEN_REVEALED' as const,
           effect: 'TRIGGER_SURGE',
           gate: 'IF_FAILED' as const,
           params: {

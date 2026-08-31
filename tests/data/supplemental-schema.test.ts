@@ -65,11 +65,57 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           {
             id: 'bad_ability',
             timing: 'ILLEGAL_TIMING_KEY',
+            steps: [{ effect: 'DEAL_DAMAGE' }],
           },
         ],
       };
       const res = CardEnrichmentSchema.safeParse(invalidCard);
       expect(res.success).toBe(false);
+    });
+
+    it('Rejects card ability missing steps or having empty steps array', () => {
+      const missingSteps = {
+        comment: 'Test card missing steps',
+        abilities: [
+          {
+            id: 'missing_steps_ability',
+            timing: 'ACTION',
+          },
+        ],
+      };
+      const emptySteps = {
+        comment: 'Test card empty steps',
+        abilities: [
+          {
+            id: 'empty_steps_ability',
+            timing: 'ACTION',
+            steps: [],
+          },
+        ],
+      };
+      expect(CardEnrichmentSchema.safeParse(missingSteps).success).toBe(false);
+      expect(CardEnrichmentSchema.safeParse(emptySteps).success).toBe(false);
+    });
+
+    it('Accepts valid card ability with steps array', () => {
+      const validCard = {
+        comment: 'Valid card with steps',
+        abilities: [
+          {
+            id: 'valid_ability',
+            timing: 'ACTION',
+            steps: [
+              {
+                id: 'step_1',
+                effect: 'DEAL_DAMAGE',
+                params: { amount: 3 },
+                gate: 'ALWAYS',
+              },
+            ],
+          },
+        ],
+      };
+      expect(CardEnrichmentSchema.safeParse(validCard).success).toBe(true);
     });
 
     it('Enforces that no card marked noSupplementalNeeded has active rules text in upstream data', () => {

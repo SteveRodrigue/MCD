@@ -23,16 +23,23 @@ interface CardAudit {
   ambiguityFile?: string;
 }
 
+interface AbilityStep {
+  id?: string;
+  effect?: string;
+  gate?: string;
+  params?: Record<string, unknown>;
+  filter?: Record<string, unknown>;
+}
+
 interface CardAbility {
   id?: string;
   timing?: string;
   trigger?: string;
+  limit?: string;
   cost?: Record<string, unknown>;
-  effect?: string;
-  params?: Record<string, unknown>;
-  sequence?: CardAbility[];
   maxPerRound?: number;
   errata?: string | null;
+  steps?: AbilityStep[];
 }
 
 interface SupplementalEntry {
@@ -227,10 +234,21 @@ export function runDeclarationsAudit() {
 
   const noSupplementalCards: NoSupplementalCardInfo[] = [];
   const falseVanillaViolations: FalseVanillaViolation[] = [];
+  const multiAbilityCards: {
+    code: string;
+    name: string;
+    type: string;
+    pack: string;
+    abilitiesCount: number;
+    abilities: { id: string; timing: string; trigger?: string; stepsCount: number }[];
+  }[] = [];
 
   let totalCardsInSupplemental = 0;
   let totalCardsWithAbilities = 0;
   let totalAbilitiesDeclared = 0;
+  let totalSingleStepAbilities = 0;
+  let totalMultiStepAbilities = 0;
+  let totalCardsWithMultiStep = 0;
 
   function recordUsage(map: Map<string, UsageOccurrence[]>, key: string, occ: UsageOccurrence) {
     if (!key) return;
@@ -245,7 +263,6 @@ export function runDeclarationsAudit() {
 
     if (ability.timing) recordUsage(timingsUsage, ability.timing, occ);
     if (ability.trigger) recordUsage(triggersUsage, ability.trigger, occ);
-    if (ability.effect) recordUsage(effectsUsage, ability.effect, occ);
 
     if (ability.cost) {
       for (const costKey of Object.keys(ability.cost)) {
@@ -253,14 +270,19 @@ export function runDeclarationsAudit() {
       }
     }
 
-    if (ability.params) {
-      if (ability.params.target) recordUsage(targetsUsage, String(ability.params.target), occ);
-      if (ability.params.scaling) recordUsage(scalingUsage, String(ability.params.scaling), occ);
-    }
+    if (Array.isArray(ability.steps)) {
+      if (ability.steps.length === 1) {
+        totalSingleStepAbilities += 1;
+      } else if (ability.steps.length >= 2) {
+        totalMultiStepAbilities += 1;
+      }
 
-    if (Array.isArray(ability.sequence)) {
-      for (const subAbility of ability.sequence) {
-        processAbility(subAbility, code, cardName, pack);
+      for (const step of ability.steps) {
+        if (step.effect) recordUsage(effectsUsage, step.effect, occ);
+        if (step.params) {
+          if (step.params.target) recordUsage(targetsUsage, String(step.params.target), occ);
+          if (step.params.scaling) recordUsage(scalingUsage, String(step.params.scaling), occ);
+        }
       }
     }
   }
@@ -298,8 +320,33 @@ export function runDeclarationsAudit() {
 
       if (entry.abilities && entry.abilities.length > 0) {
         totalCardsWithAbilities += 1;
+        let cardHasMultiStep = false;
+
         for (const ability of entry.abilities) {
+          if (Array.isArray(ability.steps) && ability.steps.length >= 2) {
+            cardHasMultiStep = true;
+          }
           processAbility(ability, code, cardName, packName);
+        }
+
+        if (cardHasMultiStep) {
+          totalCardsWithMultiStep += 1;
+        }
+
+        if (entry.abilities.length > 1) {
+          multiAbilityCards.push({
+            code,
+            name: upstream ? upstream.name : 'Unknown',
+            type: upstream ? upstream.type_code : 'Unknown',
+            pack: packName,
+            abilitiesCount: entry.abilities.length,
+            abilities: entry.abilities.map((ab) => ({
+              id: ab.id || 'unnamed_ability',
+              timing: ab.timing || 'ACTION',
+              trigger: ab.trigger,
+              stepsCount: Array.isArray(ab.steps) ? ab.steps.length : 0,
+            })),
+          });
         }
       }
     }
@@ -326,6 +373,10 @@ export function runDeclarationsAudit() {
   reportLines.push(`| **Open Ambiguity Reports** | **${ambiguityReports.size}** | Blocked cards isolated in \`docs/ambiguities/\` (Inbox Zero Queue) |`);
   reportLines.push(`| **False-Vanilla Violations** | **${falseVanillaViolations.length}** | 🚨 Cards marked \`noSupplementalNeeded\` that have printed rules text |`);
   reportLines.push(`| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | Total individual ability definitions declared |`);
+  reportLines.push(`| **Single-Step Abilities (1 Step)** | **${totalSingleStepAbilities}** | Abilities with exactly 1 atomic execution step |`);
+  reportLines.push(`| **Multi-Step Abilities (2+ Steps)** | **${totalMultiStepAbilities}** | Abilities decomposed into sequenced execution pipelines |`);
+  reportLines.push(`| **Cards with Multi-Step Sequences** | **${totalCardsWithMultiStep}** | Cards containing at least 1 ability with 2+ steps |`);
+  reportLines.push(`| **Cards with Multiple Abilities (2+)** | **${multiAbilityCards.length}** | Cards declaring more than 1 distinct ability header |`);
   reportLines.push(`| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`);
   reportLines.push(`| **Unique Triggers In Use** | **${triggersUsage.size}** | Distinct trigger window types actively declared |`);
   reportLines.push(`| **Unique Timings In Use** | **${timingsUsage.size}** | Distinct timing categories actively declared |`);
@@ -384,7 +435,28 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 💥 4. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
+  reportLines.push(`## 📋 4. Cards with Multiple Abilities (2+ Abilities Declared — ${multiAbilityCards.length} Cards)`);
+  reportLines.push(``);
+  reportLines.push(`These **${multiAbilityCards.length} cards** declare multiple distinct ability headers (e.g. dual Hero/Alter-Ego actions, combined Constant modifiers with triggered Actions, or multiple Response triggers):`);
+  reportLines.push(``);
+  reportLines.push(`| Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |`);
+  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
+
+  multiAbilityCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  for (const m of multiAbilityCards) {
+    const abList = m.abilities
+      .map((a) => {
+        const triggerStr = a.trigger ? ` / \`${a.trigger}\`` : '';
+        return `• \`${a.id}\` (\`${a.timing}\`${triggerStr}, **${a.stepsCount} step${a.stepsCount === 1 ? '' : 's'}**)`;
+      })
+      .join('<br/>');
+    reportLines.push(`| \`${m.code}\` | **${m.name}** | \`${m.type}\` | \`${m.pack}\` | **${m.abilitiesCount}** | ${abList} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(`## 💥 5. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
   reportLines.push(``);
   reportLines.push(`Changing these primitives will affect many cards across the entire game engine:`);
   reportLines.push(``);
@@ -416,7 +488,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🔍 5. Single-Use & Unique Primitives (Card Count = 1)`);
+  reportLines.push(`## 🔍 6. Single-Use & Unique Primitives (Card Count = 1)`);
   reportLines.push(``);
   reportLines.push(`These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:`);
   reportLines.push(``);
@@ -444,7 +516,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⚠️ 6. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
+  reportLines.push(`## ⚠️ 7. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
   reportLines.push(``);
   reportLines.push(`These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:`);
   reportLines.push(``);
@@ -466,7 +538,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 📑 7. Complete Effects Inventory`);
+  reportLines.push(`## 📑 8. Complete Effects Inventory`);
   reportLines.push(``);
   reportLines.push(`| Effect Primitive | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -480,7 +552,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⏱️ 8. Complete Triggers Inventory`);
+  reportLines.push(`## ⏱️ 9. Complete Triggers Inventory`);
   reportLines.push(``);
   reportLines.push(`| Trigger Window | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -494,7 +566,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🎯 9. Timings, Costs & Target Selectors Inventory`);
+  reportLines.push(`## 🎯 10. Timings, Costs & Target Selectors Inventory`);
   reportLines.push(``);
   reportLines.push(`### Ability Timings:`);
   reportLines.push(`| Timing | Occurrences | Cards |`);
@@ -536,17 +608,21 @@ export function runDeclarationsAudit() {
   console.log(`\n========================================================`);
   console.log(`📊 SUPPLEMENTAL DECLARATIONS USAGE AUDIT COMPLETE`);
   console.log(`========================================================`);
-  console.log(`Total Cards Scanned:      ${totalCardsInSupplemental}`);
-  console.log(`Cards with Abilities:     ${totalCardsWithAbilities}`);
-  console.log(`No Supplemental Needed:   ${noSupplementalCards.length}`);
-  console.log(`Open Ambiguity Reports:   ${ambiguityReports.size}`);
-  console.log(`False-Vanilla Violations: ${falseVanillaViolations.length}`);
-  console.log(`Total Abilities Declared: ${totalAbilitiesDeclared}`);
-  console.log(`Unique Effect Types:      ${effectsUsage.size}`);
-  console.log(`Unique Trigger Types:     ${triggersUsage.size}`);
-  console.log(`High-Impact Effects (>=5):${highImpactEffects.length}`);
-  console.log(`Single-Use Effects (=1):  ${singleUseEffects.length}`);
-  console.log(`Report Written To:        ${OUTPUT_REPORT_PATH}`);
+  console.log(`Total Cards Scanned:        ${totalCardsInSupplemental}`);
+  console.log(`Cards with Abilities:       ${totalCardsWithAbilities}`);
+  console.log(`No Supplemental Needed:     ${noSupplementalCards.length}`);
+  console.log(`Open Ambiguity Reports:     ${ambiguityReports.size}`);
+  console.log(`False-Vanilla Violations:   ${falseVanillaViolations.length}`);
+  console.log(`Total Abilities Declared:   ${totalAbilitiesDeclared}`);
+  console.log(`Single-Step Abilities (=1): ${totalSingleStepAbilities}`);
+  console.log(`Multi-Step Abilities (>=2): ${totalMultiStepAbilities}`);
+  console.log(`Cards with Multi-Step:      ${totalCardsWithMultiStep}`);
+  console.log(`Cards with 2+ Abilities:    ${multiAbilityCards.length}`);
+  console.log(`Unique Effect Types:        ${effectsUsage.size}`);
+  console.log(`Unique Trigger Types:       ${triggersUsage.size}`);
+  console.log(`High-Impact Effects (>=5):  ${highImpactEffects.length}`);
+  console.log(`Single-Use Effects (=1):    ${singleUseEffects.length}`);
+  console.log(`Report Written To:          ${OUTPUT_REPORT_PATH}`);
   console.log(`========================================================\n`);
 }
 

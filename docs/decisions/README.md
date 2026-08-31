@@ -49,6 +49,7 @@ Each record documents:
 | [ADR-0028](0028-declarative-effect-sequencing-and-conditional-gates.md) | 2026-08-31 | Declarative Effect Sequencing, Conditional Gates & Contextual Entity Passing | **Accepted** | Decompose complex abilities into generic atomic steps (`sequence: []`) with conditional gating (`gate: "ALWAYS" \| "THEN" \| "IF_AMOUNT_ZERO" \| "IF_ALREADY_HAS_STATUS"`) per RR v1.8. |
 | [ADR-0029](0029-generic-zone-transfer-and-deck-manipulation-primitives.md) | 2026-08-31 | Generic Zone Transfer and Deck Manipulation Primitives | **Accepted** | Standardize parameterized semantic primitives (`PUT_INTO_PLAY`, `SHUFFLE_INTO_DECK`, `DISCARD_CARDS`) across all card zones instead of zone-specific effect names. |
 | [ADR-0030](0030-unified-ability-step-sequence-architecture.md) | 2026-08-31 | Unified Ability Step Sequence Architecture & Supplemental Normalization | **Accepted** | Unify ability execution by strictly decoupling ability headers (`CardAbility`) from execution steps (`AbilityStep[]`), eliminating schema duality and branching. |
+| [ADR-0031](0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md) | 2026-08-31 | Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline | **Accepted** | Formalize 5-phase attack state machine supporting Basic Hero DEF, Ally blocks, Defense events, Boost cancellation, Overkill, and Direct Damage separation. |
 
 ---
 

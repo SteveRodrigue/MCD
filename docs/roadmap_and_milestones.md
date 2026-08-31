@@ -78,13 +78,16 @@ graph TD
   * Allow voluntary reactions with explicit "Pass / Do Nothing" options in prompts.
 * [ ] **Unlocks 10 Ambiguity Cards:** *Great Responsibility* (`01061`), *Emergency* (`01085`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`), *Energy Channel* (`01018`), *Black Widow* (`01075`), *Enhanced Spider-Sense* (`01004`), *Captain Marvel's Helmet* (`01016`), *Cosmic Flight* (`01017`).
 
-### 3. 🔴 `[Must-Have]` Milestone 2B: Unified Combat & Damage Event Pipeline (ADR-0031)
-* [ ] **Atomic Damage Resolution Pipeline (RR v1.8 p. 4, 11):**
-  * Formally differentiate damage caused by an *Attack* from *Direct Damage*.
-  * Structured flow: Source $\rightarrow$ IsAttack $\rightarrow$ Guard/Target Validation $\rightarrow$ Toughness Strip $\rightarrow$ Interrupt/Prevention $\rightarrow$ Apply Damage $\rightarrow$ Overkill/Defeat $\rightarrow$ Responses (Retaliate/Heal).
-* [ ] **Event Dispatcher Hooks:**
-  * Fire discrete engine events for `ATTACK_RESOLVED`, `DAMAGE_DEALT`, `OVERKILL_OCCURRED`, `ENEMY_DEFEATED`, `ALLY_CONSEQUENTIAL_DAMAGE`, `THWART_COMPLETED`, and `RECOVER_COMPLETED`.
-* [ ] **Unlocks 8 Ambiguity Cards:** *Gamma Slam* (`01021`), *Relentless Assault* (`01053`), *Uppercut* (`01054`), *Tigra* (`01051`), *Panther Claws* (`01047`), *Hulk* (`01050`), *Superhuman Strength* (`01028`), *Repulsor Blast* (`01031`).
+### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031)
+* [ ] **5-Phase Reactive Attack State Machine (RR v1.8 p. 4, 7, 11, 24):**
+  * **Phase 1 (Initiation & Pre-Attack):** Stun clearing, Webbed Up intercepts, `WHEN_ENEMY_INITIATES_ATTACK` triggers (*Spider-Sense*, *Powerful Punch*).
+  * **Phase 2 (Defender Declaration Window):** Interactive `DECLARE_DEFENDER` decision prompt supporting Basic Hero DEF (`DEF` stat mitigation), Ally Defend (absorbs attack, Overkill check), Co-op Teammate Defend, Defense Initiation Events (*I Can Do This All Day*, *Mutant Protectors*), or Take Undefended.
+  * **Phase 3 (Boost Resolution & Boost Interrupts):** Facedown Boost card deals, `WHEN_BOOST_CARD_REVEALED` interrupts (*Defiance*, *Preemptive Strike*), and ★ Star Boost abilities.
+  * **Phase 4 (Damage Calculation & Damage Prevention):** Dynamic DEF subtraction ($\max(0, \text{Total Attack} - \text{DEF})$), Damage Prevention window (*Backflip*, *Cosmic Flight*, *Side Step*), Tough status absorption, and Overkill spillover routing to identity.
+  * **Phase 5 (Post-Attack Responses & Retaliate):** Retaliate return damage, `HERO_DEFENDED_ATTACK` responses (*Indomitable*, *Counter-Punch*, *Unflappable*), and `ATTACK_RESOLVED` events.
+* [ ] **Direct Damage vs. Attack Damage Invariant:**
+  * Strictly separate Attack Damage from Direct / Indirect Damage (treacheries, hazards, consequential damage). Direct damage bypasses DEF, prohibits ally blocks, and forbids attack defense cards, while honoring universal prevention (*Cosmic Flight*, *Tough*).
+* [ ] **Unlocks 12+ Ambiguity Cards:** *Backflip* (`01003`), *Cosmic Flight* (`01017`), *Indomitable* (`01082`), *Counter-Punch* (`01077`), *Armored Vest* (`01081`), *Get Behind Me!* (`01078`), *Great Responsibility* (`01061`), *Gamma Slam* (`01021`), *Relentless Assault* (`01053`), *Uppercut* (`01054`), *Tigra* (`01051`), *Hulk* (`01050`).
 
 ### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0032)
 * [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**

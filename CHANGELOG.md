@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031 / RR v1.8 p. 4, 7, 11, 24):**
+  - Formulated the 5-phase reactive enemy attack state machine: Phase 1 (Initiation/Spider-Sense), Phase 2 (Defender Declaration / Basic Hero DEF / Ally blocks / Co-op), Phase 3 (Boost resolution / Boost cancellations), Phase 4 (Damage calculation / DEF subtraction / Damage prevention / Tough / Overkill), and Phase 5 (Post-defense responses / Retaliate).
+  - Established the Direct Damage Invariant: non-attack damage bypasses DEF and ally blocks, prohibiting attack-specific defense cards while preserving universal prevention (*Cosmic Flight*, *Tough*).
+  - Authored `docs/decisions/0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md` and integrated into Milestone 2B of `docs/roadmap_and_milestones.md`.
 - **Strategic Roadmap & Milestone Architecture Realignment (`docs/roadmap_and_milestones.md`):**
   - Re-anchored the development roadmap on a **Capability-First, Headless-Simulation-Driven** milestone sequence to minimize tech debt and eliminate card-by-card refactor loops.
   - Sequenced foundational engine pipelines (**Milestone 2A: Universal Resolution Stack & Prompt Queue / ADR-0030**, **Milestone 2B: Unified Combat & Damage Event Pipeline / ADR-0031**, **Milestone 2C: Scenario Setup & Modular Plugin Pipeline / ADR-0032**) ahead of card batch promotion (**Milestone 2D: The Great Core Set Promotion Pass / Inbox Zero**).

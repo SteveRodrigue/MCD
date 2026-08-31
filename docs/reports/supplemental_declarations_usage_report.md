@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-08-31T03:32:54.082Z`  
+> **Generated:** `2026-08-31T03:35:40.728Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -111,34 +111,34 @@ These primitives are declared in schema types or specifications but have **0 act
 
 | Category | Specified Primitive | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| **Effect** | `EXHAUST_CHARACTER` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `SEARCH_AND_DRAW` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `ALLY_LIMIT_BONUS` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `CONFUSE_TARGET` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `STUN_TARGET` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `GIVE_TOUGH_STATUS` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `REDISTRIBUTE_DAMAGE` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `DEAL_INDIRECT_DAMAGE` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Effect** | `PLAY_FROM_ZONE` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this effect. |
-| **Trigger** | `BOOST_STAR_RESOLVED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `PLAYED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ATTACHED_MINION_DEFEATED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ATTACHED_ENEMY_ATTACKS` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `MAIN_SCHEME_ADVANCED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `FORM_CHANGED_TO_ALTER_EGO` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ATTACK` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ROUND_BEGAN` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ROUND_ENDED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `ROUND_END` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `PLAYER_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `PLAYER_PHASE_ENDED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `VILLAIN_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `VILLAIN_PHASE_ENDED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `DEFEATED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `DAMAGE_TAKEN` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `THREAT_PLACED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `HERO_FLIPPED` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
-| **Trigger** | `PHASE_START` | 🟡 `0 Cards` | Defined in schema/specifications; no supplemental card currently declares this trigger. |
+| **Effect** | `APPLY_STATUS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `DEAL_DAMAGE_SPLIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `DOUBLE_RESOURCE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `PLACE_THREAT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `PLAY_FROM_ZONE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `RESOURCE_GENERATION` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `TOUGHNESS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Trigger** | `ATTACHED_ENEMY_ATTACKS` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ATTACHED_MINION_DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `BOOST` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `BOOST_STAR_RESOLVED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `DAMAGE_TAKEN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `FORM_CHANGED_TO_ALTER_EGO` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `HERO_FLIPPED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `MAIN_SCHEME_ADVANCED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `PHASE_START` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `PLAYED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `PLAYER_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `PLAYER_PHASE_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ROUND_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ROUND_END` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ROUND_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `THREAT_PLACED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `VILLAIN_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `VILLAIN_PHASE_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 
 ---
 
@@ -259,6 +259,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | `HERO_INTERRUPT` | **4** | `01061` Great Responsibility (event), `01075` Black Widow (ally), `01078` Get Behind Me! (event), `01082` Indomitable (upgrade) |
 | `INTERRUPT` | **3** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01017` Cosmic Flight (upgrade) |
 | `FORCED_INTERRUPT` | **3** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01098` Armored Rhino Suit (attachment) |
+| `ALTER_EGO_INTERRUPT` | 🟡 **0** | *Unused in supplemental declarations* |
+| `HERO_RESPONSE` | 🟡 **0** | *Unused in supplemental declarations* |
+| `ALTER_EGO_RESPONSE` | 🟡 **0** | *Unused in supplemental declarations* |
+| `BOOST` | 🟡 **0** | *Unused in supplemental declarations* |
+| `WHEN_PLAYED` | 🟡 **0** | *Unused in supplemental declarations* |
 
 ### Cost Primitives:
 | Cost Key | Occurrences | Cards |

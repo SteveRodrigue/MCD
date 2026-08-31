@@ -268,9 +268,17 @@ describe('Custom Hero: Daredevil', () => {
 });
 ```
 
+### Run Schema Validation & Declarations Audit
+After adding cards and writing tests, execute:
+```bash
+npm run report:declarations   # Regenerates docs/reports/supplemental_declarations_usage_report.md
+npm test                      # Runs Vitest test suite including supplemental-schema.test.ts
+npm run typecheck             # Verifies TypeScript types
+```
+
 ---
 
 ## 7. Related References
-* [Supplemental Data Schema Specification](../specifications/supplemental_data_schema.md)
+* [Supplemental Data Schema Specification](../specifications/supplemental/README.md)
 * [Scenario Creation Guide](./scenario_creation_guide.md)
 * [Card Integration Protocol (SKILL.md)](../../.agents/skills/card-integration-protocol/SKILL.md)

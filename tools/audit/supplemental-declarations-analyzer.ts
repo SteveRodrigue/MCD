@@ -77,6 +77,42 @@ interface AmbiguityReportInfo {
   blockerCategory: string;
 }
 
+interface FalseVanillaViolation {
+  code: string;
+  name: string;
+  type: string;
+  pack: string;
+  printedText: string;
+}
+
+function hasActiveRulesText(text?: string): boolean {
+  if (!text) return false;
+  const stripped = text
+    .replace(/<i>.*?<\/i>/gis, '')
+    .replace(/<b>Contents<\/b>:.*?Setup:.*$/gis, '')
+    .replace(/<b>If this stage is completed, the players lose the game\.<\/b>/gis, '')
+    .replace(/Hazard icon/gis, '')
+    .replace(/Acceleration icon/gis, '')
+    .replace(/Crisis icon/gis, '')
+    .replace(/Boost icon/gis, '')
+    .trim();
+
+  if (!stripped || stripped.length === 0) return false;
+
+  const triggerPatterns = [
+    /\bWhen Revealed\b/i,
+    /\bWhen Defeated\b/i,
+    /\bAction\b/i,
+    /\bInterrupt\b/i,
+    /\bResponse\b/i,
+    /\bSpecial\b/i,
+    /\bBoost\b/i,
+    /\[star\]/i,
+    /\bForced\b/i,
+  ];
+  return triggerPatterns.some((p) => p.test(stripped));
+}
+
 function loadAllUpstreamCards(): Map<string, UpstreamCard> {
   const map = new Map<string, UpstreamCard>();
   if (!fs.existsSync(UPSTREAM_DIR)) return map;
@@ -166,7 +202,6 @@ function discoverSpecifiedPrimitives(): { effects: Set<string>; triggers: Set<st
     const specFiles = fs.readdirSync(SPECS_DIR).filter((f) => f.endsWith('.md'));
     for (const file of specFiles) {
       const content = fs.readFileSync(path.join(SPECS_DIR, file), 'utf-8');
-      // Match markdown headers like ### `EFFECT_NAME`
       const matches = content.matchAll(/### `([A-Z0-9_]+)`/g);
       for (const m of matches) {
         if (m[1]) effects.add(m[1]);
@@ -191,6 +226,7 @@ export function runDeclarationsAudit() {
   const scalingUsage = new Map<string, UsageOccurrence[]>();
 
   const noSupplementalCards: NoSupplementalCardInfo[] = [];
+  const falseVanillaViolations: FalseVanillaViolation[] = [];
 
   let totalCardsInSupplemental = 0;
   let totalCardsWithAbilities = 0;
@@ -236,6 +272,17 @@ export function runDeclarationsAudit() {
       const cardName = upstream ? `${upstream.name} (${upstream.type_code})` : `Unknown Card #${code}`;
 
       if (entry.noSupplementalNeeded) {
+        // Quality Gate Check: Does this card actually have rules text?
+        if (upstream && hasActiveRulesText(upstream.text)) {
+          falseVanillaViolations.push({
+            code,
+            name: upstream.name,
+            type: upstream.type_code,
+            pack: packName,
+            printedText: upstream.text || '',
+          });
+        }
+
         noSupplementalCards.push({
           code,
           name: upstream ? upstream.name : 'Unknown',
@@ -277,12 +324,30 @@ export function runDeclarationsAudit() {
   reportLines.push(`| **Active Declared Cards** | **${totalCardsWithAbilities}** | Cards with executable \`abilities: [...]\` |`);
   reportLines.push(`| **No Supplemental Needed** | **${noSupplementalCards.length}** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |`);
   reportLines.push(`| **Open Ambiguity Reports** | **${ambiguityReports.size}** | Blocked cards isolated in \`docs/ambiguities/\` (Inbox Zero Queue) |`);
+  reportLines.push(`| **False-Vanilla Violations** | **${falseVanillaViolations.length}** | 🚨 Cards marked \`noSupplementalNeeded\` that have printed rules text |`);
   reportLines.push(`| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | Total individual ability definitions declared |`);
   reportLines.push(`| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`);
   reportLines.push(`| **Unique Triggers In Use** | **${triggersUsage.size}** | Distinct trigger window types actively declared |`);
   reportLines.push(`| **Unique Timings In Use** | **${timingsUsage.size}** | Distinct timing categories actively declared |`);
   reportLines.push(`| **Unique Cost Keys In Use** | **${costsUsage.size}** | Distinct ability cost types actively declared |`);
   reportLines.push(``);
+
+  if (falseVanillaViolations.length > 0) {
+    reportLines.push(`---`);
+    reportLines.push(``);
+    reportLines.push(`## 🚨 2. False-Vanilla Violations (Immediate Action Required)`);
+    reportLines.push(``);
+    reportLines.push(`The following **${falseVanillaViolations.length} cards** are marked \`"noSupplementalNeeded": true\`, but have active printed rules text in \`data/upstream/\`! Per Step 3 of the Card Integration Protocol, they must be converted to active abilities or isolated in \`docs/ambiguities/\`:`);
+    reportLines.push(``);
+    reportLines.push(`| Card Code | Card Name | Type | Pack | Printed Rules Text |`);
+    reportLines.push(`| :--- | :--- | :--- | :--- | :--- |`);
+    for (const v of falseVanillaViolations) {
+      const cleanText = v.printedText.replace(/\r?\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
+      reportLines.push(`| \`${v.code}\` | **${v.name}** | \`${v.type}\` | \`${v.pack}\` | ${cleanText} |`);
+    }
+    reportLines.push(``);
+  }
+
   reportLines.push(`---`);
   reportLines.push(``);
   reportLines.push(`## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — ${ambiguityReports.size} Cards)`);
@@ -311,7 +376,6 @@ export function runDeclarationsAudit() {
   reportLines.push(`| Card Code | Card Name | Type | Faction / Aspect | Pack | Description / Comment |`);
   reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
 
-  // Sort by code canonically
   noSupplementalCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
   for (const c of noSupplementalCards) {
     reportLines.push(`| \`${c.code}\` | **${c.name}** | \`${c.type}\` | \`${c.faction}\` | \`${c.pack}\` | ${c.comment} |`);
@@ -476,6 +540,7 @@ export function runDeclarationsAudit() {
   console.log(`Cards with Abilities:     ${totalCardsWithAbilities}`);
   console.log(`No Supplemental Needed:   ${noSupplementalCards.length}`);
   console.log(`Open Ambiguity Reports:   ${ambiguityReports.size}`);
+  console.log(`False-Vanilla Violations: ${falseVanillaViolations.length}`);
   console.log(`Total Abilities Declared: ${totalAbilitiesDeclared}`);
   console.log(`Unique Effect Types:      ${effectsUsage.size}`);
   console.log(`Unique Trigger Types:     ${triggersUsage.size}`);

@@ -71,5 +71,60 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const res = CardEnrichmentSchema.safeParse(invalidCard);
       expect(res.success).toBe(false);
     });
+
+    it('Enforces that no card marked noSupplementalNeeded has active rules text in upstream data', () => {
+      const upstreamDir = path.resolve('data/upstream/pack');
+      const upstreamCards = new Map<string, any>();
+      if (fs.existsSync(upstreamDir)) {
+        for (const file of fs.readdirSync(upstreamDir).filter((f) => f.endsWith('.json'))) {
+          const list = JSON.parse(fs.readFileSync(path.join(upstreamDir, file), 'utf8'));
+          if (Array.isArray(list)) {
+            for (const c of list) {
+              if (c && c.code) upstreamCards.set(c.code, c);
+            }
+          }
+        }
+      }
+
+      for (const file of packFiles) {
+        const filePath = path.join(packDir, file);
+        const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const cards = json.cards || json;
+
+        for (const [code, entry] of Object.entries(cards) as [string, any][]) {
+          if (entry.noSupplementalNeeded) {
+            const upstream = upstreamCards.get(code);
+            if (upstream && upstream.text) {
+              const stripped = upstream.text
+                .replace(/<i>.*?<\/i>/gis, '')
+                .replace(/<b>Contents<\/b>:.*?Setup:.*$/gis, '')
+                .replace(/<b>If this stage is completed, the players lose the game\.<\/b>/gis, '')
+                .replace(/Hazard icon/gis, '')
+                .replace(/Acceleration icon/gis, '')
+                .replace(/Crisis icon/gis, '')
+                .replace(/Boost icon/gis, '')
+                .trim();
+
+              const hasActiveTrigger = [
+                /\bWhen Revealed\b/i,
+                /\bWhen Defeated\b/i,
+                /\bAction\b/i,
+                /\bInterrupt\b/i,
+                /\bResponse\b/i,
+                /\bSpecial\b/i,
+                /\bBoost\b/i,
+                /\[star\]/i,
+                /\bForced\b/i,
+              ].some((p) => p.test(stripped));
+
+              expect(
+                hasActiveTrigger,
+                `Card ${code} (${upstream.name}) has active rules text but is marked noSupplementalNeeded: true`,
+              ).toBe(false);
+            }
+          }
+        }
+      }
+    });
   });
 });

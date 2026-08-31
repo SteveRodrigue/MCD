@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { TriggerTypeSchema, TimingTypeSchema } from '../../src/data/supplemental/schema';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,6 +9,7 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 
 const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
+const SPECS_DIR = path.join(ROOT_DIR, 'docs/specifications/supplemental');
 const OUTPUT_REPORT_PATH = path.join(ROOT_DIR, 'docs/reports/supplemental_declarations_usage_report.md');
 
 interface CardAudit {
@@ -24,9 +26,9 @@ interface CardAbility {
   id?: string;
   timing?: string;
   trigger?: string;
-  cost?: Record<string, any>;
+  cost?: Record<string, unknown>;
   effect?: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   sequence?: CardAbility[];
   maxPerRound?: number;
   errata?: string | null;
@@ -86,7 +88,7 @@ function loadAllSupplementalPacks(): Map<string, Record<string, SupplementalEntr
     const packName = file.replace('.json', '');
     try {
       const content = JSON.parse(fs.readFileSync(path.join(SUPPLEMENTAL_DIR, file), 'utf-8'));
-      const cards = (content && content.cards) ? content.cards : content;
+      const cards = content && content.cards ? content.cards : content;
       packs.set(packName, cards);
     } catch (e) {
       console.warn(`Warning: Failed to parse supplemental pack ${file}:`, e);
@@ -95,9 +97,35 @@ function loadAllSupplementalPacks(): Map<string, Record<string, SupplementalEntr
   return packs;
 }
 
+function discoverSpecifiedPrimitives(): { effects: Set<string>; triggers: Set<string> } {
+  const effects = new Set<string>();
+  const triggers = new Set<string>();
+
+  // Add all triggers from Zod schema
+  for (const option of TriggerTypeSchema.options) {
+    triggers.add(option);
+  }
+
+  // Parse markdown spec files in docs/specifications/supplemental/
+  if (fs.existsSync(SPECS_DIR)) {
+    const specFiles = fs.readdirSync(SPECS_DIR).filter((f) => f.endsWith('.md'));
+    for (const file of specFiles) {
+      const content = fs.readFileSync(path.join(SPECS_DIR, file), 'utf-8');
+      // Match markdown headers like ### `EFFECT_NAME`
+      const matches = content.matchAll(/### `([A-Z0-9_]+)`/g);
+      for (const m of matches) {
+        if (m[1]) effects.add(m[1]);
+      }
+    }
+  }
+
+  return { effects, triggers };
+}
+
 export function runDeclarationsAudit() {
   const upstreamCards = loadAllUpstreamCards();
   const supplementalPacks = loadAllSupplementalPacks();
+  const { effects: specifiedEffects, triggers: specifiedTriggers } = discoverSpecifiedPrimitives();
 
   const effectsUsage = new Map<string, UsageOccurrence[]>();
   const triggersUsage = new Map<string, UsageOccurrence[]>();
@@ -163,75 +191,6 @@ export function runDeclarationsAudit() {
     }
   }
 
-  // Known schema specifications to check for zero-usage primitives
-  const knownSpecEffects = [
-    'DEAL_DAMAGE',
-    'REMOVE_THREAT',
-    'DRAW_CARDS',
-    'READY_CHARACTER',
-    'EXHAUST_CHARACTER',
-    'HEAL_DAMAGE',
-    'MODIFY_HAND_SIZE',
-    'PLAYER_CHOICE',
-    'CHANGE_FORM_DRAW_TO_HAND_SIZE',
-    'SEARCH_AND_DRAW',
-    'SPAWN_NEMESIS',
-    'VILLAIN_SCHEMES',
-    'VILLAIN_ATTACKS',
-    'ALLY_LIMIT_BONUS',
-    'CONFUSE_TARGET',
-    'STUN_TARGET',
-    'GIVE_TOUGH_STATUS',
-    'DISCARD_ATTACHMENT',
-    'DISCARD_SELF',
-    'PREVENT_DAMAGE',
-    'REDISTRIBUTE_DAMAGE',
-    'MODIFY_STAT',
-    'ADD_THREAT_PER_PLAYER',
-    'DEAL_INDIRECT_DAMAGE',
-    'PLAY_FROM_ZONE',
-  ];
-
-  const knownSpecTriggers = [
-    'WHEN_REVEALED',
-    'BOOST_STAR_RESOLVED',
-    'VILLAIN_INITIATES_ATTACK',
-    'TAKE_ATTACK_DAMAGE',
-    'TAKE_DAMAGE',
-    'CARD_PLAYED',
-    'PLAYED',
-    'MINION_DEFEATED',
-    'MINION_DEFEATED_BY_ATTACK',
-    'ENEMY_DEFEATED_BY_HERO_ATTACK',
-    'MINION_ENTERS_PLAY',
-    'TREACHERY_REVEALED',
-    'ATTACHED_MINION_DEFEATED',
-    'ATTACHED_ENEMY_ATTACKS',
-    'THREAT_WOULD_BE_PLACED',
-    'MAIN_SCHEME_ADVANCED',
-    'FORM_CHANGED_TO_HERO',
-    'FORM_CHANGED_TO_ALTER_EGO',
-    'BASIC_ATTACK_PERFORMED',
-    'HERO_DEFENDED_ATTACK',
-    'ATTACK_RESOLVED',
-    'THWART_RESOLVED',
-    'RESOURCE_SPENT',
-    'MINION_ATTACKED',
-    'ATTACK',
-    'ROUND_BEGAN',
-    'ROUND_ENDED',
-    'ROUND_END',
-    'PLAYER_PHASE_BEGAN',
-    'PLAYER_PHASE_ENDED',
-    'VILLAIN_PHASE_BEGAN',
-    'VILLAIN_PHASE_ENDED',
-    'DEFEATED',
-    'DAMAGE_TAKEN',
-    'THREAT_PLACED',
-    'HERO_FLIPPED',
-    'PHASE_START',
-  ];
-
   // Markdown Report Generator
   const reportLines: string[] = [];
   const timestamp = new Date().toISOString();
@@ -265,7 +224,7 @@ export function runDeclarationsAudit() {
   reportLines.push(`| Category | Primitive Name | Card Count | Example Cards |`);
   reportLines.push(`| :--- | :--- | :--- | :--- |`);
 
-  function formatExamples(occurrences: UsageOccurrence[], max: number = 3): string {
+  function formatExamples(occurrences: UsageOccurrence[], max = 3): string {
     const uniqueCards = Array.from(new Set(occurrences.map((o) => `\`${o.code}\` ${o.cardName}`)));
     const sample = uniqueCards.slice(0, max).join(', ');
     return uniqueCards.length > max ? `${sample} *(+${uniqueCards.length - max} more)*` : sample;
@@ -325,15 +284,15 @@ export function runDeclarationsAudit() {
   reportLines.push(`| Category | Specified Primitive | Status | Notes |`);
   reportLines.push(`| :--- | :--- | :--- | :--- |`);
 
-  for (const specEffect of knownSpecEffects) {
+  for (const specEffect of Array.from(specifiedEffects).sort()) {
     if (!effectsUsage.has(specEffect)) {
-      reportLines.push(`| **Effect** | \`${specEffect}\` | 🟡 \`0 Cards\` | Defined in schema/specifications; no supplemental card currently declares this effect. |`);
+      reportLines.push(`| **Effect** | \`${specEffect}\` | 🟡 \`0 Cards\` | Documented in \`docs/specifications/supplemental/\` but has 0 card declarations. |`);
     }
   }
 
-  for (const specTrigger of knownSpecTriggers) {
+  for (const specTrigger of Array.from(specifiedTriggers).sort()) {
     if (!triggersUsage.has(specTrigger)) {
-      reportLines.push(`| **Trigger** | \`${specTrigger}\` | 🟡 \`0 Cards\` | Defined in schema/specifications; no supplemental card currently declares this trigger. |`);
+      reportLines.push(`| **Trigger** | \`${specTrigger}\` | 🟡 \`0 Cards\` | Defined in \`TriggerTypeSchema\` but has 0 card declarations. |`);
     }
   }
 
@@ -375,6 +334,12 @@ export function runDeclarationsAudit() {
   reportLines.push(`| :--- | :--- | :--- |`);
   for (const [timing, list] of Array.from(timingsUsage.entries()).sort((a, b) => b[1].length - a[1].length)) {
     reportLines.push(`| \`${timing}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const timing of TimingTypeSchema.options) {
+    if (!timingsUsage.has(timing)) {
+      reportLines.push(`| \`${timing}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
   }
 
   reportLines.push(``);

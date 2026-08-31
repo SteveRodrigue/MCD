@@ -49,6 +49,7 @@ export interface PlayerState {
   tableau: CardInstance[]; // Supports & Upgrades in play
   allies: CardInstance[]; // Allies in play
   engagedMinions: CardInstance[]; // Minions engaged with this player
+  basicChangeFormUsedThisRound: boolean;
   formChangedThisRound: boolean;
   recoveryUsedThisRound: boolean;
   /** Tracks ability IDs used during the current round (e.g. limit: ONCE_PER_ROUND) */

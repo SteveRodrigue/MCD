@@ -31,8 +31,8 @@ export function canChangeForm(
     }
   }
 
-  if (player.formChangedThisRound) {
-    return { allowed: false, reason: 'Form has already been changed this round (Limit once per round).' };
+  if (player.basicChangeFormUsedThisRound || player.formChangedThisRound) {
+    return { allowed: false, reason: 'Form has already been changed this round (Limit once per round as a basic action).' };
   }
 
   if (targetFormCode) {

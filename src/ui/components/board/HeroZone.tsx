@@ -61,7 +61,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handBonus = effectiveHandSize - baseHandSize;
 
   // Action Permissions
-  const canFlip = !player.formChangedThisRound;
+  const canFlip = !player.basicChangeFormUsedThisRound && !player.formChangedThisRound;
   const canRecover = !isHero && !player.exhausted && !player.recoveryUsedThisRound && player.health < effectiveMaxHealth;
   const canAttack = isHero && !player.exhausted;
   const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;

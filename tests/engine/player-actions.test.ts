@@ -593,6 +593,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
           tableau: [],
           allies: [],
           engagedMinions: [],
+          basicChangeFormUsedThisRound: false,
           formChangedThisRound: false,
           recoveryUsedThisRound: false,
           dealtEncounterCards: [],

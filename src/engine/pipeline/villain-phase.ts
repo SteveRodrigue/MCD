@@ -544,6 +544,12 @@ export function step5_revealEncounterCards(state: GameState): GameState {
 export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState {
   state.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
 
+  // Dispatch Round Ended triggers across players
+  for (const player of state.players) {
+    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
+    dispatchTrigger(state, 'ROUND_END', { targetPlayerId: player.id });
+  }
+
   // 1. Pass First Player Token
   state.firstPlayerIndex = (state.firstPlayerIndex + 1) % state.players.length;
   state.activePlayerIndex = state.firstPlayerIndex;
@@ -555,7 +561,7 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       const abilities = a.card.enrichment?.abilities || [];
       return abilities.some(
         (ab) =>
-          (ab.trigger === 'ROUND_END' || ab.timing === 'FORCED_RESPONSE') &&
+          (ab.trigger === 'ROUND_END' || ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
           ab.effect === 'DISCARD_SELF',
       );
     });
@@ -569,6 +575,7 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
 
     // Ready identity
     player.exhausted = false;
+    player.basicChangeFormUsedThisRound = false;
     player.formChangedThisRound = false;
     player.recoveryUsedThisRound = false;
     player.usedAbilitiesThisRound = {};
@@ -620,6 +627,12 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
     onomatopoeia: 'NEW ROUND!',
   });
 
+  // Dispatch Round Began & Player Phase Began lifecycle triggers
+  for (const player of state.players) {
+    dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
+    dispatchTrigger(state, 'PLAYER_PHASE_BEGAN', { targetPlayerId: player.id });
+  }
+
   return state;
 }
 
@@ -640,6 +653,11 @@ export function executeVillainPhase(state: GameState): GameState {
     onomatopoeia: 'VILLAIN PHASE!',
   });
 
+  // Dispatch Villain Phase Began triggers
+  for (const player of nextState.players) {
+    dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
+  }
+
   step1_placeThreat(nextState);
   if (nextState.winner) return nextState;
 
@@ -654,6 +672,11 @@ export function executeVillainPhase(state: GameState): GameState {
 
   step5_revealEncounterCards(nextState);
   if (nextState.winner) return nextState;
+
+  // Dispatch Villain Phase Ended triggers
+  for (const player of nextState.players) {
+    dispatchTrigger(nextState, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
+  }
 
   step6_passFirstPlayerAndRoundUpkeep(nextState);
   return nextState;

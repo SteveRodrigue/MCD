@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Turn-Gated Form Changes & Phase/Round Lifecycle Triggers (RR v1.8 p. 8, 22, 24):**
+  - Enforced official 1/round basic form change limit (`basicChangeFormUsedThisRound: boolean`) across engine and UI (`canChangeForm`, `HeroZone.tsx`, `IdentityActionModal.tsx`).
+  - Separated card-effect form flips (e.g. *Split Personality* `01025`) from basic form flips, allowing card effects to flip identity without consuming the once-per-round basic action limit.
+  - Implemented `CHANGE_FORM_DRAW_TO_HAND_SIZE` effect primitive and promoted *Split Personality* (`01025`) to 98% confidence, resolving and deleting ambiguity report `core_01025_split_personality.md` (Inbox Zero).
+  - Established formal phase and round lifecycle trigger pipeline (`ROUND_BEGAN`, `ROUND_ENDED`, `PLAYER_PHASE_BEGAN`, `PLAYER_PHASE_ENDED`, `VILLAIN_PHASE_BEGAN`, `VILLAIN_PHASE_ENDED`).
+  - Automated round reset of `basicChangeFormUsedThisRound = false` upon new round transition in `step6_passFirstPlayerAndRoundUpkeep`.
+  - Added unit test suites `tests/engine/form-change-rules.test.ts` and `tests/engine/lifecycle-triggers.test.ts`.
 - **Heroic Mode & Difficulty Controls in UI Settings & Scenario Selector:**
   - Added dedicated difficulty selection buttons (`SKIRMISH`, `STANDARD`, `EXPERT`) and **Heroic Mode Variant** level selectors (`Off`, `Heroic 1`, `Heroic 2`, `Heroic 3`) to `ScenarioSelector.tsx`.
   - Added visual badges distinguishing `⭐ OFFICIAL FFG HEROIC MODE` (on Expert) from `⚡ CUSTOM VARIANT` (on Standard / Skirmish).

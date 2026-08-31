@@ -40,7 +40,13 @@ export type TriggerType =
   | 'RESOURCE_SPENT'
   | 'MINION_ATTACKED'
   | 'ATTACK'
-  | 'ROUND_END';
+  | 'ROUND_BEGAN'
+  | 'ROUND_ENDED'
+  | 'PLAYER_PHASE_BEGAN'
+  | 'PLAYER_PHASE_ENDED'
+  | 'VILLAIN_PHASE_BEGAN'
+  | 'VILLAIN_PHASE_ENDED'
+  | 'ROUND_END'; // backward-compatible alias
 
 export type EffectType =
   | 'DRAW_CARDS'
@@ -63,6 +69,7 @@ export type EffectType =
   | 'REDUCE_NEXT_CARD_COST'
   | 'CONVERT_THREAT_TO_DAMAGE'
   | 'SEARCH_AND_REVEAL_SIDE_SCHEME'
+  | 'CHANGE_FORM_DRAW_TO_HAND_SIZE'
   | 'THW_BONUS_PER_SIDE_SCHEME'
   | 'NICK_FURY_CHOICE'
   | 'DISCARD_SELF'

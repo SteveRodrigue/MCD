@@ -22,11 +22,15 @@
           "id": "spider_sense",
           "timing": "INTERRUPT",
           "trigger": "VILLAIN_INITIATES_ATTACK",
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ]
     },
@@ -51,11 +55,15 @@
           "id": "scientist",
           "timing": "RESOURCE",
           "limit": "ONCE_PER_ROUND",
-          "effect": "GENERATE_RESOURCE",
-          "params": {
-            "resource": "mental",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "GENERATE_RESOURCE",
+              "params": {
+                "resource": "mental",
+                "amount": 1
+              }
+            }
+          ]
         }
       ]
     },
@@ -84,11 +92,15 @@
           "id": "black_cat_when_played",
           "timing": "FORCED_RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "DISCARD_TOP_DECK_FILTER",
-          "params": {
-            "count": 2,
-            "filterResource": "mental"
-          }
+          "steps": [
+            {
+              "effect": "DISCARD_TOP_DECK_FILTER",
+              "params": {
+                "count": 2,
+                "filterResource": "mental"
+              }
+            }
+          ]
         }
       ]
     },
@@ -103,10 +115,14 @@
           "cost": {
             "discardSelf": true
           },
-          "effect": "PREVENT_DAMAGE",
-          "params": {
-            "amount": "ALL"
-          }
+          "steps": [
+            {
+              "effect": "PREVENT_DAMAGE",
+              "params": {
+                "amount": "ALL"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -151,11 +167,15 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 8,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 8,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -182,11 +202,15 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 4,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 4,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -210,21 +234,29 @@
         {
           "id": "spider_tracer_attach",
           "timing": "CARD_PLAYED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "CHOSEN_MINION"
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "CHOSEN_MINION"
+              }
+            }
+          ]
         },
         {
           "id": "spider_tracer_defeat_trigger",
           "timing": "FORCED_INTERRUPT",
           "trigger": "MINION_DEFEATED",
-          "effect": "WHEN_ATTACHED_HOST_DEFEATED",
-          "params": {
-            "effect": "REMOVE_THREAT",
-            "amount": 3,
-            "target": "MAIN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "WHEN_ATTACHED_HOST_DEFEATED",
+              "params": {
+                "effect": "REMOVE_THREAT",
+                "amount": 3,
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -247,15 +279,19 @@
         {
           "id": "web_shooter_resource",
           "timing": "RESOURCE",
-          "effect": "GENERATE_RESOURCE",
           "cost": {
             "exhaust": true,
             "spendCounter": 1
           },
-          "params": {
-            "resource": "wild",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "GENERATE_RESOURCE",
+              "params": {
+                "resource": "wild",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "uses": {
@@ -283,20 +319,28 @@
         {
           "id": "webbed_up_attach",
           "timing": "CARD_PLAYED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "ENEMY",
-            "maxPerHost": 1
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "ENEMY",
+                "maxPerHost": 1
+              }
+            }
+          ]
         },
         {
           "id": "webbed_up_intercept",
           "timing": "FORCED_INTERRUPT",
           "trigger": "VILLAIN_INITIATES_ATTACK",
-          "effect": "INTERCEPT_ATTACK",
-          "params": {
-            "effect": "CANCEL_ATTACK_AND_STUN_HOST"
-          }
+          "steps": [
+            {
+              "effect": "INTERCEPT_ATTACK",
+              "params": {
+                "effect": "CANCEL_ATTACK_AND_STUN_HOST"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -324,11 +368,15 @@
             "exhaustSelf": true,
             "costCheck": "CURRENT_HEALTH < MAX_HEALTH"
           },
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "SELF_IDENTITY"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "SELF_IDENTITY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -355,11 +403,15 @@
           "id": "commander",
           "timing": "ALTER_EGO_ACTION",
           "limit": "ONCE_PER_ROUND",
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "target": "CHOSEN_PLAYER"
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1,
+                "target": "CHOSEN_PLAYER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -382,11 +434,15 @@
           "id": "spider_woman_enters_play",
           "timing": "RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "CONFUSED",
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "CONFUSED",
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -411,12 +467,16 @@
           "tags": [
             "THWART"
           ],
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 2,
-            "bonusEnergyThwart": 2,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 2,
+                "bonusEnergyThwart": 2,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -441,12 +501,16 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 5,
-            "bonusEnergyDraw": 1,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 5,
+                "bonusEnergyDraw": 1,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -488,11 +552,15 @@
             "exhaustSelf": true,
             "discardFromHand": 1
           },
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "carolBonus": 1
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1,
+                "carolBonus": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -568,11 +636,15 @@
           "id": "she_hulk_form_change",
           "timing": "FORCED_RESPONSE",
           "trigger": "FORM_CHANGED_TO_HERO",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -595,11 +667,15 @@
           "id": "jennifer_walters_thwart",
           "timing": "ALTER_EGO_ACTION",
           "limit": "ONCE_PER_ROUND",
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 1,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -653,11 +729,15 @@
         {
           "id": "ground_stomp_action",
           "timing": "HERO_ACTION",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "ALL_ENEMIES"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "ALL_ENEMIES"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -685,12 +765,16 @@
               "maxCount": 5
             }
           },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "target": "MAIN_SCHEME",
-            "scaling": "PER_DISCARDED_CARD",
-            "multiplier": 1
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "target": "MAIN_SCHEME",
+                "scaling": "PER_DISCARDED_CARD",
+                "multiplier": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -730,15 +814,13 @@
         {
           "id": "split_personality",
           "timing": "ACTION",
-          "sequence": [
+          "steps": [
             {
               "id": "split_personality_flip",
-              "timing": "ACTION",
               "effect": "FLIP_FORM"
             },
             {
               "id": "split_personality_draw",
-              "timing": "ACTION",
               "effect": "DRAW_UP_TO_HAND_SIZE",
               "gate": "THEN"
             }
@@ -770,11 +852,15 @@
               "mental": 1
             }
           },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 2,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 2,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -800,10 +886,14 @@
             "exhaustSelf": true,
             "takeDamage": 1
           },
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -841,15 +931,19 @@
         {
           "id": "iron_man_hand_size",
           "timing": "CONSTANT",
-          "effect": "MODIFY_HAND_SIZE",
-          "filter": {
-            "trait": "Tech",
-            "type_code": "upgrade"
-          },
-          "params": {
-            "scaling": "PER_MATCHING_CARD",
-            "multiplier": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_HAND_SIZE",
+              "params": {
+                "scaling": "PER_MATCHING_CARD",
+                "multiplier": 1
+              },
+              "filter": {
+                "trait": "Tech",
+                "type_code": "upgrade"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -874,12 +968,16 @@
           "id": "futurist",
           "timing": "ALTER_EGO_ACTION",
           "limit": "ONCE_PER_ROUND",
-          "effect": "SCRY_AND_SELECT_TRAIT",
-          "params": {
-            "lookCount": 3,
-            "trait": "Tech",
-            "takeCount": 1
-          }
+          "steps": [
+            {
+              "effect": "SCRY_AND_SELECT_TRAIT",
+              "params": {
+                "lookCount": 3,
+                "trait": "Tech",
+                "takeCount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -905,11 +1003,15 @@
             "exhaustSelf": true,
             "damageHero": 2
           },
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "ALL_ENEMIES"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "ALL_ENEMIES"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -952,12 +1054,16 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 4,
-            "aerialBonus": 4,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 4,
+                "aerialBonus": 4,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1014,10 +1120,14 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "READY_IDENTITY",
-          "params": {
-            "target": "SELF_IDENTITY"
-          }
+          "steps": [
+            {
+              "effect": "READY_IDENTITY",
+              "params": {
+                "target": "SELF_IDENTITY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1041,10 +1151,14 @@
         {
           "id": "mark_v_armor_hp",
           "timing": "CONSTANT",
-          "effect": "MODIFY_MAX_HEALTH",
-          "params": {
-            "amount": 6
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "params": {
+                "amount": 6
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1070,12 +1184,16 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 1,
-            "aerialAllSchemes": true,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "aerialAllSchemes": true,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1103,12 +1221,16 @@
               "energy": 1
             }
           },
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "aerialBonus": 1,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "aerialBonus": 1,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1130,10 +1252,14 @@
         {
           "id": "rocket_boots_hp",
           "timing": "CONSTANT",
-          "effect": "MODIFY_MAX_HEALTH",
-          "params": {
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_MAX_HEALTH",
+              "params": {
+                "amount": 1
+              }
+            }
+          ]
         },
         {
           "id": "rocket_boots_aerial",
@@ -1144,11 +1270,15 @@
               "energy"
             ]
           },
-          "effect": "GRANT_KEYWORD",
-          "params": {
-            "keyword": "Aerial",
-            "duration": "END_OF_PHASE"
-          }
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "params": {
+                "keyword": "Aerial",
+                "duration": "END_OF_PHASE"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1319,10 +1449,14 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 2
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 2
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1363,12 +1497,16 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "baseAmount": 2,
-            "finisherBonus": 2,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "baseAmount": 2,
+                "finisherBonus": 2,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1393,12 +1531,16 @@
           "tags": [
             "THWART"
           ],
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "baseAmount": 1,
-            "finisherBonus": 1,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "baseAmount": 1,
+                "finisherBonus": 1,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1453,11 +1595,15 @@
           "id": "tigra_defeat_heal",
           "timing": "RESPONSE",
           "trigger": "MINION_DEFEATED_BY_ATTACK",
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1480,11 +1626,15 @@
           "id": "chase_them_down",
           "timing": "RESPONSE",
           "trigger": "ENEMY_DEFEATED_BY_HERO_ATTACK",
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 2,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 2,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1509,12 +1659,16 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 5,
-            "target": "CHOSEN_MINION",
-            "overkillOnPhysical": true
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 5,
+                "target": "CHOSEN_MINION",
+                "overkillOnPhysical": true
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1539,11 +1693,15 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 5,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 5,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1577,10 +1735,14 @@
         {
           "id": "power_of_aggression",
           "timing": "RESOURCE",
-          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
-          "params": {
-            "aspect": "aggression"
-          }
+          "steps": [
+            {
+              "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+              "params": {
+                "aspect": "aggression"
+              }
+            }
+          ]
         }
       ]
     },
@@ -1599,11 +1761,15 @@
             "exhaustSelf": true,
             "removeCounter": 1
           },
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1625,11 +1791,15 @@
         {
           "id": "combat_training_atk",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "ATTACK",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1652,11 +1822,15 @@
           "id": "daredevil_after_thwart",
           "timing": "RESPONSE",
           "trigger": "THWART_RESOLVED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1678,13 +1852,17 @@
         {
           "id": "jessica_jones_thw_bonus",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "THWART",
-            "scaling": "PER_SIDE_SCHEME",
-            "multiplier": 1,
-            "maxBonus": 4
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "THWART",
+                "scaling": "PER_SIDE_SCHEME",
+                "multiplier": 1,
+                "maxBonus": 4
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1709,12 +1887,16 @@
           "tags": [
             "THWART"
           ],
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 3,
-            "bonusWithMental": 1,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 3,
+                "bonusWithMental": 1,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1766,10 +1948,14 @@
         {
           "id": "power_of_justice",
           "timing": "RESOURCE",
-          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
-          "params": {
-            "aspect": "justice"
-          }
+          "steps": [
+            {
+              "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+              "params": {
+                "aspect": "justice"
+              }
+            }
+          ]
         }
       ]
     },
@@ -1783,11 +1969,15 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 1,
-            "target": "MAIN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1820,11 +2010,15 @@
             "exhaustSelf": true,
             "removeCounter": 1
           },
-          "effect": "REMOVE_THREAT",
-          "params": {
-            "amount": 1,
-            "target": "CHOSEN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1847,11 +2041,15 @@
         {
           "id": "heroic_intuition_thw",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "THWART",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "THWART",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1882,11 +2080,15 @@
           "cost": {
             "removeCounter": 1
           },
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "TRIGGERING_MINION"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "TRIGGERING_MINION"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1909,11 +2111,15 @@
           "id": "maria_hill_enters_play",
           "timing": "RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "target": "ALL_PLAYERS"
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1,
+                "target": "ALL_PLAYERS"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1995,10 +2201,14 @@
         {
           "id": "make_the_call",
           "timing": "ACTION",
-          "effect": "PLAY_ALLY_FROM_DISCARD",
-          "params": {
-            "target": "ALLY_IN_DISCARD"
-          }
+          "steps": [
+            {
+              "effect": "PLAY_ALLY_FROM_DISCARD",
+              "params": {
+                "target": "ALLY_IN_DISCARD"
+              }
+            }
+          ]
         }
       ]
     },
@@ -2020,10 +2230,14 @@
         {
           "id": "power_of_leadership",
           "timing": "RESOURCE",
-          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
-          "params": {
-            "aspect": "leadership"
-          }
+          "steps": [
+            {
+              "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+              "params": {
+                "aspect": "leadership"
+              }
+            }
+          ]
         }
       ]
     },
@@ -2033,11 +2247,15 @@
         {
           "id": "triskelion_ally_limit",
           "timing": "CONSTANT",
-          "effect": "MODIFY_ALLY_LIMIT",
-          "params": {
-            "amount": 1,
-            "target": "SELF_IDENTITY"
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_ALLY_LIMIT",
+              "params": {
+                "amount": 1,
+                "target": "SELF_IDENTITY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2059,29 +2277,41 @@
         {
           "id": "inspired_attach",
           "timing": "CARD_PLAYED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "CHOSEN_ALLY",
-            "maxPerHost": 1
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "CHOSEN_ALLY",
+                "maxPerHost": 1
+              }
+            }
+          ]
         },
         {
           "id": "inspired_thw_bonus",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "THWART",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "THWART",
+                "amount": 1
+              }
+            }
+          ]
         },
         {
           "id": "inspired_atk_bonus",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "ATTACK",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2120,11 +2350,15 @@
         {
           "id": "luke_cage_tough",
           "timing": "SETUP",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2190,10 +2424,14 @@
         {
           "id": "power_of_protection",
           "timing": "RESOURCE",
-          "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
-          "params": {
-            "aspect": "protection"
-          }
+          "steps": [
+            {
+              "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
+              "params": {
+                "aspect": "protection"
+              }
+            }
+          ]
         }
       ]
     },
@@ -2212,11 +2450,15 @@
             "exhaustSelf": true,
             "removeCounter": 1
           },
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "CHOSEN_CHARACTER"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "CHOSEN_CHARACTER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2238,11 +2480,15 @@
         {
           "id": "armored_vest_def",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "DEFENSE",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "DEFENSE",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2268,10 +2514,14 @@
           "cost": {
             "discardSelf": true
           },
-          "effect": "READY_CHARACTER",
-          "params": {
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "READY_CHARACTER",
+              "params": {
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2294,11 +2544,15 @@
           "id": "mockingbird_when_played",
           "timing": "FORCED_RESPONSE",
           "trigger": "CARD_PLAYED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "STUNNED",
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "STUNNED",
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2322,42 +2576,46 @@
           "id": "nick_fury_enters_play",
           "timing": "CARD_PLAYED",
           "trigger": "CARD_PLAYED",
-          "effect": "PLAYER_CHOICE",
-          "params": {
-            "title": "Nick Fury's Orders",
-            "description": "Choose one of Nick Fury's tactical abilities:",
-            "options": [
-              {
-                "id": "draw_3_cards",
-                "label": "Draw 3 Cards",
-                "description": "Draw 3 cards from your deck into your hand.",
-                "effect": "DRAW_CARDS",
-                "params": {
-                  "count": 3
-                }
-              },
-              {
-                "id": "remove_2_threat",
-                "label": "Remove 2 Threat",
-                "description": "Remove 2 threat from the active main scheme.",
-                "effect": "REMOVE_THREAT",
-                "params": {
-                  "amount": 2,
-                  "target": "MAIN_SCHEME"
-                }
-              },
-              {
-                "id": "deal_4_damage",
-                "label": "Deal 4 Damage",
-                "description": "Deal 4 damage to the villain.",
-                "effect": "DEAL_DAMAGE",
-                "params": {
-                  "amount": 4,
-                  "target": "VILLAIN"
-                }
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "params": {
+                "title": "Nick Fury's Orders",
+                "description": "Choose one of Nick Fury's tactical abilities:",
+                "options": [
+                  {
+                    "id": "draw_3_cards",
+                    "label": "Draw 3 Cards",
+                    "description": "Draw 3 cards from your deck into your hand.",
+                    "effect": "DRAW_CARDS",
+                    "params": {
+                      "count": 3
+                    }
+                  },
+                  {
+                    "id": "remove_2_threat",
+                    "label": "Remove 2 Threat",
+                    "description": "Remove 2 threat from the active main scheme.",
+                    "effect": "REMOVE_THREAT",
+                    "params": {
+                      "amount": 2,
+                      "target": "MAIN_SCHEME"
+                    }
+                  },
+                  {
+                    "id": "deal_4_damage",
+                    "label": "Deal 4 Damage",
+                    "description": "Deal 4 damage to the villain.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "amount": 4,
+                      "target": "VILLAIN"
+                    }
+                  }
+                ]
               }
-            ]
-          }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2399,11 +2657,15 @@
         {
           "id": "first_aid",
           "timing": "ACTION",
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "CHOSEN_CHARACTER"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "CHOSEN_CHARACTER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2428,11 +2690,15 @@
           "tags": [
             "ATTACK"
           ],
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 3,
-            "target": "CHOSEN_ENEMY"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 3,
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2505,11 +2771,15 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "DRAW_CARDS",
-          "params": {
-            "count": 1,
-            "target": "CHOSEN_PLAYER"
-          }
+          "steps": [
+            {
+              "effect": "DRAW_CARDS",
+              "params": {
+                "count": 1,
+                "target": "CHOSEN_PLAYER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -2546,11 +2816,15 @@
           "cost": {
             "exhaustSelf": true
           },
-          "effect": "REDUCE_NEXT_CARD_COST",
-          "params": {
-            "amount": 1,
-            "target": "CHOSEN_PLAYER"
-          }
+          "steps": [
+            {
+              "effect": "REDUCE_NEXT_CARD_COST",
+              "params": {
+                "amount": 1,
+                "target": "CHOSEN_PLAYER"
+              }
+            }
+          ]
         }
       ]
     },

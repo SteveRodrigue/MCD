@@ -24,15 +24,19 @@
           "id": "rhino_stage_ii_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
-          "params": {
-            "targetCardCode": "01107",
-            "searchZones": [
-              "ENCOUNTER_DECK",
-              "ENCOUNTER_DISCARD"
-            ],
-            "shuffleDeck": "ENCOUNTER_DECK"
-          }
+          "steps": [
+            {
+              "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
+              "params": {
+                "targetCardCode": "01107",
+                "searchZones": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
+                "shuffleDeck": "ENCOUNTER_DECK"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -57,20 +61,28 @@
           "id": "rhino_stage_iii_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "STUNNED",
-            "target": "ALL_HEROES"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "STUNNED",
+                "target": "ALL_HEROES"
+              }
+            }
+          ]
         },
         {
           "id": "rhino_stage_iii_tough",
           "timing": "SETUP",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -131,21 +143,29 @@
           "id": "armored_rhino_suit_attach",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "VILLAIN"
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
         },
         {
           "id": "armored_rhino_suit_shield",
           "timing": "FORCED_INTERRUPT",
           "trigger": "TAKE_ATTACK_DAMAGE",
-          "effect": "ATTACHMENT_DAMAGE_SHIELD",
-          "params": {
-            "mode": "PREVENT_ALL_AND_DISCARD",
-            "maxAbsorb": 5,
-            "target": "ATTACHED_VILLAIN"
-          }
+          "steps": [
+            {
+              "effect": "ATTACHMENT_DAMAGE_SHIELD",
+              "params": {
+                "mode": "PREVENT_ALL_AND_DISCARD",
+                "maxAbsorb": 5,
+                "target": "ATTACHED_VILLAIN"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -169,27 +189,39 @@
           "id": "charge_attach",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "VILLAIN"
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
         },
         {
           "id": "charge_atk_bonus",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "ATTACK",
-            "amount": 3
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "ATTACK",
+                "amount": 3
+              }
+            }
+          ]
         },
         {
           "id": "charge_overkill",
           "timing": "CONSTANT",
-          "effect": "GRANT_KEYWORD",
-          "params": {
-            "keyword": "OVERKILL"
-          }
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "params": {
+                "keyword": "OVERKILL"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -213,19 +245,27 @@
           "id": "ivory_horn_attach",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ATTACH_TO_HOST",
-          "params": {
-            "target": "VILLAIN"
-          }
+          "steps": [
+            {
+              "effect": "ATTACH_TO_HOST",
+              "params": {
+                "target": "VILLAIN"
+              }
+            }
+          ]
         },
         {
           "id": "ivory_horn_atk_bonus",
           "timing": "CONSTANT",
-          "effect": "MODIFY_STAT",
-          "params": {
-            "stat": "ATTACK",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "MODIFY_STAT",
+              "params": {
+                "stat": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
         },
         {
           "id": "ivory_horn_discard_action",
@@ -235,10 +275,14 @@
               "physical": 3
             }
           },
-          "effect": "DISCARD_ATTACHMENT",
-          "params": {
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "DISCARD_ATTACHMENT",
+              "params": {
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -262,10 +306,14 @@
         {
           "id": "hydra_mercenary_guard",
           "timing": "CONSTANT",
-          "effect": "GRANT_KEYWORD",
-          "params": {
-            "keyword": "GUARD"
-          }
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "params": {
+                "keyword": "GUARD"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -288,20 +336,28 @@
         {
           "id": "sandman_toughness",
           "timing": "SETUP",
-          "effect": "GIVE_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "GIVE_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         },
         {
           "id": "sandman_attack_discard",
           "timing": "FORCED_RESPONSE",
           "trigger": "MINION_ATTACKED",
-          "effect": "DISCARD_ENCOUNTER_DECK",
-          "params": {
-            "count": 2
-          }
+          "steps": [
+            {
+              "effect": "DISCARD_ENCOUNTER_DECK",
+              "params": {
+                "count": 2
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -325,11 +381,15 @@
           "id": "shocker_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "target": "ALL_HEROES",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "target": "ALL_HEROES",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -352,10 +412,9 @@
           "id": "hard_to_keep_down_heal",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "sequence": [
+          "steps": [
             {
               "id": "hard_to_keep_down_heal_step",
-              "timing": "WHEN_REVEALED",
               "effect": "HEAL_DAMAGE",
               "params": {
                 "amount": 4,
@@ -364,7 +423,6 @@
             },
             {
               "id": "hard_to_keep_down_surge_step",
-              "timing": "WHEN_REVEALED",
               "effect": "TRIGGER_SURGE",
               "gate": "IF_AMOUNT_ZERO"
             }
@@ -392,10 +450,9 @@
           "id": "im_tough_status",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "sequence": [
+          "steps": [
             {
               "id": "im_tough_status_step",
-              "timing": "WHEN_REVEALED",
               "effect": "ADD_STATUS",
               "params": {
                 "status": "TOUGH",
@@ -404,7 +461,6 @@
             },
             {
               "id": "im_tough_surge_step",
-              "timing": "WHEN_REVEALED",
               "effect": "TRIGGER_SURGE",
               "gate": "IF_ALREADY_HAS_STATUS",
               "params": {
@@ -436,10 +492,14 @@
           "id": "stampede_attack",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE",
-          "params": {
-            "target": "ACTIVE_PLAYER"
-          }
+          "steps": [
+            {
+              "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE",
+              "params": {
+                "target": "ACTIVE_PLAYER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -463,11 +523,15 @@
           "id": "breakin_and_takin_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT_PER_PLAYER",
-          "params": {
-            "target": "THIS_SIDE_SCHEME",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT_PER_PLAYER",
+              "params": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -491,10 +555,14 @@
           "id": "crowd_control_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "WHEN_REVEALED_THREAT_PER_PLAYER",
-          "params": {
-            "amountPerPlayer": 1
-          }
+          "steps": [
+            {
+              "effect": "WHEN_REVEALED_THREAT_PER_PLAYER",
+              "params": {
+                "amountPerPlayer": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -519,11 +587,15 @@
           "id": "bomb_scare_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT_PER_PLAYER",
-          "params": {
-            "target": "THIS_SIDE_SCHEME",
-            "amount": 1
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT_PER_PLAYER",
+              "params": {
+                "target": "THIS_SIDE_SCHEME",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -546,33 +618,37 @@
           "id": "hydra_bomber_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "PLAYER_CHOICE",
-          "params": {
-            "title": "Hydra Bomber Attack",
-            "description": "Choose an effect to resolve for Hydra Bomber's When Revealed trigger:",
-            "options": [
-              {
-                "id": "take_damage",
-                "label": "Take 2 Damage",
-                "description": "Deal 2 damage to your identity.",
-                "effect": "DEAL_DAMAGE",
-                "params": {
-                  "target": "HERO",
-                  "amount": 2
-                }
-              },
-              {
-                "id": "place_threat",
-                "label": "Place 1 Threat on Main Scheme",
-                "description": "Place 1 threat on the active main scheme.",
-                "effect": "PLACE_THREAT",
-                "params": {
-                  "target": "MAIN_SCHEME",
-                  "amount": 1
-                }
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "params": {
+                "title": "Hydra Bomber Attack",
+                "description": "Choose an effect to resolve for Hydra Bomber's When Revealed trigger:",
+                "options": [
+                  {
+                    "id": "take_damage",
+                    "label": "Take 2 Damage",
+                    "description": "Deal 2 damage to your identity.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "target": "HERO",
+                      "amount": 2
+                    }
+                  },
+                  {
+                    "id": "place_threat",
+                    "label": "Place 1 Threat on Main Scheme",
+                    "description": "Place 1 threat on the active main scheme.",
+                    "effect": "PLACE_THREAT",
+                    "params": {
+                      "target": "MAIN_SCHEME",
+                      "amount": 1
+                    }
+                  }
+                ]
               }
-            ]
-          }
+            }
+          ]
         }
       ],
       "audit": {
@@ -596,8 +672,12 @@
           "id": "explosion_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "EXPLOSION",
-          "params": {}
+          "steps": [
+            {
+              "effect": "EXPLOSION",
+              "params": {}
+            }
+          ]
         }
       ],
       "audit": {
@@ -621,11 +701,15 @@
           "id": "false_alarm_confuse",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "CONFUSED",
-            "target": "ACTIVE_IDENTITY"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "CONFUSED",
+                "target": "ACTIVE_IDENTITY"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -648,7 +732,11 @@
           "id": "affairs_of_state",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
@@ -677,11 +765,15 @@
           "id": "killmonger_response",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -699,11 +791,15 @@
           "id": "heart_shaped_herb",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "VILLAIN"
-          }
+          "steps": [
+            {
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "VILLAIN"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -721,11 +817,15 @@
           "id": "ritual_combat",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -743,7 +843,11 @@
           "id": "legal_work",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
@@ -762,11 +866,15 @@
           "id": "personal_challenge_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT_PER_PLAYER",
-          "params": {
-            "amountPerPlayer": 1,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT_PER_PLAYER",
+              "params": {
+                "amountPerPlayer": 1,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -786,11 +894,15 @@
           "id": "titania_response",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -807,10 +919,14 @@
         {
           "id": "genetically_enhanced",
           "timing": "CONSTANT",
-          "effect": "ADD_STATUS",
-          "params": {
-            "bonusAttack": 1
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "bonusAttack": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -828,11 +944,15 @@
           "id": "titanias_fury",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -850,7 +970,11 @@
           "id": "eviction_notice",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
@@ -882,11 +1006,15 @@
           "id": "vulture_quickstrike",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -904,11 +1032,15 @@
           "id": "sweeping_swoop",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -926,11 +1058,15 @@
           "id": "vultures_plans",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "CONFUSED",
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "CONFUSED",
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -948,7 +1084,11 @@
           "id": "business_problems",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
@@ -967,11 +1107,15 @@
           "id": "imminent_overload_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT_PER_PLAYER",
-          "params": {
-            "amountPerPlayer": 1,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT_PER_PLAYER",
+              "params": {
+                "amountPerPlayer": 1,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -991,11 +1135,15 @@
           "id": "whiplash_response",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1012,10 +1160,14 @@
         {
           "id": "electric_whip_attack",
           "timing": "CONSTANT",
-          "effect": "ADD_STATUS",
-          "params": {
-            "bonusAttack": 1
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "bonusAttack": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1033,11 +1185,15 @@
           "id": "electromagnetic_backlash",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1055,7 +1211,11 @@
           "id": "family_emergency",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
@@ -1074,11 +1234,15 @@
           "id": "psyche_magnitron_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT_PER_PLAYER",
-          "params": {
-            "amountPerPlayer": 1,
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT_PER_PLAYER",
+              "params": {
+                "amountPerPlayer": 1,
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1098,11 +1262,15 @@
           "id": "yon_rogg_response",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "TOUGH",
-            "target": "SELF"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "SELF"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1120,22 +1288,30 @@
           "id": "kree_manipulator_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_THREAT",
-          "params": {
-            "amount": 1,
-            "target": "MAIN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
         },
         {
           "id": "kree_manipulator_boost",
           "timing": "BOOST",
           "trigger": "BOOST_STAR_RESOLVED",
-          "effect": "ADD_THREAT",
-          "params": {
-            "amount": 1,
-            "target": "MAIN_SCHEME",
-            "condition": "UNDEFENDED_ATTACK"
-          }
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "MAIN_SCHEME",
+                "condition": "UNDEFENDED_ATTACK"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1155,11 +1331,15 @@
           "id": "yon_roggs_treason",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DEAL_DAMAGE",
-          "params": {
-            "amount": 2,
-            "target": "HERO"
-          }
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 2,
+                "target": "HERO"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1177,8 +1357,12 @@
           "id": "advance_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_SCHEMES",
-          "params": {}
+          "steps": [
+            {
+              "effect": "VILLAIN_SCHEMES",
+              "params": {}
+            }
+          ]
         }
       ],
       "audit": {
@@ -1201,8 +1385,12 @@
           "id": "assault_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_ATTACKS",
-          "params": {}
+          "steps": [
+            {
+              "effect": "VILLAIN_ATTACKS",
+              "params": {}
+            }
+          ]
         }
       ],
       "audit": {
@@ -1226,10 +1414,14 @@
           "id": "caught_off_guard_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE",
-          "params": {
-            "target": "ACTIVE_PLAYER"
-          }
+          "steps": [
+            {
+              "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE",
+              "params": {
+                "target": "ACTIVE_PLAYER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1252,8 +1444,12 @@
           "id": "gang_up_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
-          "params": {}
+          "steps": [
+            {
+              "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
+              "params": {}
+            }
+          ]
         }
       ],
       "audit": {
@@ -1277,10 +1473,9 @@
           "id": "shadow_of_the_past_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "sequence": [
+          "steps": [
             {
               "id": "step_1_spawn_nemesis_minion",
-              "timing": "WHEN_REVEALED",
               "effect": "PUT_INTO_PLAY",
               "params": {
                 "from": "SET_ASIDE",
@@ -1293,7 +1488,6 @@
             },
             {
               "id": "step_2_spawn_nemesis_scheme",
-              "timing": "WHEN_REVEALED",
               "effect": "PUT_INTO_PLAY",
               "params": {
                 "from": "SET_ASIDE",
@@ -1306,7 +1500,6 @@
             },
             {
               "id": "step_3_shuffle_remaining_cards",
-              "timing": "WHEN_REVEALED",
               "effect": "SHUFFLE_INTO_DECK",
               "params": {
                 "from": "SET_ASIDE",
@@ -1318,7 +1511,6 @@
             },
             {
               "id": "step_4_fallback_surge",
-              "timing": "WHEN_REVEALED",
               "effect": "TRIGGER_SURGE",
               "gate": "IF_FAILED",
               "params": {
@@ -1351,30 +1543,34 @@
           "id": "exhaustion_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "PLAYER_CHOICE",
-          "params": {
-            "title": "Exhaustion Treachery",
-            "description": "Choose to either exhaust your identity or take 2 damage:",
-            "options": [
-              {
-                "id": "exhaust_identity",
-                "label": "Exhaust Identity",
-                "description": "Exhaust your hero or alter-ego.",
-                "effect": "EXHAUST_IDENTITY",
-                "params": {}
-              },
-              {
-                "id": "take_2_damage",
-                "label": "Take 2 Damage",
-                "description": "Deal 2 damage to your identity.",
-                "effect": "DEAL_DAMAGE",
-                "params": {
-                  "target": "HERO",
-                  "amount": 2
-                }
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "params": {
+                "title": "Exhaustion Treachery",
+                "description": "Choose to either exhaust your identity or take 2 damage:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust Identity",
+                    "description": "Exhaust your hero or alter-ego.",
+                    "effect": "EXHAUST_IDENTITY",
+                    "params": {}
+                  },
+                  {
+                    "id": "take_2_damage",
+                    "label": "Take 2 Damage",
+                    "description": "Deal 2 damage to your identity.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "target": "HERO",
+                      "amount": 2
+                    }
+                  }
+                ]
               }
-            ]
-          }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1397,10 +1593,14 @@
           "id": "masterplan_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
-          "params": {
-            "amount": 4
-          }
+          "steps": [
+            {
+              "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
+              "params": {
+                "amount": 4
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1424,15 +1624,13 @@
           "id": "under_fire_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "sequence": [
+          "steps": [
             {
               "id": "under_fire_surge",
-              "timing": "WHEN_REVEALED",
               "effect": "TRIGGER_SURGE"
             },
             {
               "id": "under_fire_reveal",
-              "timing": "WHEN_REVEALED",
               "effect": "REVEAL_ENCOUNTER_CARD"
             }
           ]
@@ -1459,10 +1657,14 @@
           "id": "masterplan_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS",
-          "params": {
-            "target": "MAIN_SCHEME"
-          }
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
         }
       ],
       "audit": {
@@ -1480,7 +1682,11 @@
           "id": "under_fire_when_revealed",
           "timing": "FORCED_RESPONSE",
           "trigger": "WHEN_REVEALED",
-          "effect": "DISCARD_SELF"
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {

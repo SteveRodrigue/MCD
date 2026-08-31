@@ -793,19 +793,36 @@
       ]
     },
     "01024": {
-      "comment": "Event: Hero Response: After She-Hulk makes a basic attack, ready She-Hulk.",
+      "comment": "Event: Hero Response: After you make a basic attack (using your ATK), ready She-Hulk.",
+      "abilities": [
+        {
+          "id": "one_two_punch_response",
+          "timing": "RESPONSE",
+          "trigger": "BASIC_ATTACK_PERFORMED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "READY_IDENTITY"
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T11:32",
+        "reviewedAt": "2026-08-31T11:32",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) -> READY_CHARACTER ({\"target\":\"SELF\"})",
-        "ambiguityFile": "docs/ambiguities/core_01024_one_two_punch.md"
+        "confidence": 100,
+        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) [Cost: Discard this card] -> Ready She-Hulk"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Response: After you make a basic attack (using your ATK), ready She-Hulk."
+        "Trigger: Hero Response after you make a basic attack (RESPONSE @ BASIC_ATTACK_PERFORMED)",
+        "Cost: Discard One-Two Punch from hand",
+        "Effect: Ready She-Hulk"
       ]
     },
     "01025": {
@@ -1914,18 +1931,34 @@
     },
     "01061": {
       "comment": "Defense Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
+      "abilities": [
+        {
+          "id": "great_responsibility_interrupt",
+          "timing": "INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "TAKE_THREAT_AS_DAMAGE"
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T11:32",
+        "reviewedAt": "2026-08-31T11:32",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONVERT_THREAT_TO_DAMAGE",
-        "ambiguityFile": "docs/ambiguities/core_01061_great_responsibility.md"
+        "confidence": 100,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Take threat as damage on hero"
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
+        "Cost: Discard Great Responsibility from hand",
         "Effect: Take that threat as damage on your hero instead of placing threat on the scheme"
       ]
     },
@@ -2376,34 +2409,72 @@
     },
     "01077": {
       "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
+      "abilities": [
+        {
+          "id": "counter_punch_response",
+          "timing": "RESPONSE",
+          "trigger": "HERO_DEFENDED_ATTACK",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amountFormula": "HERO_ATK",
+                "target": "ENEMY"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T11:32",
+        "reviewedAt": "2026-08-31T11:32",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) -> DEAL_DAMAGE_EQUAL_TO_HERO_ATK ({\"target\":\"ATTACKING_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01077_counter_punch.md"
+        "confidence": 100,
+        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> Deal damage equal to hero's ATK to that enemy"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Response (attack): After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK."
+        "Trigger: Hero Response after hero defends against an enemy attack (RESPONSE @ HERO_DEFENDED_ATTACK)",
+        "Cost: Discard Counter-Punch from hand",
+        "Effect: Deal damage to that enemy equal to your hero's ATK"
       ]
     },
     "01078": {
       "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
+      "abilities": [
+        {
+          "id": "get_behind_me_interrupt",
+          "timing": "INTERRUPT",
+          "trigger": "TREACHERY_REVEALED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "CANCEL_WHEN_REVEALED_AND_ATTACK"
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T11:32",
+        "reviewedAt": "2026-08-31T11:32",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) -> CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK",
-        "ambiguityFile": "docs/ambiguities/core_01078_get_behind_me.md"
+        "confidence": 100,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card] -> Cancel When Revealed effects, Villain attacks you instead"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its \"When Revealed\" effects. The villain attacks you instead."
+        "Trigger: Hero Interrupt when a treachery card is revealed from the encounter deck (HERO_INTERRUPT @ TREACHERY_REVEALED)",
+        "Cost: Discard Get Behind Me! from hand",
+        "Effect: Cancel its When Revealed effects. The villain attacks you instead."
       ]
     },
     "01079": {
@@ -2634,21 +2705,40 @@
       ]
     },
     "01085": {
-      "comment": "Event: Blocked pending Tier 3 Optional Interrupt Prompt state machine (see docs/ambiguities/core_01085_emergency.md).",
+      "comment": "Event: Interrupt (thwart): When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
+      "abilities": [
+        {
+          "id": "emergency_interrupt",
+          "timing": "INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "REMOVE_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "ACTIVE_SCHEME"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T11:32",
+        "reviewedAt": "2026-08-31T11:32",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from a scheme",
-        "ambiguityFile": "docs/ambiguities/core_01085_emergency.md"
+        "confidence": 100,
+        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from the scheme"
       },
       "mechanicSteps": [
-        "Trigger: Interrupt when the villain schemes (INTERRUPT @ VILLAIN_SCHEMES)",
-        "Condition: Player choice via optional decision prompt (Accept / Decline)",
-        "Effect: Reduce threat placed on the scheme by 1 and discard Emergency"
+        "Trigger: Interrupt when threat would be placed on a scheme (INTERRUPT @ THREAT_WOULD_BE_PLACED)",
+        "Cost: Discard Emergency from hand",
+        "Effect: Reduce threat placed on the scheme by 1"
       ]
     },
     "01086": {

@@ -10,6 +10,7 @@ export interface ScenarioGameSetupOptions {
   heroIds?: string[];
   deckOverrides?: Record<string, string[]>;
   modularSetCodes?: string[];
+  skipMulligan?: boolean;
 }
 
 /**
@@ -42,6 +43,8 @@ export interface ScenarioDefinition {
   modularEncounterSets: {
     mandatory: string[];
     defaults: Record<DifficultyMode, string[]>;
+    slotCount?: number;
+    recommendedModularSets?: string[];
   };
 }
 
@@ -55,10 +58,16 @@ export interface ScenarioPlugin {
   // --- LIFECYCLE HOOKS ---
 
   /**
-   * Scenario Setup (Steps 1-11 of Rules Reference v1.8):
+   * Scenario Setup (Steps 1-15 of Rules Reference v1.8):
    * Sets up villains, main schemes, target threat, and builds the encounter deck.
    */
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState;
+
+  /**
+   * Stage 1A Declarative Setup Hook (Step 10 of Rules Reference v1.8):
+   * Places starting side schemes, environments, and attachments into play.
+   */
+  resolveStage1ASetup?(state: GameState, options: ScenarioGameSetupOptions): GameState;
 
   /**
    * Step 1 of Villain Phase: Place Threat on Main Scheme(s).

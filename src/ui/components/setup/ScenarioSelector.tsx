@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Users, Flame, Zap, Play, Info, Trash2, Crown, Award } from 'lucide-react';
-import { listScenarios, getScenario } from '../../../engine/scenarios';
+import { listScenarios, getScenario, listModularEncounterSets } from '../../../engine/scenarios';
 import { listStarterDecks } from '../../../engine/decks';
 import { CardCatalog } from '../../../data/importer/card-loader';
 import { DifficultyMode } from '../../../engine/models';
@@ -15,6 +15,7 @@ export interface SetupSelection {
   heroicLevel: number;
   playerCount: number;
   deckIds: string[];
+  selectedModularSetCodes?: string[];
 }
 
 interface ScenarioSelectorProps {
@@ -30,10 +31,26 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   const [catalog] = useState(() => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]));
   const scenarios = useMemo(() => listScenarios(), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
+  const modularSets = useMemo(() => listModularEncounterSets(), []);
 
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
   const [difficulty, setDifficulty] = useState<DifficultyMode>(() => defaultDifficulty || 'STANDARD');
   const [heroicLevel, setHeroicLevel] = useState<number>(() => defaultHeroicLevel || 0);
+
+  const selectedScenario = getScenario(selectedScenarioId) || getScenario('rhino')!;
+  const defaultModularForScenario = useMemo(() => {
+    return selectedScenario.recommendedModularSets?.[0] || 'bomb_scare';
+  }, [selectedScenario]);
+
+  const [selectedModularSetCode, setSelectedModularSetCode] = useState<string>(() => defaultModularForScenario);
+
+  const handleSelectScenario = (scenarioId: string) => {
+    setSelectedScenarioId(scenarioId);
+    const scen = getScenario(scenarioId);
+    if (scen && scen.recommendedModularSets?.[0]) {
+      setSelectedModularSetCode(scen.recommendedModularSets[0]);
+    }
+  };
 
   // 4 discrete hero seat slots (null = empty seat)
   const [seats, setSeats] = useState<(string | null)[]>([
@@ -54,7 +71,6 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     });
   };
 
-  const selectedScenario = getScenario(selectedScenarioId) || getScenario('rhino')!;
   const villainCode =
     difficulty === 'EXPERT' ? selectedScenario.stages.expert[0] : selectedScenario.stages.standard[0];
   const villainPreviewCard = catalog.getCard(villainCode);
@@ -69,6 +85,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
       heroicLevel,
       playerCount,
       deckIds: activeDecks,
+      selectedModularSetCodes: [selectedModularSetCode],
     });
   };
 
@@ -106,7 +123,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               {scenarios.map((scenario) => (
                 <button
                   key={scenario.id}
-                  onClick={() => setSelectedScenarioId(scenario.id)}
+                  onClick={() => handleSelectScenario(scenario.id)}
                   className={`w-full text-left p-4 rounded border-2 transition-all ${
                     selectedScenarioId === scenario.id
                       ? 'border-comic-black bg-amber-50 shadow-comic'
@@ -131,12 +148,73 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               ))}
             </div>
 
-            {/* Modular Set Info */}
-            <div className="mt-4 p-3 bg-sky-50 border border-comic-black rounded text-xs flex items-start gap-2">
-              <Info className="w-4 h-4 text-comic-blue shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-comic-blue uppercase">Recommended Modular: </span>
-                <span className="font-semibold">Bomb Scare</span> (Included in encounter deck)
+            {/* Modular Encounter Set Customizer */}
+            <div className="mt-5 p-4 bg-slate-50 border-2 border-comic-black rounded-xl space-y-3 shadow-comic-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-comic text-sm text-comic-black uppercase">
+                  <Info className="w-4 h-4 text-comic-blue" />
+                  <span>Encounter Sets & Modular Customization</span>
+                </div>
+                {selectedModularSetCode !== defaultModularForScenario && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedModularSetCode(defaultModularForScenario)}
+                    className="text-[10px] text-comic-red font-bold underline hover:text-red-700"
+                  >
+                    Reset to Default
+                  </button>
+                )}
+              </div>
+
+              {/* Scenario-Mandatory Encounter Sets Badges */}
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Scenario-Mandatory Sets:
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
+                    <span>🔒 {selectedScenario.name} Set</span>
+                    <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                  </span>
+                  <span className="bg-slate-200 border border-comic-black px-2 py-0.5 text-xs font-bold text-slate-800 rounded flex items-center gap-1">
+                    <span>🔒 Standard Set</span>
+                    <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                  </span>
+                  {difficulty === 'EXPERT' && (
+                    <span className="bg-red-100 border border-comic-black px-2 py-0.5 text-xs font-bold text-comic-red rounded flex items-center gap-1">
+                      <span>🔒 Expert Set</span>
+                      <span className="text-[10px] text-slate-500 font-normal">(Mandatory)</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Customizable Modular Slot (1 Slot) */}
+              <div className="space-y-1.5 pt-1 border-t border-slate-200">
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                    Modular Encounter Slot (1 Required):
+                  </div>
+                  <span className="text-[10px] bg-amber-100 border border-comic-black px-1.5 py-0.2 rounded font-bold text-slate-800">
+                    {selectedModularSetCode === defaultModularForScenario ? 'Default Recommendation' : 'Custom Modular Set'}
+                  </span>
+                </div>
+
+                <select
+                  value={selectedModularSetCode}
+                  onChange={(e) => setSelectedModularSetCode(e.target.value)}
+                  className="w-full p-2 bg-white border-2 border-comic-black rounded font-medium text-sm text-slate-800 shadow-comic-sm focus:outline-none focus:ring-2 focus:ring-comic-yellow"
+                >
+                  {modularSets.map((mod) => (
+                    <option key={mod.code} value={mod.code}>
+                      {mod.name} ({mod.cardCount} cards) {mod.code === defaultModularForScenario ? '— [Recommended]' : ''}
+                    </option>
+                  ))}
+                </select>
+
+                <p className="text-[11px] text-slate-600 italic">
+                  {modularSets.find((m) => m.code === selectedModularSetCode)?.description}
+                </p>
               </div>
             </div>
 

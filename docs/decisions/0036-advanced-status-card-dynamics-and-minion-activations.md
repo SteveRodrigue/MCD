@@ -1,6 +1,6 @@
 # [ADR-0036] Advanced Status Card Dynamics & Minion Activation Modifiers
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity

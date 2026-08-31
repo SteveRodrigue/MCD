@@ -94,32 +94,32 @@ graph TD
   * Direct damage vs. attack damage invariant (`dealDirectDamage`).
   * Promotes 8 Core Set cards: *Backflip* (`01003`), *Enhanced Spider-Sense* (`01004`), *Cosmic Flight* (`01017`), *Gamma Slam* (`01021`), *Hulk* (`01050`), *Tigra* (`01051`), *Relentless Assault* (`01053`), *Uppercut* (`01054`).
 
-### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline ([ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))
-* [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28 / [ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)):**
-  * Refactor scenario initialization into declarative plug-in modules (`createGame(scenarioConfig, playerConfigs)`).
-  * Enforce strict encounter set taxonomy: Scenario-Mandatory Sets (Villain set, Standard/Expert set, scenario-required secondary sets like *Prelates*) vs. Customizable Modular Slots.
-  * Execute Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing) using generic zone primitives ([ADR-0029](decisions/0029-generic-zone-transfer-and-deck-manipulation-primitives.md)).
-  * Standardize scenario plugins for Rhino, Klaw, and Ultron with plug-and-play modular encounter sets (*Bomb Scare*, *Masters of Evil*, *Under Attack*, *Legions of Hydra*, *The Doomsday Chair*).
-* [ ] **Scenario Selection Screen & Modular Set Customizer (`ScenarioSelector.tsx`):**
-  * Update `ScenarioSelector.tsx` to display locked scenario-mandatory set badges (`[🔒 MANDATORY]`).
-  * Add modular encounter set slot selectors pre-populated with scenario default recommendations (e.g. *Bomb Scare* for Rhino, *Masters of Evil* for Klaw, *Under Attack* for Ultron), allowing players to replace optional sets with any modular set in their collection.
-  * Provide a "Reset to Defaults" button and pass `selectedModularSetCodes` in `SetupSelection`.
+### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline ([ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)) ✅ (Completed)
+* [x] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28 / [ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)) ✅ (Completed):**
+  * Refactored scenario initialization into declarative plug-in modules (`createGame(scenarioConfig, playerConfigs)`).
+  * Enforced strict encounter set taxonomy: Scenario-Mandatory Sets (Villain set, Standard/Expert set) vs. Customizable Modular Slots.
+  * Executed Main Scheme Stage 1A setup instructions (Permanent cards in play, villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing) using generic zone primitives.
+  * Standardized scenario plugins for Rhino, Klaw, and Ultron with plug-and-play modular encounter sets (*Bomb Scare*, *Masters of Evil*, *Under Attack*, *Legions of Hydra*, *The Doomsday Chair*).
+* [x] **Scenario Selection Screen & Modular Set Customizer (`ScenarioSelector.tsx`) ✅ (Completed):**
+  * Updated `ScenarioSelector.tsx` to display locked scenario-mandatory set badges (`[🔒 MANDATORY]`).
+  * Added modular encounter set slot selectors pre-populated with scenario default recommendations (e.g. *Bomb Scare* for Rhino, *Masters of Evil* for Klaw, *Under Attack* for Ultron), allowing players to replace optional sets with any modular set in their collection.
+  * Provided a "Reset to Defaults" button and passed `selectedModularSetCodes` in `SetupSelection`.
 
-### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero)
-* [ ] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md)):**
-  - Implement dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
-  - Support heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).
-  - Support dynamic limit expansion modifiers (e.g. *Side Holster*, *Venom*, *Prehensile Tail*).
-  - Add voluntary discard replacement prompt (`DISCARD_RESTRICTED_REPLACEMENT`) in `canPlayCard()` when playing a restricted card at capacity.
-* [ ] **Global Unique Card Rule & Identity Collision (RR v1.8 p. 29):**
-  - Evaluate uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
-* [ ] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18):**
-  - Guarantee immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws.
-* [ ] **Promote 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)):**
-  - Execute Card Integration Protocol across all remaining 32 ambiguity files.
-  - Promote all cards to $\ge 98\%$ confidence with dedicated unit tests.
-  - Prune `docs/ambiguities/` to **0 files (Inbox Zero)**.
-  - 100% Core Set Player Cards (all 5 Heroes) + 100% Rhino Encounter Pool executable in headless engine.
+### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero) ✅ (Completed)
+* [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md)) ✅ (Completed):**
+  - Implemented dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
+  - Supported heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).
+  - Supported dynamic limit expansion modifiers (e.g. *Side Holster*, *Venom*, *Prehensile Tail*).
+  - Validated voluntary discard replacement policy in `canPlayCard()` when playing a restricted card at capacity.
+* [x] **Global Unique Card Rule & Identity Collision (RR v1.8 p. 29) ✅ (Completed):**
+  - Evaluated uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
+* [x] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18) ✅ (Completed):**
+  - Guaranteed immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws (`drawPlayerCard`, `drawEncounterCard`, `discardFromEncounterDeckUntil`, `discardFromPlayerDeckUntil`).
+* [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
+  - Executed Card Integration Protocol across all 23 ambiguity files.
+  - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.
+  - Pruned `docs/ambiguities/` to **0 files (Inbox Zero)**.
+  - 100% Core Set Player Cards (all 5 Heroes: Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) + 100% Encounter Pool executable in headless engine.
 
 ---
 

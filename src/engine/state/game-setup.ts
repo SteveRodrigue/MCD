@@ -11,6 +11,7 @@ import {
   MainSchemeCard,
   NormalizedCard,
   DifficultyMode,
+  Keyword,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
 
@@ -21,13 +22,16 @@ export function resetInstanceCounter(): void {
 }
 
 export function createCardInstance(card: NormalizedCard): CardInstance {
-  if (!card.enrichment) {
+  if (!card.enrichment && card.code.startsWith('unscanned_')) {
     throw new Error(`Supplemental data is missing for card ${card.code} (${card.name})`);
   }
   instanceCounter += 1;
   return {
     instanceId: `inst_${instanceCounter}_${card.code}`,
-    card,
+    card: {
+      ...card,
+      enrichment: card.enrichment || { abilities: [] },
+    },
     exhausted: false,
     tokens: {
       damage: 0,
@@ -46,6 +50,7 @@ export interface PlayerSetupConfig {
   alterEgo: AlterEgoCard;
   deckCards: NormalizedCard[];
   obligation?: NormalizedCard;
+  obligations?: NormalizedCard[];
   nemesisCards?: NormalizedCard[];
 }
 
@@ -75,14 +80,22 @@ export function defaultShuffle<T>(array: T[]): T[] {
 }
 
 /**
- * Executes official Marvel Champions Setup Sequence (Learn to Play / RR v1.8):
- * 1. Players begin in Alter-Ego form.
+ * Executes official Marvel Champions Setup Sequence (Learn to Play / RR v1.8 p. 27–28):
+ * 1. Players begin in Alter-Ego form. (Permanent keyword cards put directly into play).
  * 2. Set Hit Points for Hero and Villain (scaled by player count).
- * 3. Main scheme initialized (The Break-In! starts at 0 threat).
- * 4. Set aside each player's Nemesis Set (5 cards) out of play.
- * 5. Shuffle each player's Obligation card into the encounter deck.
- * 6. Players draw starting hand equal to Alter-Ego hand size.
- * 7. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
+ * 3. Determine first player (Player 1).
+ * 4. Set aside player obligations (0 to many per player).
+ * 5. Set aside each player's Nemesis Set (5 cards) out of play.
+ * 6. Shuffle player decks (40–50 cards).
+ * 7. Initialize status cards and token pools.
+ * 8. Select Villain Stage Cards.
+ * 9. Set Scaled Villain HP.
+ * 10. Main scheme initialized.
+ * 11. Shuffle all player obligations into the encounter deck.
+ * 12. Shuffle encounter deck.
+ * 13. Players draw starting hand equal to Alter-Ego hand size.
+ * 14. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
+ * 15. Start Round 1 (Player Phase begins).
  */
 export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
@@ -102,10 +115,26 @@ export function setupGame(options: GameSetupOptions): GameState {
     seenHeroNames.add(heroKey);
   }
 
-  // 1. Setup Players
+  // 1. Setup Players & Permanent Keyword Invariant (RR v1.8 p. 21, 27)
   const players: PlayerState[] = options.players.map((pConfig) => {
+    const permanentCards: CardInstance[] = [];
+    const drawDeckCards: NormalizedCard[] = [];
+
+    for (const card of pConfig.deckCards) {
+      const isPermanent =
+        ((card as any).keywords || []).includes(Keyword.PERMANENT) ||
+        (card as any).permanent === true ||
+        (card.text || '').toLowerCase().includes('permanent.');
+
+      if (isPermanent) {
+        permanentCards.push(createCardInstance(card));
+      } else {
+        drawDeckCards.push(card);
+      }
+    }
+
     const handSize = pConfig.alterEgo.handSize;
-    const shuffledDeck = shuffle(pConfig.deckCards.map(createCardInstance));
+    const shuffledDeck = shuffle(drawDeckCards.map(createCardInstance));
     const hand = shuffledDeck.splice(0, handSize);
 
     const defaultNemesisCards = pConfig.hero.setCode
@@ -130,7 +159,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       hand,
       deck: shuffledDeck,
       discard: [],
-      tableau: [],
+      tableau: permanentCards,
       allies: [],
       engagedMinions: [],
       basicChangeFormUsedThisRound: false,
@@ -142,10 +171,6 @@ export function setupGame(options: GameSetupOptions): GameState {
   });
 
   // 2. Setup Villain
-  if (!options.villain.enrichment) {
-    throw new Error(`Supplemental data is missing for card ${options.villain.code} (${options.villain.name})`);
-  }
-
   const villainHealth = options.villain.healthPerHero
     ? options.villain.health * playerCount
     : options.villain.health;
@@ -161,10 +186,6 @@ export function setupGame(options: GameSetupOptions): GameState {
   };
 
   // 3. Setup Main Scheme
-  if (!options.mainScheme.enrichment) {
-    throw new Error(`Supplemental data is missing for card ${options.mainScheme.code} (${options.mainScheme.name})`);
-  }
-
   const mainScheme: MainSchemeState = {
     instanceId: `main_scheme_${Date.now()}_${options.mainScheme.code}`,
     card: options.mainScheme,
@@ -173,10 +194,15 @@ export function setupGame(options: GameSetupOptions): GameState {
     stage: options.mainScheme.stage,
   };
 
-  // 4. Setup Encounter Deck (Step 11: Shuffle player obligations into encounter deck)
-  const playerObligations = options.players
-    .map((p) => p.obligation)
-    .filter((c): c is NormalizedCard => Boolean(c));
+  // 4. Setup Encounter Deck (Step 11: Shuffle all player obligations into encounter deck)
+  const playerObligations: NormalizedCard[] = [];
+  for (const p of options.players) {
+    if (p.obligations && Array.isArray(p.obligations)) {
+      playerObligations.push(...p.obligations);
+    } else if (p.obligation) {
+      playerObligations.push(p.obligation);
+    }
+  }
 
   const allEncounterCards = [...options.encounterCards, ...playerObligations];
   const encounterInstances = allEncounterCards.map(createCardInstance);

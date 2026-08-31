@@ -84,9 +84,19 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     // Add scenario cards (Rhino set)
     allEncounterCards.push(...cardCatalog.getCardsBySet('rhino'));
 
+    // Add Standard set
+    allEncounterCards.push(...cardCatalog.getCardsBySet('standard'));
+
+    // Add Expert set if difficulty is EXPERT
+    if (difficulty === 'EXPERT') {
+      allEncounterCards.push(...cardCatalog.getCardsBySet('expert'));
+    }
+
     // Add modular sets
     for (const setCode of modularSetCodes) {
-      allEncounterCards.push(...cardCatalog.getCardsBySet(setCode));
+      if (setCode !== 'standard' && setCode !== 'expert') {
+        allEncounterCards.push(...cardCatalog.getCardsBySet(setCode));
+      }
     }
 
     // Filter out villain cards and main scheme cards from encounter deck

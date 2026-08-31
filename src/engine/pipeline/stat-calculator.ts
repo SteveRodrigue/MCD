@@ -112,6 +112,12 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     }
   }
 
+  // Add token/temporary stat bonuses (e.g. Vision 01068 or Lead from the Front 01070)
+  if (ally.tokens) {
+    thwart += (ally.tokens as any).thwBonus || 0;
+    attack += (ally.tokens as any).atkBonus || 0;
+  }
+
   return {
     thwart: Math.max(0, thwart),
     attack: Math.max(0, attack),
@@ -131,6 +137,18 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
   let recovery = !isHero ? (player.alterEgo as AlterEgoCard).recover || 0 : 0;
   const keywords: string[] = [];
 
+  const hasAerial = Boolean(
+    player.hero.traits?.includes('Aerial') ||
+    ((player as any).traits || []).includes('Aerial') ||
+    player.tableau.some(
+      (t) =>
+        t.card.code === '01017' ||
+        (t.card.enrichment?.abilities || []).some((a) =>
+          a.steps?.some((s) => s.effect === 'ADD_TRAIT' && s.params?.trait === 'Aerial'),
+        ),
+    ),
+  );
+
   // Inspect in-play upgrades in player tableau
   for (const item of player.tableau || []) {
     const abilities = item.card.enrichment?.abilities || [];
@@ -138,10 +156,19 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           if (step.effect === 'MODIFY_STAT') {
-            if (step.params?.stat === 'THWART') thwart += (step.params.amount as number) || 0;
-            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
-            if (step.params?.stat === 'DEFENSE') defense += (step.params.amount as number) || 0;
-            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY') recovery += (step.params.amount as number) || 0;
+            const aerialBonus = (step.params?.aerialBonus as number) || 0;
+            const extra = hasAerial ? aerialBonus : 0;
+
+            if (step.params?.stat === 'THWART') thwart += ((step.params.amount as number) || 0) + extra;
+            if (step.params?.stat === 'ATTACK') attack += ((step.params.amount as number) || 0) + extra;
+            if (step.params?.stat === 'DEFENSE') {
+              if (item.card.code === '01016') {
+                defense += hasAerial ? 2 : 1;
+              } else {
+                defense += ((step.params.amount as number) || 0) + extra;
+              }
+            }
+            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY') recovery += ((step.params.amount as number) || 0) + extra;
           }
           if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
             keywords.push(step.params.keyword as string);

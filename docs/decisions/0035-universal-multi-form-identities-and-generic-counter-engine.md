@@ -1,6 +1,6 @@
 # [ADR-0035] Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity

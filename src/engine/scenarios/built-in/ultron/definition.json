@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "ultron",
+  "name": "Ultron",
+  "scenarioCardCode": "01134",
+  "author": "Fantasy Flight Games",
+  "version": "1.0.0",
+  "description": "The sentient artificial intelligence Ultron is manufacturing an army of drones to exterminate humanity!",
+  "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
+  
+  "villainSetup": {
+    "villainName": "Ultron",
+    "stages": {
+      "SKIRMISH": ["01134"],
+      "STANDARD": ["01134", "01135"],
+      "EXPERT": ["01135", "01136"]
+    },
+    "healthPerPlayer": {
+      "01134": 17,
+      "01135": 22,
+      "01136": 27
+    }
+  },
+
+  "mainSchemeSetup": {
+    "stages": ["01137a", "01137b", "01138a", "01138b", "01139a", "01139b"],
+    "startingThreat": 0,
+    "targetThreatPerPlayer": 3,
+    "escalationThreatPerPlayer": 1
+  },
+
+  "modularEncounterSets": {
+    "mandatory": ["ultron"],
+    "defaults": {
+      "SKIRMISH": ["standard", "under_attack"],
+      "STANDARD": ["standard", "under_attack"],
+      "EXPERT": ["standard", "expert", "under_attack"]
+    },
+    "slotCount": 1,
+    "recommendedModularSets": ["under_attack"]
+  }
+}

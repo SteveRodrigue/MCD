@@ -88,6 +88,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       // Attach Charge (01099) to Rhino giving Overkill (+3 ATK on attack)
       const chargeCard = cardCatalog.getCard('01099')!;
       state.villain.attachments.push(createCardInstance(chargeCard));
+      state.encounterDeck = []; // No extra boost icons
 
       const initialHp = state.players[0].health;
 

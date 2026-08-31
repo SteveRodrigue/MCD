@@ -4,7 +4,7 @@ import {
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { getEffectiveHandSize } from './stat-calculator';
-import { drawEncounterCard } from './villain-phase';
+import { drawPlayerCard } from './deck-exhaustion';
 import { startPlayerPhase } from './player-phase';
 
 /**
@@ -71,18 +71,7 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
 
     const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
     for (let d = 0; d < cardsToDraw; d++) {
-      if (player.deck.length === 0) {
-        // Player deck cycle rule (RR v1.8 p. 12): Shuffle discard into deck + deal 1 facedown encounter card
-        if (player.discard.length > 0) {
-          player.deck = [...player.discard].sort(() => Math.random() - 0.5);
-          player.discard = [];
-          const extraEncounter = drawEncounterCard(state);
-          if (extraEncounter) {
-            player.dealtEncounterCards.push(extraEncounter);
-          }
-        }
-      }
-      const drawn = player.deck.shift();
+      const drawn = drawPlayerCard(state, player.id);
       if (drawn) {
         player.hand.push(drawn);
       }

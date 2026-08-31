@@ -6,6 +6,7 @@ import {
   CardEnrichmentSchema,
   CardAuditRecordSchema,
 } from '../../src/data/supplemental/schema';
+import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 
 describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
   const packDir = path.resolve('src/data/supplemental/pack');
@@ -16,11 +17,22 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
   });
 
   for (const file of packFiles) {
-    it(`Validates ${file} against SupplementalPackSchema`, () => {
+    it(`Validates ${file} against SupplementalPackSchema and enforces zero duplicate JSON keys`, () => {
       const filePath = path.join(packDir, file);
       const rawContent = fs.readFileSync(filePath, 'utf8');
-      const json = JSON.parse(rawContent);
 
+      // 1. Raw JSON duplicate key check
+      const duplicateKeys = detectDuplicateJsonKeys(rawContent);
+      if (duplicateKeys.length > 0) {
+        console.error(`Duplicate keys found in ${file}:`, duplicateKeys);
+      }
+      expect(
+        duplicateKeys,
+        `Found duplicate keys in ${file}: ${JSON.stringify(duplicateKeys)}`,
+      ).toEqual([]);
+
+      // 2. Schema parse & validation
+      const json = JSON.parse(rawContent);
       const result = SupplementalPackSchema.safeParse(json);
       if (!result.success) {
         console.error(`Validation failure in ${file}:`, JSON.stringify(result.error.issues, null, 2));
@@ -171,6 +183,21 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           }
         }
       }
+    });
+
+    it('Correctly identifies duplicate keys in raw JSON with line numbers', () => {
+      const sampleWithDuplicates = `{\n  "cards": {\n    "001": { "name": "Card 1" },\n    "001": { "name": "Duplicate 1" }\n  }\n}`;
+      const dups = detectDuplicateJsonKeys(sampleWithDuplicates);
+      expect(dups.length).toBe(1);
+      expect(dups[0].key).toBe('001');
+      expect(dups[0].firstSeenLine).toBe(3);
+      expect(dups[0].line).toBe(4);
+    });
+
+    it('Correctly passes on JSON with non-duplicate nested keys', () => {
+      const sampleValid = `{\n  "card1": { "id": "1", "name": "A" },\n  "card2": { "id": "2", "name": "B" }\n}`;
+      const dups = detectDuplicateJsonKeys(sampleValid);
+      expect(dups).toEqual([]);
     });
   });
 });

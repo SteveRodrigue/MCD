@@ -15,8 +15,8 @@ import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
-  drawEncounterCard,
 } from '../pipeline/villain-phase';
+import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { getEffectiveHeroStats, getEffectiveMaxHealth } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
@@ -24,13 +24,14 @@ import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 export interface EffectExecutionContext {
   playerId: string;
   sourceCardInstance?: CardInstance;
-  targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme';
+  targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'ally' | 'hero' | 'character';
   targetInstanceId?: string;
   resourcesSpent?: string[];
   previousResult?: StepResolutionResult;
   collectedCardInstanceIds?: string[];
   threatAmount?: number;
   damageAmount?: number;
+  choice?: string;
 }
 
 export interface EffectResult {
@@ -217,7 +218,7 @@ export function executeStep(
       for (const p of targetPlayers) {
         let drawnForP = 0;
         for (let i = 0; i < count; i++) {
-          const drawn = p.deck.shift();
+          const drawn = drawPlayerCard(state, p.id);
           if (drawn) {
             p.hand.push(drawn);
             drawnForP += 1;
@@ -663,12 +664,31 @@ export function executeStep(
       let mutatedState = false;
       let alreadyHadStatus = false;
 
-      if (target === 'VILLAIN' || target === 'CHOSEN_ENEMY') {
-        if (!state.villain.statusCards.includes(status)) {
-          state.villain.statusCards.push(status);
-          mutatedState = true;
+      if (
+        target === 'VILLAIN' ||
+        target === 'CHOSEN_ENEMY' ||
+        target === 'ATTACK_TARGET' ||
+        target === 'ATTACKED_ENEMY' ||
+        target === 'TARGET_ENEMY'
+      ) {
+        if (context.targetType === 'minion' && context.targetInstanceId) {
+          const minion = player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId);
+          if (minion) {
+            if (!minion.statusCards) minion.statusCards = [];
+            if (!minion.statusCards.includes(status)) {
+              minion.statusCards.push(status);
+              mutatedState = true;
+            } else {
+              alreadyHadStatus = true;
+            }
+          }
         } else {
-          alreadyHadStatus = true;
+          if (!state.villain.statusCards.includes(status)) {
+            state.villain.statusCards.push(status);
+            mutatedState = true;
+          } else {
+            alreadyHadStatus = true;
+          }
         }
       } else if (target === 'HERO' || target === 'ALL_HEROES' || target === 'DEFENDING_CHARACTER' || target === 'DEFENDING_PLAYER') {
         const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
@@ -1089,19 +1109,28 @@ export function executeStep(
 
     case 'READY_IDENTITY':
     case 'READY_CHARACTER':
+    case 'READY_ALLY':
     case 'READY_CARD': {
-      player.exhausted = false;
+      const targetParam = step.params?.target as string | undefined;
+      if (targetParam === 'CHOSEN_ALLY' || targetParam === 'ALLY' || context.targetType === 'ally') {
+        const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId) || player.allies[0];
+        if (ally) {
+          ally.exhausted = false;
+        }
+      } else {
+        player.exhausted = false;
+      }
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
         category: 'ability',
-        key: 'card.effect.readyIdentity',
+        key: 'card.effect.readyCharacter',
         params: { player: player.name },
         onomatopoeia: 'READY!',
       });
-      return { state, success: true, onomatopoeia: 'READY!' };
+      return { state, success: true, mutatedState: true, onomatopoeia: 'READY!' };
     }
 
     case 'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS':
@@ -1821,15 +1850,262 @@ export function executeStep(
       return { state, success: true, mutatedState: true, value: 1, onomatopoeia: 'HULK RESOLVED!' };
     }
 
-    case 'ADD_TRAIT': {
-      const trait = step.params?.trait as string;
-      if (trait) {
-        if (!player.hero.traits) (player.hero as any).traits = [];
-        if (!player.hero.traits.includes(trait)) {
-          player.hero.traits.push(trait);
+    case 'ADD_COUNTER':
+    case 'MODIFY_COUNTER': {
+      const amount = (step.params?.amount as number) || 1;
+      if (context.sourceCardInstance) {
+        if (!context.sourceCardInstance.tokens) {
+          context.sourceCardInstance.tokens = { damage: 0, threat: 0, counters: 0 };
+        }
+        context.sourceCardInstance.tokens.counters = (context.sourceCardInstance.tokens.counters || 0) + amount;
+      }
+      return { state, success: true, mutatedState: true, value: amount, onomatopoeia: `+${amount} COUNTERS!` };
+    }
+
+    case 'RETURN_TO_HAND': {
+      if (context.sourceCardInstance) {
+        const allyIdx = player.allies.indexOf(context.sourceCardInstance);
+        if (allyIdx !== -1) {
+          player.allies.splice(allyIdx, 1);
+          player.hand.push(context.sourceCardInstance);
+        } else {
+          const tabIdx = player.tableau.indexOf(context.sourceCardInstance);
+          if (tabIdx !== -1) {
+            player.tableau.splice(tabIdx, 1);
+            player.hand.push(context.sourceCardInstance);
+          }
         }
       }
-      return { state, success: true, mutatedState: true, onomatopoeia: `GAINED [[${trait}]] TRAIT!` };
+      return { state, success: true, mutatedState: true, onomatopoeia: 'RETURNED TO HAND!' };
+    }
+
+    case 'REPULSOR_BLAST':
+    case 'REPULSOR_BLAST_DAMAGE': {
+      const discardCount = (step.params?.discardCount as number) || 5;
+      let energyCount = 0;
+
+      for (let i = 0; i < discardCount; i++) {
+        const drawn = drawPlayerCard(state, player.id);
+        if (drawn) {
+          player.discard.push(drawn);
+          const raw = drawn.card.raw || ({} as any);
+          const cardEnergy = raw.resource_energy || drawn.card.resources?.energy || 0;
+          const cardWild = raw.resource_wild || drawn.card.resources?.wild || 0;
+          energyCount += cardEnergy + cardWild;
+        }
+      }
+
+      const totalDmg = 1 + energyCount * 2;
+      const targetEnemy = context.targetType === 'minion' && context.targetInstanceId ? 'minion' : 'villain';
+
+      if (targetEnemy === 'villain') {
+        const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          state.villain.statusCards.splice(toughIdx, 1);
+        } else {
+          state.villain.health = Math.max(0, state.villain.health - totalDmg);
+        }
+      }
+
+      const onomatopoeia = `REPULSOR BLAST! ${totalDmg} DAMAGE (${energyCount} ENERGY)!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'iron_man.repulsor_blast',
+        params: { totalDmg, energyCount, villain: state.villain.card.name },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: true, value: totalDmg, onomatopoeia };
+    }
+
+    case 'GENERATE_TOP_DISCARD_RESOURCES': {
+      const topCard = player.discard[player.discard.length - 1];
+      let resCount = 1;
+      if (topCard) {
+        resCount = topCard.card.resources?.total || 1;
+      }
+      return { state, success: true, mutatedState: true, value: resCount, onomatopoeia: `+${resCount} RESOURCES FROM DISCARD!` };
+    }
+
+    case 'RETRIEVE_CARD_FROM_DISCARD':
+    case 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD': {
+      const traitFilter = (step.params?.trait as string) || 'Tech';
+      // Search from top of discard (last item) downwards
+      for (let i = player.discard.length - 1; i >= 0; i--) {
+        const item = player.discard[i];
+        if (item.card.traits?.includes(traitFilter) && item.card.type === CardType.UPGRADE) {
+          const [retrieved] = player.discard.splice(i, 1);
+          player.hand.push(retrieved);
+          return { state, success: true, mutatedState: true, onomatopoeia: `RETRIEVED ${retrieved.card.name}!` };
+        }
+      }
+      return { state, success: true, mutatedState: false, onomatopoeia: 'NO TECH UPGRADE IN DISCARD' };
+    }
+
+    case 'SEARCH_DECK_FOR_CARD':
+    case 'SEARCH_AND_PLAY_UPGRADE': {
+      const traitFilter = step.params?.trait as string | undefined;
+      const typeFilter = (step.params?.type as string) || (step.params?.type_code as string) || 'upgrade';
+
+      const matchIdx = player.deck.findIndex((c) => {
+        const typeMatch = !typeFilter || c.card.type === typeFilter || c.card.raw.type_code === typeFilter;
+        const traitMatch = !traitFilter || c.card.traits?.includes(traitFilter);
+        return typeMatch && traitMatch;
+      });
+
+      if (matchIdx !== -1) {
+        const [foundCard] = player.deck.splice(matchIdx, 1);
+        if (step.effect === 'SEARCH_AND_PLAY_UPGRADE') {
+          player.tableau.push(foundCard);
+        } else {
+          player.hand.push(foundCard);
+        }
+        // Shuffle deck after search
+        player.deck = [...player.deck].sort(() => Math.random() - 0.5);
+        return { state, success: true, mutatedState: true, onomatopoeia: `FOUND ${foundCard.card.name}!` };
+      }
+
+      // Target not found: shuffle deck
+      player.deck = [...player.deck].sort(() => Math.random() - 0.5);
+      return { state, success: true, mutatedState: false, onomatopoeia: 'TARGET NOT FOUND IN DECK' };
+    }
+
+    case 'SHUFFLE_DISCARD_INTO_DECK': {
+      const count = (step.params?.count as number) || 3;
+      const toShuffle = player.discard.splice(0, count);
+      player.deck.push(...toShuffle);
+      player.deck = [...player.deck].sort(() => Math.random() - 0.5);
+      return { state, success: true, mutatedState: true, value: toShuffle.length, onomatopoeia: `SHUFFLED ${toShuffle.length} CARDS INTO DECK!` };
+    }
+
+    case 'TRIGGER_WAKANDA_UPGRADES':
+    case 'EXECUTE_WAKANDA_FOREVER': {
+      // Find all in-play Black Panther upgrades in player tableau
+      const bpUpgrades = player.tableau.filter((t) =>
+        t.card.traits?.includes('Black Panther') ||
+        ['01046', '01047', '01048', '01049'].includes(t.card.code),
+      );
+
+      let executed = 0;
+      for (let i = 0; i < bpUpgrades.length; i++) {
+        const upgrade = bpUpgrades[i];
+        const isFinal = i === bpUpgrades.length - 1;
+        const code = upgrade.card.code;
+
+        if (code === '01046') {
+          // Energy Daggers: 1 damage to villain + minion (2 if final)
+          const dmg = isFinal ? 2 : 1;
+          dealDirectDamage(state, 'VILLAIN', dmg);
+          for (const m of player.engagedMinions) {
+            dealDirectDamage(state, { type: 'MINION', instanceId: m.instanceId }, dmg);
+          }
+        } else if (code === '01047') {
+          // Panther Claws: 2 damage to enemy (4 if final)
+          const dmg = isFinal ? 4 : 2;
+          dealDirectDamage(state, 'VILLAIN', dmg);
+        } else if (code === '01048') {
+          // Tactical Genius: 1 threat removed (2 if final)
+          const thw = isFinal ? 2 : 1;
+          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - thw);
+        } else if (code === '01049') {
+          // Vibranium Suit: Move 1 damage from BP to enemy (2 if final)
+          const moveAmt = isFinal ? 2 : 1;
+          player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + moveAmt);
+          dealDirectDamage(state, 'VILLAIN', moveAmt);
+        }
+        executed += 1;
+      }
+
+      const onomatopoeia = `WAKANDA FOREVER! (${executed} UPGRADES RESOLVED)`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'black_panther.wakanda_forever',
+        params: { executed },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: executed > 0, value: executed, onomatopoeia };
+    }
+
+    case 'DEAL_DAMAGE_ALL_ENEMIES': {
+      const baseAmt = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
+      dealDirectDamage(state, 'VILLAIN', baseAmt);
+      for (const m of player.engagedMinions) {
+        dealDirectDamage(state, { type: 'MINION', instanceId: m.instanceId }, baseAmt);
+      }
+      return { state, success: true, mutatedState: true, value: baseAmt, onomatopoeia: `ALL ENEMIES HIT FOR ${baseAmt}!` };
+    }
+
+    case 'TRANSFER_DAMAGE': {
+      const amount = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
+      player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
+      dealDirectDamage(state, 'VILLAIN', amount);
+      return { state, success: true, mutatedState: true, value: amount, onomatopoeia: `TRANSFERRED ${amount} DAMAGE!` };
+    }
+
+    case 'BOOST_STAT_CHOICE': {
+      const amount = (step.params?.amount as number) || 2;
+      const chosenStat = (context.choice as string) || (step.params?.stat as string) || 'ATK';
+      if (context.sourceCardInstance) {
+        if (!context.sourceCardInstance.tokens) {
+          context.sourceCardInstance.tokens = { damage: 0, threat: 0, counters: 0 };
+        }
+        if (chosenStat === 'THW' || chosenStat === 'THWART') {
+          (context.sourceCardInstance.tokens as any).thwBonus = ((context.sourceCardInstance.tokens as any).thwBonus || 0) + amount;
+        } else {
+          (context.sourceCardInstance.tokens as any).atkBonus = ((context.sourceCardInstance.tokens as any).atkBonus || 0) + amount;
+        }
+      }
+      return { state, success: true, mutatedState: true, value: amount, onomatopoeia: `+${amount} ${chosenStat}!` };
+    }
+
+    case 'BUFF_ALL_FRIENDLY_CHARACTERS': {
+      const atkBonus = (step.params?.atkBonus as number) || 1;
+      const thwBonus = (step.params?.thwBonus as number) || 1;
+      for (const a of player.allies) {
+        if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
+        (a.tokens as any).atkBonus = ((a.tokens as any).atkBonus || 0) + atkBonus;
+        (a.tokens as any).thwBonus = ((a.tokens as any).thwBonus || 0) + thwBonus;
+      }
+      return { state, success: true, mutatedState: true, onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ALL CHARACTERS!` };
+    }
+
+    case 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER': {
+      const replacement = drawEncounterCard(state);
+      if (replacement) {
+        player.dealtEncounterCards.push(replacement);
+      }
+      return { state, success: true, mutatedState: true, onomatopoeia: 'CANCELLED & REVEALED ANOTHER!' };
+    }
+
+    case 'ATTACH_FACEDOWN_CARDS_FROM_HAND': {
+      for (const p of state.players) {
+        if (p.hand.length > 0) {
+          const randIdx = Math.floor(Math.random() * p.hand.length);
+          const [removed] = p.hand.splice(randIdx, 1);
+          if (context.sourceCardInstance) {
+            if (!context.sourceCardInstance.attachments) context.sourceCardInstance.attachments = [];
+            context.sourceCardInstance.attachments.push({ ...removed, ownerId: p.id } as any);
+          }
+        }
+      }
+      return { state, success: true, mutatedState: true, onomatopoeia: 'CARDS ATTACHED FACEDOWN!' };
+    }
+
+    case 'RETURN_FACEDOWN_CARDS_TO_OWNERS': {
+      if (context.sourceCardInstance && context.sourceCardInstance.attachments) {
+        for (const card of context.sourceCardInstance.attachments) {
+          const ownerId = (card as any).ownerId;
+          const owner = state.players.find((p) => p.id === ownerId) || player;
+          owner.hand.push(card);
+        }
+        context.sourceCardInstance.attachments = [];
+      }
+      return { state, success: true, mutatedState: true, onomatopoeia: 'CARDS RETURNED TO HANDS!' };
     }
 
     default:

@@ -142,6 +142,40 @@ export interface ScenarioConfig {
 
 ---
 
+### 🎨 UI & Presentation Layer: Interactive Modular Set Customizer (`ScenarioSelector.tsx`)
+
+To give players full tactile control over their game setup per official Marvel Champions rules, `ScenarioSelector.tsx` and `SetupSelection` will be updated with an **Encounter Customization Sub-Panel**:
+
+```mermaid
+graph TD
+    ScenarioSelect["1. Choose Scenario (Rhino / Klaw / Ultron)"] --> LoadDefaults["Load Plugin: Scenario-Mandatory Sets + Default Modular Slots"]
+    
+    LoadDefaults --> RenderUI["Render Scenario Selector Screen"]
+    
+    RenderUI --> ViewMandatory["Display Locked Mandatory Badges:<br/>• 🔒 Villain Set<br/>• 🔒 Standard Set (or Standard II)<br/>• 🔒 Expert Set (if Expert checked)<br/>• 🔒 Required Secondary Sets (e.g. Prelates)"]
+    
+    RenderUI --> CustomizeSlots["Display Modular Set Slot Pickers:<br/>• Slot 1: [ Bomb Scare (Default) ▾ ]<br/>  ↳ Dropdown options: Masters of Evil, Under Attack, Legions of Hydra, Doomsday Chair...<br/>• Reset to Defaults Button"]
+    
+    CustomizeSlots --> StartSetup["Start Setup ➔ passes selectedModularSetCodes in SetupSelection"]
+```
+
+1. **`SetupSelection` Interface Update:**
+   ```typescript
+   export interface SetupSelection {
+     scenarioId: string;
+     difficulty: DifficultyMode;
+     heroicLevel: number;
+     playerCount: number;
+     deckIds: string[];
+     selectedModularSetCodes: string[]; // Custom modular encounter sets
+   }
+   ```
+2. **Visual Retro Pop-Art Treatment:**
+   * **Mandatory Sets:** Displayed with retro black-and-yellow comic badge borders with a locked icon (`🔒 MANDATORY`).
+   * **Customizable Slots:** Rendered as interactive Ben-Day halftone selectors showing set icon, card count (e.g. `6 cards`), hazard/boost previews, and a "Defaults" restore trigger.
+
+---
+
 ## Consequences
 
 ### Positive Consequences

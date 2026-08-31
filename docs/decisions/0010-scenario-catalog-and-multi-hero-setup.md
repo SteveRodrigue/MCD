@@ -1,6 +1,6 @@
 # ADR-0010: Scenario Catalog, Pre-built Starter Decks, and Multi-Hero Solo Setup Architecture
 
-* **Status:** Accepted
+* **Status:** Superseded by [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)
 * **Date:** 2026-08-26
 * **Deciders:** Core Architecture Team
 * **Consulted:** Rules Reference v1.8 (Setup Sequence p. 23–24), Learn to Play Guide

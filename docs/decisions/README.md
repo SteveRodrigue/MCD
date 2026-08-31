@@ -15,6 +15,36 @@ Each record documents:
 
 ---
 
+## 🗺️ Visual ADR Lineage & Evolution Graph
+
+```mermaid
+graph TD
+    %% Foundation & Core Invariants
+    ADR02["ADR-0002: Headless Decoupled Engine"] --> ADR27["ADR-0027: Modular Phase Pipelines"]
+    ADR07["ADR-0007: Rules Authority (RR v1.8)"] --> ADR19["ADR-0019: Zero Raw-Text Parsing"]
+    
+    %% Ability & Schema Lineage
+    ADR08["ADR-0008: Declarative Abilities (Flat)"] -->|Evolved by| ADR28["ADR-0028: Effect Sequences"]
+    ADR28 -->|Superseded by| ADR30["ADR-0030: Unified AbilityStep[] Architecture"]
+    ADR21["ADR-0021: Composable Primitives"] --> ADR29["ADR-0029: Generic Zone Primitives (PUT_INTO_PLAY)"]
+    ADR29 --> ADR30
+    
+    %% Combat & Defense Lineage
+    ADR27 --> ADR31["ADR-0031: 5-Phase Combat & Multi-Window Defense"]
+    ADR19 --> ADR31
+    
+    %% Resolution Stack Lineage
+    ADR20["ADR-0020: Interactive Interrupts (Single Prompt)"] -->|Superseded by| ADR32["ADR-0032: Frame Stack & Prompt Queue"]
+    ADR30 --> ADR32
+    ADR31 --> ADR32
+    
+    %% Scenario Setup Lineage
+    ADR10["ADR-0010: Scenario Catalog (Ad-hoc)"] -->|Superseded by| ADR33["ADR-0033: 15-Step Scenario Plugin Engine"]
+    ADR29 --> ADR33
+```
+
+---
+
 ## Decision Log Table
 
 | ID | Date | Title | Status | Primary Rationale / Why |
@@ -28,7 +58,7 @@ Each record documents:
 | [ADR-0007](0007-official-rules-authority-rr-v18.md) | 2026-08-26 | Official Rules Authority (RR v1.8 & Errata) | **Accepted** | All game mechanics, timing windows, and errata must strictly adhere to the official Rules Reference v1.8 and Learn to Play Guide. |
 | [ADR-0008](0008-declarative-card-ability-enrichment.md) | 2026-08-26 | Declarative Card Ability & Effect Enrichment | **Accepted** | Declarative supplemental ability layer with reusable effect primitives, 100% card registration, and explicit status signals. |
 | [ADR-0009](0009-game-history-and-action-log.md) | 2026-08-26 | In-Game Action History & Real-Time Combat Log | **Accepted** | Implement a strictly ordered, immutable log of game events to support undo mechanics, replayability, and debugging. |
-| [ADR-0010](0010-scenario-catalog-and-multi-hero-setup.md) | 2026-08-26 | Scenario Catalog & Multi-Hero Solo Setup Architecture | **Accepted** | Decouple scenarios and starter decks into registries with automatic multi-hero (1–4) scaling and an interactive Mulligan state machine. |
+| [ADR-0010](0010-scenario-catalog-and-multi-hero-setup.md) | 2026-08-26 | Scenario Catalog & Multi-Hero Solo Setup Architecture | **Superseded by [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)** | Initial scenario registry and scaling, superseded by the official 15-step `ScenarioPlugin` pipeline. |
 | [ADR-0011](0011-card-orientation-and-art-caching.md) | 2026-08-27 | Card Orientation Metadata & Cache-First Art Resolution | **Accepted** | Model card orientation (Portrait vs Landscape for Schemes), responsive UI dimensions, and cache-first MarvelCDB card art loading. |
 | [ADR-0012](0012-z-axis-hover-zoom-and-layering.md) | 2026-08-27 | Z-Axis Unconstrained Elevation & Hover-Zoom Architecture | **Accepted** | Maintain unconstrained Z-axis elevation (`z-50`) without overflow clipping or scrollbar spawning on interactive card docks. |
 | [ADR-0013](0013-game-settings-and-dev-mode.md) | 2026-08-27 | Game Settings & Developer Mode State Architecture | **Accepted** | Decouple UI settings into a persistent React Context with a top-bar Dev Mode indicator and Options Menu. |
@@ -38,7 +68,7 @@ Each record documents:
 | [ADR-0017](0017-panoramic-horizontal-tabletop-and-edge-scrolling.md) | 2026-08-27 | Panoramic Horizontal Tabletop with Edge and Drag Scrolling | **Accepted** | Panoramic horizontal row for 1–4 heroes with full-sized tableaus/hands, edge-hover auto-panning, and drag-to-scroll cross-table deployment. |
 | [ADR-0018](0018-declarative-state-modifiers-and-dynamic-board-limits.md) | 2026-08-27 | Declarative State Modifiers & Zero Card-Code Coupling | **Accepted** | Derive all board limits and state modifiers dynamically from declarative metadata without hardcoding card IDs in the engine. |
 | [ADR-0019](0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md) | 2026-08-27 | Strict Metadata-Driven Rules Execution & Zero Raw-Text Parsing | **Accepted** | Never parse raw card text strings for game rules or legality to prevent breaking on translations (i18n), upstream typos, or complex text edge cases. |
-| [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md) | 2026-08-27 | Optional vs Forced Triggers, Exact Event Scoping & Interactive Interrupts | **Accepted** | Differentiate mandatory forced abilities from optional player interrupts, isolate villain vs minion activations, and support interactive decision prompts per RR v1.8. |
+| [ADR-0020](0020-optional-vs-forced-triggers-exact-event-scoping-and-interactive-interrupts.md) | 2026-08-27 | Optional vs Forced Triggers, Exact Event Scoping & Interactive Interrupts | **Superseded by [ADR-0032](0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)** | Initial interrupt handling, superseded by the frame execution stack and multi-prompt queue. |
 | [ADR-0021](0021-card-integration-workflow-and-composable-primitives.md) | 2026-08-28 | Standard Card Integration Protocol & Composable Primitives Architecture | **Accepted** | Enforce standard 8-step protocol for card translation and composable generic primitives without monolithic card-specific logic. |
 | [ADR-0022](0022-authoritative-zod-supplemental-schema-and-cicd-quality-gate.md) | 2026-08-30 | Authoritative Zod Supplemental Schema & CI/CD Quality Gate | **Accepted** | Enforce strict runtime Zod validation (`src/data/supplemental/schema.ts`) and automated Vitest CI/CD tests for 100% of supplemental data packs. |
 | [ADR-0023](0023-modular-supplemental-specification-suite-and-implementation-status-badges.md) | 2026-08-30 | Modular Supplemental Specification Suite & Implementation Status Badges | **Accepted** | Decompose monolithic schema documentation into a 10-part modular suite with explicit 🟢 IMPLEMENTED vs 🟡 ROADMAP status badges. |
@@ -46,7 +76,7 @@ Each record documents:
 | [ADR-0025](0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md) | 2026-08-30 | Architectural Subsystem Completion & Mandatory Supplemental Review Pipeline | **Accepted** | Mandate an immediate card review pass upon completing any engine subsystem, promoting blocked cards with unit tests, Inbox Zero pruning, and closing GitHub issues. |
 | [ADR-0026](0026-daily-bugle-action-dispatcher-and-dynamic-fan-out-hand.md) | 2026-08-30 | 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture | **Accepted** | Provide centralized legal move discovery via retro Daily Bugle newspaper broadsheet, automatic turn-end verification, and responsive zero-overflow fan-out hand stacking. |
 | [ADR-0027](0027-modular-phase-pipeline-architecture.md) | 2026-08-30 | Modular Phase Pipelines & Lifecycle Hooks Architecture | **Accepted** | Modularize engine execution into dedicated phase files (`player-phase.ts`, `villain-phase.ts`, `round-upkeep.ts`) with discrete phase/round lifecycle triggers and ability limit resets. |
-| [ADR-0028](0028-declarative-effect-sequencing-and-conditional-gates.md) | 2026-08-31 | Declarative Effect Sequencing, Conditional Gates & Contextual Entity Passing | **Accepted** | Decompose complex abilities into generic atomic steps (`sequence: []`) with conditional gating (`gate: "ALWAYS" \| "THEN" \| "IF_AMOUNT_ZERO" \| "IF_ALREADY_HAS_STATUS"`) per RR v1.8. |
+| [ADR-0028](0028-declarative-effect-sequencing-and-conditional-gates.md) | 2026-08-31 | Declarative Effect Sequencing, Conditional Gates & Contextual Entity Passing | **Superseded by [ADR-0030](0030-unified-ability-step-sequence-architecture.md)** | Initial recursive sequence schema, superseded by unified `steps: AbilityStep[]` architecture. |
 | [ADR-0029](0029-generic-zone-transfer-and-deck-manipulation-primitives.md) | 2026-08-31 | Generic Zone Transfer and Deck Manipulation Primitives | **Accepted** | Standardize parameterized semantic primitives (`PUT_INTO_PLAY`, `SHUFFLE_INTO_DECK`, `DISCARD_CARDS`) across all card zones instead of zone-specific effect names. |
 | [ADR-0030](0030-unified-ability-step-sequence-architecture.md) | 2026-08-31 | Unified Ability Step Sequence Architecture & Supplemental Normalization | **Accepted** | Unify ability execution by strictly decoupling ability headers (`CardAbility`) from execution steps (`AbilityStep[]`), eliminating schema duality and branching. |
 | [ADR-0031](0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md) | 2026-08-31 | Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline | **Accepted** | Formalize 5-phase attack state machine supporting Basic Hero DEF, Ally blocks, Defense events, Boost cancellation, Overkill, and Direct Damage separation. |

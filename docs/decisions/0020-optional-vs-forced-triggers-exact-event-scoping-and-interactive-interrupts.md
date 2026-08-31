@@ -1,7 +1,7 @@
 # ADR-0020: Optional vs. Forced Trigger Decisions, Exact Event Scoping & Interactive Interrupt State Machine (RR v1.8)
 
 ## Status
-Accepted
+Superseded by [ADR-0032](0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)
 
 ## Context & Problem Statement
 In Marvel Champions rules architecture, triggers and reactive abilities (Interrupts and Responses) are among the most nuanced systems in the game. Conflating distinct enemy activations or treating optional player choices as automatic side-effects violates official timing rules and breaks tactical decision-making:

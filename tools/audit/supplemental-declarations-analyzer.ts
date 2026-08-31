@@ -10,6 +10,7 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
 const SPECS_DIR = path.join(ROOT_DIR, 'docs/specifications/supplemental');
+const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
 const OUTPUT_REPORT_PATH = path.join(ROOT_DIR, 'docs/reports/supplemental_declarations_usage_report.md');
 
 interface CardAudit {
@@ -67,6 +68,15 @@ interface NoSupplementalCardInfo {
   comment: string;
 }
 
+interface AmbiguityReportInfo {
+  filename: string;
+  code: string;
+  name: string;
+  pack: string;
+  confidence: number;
+  blockerCategory: string;
+}
+
 function loadAllUpstreamCards(): Map<string, UpstreamCard> {
   const map = new Map<string, UpstreamCard>();
   if (!fs.existsSync(UPSTREAM_DIR)) return map;
@@ -107,6 +117,41 @@ function loadAllSupplementalPacks(): Map<string, Record<string, SupplementalEntr
   return packs;
 }
 
+function loadAllAmbiguityReports(): Map<string, AmbiguityReportInfo> {
+  const map = new Map<string, AmbiguityReportInfo>();
+  if (!fs.existsSync(AMBIGUITIES_DIR)) return map;
+
+  const files = fs.readdirSync(AMBIGUITIES_DIR).filter((f) => f.endsWith('.md') && f !== 'README.md');
+  for (const file of files) {
+    try {
+      const content = fs.readFileSync(path.join(AMBIGUITIES_DIR, file), 'utf-8');
+      const codeMatch = content.match(/card_code:\s*["']?([0-9a-z_]+)["']?/i) || file.match(/^[a-z]+_([0-9a-z]+)_/i);
+      const nameMatch = content.match(/card_name:\s*["']?([^"'\r\n]+)["']?/i) || content.match(/#\s*Card Ambiguity Report:\s*([^\r\n(#]+)/i);
+      const packMatch = content.match(/pack:\s*["']?([^"'\r\n]+)["']?/i) || file.match(/^([a-z]+)_/i);
+      const confMatch = content.match(/confidence_reached:\s*([0-9]+)/i);
+      const blockerMatch = content.match(/blocker_category:\s*["']?([^"'\r\n]+)["']?/i);
+
+      const code = codeMatch ? codeMatch[1] : file.replace('.md', '');
+      const name = nameMatch ? nameMatch[1].trim() : 'Unknown';
+      const pack = packMatch ? packMatch[1].trim() : 'core';
+      const confidence = confMatch ? parseInt(confMatch[1], 10) : 70;
+      const blockerCategory = blockerMatch ? blockerMatch[1].trim() : 'RULES_AMBIGUITY';
+
+      map.set(code, {
+        filename: file,
+        code,
+        name,
+        pack,
+        confidence,
+        blockerCategory,
+      });
+    } catch (e) {
+      console.warn(`Warning: Failed to parse ambiguity file ${file}:`, e);
+    }
+  }
+  return map;
+}
+
 function discoverSpecifiedPrimitives(): { effects: Set<string>; triggers: Set<string> } {
   const effects = new Set<string>();
   const triggers = new Set<string>();
@@ -135,6 +180,7 @@ function discoverSpecifiedPrimitives(): { effects: Set<string>; triggers: Set<st
 export function runDeclarationsAudit() {
   const upstreamCards = loadAllUpstreamCards();
   const supplementalPacks = loadAllSupplementalPacks();
+  const ambiguityReports = loadAllAmbiguityReports();
   const { effects: specifiedEffects, triggers: specifiedTriggers } = discoverSpecifiedPrimitives();
 
   const effectsUsage = new Map<string, UsageOccurrence[]>();
@@ -148,7 +194,6 @@ export function runDeclarationsAudit() {
 
   let totalCardsInSupplemental = 0;
   let totalCardsWithAbilities = 0;
-  let totalCardsBlocked = 0;
   let totalAbilitiesDeclared = 0;
 
   function recordUsage(map: Map<string, UsageOccurrence[]>, key: string, occ: UsageOccurrence) {
@@ -204,10 +249,6 @@ export function runDeclarationsAudit() {
         });
       }
 
-      if (entry.audit?.ambiguityFile) {
-        totalCardsBlocked += 1;
-      }
-
       if (entry.abilities && entry.abilities.length > 0) {
         totalCardsWithAbilities += 1;
         for (const ability of entry.abilities) {
@@ -235,7 +276,7 @@ export function runDeclarationsAudit() {
   reportLines.push(`| **Total Cards Registered** | **${totalCardsInSupplemental}** | Total cards present in \`src/data/supplemental/\` |`);
   reportLines.push(`| **Active Declared Cards** | **${totalCardsWithAbilities}** | Cards with executable \`abilities: [...]\` |`);
   reportLines.push(`| **No Supplemental Needed** | **${noSupplementalCards.length}** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |`);
-  reportLines.push(`| **Blocked / Ambiguity Cards** | **${totalCardsBlocked}** | Cards isolated in \`docs/ambiguities/\` |`);
+  reportLines.push(`| **Open Ambiguity Reports** | **${ambiguityReports.size}** | Blocked cards isolated in \`docs/ambiguities/\` (Inbox Zero Queue) |`);
   reportLines.push(`| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | Total individual ability definitions declared |`);
   reportLines.push(`| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`);
   reportLines.push(`| **Unique Triggers In Use** | **${triggersUsage.size}** | Distinct trigger window types actively declared |`);
@@ -244,7 +285,26 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🟢 2. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive)`);
+  reportLines.push(`## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — ${ambiguityReports.size} Cards)`);
+  reportLines.push(``);
+  reportLines.push(`These **${ambiguityReports.size} cards** are currently isolated in [\`docs/ambiguities/\`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\\ge 95\\%$ confidence, its file is deleted to achieve **Inbox Zero**:`);
+  reportLines.push(``);
+  reportLines.push(`| Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |`);
+  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
+
+  const sortedAmbiguities = Array.from(ambiguityReports.values()).sort((a, b) =>
+    a.code.localeCompare(b.code, undefined, { numeric: true }),
+  );
+  for (const amb of sortedAmbiguities) {
+    reportLines.push(
+      `| \`${amb.code}\` | **${amb.name}** | \`${amb.pack}\` | \`${amb.confidence}%\` | \`${amb.blockerCategory}\` | [\`${amb.filename}\`](../ambiguities/${amb.filename}) |`,
+    );
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(`## 🟢 3. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive — ${noSupplementalCards.length} Cards)`);
   reportLines.push(``);
   reportLines.push(`These **${noSupplementalCards.length} cards** have been audited and explicitly verified as \`"noSupplementalNeeded": true\` (standard double resource generators, vanilla baseline minions, basic identity cards, or schemes with no custom trigger hooks):`);
   reportLines.push(``);
@@ -260,7 +320,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 💥 3. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
+  reportLines.push(`## 💥 4. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
   reportLines.push(``);
   reportLines.push(`Changing these primitives will affect many cards across the entire game engine:`);
   reportLines.push(``);
@@ -292,7 +352,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🔍 4. Single-Use & Unique Primitives (Card Count = 1)`);
+  reportLines.push(`## 🔍 5. Single-Use & Unique Primitives (Card Count = 1)`);
   reportLines.push(``);
   reportLines.push(`These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:`);
   reportLines.push(``);
@@ -320,7 +380,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⚠️ 5. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
+  reportLines.push(`## ⚠️ 6. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
   reportLines.push(``);
   reportLines.push(`These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:`);
   reportLines.push(``);
@@ -342,7 +402,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 📑 6. Complete Effects Inventory`);
+  reportLines.push(`## 📑 7. Complete Effects Inventory`);
   reportLines.push(``);
   reportLines.push(`| Effect Primitive | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -356,7 +416,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⏱️ 7. Complete Triggers Inventory`);
+  reportLines.push(`## ⏱️ 8. Complete Triggers Inventory`);
   reportLines.push(``);
   reportLines.push(`| Trigger Window | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -370,7 +430,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🎯 8. Timings, Costs & Target Selectors Inventory`);
+  reportLines.push(`## 🎯 9. Timings, Costs & Target Selectors Inventory`);
   reportLines.push(``);
   reportLines.push(`### Ability Timings:`);
   reportLines.push(`| Timing | Occurrences | Cards |`);
@@ -415,7 +475,7 @@ export function runDeclarationsAudit() {
   console.log(`Total Cards Scanned:      ${totalCardsInSupplemental}`);
   console.log(`Cards with Abilities:     ${totalCardsWithAbilities}`);
   console.log(`No Supplemental Needed:   ${noSupplementalCards.length}`);
-  console.log(`Blocked (Ambiguity):      ${totalCardsBlocked}`);
+  console.log(`Open Ambiguity Reports:   ${ambiguityReports.size}`);
   console.log(`Total Abilities Declared: ${totalAbilitiesDeclared}`);
   console.log(`Unique Effect Types:      ${effectsUsage.size}`);
   console.log(`Unique Trigger Types:     ${triggersUsage.size}`);

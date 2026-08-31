@@ -199,7 +199,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
    * If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
    * If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
 2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
-3. **Document in Specs:** Add an entry to `docs/specs/card-mechanics-breakdown.md`.
+3. **Document in Specs:** Add an entry to `docs/specifications/card_mechanics_breakdown.md`.
 4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
 6. **Verify:** Run test suite: `npm test; npm run typecheck; npm run build`.

@@ -60,7 +60,7 @@ You can use the following prompt templates to invoke specialized skills and work
 
 > **Checking Algorithmic Card Specifications:**
 > ```text
-> Look at docs/specs/card-mechanics-breakdown.md to see how Black Cat's deck filtering is broken down into steps.
+> Look at docs/specifications/card_mechanics_breakdown.md to see how Black Cat's deck filtering is broken down into steps.
 > ```
 
 > **Auditing Supplemental Freshness:**
@@ -75,8 +75,8 @@ You can use the following prompt templates to invoke specialized skills and work
 | Directory | Type | Purpose |
 | :--- | :--- | :--- |
 | **[`references/`](references/)** | **Read-Only** | External ground truth (FFG Rules Reference v1.8, MarvelCDB FAQ links, Hall of Heroes). |
-| **[`docs/decisions/`](docs/decisions/)** | **Read/Write** | Architecture Decision Records (ADR-0001 through ADR-0021). |
-| **[`docs/specs/`](docs/specs/)** | **Read/Write** | Algorithmic step-by-step card mechanics breakdown (`card-mechanics-breakdown.md`). |
+| **[`docs/decisions/`](docs/decisions/)** | **Read/Write** | Architecture Decision Records (ADR-0001 through ADR-0027). |
+| **[`docs/specifications/`](docs/specifications/)** | **Read/Write** | Algorithmic card breakdowns (`card_mechanics_breakdown.md`) and supplemental schemas. |
 | **[`docs/ambiguities/`](docs/ambiguities/)** | **Read/Write** | Active blocked cards queue (Inbox Zero target: 0 files). |
 | **[`docs/reports/`](docs/reports/)** | **Read/Write** | Full audit reports (`card-supplemental-audit-core-and-rhino.md`). |
 | **[`logs/skills/`](logs/skills/)** | **Logs** | Real-time progress and audit trail logs for skill execution. |

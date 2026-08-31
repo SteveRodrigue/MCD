@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
-
+- **Documentation Architecture Consolidation:**
+  - Consolidated legacy `docs/specs/` directory into authoritative `docs/specifications/` hub.
+  - Relocated `docs/specs/card-mechanics-breakdown.md` to [`docs/specifications/card_mechanics_breakdown.md`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/docs/specifications/card_mechanics_breakdown.md) and pruned `docs/specs/`.
+  - Updated all internal links across `CHEATSHEET.md`, `docs/README.md`, `ADR-0021`, and skill protocols.
 - **Modular Phase Pipelines & Lifecycle Hooks Architecture (ADR-0027 / RR v1.8 p. 15, 22, 32):**
   - Refactored monolithic phase logic into single-responsibility modules:
     - `src/engine/pipeline/player-phase.ts`: Implemented `startPlayerPhase`, `endPlayerPhase`, and `passActivePlayer`.

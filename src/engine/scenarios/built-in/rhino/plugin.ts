@@ -27,6 +27,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
   onGameSetup(state: GameState, options: ScenarioGameSetupOptions): GameState {
     const difficulty = options.difficulty || 'STANDARD';
     state.difficulty = difficulty;
+    state.heroicLevel = options.heroicLevel || 0;
     state.scenarioId = this.definition.id;
     state.scenarioCardCode = this.definition.scenarioCardCode;
 

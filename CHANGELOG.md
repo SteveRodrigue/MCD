@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Sequential Hazard Icon Distribution & Heroic Mode (RR v1.8 p. 11, p. 22):**
+  - Refactored Step 4 of the Villain Phase in `src/engine/pipeline/villain-phase.ts` to implement official two-pass encounter card dealing.
+  - **Pass 1 (Base & Heroic):** Deals $1 + \text{heroicLevel}$ encounter cards to each player in player order starting with the First Player.
+  - **Pass 2 (Hazard Icons):** Deals 1 extra encounter card per active Hazard icon sequentially in player order starting from the First Player (round-robin).
+  - Orthogonalized `heroicLevel` ($0, 1, 2 \dots$) from `DifficultyMode` (`SKIRMISH`, `STANDARD`, `EXPERT`), allowing Heroic variants across all game modes.
+  - Added test suite `tests/engine/keywords-hazard.test.ts`.
 - **Interleaved Villain & Minion Activations (RR v1.8 p. 22):**
   - Restructured Step 2 of the Villain Phase in `src/engine/pipeline/villain-phase.ts` to follow the official player-by-player activation loop starting from the First Player.
   - For each player in player order: the villain activates against the player (Attacks if hero, Schemes if alter-ego), followed immediately by all minions engaged with that player activating against them.

@@ -65,8 +65,8 @@ graph TD
 * [x] **Interleaved Player-by-Player Activation Loop:**
   * Structure Step 2/3 as a unified loop starting from the First Player:
     $$\text{For each player (starting at First Player)} \rightarrow \text{Villain activates against player} \rightarrow \text{Engaged minions activate against player}.$$
-* [ ] **Sequential Hazard Icon Distribution (RR v1.8 p. 11):**
-  * Distribute extra encounter cards from Hazard icons sequentially in player order starting from the First Player (e.g. In a 2-player game with 2 Hazard icons: Player 1 receives 2 cards, Player 2 receives 2 cards).
+* [x] **Sequential Hazard Icon Distribution (RR v1.8 p. 11) & Heroic Mode:**
+  * Distribute extra encounter cards from Hazard icons sequentially in player order starting from the First Player (round-robin), with orthogonal Heroic Level support.
 
 ### 2. 🔴 `[Must-Have]` Nested Resolution Stack & Decision Prompt Queue (RR v1.8 p. 16, 24)
 * [ ] **Nested Action & Trigger Execution Stack:**

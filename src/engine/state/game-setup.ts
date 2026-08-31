@@ -53,6 +53,7 @@ export interface GameSetupOptions {
   id?: string;
   scenarioId?: string;
   difficulty?: DifficultyMode;
+  heroicLevel?: number;
   players: PlayerSetupConfig[];
   villain: VillainCard;
   mainScheme: MainSchemeCard;
@@ -197,6 +198,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     setupState,
     scenarioId: options.scenarioId || 'rhino',
     difficulty,
+    heroicLevel: options.heroicLevel || 0,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
     players,

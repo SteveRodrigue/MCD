@@ -383,35 +383,58 @@ export function step3_minionActivations(state: GameState): GameState {
 }
 
 /**
- * Step 4: Deal Encounter Cards (RR v1.8 p. 32)
+ * Step 4: Deal Encounter Cards (RR v1.8 p. 11, p. 22, p. 32 & FFG Heroic Mode)
+ * 1. Pass 1 (Base & Heroic): Deal 1 + heroicLevel encounter cards to each player in player order, starting with First Player.
+ * 2. Pass 2 (Hazard Icons): Deal 1 additional encounter card for each active Hazard icon sequentially in player order starting with First Player.
  */
 export function step4_dealEncounterCards(state: GameState): GameState {
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
 
-  // Check Hazard icons count from side schemes
+  const playerCount = state.players.length;
+  if (playerCount === 0) return state;
+
+  const heroicLevel = Math.max(0, state.heroicLevel || 0);
+  const baseCardsPerPlayer = 1 + heroicLevel;
+
+  // Pass 1: Deal base encounter cards (+ heroic modifier) in player order
+  for (let round = 0; round < baseCardsPerPlayer; round++) {
+    for (let i = 0; i < playerCount; i++) {
+      const playerIdx = (state.firstPlayerIndex + i) % playerCount;
+      const card = drawEncounterCard(state);
+      if (card) {
+        state.players[playerIdx].dealtEncounterCards.push(card);
+      }
+    }
+  }
+
+  // Count active Hazard icons from all in-play side schemes
   let hazardCount = 0;
   for (const sideScheme of state.sideSchemes) {
     const card = sideScheme.card as SideSchemeCard;
     if (card.hasHazard) hazardCount += 1;
   }
 
-  // 1 card per player
-  for (let i = 0; i < state.players.length; i++) {
-    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
-    const card = drawEncounterCard(state);
-    if (card) {
-      state.players[playerIdx].dealtEncounterCards.push(card);
+  // Pass 2: Deal additional cards for hazard icons sequentially in player order starting from firstPlayerIndex (RR v1.8 p. 11)
+  for (let h = 0; h < hazardCount; h++) {
+    const targetPlayerIdx = (state.firstPlayerIndex + h) % playerCount;
+    const extraCard = drawEncounterCard(state);
+    if (extraCard) {
+      state.players[targetPlayerIdx].dealtEncounterCards.push(extraCard);
     }
   }
 
-  // Extra cards for hazard icons to first player
-  for (let h = 0; h < hazardCount; h++) {
-    const extraCard = drawEncounterCard(state);
-    if (extraCard) {
-      state.players[state.firstPlayerIndex].dealtEncounterCards.push(extraCard);
-    }
-  }
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'villainPhase.step4.encounterCardsDealt',
+    params: {
+      basePerPlayer: baseCardsPerPlayer,
+      heroicLevel,
+      hazardCount,
+    },
+    onomatopoeia: 'ENCOUNTER DEALT!',
+  });
 
   return state;
 }

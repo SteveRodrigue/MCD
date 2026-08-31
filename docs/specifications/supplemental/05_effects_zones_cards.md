@@ -87,6 +87,45 @@
 
 ---
 
+### `PUT_INTO_PLAY`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / *Shadow of the Past* `01190`, *Rhino Stage II* `01095`, *Make the Call* `01071`)
+* **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving all standard entrance lifecycle rules (attaching Toughness/Guard keywords, calculating starting threat for side schemes, and triggering When Revealed / Enters Play responses per RR v1.8 p. 14).
+
+```json
+{
+  "effect": "PUT_INTO_PLAY",
+  "params": {
+    "from": "SET_ASIDE",
+    "to": "ENGAGED_WITH_PLAYER",
+    "filter": {
+      "type": "minion",
+      "set": "PLAYER_NEMESIS"
+    }
+  }
+}
+```
+
+---
+
+### `SHUFFLE_INTO_DECK`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / *Shadow of the Past* `01190`, *Ancestral Knowledge* `01042`)
+* **Description:** Collects matching cards from a specified source zone (`from`: `"SET_ASIDE" | "DISCARD" | "HAND"`), places them into the target deck (`toDeck`: `"ENCOUNTER_DECK" | "PLAYER_DECK"`), and shuffles the deck.
+
+```json
+{
+  "effect": "SHUFFLE_INTO_DECK",
+  "params": {
+    "from": "SET_ASIDE",
+    "toDeck": "ENCOUNTER_DECK",
+    "filter": {
+      "set": "PLAYER_NEMESIS"
+    }
+  }
+}
+```
+
+---
+
 ### `PLAY_FROM_ZONE`
 * **Status:** 🟡 `ROADMAP` (Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - *Make the Call* `01071`)
 * **Description:** Enables playing a card from a non-hand zone (e.g. player discard pile) with filter constraints.

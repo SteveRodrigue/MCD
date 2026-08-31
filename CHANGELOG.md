@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Generic Zone Transfer & Deck Manipulation Primitives (ADR-0029 / RR v1.8 p. 14, 33):**
+  - Implemented generic `PUT_INTO_PLAY` (`from`, `to`, `filter`) resolving Toughness/Guard keywords, side scheme base threat calculations, and entrance trigger responses.
+  - Implemented generic `SHUFFLE_INTO_DECK` (`from`, `toDeck`, `filter`) supporting set-aside, discard, and hand card transfers to Encounter and Player decks.
+  - Enhanced `shouldExecuteStep` with targeted step result lookup (`targetStepId`) via `stepResultsMap`.
+  - Decomposed *Shadow of the Past* (`01190`) from monolithic `SPAWN_NEMESIS` into a declarative 4-step sequence (`PUT_INTO_PLAY` Minion $\rightarrow$ `PUT_INTO_PLAY` Scheme $\rightarrow$ `SHUFFLE_INTO_DECK` $\rightarrow$ `TRIGGER_SURGE` `gate: IF_FAILED`).
+  - Added dedicated test suite `tests/engine/shadow-of-the-past-sequencing.test.ts` verifying both standard and fallback Surge cases.
+  - Updated specification `docs/specifications/supplemental/05_effects_zones_cards.md` to `🟢 IMPLEMENTED (v1.0)`.
 - **Declarative Effect Sequencing & Conditional Gates Pipeline (ADR-0028 / RR v1.8 p. 2, 24):**
   - Extended `CardAbilitySchema` and engine pipeline with recursive `sequence: CardAbility[]` array.
   - Implemented `ConditionGate` supporting `'ALWAYS'`, `'THEN'`, `'IF_PREVIOUS_SUCCESS'`, `'IF_AMOUNT_ZERO'`, `'IF_ZERO_HEALED'`, `'IF_FAILED'`, `'IF_ALREADY_HAS_STATUS'`, and `'IF_RESOURCE_MATCH'`.

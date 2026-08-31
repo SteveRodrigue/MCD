@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
@@ -13,14 +13,16 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   prompt,
   onSelectOption,
 }) => {
+  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+
   if (!prompt) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-yellow-400 border-4 border-black rounded-2xl shadow-[8px_8px_0px_rgba(0,0,0,1)] p-5 sm:p-6 overflow-hidden">
+      <div className="relative w-full max-w-xl bg-yellow-400 border-4 border-black rounded-2xl shadow-[8px_8px_0px_rgba(0,0,0,1)] p-5 sm:p-6 overflow-visible">
         {/* Comic background dots */}
         <div
-          className="absolute inset-0 opacity-10 pointer-events-none"
+          className="absolute inset-0 opacity-10 pointer-events-none rounded-2xl overflow-hidden"
           style={{
             backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
             backgroundSize: '12px 12px',
@@ -53,7 +55,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
 
         {/* Visual Scryed/Revealed Cards Gallery (with Non-Tech Cards Grayed Out) */}
         {prompt.revealedCards && prompt.revealedCards.length > 0 && (
-          <div className="relative mb-4 bg-yellow-300/90 border-2 border-black rounded-xl p-3 shadow-inner">
+          <div className="relative mb-4 bg-yellow-300/90 border-2 border-black rounded-xl p-3 shadow-inner overflow-visible">
             <div className="flex justify-between items-center mb-2 px-1">
               <span className="text-[11px] font-comic font-black uppercase text-slate-900 tracking-wider">
                 Revealed Cards ({prompt.revealedCards.length})
@@ -63,33 +65,41 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               </span>
             </div>
 
-            <div className="flex flex-wrap justify-center items-center gap-3 pt-1">
-              {prompt.revealedCards.map((rc) => (
-                <div
-                  key={rc.instanceId}
-                  onClick={() => {
-                    if (rc.isSelectable && rc.selectableOptionId) {
-                      onSelectOption(rc.selectableOptionId);
-                    }
-                  }}
-                  className={`flex flex-col items-center gap-1.5 transition-all ${
-                    rc.isSelectable
-                      ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
-                      : 'filter grayscale brightness-90 contrast-95 pointer-events-none ring-2 ring-slate-400/80 rounded-xl p-0.5'
-                  }`}
-                >
-                  <CardView card={rc.card} size="sm" enableHoverZoom={true} />
-                  <span
-                    className={`font-comic text-[9px] px-2 py-0.5 rounded border border-black font-black uppercase shadow-xs ${
+            <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
+              {prompt.revealedCards.map((rc) => {
+                const isHovered = hoveredCardId === rc.instanceId;
+                return (
+                  <div
+                    key={rc.instanceId}
+                    onMouseEnter={() => setHoveredCardId(rc.instanceId)}
+                    onMouseLeave={() => setHoveredCardId(null)}
+                    onClick={() => {
+                      if (rc.isSelectable && rc.selectableOptionId) {
+                        onSelectOption(rc.selectableOptionId);
+                      }
+                    }}
+                    style={{ zIndex: isHovered ? 60 : 10 }}
+                    className={`flex flex-col items-center gap-1.5 transition-all relative ${
+                      isHovered ? 'z-[60]' : 'z-10'
+                    } ${
                       rc.isSelectable
-                        ? 'bg-emerald-400 text-slate-950 animate-pulse'
-                        : 'bg-slate-300 text-slate-700'
+                        ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
+                        : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
                     }`}
                   >
-                    {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
-                  </span>
-                </div>
-              ))}
+                    <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
+                    <span
+                      className={`font-comic text-[9px] px-2 py-0.5 rounded border border-black font-black uppercase shadow-xs ${
+                        rc.isSelectable
+                          ? 'bg-emerald-400 text-slate-950 animate-pulse'
+                          : 'bg-slate-300 text-slate-700'
+                      }`}
+                    >
+                      {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

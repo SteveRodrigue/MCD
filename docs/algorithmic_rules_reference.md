@@ -241,11 +241,11 @@ for (const player of state.playersInTurnOrder) {
 Encounter cards from Hazard icons are distributed sequentially in turn order starting from the First Player:
 $$\text{Extra Card } h \rightarrow \text{Player } ((\text{firstPlayerIndex} + h) \pmod{\text{playerCount}}).$$
 
-### Phase & Round Lifecycle Triggers:
-The engine pipeline dispatches discrete lifecycle triggers across turn and round boundaries:
-* `ROUND_BEGAN` / `ROUND_ENDED` (Round counter increments, First Player token passes)
-* `PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED` (Player turn loop starts/ends, `basicChangeFormUsedThisRound` resets)
-* `VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED` (Step 1 threat starts / Step 5 reveals complete)
+### Phase & Round Lifecycle Triggers & Limit Resets (RR v1.8 p. 15):
+The engine pipeline dispatches discrete lifecycle triggers and performs atomic limit resets across phase and round boundaries:
+* `ROUND_BEGAN` / `ROUND_ENDED`: Round counter increments, First Player token passes, and `usedAbilitiesThisRound = {}` resets.
+* `PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED`: Player turn loop starts/ends, `basicChangeFormUsedThisRound = false` resets, and `usedAbilitiesThisPhase = {}` resets.
+* `VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED`: Step 1 threat starts / Step 5 reveals complete, and `usedAbilitiesThisPhase = {}` resets.
 
 ---
 

@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Modular Phase Pipelines & Lifecycle Hooks Architecture (ADR-0027 / RR v1.8 p. 15, 22, 32):**
+  - Refactored monolithic phase logic into single-responsibility modules:
+    - `src/engine/pipeline/player-phase.ts`: Implemented `startPlayerPhase`, `endPlayerPhase`, and `passActivePlayer`.
+    - `src/engine/pipeline/villain-phase.ts`: Encapsulated strictly Steps 1 through 5 (Threat, Interleaved Activations, Dealing, Reveals).
+    - `src/engine/pipeline/round-upkeep.ts`: Encapsulated `step6_passFirstPlayerAndRoundUpkeep`, forced round-end discards (*Nick Fury* `01084`), hand refills, deck cycling, First Player token rotation, and round incrementation.
+  - Implemented strict phase-level ability resets: `usedAbilitiesThisPhase = {}` resets upon entering Player Phase and entering Villain Phase (enforcing `ONCE_PER_PHASE` limits).
+  - Implemented round-level ability resets: `usedAbilitiesThisRound = {}` and `basicChangeFormUsedThisRound = false` upon new round transition.
+  - Re-exported all pipeline symbols through `src/engine/pipeline/index.ts` with 100% backwards compatibility.
+  - Expanded test suite `tests/engine/lifecycle-triggers.test.ts` to verify phase rotation and ability limit resets.
 - **Turn-Gated Form Changes & Phase/Round Lifecycle Triggers (RR v1.8 p. 8, 22, 24):**
   - Enforced official 1/round basic form change limit (`basicChangeFormUsedThisRound: boolean`) across engine and UI (`canChangeForm`, `HeroZone.tsx`, `IdentityActionModal.tsx`).
   - Separated card-effect form flips (e.g. *Split Personality* `01025`) from basic form flips, allowing card effects to flip identity without consuming the once-per-round basic action limit.

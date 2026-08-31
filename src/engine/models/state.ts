@@ -7,6 +7,7 @@ import {
   SideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
+import { AbilityStep } from './abilities';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -138,6 +139,19 @@ export interface RevealedCardDisplay {
   dimmedReason?: string;
 }
 
+/**
+ * Execution Frame for the Universal Resolution Stack (ADR-0032)
+ */
+export interface ExecutionFrame {
+  id: string;
+  type: 'ACTION' | 'ACTIVATION' | 'PHASE_STEP' | 'INTERRUPT' | 'RESPONSE';
+  sourceCardCode?: string;
+  playerId?: string;
+  stepIndex: number;
+  steps: AbilityStep[];
+  context?: Record<string, any>;
+}
+
 export interface PendingDecisionPrompt {
   promptId: string;
   playerId: string;
@@ -146,6 +160,10 @@ export interface PendingDecisionPrompt {
   sourceCardName: string;
   options: DecisionPromptOption[];
   revealedCards?: RevealedCardDisplay[];
+  isVoluntary?: boolean;
+  parentFrameId?: string;
+  queuePosition?: number;
+  totalQueued?: number;
 }
 
 export interface GameState {
@@ -154,6 +172,13 @@ export interface GameState {
   phase: GamePhase;
   setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
+
+  /** Structured FIFO Prompt Queue (ADR-0032) */
+  pendingDecisionQueue?: PendingDecisionPrompt[];
+  /** Execution Frame Stack (ADR-0032) */
+  executionStack?: ExecutionFrame[];
+
+  /** Legacy / direct pointer to head of pendingDecisionQueue for backwards-compatibility */
   pendingDecisionPrompt?: PendingDecisionPrompt;
   scenarioId?: string;
   scenarioCardCode?: string;

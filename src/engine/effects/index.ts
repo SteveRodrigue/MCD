@@ -16,6 +16,8 @@ import {
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
 } from '../pipeline/villain-phase';
+import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { getEffectiveHeroStats } from '../pipeline/stat-calculator';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -25,6 +27,8 @@ export interface EffectExecutionContext {
   resourcesSpent?: string[];
   previousResult?: StepResolutionResult;
   collectedCardInstanceIds?: string[];
+  threatAmount?: number;
+  damageAmount?: number;
 }
 
 export interface EffectResult {
@@ -230,7 +234,10 @@ export function executeStep(
     }
 
     case 'DEAL_DAMAGE': {
-      const amount = (step.params?.amount as number) || 0;
+      let amount = (step.params?.amount as number) || 0;
+      if (step.params?.amountFormula === 'HERO_ATK' || (step.params?.amount as any) === 'HERO_ATK') {
+        amount = getEffectiveHeroStats(state, player).attack;
+      }
       const targetParam = step.params?.target as string | undefined;
 
       if (targetParam === 'ALL_ENEMIES') {
@@ -714,7 +721,7 @@ export function executeStep(
         };
       });
 
-      state.pendingDecisionPrompt = {
+      state = enqueueDecisionPrompt(state, {
         promptId: `futurist_${Date.now()}`,
         playerId: player.id,
         title: 'FUTURIST (Tony Stark)',
@@ -722,7 +729,7 @@ export function executeStep(
         sourceCardName: 'Tony Stark',
         options,
         revealedCards,
-      };
+      });
 
       state.log.push({
         id: `log_${Date.now()}`,
@@ -1007,6 +1014,56 @@ export function executeStep(
       return { state, success: true };
     }
 
+    case 'READY_IDENTITY':
+    case 'READY_CHARACTER':
+    case 'READY_CARD': {
+      player.exhausted = false;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'card.effect.readyIdentity',
+        params: { player: player.name },
+        onomatopoeia: 'READY!',
+      });
+      return { state, success: true, onomatopoeia: 'READY!' };
+    }
+
+    case 'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS':
+    case 'CANCEL_WHEN_REVEALED_AND_ATTACK': {
+      executeVillainAttackAgainstPlayer(state, player);
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'card.effect.getBehindMe',
+        params: { player: player.name },
+        onomatopoeia: 'GET BEHIND ME! (VILLAIN ATTACKS)',
+      });
+      return { state, success: true, onomatopoeia: 'GET BEHIND ME! VILLAIN ATTACKS!' };
+    }
+
+    case 'TAKE_THREAT_AS_DAMAGE': {
+      const amount = (context.threatAmount ?? (step.params?.amount as number)) || 1;
+      player.health = Math.max(0, player.health - amount);
+      if (player.health <= 0) state.winner = 'VILLAIN';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'card.effect.greatResponsibility',
+        params: { player: player.name, damage: amount },
+        onomatopoeia: 'GREAT RESPONSIBILITY! (DAMAGE TAKEN)',
+      });
+      return { state, success: true, onomatopoeia: 'GREAT RESPONSIBILITY!' };
+    }
+
     case 'DISCARD_ATTACHMENT': {
       if (context.sourceCardInstance) {
         const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
@@ -1049,15 +1106,16 @@ export function executeStep(
       const title = (step.params?.title as string) || (step.params?.promptTitle as string) || 'Choose an Option';
       const description = (step.params?.description as string) || '';
       const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
-
-      state.pendingDecisionPrompt = {
-        promptId: `prompt_${Date.now()}_${step.id || 'choice'}`,
+      const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
+      state = enqueueDecisionPrompt(state, {
+        promptId,
         playerId: context.playerId || player.id,
         title,
         description,
         sourceCardName,
         options,
-      };
+        isVoluntary: (step.params?.isVoluntary as boolean) ?? false,
+      });
 
       state.log.push({
         id: `log_${Date.now()}`,
@@ -1066,7 +1124,7 @@ export function executeStep(
         phase: state.phase,
         category: 'ability',
         key: 'decision.prompt.opened',
-        params: { player: player.name, promptId: state.pendingDecisionPrompt?.promptId || '', source: sourceCardName },
+        params: { player: player.name, promptId, source: sourceCardName },
         onomatopoeia: 'CHOICE REQUIRED!',
       });
 

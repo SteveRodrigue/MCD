@@ -24,6 +24,7 @@ import { executeEffect } from '../effects';
 import { executeVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
+import { resolveDecisionPrompt } from './prompt-queue';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -952,7 +953,7 @@ export function dispatchAction(
       }
 
       return {
-        state: nextState,
+        state: effectRes.state,
         result: {
           success: effectRes.success,
           error: effectRes.error,
@@ -1081,56 +1082,7 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      const prompt = nextState.pendingDecisionPrompt;
-      if (!prompt) {
-        return { state, result: { success: false, error: 'No pending decision prompt active' } };
-      }
-      if (prompt.playerId !== action.playerId) {
-        return { state, result: { success: false, error: 'Decision prompt belongs to another player' } };
-      }
-
-      const selectedOption = prompt.options.find((opt) => opt.id === action.selectedOptionId);
-      if (!selectedOption) {
-        return { state, result: { success: false, error: `Invalid option id '${action.selectedOptionId}'` } };
-      }
-
-      // Clear prompt
-      delete nextState.pendingDecisionPrompt;
-
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
-        category: 'ability',
-        key: 'decision.prompt.resolved',
-        params: { player: player.name, option: selectedOption.label, promptId: prompt.promptId },
-        onomatopoeia: 'CHOICE MADE!',
-      });
-
-      // Execute selected ability effect
-      const syntheticAbility = {
-        id: `${prompt.promptId}_${selectedOption.id}`,
-        timing: 'ACTION' as const,
-        steps: [
-          {
-            effect: selectedOption.effect || 'RESOLVED',
-            params: selectedOption.params || {},
-          },
-        ],
-      };
-
-      const effectRes = executeEffect(nextState, syntheticAbility, {
-        playerId: action.playerId,
-      });
-
-      return {
-        state: effectRes.state,
-        result: {
-          success: true,
-          onomatopoeia: effectRes.onomatopoeia || 'CHOICE RESOLVED!',
-        },
-      };
+      return resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
     }
 
     default:

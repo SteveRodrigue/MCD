@@ -291,14 +291,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         logs={gameState.log}
       />
 
-      {/* 8. Interactive Decision Prompt Modal (ADR-0020) */}
+      {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032) */}
       <DecisionPromptModal
-        prompt={gameState.pendingDecisionPrompt}
+        prompt={gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt}
         onSelectOption={(optionId) => {
-          if (gameState.pendingDecisionPrompt && onDispatchAction) {
+          const activePrompt = gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
+          if (activePrompt && onDispatchAction) {
             onDispatchAction({
               type: 'RESOLVE_DECISION_PROMPT',
-              playerId: gameState.pendingDecisionPrompt.playerId,
+              playerId: activePrompt.playerId,
               selectedOptionId: optionId,
             });
           }

@@ -54,9 +54,9 @@
 
 ## 2. Search, Split & Zone Manipulations
 
-### `SEARCH_AND_DRAW`
-* **Status:** 🟡 `ROADMAP` (Issue [#10](https://github.com/SteveRodrigue/MCD/issues/10) - *Tony Stark* `01029b` / Issue [#14](https://github.com/SteveRodrigue/MCD/issues/14) - *Stark Tower*)
-* **Description:** Looks at top N cards of player/encounter deck, prompts player to choose M cards into destination zone (e.g. Hand), and sends remaining cards to unselected destination (e.g. Discard).
+### `SCRY_AND_SELECT_TRAIT` / `SEARCH_AND_DRAW`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L465`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L465) / *Tony Stark* `01029b` Futurist)
+* **Description:** Looks at top N cards of player deck, opens an interactive `PendingDecisionPrompt` allowing the player to choose M cards matching a trait filter into hand (or decline), and discards unselected cards.
 
 ```json
 {

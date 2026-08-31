@@ -35,6 +35,7 @@ interface CardAbility {
 }
 
 interface SupplementalEntry {
+  noSupplementalNeeded?: boolean;
   comment?: string;
   abilities?: CardAbility[];
   audit?: CardAudit;
@@ -55,6 +56,15 @@ interface UsageOccurrence {
   cardName: string;
   pack: string;
   abilityId: string;
+}
+
+interface NoSupplementalCardInfo {
+  code: string;
+  name: string;
+  type: string;
+  faction: string;
+  pack: string;
+  comment: string;
 }
 
 function loadAllUpstreamCards(): Map<string, UpstreamCard> {
@@ -134,6 +144,8 @@ export function runDeclarationsAudit() {
   const costsUsage = new Map<string, UsageOccurrence[]>();
   const scalingUsage = new Map<string, UsageOccurrence[]>();
 
+  const noSupplementalCards: NoSupplementalCardInfo[] = [];
+
   let totalCardsInSupplemental = 0;
   let totalCardsWithAbilities = 0;
   let totalCardsBlocked = 0;
@@ -178,6 +190,20 @@ export function runDeclarationsAudit() {
       const upstream = upstreamCards.get(code);
       const cardName = upstream ? `${upstream.name} (${upstream.type_code})` : `Unknown Card #${code}`;
 
+      if (entry.noSupplementalNeeded) {
+        noSupplementalCards.push({
+          code,
+          name: upstream ? upstream.name : 'Unknown',
+          type: upstream ? upstream.type_code : 'Unknown',
+          faction: upstream ? upstream.faction_code : 'Unknown',
+          pack: packName,
+          comment: (entry.comment || entry.audit?.reconstructedText || 'No abilities required (Vanilla / Base Stats / Standard Resource)')
+            .replace(/\r?\n|\r/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim(),
+        });
+      }
+
       if (entry.audit?.ambiguityFile) {
         totalCardsBlocked += 1;
       }
@@ -208,6 +234,7 @@ export function runDeclarationsAudit() {
   reportLines.push(`| :--- | :--- | :--- |`);
   reportLines.push(`| **Total Cards Registered** | **${totalCardsInSupplemental}** | Total cards present in \`src/data/supplemental/\` |`);
   reportLines.push(`| **Active Declared Cards** | **${totalCardsWithAbilities}** | Cards with executable \`abilities: [...]\` |`);
+  reportLines.push(`| **No Supplemental Needed** | **${noSupplementalCards.length}** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |`);
   reportLines.push(`| **Blocked / Ambiguity Cards** | **${totalCardsBlocked}** | Cards isolated in \`docs/ambiguities/\` |`);
   reportLines.push(`| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | Total individual ability definitions declared |`);
   reportLines.push(`| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`);
@@ -217,7 +244,23 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 💥 2. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
+  reportLines.push(`## 🟢 2. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive)`);
+  reportLines.push(``);
+  reportLines.push(`These **${noSupplementalCards.length} cards** have been audited and explicitly verified as \`"noSupplementalNeeded": true\` (standard double resource generators, vanilla baseline minions, basic identity cards, or schemes with no custom trigger hooks):`);
+  reportLines.push(``);
+  reportLines.push(`| Card Code | Card Name | Type | Faction / Aspect | Pack | Description / Comment |`);
+  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
+
+  // Sort by code canonically
+  noSupplementalCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  for (const c of noSupplementalCards) {
+    reportLines.push(`| \`${c.code}\` | **${c.name}** | \`${c.type}\` | \`${c.faction}\` | \`${c.pack}\` | ${c.comment} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(`## 💥 3. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
   reportLines.push(``);
   reportLines.push(`Changing these primitives will affect many cards across the entire game engine:`);
   reportLines.push(``);
@@ -249,7 +292,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🔍 3. Single-Use & Unique Primitives (Card Count = 1)`);
+  reportLines.push(`## 🔍 4. Single-Use & Unique Primitives (Card Count = 1)`);
   reportLines.push(``);
   reportLines.push(`These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:`);
   reportLines.push(``);
@@ -277,7 +320,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⚠️ 4. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
+  reportLines.push(`## ⚠️ 5. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`);
   reportLines.push(``);
   reportLines.push(`These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:`);
   reportLines.push(``);
@@ -299,7 +342,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 📑 5. Complete Effects Inventory`);
+  reportLines.push(`## 📑 6. Complete Effects Inventory`);
   reportLines.push(``);
   reportLines.push(`| Effect Primitive | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -313,7 +356,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## ⏱️ 6. Complete Triggers Inventory`);
+  reportLines.push(`## ⏱️ 7. Complete Triggers Inventory`);
   reportLines.push(``);
   reportLines.push(`| Trigger Window | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
@@ -327,7 +370,7 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 🎯 7. Timings, Costs & Target Selectors Inventory`);
+  reportLines.push(`## 🎯 8. Timings, Costs & Target Selectors Inventory`);
   reportLines.push(``);
   reportLines.push(`### Ability Timings:`);
   reportLines.push(`| Timing | Occurrences | Cards |`);
@@ -371,6 +414,7 @@ export function runDeclarationsAudit() {
   console.log(`========================================================`);
   console.log(`Total Cards Scanned:      ${totalCardsInSupplemental}`);
   console.log(`Cards with Abilities:     ${totalCardsWithAbilities}`);
+  console.log(`No Supplemental Needed:   ${noSupplementalCards.length}`);
   console.log(`Blocked (Ambiguity):      ${totalCardsBlocked}`);
   console.log(`Total Abilities Declared: ${totalAbilitiesDeclared}`);
   console.log(`Unique Effect Types:      ${effectsUsage.size}`);

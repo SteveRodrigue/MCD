@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-08-31T03:35:40.728Z`  
+> **Generated:** `2026-08-31T03:37:28.658Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -11,6 +11,7 @@
 | :--- | :--- | :--- |
 | **Total Cards Registered** | **156** | Total cards present in `src/data/supplemental/` |
 | **Active Declared Cards** | **140** | Cards with executable `abilities: [...]` |
+| **No Supplemental Needed** | **14** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Blocked / Ambiguity Cards** | **2** | Cards isolated in `docs/ambiguities/` |
 | **Total Abilities Declared** | **156** | Total individual ability definitions declared |
 | **Unique Effects In Use** | **66** | Distinct effect primitive types actively declared |
@@ -20,7 +21,30 @@
 
 ---
 
-## 💥 2. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
+## 🟢 2. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive)
+
+These **14 cards** have been audited and explicitly verified as `"noSupplementalNeeded": true` (standard double resource generators, vanilla baseline minions, basic identity cards, or schemes with no custom trigger hooks):
+
+| Card Code | Card Name | Type | Faction / Aspect | Pack | Description / Comment |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `01014` | **Energy Absorption** | `resource` | `hero` | `core` | RESOURCE: Energy Absorption |
+| `01044` | **Vibranium** | `resource` | `hero` | `core` | RESOURCE: Vibranium |
+| `01088` | **Energy** | `resource` | `basic` | `core` | RESOURCE: Energy |
+| `01089` | **Genius** | `resource` | `basic` | `core` | RESOURCE: Genius |
+| `01090` | **Strength** | `resource` | `basic` | `core` | RESOURCE: Strength |
+| `01094` | **Rhino** | `villain` | `encounter` | `core_encounter` | VILLAIN: Rhino |
+| `01097a` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | MAIN_SCHEME: The Break-In! |
+| `01097b` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | MAIN_SCHEME: The Break-In! |
+| `01156` | **Usurp The Throne** | `side_scheme` | `encounter` | `core_encounter` | Vanilla card (no printed abilities). |
+| `01161` | **Personal Challenge** | `side_scheme` | `encounter` | `core_encounter` | Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here. |
+| `01166` | **Highway Robbery** | `side_scheme` | `encounter` | `core_encounter` | Passive/Vanilla: <b>When Revealed</b>: Each player places a random card from their hand facedown here. <b>When Defeated</b>: Return each facedown card here to its owner's hand. |
+| `01171` | **Imminent Overload** | `side_scheme` | `encounter` | `core_encounter` | Passive/Vanilla: <b>When Revealed</b>: Place an additional 1 [per_hero] threat here. |
+| `01176` | **The Psyche-Magnitron** | `side_scheme` | `encounter` | `core_encounter` | Passive/Vanilla: <b>When Revealed</b>: Place an additional 1[per_hero] threat here. |
+| `01178` | **Kree Manipulator** | `treachery` | `encounter` | `core_encounter` | Passive/Vanilla: Surge. <i>(After this card resolves, reveal 1 additional encounter card.)</i> <b>When Revealed</b>: Place 1 threat on the main scheme. <hr /> [star] <b>Boost</b>: If the villain is making an undefended attack, place 1 threat on the main scheme. |
+
+---
+
+## 💥 3. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
 
 Changing these primitives will affect many cards across the entire game engine:
 
@@ -39,7 +63,7 @@ Changing these primitives will affect many cards across the entire game engine:
 
 ---
 
-## 🔍 3. Single-Use & Unique Primitives (Card Count = 1)
+## 🔍 4. Single-Use & Unique Primitives (Card Count = 1)
 
 These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:
 
@@ -105,7 +129,7 @@ These primitives are only declared on a single card. They represent high special
 
 ---
 
-## ⚠️ 4. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
+## ⚠️ 5. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
 
 These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:
 
@@ -142,7 +166,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 📑 5. Complete Effects Inventory
+## 📑 6. Complete Effects Inventory
 
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -215,7 +239,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## ⏱️ 6. Complete Triggers Inventory
+## ⏱️ 7. Complete Triggers Inventory
 
 | Trigger Window | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -240,7 +264,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 🎯 7. Timings, Costs & Target Selectors Inventory
+## 🎯 8. Timings, Costs & Target Selectors Inventory
 
 ### Ability Timings:
 | Timing | Occurrences | Cards |

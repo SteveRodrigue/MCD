@@ -25,12 +25,12 @@ To prevent conflicting interpretations and ensure strict rules accuracy across a
 
 **Chosen Authority:** The official Fantasy Flight Games documents stored in `references/`:
 1. **Primary & Superseding Authority:**
-   * **[Rules Reference v1.8](references/mc_rulesreference_v18_compressed.pdf)** (`references/mc_rulesreference_v18_compressed.pdf`)
+   * **[Rules Reference v1.8](../../references/mc_rulesreference_v18_compressed.pdf)** (`references/mc_rulesreference_v18_compressed.pdf`)
    * **The Rules Reference v1.8 supersedes and corrects the Learn to Play guide in all cases.**
    * Defines: Precise timing hierarchies (*Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses*), Cost Payment resolution, Attack/Defense/Thwart frameworks, Keyword mechanics, and official card errata.
 2. **Introductory Tutorial & Sequence Guide:**
-   * **[Learn to Play Guide](references/mvc01_learn_to_play_eng-compressed.pdf)** (`references/mvc01_learn_to_play_eng-compressed.pdf`)
-   * Used for initial tutorial flows, basic component anatomy, and introductory terminology. If any conflict exists between the Learn to Play guide and the Rules Reference, the Rules Reference v1.8 strictly prevails.
+   * **[Rules Reference Markdown](../../references/rules_reference_v18.md)** (`references/rules_reference_v18.md`)
+   * Used for timing flows, basic component anatomy, and rules terminology. If any conflict exists, the Rules Reference v1.8 strictly prevails.
 
 ---
 

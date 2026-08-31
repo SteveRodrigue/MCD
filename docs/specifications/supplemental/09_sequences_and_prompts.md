@@ -2,10 +2,10 @@
 
 ---
 
-## 1. Multi-Action Sequencing (`sequence: []`) & Conditional Gates
+## 1. Unified Action Step Sequencing (`steps: []`) & Conditional Gates
 
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028 / *Split Personality* `01025`, *Hard to Keep Down* `01104`, *I'm Tough* `01105`, *Under Fire* `01193`)
-* **Description:** Decomposes complex cards into ordered sequences of discrete, reusable atomic sub-actions, with optional conditional gating (`gate: ...`) and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028, ADR-0030 / *Split Personality* `01025`, *Hard to Keep Down* `01104`, *I'm Tough* `01105`, *Under Fire* `01193`)
+* **Description:** Decomposes all card abilities into an ordered execution pipeline of discrete, reusable atomic `AbilityStep` primitives, with optional conditional gating (`gate: ...`) and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
 
 ### Conditional Gates:
 * `"ALWAYS"` *(Default)*: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".
@@ -18,17 +18,15 @@
 ### Example:
 ```json
 {
-  "id": "split_personality_sequence",
+  "id": "split_personality",
   "timing": "ACTION",
-  "sequence": [
+  "steps": [
     {
       "id": "step_1_flip",
-      "timing": "ACTION",
       "effect": "FLIP_FORM"
     },
     {
       "id": "step_2_draw",
-      "timing": "ACTION",
       "effect": "DRAW_UP_TO_HAND_SIZE",
       "gate": "THEN"
     }

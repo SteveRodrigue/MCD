@@ -69,17 +69,17 @@ graph TD
 * [x] **Turn-Gated Form Changes (RR v1.8 p. 8):**
   * Basic 1/round form change limit tracked via `basicChangeFormUsedThisRound` with automatic reset on `ROUND_BEGAN`.
 
-### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue (ADR-0032) ✅ (Completed)
-* [x] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24):**
+### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue ([ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)) ✅ (Completed)
+* [x] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24 / [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)):**
   * Supported interruption windows and execution frames (`ExecutionFrame`, `executionStack`) without state corruption.
   * Supported voluntary reaction windows with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
 * [x] **Decision Prompt Queue Management:**
   * Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.
 * [x] **Promoted 5 Ambiguity Cards to 100% Confidence:** *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`).
 
-### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031) ✅ (Completed)
+### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline ([ADR-0031](decisions/0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md)) ✅ (Completed)
 * [x] **Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engine ✅ (Completed):**
-  * Built modular 7-step combat pipeline in `src/engine/pipeline/combat-pipeline.ts`.
+  * Built modular 7-step combat pipeline in `src/engine/pipeline/combat-pipeline.ts` ([ADR-0031](decisions/0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md)).
   * Step 1 Stun/Webbed Up check & Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / *Spider-Sense* card draw).
   * Step 3 `DECLARE_DEFENDER` modal prompt with Basic Hero Defend (DEF mitigation), Ally Block, and Take Undefended.
   * Headless synchronous execution helper with configurable defense policy (`TAKE_UNDEFENDED`, `HERO_IF_READY`, `ALLY_CHUMP_BLOCK`, `AUTO_OPTIMAL`).
@@ -90,15 +90,15 @@ graph TD
   * ★ Star Boost abilities engine & dynamic boost card chaining (*Titania's Fury* `01164`, *Sweeping Swoop* `01168`, *Electric Whip Attack* `01173`, *Kree Manipulator* `01178`).
 * [x] **Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant ✅ (Completed):**
   * Step 6 Damage Prevention Interrupts (*Backflip* `01003`, *Cosmic Flight* `01017`) and Tough preservation.
-  * Overkill excess damage routing (bidirectional: Enemy $\rightarrow$ Ally $\rightarrow$ Hero, Player $\rightarrow$ Minion $\rightarrow$ Villain) and `RETALIATE X` return damage in Step 7.
+  * Overkill excess damage routing (bidirectional: Enemy $\rightarrow$ Defending Ally $\rightarrow$ Hero, Player $\rightarrow$ Minion $\rightarrow$ Villain) and `RETALIATE X` return damage in Step 7.
   * Direct damage vs. attack damage invariant (`dealDirectDamage`).
   * Promotes 8 Core Set cards: *Backflip* (`01003`), *Enhanced Spider-Sense* (`01004`), *Cosmic Flight* (`01017`), *Gamma Slam* (`01021`), *Hulk* (`01050`), *Tigra* (`01051`), *Relentless Assault* (`01053`), *Uppercut* (`01054`).
 
-### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0033)
-* [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**
+### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline ([ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))
+* [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28 / [ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md)):**
   * Refactor scenario initialization into declarative plug-in modules (`createGame(scenarioConfig, playerConfigs)`).
   * Enforce strict encounter set taxonomy: Scenario-Mandatory Sets (Villain set, Standard/Expert set, scenario-required secondary sets like *Prelates*) vs. Customizable Modular Slots.
-  * Execute Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).
+  * Execute Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing) using generic zone primitives ([ADR-0029](decisions/0029-generic-zone-transfer-and-deck-manipulation-primitives.md)).
   * Standardize scenario plugins for Rhino, Klaw, and Ultron with plug-and-play modular encounter sets (*Bomb Scare*, *Masters of Evil*, *Under Attack*, *Legions of Hydra*, *The Doomsday Chair*).
 * [ ] **Scenario Selection Screen & Modular Set Customizer (`ScenarioSelector.tsx`):**
   * Update `ScenarioSelector.tsx` to display locked scenario-mandatory set badges (`[🔒 MANDATORY]`).
@@ -106,7 +106,7 @@ graph TD
   * Provide a "Reset to Defaults" button and pass `selectedModularSetCodes` in `SetupSelection`.
 
 ### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero)
-* [ ] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25):**
+* [ ] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md)):**
   - Implement dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
   - Support heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).
   - Support dynamic limit expansion modifiers (e.g. *Side Holster*, *Venom*, *Prehensile Tail*).
@@ -115,7 +115,7 @@ graph TD
   - Evaluate uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
 * [ ] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18):**
   - Guarantee immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws.
-* [ ] **Promote 100% of Ambiguity Cards in `docs/ambiguities/`:**
+* [ ] **Promote 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)):**
   - Execute Card Integration Protocol across all remaining 32 ambiguity files.
   - Promote all cards to $\ge 98\%$ confidence with dedicated unit tests.
   - Prune `docs/ambiguities/` to **0 files (Inbox Zero)**.
@@ -124,7 +124,7 @@ graph TD
 ---
 
 ## 📍 Phase 3: Automated Headless Match Simulation & Multi-Hero Verification 📅 (Planned Next)
-*Objective: Deliver a 100% automated, headless, deterministic game simulator capable of running full multi-round matches across all 5 Core Heroes against Rhino, Klaw, and Ultron.*
+*Objective: Deliver a 100% automated, headless, deterministic game simulator capable of running full multi-round matches across all 5 Core Heroes against Rhino, Klaw, and Ultron ([ADR-0002](decisions/0002-decoupled-headless-rules-engine.md), [ADR-0009](decisions/0009-game-history-and-action-log.md)).*
 
 ### Milestones & Tasks
 1. 🔴 `[Must-Have]` **Deterministic Monte Carlo Simulation Engine:**
@@ -132,19 +132,19 @@ graph TD
    * Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
 2. 🔴 `[Must-Have]` **Multi-Hero Collaboration & Cooperative Triggers:**
    * Verify "Action: Ask another player to..." and cross-player resource/defense triggers (*Make the Call*, *Get Behind Me!*, *Helicarrier*, *Maria Hill*).
-   * **`Alliance` Keyword Engine (RR v1.8 p. 4):** Support collaborative multi-player resource pooling from hands and generators for Alliance cards.
+   * **`Alliance` Keyword Engine (RR v1.8 p. 4 / [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)):** Support collaborative multi-player resource pooling from hands and generators for Alliance cards.
    * **`Team-Up` Prerequisite Validator (RR v1.8 p. 28):** Validate dual-identity prerequisites across active identities and tableaus.
 
 ---
 
 ## 📍 Phase 4: Comic Tabletop UI, Deck Import & Visual Polish 🃏 (Planned)
-*Objective: Connect the proven headless engine to our 1960s Pop-Art presentation layer with community deck import.*
+*Objective: Connect the proven headless engine to our 1960s Pop-Art presentation layer with community deck import ([ADR-0004](decisions/0004-visual-art-direction-comic-pop-art.md), [ADR-0014](decisions/0014-marvelcdb-deck-schema-and-metadata-decks.md), [ADR-0017](decisions/0017-panoramic-horizontal-tabletop-and-edge-scrolling.md), [ADR-0026](decisions/0026-daily-bugle-action-dispatcher-and-dynamic-fan-out-hand.md)).*
 
-### 1. 🟠 `[Should-Have]` Community Deck Import (MarvelCDB REST API)
+### 1. 🟠 `[Should-Have]` Community Deck Import (MarvelCDB REST API - [ADR-0014](decisions/0014-marvelcdb-deck-schema-and-metadata-decks.md))
 * [ ] 1-click **"Import Deck by MarvelCDB URL / ID"** button to load any community deck directly from `https://marvelcdb.com`.
 * [ ] In-game deck validation checking aspect and unicity rules (40–50 cards).
 
-### 2. 🟠 `[Should-Have]` Comic Tabletop UI Polish & Visual Ergonomics
+### 2. 🟠 `[Should-Have]` Comic Tabletop UI Polish & Visual Ergonomics ([ADR-0017](decisions/0017-panoramic-horizontal-tabletop-and-edge-scrolling.md), [ADR-0026](decisions/0026-daily-bugle-action-dispatcher-and-dynamic-fan-out-hand.md))
 * [ ] **Discard Pile Inspectors with Multi-Tier Sorting Options:**
   * Interactive modal to inspect Player Discard and Encounter Discard piles with sorting toggles (Chronological, Card Type, Aspect, Cost, Alphabetical) preserving underlying state order.
 * [ ] **Interactive Card Play & Resource Payment Modal:**
@@ -152,7 +152,7 @@ graph TD
 * [ ] **Turn Pass & Step-by-Step Activation Banners.**
 
 ### 3. 🟡 `[Nice-to-Have]` Visual & Audio Polish
-* [ ] Dynamic Onomatopoeia starburst overlays (*POW!*, *BAM!*, *KAPOW!*, *THWIP!*).
+* [ ] Dynamic Onomatopoeia starburst overlays (*POW!*, *BAM!*, *KAPOW!*, *THWIP!* - [ADR-0004](decisions/0004-visual-art-direction-comic-pop-art.md)).
 * [ ] Retro comic action sound effects and card dealing chimes.
 * [ ] Standalone In-Game Visual Deckbuilder (secondary to MarvelCDB import).
 
@@ -161,26 +161,26 @@ graph TD
 ## 📍 Phase 5: Expansion Waves, Advanced Mechanics & Native Ecosystem 🚀 (Planned)
 *Objective: Scale the engine to support advanced expansion mechanics, new card types, multi-form identities, and native platforms.*
 
-### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks (ADR-0034)
-* [ ] **Player Side Scheme Execution Engine (`player_side_scheme`):**
+### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md))
+* [ ] **Player Side Scheme Execution Engine (`player_side_scheme` - RR v1.8 p. 26 / [ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)):**
   * Support voluntary player side schemes with printed threat and "When Defeated" player reward step sequences.
   * Enable heroes and allies to target player side schemes with basic thwart and thwart events.
-* [ ] **Persistent Victory Display (`state.victoryDisplay`):**
+* [ ] **Persistent Victory Display (`state.victoryDisplay` - RR v1.8 p. 30):**
   * Route defeated `Victory X` schemes and minions to the Victory Display zone to prevent deck recycling and track victory scores.
 * [ ] **Auxiliary Scenario Decks (`auxiliaryDecks` & `auxiliaryDiscards`):**
   * Support modular auxiliary decks for complex campaign scenarios (*Infinity Gauntlet*, *Holding Cell*, *Market*, *Evidence*).
 
-### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine (ADR-0035)
-* [ ] **Multi-Form Identity Scaling (3-Sided & Mass/Energy Forms):**
+### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine ([ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md))
+* [ ] **Multi-Form Identity Scaling (3-Sided & Mass/Energy Forms - RR v1.8 p. 12 / [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md)):**
   * Support 3-sided identities (*Ant-Man*, *Wasp*), Energy Forms (*Spectrum*), Mass Forms (*Vision*, *Shadowcat*), and Progression levels (*Ironheart*).
   * Dispatch discrete `FORM_CHANGED` lifecycle events with form-entry ability step triggers.
 * [ ] **Universal Dynamic Counter Map (`counters: Record<string, number>`):**
-  * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS` and `SPEND_COUNTERS` primitives.
+  * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS`, `SPEND_COUNTERS`, and `REMOVE_COUNTERS_MATCHING_FILTER` primitives.
 
-### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers (ADR-0036)
-* [ ] **Count-Based Status Thresholds (RR v1.8 p. 28):**
+### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers ([ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md))
+* [ ] **Count-Based Status Thresholds (RR v1.8 p. 28 / [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md)):**
   * Support **`Stalwart`** (status immunity) and **`Steady`** (requires 2 status cards to cancel actions).
-* [ ] **Minion Combat & Threat Modifiers:**
+* [ ] **Minion Combat & Threat Modifiers (RR v1.8 p. 14, 16, 18, 30):**
   * **`Villainous` Keyword:** Minions draw and resolve facedown boost cards when activating.
   * **`Quickstrike` Keyword:** Minions immediately trigger an attack activation upon engaging a Hero.
   * **`Incite X` & `Hinder X`:** Threat modifiers executed upon encounter card entry.
@@ -189,5 +189,5 @@ graph TD
 * [ ] Incremental pack integration: Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Green Goblin, Galaxy's Most Wanted, Mad Titan's Shadow, Sinister Motives, Mutant Genesis, Next Evolution, Age of Apocalypse.
 
 ### 5. 🔵 `[Future / Experimental]` Native Desktop & Network Multiplayer
-* [ ] **Native Desktop Executable (Tauri):** Standalone Windows/Mac/Linux binaries with ultra-low memory footprint.
+* [ ] **Native Desktop Executable (Tauri - [ADR-0003](decisions/0003-technology-stack-selection.md)):** Standalone Windows/Mac/Linux binaries with ultra-low memory footprint.
 * [ ] **Peer-to-Peer Network Multiplayer (WebRTC):** Synchronized state room for 2–4 players over WebSockets/WebRTC.

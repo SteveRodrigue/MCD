@@ -30,8 +30,8 @@ All uncompleted and future roadmap items are categorized using the following pri
 ```mermaid
 graph TD
     P0["Phase 0: Foundation & Governance ✅<br/>(Scaffolding, ADRs, Tooling, CI/CD)"] --> P1["Phase 1: Headless Engine & Schema Verification ✅<br/>(Deterministic State Tree, Supplemental Zod Schema, CI Tests)"]
-    P1 --> P2["Phase 2: 2-Hero Vertical Slice Matchup 🚧<br/>(Spider-Man + Captain Marvel vs Rhino: 100% Debugged Multi-Handed Solo)"]
-    P2 --> P3["Phase 3: Rules Engine Robustness & Nested Resolution 📅<br/>(Nested Trigger Stack, Interleaved Step 2/3 Activations, Combat Event Bus)"]
+    P1 --> P2["Phase 2: Rules Engine Robustness & Nested Resolution 🚧<br/>(Interleaved Step 2/3 Activations, Nested Stack, Event Bus)"]
+    P2 --> P3["Phase 3: 2-Hero Vertical Slice Matchup 📅<br/>(Spider-Man + Captain Marvel vs Rhino: 100% Debugged Multi-Handed Matchup)"]
     P3 --> P4["Phase 4: Core Set Completion & Polish 🃏<br/>(All 5 Core Heroes, Klaw, Ultron, MarvelCDB URL Import, Pop-Art UI)"]
     P4 --> P5["Phase 5: Expansions & Desktop Packaging 🚀<br/>(Hero & Scenario Packs, Tauri Desktop Binary, WebRTC P2P Multiplayer)"]
 ```
@@ -39,7 +39,7 @@ graph TD
 ---
 
 ## 📍 Phase 0: Project Inception & Foundation ✅ (Completed)
-* [x] **Architecture Decision Records (ADRs):** ADR-0001 through ADR-0022 created and indexed.
+* [x] **Architecture Decision Records (ADRs):** ADR-0001 through ADR-0026 created and indexed.
 * [x] **Technology Selection:** TypeScript 5 + React 18 + Tailwind CSS + Vitest + Vite.
 * [x] **Open-Source Governance:** MIT License, README, CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, and CI workflow.
 * [x] **Tooling & Scaffolding:** Vite 5, TypeScript 5, Vitest, Tailwind with Comic Theme, smoke tests verified.
@@ -52,51 +52,29 @@ graph TD
 * [x] **Automated Schema CI/CD Tests:** `tests/data/supplemental-schema.test.ts` validating 100% of supplemental packs.
 * [x] **Modular Documentation Hub:** 10-part specification suite in `docs/specifications/supplemental/` with 🟢 `IMPLEMENTED` vs 🟡 `ROADMAP` status badges.
 * [x] **Hero & Scenario Creation Guides:** Standardized authoring guides for community and official expansion packs.
+* [x] **100% Core Set Encounter Pool Parity:** Multi-Stage Villain transitions (I $\rightarrow$ II $\rightarrow$ III), Option 3 Extra Activations (*Advance*, *Assault*, *Gang-Up*, *Explosion*, *Masterplan*, *Under Fire*), and Nemesis Spawning pipeline (*Shadow of the Past* `01190`).
+* [x] **Mulligan Rules Alignment (RR v1.8 p. 23):** Discard pile placement with top replacement draws.
+* [x] **Ergonomics & Action Engine:** 1960s Daily Bugle Action Dispatcher (`DailyBugleActionNewspaper.tsx`), form-aware Identity Action Modal (`IdentityActionModal.tsx`), and Dynamic Fan-Out Stack Hand layout (`useHandFanLayout.ts`).
 
 ---
 
-## 📍 Phase 2: 2-Hero Multi-Handed Vertical Slice (Current Sprint) 🚧
-*Objective: Deliver a 100% automated, fully working, and deeply playable multi-handed solo game: **Spider-Man (Justice) + Captain Marvel (Leadership) vs Rhino (Standard I + Bomb Scare)**.*
-
-### Milestones & Tasks
-1. 🔴 `[Must-Have]` **100% Core Set Encounter Pool Parity (Completed):**
-   * [x] Multi-Stage Villain transitions (Stage I $\rightarrow$ II $\rightarrow$ III).
-   * [x] Option 3 Extra Activations (*Advance*, *Assault*, *Gang-Up*, *Explosion*, *Masterplan*, *Under Fire*).
-   * [x] Nemesis Spawning pipeline (*Shadow of the Past* `01190` with set-aside isolation and Surge fallback).
-2. 🔴 `[Must-Have]` **Mulligan Rules Alignment (RR v1.8 p. 23):**
-   * [x] Ensure rejected mulligan cards are placed in player **discard pile** (not shuffled into deck), and replacement cards drawn from top.
-3. 🔴 `[Must-Have]` **Dynamic Hand Size & Tech Upgrades (Issue #9) (Completed):**
-   * [x] Continuous aura modifying live effective hand size dynamically during round upkeep and UI rendering (*Iron Man* `01029a`, *Arc Reactor*, *Mark V Armor*, *Rocket Boots*).
-   * [x] Tony Stark *Futurist* scrying ability with interactive player choice prompt (`DecisionPromptModal.tsx`).
-4. 🔴 `[Must-Have]` **Captain Marvel & Spider-Man Card Parity:**
-   * [x] Spider-Man signature cards: *Spider-Sense*, *Backflip*, *Swinging Web Kick*, *Spider-Tracer*, *Aunt May*, *Web-Shooter*.
-   * [ ] Captain Marvel signature cards: *Rechannel*, *Crisis Intervenor*, *Photonic Blast*, *Energy Channel* (energy token accumulation), *Cosmic Flight*, *Captain Marvel's Helmet*.
-5. 🔴 `[Must-Have]` **Ergonomics & Action Engine (Completed):**
-   * [x] 1960s Daily Bugle Action Dispatcher (`DailyBugleActionNewspaper.tsx`) & Legal Actions Engine (`legal-actions-generator.ts`).
-   * [x] Form-aware Identity Action Modal on card click (`IdentityActionModal.tsx`).
-   * [x] Dynamic Fan-Out Stack Hand layout with zero-overflow auto-tightening and instant repositioning (`useHandFanLayout.ts`).
-6. 🔴 `[Must-Have]` **2-Hero Multi-Handed Solo Automated Match Simulation:**
-   * [ ] Automated end-to-end game simulation verifying full win/loss conditions with 2 heroes collaborating against Rhino across multiple rounds.
-
----
-
-## 📍 Phase 3: Rules Engine Robustness & Nested Timing Architecture 📅 (Planned)
+## 📍 Phase 2: Rules Engine Robustness & Nested Timing Architecture 🚧 (Current Sprint)
 *Objective: Build an industrial-grade, event-driven rules engine with complete nested resolution and correct multiplayer turn loops.*
 
-### 1. 🔴 `[Must-Have]` Nested Resolution Stack & Decision Prompt Queue (RR v1.8 p. 16, 24)
+### 1. 🔴 `[Must-Have]` Interleaved Villain Phase Activations (RR v1.8 p. 22)
+* [ ] **Interleaved Player-by-Player Activation Loop:**
+  * Structure Step 2/3 as a unified loop starting from the First Player:
+    $$\text{For each player (starting at First Player)} \rightarrow \text{Villain activates against player} \rightarrow \text{Engaged minions activate against player}.$$
+* [ ] **Sequential Hazard Icon Distribution (RR v1.8 p. 11):**
+  * Distribute extra encounter cards from Hazard icons sequentially in player order starting from the First Player (e.g. In a 2-player game with 2 Hazard icons: Player 1 receives 2 cards, Player 2 receives 2 cards).
+
+### 2. 🔴 `[Must-Have]` Nested Resolution Stack & Decision Prompt Queue (RR v1.8 p. 16, 24)
 * [ ] **Nested Action & Trigger Execution Stack:**
   * Support interruption windows opening inside active action/activation windows without state corruption.
   * Allow voluntary reactions with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
   * Support player-ordered resolution when multiple `FORCED` triggers fire simultaneously (RR v1.8 p. 16).
 * [ ] **Turn-Gated Form Changes (`basicChangeFormUsedThisRound`):**
   * Track natural 1/round basic flip action separately from card-effect flips (e.g. *Split Personality* `01025`).
-
-### 2. 🔴 `[Must-Have]` Interleaved Villain Phase Activations (RR v1.8 p. 22)
-* [ ] **Interleaved Player-by-Player Activation Loop:**
-  * Structure Step 2/3 as a unified loop starting from the First Player:
-    $$\text{For each player (starting at First Player)} \rightarrow \text{Villain activates against player} \rightarrow \text{Engaged minions activate against player}.$$
-* [ ] **Sequential Hazard Icon Distribution (RR v1.8 p. 11):**
-  * Distribute extra encounter cards from Hazard icons sequentially in player order starting from the First Player (e.g. In a 2-player game with 2 Hazard icons: Player 1 receives 2 cards, Player 2 receives 2 cards).
 
 ### 3. 🔴 `[Must-Have]` Event-Driven Combat & Action Signals
 * [ ] **Direct Damage vs Attack Damage Distinction:**
@@ -109,6 +87,21 @@ graph TD
   * Formalize inspection rights in UI and engine:
     * **Discard Piles (Open Information):** Any player may inspect any discard pile (Player Discard, Encounter Discard) at any time during the game without altering the physical card order.
     * **Draw Decks (Hidden Information):** Draw decks may only be inspected when a card effect instructs the player to search/look, or via Dev Mode toggles.
+
+---
+
+## 📍 Phase 3: 2-Hero Multi-Handed Vertical Slice Matchup 📅 (Planned Next)
+*Objective: Deliver a 100% automated, fully working, and deeply playable multi-handed solo game: **Spider-Man (Justice) + Captain Marvel (Leadership) vs Rhino (Standard I + Bomb Scare)**.*
+
+### Milestones & Tasks
+1. 🔴 `[Must-Have]` **Spider-Man & Captain Marvel Full Signature Parity:**
+   * [x] Spider-Man signature cards: *Spider-Sense*, *Backflip*, *Swinging Web Kick*, *Spider-Tracer*, *Aunt May*, *Web-Shooter*.
+   * [ ] Captain Marvel signature cards: *Rechannel*, *Crisis Intervenor*, *Photonic Blast*, *Energy Channel* (energy token accumulation), *Cosmic Flight*, *Captain Marvel's Helmet*.
+2. 🔴 `[Must-Have]` **Dynamic Hand Size & Tech Upgrades (Issue #9):**
+   * [x] Continuous aura modifying live effective hand size dynamically during round upkeep and UI rendering (*Iron Man* `01029a`, *Arc Reactor*, *Mark V Armor*, *Rocket Boots*).
+   * [x] Tony Stark *Futurist* scrying ability with interactive player choice prompt (`DecisionPromptModal.tsx`).
+3. 🔴 `[Must-Have]` **2-Hero Multi-Handed Solo Automated Match Simulation:**
+   * [ ] Automated end-to-end game simulation verifying full win/loss conditions with 2 heroes collaborating against Rhino across multiple rounds.
 
 ---
 
@@ -126,7 +119,7 @@ graph TD
 ### 3. 🟠 `[Should-Have]` Comic Tabletop UI Polish & Visual Ergonomics
 * [ ] **Discard Pile Inspectors with Multi-Tier Sorting Options:**
   * Interactive modal to inspect Player Discard and Encounter Discard piles with sorting toggles (Discard Chronological Order, Card Type, Aspect/Faction, Cost, Alphabetical) while preserving underlying state order.
-* [x] **Card Exhaustion Visuals:** Subtle 15-degree tilt (`rotate-[15deg]`) with desaturated overlay and `EXHAUSTED` badge (replacing 90-degree rotation to eliminate board sprawl).
+* [x] **Card Exhaustion Visuals:** Subtle 15-degree tilt (`rotate-[15deg]`) with desaturated overlay and `EXHAUSTED` badge.
 * [ ] **Interactive Card Play & Resource Payment Modal:** Select resources from hand cards and exhausted generators (*Web-Shooter*, *Helicarrier*, *Rechannel*).
 * [ ] **Turn Pass & Step-by-Step Activation Banners.**
 

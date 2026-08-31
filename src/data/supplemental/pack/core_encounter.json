@@ -350,23 +350,35 @@
       "abilities": [
         {
           "id": "hard_to_keep_down_heal",
-          "timing": "FORCED_RESPONSE",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "HEAL_DAMAGE_WITH_SURGE",
-          "params": {
-            "amount": 4,
-            "target": "VILLAIN"
-          }
+          "sequence": [
+            {
+              "id": "hard_to_keep_down_heal_step",
+              "timing": "WHEN_REVEALED",
+              "effect": "HEAL_DAMAGE",
+              "params": {
+                "amount": 4,
+                "target": "VILLAIN"
+              }
+            },
+            {
+              "id": "hard_to_keep_down_surge_step",
+              "timing": "WHEN_REVEALED",
+              "effect": "TRIGGER_SURGE",
+              "gate": "IF_AMOUNT_ZERO"
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-31T04:10",
+        "reviewedAt": "2026-08-31T04:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Heal 4 damage from VILLAIN. If 0 healed, gain Surge"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [HEAL_DAMAGE (amount: 4, target: VILLAIN), IF_AMOUNT_ZERO -> TRIGGER_SURGE]"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -378,23 +390,39 @@
       "abilities": [
         {
           "id": "im_tough_status",
-          "timing": "FORCED_RESPONSE",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "ADD_STATUS_WITH_SURGE",
-          "params": {
-            "status": "TOUGH",
-            "target": "VILLAIN"
-          }
+          "sequence": [
+            {
+              "id": "im_tough_status_step",
+              "timing": "WHEN_REVEALED",
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "VILLAIN"
+              }
+            },
+            {
+              "id": "im_tough_surge_step",
+              "timing": "WHEN_REVEALED",
+              "effect": "TRIGGER_SURGE",
+              "gate": "IF_ALREADY_HAS_STATUS",
+              "params": {
+                "status": "TOUGH",
+                "target": "VILLAIN"
+              }
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-08-31T04:10",
+        "reviewedAt": "2026-08-31T04:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH to VILLAIN. If already TOUGH, gain Surge"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [ADD_STATUS (status: TOUGH, target: VILLAIN), IF_ALREADY_HAS_STATUS -> TRIGGER_SURGE]"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -1349,18 +1377,28 @@
           "id": "under_fire_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "REVEAL_ENCOUNTER_CARD_WITH_SURGE",
-          "params": {}
+          "sequence": [
+            {
+              "id": "under_fire_surge",
+              "timing": "WHEN_REVEALED",
+              "effect": "TRIGGER_SURGE"
+            },
+            {
+              "id": "under_fire_reveal",
+              "timing": "WHEN_REVEALED",
+              "effect": "REVEAL_ENCOUNTER_CARD"
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-08-31T04:10",
+        "reviewedAt": "2026-08-31T04:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "WHEN_REVEALED -> REVEAL_ENCOUNTER_CARD_WITH_SURGE"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [TRIGGER_SURGE, REVEAL_ENCOUNTER_CARD]"
       },
       "mechanicSteps": [
         "Keyword: Surge.",

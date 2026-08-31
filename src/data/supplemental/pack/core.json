@@ -730,17 +730,29 @@
         {
           "id": "split_personality",
           "timing": "ACTION",
-          "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
+          "sequence": [
+            {
+              "id": "split_personality_flip",
+              "timing": "ACTION",
+              "effect": "FLIP_FORM"
+            },
+            {
+              "id": "split_personality_draw",
+              "timing": "ACTION",
+              "effect": "DRAW_UP_TO_HAND_SIZE",
+              "gate": "THEN"
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-31T04:05",
+        "reviewedAt": "2026-08-31T04:05",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "ACTION -> CHANGE_FORM_DRAW_TO_HAND_SIZE"
+        "reconstructedText": "ACTION -> SEQUENCE [FLIP_FORM, THEN -> DRAW_UP_TO_HAND_SIZE]"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Change your form (flip your identity card). Then, draw up to your printed hand size."

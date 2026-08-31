@@ -100,6 +100,8 @@ export const TargetSelectorSchema = z.enum([
   'SELF_IDENTITY',
   'ACTIVE_PLAYER',
   'ALL_PLAYERS',
+  'ALL_HEROES',
+  'TRIGGERING_HERO',
   'CHOSEN_PLAYER',
   'VILLAIN',
   'MAIN_SCHEME',
@@ -109,6 +111,22 @@ export const TargetSelectorSchema = z.enum([
   'ALL_ENEMIES',
   'ENGAGED_MINIONS',
   'CHOSEN_ALLY',
+  'PREVIOUS_TARGET',
+  'PREVIOUS_SELECTED_CARD',
+]);
+
+/**
+ * Sequential Condition Gate Types (RR v1.8 p. 2, 24)
+ */
+export const ConditionGateSchema = z.enum([
+  'ALWAYS',
+  'THEN',
+  'IF_PREVIOUS_SUCCESS',
+  'IF_AMOUNT_ZERO',
+  'IF_ZERO_HEALED',
+  'IF_FAILED',
+  'IF_ALREADY_HAS_STATUS',
+  'IF_RESOURCE_MATCH',
 ]);
 
 /**
@@ -210,6 +228,7 @@ export interface CardAbility {
   trigger?: z.infer<typeof TriggerTypeSchema>;
   cost?: AbilityCost;
   effect?: string;
+  gate?: z.infer<typeof ConditionGateSchema>;
   params?: Record<string, any>;
   sequence?: CardAbility[];
   maxPerRound?: number;
@@ -226,6 +245,7 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z.lazy(() =>
     trigger: TriggerTypeSchema.optional(),
     cost: AbilityCostSchema.optional(),
     effect: z.string().optional(),
+    gate: ConditionGateSchema.optional(),
     params: z.record(z.string(), z.any()).optional(),
     sequence: z.array(CardAbilitySchema).optional(),
     maxPerRound: z.number().optional(),

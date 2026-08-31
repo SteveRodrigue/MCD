@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-08-31T10:45:55.915Z`  
+> **Generated:** `2026-08-31T12:33:57.501Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -14,7 +14,11 @@
 | **No Supplemental Needed** | **9** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **32** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **140** | Total individual ability definitions declared |
+| **Total Abilities Declared** | **128** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **123** | Abilities with exactly 1 atomic execution step |
+| **Multi-Step Abilities (2+ Steps)** | **5** | Abilities decomposed into sequenced execution pipelines |
+| **Cards with Multi-Step Sequences** | **5** | Cards containing at least 1 ability with 2+ steps |
+| **Cards with Multiple Abilities (2+)** | **10** | Cards declaring more than 1 distinct ability header |
 | **Unique Effects In Use** | **45** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **13** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **15** | Distinct timing categories actively declared |
@@ -81,7 +85,26 @@ These **9 cards** have been audited and explicitly verified as `"noSupplementalN
 
 ---
 
-## 💥 4. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
+## 📋 4. Cards with Multiple Abilities (2+ Abilities Declared — 10 Cards)
+
+These **10 cards** declare multiple distinct ability headers (e.g. dual Hero/Alter-Ego actions, combined Constant modifiers with triggered Actions, or multiple Response triggers):
+
+| Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `01007` | **Spider-Tracer** | `upgrade` | `core` | **2** | • `spider_tracer_attach` (`CARD_PLAYED`, **1 step**)<br/>• `spider_tracer_defeat_trigger` (`FORCED_INTERRUPT` / `MINION_DEFEATED`, **1 step**) |
+| `01009` | **Webbed Up** | `upgrade` | `core` | **2** | • `webbed_up_attach` (`CARD_PLAYED`, **1 step**)<br/>• `webbed_up_intercept` (`FORCED_INTERRUPT` / `VILLAIN_INITIATES_ATTACK`, **1 step**) |
+| `01039` | **Rocket Boots** | `upgrade` | `core` | **2** | • `rocket_boots_hp` (`CONSTANT`, **1 step**)<br/>• `rocket_boots_aerial` (`HERO_ACTION`, **1 step**) |
+| `01074` | **Inspired** | `upgrade` | `core` | **3** | • `inspired_attach` (`CARD_PLAYED`, **1 step**)<br/>• `inspired_thw_bonus` (`CONSTANT`, **1 step**)<br/>• `inspired_atk_bonus` (`CONSTANT`, **1 step**) |
+| `01096` | **Rhino** | `villain` | `core_encounter` | **2** | • `rhino_stage_iii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `rhino_stage_iii_tough` (`SETUP`, **1 step**) |
+| `01098` | **Armored Rhino Suit** | `attachment` | `core_encounter` | **2** | • `armored_rhino_suit_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `armored_rhino_suit_shield` (`FORCED_INTERRUPT` / `TAKE_ATTACK_DAMAGE`, **1 step**) |
+| `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**) |
+| `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **3** | • `ivory_horn_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`ACTION`, **1 step**) |
+| `01102` | **Sandman** | `minion` | `core_encounter` | **2** | • `sandman_toughness` (`SETUP`, **1 step**)<br/>• `sandman_attack_discard` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**) |
+| `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST_STAR_RESOLVED`, **1 step**) |
+
+---
+
+## 💥 5. High-Impact Primitives (Blast-Radius $\ge 5$ Cards)
 
 Changing these primitives will affect many cards across the entire game engine:
 
@@ -101,7 +124,7 @@ Changing these primitives will affect many cards across the entire game engine:
 
 ---
 
-## 🔍 5. Single-Use & Unique Primitives (Card Count = 1)
+## 🔍 6. Single-Use & Unique Primitives (Card Count = 1)
 
 These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:
 
@@ -112,9 +135,9 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `DISCARD_ENCOUNTER_DECK` | `01102` | Sandman (minion) (core_encounter) | `sandman_attack_discard` |
 | **Effect** | `DISCARD_TOP_DECK_FILTER` | `01002` | Black Cat (ally) (core) | `black_cat_when_played` |
 | **Effect** | `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE` | `01188` | Caught Off Guard (treachery) (core_encounter) | `caught_off_guard_when_revealed` |
-| **Effect** | `DRAW_UP_TO_HAND_SIZE` | `01025` | Split Personality (event) (core) | `split_personality_draw` |
+| **Effect** | `DRAW_UP_TO_HAND_SIZE` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `EXPLOSION` | `01111` | Explosion (treachery) (core_encounter) | `explosion_when_revealed` |
-| **Effect** | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality_flip` |
+| **Effect** | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` | `01106` | Stampede (treachery) (core_encounter) | `stampede_attack` |
 | **Effect** | `GIVE_STATUS` | `01102` | Sandman (minion) (core_encounter) | `sandman_toughness` |
 | **Effect** | `INTERCEPT_ATTACK` | `01009` | Webbed Up (upgrade) (core) | `webbed_up_intercept` |
@@ -126,10 +149,10 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `READY_CHARACTER` | `01082` | Indomitable (upgrade) (core) | `indomitable_ready` |
 | **Effect** | `READY_IDENTITY` | `01035` | Arc Reactor (upgrade) (core) | `arc_reactor_ready` |
 | **Effect** | `REDUCE_NEXT_CARD_COST` | `01092` | Helicarrier (support) (core) | `helicarrier_action` |
-| **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_reveal` |
+| **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_when_revealed` |
 | **Effect** | `SCRY_AND_SELECT_TRAIT` | `01029b` | Tony Stark (alter_ego) (core) | `futurist` |
 | **Effect** | `SEARCH_AND_REVEAL_SIDE_SCHEME` | `01095` | Rhino (villain) (core_encounter) | `rhino_stage_ii_when_revealed` |
-| **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `step_3_shuffle_remaining_cards` |
+| **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `shadow_of_the_past_when_revealed` |
 | **Effect** | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | `01189` | Gang-Up (treachery) (core_encounter) | `gang_up_when_revealed` |
 | **Effect** | `VILLAIN_ATTACKS` | `01187` | Assault (treachery) (core_encounter) | `assault_when_revealed` |
 | **Effect** | `VILLAIN_SCHEMES` | `01186` | Advance (treachery) (core_encounter) | `advance_when_revealed` |
@@ -146,7 +169,7 @@ These primitives are only declared on a single card. They represent high special
 
 ---
 
-## ⚠️ 6. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
+## ⚠️ 7. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)
 
 These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:
 
@@ -190,7 +213,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 📑 7. Complete Effects Inventory
+## 📑 8. Complete Effects Inventory
 
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -242,7 +265,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## ⏱️ 8. Complete Triggers Inventory
+## ⏱️ 9. Complete Triggers Inventory
 
 | Trigger Window | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
@@ -262,17 +285,17 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ---
 
-## 🎯 9. Timings, Costs & Target Selectors Inventory
+## 🎯 10. Timings, Costs & Target Selectors Inventory
 
 ### Ability Timings:
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `WHEN_REVEALED` | **34** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+19 more)* |
 | `FORCED_RESPONSE` | **26** | `01002` Black Cat (ally), `01019a` She-Hulk (hero), `01083` Mockingbird (ally), `01102` Sandman (minion), `01106` Stampede (treachery) *(+21 more)* |
+| `WHEN_REVEALED` | **24** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+19 more)* |
 | `CONSTANT` | **16** | `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade), `01039` Rocket Boots (upgrade), `01057` Combat Training (upgrade), `01059` Jessica Jones (ally) *(+9 more)* |
 | `HERO_ACTION` | **15** | `01005` Swinging Web Kick (event), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01022` Ground Stomp (event), `01027` Focused Rage (upgrade) *(+10 more)* |
-| `ACTION` | **11** | `01025` Split Personality (event), `01056` Tac Team (support), `01064` Surveillance Team (support), `01071` Make the Call (event), `01080` Med Team (support) *(+4 more)* |
 | `ALTER_EGO_ACTION` | **9** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01019b` Jennifer Walters (alter_ego) *(+4 more)* |
+| `ACTION` | **9** | `01025` Split Personality (event), `01056` Tac Team (support), `01064` Surveillance Team (support), `01071` Make the Call (event), `01080` Med Team (support) *(+4 more)* |
 | `RESPONSE` | **7** | `01011` Spider-Woman (ally), `01051` Tigra (ally), `01052` Chase Them Down (event), `01058` Daredevil (ally), `01063` Interrogation Room (support) *(+2 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01008` Web-Shooter (upgrade), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
 | `CARD_PLAYED` | **4** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade), `01084` Nick Fury (ally) |

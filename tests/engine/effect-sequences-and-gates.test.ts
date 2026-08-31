@@ -75,16 +75,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
     const ability = {
       id: 'test_seq_always',
       timing: 'ACTION' as const,
-      sequence: [
+      steps: [
         {
           id: 'step_1',
-          timing: 'ACTION' as const,
           effect: 'HEAL_DAMAGE',
           params: { amount: 3, target: 'SELF' },
         },
         {
           id: 'step_2',
-          timing: 'ACTION' as const,
           effect: 'DRAW_CARDS',
           params: { count: 2 },
         },
@@ -104,16 +102,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'then_success_ability',
         timing: 'ACTION' as const,
-        sequence: [
+        steps: [
           {
             id: 'remove_threat_step',
-            timing: 'ACTION' as const,
             effect: 'REMOVE_THREAT',
             params: { amount: 2, target: 'MAIN_SCHEME' },
           },
           {
             id: 'draw_card_step',
-            timing: 'ACTION' as const,
             effect: 'DRAW_CARDS',
             gate: 'THEN' as const,
             params: { count: 1 },
@@ -134,16 +130,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'then_skipped_ability',
         timing: 'ACTION' as const,
-        sequence: [
+        steps: [
           {
             id: 'remove_threat_step',
-            timing: 'ACTION' as const,
             effect: 'REMOVE_THREAT',
             params: { amount: 2, target: 'MAIN_SCHEME' },
           },
           {
             id: 'draw_card_step',
-            timing: 'ACTION' as const,
             effect: 'DRAW_CARDS',
             gate: 'THEN' as const,
             params: { count: 1 },
@@ -167,16 +161,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'hard_to_keep_down',
         timing: 'WHEN_REVEALED' as const,
-        sequence: [
+        steps: [
           {
             id: 'heal_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'HEAL_DAMAGE',
             params: { amount: 4, target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'TRIGGER_SURGE',
             gate: 'IF_AMOUNT_ZERO' as const,
           },
@@ -197,16 +189,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'hard_to_keep_down',
         timing: 'WHEN_REVEALED' as const,
-        sequence: [
+        steps: [
           {
             id: 'heal_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'HEAL_DAMAGE',
             params: { amount: 4, target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'TRIGGER_SURGE',
             gate: 'IF_AMOUNT_ZERO' as const,
           },
@@ -228,16 +218,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'im_tough',
         timing: 'WHEN_REVEALED' as const,
-        sequence: [
+        steps: [
           {
             id: 'status_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'ADD_STATUS',
             params: { status: 'TOUGH', target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'TRIGGER_SURGE',
             gate: 'IF_ALREADY_HAS_STATUS' as const,
             params: { status: 'TOUGH', target: 'VILLAIN' },
@@ -258,16 +246,14 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'im_tough',
         timing: 'WHEN_REVEALED' as const,
-        sequence: [
+        steps: [
           {
             id: 'status_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'ADD_STATUS',
             params: { status: 'TOUGH', target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
-            timing: 'WHEN_REVEALED' as const,
             effect: 'TRIGGER_SURGE',
             gate: 'IF_ALREADY_HAS_STATUS' as const,
             params: { status: 'TOUGH', target: 'VILLAIN' },
@@ -291,15 +277,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
       const ability = {
         id: 'split_personality',
         timing: 'ACTION' as const,
-        sequence: [
+        steps: [
           {
             id: 'flip_step',
-            timing: 'ACTION' as const,
             effect: 'FLIP_FORM',
           },
           {
             id: 'draw_step',
-            timing: 'ACTION' as const,
             effect: 'DRAW_UP_TO_HAND_SIZE',
             gate: 'THEN' as const,
           },

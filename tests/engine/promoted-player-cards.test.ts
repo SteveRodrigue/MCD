@@ -57,11 +57,15 @@ describe('Promoted Core Player Cards', () => {
     const ability = {
       id: 'ground_stomp_action',
       timing: 'HERO_ACTION' as const,
-      effect: 'DEAL_DAMAGE',
-      params: {
-        amount: 1,
-        target: 'ALL_ENEMIES',
-      },
+      steps: [
+        {
+          effect: 'DEAL_DAMAGE',
+          params: {
+            amount: 1,
+            target: 'ALL_ENEMIES',
+          },
+        },
+      ],
     };
 
     const res = executeEffect(state, ability, { playerId: p1.id });
@@ -82,11 +86,15 @@ describe('Promoted Core Player Cards', () => {
       id: 'maria_hill_enters_play',
       timing: 'RESPONSE' as const,
       trigger: 'CARD_PLAYED' as const,
-      effect: 'DRAW_CARDS',
-      params: {
-        count: 1,
-        target: 'ALL_PLAYERS',
-      },
+      steps: [
+        {
+          effect: 'DRAW_CARDS',
+          params: {
+            count: 1,
+            target: 'ALL_PLAYERS',
+          },
+        },
+      ],
     };
 
     const res = executeEffect(state, ability, { playerId: p1.id });
@@ -138,8 +146,12 @@ describe('Promoted Core Player Cards', () => {
             {
               id: 'triskelion_ally_limit',
               timing: 'CONSTANT',
-              effect: 'ALLY_LIMIT_BONUS',
-              params: { amount: 1 },
+              steps: [
+                {
+                  effect: 'ALLY_LIMIT_BONUS',
+                  params: { amount: 1 },
+                },
+              ],
             },
           ],
         },

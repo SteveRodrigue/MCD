@@ -217,10 +217,11 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
     for (const item of p.tableau) {
       const abilities = item.card.enrichment?.abilities || [];
       for (const ab of abilities) {
-        if (ab.timing === 'CONSTANT' && ab.effect === 'ALLY_LIMIT_BONUS') {
-          const target = ab.params?.target || 'CONTROLLER';
+        const limitStep = ab.steps?.find((s) => s.effect === 'ALLY_LIMIT_BONUS');
+        if (ab.timing === 'CONSTANT' && limitStep) {
+          const target = limitStep.params?.target || 'CONTROLLER';
           if (target === 'ALL_PLAYERS' || p.id === playerId) {
-            bonus += Number(ab.params?.amount) || 1;
+            bonus += Number(limitStep.params?.amount) || 1;
           }
         }
       }
@@ -364,10 +365,10 @@ export function canPlayCard(
       }
 
       // Check aspect doubling cards (e.g. The Power of Leadership / Justice / Aggression / Protection)
-      const aspectDoubleAbility = pCard.card.enrichment?.abilities?.find(
-        (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-      );
-      if (aspectDoubleAbility && aspectDoubleAbility.params?.aspect === card.faction) {
+      const aspectDoubleStep = pCard.card.enrichment?.abilities
+        ?.flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+      if (aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction) {
         generatedResources += 2;
       } else {
         generatedResources += pCard.card.resources.total || 1;
@@ -379,7 +380,7 @@ export function canPlayCard(
       // Check if identity ability (e.g. Peter Parker Scientist / Carol Danvers Rechannel)
       if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
         const idAbility = player.activeFormCard.enrichment?.abilities?.find(
-          (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE',
+          (a) => a.timing === 'RESOURCE' || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
         );
         if (idAbility) {
           if (idAbility.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1) {
@@ -394,7 +395,8 @@ export function canPlayCard(
               reason: `Identity ability '${idAbility.id}' has already been used this phase (Limit: once per phase).`,
             };
           }
-          generatedResources += Number(idAbility.params?.amount) || 1;
+          const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+          generatedResources += Number(genStep?.params?.amount) || 1;
         }
         continue;
       }
@@ -542,21 +544,22 @@ export function evaluateCardPlayability(
   // A. Hand resources from other cards
   for (const other of player.hand) {
     if (other.instanceId === cardInstance.instanceId) continue;
-    const aspectDouble = other.card.enrichment?.abilities?.find(
-      (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-    );
-    const multiplier = aspectDouble && aspectDouble.params?.aspect === card.faction ? 2 : 1;
+    const aspectDoubleStep = other.card.enrichment?.abilities
+      ?.flatMap((a) => a.steps || [])
+      .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+    const multiplier = aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction ? 2 : 1;
     maxPotentialResources += (other.card.resources.total || 1) * multiplier;
   }
 
   // B. Identity Resource Ability
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
   for (const ab of idAbilities) {
-    if (ab.timing === 'RESOURCE' || ab.effect === 'GENERATE_RESOURCE') {
+    if (ab.timing === 'RESOURCE' || ab.steps?.some((s) => s.effect === 'GENERATE_RESOURCE')) {
       const isUsedRound = ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
       const isUsedPhase = ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
       if (!isUsedRound && !isUsedPhase) {
-        maxPotentialResources += Number(ab.params?.amount) || 1;
+        const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+        maxPotentialResources += Number(genStep?.params?.amount) || 1;
       }
     }
   }
@@ -570,7 +573,9 @@ export function evaluateCardPlayability(
       }
     } else {
       const hasResAbility = t.card.enrichment?.abilities?.some(
-        (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+        (a) =>
+          a.timing === 'RESOURCE' ||
+          a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
       );
       if (hasResAbility) {
         maxPotentialResources += 1;

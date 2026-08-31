@@ -120,6 +120,14 @@ export interface SequenceExecutionContext {
   resourcesSpent?: string[];
 }
 
+export interface AbilityStep {
+  id?: string;
+  effect: EffectType;
+  params?: Record<string, unknown>;
+  gate?: ConditionGate;
+  filter?: Record<string, unknown>;
+}
+
 export interface CardAbility {
   id: string;
   timing: AbilityTiming;
@@ -128,11 +136,7 @@ export interface CardAbility {
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
   tags?: string[];
   cost?: AbilityCost;
-  effect?: EffectType;
-  gate?: ConditionGate;
-  filter?: Record<string, unknown>;
-  params?: Record<string, unknown>;
-  sequence?: CardAbility[];
+  steps: AbilityStep[];
 }
 
 export interface CardUsesDefinition {

@@ -41,12 +41,14 @@ export function getEffectiveVillainStats(_state: GameState, villain: VillainStat
     const abilities = attachment.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
-        if (ab.effect === 'MODIFY_STAT') {
-          if (ab.params?.stat === 'ATTACK') attack += (ab.params.amount as number) || 0;
-          if (ab.params?.stat === 'SCHEME') scheme += (ab.params.amount as number) || 0;
-        }
-        if (ab.effect === 'GRANT_KEYWORD' && ab.params?.keyword) {
-          keywords.push(ab.params.keyword as string);
+        for (const step of ab.steps || []) {
+          if (step.effect === 'MODIFY_STAT') {
+            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
+            if (step.params?.stat === 'SCHEME') scheme += (step.params.amount as number) || 0;
+          }
+          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
+            keywords.push(step.params.keyword as string);
+          }
         }
       }
     }
@@ -72,18 +74,22 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   // Check constant abilities on the ally itself
   const selfAbilities = ally.card.enrichment?.abilities || [];
   for (const ab of selfAbilities) {
-    if (ab.timing === 'CONSTANT' && ab.effect === 'MODIFY_STAT') {
-      if (ab.params?.stat === 'THWART') {
-        if (ab.params.scaling === 'PER_SIDE_SCHEME') {
-          const sideSchemeCount = (state.sideSchemes || []).length;
-          const maxBonus = (ab.params.maxBonus as number) || 4;
-          thwart += Math.min(maxBonus, sideSchemeCount * ((ab.params.multiplier as number) || 1));
-        } else if (ab.params.amount) {
-          thwart += (ab.params.amount as number) || 0;
+    if (ab.timing === 'CONSTANT') {
+      for (const step of ab.steps || []) {
+        if (step.effect === 'MODIFY_STAT') {
+          if (step.params?.stat === 'THWART') {
+            if (step.params.scaling === 'PER_SIDE_SCHEME') {
+              const sideSchemeCount = (state.sideSchemes || []).length;
+              const maxBonus = (step.params.maxBonus as number) || 4;
+              thwart += Math.min(maxBonus, sideSchemeCount * ((step.params.multiplier as number) || 1));
+            } else if (step.params.amount) {
+              thwart += (step.params.amount as number) || 0;
+            }
+          }
+          if (step.params?.stat === 'ATTACK') {
+            attack += (step.params.amount as number) || 0;
+          }
         }
-      }
-      if (ab.params?.stat === 'ATTACK') {
-        attack += (ab.params.amount as number) || 0;
       }
     }
   }
@@ -93,12 +99,14 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     const abilities = attachment.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
-        if (ab.effect === 'MODIFY_STAT') {
-          if (ab.params?.stat === 'THWART') thwart += (ab.params.amount as number) || 0;
-          if (ab.params?.stat === 'ATTACK') attack += (ab.params.amount as number) || 0;
-        }
-        if (ab.effect === 'GRANT_KEYWORD' && ab.params?.keyword) {
-          keywords.push(ab.params.keyword as string);
+        for (const step of ab.steps || []) {
+          if (step.effect === 'MODIFY_STAT') {
+            if (step.params?.stat === 'THWART') thwart += (step.params.amount as number) || 0;
+            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
+          }
+          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
+            keywords.push(step.params.keyword as string);
+          }
         }
       }
     }
@@ -128,14 +136,16 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
     const abilities = item.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
-        if (ab.effect === 'MODIFY_STAT') {
-          if (ab.params?.stat === 'THWART') thwart += (ab.params.amount as number) || 0;
-          if (ab.params?.stat === 'ATTACK') attack += (ab.params.amount as number) || 0;
-          if (ab.params?.stat === 'DEFENSE') defense += (ab.params.amount as number) || 0;
-          if (ab.params?.stat === 'RECOVER' || ab.params?.stat === 'RECOVERY') recovery += (ab.params.amount as number) || 0;
-        }
-        if (ab.effect === 'GRANT_KEYWORD' && ab.params?.keyword) {
-          keywords.push(ab.params.keyword as string);
+        for (const step of ab.steps || []) {
+          if (step.effect === 'MODIFY_STAT') {
+            if (step.params?.stat === 'THWART') thwart += (step.params.amount as number) || 0;
+            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
+            if (step.params?.stat === 'DEFENSE') defense += (step.params.amount as number) || 0;
+            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY') recovery += (step.params.amount as number) || 0;
+          }
+          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
+            keywords.push(step.params.keyword as string);
+          }
         }
       }
     }
@@ -173,28 +183,32 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
   for (const item of allCards) {
     const abilities = item.enrichment?.abilities || [];
     for (const ab of abilities) {
-      if (ab.timing === 'CONSTANT' && ab.effect === 'MODIFY_HAND_SIZE') {
-        if (ab.params?.scaling === 'PER_MATCHING_CARD') {
-          // Count matching cards in player's tableau
-          const filter = ab.filter || {};
-          let matches = 0;
-          for (const tableauItem of player.tableau || []) {
-            const card = tableauItem.card;
-            let match = true;
-            if (filter.trait) {
-              const trait = filter.trait as string;
-              if (!card.traits || !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())) {
-                match = false;
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'MODIFY_HAND_SIZE') {
+            if (step.params?.scaling === 'PER_MATCHING_CARD') {
+              // Count matching cards in player's tableau
+              const filter = step.filter || (step.params?.filter as any) || {};
+              let matches = 0;
+              for (const tableauItem of player.tableau || []) {
+                const card = tableauItem.card;
+                let match = true;
+                if (filter.trait) {
+                  const trait = filter.trait as string;
+                  if (!card.traits || !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())) {
+                    match = false;
+                  }
+                }
+                if (filter.type_code && card.type !== (filter.type_code as string) && card.raw?.type_code !== filter.type_code) {
+                  match = false;
+                }
+                if (match) matches++;
               }
+              bonus += matches * ((step.params?.multiplier as number) || 1);
+            } else if (step.params?.amount) {
+              bonus += (step.params.amount as number) || 0;
             }
-            if (filter.type_code && card.type !== (filter.type_code as string) && card.raw?.type_code !== filter.type_code) {
-              match = false;
-            }
-            if (match) matches++;
           }
-          bonus += matches * ((ab.params.multiplier as number) || 1);
-        } else if (ab.params?.amount) {
-          bonus += (ab.params.amount as number) || 0;
         }
       }
     }
@@ -217,10 +231,12 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
     const abilities = item.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
-        if (ab.effect === 'MODIFY_MAX_HEALTH') {
-          bonus += (ab.params?.amount as number) || (ab.params?.healthBonus as number) || 0;
-        } else if (ab.effect === 'MODIFY_STAT' && (ab.params?.stat === 'HEALTH' || ab.params?.stat === 'MAX_HEALTH')) {
-          bonus += (ab.params?.amount as number) || 0;
+        for (const step of ab.steps || []) {
+          if (step.effect === 'MODIFY_MAX_HEALTH') {
+            bonus += (step.params?.amount as number) || (step.params?.healthBonus as number) || 0;
+          } else if (step.effect === 'MODIFY_STAT' && (step.params?.stat === 'HEALTH' || step.params?.stat === 'MAX_HEALTH')) {
+            bonus += (step.params?.amount as number) || 0;
+          }
         }
       }
     }

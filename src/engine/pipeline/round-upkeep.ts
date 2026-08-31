@@ -38,7 +38,7 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       return abilities.some(
         (ab) =>
           (ab.trigger === 'ROUND_END' || ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
-          ab.effect === 'DISCARD_SELF',
+          ab.steps?.some((s) => s.effect === 'DISCARD_SELF'),
       );
     });
     for (const ally of endRoundAllies) {

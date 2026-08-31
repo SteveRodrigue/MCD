@@ -169,8 +169,8 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                       <span className="text-[10px] text-slate-600 block">
                         {alreadyUsed
                           ? 'Already used this round (Limit: once per round)'
-                          : ab.params?.description
-                            ? String(ab.params.description)
+                          : ab.steps?.[0]?.params?.description
+                            ? String(ab.steps[0].params.description)
                             : ab.id === 'futurist'
                               ? 'Look at top 3 cards of deck, add 1 Tech card to hand, discard rest.'
                               : `Trigger ${player.activeFormCard.name}'s special ability`}

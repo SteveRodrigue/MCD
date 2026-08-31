@@ -199,7 +199,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             id: `action_id_ability_${ab.id}`,
             category: 'identity',
             headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
-            subtext: ab.params?.description ? String(ab.params.description) : `Trigger ${player.activeFormCard.name}'s special ability`,
+            subtext: ab.steps?.[0]?.params?.description ? String(ab.steps[0].params.description) : `Trigger ${player.activeFormCard.name}'s special ability`,
             action: {
               type: 'USE_CARD_ABILITY',
               playerId: player.id,
@@ -249,7 +249,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,
               category: 'board',
               headline: `Activate ${tableauItem.card.name}`,
-              subtext: ab.params?.description ? String(ab.params.description) : `Trigger ${tableauItem.card.name} (${ab.id})`,
+              subtext: ab.steps?.[0]?.params?.description ? String(ab.steps[0].params.description) : `Trigger ${tableauItem.card.name} (${ab.id})`,
               action: {
                 type: 'USE_CARD_ABILITY',
                 playerId: player.id,

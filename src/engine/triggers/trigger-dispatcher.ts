@@ -79,7 +79,8 @@ export function dispatchTrigger(
       }
 
       // Execute effect
-      if (ability.effect === 'PREVENT_DAMAGE') {
+      const firstStep = ability.steps?.[0];
+      if (firstStep?.effect === 'PREVENT_DAMAGE') {
         currentDamage = 0;
         isPrevented = true;
         state.log.push({
@@ -112,8 +113,9 @@ export function dispatchTrigger(
           p.discard.push(interruptCard);
         }
 
-        if (ability.effect === 'REMOVE_THREAT') {
-          const reduction = Number(ability.params?.amount ?? 1);
+        const threatStep = ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
+        if (threatStep?.effect === 'REMOVE_THREAT') {
+          const reduction = Number(threatStep.params?.amount ?? 1);
           currentThreat = Math.max(0, currentThreat - reduction);
           state.log.push({
             id: `log_${Date.now()}`,

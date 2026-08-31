@@ -86,7 +86,7 @@ export function step1_placeThreat(state: GameState): GameState {
 export function executeVillainAttackAgainstPlayer(state: GameState, player: PlayerState): void {
   // 1. Check Pre-Attack Interceptors (e.g. Webbed Up 01009)
   const webbedUpIdx = (state.villain.attachments || []).findIndex(
-    (att) => att.card.code === '01009' || att.card.enrichment?.abilities?.some((a) => a.effect === 'INTERCEPT_ATTACK'),
+    (att) => att.card.code === '01009' || att.card.enrichment?.abilities?.some((a) => a.steps?.some((s) => s.effect === 'INTERCEPT_ATTACK')),
   );
   if (webbedUpIdx !== -1) {
     const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);

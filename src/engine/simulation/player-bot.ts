@@ -50,14 +50,14 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
       return abilities.some(
         (a) =>
           (a.timing === 'ALTER_EGO_ACTION' || a.timing === 'ACTION') &&
-          a.effect === 'HEAL_DAMAGE',
+          a.steps?.some((s) => s.effect === 'HEAL_DAMAGE'),
       );
     });
     if (healingSupport && player.health < player.maxHealth) {
       const healAbility = healingSupport.card.enrichment!.abilities!.find(
         (a) =>
           (a.timing === 'ALTER_EGO_ACTION' || a.timing === 'ACTION') &&
-          a.effect === 'HEAL_DAMAGE',
+          a.steps?.some((s) => s.effect === 'HEAL_DAMAGE'),
       )!;
       return {
         type: 'USE_CARD_ABILITY',

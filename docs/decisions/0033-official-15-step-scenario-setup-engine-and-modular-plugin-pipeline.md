@@ -26,7 +26,7 @@ How should we design a standardized, modular, and 100% data-driven Scenario Setu
 ## Decision Drivers
 * **Driver 1: Official Rules Fidelity (RR v1.8 p. 27–28):** Implement the exact 15-step sequence in chronological order.
 * **Driver 2: Scenario Plugin Architecture:** Allow scenarios to be declared as modular plugins (`ScenarioPlugin`) that can be loaded, configured, and simulated independently.
-* **Driver 3: Arbitrary Modular Encounter Mixing:** Enable players to combine any villain with any modular encounter sets (e.g., *Rhino + Masters of Evil*, *Klaw + Legions of Hydra*).
+* **Driver 3: Strict Encounter Set Taxonomy & Modular Slot Customization:** Distinguish between **Scenario-Mandatory Sets** (Villain set, Standard/Expert set, scenario-required secondary sets) and **Customizable Modular Slots** (where players may replace the recommended default set, e.g. *Bomb Scare*, with other modular sets complying with scenario constraints).
 * **Driver 4: Headless Simulation Integration:** Enable instant game creation via `createGame(scenarioConfig, playerConfigs)` for automated headless match testing.
 
 ---
@@ -86,6 +86,22 @@ flowchart TD
 
 ---
 
+### 📦 Encounter Set Taxonomy (RR v1.8 p. 19, 27)
+
+To strictly enforce scenario rules while supporting modular customization, encounter sets are partitioned into two distinct categories:
+
+1. **Scenario-Mandatory Encounter Sets (Fixed & Non-Replaceable):**
+   * **Primary Villain Set:** The scenario's core encounter cards (e.g. *Rhino*, *Klaw*, *Ultron*).
+   * **Standard Encounter Set:** Mandatory for all games (*Standard I*, *Standard II*, or *Standard III*).
+   * **Expert Encounter Set:** Mandatory when difficulty is set to Expert (*Expert I* or *Expert II*).
+   * **Scenario-Required Secondary Sets:** Specific secondary sets mandated by the scenario rules (e.g. *Prelates* in Apocalypse, *Temporal* in Kang, *Hydra Patrol* and *Hydra Assault* in Red Skull). These **cannot** be swapped out.
+2. **Customizable Modular Slots (Replaceable Defaults):**
+   * Defined by the scenario as a required **slot count** (e.g., 1 modular set for Rhino/Klaw/Ultron, 2 for Crossbones, $1 + N$ for Citizen V).
+   * Defines a **recommended default set** in parentheses on Main Scheme 1A (e.g. *Bomb Scare* for Rhino, *Masters of Evil* for Klaw, *Under Attack* for Ultron).
+   * Players may replace the recommended default with any valid modular encounter set that matches the slot's requirements/filters.
+
+---
+
 ### 📋 Scenario Plugin Contract (`src/engine/models/scenarios.ts`)
 
 ```typescript
@@ -93,7 +109,20 @@ export interface ScenarioPlugin {
   scenarioCode: string;
   name: string;
   difficultyModes: ('standard' | 'expert' | 'heroic')[];
-  defaultModularSets: string[]; // e.g. ['bomb_scare']
+  
+  // Non-replaceable encounter sets mandated by scenario rules
+  requiredEncounterSets: {
+    standardSetCode: string; // 'standard' | 'standard_ii'
+    expertSetCode?: string;   // 'expert' | 'expert_ii'
+    scenarioSpecificSets?: string[]; // e.g. ['prelates'] or ['hydra_patrol', 'hydra_assault']
+  };
+
+  // Modular slot specifications & default recommendations
+  modularSlots: {
+    slotCount: number | ((playerCount: number) => number);
+    recommendedDefaultCodes: string[]; // e.g. ['bomb_scare'] for Rhino, ['masters_of_evil'] for Klaw
+    slotFilter?: (encounterSet: ModularEncounterSet) => boolean; // e.g. requires Elite minion
+  };
   
   // Dynamic scaling and stage configuration
   getVillainStages(difficulty: 'standard' | 'expert'): CardInstance[];
@@ -107,7 +136,7 @@ export interface ScenarioConfig {
   scenarioPlugin: ScenarioPlugin;
   difficulty: 'standard' | 'expert';
   heroicLevel?: number; // 0 = standard, 1+ = extra encounter cards
-  modularSetCodes: string[]; // e.g. ['bomb_scare', 'masters_of_evil']
+  selectedModularSetCodes: string[]; // Must satisfy modularSlots constraints
 }
 ```
 

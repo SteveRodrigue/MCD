@@ -52,6 +52,11 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'MAIN_SCHEME_ADVANCED'` | Main scheme reaches target threat and advances stage. | `scenario-helpers.ts` |
 | `'FORM_CHANGED_TO_HERO'` | Player flips to Hero form. | `action-dispatcher.ts` |
 | `'FORM_CHANGED_TO_ALTER_EGO'`| Player flips to Alter-Ego form. | `action-dispatcher.ts` |
-| `'ROUND_END'` | Round upkeep begins. | `step6_endOfRoundUpkeep` |
+| `'ROUND_BEGAN'` | Round counter increments, starting player phase. | `villain-phase.ts` |
+| `'ROUND_ENDED'` / `'ROUND_END'` | Round upkeep begins / passes First Player token. | `villain-phase.ts` |
+| `'PLAYER_PHASE_BEGAN'` | Player phase begins and basic form change limit resets. | `villain-phase.ts` |
+| `'PLAYER_PHASE_ENDED'` | All players have ended their turns. | `villain-phase.ts` |
+| `'VILLAIN_PHASE_BEGAN'` | Villain phase begins (Step 1 place threat). | `villain-phase.ts` |
+| `'VILLAIN_PHASE_ENDED'` | Villain phase completes (after Step 5 reveals). | `villain-phase.ts` |
 | `'PHASE_START'` | A new game phase begins. | `pipeline.ts` |
 | `'DEFEATED'` | General character or scheme defeat event. | `pipeline.ts` |

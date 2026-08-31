@@ -84,15 +84,16 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     // 1. Identity Resource Abilities (e.g. Peter Parker: Scientist, Carol Danvers: Rechannel)
     const idAbilities = player.activeFormCard.enrichment?.abilities || [];
     for (const ab of idAbilities) {
-      if (ab.timing === 'RESOURCE' || ab.effect === 'GENERATE_RESOURCE') {
+      const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+      if (ab.timing === 'RESOURCE' || genStep) {
         const isUsedThisRound =
           ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
         const isUsedThisPhase =
           ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
         if (isUsedThisRound || isUsedThisPhase) continue;
 
-        const resType = (ab.params?.resource as string) || 'resource';
-        const amount = Number(ab.params?.amount) || 1;
+        const resType = (genStep?.params?.resource as string) || 'resource';
+        const amount = Number(genStep?.params?.amount) || 1;
         list.push({
           id: 'identity_ability',
           name: `${player.activeFormCard.name} (${ab.id.replace(/_/g, ' ').toUpperCase()})`,
@@ -108,7 +109,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       if (c.exhausted) continue;
       const uses = c.card.enrichment?.uses;
       const hasResAbility = c.card.enrichment?.abilities?.some(
-        (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+        (a) =>
+          a.timing === 'RESOURCE' ||
+          a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
       );
 
       if (uses) {
@@ -148,11 +151,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const hCard = availableHandCards.find((c) => c.instanceId === hId);
       if (!hCard) continue;
 
-      const aspectDouble = hCard.card.enrichment?.abilities?.find(
-        (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-      );
+      const aspectDoubleStep = hCard.card.enrichment?.abilities
+        ?.flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
 
-      const isDoubled = aspectDouble && aspectDouble.params?.aspect === card.faction;
+      const isDoubled = aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction;
       const multiplier = isDoubled ? 2 : 1;
 
       const res = hCard.card.resources;
@@ -370,10 +373,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 {availableHandCards.map((hCard) => {
                   const isSelected = selectedHandCardIds.includes(hCard.instanceId);
                   const res = hCard.card.resources;
-                  const aspectDouble = hCard.card.enrichment?.abilities?.find(
-                    (a) => a.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
-                  );
-                  const isDoubled = aspectDouble && aspectDouble.params?.aspect === card.faction;
+                  const aspectDoubleStep = hCard.card.enrichment?.abilities
+                    ?.flatMap((a) => a.steps || [])
+                    .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+                  const isDoubled = aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction;
 
                   return (
                     <button

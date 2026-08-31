@@ -220,38 +220,54 @@ export const DecisionPromptOptionSchema = z.object({
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
 
 /**
- * Card Ability Interface (Recursive)
+ * Ability Execution Step Interface (Operational Primitive)
+ */
+export interface AbilityStep {
+  id?: string;
+  effect: string;
+  params?: Record<string, any>;
+  gate?: z.infer<typeof ConditionGateSchema>;
+  filter?: z.infer<typeof FilterSchema>;
+}
+
+/**
+ * Ability Execution Step Schema
+ */
+export const AbilityStepSchema = z.object({
+  id: z.string().optional(),
+  effect: z.string().min(1),
+  params: z.record(z.string(), z.any()).optional(),
+  gate: ConditionGateSchema.optional(),
+  filter: FilterSchema.optional(),
+});
+
+/**
+ * Card Ability Interface (Trigger / Cost / Timing Header)
  */
 export interface CardAbility {
   id: string;
   timing: z.infer<typeof TimingTypeSchema>;
   trigger?: z.infer<typeof TriggerTypeSchema>;
   cost?: AbilityCost;
-  effect?: string;
-  gate?: z.infer<typeof ConditionGateSchema>;
-  params?: Record<string, any>;
-  sequence?: CardAbility[];
+  limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
   maxPerRound?: number;
   errata?: string | null;
+  steps: AbilityStep[];
 }
 
 /**
  * Card Ability Schema
  */
-export const CardAbilitySchema: z.ZodType<CardAbility> = z.lazy(() =>
-  z.object({
-    id: z.string().min(1),
-    timing: TimingTypeSchema,
-    trigger: TriggerTypeSchema.optional(),
-    cost: AbilityCostSchema.optional(),
-    effect: z.string().optional(),
-    gate: ConditionGateSchema.optional(),
-    params: z.record(z.string(), z.any()).optional(),
-    sequence: z.array(CardAbilitySchema).optional(),
-    maxPerRound: z.number().optional(),
-    errata: z.string().nullable().optional(),
-  }),
-);
+export const CardAbilitySchema: z.ZodType<CardAbility> = z.object({
+  id: z.string().min(1),
+  timing: TimingTypeSchema,
+  trigger: TriggerTypeSchema.optional(),
+  cost: AbilityCostSchema.optional(),
+  limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
+  maxPerRound: z.number().optional(),
+  errata: z.string().nullable().optional(),
+  steps: z.array(AbilityStepSchema).min(1),
+});
 
 /**
  * Card Enrichment Schema

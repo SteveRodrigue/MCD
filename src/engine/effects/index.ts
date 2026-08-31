@@ -4,6 +4,7 @@ import {
   StatusCard,
   MinionCard,
   CardAbility,
+  AbilityStep,
   CardType,
   SideSchemeCard,
   ConditionGate,
@@ -45,7 +46,7 @@ export function shouldExecuteStep(
   gate: ConditionGate | undefined,
   prevResult: StepResolutionResult | undefined,
   state: GameState,
-  step: CardAbility,
+  step: AbilityStep,
   context: EffectExecutionContext,
   stepResultsMap?: Map<string, StepResolutionResult>,
 ): boolean {
@@ -98,7 +99,7 @@ export function shouldExecuteStep(
  */
 export function executeSequence(
   state: GameState,
-  sequence: CardAbility[],
+  steps: AbilityStep[],
   context: EffectExecutionContext,
 ): EffectResult {
   let currentState = state;
@@ -106,7 +107,7 @@ export function executeSequence(
   const stepResultsMap = new Map<string, StepResolutionResult>();
   const onomatopoeias: string[] = [];
 
-  for (const step of sequence) {
+  for (const step of steps) {
     const shouldRun = shouldExecuteStep(
       step.gate,
       prevResult,
@@ -126,7 +127,7 @@ export function executeSequence(
         step.params?.target === 'PREVIOUS_TARGET' ? prevResult?.targetId : context.targetInstanceId,
     };
 
-    const res = executeEffect(currentState, step, stepContext);
+    const res = executeStep(currentState, step, stepContext);
     currentState = res.state;
 
     prevResult = {
@@ -155,24 +156,43 @@ export function executeSequence(
 }
 
 /**
- * Executes a declarative effect primitive on the GameState.
+ * Executes a declarative effect or ability on the GameState.
  */
 export function executeEffect(
   state: GameState,
-  ability: CardAbility,
+  abilityOrStep: CardAbility | AbilityStep,
+  context: EffectExecutionContext,
+): EffectResult {
+  if ('steps' in abilityOrStep && Array.isArray(abilityOrStep.steps) && abilityOrStep.steps.length > 0) {
+    return executeSequence(state, abilityOrStep.steps, context);
+  }
+
+  if ('sequence' in abilityOrStep && Array.isArray((abilityOrStep as any).sequence) && (abilityOrStep as any).sequence.length > 0) {
+    return executeSequence(state, (abilityOrStep as any).sequence, context);
+  }
+
+  if ('effect' in abilityOrStep && abilityOrStep.effect) {
+    return executeStep(state, abilityOrStep as AbilityStep, context);
+  }
+
+  return { state, success: true, onomatopoeia: 'RESOLVED!' };
+}
+
+/**
+ * Executes a single declarative ability step primitive on the GameState.
+ */
+export function executeStep(
+  state: GameState,
+  step: AbilityStep,
   context: EffectExecutionContext,
 ): EffectResult {
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
-  if (Array.isArray(ability.sequence) && ability.sequence.length > 0) {
-    return executeSequence(state, ability.sequence, context);
-  }
-
-  switch (ability.effect) {
+  switch (step.effect) {
     case 'DRAW_CARDS': {
-      const count = (ability.params?.count as number) || 1;
-      const targetParam = ability.params?.target as string | undefined;
+      const count = (step.params?.count as number) || 1;
+      const targetParam = step.params?.target as string | undefined;
       const targetPlayers = targetParam === 'ALL_PLAYERS' ? state.players : [player];
       let totalDrawn = 0;
 
@@ -210,8 +230,8 @@ export function executeEffect(
     }
 
     case 'DEAL_DAMAGE': {
-      const amount = (ability.params?.amount as number) || 0;
-      const targetParam = ability.params?.target as string | undefined;
+      const amount = (step.params?.amount as number) || 0;
+      const targetParam = step.params?.target as string | undefined;
 
       if (targetParam === 'ALL_ENEMIES') {
         // Deal damage to villain
@@ -313,7 +333,7 @@ export function executeEffect(
         // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
         const armorIdx = (state.villain.attachments || []).findIndex((att) => {
           const abs = att.card.enrichment?.abilities || [];
-          return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+          return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
         });
         if (armorIdx !== -1) {
           const armor = state.villain.attachments.splice(armorIdx, 1)[0];
@@ -396,8 +416,9 @@ export function executeEffect(
               for (const att of minion.attachments || []) {
                 const attAbs = att.card.enrichment?.abilities || [];
                 for (const ab of attAbs) {
-                  if (ab.effect === 'WHEN_ATTACHED_HOST_DEFEATED') {
-                    const removeAmount = (ab.params?.amount as number) || 3;
+                  const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
+                  if (hostDefStep) {
+                    const removeAmount = (hostDefStep.params?.amount as number) || 3;
                     state.mainScheme.threat = Math.max(0, state.mainScheme.threat - removeAmount);
                     state.log.push({
                       id: `log_${Date.now()}`,
@@ -409,7 +430,7 @@ export function executeEffect(
                     });
                   }
                 }
-                player.discard.push(att);
+                p.discard.push(att);
               }
 
               const onomatopoeia = 'SMASH! MINION DEFEATED!';
@@ -445,8 +466,8 @@ export function executeEffect(
     }
 
     case 'HEAL_DAMAGE': {
-      const amount = (ability.params?.amount as number) || 0;
-      const target = (ability.params?.target as string) || 'SELF';
+      const amount = (step.params?.amount as number) || 0;
+      const target = (step.params?.target as string) || 'SELF';
       let healed = 0;
 
       if (target === 'VILLAIN') {
@@ -494,8 +515,8 @@ export function executeEffect(
     }
 
     case 'GENERATE_RESOURCE': {
-      const resourceType = (ability.params?.resource as string) || 'wild';
-      const amount = (ability.params?.amount as number) || 1;
+      const resourceType = (step.params?.resource as string) || 'wild';
+      const amount = (step.params?.amount as number) || 1;
 
       return {
         state,
@@ -505,8 +526,8 @@ export function executeEffect(
     }
 
     case 'REMOVE_THREAT': {
-      const amount = (ability.params?.amount as number) || 1;
-      const targetParam = (ability.params?.target as string) || 'MAIN_SCHEME';
+      const amount = (step.params?.amount as number) || 1;
+      const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
 
       if (targetParam === 'MAIN_SCHEME') {
@@ -552,12 +573,12 @@ export function executeEffect(
 
     case 'ADD_STATUS': {
       let status: StatusCard = StatusCard.STUNNED;
-      const statusParam = ability.params?.status;
+      const statusParam = step.params?.status;
       if (statusParam === 'TOUGH' || statusParam === StatusCard.TOUGH) status = StatusCard.TOUGH;
       if (statusParam === 'CONFUSED' || statusParam === StatusCard.CONFUSED) status = StatusCard.CONFUSED;
       if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED) status = StatusCard.STUNNED;
 
-      const target = (ability.params?.target as string) || 'VILLAIN';
+      const target = (step.params?.target as string) || 'VILLAIN';
       let mutatedState = false;
       let alreadyHadStatus = false;
 
@@ -607,8 +628,8 @@ export function executeEffect(
 
     case 'DISCARD_TOP_DECK_FILTER': {
       // Black Cat: Discard top 2 cards, add each Mental resource to hand
-      const count = (ability.params?.count as number) || 2;
-      const filterRes = (ability.params?.filterResource as string) || 'mental';
+      const count = (step.params?.count as number) || 2;
+      const filterRes = (step.params?.filterResource as string) || 'mental';
       let matchedCount = 0;
 
       for (let i = 0; i < count; i++) {
@@ -645,8 +666,8 @@ export function executeEffect(
 
     case 'SCRY_AND_SELECT_TRAIT': {
       // Tony Stark Futurist: Look at top lookCount (3) cards of deck, allow player to select 1 matching trait ('Tech') card to add to hand, discard rest.
-      const lookCount = (ability.params?.lookCount as number) || 3;
-      const trait = (ability.params?.trait as string) || 'Tech';
+      const lookCount = (step.params?.lookCount as number) || 3;
+      const trait = (step.params?.trait as string) || 'Tech';
 
       const scryedCards: CardInstance[] = [];
       for (let i = 0; i < lookCount; i++) {
@@ -722,8 +743,8 @@ export function executeEffect(
     }
 
     case 'RESOLVE_SCRY_SELECTION': {
-      const takeId = ability.params?.takeInstanceId as string | null | undefined;
-      const scryedIds = (ability.params?.scryedInstanceIds as string[]) || [];
+      const takeId = step.params?.takeInstanceId as string | null | undefined;
+      const scryedIds = (step.params?.scryedInstanceIds as string[]) || [];
 
       let takenCardName = '';
       if (!player.setAsideCards) player.setAsideCards = [];
@@ -762,7 +783,7 @@ export function executeEffect(
 
     case 'HEAL_DAMAGE_WITH_SURGE': {
       // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
-      const amount = (ability.params?.amount as number) || 4;
+      const amount = (step.params?.amount as number) || 4;
       const healed = Math.min(state.villain.maxHealth - state.villain.health, amount);
       if (healed > 0) {
         state.villain.health += healed;
@@ -788,9 +809,9 @@ export function executeEffect(
     }
 
     case 'ADD_THREAT_PER_PLAYER': {
-      const amountPerPlayer = (ability.params?.amount as number) || 1;
+      const amountPerPlayer = (step.params?.amount as number) || 1;
       const totalToAdd = amountPerPlayer * state.players.length;
-      const target = (ability.params?.target as string) || 'THIS_SIDE_SCHEME';
+      const target = (step.params?.target as string) || 'THIS_SIDE_SCHEME';
 
       if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
         const scheme = state.sideSchemes.find(
@@ -947,7 +968,7 @@ export function executeEffect(
     }
 
     case 'ATTACH_TO_HOST': {
-      const targetHost = ability.params?.target as string;
+      const targetHost = step.params?.target as string;
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
 
@@ -1015,7 +1036,7 @@ export function executeEffect(
     }
 
     case 'DISCARD_ENCOUNTER_DECK': {
-      const count = (ability.params?.count as number) || 1;
+      const count = (step.params?.count as number) || 1;
       for (let i = 0; i < count; i++) {
         const card = state.encounterDeck.shift();
         if (card) state.encounterDiscard.push(card);
@@ -1024,13 +1045,13 @@ export function executeEffect(
     }
 
     case 'PLAYER_CHOICE': {
-      const options = (ability.params?.options as any[]) || [];
-      const title = (ability.params?.title as string) || 'Choose an Option';
-      const description = (ability.params?.description as string) || '';
-      const sourceCardName = context.sourceCardInstance?.card.name || ability.id;
+      const options = (step.params?.options as any[]) || [];
+      const title = (step.params?.title as string) || (step.params?.promptTitle as string) || 'Choose an Option';
+      const description = (step.params?.description as string) || '';
+      const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
 
       state.pendingDecisionPrompt = {
-        promptId: `prompt_${Date.now()}_${ability.id}`,
+        promptId: `prompt_${Date.now()}_${step.id || 'choice'}`,
         playerId: context.playerId || player.id,
         title,
         description,
@@ -1045,7 +1066,7 @@ export function executeEffect(
         phase: state.phase,
         category: 'ability',
         key: 'decision.prompt.opened',
-        params: { player: player.name, promptId: state.pendingDecisionPrompt.promptId, source: sourceCardName },
+        params: { player: player.name, promptId: state.pendingDecisionPrompt?.promptId || '', source: sourceCardName },
         onomatopoeia: 'CHOICE REQUIRED!',
       });
 
@@ -1100,7 +1121,7 @@ export function executeEffect(
     }
 
     case 'PLACE_THREAT_PER_SIDE_SCHEME': {
-      const amount = (ability.params?.amount as number) || 4;
+      const amount = (step.params?.amount as number) || 4;
       if (state.sideSchemes.length > 0) {
         for (const s of state.sideSchemes) {
           s.threat += amount;
@@ -1144,9 +1165,9 @@ export function executeEffect(
     }
 
     case 'PUT_INTO_PLAY': {
-      const fromZone = (ability.params?.from as string) || 'SET_ASIDE';
-      const toZone = (ability.params?.to as string) || 'ENGAGED_WITH_PLAYER';
-      const filter = (ability.params?.filter as Record<string, any>) || {};
+      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
+      const toZone = (step.params?.to as string) || 'ENGAGED_WITH_PLAYER';
+      const filter = (step.params?.filter as Record<string, any>) || {};
 
       const heroSetCode = player.hero?.setCode || '';
       const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
@@ -1268,9 +1289,9 @@ export function executeEffect(
     }
 
     case 'SHUFFLE_INTO_DECK': {
-      const fromZone = (ability.params?.from as string) || 'SET_ASIDE';
-      const toDeck = (ability.params?.toDeck as string) || 'ENCOUNTER_DECK';
-      const filter = (ability.params?.filter as Record<string, any>) || {};
+      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
+      const toDeck = (step.params?.toDeck as string) || 'ENCOUNTER_DECK';
+      const filter = (step.params?.filter as Record<string, any>) || {};
 
       const heroSetCode = player.hero?.setCode || '';
       const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
@@ -1353,7 +1374,6 @@ export function executeEffect(
         [
           {
             id: 'step_1_spawn_nemesis_minion',
-            timing: 'WHEN_REVEALED',
             effect: 'PUT_INTO_PLAY',
             params: {
               from: 'SET_ASIDE',
@@ -1363,7 +1383,6 @@ export function executeEffect(
           },
           {
             id: 'step_2_spawn_nemesis_scheme',
-            timing: 'WHEN_REVEALED',
             effect: 'PUT_INTO_PLAY',
             params: {
               from: 'SET_ASIDE',
@@ -1373,7 +1392,6 @@ export function executeEffect(
           },
           {
             id: 'step_3_shuffle_remaining_cards',
-            timing: 'WHEN_REVEALED',
             effect: 'SHUFFLE_INTO_DECK',
             params: {
               from: 'SET_ASIDE',
@@ -1383,7 +1401,6 @@ export function executeEffect(
           },
           {
             id: 'step_4_fallback_surge',
-            timing: 'WHEN_REVEALED',
             effect: 'TRIGGER_SURGE',
             gate: 'IF_FAILED',
           },
@@ -1478,8 +1495,8 @@ export function executeEffect(
     }
 
     case 'ADD_THREAT': {
-      const amount = (ability.params?.amount as number) || 1;
-      const target = (ability.params?.target as string) || 'MAIN_SCHEME';
+      const amount = (step.params?.amount as number) || 1;
+      const target = (step.params?.target as string) || 'MAIN_SCHEME';
       state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
       const onomatopoeia = `SCHEME THREAT +${amount}!`;
       state.log.push({
@@ -1512,8 +1529,8 @@ export function executeEffect(
       return executeSequence(
         state,
         [
-          { id: 'step_1_flip', timing: 'ACTION', effect: 'FLIP_FORM' },
-          { id: 'step_2_draw', timing: 'ACTION', effect: 'DRAW_UP_TO_HAND_SIZE' },
+          { id: 'step_1_flip', effect: 'FLIP_FORM' },
+          { id: 'step_2_draw', effect: 'DRAW_UP_TO_HAND_SIZE' },
         ],
         context,
       );

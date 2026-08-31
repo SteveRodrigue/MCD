@@ -255,7 +255,7 @@ export function dispatchAction(
         // Check Villain Attachments for Damage Shield (e.g. Armored Rhino Suit 01098)
         const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
           const abs = att.card.enrichment?.abilities || [];
-          return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+          return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
         });
         if (armorIdx !== -1) {
           const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
@@ -354,8 +354,9 @@ export function dispatchAction(
           for (const att of minion.attachments || []) {
             const attAbs = att.card.enrichment?.abilities || [];
             for (const ab of attAbs) {
-              if (ab.effect === 'WHEN_ATTACHED_HOST_DEFEATED') {
-                const removeAmount = (ab.params?.amount as number) || 3;
+              const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
+              if (hostDefStep) {
+                const removeAmount = (hostDefStep.params?.amount as number) || 3;
                 nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removeAmount);
                 nextState.log.push({
                   id: `log_${Date.now()}`,
@@ -432,7 +433,7 @@ export function dispatchAction(
           // Check damage shield on villain
           const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
             const abs = att.card.enrichment?.abilities || [];
-            return abs.some((a) => a.effect === 'ATTACHMENT_DAMAGE_SHIELD');
+            return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
           });
           if (armorIdx !== -1) {
             const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
@@ -650,7 +651,7 @@ export function dispatchAction(
       for (const gId of action.generatorInstanceIds || []) {
         if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
           const idAbility = player.activeFormCard.enrichment?.abilities?.find(
-            (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE',
+            (a) => a.timing === 'RESOURCE' || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
           );
           if (idAbility) {
             if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
@@ -683,7 +684,9 @@ export function dispatchAction(
 
           // Track limits on table abilities if configured
           const tableAbility = gCard.card.enrichment?.abilities?.find(
-            (a) => a.timing === 'RESOURCE' || a.effect === 'GENERATE_RESOURCE' || a.effect === 'COST_REDUCER',
+            (a) =>
+              a.timing === 'RESOURCE' ||
+              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
           );
           if (tableAbility) {
             const key = `${gCard.instanceId}_${tableAbility.id}`;
@@ -762,9 +765,10 @@ export function dispatchAction(
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
-        const attachAbility = abilities.find((a) => a.effect === 'ATTACH_TO_HOST');
+        const attachAbility = abilities.find((a) => a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST'));
         if (attachAbility) {
-          const targetHost = attachAbility.params?.target as string;
+          const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
+          const targetHost = attachStep?.params?.target as string;
           if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
             const ally = player.allies.find((a) => a.instanceId === action.targetInstanceId) || player.allies[0];
             if (ally) {
@@ -797,8 +801,13 @@ export function dispatchAction(
 
         // Apply immediate max health expansion (RR v1.8 p. 11: Current HP increases by same amount)
         for (const ability of abilities) {
-          if (ability.timing === 'CONSTANT' && (ability.effect === 'MODIFY_MAX_HEALTH' || (ability.effect === 'MODIFY_STAT' && ability.params?.stat === 'HEALTH'))) {
-            const hpBonus = (ability.params?.amount as number) || (ability.params?.healthBonus as number) || 0;
+          const matchingStep = ability.steps?.find(
+            (s) =>
+              s.effect === 'MODIFY_MAX_HEALTH' ||
+              (s.effect === 'MODIFY_STAT' && s.params?.stat === 'HEALTH'),
+          );
+          if (ability.timing === 'CONSTANT' && matchingStep) {
+            const hpBonus = (matchingStep.params?.amount as number) || (matchingStep.params?.healthBonus as number) || 0;
             if (hpBonus > 0) {
               player.health += hpBonus;
               player.maxHealth = getEffectiveMaxHealth(player, nextState);
@@ -910,13 +919,21 @@ export function dispatchAction(
 
       // Dynamic parameter scaling (e.g. Legal Practice 01023: Remove 1 threat per discarded card)
       let effectiveAbility = ability;
-      if (ability.params?.scaling === 'PER_DISCARDED_CARD') {
+      const scalingStep = ability.steps?.find((s) => s.params?.scaling === 'PER_DISCARDED_CARD');
+      if (scalingStep) {
         effectiveAbility = {
           ...ability,
-          params: {
-            ...ability.params,
-            amount: discardedCount * ((ability.params?.multiplier as number) || 1),
-          },
+          steps: ability.steps.map((s) =>
+            s === scalingStep
+              ? {
+                  ...s,
+                  params: {
+                    ...s.params,
+                    amount: discardedCount * ((s.params?.multiplier as number) || 1),
+                  },
+                }
+              : s,
+          ),
         };
       }
 
@@ -1095,8 +1112,12 @@ export function dispatchAction(
       const syntheticAbility = {
         id: `${prompt.promptId}_${selectedOption.id}`,
         timing: 'ACTION' as const,
-        effect: selectedOption.effect,
-        params: selectedOption.params || {},
+        steps: [
+          {
+            effect: selectedOption.effect || 'RESOLVED',
+            params: selectedOption.params || {},
+          },
+        ],
       };
 
       const effectRes = executeEffect(nextState, syntheticAbility, {

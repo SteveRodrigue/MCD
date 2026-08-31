@@ -22,7 +22,32 @@ graph TD
 
 ---
 
-## 2. Step 1: Design the Dual-Sided Identity
+## 2. Upstream Data Format Compliance (zzorba / MarvelCDB Standard)
+
+> [!IMPORTANT]
+> **Strict zzorba / MarvelCDB Schema Compliance:**  
+> All base card definitions in `data/upstream/` **must strictly comply with the upstream zzorba format** ([`zzorba/marvelsdb-json-data`](https://github.com/zzorba/marvelsdb-json-data)), which is the canonical standard used by [MarvelCDB](https://marvelcdb.com).
+>
+> **Separation of Concerns:**
+> 1. **Upstream zzorba JSON (`data/upstream/`):** Contains static presentation, card text, traits, costs, printed stats, and deckbuilding metadata.
+> 2. **Supplemental Rules JSON (`src/data/supplemental/`):** Contains pure engine-executable `abilities` with `steps: AbilityStep[]`, costs, timings, triggers, and audit proofs.
+
+### Standard zzorba Card Fields:
+* `code` *(string, required)*: Unique identifier (e.g. `"custom_001a"`).
+* `name` *(string, required)*: Card title (e.g. `"Daredevil"`).
+* `type_code` *(string, required)*: Canonical type (`"hero"`, `"alter_ego"`, `"ally"`, `"event"`, `"resource"`, `"support"`, `"upgrade"`, `"obligation"`, `"minion"`, `"side_scheme"`, `"treachery"`, `"attachment"`).
+* `faction_code` *(string, required)*: Faction (`"hero"`, `"aggression"`, `"justice"`, `"leadership"`, `"protection"`, `"basic"`, `"encounter"`).
+* `pack_code` *(string, required)*: Pack identifier (e.g. `"custom"`).
+* `set_code` *(string, optional)*: Set grouping (e.g. `"daredevil"`, `"daredevil_nemesis"`).
+* `is_unique` *(boolean, optional)*: Whether unique diamond (`◆`) is printed.
+* `cost` *(number, optional)*: Resource play cost for player cards.
+* `health`, `hand_size`, `thwart`, `attack`, `defense`, `recover` *(number, optional)*: Printed stats.
+* `traits` *(string, optional)*: Period-delimited traits (e.g. `"Avenger. Defender."`).
+* `text` *(string, optional)*: HTML-formatted card text for presentation (engine never scrapes this).
+
+---
+
+## 3. Step 1: Design the Dual-Sided Identity
 
 The identity consists of two card entries sharing the same base code (`<code>a` for Hero, `<code>b` for Alter-Ego):
 
@@ -74,11 +99,15 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
         "id": "daredevil_defense_interrupt",
         "timing": "INTERRUPT",
         "trigger": "ATTACK",
-        "effect": "DEAL_DAMAGE",
-        "params": {
-          "amount": 1,
-          "target": "CHOSEN_ENEMY"
-        }
+        "steps": [
+          {
+            "effect": "DEAL_DAMAGE",
+            "params": {
+              "amount": 1,
+              "target": "CHOSEN_ENEMY"
+            }
+          }
+        ]
       }
     ],
     "audit": {
@@ -103,11 +132,15 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
         "cost": {
           "exhaustSelf": true
         },
-        "effect": "REMOVE_THREAT",
-        "params": {
-          "amount": 1,
-          "target": "CHOSEN_SCHEME"
-        }
+        "steps": [
+          {
+            "effect": "REMOVE_THREAT",
+            "params": {
+              "amount": 1,
+              "target": "CHOSEN_SCHEME"
+            }
+          }
+        ]
       }
     ],
     "audit": {

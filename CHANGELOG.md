@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Documentation & Protocol Link Resolution:**
+  - Fixed relative path depth resolution in `.agents/skills/card-integration-protocol/SKILL.md` (pointing from 3 directory levels deep to `../../../docs/` and `../../../references/`).
+  - Fixed relative reference link in `docs/decisions/0007-official-rules-authority-rr-v18.md` (`../../references/`).
+  - Validated 100% of markdown links across `docs/` and `.agents/`.
+- **Unified Constant Card Zoom Scaling & Custom Magnification Settings (UI/UX Improvement):**
+  - Standardized hover zoom scaling across all card sizes (`sm`, `md`, `lg`, `xl`) and orientations (portrait vs. landscape) in `CardView.tsx`.
+  - Replaced the fixed multiplier ($1.9\times$) with size-adaptive scale factors (`sm` portrait $2.75\times$, `md` portrait $1.75\times$, `sm` landscape $2.5\times$, `md` landscape $1.72\times$), ensuring cards in Hand, Hero Zone, Tableau, Villain Zone, and Schemes all scale to the exact same readable target preview dimensions (~308px portrait width, ~440px landscape width).
+  - Added user-configurable **Card Zooming** preference to `OptionsMenu.tsx` and persistent `GameSettingsContext.tsx` with three magnification presets: **Small (90%)**, **Normal (100%, default)**, and **Larger (110%)**.
+  - Updated viewport boundary collision detection in `CardView.tsx` and tooltip labels in `PlayerHandTray.tsx`.
+- **Unified Ability Step Sequence Architecture & Supplemental Data Normalization (ADR-0030 / RR v1.8):**
+  - Strictly decoupled ability declaration headers (`CardAbility`: timing, trigger, cost, limit, errata, tags) from execution operations (`AbilityStep[]`: effect, params, gate, filter), eliminating top-level effect duality and conditional branching.
+  - Updated Zod schema `CardAbilitySchema` to mandate `steps: z.array(AbilityStepSchema).min(1)` and removed deprecated top-level `effect`, `params`, `gate`, `filter`, and recursive `sequence`.
+  - Created automated migration tooling `tools/migrate-supplemental-to-steps.ts` and migrated 100% of supplemental card packs (`core.json` and `core_encounter.json` across 115 cards and 128 abilities).
+  - Refactored core execution engine `src/engine/effects/index.ts` to process unified `AbilityStep` sequences with `executeSequence` and `executeStep`, supporting conditional gating (`ALWAYS`, `THEN`, `IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_FAILED`) and contextual entity flow.
+  - Updated pipeline and rules modules (`action-dispatcher.ts`, `legality-checker.ts`, `stat-calculator.ts`, `villain-phase.ts`, `round-upkeep.ts`, `trigger-dispatcher.ts`, `player-bot.ts`) to query declarative steps.
+  - Updated UI modals (`CardPaymentModal.tsx`, `IdentityActionModal.tsx`) and audit tool `tools/audit/supplemental-declarations-analyzer.ts` to inspect step arrays.
+  - Updated `.agents/skills/card-integration-protocol/SKILL.md` (Step 3 schema template and Step 5 decompiler protocol) and supplemental specifications suite (`09_sequences_and_prompts.md`, `hero_creation_guide.md`).
+  - Verified with 100% passing test suite across all 35 test files and 171 tests (`npm test && npm run typecheck && npm run build`).
 - **Generic Zone Transfer & Deck Manipulation Primitives (ADR-0029 / RR v1.8 p. 14, 33):**
   - Implemented generic `PUT_INTO_PLAY` (`from`, `to`, `filter`) resolving Toughness/Guard keywords, side scheme base threat calculations, and entrance trigger responses.
   - Implemented generic `SHUFFLE_INTO_DECK` (`from`, `toDeck`, `filter`) supporting set-aside, discard, and hand card transfers to Encounter and Player decks.

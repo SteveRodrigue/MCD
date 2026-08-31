@@ -70,7 +70,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
 * Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
-* **MANDATORY SPECIFICATION CONSULTATION:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../docs/guidelines/):
+* **MANDATORY SPECIFICATION CONSULTATION:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
   * `01_metadata_and_audit.md` (Metadata & Audit standards)
   * `02_timings_and_triggers.md` (Timings & Triggers matrix)
   * `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
@@ -91,7 +91,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   8. **Q8 (Contingencies & Branching):** Is there a fallback or conditional branch (e.g. "if you cannot...", "in alter-ego...", "if 0 healed -> surge")?
 
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
-* **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../docs/guidelines/scenario_creation_guide.md).
+* **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md).
 * **DEDUCTIVE SCHEMA MODELING:** If a card's mechanics match a documented schema in `docs/specifications/supplemental/`, translate the card strictly using that documented structure. If no documented schema exists or if it is marked 🟡 `ROADMAP`, the card requires specification refinement or engine addition.
 * **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 * **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
@@ -133,26 +133,32 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
         "discardSelf": true,
         "resourceCost": { "physical": 1 }
       },
-      "effect": "<EFFECT_PRIMITIVE>",
-      "params": {
-        "searchZones": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
-        "shuffleDeck": "ENCOUNTER_DECK",
-        "revealTarget": true
-      }
+      "steps": [
+        {
+          "id": "<optional_step_id>",
+          "effect": "<EFFECT_PRIMITIVE>",
+          "gate": "<ALWAYS | THEN | IF_AMOUNT_ZERO | IF_ALREADY_HAS_STATUS | IF_FAILED>",
+          "params": {
+            "searchZones": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+            "shuffleDeck": "ENCOUNTER_DECK",
+            "revealTarget": true
+          }
+        }
+      ]
     }
   ]
 }
 ```
 
 ### Step 4: Consult Ground Truth References (`references/`)
-* Check `references/rules_reference_v18.md` for official timing rules.
-* Consult `references/links.md` for:
+* Check [`references/rules_reference_v18.md`](../../../references/rules_reference_v18.md) for official timing rules.
+* Consult [`references/links.md`](../../../references/links.md) for:
   * Official FAQ & Errata: `https://marvelcdb.com/faqs`
   * Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
 * **The Golden Rule (RR v1.8 p. 2):** If the printed card text explicitly contradicts a general rule in the Rules Reference, the card text takes precedence.
 
 ### Step 5: Bidirectional Round-Trip Validation & Specification-Tied Confidence
-* **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, `effect`, and `params`) and decompile it into natural card text.
+* **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, and `steps: [{ effect, params, gate }]` pipeline) and decompile it into natural card text.
   * **Strict Rule:** Do **NOT** read `comment` or `mechanicSteps` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
 * **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
   * Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
@@ -213,7 +219,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
 3. **Synchronous Specification Feedback Loop:**
    * Whenever an engine primitive, trigger, or parameter is implemented or refactored:
-     1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
+     1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
      2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
@@ -222,7 +228,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ---
 
 ## 📚 Related Documentation & Authoritative Standards
-* [Supplemental Data Schema Specification (Modular Hub)](../../docs/specifications/supplemental/README.md)
-* [Hero & Identity Creation Guide](../../docs/guidelines/hero_creation_guide.md)
-* [Scenario Creation Guide](../../docs/guidelines/scenario_creation_guide.md)
+* [Supplemental Data Schema Specification (Modular Hub)](../../../docs/specifications/supplemental/README.md)
+* [Hero & Identity Creation Guide](../../../docs/guidelines/hero_creation_guide.md)
+* [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md)
 

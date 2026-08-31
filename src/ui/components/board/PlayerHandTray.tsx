@@ -385,7 +385,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       zIndex: isHovered ? 60 : 30 - index,
                       marginLeft: index === 0 ? 0 : `${multiHandFan.overlapMargin}px`,
                     }}
-                    className={`shrink-0 relative transition-all duration-200 cursor-pointer ${
+                    className={`shrink-0 relative transition-transform duration-150 ease-out cursor-pointer ${
                       isHovered ? '-translate-y-8 z-[60]' : 'hover:-translate-y-2'
                     }`}
                   >
@@ -543,7 +543,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                         zIndex: isHovered ? 60 : 30 - index,
                         marginLeft: index === 0 ? 0 : `${singleHandFan.overlapMargin}px`,
                       }}
-                      className={`shrink-0 relative transition-all duration-200 cursor-pointer ${
+                      className={`shrink-0 relative transition-transform duration-150 ease-out cursor-pointer ${
                         isHovered ? '-translate-y-12 z-[60]' : 'hover:-translate-y-2'
                       }`}
                     >

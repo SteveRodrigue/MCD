@@ -62,7 +62,7 @@ graph TD
 *Objective: Build an industrial-grade, event-driven rules engine with complete nested resolution and correct multiplayer turn loops.*
 
 ### 1. 🔴 `[Must-Have]` Interleaved Villain Phase Activations (RR v1.8 p. 22)
-* [ ] **Interleaved Player-by-Player Activation Loop:**
+* [x] **Interleaved Player-by-Player Activation Loop:**
   * Structure Step 2/3 as a unified loop starting from the First Player:
     $$\text{For each player (starting at First Player)} \rightarrow \text{Villain activates against player} \rightarrow \text{Engaged minions activate against player}.$$
 * [ ] **Sequential Hazard Icon Distribution (RR v1.8 p. 11):**

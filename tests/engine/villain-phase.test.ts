@@ -151,6 +151,120 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       expect(gameState.mainScheme.threat).toBe(initialThreat);
       expect(gameState.villain.statusCards).not.toContain(StatusCard.CONFUSED);
     });
+
+    it('executes interleaved activations per player in player order (RR v1.8 p. 22)', () => {
+      // Setup 2-player game: P1 (Hero) with Minion 1, P2 (Alter-Ego) with Minion 2
+      const p1 = gameState.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = p1.hero;
+      p1.hand = [];
+
+      const captainMarvelIdentity = catalog.getHeroIdentity('captain_marvel')!;
+      const p2 = {
+        ...p1,
+        id: 'p2',
+        name: 'Carol Danvers',
+        hero: captainMarvelIdentity.hero,
+        alterEgo: captainMarvelIdentity.alterEgo,
+        activeFormCard: captainMarvelIdentity.alterEgo,
+        currentForm: 'alter_ego' as const,
+        health: 12,
+        maxHealth: 12,
+        engagedMinions: [] as any[],
+        hand: [],
+        deck: [],
+        discard: [],
+        tableau: [],
+        statusCards: [],
+        dealtEncounterCards: [],
+      };
+      gameState.players.push(p2);
+
+      const minion1 = createCardInstance(catalog.getCard('01108')!); // Hydra Mercenary (ATK 1, SCH 1)
+      const minion2 = createCardInstance(catalog.getCard('01109')!); // Hydra Bomber (ATK 1, SCH 1)
+      p1.engagedMinions.push(minion1);
+      p2.engagedMinions.push(minion2);
+
+      gameState.firstPlayerIndex = 0;
+      gameState.log = [];
+
+      step2_villainActivations(gameState);
+
+      // Extract attack/scheme activation log keys
+      const activationLogs = gameState.log.filter((l) =>
+        ['villain.attack.hit', 'villain.scheme.threat', 'minion.attack.hit', 'minion.scheme.threat'].includes(l.key),
+      );
+
+      // Verify sequence:
+      // 1. Villain attacks P1
+      // 2. Minion 1 attacks P1
+      // 3. Villain schemes against P2
+      // 4. Minion 2 schemes against P2
+      expect(activationLogs.length).toBe(4);
+      expect(activationLogs[0].key).toBe('villain.attack.hit');
+      expect(activationLogs[0].params?.player).toBe(p1.name);
+
+      expect(activationLogs[1].key).toBe('minion.attack.hit');
+      expect(activationLogs[1].params?.player).toBe(p1.name);
+
+      expect(activationLogs[2].key).toBe('villain.scheme.threat');
+
+      expect(activationLogs[3].key).toBe('minion.scheme.threat');
+      expect(activationLogs[3].params?.player).toBe(p2.name);
+    });
+
+    it('respects first player rotation during interleaved activations', () => {
+      // Setup 2-player game where P2 is First Player
+      const p1 = gameState.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = p1.hero;
+      p1.hand = [];
+
+      const captainMarvelIdentity = catalog.getHeroIdentity('captain_marvel')!;
+      const p2 = {
+        ...p1,
+        id: 'p2',
+        name: 'Carol Danvers',
+        hero: captainMarvelIdentity.hero,
+        alterEgo: captainMarvelIdentity.alterEgo,
+        activeFormCard: captainMarvelIdentity.hero,
+        currentForm: 'hero' as const,
+        health: 12,
+        maxHealth: 12,
+        engagedMinions: [] as any[],
+        hand: [],
+        deck: [],
+        discard: [],
+        tableau: [],
+        statusCards: [],
+        dealtEncounterCards: [],
+      };
+      gameState.players.push(p2);
+
+      const minion1 = createCardInstance(catalog.getCard('01108')!);
+      const minion2 = createCardInstance(catalog.getCard('01109')!);
+      p1.engagedMinions.push(minion1);
+      p2.engagedMinions.push(minion2);
+
+      gameState.firstPlayerIndex = 1; // P2 starts!
+      gameState.log = [];
+
+      step2_villainActivations(gameState);
+
+      const activationLogs = gameState.log.filter((l) =>
+        ['villain.attack.hit', 'minion.attack.hit'].includes(l.key),
+      );
+
+      // Verify sequence starts with P2:
+      // 1. Villain attacks P2
+      // 2. Minion 2 attacks P2
+      // 3. Villain attacks P1
+      // 4. Minion 1 attacks P1
+      expect(activationLogs[0].params?.player).toBe(p2.name);
+      expect(activationLogs[1].params?.player).toBe(p2.name);
+      expect(activationLogs[2].params?.player).toBe(p1.name);
+      expect(activationLogs[3].params?.player).toBe(p1.name);
+    });
   });
 
   describe('Step 3: Minion Activations (RR v1.8 p. 31)', () => {

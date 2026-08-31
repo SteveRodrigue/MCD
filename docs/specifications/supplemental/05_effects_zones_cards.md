@@ -75,6 +75,18 @@
 
 ---
 
+### `CHANGE_FORM_DRAW_TO_HAND_SIZE`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1082`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1082) / *Split Personality* `01025`)
+* **Description:** Flips the player's active identity card to their alternate form independently without consuming or requiring their basic once-per-round form change action (`basicChangeFormUsedThisRound`), then draws cards from deck up to the printed hand size limit of the newly active form.
+
+```json
+{
+  "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
+}
+```
+
+---
+
 ### `PLAY_FROM_ZONE`
 * **Status:** 🟡 `ROADMAP` (Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - *Make the Call* `01071`)
 * **Description:** Enables playing a card from a non-hand zone (e.g. player discard pile) with filter constraints.

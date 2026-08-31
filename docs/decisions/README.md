@@ -41,6 +41,11 @@ graph TD
     %% Scenario Setup Lineage
     ADR10["ADR-0010: Scenario Catalog (Ad-hoc)"] -->|Superseded by| ADR33["ADR-0033: 15-Step Scenario Plugin Engine"]
     ADR29 --> ADR33
+    ADR33 --> ADR34["ADR-0034: Player Side Schemes & Victory Display"]
+    
+    %% Advanced Expansion Lineage
+    ADR30 --> ADR35["ADR-0035: Multi-Form Identities & Counter Engine"]
+    ADR31 --> ADR36["ADR-0036: Advanced Status (Stalwart/Steady) & Minion Modifiers"]
 ```
 
 ---
@@ -82,6 +87,9 @@ graph TD
 | [ADR-0031](0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md) | 2026-08-31 | Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline | **Accepted** | Formalize 5-phase attack state machine supporting Basic Hero DEF, Ally blocks, Defense events, Boost cancellation, Overkill, and Direct Damage separation. |
 | [ADR-0032](0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md) | 2026-08-31 | Universal Resolution Stack, Decision Prompt Queue & Nested Interrupt Pipeline | **Accepted** | Model nested interrupts, responses, and voluntary reaction windows using an explicit execution stack and serializable FIFO/LIFO prompt queue per RR v1.8 p. 16. |
 | [ADR-0033](0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md) | 2026-08-31 | Official 15-Step Scenario Setup Engine & Modular Plugin Pipeline | **Accepted** | Replace ad-hoc scenario setup with a declarative `ScenarioPlugin` architecture executing the official 15-step setup protocol per RR v1.8 p. 27–28. |
+| [ADR-0034](0034-player-side-schemes-victory-display-and-auxiliary-decks.md) | 2026-08-31 | Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture | **Proposed** | Model voluntary player side schemes, the permanent Victory Display zone (`state.victoryDisplay`), and generic auxiliary scenario decks per RR v1.8 p. 26, 30. |
+| [ADR-0035](0035-universal-multi-form-identities-and-generic-counter-engine.md) | 2026-08-31 | Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine | **Proposed** | Support 3-sided identities (Ant-Man/Wasp), Mass/Energy form upgrades (Spectrum/Vision), and universal `counters: Record<string, number>` map. |
+| [ADR-0036](0036-advanced-status-card-dynamics-and-minion-activations.md) | 2026-08-31 | Advanced Status Card Dynamics & Minion Activation Modifiers | **Proposed** | Model count-based status thresholds (Stalwart immunity, Steady 2-card threshold) and minion modifiers (Villainous boosts, Quickstrike, Incite, Hinder). |
 
 ---
 

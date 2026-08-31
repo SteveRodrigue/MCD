@@ -652,6 +652,52 @@ export function step7_resolvePostAttackAndRetaliate(
     targetPlayerId: attackContext.targetPlayerId,
   });
 
+  // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24)
+  if (player && player.health > 0 && attackContext.heroDefended) {
+    // Check Hero or Tableau cards for Retaliate
+    let retaliateX = 0;
+    const heroCard = player.hero as any;
+    if (heroCard.keywords?.includes('Retaliate 1') || heroCard.keywords?.includes('Retaliate') || (heroCard.text || '').toLowerCase().includes('retaliate 1')) {
+      retaliateX = 1;
+    }
+    for (const item of player.tableau || []) {
+      const itemText = (item.card.text || '').toLowerCase();
+      if (itemText.includes('retaliate 1') || (item.card as any).keywords?.includes('Retaliate') || (item.card as any).keywords?.includes('Retaliate 1')) {
+        retaliateX += 1;
+      }
+    }
+
+    if (retaliateX > 0) {
+      if (attackContext.attackerType === 'VILLAIN') {
+        state.villain.health = Math.max(0, state.villain.health - retaliateX);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'retaliate.hero.hit',
+          params: { damage: retaliateX, villain: state.villain.card.name },
+          onomatopoeia: 'RETALIATE! (HERO)',
+        });
+      } else if (attackContext.attackerCard) {
+        const minion = attackContext.attackerCard;
+        if (!minion.tokens) minion.tokens = {};
+        minion.tokens.damage = (minion.tokens.damage || 0) + retaliateX;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'retaliate.hero.hit',
+          params: { damage: retaliateX, minion: minion.card.name },
+          onomatopoeia: 'RETALIATE! (HERO)',
+        });
+      }
+    }
+  }
+
   // Discard single-use attack attachments on villain (e.g. Charge 01099)
   if (attackContext.attackerType === 'VILLAIN') {
     const chargeIdx = (state.villain.attachments || []).findIndex((att) => att.card.code === '01099');

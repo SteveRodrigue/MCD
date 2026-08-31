@@ -1277,18 +1277,65 @@
           "id": "shadow_of_the_past_when_revealed",
           "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
-          "effect": "SPAWN_NEMESIS",
-          "params": {}
+          "sequence": [
+            {
+              "id": "step_1_spawn_nemesis_minion",
+              "timing": "WHEN_REVEALED",
+              "effect": "PUT_INTO_PLAY",
+              "params": {
+                "from": "SET_ASIDE",
+                "to": "ENGAGED_WITH_PLAYER",
+                "filter": {
+                  "type": "minion",
+                  "set": "PLAYER_NEMESIS"
+                }
+              }
+            },
+            {
+              "id": "step_2_spawn_nemesis_scheme",
+              "timing": "WHEN_REVEALED",
+              "effect": "PUT_INTO_PLAY",
+              "params": {
+                "from": "SET_ASIDE",
+                "to": "SIDE_SCHEMES",
+                "filter": {
+                  "type": "side_scheme",
+                  "set": "PLAYER_NEMESIS"
+                }
+              }
+            },
+            {
+              "id": "step_3_shuffle_remaining_cards",
+              "timing": "WHEN_REVEALED",
+              "effect": "SHUFFLE_INTO_DECK",
+              "params": {
+                "from": "SET_ASIDE",
+                "toDeck": "ENCOUNTER_DECK",
+                "filter": {
+                  "set": "PLAYER_NEMESIS"
+                }
+              }
+            },
+            {
+              "id": "step_4_fallback_surge",
+              "timing": "WHEN_REVEALED",
+              "effect": "TRIGGER_SURGE",
+              "gate": "IF_FAILED",
+              "params": {
+                "targetStepId": "step_1_spawn_nemesis_minion"
+              }
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:52",
-        "reviewedAt": "2026-08-28T14:52",
+        "updatedAt": "2026-08-31T06:45",
+        "reviewedAt": "2026-08-31T06:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "WHEN_REVEALED -> SPAWN_NEMESIS"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (Nemesis Minion), PUT_INTO_PLAY (Nemesis Scheme), SHUFFLE_INTO_DECK (Remaining Nemesis Cards), IF_FAILED -> TRIGGER_SURGE]"
       },
       "mechanicSteps": [
         "When Revealed: Reveal your set-aside nemesis minion and put it into play engaged with you.",

@@ -1,4 +1,5 @@
 export type AbilityTiming =
+  | 'WHEN_REVEALED'
   | 'FORCED_INTERRUPT'
   | 'INTERRUPT'
   | 'HERO_INTERRUPT'

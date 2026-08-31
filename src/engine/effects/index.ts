@@ -47,24 +47,35 @@ export function shouldExecuteStep(
   state: GameState,
   step: CardAbility,
   context: EffectExecutionContext,
+  stepResultsMap?: Map<string, StepResolutionResult>,
 ): boolean {
   if (!gate || gate === 'ALWAYS') return true;
 
+  const targetStepId = step.params?.targetStepId as string | undefined;
+  const evaluatedResult =
+    targetStepId && stepResultsMap?.has(targetStepId)
+      ? stepResultsMap.get(targetStepId)
+      : prevResult;
+
   if (gate === 'THEN' || gate === 'IF_PREVIOUS_SUCCESS') {
-    return !!prevResult && prevResult.success && prevResult.mutatedState;
+    return !!evaluatedResult && evaluatedResult.success && evaluatedResult.mutatedState;
   }
 
   if (gate === 'IF_AMOUNT_ZERO' || gate === 'IF_ZERO_HEALED') {
-    return !!prevResult && (!prevResult.mutatedState || (prevResult.value ?? 0) === 0);
+    return !!evaluatedResult && (!evaluatedResult.mutatedState || (evaluatedResult.value ?? 0) === 0);
   }
 
   if (gate === 'IF_FAILED') {
-    return !prevResult || !prevResult.success || !prevResult.mutatedState;
+    if (targetStepId && stepResultsMap?.has(targetStepId)) {
+      const targetRes = stepResultsMap.get(targetStepId);
+      return !targetRes || !targetRes.success || !targetRes.mutatedState;
+    }
+    return !evaluatedResult || !evaluatedResult.success || !evaluatedResult.mutatedState;
   }
 
   if (gate === 'IF_ALREADY_HAS_STATUS') {
-    if (prevResult && prevResult.conditionMet !== undefined) {
-      return prevResult.conditionMet;
+    if (evaluatedResult && evaluatedResult.conditionMet !== undefined) {
+      return evaluatedResult.conditionMet;
     }
     const statusParam = (step.params?.status as StatusCard) || StatusCard.TOUGH;
     const targetParam = (step.params?.target as string) || 'VILLAIN';
@@ -92,10 +103,18 @@ export function executeSequence(
 ): EffectResult {
   let currentState = state;
   let prevResult: StepResolutionResult | undefined = context.previousResult;
+  const stepResultsMap = new Map<string, StepResolutionResult>();
   const onomatopoeias: string[] = [];
 
   for (const step of sequence) {
-    const shouldRun = shouldExecuteStep(step.gate, prevResult, currentState, step, context);
+    const shouldRun = shouldExecuteStep(
+      step.gate,
+      prevResult,
+      currentState,
+      step,
+      context,
+      stepResultsMap,
+    );
     if (!shouldRun) {
       continue;
     }
@@ -109,24 +128,29 @@ export function executeSequence(
 
     const res = executeEffect(currentState, step, stepContext);
     currentState = res.state;
-    if (res.onomatopoeia) onomatopoeias.push(res.onomatopoeia);
 
     prevResult = {
       success: res.success,
       mutatedState: res.mutatedState ?? res.success,
       value: res.value,
-      selectedCardInstanceIds: res.selectedCardInstanceIds,
-      targetId: res.targetId,
       conditionMet: res.conditionMet,
+      targetId: res.selectedCardInstanceIds?.[0],
     };
+
+    if (step.id) {
+      stepResultsMap.set(step.id, prevResult);
+    }
+
+    if (res.onomatopoeia) {
+      onomatopoeias.push(res.onomatopoeia);
+    }
   }
 
   return {
     state: currentState,
     success: true,
-    onomatopoeia: onomatopoeias.join(' -> ') || 'SEQUENCE RESOLVED!',
-    mutatedState: prevResult?.mutatedState ?? true,
-    value: prevResult?.value,
+    mutatedState: Array.from(stepResultsMap.values()).some((r) => r.mutatedState),
+    onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
 
@@ -1119,121 +1143,253 @@ export function executeEffect(
       return { state, success: true, onomatopoeia: 'UNDER FIRE!' };
     }
 
-    case 'SPAWN_NEMESIS': {
-      const heroSetCode = player.hero.setCode || '';
+    case 'PUT_INTO_PLAY': {
+      const fromZone = (ability.params?.from as string) || 'SET_ASIDE';
+      const toZone = (ability.params?.to as string) || 'ENGAGED_WITH_PLAYER';
+      const filter = (ability.params?.filter as Record<string, any>) || {};
+
+      const heroSetCode = player.hero?.setCode || '';
       const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
 
-      // 1. Find all set-aside cards belonging specifically to this hero's nemesis set
-      const nemesisCards = player.setAsideCards.filter(
-        (c) => c.card.setCode === nemesisSetCode || (c.card.setCode && c.card.setCode.includes('nemesis')),
-      );
-
-      // 2. Find all nemesis minions in this subset (supports 1 or more minions)
-      const nemesisMinions = nemesisCards.filter((c) => c.card.type === CardType.MINION);
-
-      // If no nemesis minion is in the set-aside pool, the card gains surge
-      if (nemesisMinions.length === 0) {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'ability',
-          key: 'nemesis.spawn.surge',
-          params: { player: player.name },
-          onomatopoeia: 'SURGE! (NEMESIS UNAVAILABLE)',
-        });
-
-        return { state, success: true, onomatopoeia: 'SURGE!' };
+      let sourceList: CardInstance[] = [];
+      if (fromZone === 'SET_ASIDE') {
+        sourceList = player.setAsideCards || [];
+      } else if (fromZone === 'DISCARD') {
+        sourceList = player.discard || [];
+      } else if (fromZone === 'DECK') {
+        sourceList = player.deck || [];
       }
 
-      // 3. Put all nemesis minions into play engaged with this player
-      for (const minion of nemesisMinions) {
-        // Check Toughness
-        const hasToughness =
-          (minion.card.traits || []).includes('Toughness') ||
-          (minion.card.text || '').toLowerCase().includes('toughness');
-        if (hasToughness) {
-          if (!minion.statusCards) minion.statusCards = [];
-          if (!minion.statusCards.includes(StatusCard.TOUGH)) {
-            minion.statusCards.push(StatusCard.TOUGH);
-          }
+      const matches = sourceList.filter((c) => {
+        if (filter.set === 'PLAYER_NEMESIS') {
+          const isNemesis = c.card.setCode === nemesisSetCode || (c.card.setCode && c.card.setCode.includes('nemesis'));
+          if (!isNemesis) return false;
         }
-
-        player.engagedMinions.push(minion);
-
-        // Check Quickstrike (attacks immediately if player is in Hero form)
-        const hasQuickstrike =
-          (minion.card.traits || []).includes('Quickstrike') ||
-          (minion.card.text || '').includes('Quickstrike');
-        if (hasQuickstrike && player.currentForm === 'hero') {
-          executeMinionAttackAgainstPlayer(state, minion, player);
+        if (filter.type) {
+          const expectedType = filter.type === 'side_scheme' ? CardType.SIDE_SCHEME : filter.type === 'minion' ? CardType.MINION : filter.type;
+          if (c.card.type !== expectedType && c.card.type !== filter.type) return false;
         }
+        if (filter.code && c.card.code !== filter.code) return false;
+        return true;
+      });
 
-        // Execute minion When Revealed / Forced Response abilities
-        const abilities = minion.card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
+      if (matches.length === 0) {
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+          selectedCardInstanceIds: [],
+          onomatopoeia: 'NO MATCHES FOUND',
+        };
+      }
+
+      const matchIds = new Set(matches.map((m) => m.instanceId));
+      if (fromZone === 'SET_ASIDE') {
+        player.setAsideCards = player.setAsideCards.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DISCARD') {
+        player.discard = player.discard.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DECK') {
+        player.deck = player.deck.filter((c) => !matchIds.has(c.instanceId));
+      }
+
+      for (const cardInst of matches) {
+        if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
+          const hasToughness =
+            (cardInst.card.traits || []).includes('Toughness') ||
+            (cardInst.card.text || '').toLowerCase().includes('toughness');
+          if (hasToughness) {
+            if (!cardInst.statusCards) cardInst.statusCards = [];
+            if (!cardInst.statusCards.includes(StatusCard.TOUGH)) {
+              cardInst.statusCards.push(StatusCard.TOUGH);
+            }
           }
+
+          player.engagedMinions.push(cardInst as MinionCard & CardInstance);
+
+          const hasQuickstrike =
+            (cardInst.card.traits || []).includes('Quickstrike') ||
+            (cardInst.card.text || '').includes('Quickstrike');
+          if (hasQuickstrike && player.currentForm === 'hero') {
+            executeMinionAttackAgainstPlayer(state, cardInst as MinionCard & CardInstance, player);
+          }
+
+          const abilities = cardInst.card.enrichment?.abilities || [];
+          for (const ab of abilities) {
+            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
+              executeEffect(state, ab, { playerId: player.id, sourceCardInstance: cardInst });
+            }
+          }
+        } else if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
+          const sideCard = cardInst.card as SideSchemeCard;
+          const baseThreat = sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+          state.sideSchemes.push({
+            instanceId: cardInst.instanceId,
+            card: sideCard,
+            threat: baseThreat,
+          });
+
+          const schemeAbilities = sideCard.enrichment?.abilities || [];
+          for (const ab of schemeAbilities) {
+            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
+              executeEffect(state, ab, { playerId: player.id, sourceCardInstance: cardInst });
+            }
+          }
+        } else if (toZone === 'TABLEAU') {
+          player.tableau.push(cardInst);
         }
       }
 
-      // 4. Reveal the Nemesis Side Scheme
-      const nemesisScheme = nemesisCards.find((c) => c.card.type === CardType.SIDE_SCHEME);
-      if (nemesisScheme) {
-        const sideCard = nemesisScheme.card as SideSchemeCard;
-        const baseThreat = sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
-        state.sideSchemes.push({
-          instanceId: nemesisScheme.instanceId,
-          card: sideCard,
-          threat: baseThreat,
-        });
-
-        const schemeAbilities = sideCard.enrichment?.abilities || [];
-        for (const ability of schemeAbilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: nemesisScheme });
-          }
-        }
-      }
-
-      // 5. Shuffle remaining nemesis cards for this hero into the encounter deck
-      const spawnedInstanceIds = new Set([
-        ...nemesisMinions.map((m) => m.instanceId),
-        ...(nemesisScheme ? [nemesisScheme.instanceId] : []),
-      ]);
-      const remainingCards = nemesisCards.filter((c) => !spawnedInstanceIds.has(c.instanceId));
-      state.encounterDeck.push(...remainingCards);
-      state.encounterDeck.sort(() => Math.random() - 0.5);
-
-      // 6. Cleanly prune ONLY this hero's nemesis cards from player.setAsideCards (leaving other set-aside cards untouched)
-      player.setAsideCards = player.setAsideCards.filter(
-        (c) => c.card.setCode !== nemesisSetCode && !nemesisCards.some((nc) => nc.instanceId === c.instanceId),
-      );
-
-      const minionNames = nemesisMinions.map((m) => m.card.name).join(', ');
-      const onomatopoeia = `NEMESIS ARRIVES! ${minionNames.toUpperCase()}!`;
-
+      const cardNames = matches.map((m) => m.card.name).join(', ');
+      const onomatopoeia = `ENTERS PLAY! ${cardNames.toUpperCase()}`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
         category: 'ability',
-        key: 'nemesis.spawn.success',
+        key: 'card.putIntoPlay',
         params: {
           player: player.name,
-          minions: minionNames,
-          sideScheme: nemesisScheme?.card.name || 'None',
+          cards: cardNames,
+          destination: toZone,
         },
         onomatopoeia,
       });
 
-      return { state, success: true, onomatopoeia };
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: matches.length,
+        selectedCardInstanceIds: Array.from(matchIds),
+        onomatopoeia,
+      };
+    }
+
+    case 'SHUFFLE_INTO_DECK': {
+      const fromZone = (ability.params?.from as string) || 'SET_ASIDE';
+      const toDeck = (ability.params?.toDeck as string) || 'ENCOUNTER_DECK';
+      const filter = (ability.params?.filter as Record<string, any>) || {};
+
+      const heroSetCode = player.hero?.setCode || '';
+      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
+
+      let sourceList: CardInstance[] = [];
+      if (fromZone === 'SET_ASIDE') {
+        sourceList = player.setAsideCards || [];
+      } else if (fromZone === 'DISCARD') {
+        sourceList = player.discard || [];
+      } else if (fromZone === 'HAND') {
+        sourceList = player.hand || [];
+      }
+
+      const matches = sourceList.filter((c) => {
+        if (filter.set === 'PLAYER_NEMESIS') {
+          const isNemesis = c.card.setCode === nemesisSetCode || (c.card.setCode && c.card.setCode.includes('nemesis'));
+          if (!isNemesis) return false;
+        }
+        if (filter.type && c.card.type !== filter.type) return false;
+        return true;
+      });
+
+      if (matches.length === 0) {
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+          selectedCardInstanceIds: [],
+          onomatopoeia: 'NO CARDS TO SHUFFLE',
+        };
+      }
+
+      const matchIds = new Set(matches.map((m) => m.instanceId));
+      if (fromZone === 'SET_ASIDE') {
+        player.setAsideCards = player.setAsideCards.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DISCARD') {
+        player.discard = player.discard.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'HAND') {
+        player.hand = player.hand.filter((c) => !matchIds.has(c.instanceId));
+      }
+
+      if (toDeck === 'ENCOUNTER_DECK') {
+        state.encounterDeck.push(...matches);
+        state.encounterDeck.sort(() => Math.random() - 0.5);
+      } else if (toDeck === 'PLAYER_DECK') {
+        player.deck.push(...matches);
+        player.deck.sort(() => Math.random() - 0.5);
+      }
+
+      const onomatopoeia = `SHUFFLE ${matches.length} CARDS!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'deck.shuffled',
+        params: {
+          player: player.name,
+          count: matches.length,
+          destination: toDeck,
+        },
+        onomatopoeia,
+      });
+
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: matches.length,
+        selectedCardInstanceIds: Array.from(matchIds),
+        onomatopoeia,
+      };
+    }
+
+    case 'SPAWN_NEMESIS': {
+      return executeSequence(
+        state,
+        [
+          {
+            id: 'step_1_spawn_nemesis_minion',
+            timing: 'WHEN_REVEALED',
+            effect: 'PUT_INTO_PLAY',
+            params: {
+              from: 'SET_ASIDE',
+              to: 'ENGAGED_WITH_PLAYER',
+              filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
+            },
+          },
+          {
+            id: 'step_2_spawn_nemesis_scheme',
+            timing: 'WHEN_REVEALED',
+            effect: 'PUT_INTO_PLAY',
+            params: {
+              from: 'SET_ASIDE',
+              to: 'SIDE_SCHEMES',
+              filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
+            },
+          },
+          {
+            id: 'step_3_shuffle_remaining_cards',
+            timing: 'WHEN_REVEALED',
+            effect: 'SHUFFLE_INTO_DECK',
+            params: {
+              from: 'SET_ASIDE',
+              toDeck: 'ENCOUNTER_DECK',
+              filter: { set: 'PLAYER_NEMESIS' },
+            },
+          },
+          {
+            id: 'step_4_fallback_surge',
+            timing: 'WHEN_REVEALED',
+            effect: 'TRIGGER_SURGE',
+            gate: 'IF_FAILED',
+          },
+        ],
+        context,
+      );
     }
 
     case 'FLIP_FORM':

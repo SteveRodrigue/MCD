@@ -30,7 +30,7 @@ All uncompleted and future roadmap items are categorized using the following pri
 ```mermaid
 graph TD
     P0["Phase 0: Foundation & Governance ✅<br/>(Scaffolding, ADRs, Tooling, CI/CD)"] --> P1["Phase 1: Headless Engine & Schema Verification ✅<br/>(Deterministic State Tree, Supplemental Zod Schema, CI Tests)"]
-    P1 --> P2["Phase 2: Rules Engine Robustness & Nested Resolution 🚧<br/>(Interleaved Step 2/3 Activations, Nested Stack, Event Bus)"]
+    P1 --> P2["Phase 2: Engine Robustness & Scenario Setup Pipeline 🚧<br/>(Scenario Setup Plugins, Rhino Card Parity, Interleaved Step 2/3 Activations)"]
     P2 --> P3["Phase 3: 2-Hero Vertical Slice Matchup 📅<br/>(Spider-Man + Captain Marvel vs Rhino: 100% Debugged Multi-Handed Matchup)"]
     P3 --> P4["Phase 4: Core Set Completion & Polish 🃏<br/>(All 5 Core Heroes, Klaw, Ultron, MarvelCDB URL Import, Pop-Art UI)"]
     P4 --> P5["Phase 5: Expansions & Desktop Packaging 🚀<br/>(Hero & Scenario Packs, Tauri Desktop Binary, WebRTC P2P Multiplayer)"]
@@ -86,7 +86,17 @@ graph TD
 * [ ] 🟠 `[Should-Have]` **Rules Review & Implementation of Information Visibility (RR v1.8 p. 8, 9):**
   * Formalize inspection rights in UI and engine:
     * **Discard Piles (Open Information):** Any player may inspect any discard pile (Player Discard, Encounter Discard) at any time during the game without altering the physical card order.
-    * **Draw Decks (Hidden Information):** Draw decks may only be inspected when a card effect instructs the player to search/look, or via Dev Mode toggles.
+### 4. 🔴 `[Must-Have]` Modular Scenario Setup Pipeline (Plug-in Architecture)
+* [ ] **Official 15-Step Scenario Setup Pipeline (RR v1.8 p. 27–28):**
+  * Refactor Scenario Setup into a plug-in module system executing Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).
+  * Eliminate ad-hoc setup logic, ensuring scenarios configure themselves via declarative scenario plugins (`src/engine/scenarios/`).
+
+### 5. 🔴 `[Must-Have]` 100% Rhino Scenario Card Pool Integration & Verification
+* [ ] **Complete Rhino Encounter Pool Verification:**
+  * Ensure 100% of cards in the Rhino Scenario encounter pool are fully enriched, schema-validated, and verified with unit tests:
+    * **Rhino Signature Set:** *Rhino (Stage I, II, III)*, *The Break-In! (1A/1B)*, *Rhino's Charge* (`01098`), *Armored Rhino Suit* (`01099`), *Hard to Keep Down* (`01104`), *Stampede* (`01105`), *I'm Tough!* (`01106`), *Breakin' & Takin'* (`01107`), *Hydra Mercenary* (`01108`), *Hydra Bomber* (`01109`), *Crowd Control* (`01110`).
+    * **Modular Set (Bomb Scare):** *Bomb Scare* (`01114`), *Explosion* (`01115`), *False Alarm* (`01116`).
+    * **Standard Set (I):** *Advance* (`01186`), *Assault* (`01187`), *Caught in a Trenchcoat* (`01188`), *Gang-Up* (`01189`), *Shadow of the Past* (`01190`), *Under Fire* (`01192`), *Masterplan* (`01193`).
 
 ---
 

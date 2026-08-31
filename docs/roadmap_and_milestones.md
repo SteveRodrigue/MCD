@@ -77,16 +77,22 @@ graph TD
   * Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.
 * [x] **Promoted 5 Ambiguity Cards to 100% Confidence:** *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`).
 
-### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031)
-* [ ] **5-Phase Reactive Attack State Machine (RR v1.8 p. 4, 7, 11, 24):**
-  * **Phase 1 (Initiation & Pre-Attack):** Stun clearing, Webbed Up intercepts, `WHEN_ENEMY_INITIATES_ATTACK` triggers (*Spider-Sense*, *Powerful Punch*).
-  * **Phase 2 (Defender Declaration Window):** Interactive `DECLARE_DEFENDER` decision prompt supporting Basic Hero DEF (`DEF` stat mitigation), Ally Defend (absorbs attack, Overkill check), Co-op Teammate Defend, Defense Initiation Events (*I Can Do This All Day*, *Mutant Protectors*), or Take Undefended.
-  * **Phase 3 (Boost Resolution & Boost Interrupts):** Facedown Boost card deals, `WHEN_BOOST_CARD_REVEALED` interrupts (*Defiance*, *Preemptive Strike*), and ★ Star Boost abilities.
-  * **Phase 4 (Damage Calculation & Damage Prevention):** Dynamic DEF subtraction ($\max(0, \text{Total Attack} - \text{DEF})$), Damage Prevention window (*Backflip*, *Cosmic Flight*, *Side Step*), Tough status absorption, and Overkill spillover routing to identity.
-  * **Phase 5 (Post-Attack Responses & Retaliate):** Retaliate return damage, `HERO_DEFENDED_ATTACK` responses (*Indomitable*, *Counter-Punch*, *Unflappable*), and `ATTACK_RESOLVED` events.
-* [ ] **Direct Damage vs. Attack Damage Invariant:**
-  * Strictly separate Attack Damage from Direct / Indirect Damage (treacheries, hazards, consequential damage). Direct damage bypasses DEF, prohibits ally blocks, and forbids attack defense cards, while honoring universal prevention (*Cosmic Flight*, *Tough*).
-* [ ] **Unlocks 12+ Ambiguity Cards:** *Backflip* (`01003`), *Cosmic Flight* (`01017`), *Indomitable* (`01082`), *Counter-Punch* (`01077`), *Armored Vest* (`01081`), *Get Behind Me!* (`01078`), *Great Responsibility* (`01061`), *Gamma Slam* (`01021`), *Relentless Assault* (`01053`), *Uppercut* (`01054`), *Tigra* (`01051`), *Hulk* (`01050`).
+### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031) 🚧 (In Progress)
+* [x] **Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engine ✅ (Completed):**
+  * Built modular 7-step combat pipeline in `src/engine/pipeline/combat-pipeline.ts`.
+  * Step 1 Stun/Webbed Up check & Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / *Spider-Sense* card draw).
+  * Step 3 `DECLARE_DEFENDER` modal prompt with Basic Hero Defend (DEF mitigation), Ally Block, and Take Undefended.
+  * Headless synchronous execution helper with configurable defense policy (`TAKE_UNDEFENDED`, `HERO_IF_READY`, `ALLY_CHUMP_BLOCK`, `AUTO_OPTIMAL`).
+  * Promoted *Armored Vest* (`01081`) and *Indomitable* (`01082`) to 100% confidence.
+* [x] **Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boost Interrupts ✅ (Completed):**
+  * Step 4 facedown boost deal queue ($N \ge 0$) and Step 5 iterative 1-by-1 boost reveal loop.
+  * Boost Interrupt window (`WHEN_BOOST_CARD_REVEALED` / *Defiance*, *Target Acquired*).
+  * ★ Star Boost abilities engine & dynamic boost card chaining (*Titania's Fury* `01164`, *Sweeping Swoop* `01168`, *Electric Whip Attack* `01173`, *Kree Manipulator* `01178`).
+* [ ] **Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant:**
+  * Step 6 Damage Prevention Interrupts (*Backflip* `01003`, *Cosmic Flight* `01017`) and Tough preservation.
+  * Overkill excess damage routing and `RETALIATE X` return damage in Step 7.
+  * Direct damage vs. attack damage invariant.
+  * Promotes 10+ ambiguity cards: *Backflip* (`01003`), *Cosmic Flight* (`01017`), *Tigra* (`01051`), *Hulk* (`01050`), *Relentless Assault* (`01053`), *Gamma Slam* (`01021`), *Uppercut* (`01054`), *Enhanced Spider-Sense* (`01004`).
 
 ### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0033)
 * [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**
@@ -99,12 +105,21 @@ graph TD
   * Add modular encounter set slot selectors pre-populated with scenario default recommendations (e.g. *Bomb Scare* for Rhino, *Masters of Evil* for Klaw, *Under Attack* for Ultron), allowing players to replace optional sets with any modular set in their collection.
   * Provide a "Reset to Defaults" button and pass `selectedModularSetCodes` in `SetupSelection`.
 
-### 5. 🔴 `[Must-Have]` Milestone 2D: The Great Core Set Promotion Pass (Inbox Zero)
+### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero)
+* [ ] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25):**
+  - Implement dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
+  - Support heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).
+  - Support dynamic limit expansion modifiers (e.g. *Side Holster*, *Venom*, *Prehensile Tail*).
+  - Add voluntary discard replacement prompt (`DISCARD_RESTRICTED_REPLACEMENT`) in `canPlayCard()` when playing a restricted card at capacity.
+* [ ] **Global Unique Card Rule & Identity Collision (RR v1.8 p. 29):**
+  - Evaluate uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
+* [ ] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18):**
+  - Guarantee immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws.
 * [ ] **Promote 100% of Ambiguity Cards in `docs/ambiguities/`:**
-  * Execute Card Integration Protocol across all remaining 32 ambiguity files.
-  * Promote all cards to $\ge 98\%$ confidence with dedicated unit tests.
-  * Prune `docs/ambiguities/` to **0 files (Inbox Zero)**.
-  * 100% Core Set Player Cards (all 5 Heroes) + 100% Rhino Encounter Pool executable in headless engine.
+  - Execute Card Integration Protocol across all remaining 32 ambiguity files.
+  - Promote all cards to $\ge 98\%$ confidence with dedicated unit tests.
+  - Prune `docs/ambiguities/` to **0 files (Inbox Zero)**.
+  - 100% Core Set Player Cards (all 5 Heroes) + 100% Rhino Encounter Pool executable in headless engine.
 
 ---
 

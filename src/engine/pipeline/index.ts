@@ -8,3 +8,4 @@ export * from './player-phase';
 export * from './villain-phase';
 export * from './round-upkeep';
 export * from './prompt-queue';
+export * from './combat-pipeline';

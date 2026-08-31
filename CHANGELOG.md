@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Roadmap Expansion: Table Invariants, Restricted Keyword & Deck Depletion (Milestone 2D / RR v1.8):**
+  - Formalized specifications for the **Restricted Keyword Engine** (max 2 limit, heavy item slot weights, dynamic modifiers, voluntary discard replacement prompts per RR v1.8 p. 25).
+  - Formalized specifications for **Global Unicity & Identity Collision** (evaluating unicity across all player tableaus, allies, and Hero identities per RR v1.8 p. 29).
+  - Formalized specifications for **Mid-Action Player & Encounter Deck Exhaustion Invariants** (immediate reshuffle + acceleration / facedown encounter card penalty per RR v1.8 p. 11, 18).
+- **Sub-Milestone 2B-2 Implementation: 0-to-Many Boost Queue, Star Abilities (★) & Boost Chaining (ADR-0031):**
+  - Implemented the 0-to-many boost deal queue (Step 4) supporting 0 boost cards for minion attacks, 1 base boost card for villain attacks, and multiple boost cards for extra-boost villains (e.g. Klaw) and attachments.
+  - Implemented the iterative 1-by-1 FIFO boost resolution loop in `step4_and_5_dealAndResolveBoostCards` in `combat-pipeline.ts`.
+  - Added support for `WHEN_BOOST_CARD_REVEALED` interrupt trigger window and declarative ★ Star Boost ability resolution (`timing === 'BOOST'` or `trigger === 'BOOST'`).
+  - Added generic boost effect primitives in `src/engine/effects/index.ts`: `GIVE_ADDITIONAL_BOOST_CARD` / `DEAL_ADDITIONAL_BOOST_CARD`, `PUT_INTO_PLAY_ENGAGED`, `DISCARD_CARDS_FROM_HAND_AT_RANDOM`, and `DISCARD_UPGRADE_OR_SUPPORT`.
+  - Supported dynamic boost card chaining (appending new boost cards into `activeAttackContext.boostQueue` mid-loop).
+  - Promoted Core Set Star Boost encounter cards (*Titania's Fury* `01164`, *Sweeping Swoop* `01168`, *Electric Whip Attack* `01173`, *Kree Manipulator* `01178`) to 100% confidence.
+  - Added test suite [`tests/engine/combat-boost-and-star-abilities.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/combat-boost-and-star-abilities.test.ts) (7 new tests, 197 total tests passing).
+- **Sub-Milestone 2B-1 Implementation: Core Combat Lifecycle & Defender Declaration Engine (ADR-0031):**
+  - Created dedicated combat module [`src/engine/pipeline/combat-pipeline.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/combat-pipeline.ts) implementing the 7-step combat lifecycle.
+  - Implemented Step 1 Stun & Webbed Up cancellation intercepts and Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / *Spider-Sense* card draw).
+  - Implemented Step 3 `DECLARE_DEFENDER` modal prompt with Basic Hero Defend (exhausts hero, mitigates attack with `Hero.DEF`, sets `heroDefended = true`), Ally Block (exhausts ally, ally absorbs attack up to HP), and Take Undefended ($\text{DEF} = 0$).
+  - Added headless synchronous execution helper with configurable defense policy (`TAKE_UNDEFENDED`, `HERO_IF_READY`, `ALLY_CHUMP_BLOCK`, `AUTO_OPTIMAL`).
+  - Added `DeclareDefenderAction` action handler in `action-dispatcher.ts` and refactored `villain-phase.ts` to route attacks through `combat-pipeline.ts`.
+  - Promoted *Armored Vest* (`01081`) and *Indomitable* (`01082`) to 100% confidence.
+  - Added test suite [`tests/engine/combat-pipeline-step1-3.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/combat-pipeline-step1-3.test.ts) (9 new tests, 190 total tests passing).
 - **Mandatory Usage Audit Protocol Enforcement (`AGENTS.md` & `SKILL.md`):**
   - Updated Point 7 of the Mandatory Post-Task Protocol in `AGENTS.md` to require running `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) whenever cards, abilities, effects, or ambiguity reports change.
   - Updated Step 8 Verification Protocol in `.agents/skills/card-integration-protocol/SKILL.md` to mandate running the declarations analyzer on every card modification.

@@ -10,6 +10,7 @@ export type ActionType =
   | 'USE_CARD_ABILITY'
   | 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'
   | 'RESOLVE_DECISION_PROMPT'
+  | 'DECLARE_DEFENDER'
   | 'END_PLAYER_TURN'
   | 'DEV_ADD_CARD_TO_HAND';
 
@@ -94,6 +95,13 @@ export interface ResolveDecisionPromptAction {
   selectedOptionId: string;
 }
 
+export interface DeclareDefenderAction {
+  type: 'DECLARE_DEFENDER';
+  playerId: string;
+  defenderType: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  allyInstanceId?: string;
+}
+
 export interface EndPlayerTurnAction {
   type: 'END_PLAYER_TURN';
   playerId: string;
@@ -117,6 +125,7 @@ export type GameAction =
   | UseCardAbilityAction
   | SpendResourcesToDiscardAttachmentAction
   | ResolveDecisionPromptAction
+  | DeclareDefenderAction
   | EndPlayerTurnAction
   | DevAddCardToHandAction;
 

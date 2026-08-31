@@ -38,46 +38,57 @@ How should we design a complete, rules-accurate, and headless-decoupled Combat &
 
 **Chosen Option:** **Option 2: 5-Phase Reactive Combat State Machine**
 
-### The 5-Phase Attack State Machine
+### The 7-Step Reactive Combat State Machine
 
 ```mermaid
 flowchart TD
-    subgraph P1["Phase 1: Initiation & Pre-Attack"]
-        A1["Check Stun / Webbed Up (Clear stun & cancel attack)"]
-        A2["Dispatch 'WHEN_ENEMY_INITIATES_ATTACK' (Spider-Sense, Powerful Punch)"]
+    subgraph P1["Step 1: Pre-Attack & Status Intercepts (RR v1.8 p. 4)"]
+        A1["Check Stun / Webbed Up<br/><i>If Stunned: Discard Stun & Cancel Attack immediately</i>"]
     end
 
-    subgraph P2["Phase 2: Defender Declaration Window"]
-        B1{"Open 'DECLARE_DEFENDER' Decision Window"}
-        B1 -- 1. Basic Hero Defend --> B2["Exhaust Hero (Hero.DEF mitigates damage)"]
-        B1 -- 2. Ally Defend --> B3["Exhaust Ally (Ally absorbs attack; Overkill check)"]
-        B1 -- 3. Co-op Teammate Defend --> B4["Exhaust Teammate Hero/Ally (Switches target)"]
-        B1 -- 4. Defense Initiation Event --> B5["Play 'I Can Do This All Day' / 'Mutant Protectors'"]
-        B1 -- 5. Take Undefended --> B6["Identity is Target (DEF stat = 0)"]
+    subgraph P2["Step 2: Attack Initiation Triggers (RR v1.8 p. 24)"]
+        A2["Dispatch 'VILLAIN_INITIATES_ATTACK' / 'WHEN_ENEMY_INITIATES_ATTACK'<br/><i>e.g. Spider-Sense draws card BEFORE defender is declared</i>"]
     end
 
-    subgraph P3["Phase 3: Boost Resolution & Boost Interrupts"]
-        C1["Deal facedown Boost Card(s)"]
-        C2["Boost Interrupt Window (Defiance, Preemptive Strike)"]
-        C3["Count Boost Icons + Resolve ★ Star Boost abilities"]
-        C4["Compute Total ATK = Base ATK + Boost Icons + Attachments"]
+    subgraph P3["Step 3: Defender Declaration Window (RR v1.8 p. 7)"]
+        B1{"Open 'DECLARE_DEFENDER' Modal Prompt<br/><i>Must declare BEFORE boost cards are dealt or revealed</i>"}
+        B1 -- 1. Basic Hero Defend --> B2["Exhaust Hero<br/><i>Hero.DEF will mitigate damage; set heroDefended = true</i>"]
+        B1 -- 2. Ally Defend --> B3["Exhaust Ally<br/><i>Ally becomes target; absorbs damage; Overkill check enabled</i>"]
+        B1 -- 3. Take Undefended --> B4["Identity is Target<br/><i>DEF stat = 0</i>"]
     end
 
-    subgraph P4["Phase 4: Damage Calculation & Prevention Interrupts"]
-        D1["Raw Damage = Total ATK - (Hero.DEF if defended by Hero)"]
-        D2["Damage Prevention Window (Backflip, Cosmic Flight, Side Step)"]
-        D3["Check Tough Status (absorb remaining damage if > 0)"]
-        D4["Apply Final Damage (If Ally defeated & Overkill -> spillover to Hero)"]
-        D5["Check Defeat / Knockout"]
+    subgraph P4["Step 4: Deal Facedown Boost Cards (0 to N Cards) (RR v1.8 p. 4)"]
+        C1["Deal facedown Boost Card(s) into activeAttackContext.boostQueue<br/><i>Minion = 0 base | Villain = 1 base + Attachments + Scenario bonuses</i>"]
     end
 
-    subgraph P5["Phase 5: Post-Attack Responses & Retaliate"]
-        E1["Retaliate Trigger (Defender deals damage back to attacker)"]
-        E2["Dispatch 'HERO_DEFENDED_ATTACK' (Indomitable, Counter-Punch, Unflappable)"]
-        E3["Dispatch 'ATTACK_RESOLVED'"]
+    subgraph P5["Step 5: 1-by-1 Iterative Boost Resolution & Interrupt Loop (RR v1.8 p. 5–6)"]
+        D1["While boostQueue.length > 0: Pop next Boost Card"]
+        D2["Open Boost Interrupt Window ('WHEN_BOOST_CARD_REVEALED')<br/><i>Player Prompt: Defiance cancels card / Target Acquired cancels star ability</i>"]
+        D3["Resolve ★ Star Boost Abilities (RR v1.8 p. 6)<br/><i>e.g. Stampede deals +1 extra boost card to queue, Kree Manipulator adds threat</i>"]
+        D4["Accumulate Boost Icons: totalBoostIcons += card.boostIcons"]
+        D5["Discard resolved Boost Card to encounterDiscard"]
+        D6["Loop Ends: Total Attack = Base ATK + Attachments + Total Boost Icons"]
     end
 
-    P1 --> P2 --> P3 --> P4 --> P5
+    subgraph P6["Step 6: Damage Calculation, Prevention & Overkill (RR v1.8 p. 11, 14)"]
+        E1["Raw Damage = Total Attack - (Hero.DEF if Hero Defended)"]
+        E2["Damage Prevention Interrupts<br/><i>e.g. Backflip (prevents all attack damage), Cosmic Flight (-3 dmg)</i>"]
+        E3["Check Tough Status<br/><i>If Tough & Damage > 0: Discard Tough, prevent all remaining damage</i>"]
+        E4["Apply Final Damage to Target (Hero / Ally)"]
+        E5["Check Overkill<br/><i>If Ally defeated & Attacker has Overkill: Excess damage dealt to Hero</i>"]
+        E6["Check Defeat / Knockout"]
+    end
+
+    subgraph P7["Step 7: Post-Attack Reactions, Retaliate & Cleanup (RR v1.8 p. 7, 17)"]
+        F1["Retaliate Trigger<br/><i>If Defender has Retaliate and SURVIVED: Deal X damage to attacker</i>"]
+        F2["Dispatch 'HERO_DEFENDED_ATTACK'<br/><i>e.g. Indomitable (ready hero), Counter-Punch (attack back)</i>"]
+        F3["Dispatch 'ATTACK_RESOLVED' & 'DAMAGE_TAKEN'"]
+        F4["Discard Single-Use Attachments (e.g. Charge 01099)"]
+    end
+
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
+    D1 --> D2 --> D3 --> D4 --> D5 --> D1
+    D5 -- "Queue Empty" --> D6
 ```
 
 ---

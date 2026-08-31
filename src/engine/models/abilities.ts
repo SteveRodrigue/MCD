@@ -1,5 +1,6 @@
 export type AbilityTiming =
   | 'WHEN_REVEALED'
+  | 'BOOST'
   | 'FORCED_INTERRUPT'
   | 'INTERRUPT'
   | 'HERO_INTERRUPT'
@@ -18,6 +19,8 @@ export type AbilityTiming =
 
 export type TriggerType =
   | 'WHEN_REVEALED'
+  | 'WHEN_BOOST_CARD_REVEALED'
+  | 'BOOST'
   | 'BOOST_STAR_RESOLVED'
   | 'VILLAIN_INITIATES_ATTACK'
   | 'TAKE_ATTACK_DAMAGE'

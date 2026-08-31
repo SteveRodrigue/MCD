@@ -152,6 +152,40 @@ export interface ExecutionFrame {
   context?: Record<string, any>;
 }
 
+export type CombatPhase =
+  | 'PRE_ATTACK'
+  | 'DECLARE_DEFENDER'
+  | 'DEAL_BOOST'
+  | 'REVEAL_BOOST'
+  | 'CALCULATE_DAMAGE'
+  | 'POST_ATTACK';
+
+export interface DefenderDeclaration {
+  type: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  playerId: string;
+  allyInstanceId?: string;
+}
+
+export interface AttackExecutionContext {
+  attackId: string;
+  attackerType: 'VILLAIN' | 'MINION';
+  attackerCard?: CardInstance;
+  targetPlayerId: string;
+  phase: CombatPhase;
+  baseAttack: number;
+  boostQueue: CardInstance[];
+  totalBoostIcons: number;
+  defender?: DefenderDeclaration;
+  heroDefended?: boolean;
+  defenseValue?: number;
+  hasOverkill?: boolean;
+  hasPiercing?: boolean;
+  damagePreventionAmount?: number;
+  finalDamage?: number;
+  cancelled?: boolean;
+  cancellationReason?: string;
+}
+
 export interface PendingDecisionPrompt {
   promptId: string;
   playerId: string;
@@ -209,6 +243,7 @@ export interface GameState {
   removedFromGame: CardInstance[];
   accelerationTokens: number;
   activeBoostCard?: CardInstance;
+  activeAttackContext?: AttackExecutionContext;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
 }

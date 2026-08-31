@@ -2564,11 +2564,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:45",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T12:24",
+        "reviewedAt": "2026-08-31T12:24",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "reconstructedText": "CONSTANT -> MODIFY_STAT (DEFENSE +1)"
       },
       "mechanicSteps": [
@@ -2597,11 +2597,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:45",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T12:24",
+        "reviewedAt": "2026-08-31T12:24",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)"
       },
       "mechanicSteps": [

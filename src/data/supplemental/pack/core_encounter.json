@@ -1696,6 +1696,113 @@
         "rulesVersion": "v1.8",
         "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
       }
+    },
+    "01164": {
+      "comment": "Treachery: Titania's Fury. Star Boost: Give the villain 1 additional boost card for this activation.",
+      "abilities": [
+        {
+          "id": "titanias_fury_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-31T13:08",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "reconstructedText": "BOOST -> GIVE_ADDITIONAL_BOOST_CARD"
+      }
+    },
+    "01168": {
+      "comment": "Treachery: Sweeping Swoop. Star Boost: Stun character.",
+      "abilities": [
+        {
+          "id": "sweeping_swoop_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "STUNNED",
+                "target": "DEFENDING_CHARACTER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-31T13:08",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "reconstructedText": "BOOST -> ADD_STATUS (status: STUNNED, target: DEFENDING_CHARACTER)"
+      }
+    },
+    "01173": {
+      "comment": "Treachery: Electric Whip Attack. Star Boost: Discard upgrade.",
+      "abilities": [
+        {
+          "id": "electric_whip_attack_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD_UPGRADE_OR_SUPPORT",
+              "params": {
+                "target": "DEFENDING_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-31T13:08",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "reconstructedText": "BOOST -> DISCARD_UPGRADE_OR_SUPPORT (target: DEFENDING_PLAYER)"
+      }
+    },
+    "01178": {
+      "comment": "Treachery: Kree Manipulator. Star Boost: Place 1 threat on main scheme.",
+      "abilities": [
+        {
+          "id": "kree_manipulator_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_THREAT",
+              "params": {
+                "amount": 1,
+                "target": "MAIN_SCHEME"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-08-31T13:08",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "reconstructedText": "BOOST -> ADD_THREAT (amount: 1, target: MAIN_SCHEME)"
+      }
     }
   }
 }

@@ -15,6 +15,7 @@ import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
+  drawEncounterCard,
 } from '../pipeline/villain-phase';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { getEffectiveHeroStats } from '../pipeline/stat-calculator';
@@ -167,6 +168,18 @@ export function executeEffect(
   abilityOrStep: CardAbility | AbilityStep,
   context: EffectExecutionContext,
 ): EffectResult {
+  // Handle ability cost (e.g. discardSelf on in-play upgrades/attachments)
+  if ('cost' in abilityOrStep && (abilityOrStep as CardAbility).cost?.discardSelf && context.sourceCardInstance) {
+    const player = state.players.find((p) => p.id === context.playerId);
+    if (player) {
+      const tableauIdx = player.tableau.findIndex((c) => c.instanceId === context.sourceCardInstance!.instanceId);
+      if (tableauIdx !== -1) {
+        const [discarded] = player.tableau.splice(tableauIdx, 1);
+        player.discard.push(discarded);
+      }
+    }
+  }
+
   if ('steps' in abilityOrStep && Array.isArray(abilityOrStep.steps) && abilityOrStep.steps.length > 0) {
     return executeSequence(state, abilityOrStep.steps, context);
   }
@@ -596,14 +609,13 @@ export function executeStep(
         } else {
           alreadyHadStatus = true;
         }
-      } else if (target === 'HERO' || target === 'ALL_HEROES') {
-        for (const p of state.players) {
-          if (!p.statusCards.includes(status)) {
-            p.statusCards.push(status);
-            mutatedState = true;
-          } else {
-            alreadyHadStatus = true;
-          }
+      } else if (target === 'HERO' || target === 'ALL_HEROES' || target === 'DEFENDING_CHARACTER' || target === 'DEFENDING_PLAYER') {
+        const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
+        if (!targetPlayer.statusCards.includes(status)) {
+          targetPlayer.statusCards.push(status);
+          mutatedState = true;
+        } else {
+          alreadyHadStatus = true;
         }
       }
 
@@ -1099,6 +1111,90 @@ export function executeStep(
         if (card) state.encounterDiscard.push(card);
       }
       return { state, success: true, onomatopoeia: `DISCARDED ${count} ENCOUNTER CARDS!` };
+    }
+
+    case 'GIVE_ADDITIONAL_BOOST_CARD':
+    case 'DEAL_ADDITIONAL_BOOST_CARD': {
+      if (state.activeAttackContext) {
+        const extraCard = drawEncounterCard(state);
+        if (extraCard) {
+          state.activeAttackContext.boostQueue.push(extraCard);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'villain.boost.added',
+            params: { card: extraCard.card.name },
+            onomatopoeia: 'CHAIN BOOST ADDED!',
+          });
+        }
+      }
+      return { state, success: true, onomatopoeia: 'CHAIN BOOST ADDED!' };
+    }
+
+    case 'PUT_INTO_PLAY_ENGAGED':
+    case 'SPAWN_MINION_ENGAGED': {
+      const minionInst = context.sourceCardInstance;
+      if (minionInst) {
+        if (state.activeAttackContext) {
+          (state.activeAttackContext as any).skipBoostDiscard = true;
+        }
+        player.engagedMinions.push(minionInst);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'minion.entered.play',
+          params: { minion: minionInst.card.name, player: player.name },
+          onomatopoeia: 'MINION ENTERS THE FRAY!',
+        });
+      }
+      return { state, success: true, onomatopoeia: 'MINION ENGAGED!' };
+    }
+
+    case 'DISCARD_CARDS_FROM_HAND_AT_RANDOM':
+    case 'DISCARD_RANDOM_HAND': {
+      const count = (step.params?.count as number) || 1;
+      for (let i = 0; i < count; i++) {
+        if (player.hand.length > 0) {
+          const randIdx = Math.floor(Math.random() * player.hand.length);
+          const [discarded] = player.hand.splice(randIdx, 1);
+          player.discard.push(discarded);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'player.hand.randomDiscard',
+            params: { player: player.name, card: discarded.card.name },
+            onomatopoeia: 'RANDOM DISCARD!',
+          });
+        }
+      }
+      return { state, success: true, onomatopoeia: 'RANDOM DISCARD!' };
+    }
+
+    case 'DISCARD_UPGRADE_OR_SUPPORT': {
+      if (player.tableau.length > 0) {
+        const [discarded] = player.tableau.splice(0, 1);
+        player.discard.push(discarded);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'player.tableau.discarded',
+          params: { player: player.name, card: discarded.card.name },
+          onomatopoeia: 'TABLEAU DISCARDED!',
+        });
+      }
+      return { state, success: true, onomatopoeia: 'TABLEAU DISCARDED!' };
     }
 
     case 'PLAYER_CHOICE': {

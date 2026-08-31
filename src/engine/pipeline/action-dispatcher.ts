@@ -25,6 +25,7 @@ import { executeVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
 import { resolveDecisionPrompt } from './prompt-queue';
+import { resolveDefenderDeclaration } from './combat-pipeline';
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -1083,6 +1084,22 @@ export function dispatchAction(
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       return resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
+    }
+
+    case 'DECLARE_DEFENDER': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const updatedState = resolveDefenderDeclaration(nextState, {
+        type: action.defenderType,
+        playerId: action.playerId,
+        allyInstanceId: action.allyInstanceId,
+      });
+
+      return {
+        state: updatedState,
+        result: { success: true, onomatopoeia: 'DEFENSE RESOLVED!' },
+      };
     }
 
     default:

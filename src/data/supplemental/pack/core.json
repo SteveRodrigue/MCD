@@ -129,7 +129,7 @@
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -510,37 +510,15 @@
     },
     "01016": {
       "comment": "Upgrade: While in Hero form, Captain Marvel gets +1 DEF. After you spend Energy, heal 1 damage.",
-      "abilities": [
-        {
-          "id": "helmet_def_boost",
-          "timing": "CONSTANT",
-          "effect": "DEF_BONUS",
-          "params": {
-            "amount": 1
-          }
-        },
-        {
-          "id": "helmet_energy_heal",
-          "timing": "RESPONSE",
-          "trigger": "RESOURCE_SPENT",
-          "filter": {
-            "resource": "energy"
-          },
-          "effect": "HEAL_DAMAGE",
-          "params": {
-            "amount": 1,
-            "target": "SELF"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1}); RESPONSE (Trigger: RESOURCE_SPENT) -> Heal 1 damage from SELF"
+        "confidence": 80,
+        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1}); RESPONSE (Trigger: RESOURCE_SPENT) -> Heal 1 damage from SELF",
+        "ambiguityFile": "docs/ambiguities/core_01016_captain_marvel_s_helmet.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
@@ -548,36 +526,15 @@
     },
     "01017": {
       "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
-      "abilities": [
-        {
-          "id": "cosmic_flight_aerial",
-          "timing": "CONSTANT",
-          "effect": "ADD_TRAIT",
-          "params": {
-            "trait": "Aerial"
-          }
-        },
-        {
-          "id": "cosmic_flight_prevent",
-          "timing": "INTERRUPT",
-          "trigger": "TAKE_DAMAGE",
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "PREVENT_DAMAGE",
-          "params": {
-            "amount": 3
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CONSTANT -> ADD_TRAIT ({\"trait\":\"Aerial\"}); INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":3})"
+        "confidence": 80,
+        "reconstructedText": "CONSTANT -> ADD_TRAIT ({\"trait\":\"Aerial\"}); INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":3})",
+        "ambiguityFile": "docs/ambiguities/core_01017_cosmic_flight.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.\nHero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
@@ -590,44 +547,15 @@
         "count": 0,
         "max": 5
       },
-      "abilities": [
-        {
-          "id": "energy_channel_charge",
-          "timing": "HERO_ACTION",
-          "cost": {
-            "resourceCost": {
-              "energy": 1
-            }
-          },
-          "effect": "ADD_COUNTER",
-          "params": {
-            "amount": 1
-          }
-        },
-        {
-          "id": "energy_channel_blast",
-          "timing": "HERO_ACTION",
-          "tags": [
-            "ATTACK"
-          ],
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "DEAL_DAMAGE_PER_COUNTER",
-          "params": {
-            "multiplier": 2,
-            "target": "CHOSEN_ENEMY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTER ({\"amount\":1}); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE_PER_COUNTER ({\"multiplier\":2,\"target\":\"CHOSEN_ENEMY\"})"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTER ({\"amount\":1}); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE_PER_COUNTER ({\"multiplier\":2,\"target\":\"CHOSEN_ENEMY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01018_energy_channel.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
@@ -689,24 +617,15 @@
     },
     "01020": {
       "comment": "Ally: Action: Return Hellcat to your hand.",
-      "abilities": [
-        {
-          "id": "hellcat_return_hand",
-          "timing": "ACTION",
-          "effect": "RETURN_TO_HAND",
-          "params": {
-            "target": "SELF"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION -> RETURN_TO_HAND ({\"target\":\"SELF\"})"
+        "confidence": 80,
+        "reconstructedText": "ACTION -> RETURN_TO_HAND ({\"target\":\"SELF\"})",
+        "ambiguityFile": "docs/ambiguities/core_01020_hellcat_patsy_walker.md"
       },
       "mechanicSteps": [
         "Ally card with THW 2, ATK 1, and health 3"
@@ -714,28 +633,15 @@
     },
     "01021": {
       "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
-      "abilities": [
-        {
-          "id": "gamma_slam",
-          "timing": "HERO_ACTION",
-          "tags": [
-            "ATTACK"
-          ],
-          "effect": "DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE",
-          "params": {
-            "max": 15,
-            "target": "CHOSEN_ENEMY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE ({\"max\":15,\"target\":\"CHOSEN_ENEMY\"})"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE ({\"max\":15,\"target\":\"CHOSEN_ENEMY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01021_gamma_slam.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
@@ -804,25 +710,15 @@
     },
     "01024": {
       "comment": "Event: Hero Response: After She-Hulk makes a basic attack, ready She-Hulk.",
-      "abilities": [
-        {
-          "id": "one_two_punch",
-          "timing": "RESPONSE",
-          "trigger": "BASIC_ATTACK_PERFORMED",
-          "effect": "READY_CHARACTER",
-          "params": {
-            "target": "SELF"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) -> READY_CHARACTER ({\"target\":\"SELF\"})"
+        "confidence": 80,
+        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) -> READY_CHARACTER ({\"target\":\"SELF\"})",
+        "ambiguityFile": "docs/ambiguities/core_01024_one_two_punch.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Response: After you make a basic attack (using your ATK), ready She-Hulk."
@@ -913,37 +809,15 @@
     },
     "01028": {
       "comment": "Upgrade: She-Hulk gets +2 ATK. Forced Response: After attacking, stun the target and discard Superhuman Strength.",
-      "abilities": [
-        {
-          "id": "superhuman_strength_atk",
-          "timing": "CONSTANT",
-          "effect": "ATK_BONUS",
-          "params": {
-            "amount": 2
-          }
-        },
-        {
-          "id": "superhuman_strength_stun",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "ATTACK_RESOLVED",
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "ADD_STATUS",
-          "params": {
-            "status": "STUNNED",
-            "target": "ATTACK_TARGET"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":2}); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> Give STUNNED status to ATTACK_TARGET"
+        "confidence": 80,
+        "reconstructedText": "CONSTANT -> ATK_BONUS ({\"amount\":2}); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> Give STUNNED status to ATTACK_TARGET",
+        "ambiguityFile": "docs/ambiguities/core_01028_superhuman_strength.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: She-Hulk gets +2 ATK.\nForced Response: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
@@ -1043,30 +917,15 @@
     },
     "01031": {
       "comment": "Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
-      "abilities": [
-        {
-          "id": "repulsor_blast",
-          "timing": "HERO_ACTION",
-          "tags": [
-            "ATTACK"
-          ],
-          "effect": "REPULSOR_BLAST_DAMAGE",
-          "params": {
-            "baseDamage": 1,
-            "discardCount": 5,
-            "damagePerEnergy": 2,
-            "target": "CHOSEN_ENEMY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST_DAMAGE ({\"baseDamage\":1,\"discardCount\":5,\"damagePerEnergy\":2,\"target\":\"CHOSEN_ENEMY\"})"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST_DAMAGE ({\"baseDamage\":1,\"discardCount\":5,\"damagePerEnergy\":2,\"target\":\"CHOSEN_ENEMY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01031_repulsor_blast.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action (attack): Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
@@ -1104,24 +963,15 @@
     },
     "01033": {
       "comment": "Support: Resource: Exhaust Pepper Potts -> generate resources equal to printed resources on top card of discard pile.",
-      "abilities": [
-        {
-          "id": "pepper_potts_resource",
-          "timing": "RESOURCE",
-          "cost": {
-            "exhaustSelf": true
-          },
-          "effect": "GENERATE_TOP_DISCARD_RESOURCES"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE [Cost: Exhaust] -> GENERATE_TOP_DISCARD_RESOURCES"
+        "confidence": 80,
+        "reconstructedText": "RESOURCE [Cost: Exhaust] -> GENERATE_TOP_DISCARD_RESOURCES",
+        "ambiguityFile": "docs/ambiguities/core_01033_pepper_potts.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."
@@ -1129,29 +979,15 @@
     },
     "01034": {
       "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player to return 1 Tech upgrade from discard to hand.",
-      "abilities": [
-        {
-          "id": "stark_tower",
-          "timing": "ALTER_EGO_ACTION",
-          "cost": {
-            "exhaustSelf": true
-          },
-          "effect": "RETRIEVE_CARD_FROM_DISCARD",
-          "params": {
-            "trait": "Tech",
-            "type": "upgrade",
-            "target": "CHOSEN_PLAYER"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_CARD_FROM_DISCARD ({\"trait\":\"Tech\",\"type\":\"upgrade\",\"target\":\"CHOSEN_PLAYER\"})"
+        "confidence": 80,
+        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_CARD_FROM_DISCARD ({\"trait\":\"Tech\",\"type\":\"upgrade\",\"target\":\"CHOSEN_PLAYER\"})",
+        "ambiguityFile": "docs/ambiguities/core_01034_stark_tower.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Alter-Ego Action: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
@@ -1320,24 +1156,15 @@
     },
     "01040a": {
       "comment": "Hero Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
-      "abilities": [
-        {
-          "id": "black_panther_setup",
-          "timing": "SETUP",
-          "effect": "SEARCH_AND_PLAY_UPGRADE",
-          "params": {
-            "trait": "Black Panther"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})"
+        "confidence": 80,
+        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})",
+        "ambiguityFile": "docs/ambiguities/core_01040a_black_panther.md"
       },
       "mechanicSteps": [
         "Hero Identity ability/stats for Black Panther"
@@ -1345,24 +1172,15 @@
     },
     "01040b": {
       "comment": "Alter-Ego Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
-      "abilities": [
-        {
-          "id": "tchalla_setup",
-          "timing": "SETUP",
-          "effect": "SEARCH_AND_PLAY_UPGRADE",
-          "params": {
-            "trait": "Black Panther"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})"
+        "confidence": 80,
+        "reconstructedText": "SETUP -> SEARCH_AND_PLAY_UPGRADE ({\"trait\":\"Black Panther\"})",
+        "ambiguityFile": "docs/ambiguities/core_01040b_t_challa.md"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for T'Challa"
@@ -1370,26 +1188,15 @@
     },
     "01041": {
       "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
-      "abilities": [
-        {
-          "id": "shuri_search_upgrade",
-          "timing": "RESPONSE",
-          "trigger": "CARD_PLAYED",
-          "effect": "SEARCH_DECK_FOR_CARD",
-          "params": {
-            "type": "upgrade",
-            "destination": "HAND"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> SEARCH_DECK_FOR_CARD ({\"type\":\"upgrade\",\"destination\":\"HAND\"})"
+        "confidence": 80,
+        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> SEARCH_DECK_FOR_CARD ({\"type\":\"upgrade\",\"destination\":\"HAND\"})",
+        "ambiguityFile": "docs/ambiguities/core_01041_shuri.md"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 1, and health 3"
@@ -1397,24 +1204,15 @@
     },
     "01042": {
       "comment": "Event: Alter-Ego Action: Shuffle up to 3 cards from your discard pile into your deck.",
-      "abilities": [
-        {
-          "id": "ancestral_knowledge",
-          "timing": "ALTER_EGO_ACTION",
-          "effect": "SHUFFLE_DISCARD_INTO_DECK",
-          "params": {
-            "count": 3
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK ({\"count\":3})"
+        "confidence": 80,
+        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK ({\"count\":3})",
+        "ambiguityFile": "docs/ambiguities/core_01042_ancestral_knowledge.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
@@ -1422,21 +1220,15 @@
     },
     "01043a": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
-      "abilities": [
-        {
-          "id": "wakanda_forever_a",
-          "timing": "HERO_ACTION",
-          "effect": "TRIGGER_WAKANDA_UPGRADES"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
+        "ambiguityFile": "docs/ambiguities/core_01043a_wakanda_forever.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
@@ -1444,21 +1236,15 @@
     },
     "01043b": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
-      "abilities": [
-        {
-          "id": "wakanda_forever_b",
-          "timing": "HERO_ACTION",
-          "effect": "TRIGGER_WAKANDA_UPGRADES"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
+        "ambiguityFile": "docs/ambiguities/core_01043b_wakanda_forever.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
@@ -1466,21 +1252,15 @@
     },
     "01043c": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
-      "abilities": [
-        {
-          "id": "wakanda_forever_c",
-          "timing": "HERO_ACTION",
-          "effect": "TRIGGER_WAKANDA_UPGRADES"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
+        "ambiguityFile": "docs/ambiguities/core_01043c_wakanda_forever.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
@@ -1488,21 +1268,15 @@
     },
     "01043d": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
-      "abilities": [
-        {
-          "id": "wakanda_forever_d",
-          "timing": "HERO_ACTION",
-          "effect": "TRIGGER_WAKANDA_UPGRADES"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> TRIGGER_WAKANDA_UPGRADES",
+        "ambiguityFile": "docs/ambiguities/core_01043d_wakanda_forever.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
@@ -1554,25 +1328,15 @@
     },
     "01046": {
       "comment": "Upgrade: Special: Deal 1 damage to each enemy (2 damage if triggered last).",
-      "abilities": [
-        {
-          "id": "energy_daggers_special",
-          "timing": "SPECIAL",
-          "effect": "DEAL_DAMAGE_ALL_ENEMIES",
-          "params": {
-            "baseAmount": 1,
-            "finisherBonus": 1
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES ({\"baseAmount\":1,\"finisherBonus\":1})"
+        "confidence": 80,
+        "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES ({\"baseAmount\":1,\"finisherBonus\":1})",
+        "ambiguityFile": "docs/ambiguities/core_01046_energy_daggers.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
@@ -1640,27 +1404,15 @@
     },
     "01049": {
       "comment": "Upgrade: Special: Move 1 damage from Black Panther to an enemy (move 2 damage if triggered last).",
-      "abilities": [
-        {
-          "id": "vibranium_suit_special",
-          "timing": "SPECIAL",
-          "effect": "TRANSFER_DAMAGE",
-          "params": {
-            "baseAmount": 1,
-            "finisherBonus": 1,
-            "from": "SELF",
-            "to": "CHOSEN_ENEMY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE ({\"baseAmount\":1,\"finisherBonus\":1,\"from\":\"SELF\",\"to\":\"CHOSEN_ENEMY\"})"
+        "confidence": 80,
+        "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE ({\"baseAmount\":1,\"finisherBonus\":1,\"from\":\"SELF\",\"to\":\"CHOSEN_ENEMY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01049_vibranium_suit.md"
       },
       "mechanicSteps": [
         "Permanent/attached card: Special (attack): Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
@@ -1668,22 +1420,15 @@
     },
     "01050": {
       "comment": "Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
-      "abilities": [
-        {
-          "id": "hulk_after_attack",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "ATTACK_RESOLVED",
-          "effect": "HULK_DISCARD_RESOLUTION"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) -> HULK_DISCARD_RESOLUTION"
+        "confidence": 80,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) -> HULK_DISCARD_RESOLUTION",
+        "ambiguityFile": "docs/ambiguities/core_01050_hulk_bruce_banner.md"
       },
       "mechanicSteps": [
         "Ally card with THW 0, ATK 3, and health 5"
@@ -1804,28 +1549,27 @@
     },
     "01055": {
       "comment": "Resource Card: Double generated resources when paying for an Aggression card.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> Double resources when paying for an Aggression (red) card."
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
+      ],
       "abilities": [
         {
           "id": "power_of_aggression",
           "timing": "RESOURCE",
           "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
           "params": {
-            "aspect": "aggression",
-            "resource": "wild"
+            "aspect": "aggression"
           }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"aggression\",\"resource\":\"wild\"})"
-      },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01056": {
@@ -1976,26 +1720,15 @@
     },
     "01061": {
       "comment": "Defense Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
-      "abilities": [
-        {
-          "id": "great_responsibility",
-          "timing": "HERO_INTERRUPT",
-          "trigger": "THREAT_WOULD_BE_PLACED",
-          "zone": "HAND",
-          "cost": {
-            "discardSelf": true
-          },
-          "effect": "CONVERT_THREAT_TO_DAMAGE"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONVERT_THREAT_TO_DAMAGE"
+        "confidence": 80,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONVERT_THREAT_TO_DAMAGE",
+        "ambiguityFile": "docs/ambiguities/core_01061_great_responsibility.md"
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
@@ -2004,29 +1737,28 @@
     },
     "01062": {
       "comment": "Resource Card: Double generated resources when paying for a Justice card.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> Double resources when paying for a Justice (yellow) card."
+      },
+      "mechanicSteps": [
+        "Setup: Uses (3 snoop counters). Discard on empty.",
+        "Action: Exhaust Surveillance Team and remove 1 snoop counter -> remove 1 threat from a scheme."
+      ],
       "abilities": [
         {
           "id": "power_of_justice",
           "timing": "RESOURCE",
           "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
           "params": {
-            "aspect": "justice",
-            "resource": "wild"
+            "aspect": "justice"
           }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"justice\",\"resource\":\"wild\"})"
-      },
-      "mechanicSteps": [
-        "Setup: Uses (3 snoop counters). Discard on empty.",
-        "Action: Exhaust Surveillance Team and remove 1 snoop counter -> remove 1 threat from a scheme."
       ]
     },
     "01063": {
@@ -2187,33 +1919,15 @@
     },
     "01068": {
       "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase.",
-      "abilities": [
-        {
-          "id": "vision_boost",
-          "timing": "ACTION",
-          "cost": {
-            "resourceCost": {
-              "energy": 1
-            }
-          },
-          "effect": "BOOST_STAT_CHOICE",
-          "params": {
-            "amount": 2,
-            "options": [
-              "ATK",
-              "THW"
-            ]
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE ({\"amount\":2,\"options\":[\"ATK\",\"THW\"]})"
+        "confidence": 80,
+        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE ({\"amount\":2,\"options\":[\"ATK\",\"THW\"]})",
+        "ambiguityFile": "docs/ambiguities/core_01068_vision.md"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 2, and health 3"
@@ -2221,24 +1935,15 @@
     },
     "01069": {
       "comment": "Event: Action: Ready an ally.",
-      "abilities": [
-        {
-          "id": "get_ready",
-          "timing": "ACTION",
-          "effect": "READY_CHARACTER",
-          "params": {
-            "target": "CHOSEN_ALLY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION -> READY_CHARACTER ({\"target\":\"CHOSEN_ALLY\"})"
+        "confidence": 80,
+        "reconstructedText": "ACTION -> READY_CHARACTER ({\"target\":\"CHOSEN_ALLY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01069_get_ready.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Ready an ally."
@@ -2246,26 +1951,15 @@
     },
     "01070": {
       "comment": "Event: Hero Action: Each friendly character gets +1 ATK and +1 THW until end of phase.",
-      "abilities": [
-        {
-          "id": "lead_from_the_front",
-          "timing": "HERO_ACTION",
-          "effect": "BUFF_ALL_FRIENDLY_CHARACTERS",
-          "params": {
-            "atkBonus": 1,
-            "thwBonus": 1,
-            "duration": "PHASE_END"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS ({\"atkBonus\":1,\"thwBonus\":1,\"duration\":\"PHASE_END\"})"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS ({\"atkBonus\":1,\"thwBonus\":1,\"duration\":\"PHASE_END\"})",
+        "ambiguityFile": "docs/ambiguities/core_01070_lead_from_the_front.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
@@ -2273,50 +1967,52 @@
     },
     "01071": {
       "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control."
+      },
+      "mechanicSteps": [
+        "Event action/interrupt effect: Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
+      ],
       "abilities": [
         {
           "id": "make_the_call",
           "timing": "ACTION",
-          "effect": "PLAY_ALLY_FROM_DISCARD"
+          "effect": "PLAY_ALLY_FROM_DISCARD",
+          "params": {
+            "target": "ALLY_IN_DISCARD"
+          }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION -> PLAY_ALLY_FROM_DISCARD"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
       ]
     },
     "01072": {
       "comment": "Resource Card: Double generated resources when paying for a Leadership card.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> Double resources when paying for a Leadership (blue) card."
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
+      ],
       "abilities": [
         {
           "id": "power_of_leadership",
           "timing": "RESOURCE",
           "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
           "params": {
-            "aspect": "leadership",
-            "resource": "wild"
+            "aspect": "leadership"
           }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"leadership\",\"resource\":\"wild\"})"
-      },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01073": {
@@ -2392,28 +2088,15 @@
     },
     "01075": {
       "comment": "Ally: Hero Interrupt: When a treachery card is revealed from encounter deck, exhaust Black Widow and spend 1 Mental resource -> cancel its When Revealed effects and discard it.",
-      "abilities": [
-        {
-          "id": "black_widow_treachery_cancel",
-          "timing": "HERO_INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
-          "cost": {
-            "exhaustSelf": true,
-            "resourceCost": {
-              "mental": 1
-            }
-          },
-          "effect": "CANCEL_WHEN_REVEALED"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED"
+        "confidence": 80,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED",
+        "ambiguityFile": "docs/ambiguities/core_01075_black_widow_natasha_romanoff.md"
       },
       "mechanicSteps": [
         "Ally card with THW 2, ATK 1, and health 2"
@@ -2447,28 +2130,15 @@
     },
     "01077": {
       "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
-      "abilities": [
-        {
-          "id": "counter_punch",
-          "timing": "RESPONSE",
-          "trigger": "HERO_DEFENDED_ATTACK",
-          "tags": [
-            "ATTACK"
-          ],
-          "effect": "DEAL_DAMAGE_EQUAL_TO_HERO_ATK",
-          "params": {
-            "target": "ATTACKING_ENEMY"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) -> DEAL_DAMAGE_EQUAL_TO_HERO_ATK ({\"target\":\"ATTACKING_ENEMY\"})"
+        "confidence": 80,
+        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) -> DEAL_DAMAGE_EQUAL_TO_HERO_ATK ({\"target\":\"ATTACKING_ENEMY\"})",
+        "ambiguityFile": "docs/ambiguities/core_01077_counter_punch.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Response (attack): After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK."
@@ -2476,22 +2146,15 @@
     },
     "01078": {
       "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
-      "abilities": [
-        {
-          "id": "get_behind_me",
-          "timing": "HERO_INTERRUPT",
-          "trigger": "TREACHERY_REVEALED",
-          "effect": "CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) -> CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK"
+        "confidence": 80,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) -> CANCEL_TREACHERY_AND_FORCE_VILLAIN_ATTACK",
+        "ambiguityFile": "docs/ambiguities/core_01078_get_behind_me.md"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its \"When Revealed\" effects. The villain attacks you instead."
@@ -2499,28 +2162,27 @@
     },
     "01079": {
       "comment": "Resource Card: Double generated resources when paying for a Protection card.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "RESOURCE -> Double resources when paying for a Protection (green) card."
+      },
+      "mechanicSteps": [
+        "Resource generator card (provides resources for cost payment)"
+      ],
       "abilities": [
         {
           "id": "power_of_protection",
           "timing": "RESOURCE",
           "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
           "params": {
-            "aspect": "protection",
-            "resource": "wild"
+            "aspect": "protection"
           }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE -> DOUBLE_RESOURCE_FOR_ASPECT ({\"aspect\":\"protection\",\"resource\":\"wild\"})"
-      },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
       ]
     },
     "01080": {
@@ -2564,20 +2226,21 @@
         {
           "id": "armored_vest_def",
           "timing": "CONSTANT",
-          "effect": "DEF_BONUS",
+          "effect": "MODIFY_STAT",
           "params": {
+            "stat": "DEFENSE",
             "amount": 1
           }
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "CONSTANT -> DEF_BONUS ({\"amount\":1})"
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (DEFENSE +1)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
@@ -2601,12 +2264,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER ({\"target\":\"SELF\"})"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Response: After your hero defends, discard indomitable → ready your hero."
@@ -2705,7 +2368,7 @@
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-28T09:52",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 80,
@@ -2852,6 +2515,18 @@
     },
     "01092": {
       "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T03:45",
+        "reviewedAt": "2026-08-31T03:45",
+        "reviewedBy": "antigravity",
+        "rulesVersion": "v1.8",
+        "confidence": 98,
+        "reconstructedText": "ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1."
+      },
+      "mechanicSteps": [
+        "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
+      ],
       "abilities": [
         {
           "id": "helicarrier_action",
@@ -2865,46 +2540,19 @@
             "target": "CHOSEN_PLAYER"
           }
         }
-      ],
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust] -> REDUCE_NEXT_CARD_COST ({\"amount\":1,\"target\":\"CHOSEN_PLAYER\"})"
-      },
-      "mechanicSteps": [
-        "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
       ]
     },
     "01093": {
       "comment": "Upgrade: Attach to your hero. Hero Action: Spend a Physical resource and discard Tenacity -> ready your hero.",
-      "abilities": [
-        {
-          "id": "tenacity_ready",
-          "timing": "HERO_ACTION",
-          "cost": {
-            "discardSelf": true,
-            "resourceCost": {
-              "physical": 1
-            }
-          },
-          "effect": "READY_CHARACTER",
-          "params": {
-            "target": "SELF"
-          }
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "reviewedAt": "2026-08-31T03:45",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_CHARACTER ({\"target\":\"SELF\"})"
+        "confidence": 80,
+        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_CHARACTER ({\"target\":\"SELF\"})",
+        "ambiguityFile": "docs/ambiguities/core_01093_tenacity.md"
       },
       "mechanicSteps": [
         "Play Condition: Attach to your hero. Max 1 per hero.",

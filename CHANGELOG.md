@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Card Integration Protocol Ambiguity Alignment & Promotions:**
+  - Ran Card Integration Protocol across all 39 cards in `docs/ambiguities/`.
+  - Promoted 8 fully implemented cards to $\ge 98\%$ confidence and pruned their ambiguity reports (Inbox Zero): *Armored Vest* (`01081`), *Indomitable* (`01082`), *Helicarrier* (`01092`), *Make the Call* (`01071`), *The Power of Aggression* (`01055`), *The Power of Justice* (`01062`), *The Power of Leadership* (`01072`), and *The Power of Protection* (`01079`).
+  - Aligned all 31 remaining blocked cards with strict Circuit-Breaker isolation: active `abilities: [...]` stripped, `"ambiguityFile"` metadata stamped, and logs recorded in `logs/skills/card_integration_2026-08-30.log`.
 - **Supplemental Declarations Usage & Impact Analyzer Tool (`tools/audit/`):**
   - Built automated analytics tool `tools/audit/supplemental-declarations-analyzer.ts` and `npm run report:declarations` script.
   - Automatically parses all supplemental card definitions (`src/data/supplemental/pack/*.json`) and generates comprehensive impact reports in [`docs/reports/supplemental_declarations_usage_report.md`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/docs/reports/supplemental_declarations_usage_report.md).

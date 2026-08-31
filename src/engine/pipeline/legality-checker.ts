@@ -209,6 +209,182 @@ export function canBasicThwart(
  * Base: 3 allies (RR v1.8 p. 3).
  * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
  */
+import { Keyword } from '@engine/models';
+
+/**
+ * Checks if a card possesses the Restricted keyword (RR v1.8 p. 25).
+ */
+export function isCardRestricted(card: NormalizedCard): boolean {
+  if (card.keywords?.includes(Keyword.RESTRICTED)) return true;
+  const text = (card.text || '').toLowerCase();
+  return text.includes('restricted.') || text.includes('<b>restricted</b>');
+}
+
+/**
+ * Computes the slot weight of a restricted card (RR v1.8 p. 25).
+ * Base: 1 slot. Heavy items (e.g. "Counts as 2 restricted cards"): 2 slots.
+ */
+export function getCardRestrictedWeight(card: NormalizedCard): number {
+  if (!isCardRestricted(card)) return 0;
+  const text = (card.text || '').toLowerCase();
+  if (
+    text.includes('counts as 2 restricted cards') ||
+    text.includes('counts as two restricted cards') ||
+    text.includes('counts as 2 restricted')
+  ) {
+    return 2;
+  }
+  return 1;
+}
+
+/**
+ * Computes the active restricted card limit for a player dynamically (RR v1.8 p. 25 / ADR-0018).
+ * Base: 2 restricted cards max.
+ * Modifiers: Scans in-play cards for CONSTANT abilities with RESTRICTED_LIMIT_BONUS (e.g. Side Holster).
+ */
+export function getPlayerRestrictedLimit(state: GameState, playerId: string): number {
+  const BASE_RESTRICTED_LIMIT = 2;
+  let bonus = 0;
+
+  const player = getPlayer(state, playerId);
+  if (!player) return BASE_RESTRICTED_LIMIT;
+
+  for (const item of player.tableau) {
+    const abilities = item.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      const limitStep = ab.steps?.find((s) => s.effect === 'RESTRICTED_LIMIT_BONUS');
+      if (ab.timing === 'CONSTANT' && limitStep) {
+        bonus += Number(limitStep.params?.amount) || 1;
+      }
+    }
+  }
+
+  return BASE_RESTRICTED_LIMIT + bonus;
+}
+
+/**
+ * Computes the total restricted slot weight currently occupied in a player's tableau.
+ */
+export function getPlayerRestrictedCount(player: PlayerState): number {
+  let count = 0;
+  for (const item of player.tableau) {
+    count += getCardRestrictedWeight(item.card);
+  }
+  return count;
+}
+
+/**
+ * Validates the Global Unique Card Rule & Identity Collision (RR v1.8 p. 29).
+ * Unique cards are evaluated globally across all player tableaus, all player allies,
+ * all in-game Hero/Alter-Ego identities, and in-play villain/minion cards.
+ */
+export function checkUniqueCardPlayable(
+  state: GameState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  if (!card.isUnique) return { allowed: true };
+
+  const targetName = card.name.toLowerCase().trim();
+  const targetSubname = card.subname?.toLowerCase().trim();
+
+  // 1. Check against active Hero & Alter-Ego identities in the game
+  for (const p of state.players) {
+    const heroName = p.hero.name.toLowerCase().trim();
+    const heroSubname = p.hero.subname?.toLowerCase().trim();
+    const alterEgoName = p.alterEgo.name.toLowerCase().trim();
+    const alterEgoSubname = p.alterEgo.subname?.toLowerCase().trim();
+
+    // Match card name or subname with Hero/Alter-Ego name or subname
+    const matchesHero =
+      targetName === heroName ||
+      (targetSubname && targetSubname === heroName) ||
+      (heroSubname && targetName === heroSubname);
+    const matchesAlterEgo =
+      targetName === alterEgoName ||
+      (targetSubname && targetSubname === alterEgoName) ||
+      (alterEgoSubname && targetName === alterEgoSubname);
+
+    if (matchesHero || matchesAlterEgo) {
+      return {
+        allowed: false,
+        reason: `Global unicity violation (RR v1.8 p. 29): Unique card '${card.name}' shares identity with player '${p.name}'.`,
+      };
+    }
+  }
+
+  // 2. Check against all in-play cards across ALL players (tableaus and allies)
+  for (const p of state.players) {
+    // Check in-play allies
+    for (const ally of p.allies) {
+      if (ally.card.isUnique) {
+        const allyName = ally.card.name.toLowerCase().trim();
+        const allySubname = ally.card.subname?.toLowerCase().trim();
+
+        const nameMatch = targetName === allyName;
+        const subnameMatch =
+          targetSubname && allySubname ? targetSubname === allySubname : nameMatch;
+
+        if (nameMatch && subnameMatch) {
+          return {
+            allowed: false,
+            reason: `Global unicity violation (RR v1.8 p. 29): A unique copy of '${card.name}' is already in play under ${p.name}'s control.`,
+          };
+        }
+      }
+    }
+
+    // Check in-play tableau (upgrades/supports)
+    for (const item of p.tableau) {
+      if (item.card.isUnique) {
+        const itemName = item.card.name.toLowerCase().trim();
+        const itemSubname = item.card.subname?.toLowerCase().trim();
+
+        const nameMatch = targetName === itemName;
+        const subnameMatch =
+          targetSubname && itemSubname ? targetSubname === itemSubname : nameMatch;
+
+        if (nameMatch && subnameMatch) {
+          return {
+            allowed: false,
+            reason: `Global unicity violation (RR v1.8 p. 29): A unique copy of '${card.name}' is already in play in ${p.name}'s tableau.`,
+          };
+        }
+      }
+    }
+
+    // Check engaged unique minions
+    for (const minion of p.engagedMinions) {
+      if (minion.card.isUnique) {
+        const minionName = minion.card.name.toLowerCase().trim();
+        if (targetName === minionName) {
+          return {
+            allowed: false,
+            reason: `Global unicity violation (RR v1.8 p. 29): A unique minion '${card.name}' is already in play.`,
+          };
+        }
+      }
+    }
+  }
+
+  // 3. Check against active Villain
+  if (state.villain?.card.isUnique) {
+    const villainName = state.villain.card.name.toLowerCase().trim();
+    if (targetName === villainName) {
+      return {
+        allowed: false,
+        reason: `Global unicity violation (RR v1.8 p. 29): A unique character '${card.name}' is active as the villain.`,
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Computes the active maximum ally limit for a player dynamically (ADR-0018).
+ * Base: 3 allies (RR v1.8 p. 3).
+ * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
+ */
 export function getPlayerAllyLimit(state: GameState, playerId: string): number {
   const BASE_ALLY_LIMIT = 3;
   let bonus = 0;
@@ -338,14 +514,24 @@ export function canPlayCard(
     }
   }
 
-  // Unicity Constraint Check (RR v1.8 p. 28)
-  if (card.isUnique) {
-    const alreadyInPlay =
-      player.allies.some((a) => a.card.name === card.name) ||
-      player.tableau.some((t) => t.card.name === card.name);
-    if (alreadyInPlay) {
-      return { allowed: false, reason: `A unique copy of '${card.name}' is already in play.` };
+  // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018)
+  if (isCardRestricted(card)) {
+    const cardWeight = getCardRestrictedWeight(card);
+    const currentRestricted = getPlayerRestrictedCount(player);
+    const maxRestricted = getPlayerRestrictedLimit(state, playerId);
+
+    if (currentRestricted + cardWeight > maxRestricted) {
+      return {
+        allowed: false,
+        reason: `Restricted card limit reached (${maxRestricted} restricted cards max).`,
+      };
     }
+  }
+
+  // Global Unicity Constraint Check (RR v1.8 p. 29)
+  const unicityCheck = checkUniqueCardPlayable(state, card);
+  if (!unicityCheck.allowed) {
+    return unicityCheck;
   }
 
   // Cost payment validation

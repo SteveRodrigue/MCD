@@ -1,6 +1,6 @@
 # [ADR-0034] Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { TriggerTypeSchema, TimingTypeSchema } from '../../src/data/supplemental/schema';
+import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,8 +150,21 @@ function loadAllSupplementalPacks(): Map<string, Record<string, SupplementalEntr
   const files = fs.readdirSync(SUPPLEMENTAL_DIR).filter((f) => f.endsWith('.json'));
   for (const file of files) {
     const packName = file.replace('.json', '');
+    const fullPath = path.join(SUPPLEMENTAL_DIR, file);
+    const rawContent = fs.readFileSync(fullPath, 'utf-8');
+
+    // Enforce raw JSON duplicate key check
+    const duplicateKeys = detectDuplicateJsonKeys(rawContent);
+    if (duplicateKeys.length > 0) {
+      console.error(`\n❌ FATAL AUDIT ERROR: Duplicate keys found in ${file}:`);
+      duplicateKeys.forEach((d) =>
+        console.error(`  - Key "${d.key}" at line ${d.line} (previously defined at line ${d.firstSeenLine})`),
+      );
+      process.exit(1);
+    }
+
     try {
-      const content = JSON.parse(fs.readFileSync(path.join(SUPPLEMENTAL_DIR, file), 'utf-8'));
+      const content = JSON.parse(rawContent);
       const cards = content && content.cards ? content.cards : content;
       packs.set(packName, cards);
     } catch (e) {

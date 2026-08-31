@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "klaw",
+  "name": "Klaw",
+  "scenarioCardCode": "01113",
+  "author": "Fantasy Flight Games",
+  "version": "1.0.0",
+  "description": "Klaw is operating an illegal underground weapons network. Intercept him before his sonic converter destroys the city!",
+  "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
+  
+  "villainSetup": {
+    "villainName": "Klaw",
+    "stages": {
+      "SKIRMISH": ["01113"],
+      "STANDARD": ["01113", "01114"],
+      "EXPERT": ["01114", "01115"]
+    },
+    "healthPerPlayer": {
+      "01113": 12,
+      "01114": 18,
+      "01115": 22
+    }
+  },
+
+  "mainSchemeSetup": {
+    "stages": ["01116a", "01116b", "01117a", "01117b"],
+    "startingThreat": 0,
+    "targetThreatPerPlayer": 6,
+    "escalationThreatPerPlayer": 1
+  },
+
+  "modularEncounterSets": {
+    "mandatory": ["klaw"],
+    "defaults": {
+      "SKIRMISH": ["standard", "masters_of_evil"],
+      "STANDARD": ["standard", "masters_of_evil"],
+      "EXPERT": ["standard", "expert", "masters_of_evil"]
+    },
+    "slotCount": 1,
+    "recommendedModularSets": ["masters_of_evil"]
+  }
+}

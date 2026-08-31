@@ -16,31 +16,8 @@ import {
   getEffectiveVillainStats,
 } from './stat-calculator';
 import { executeEnemyAttackSynchronously } from './combat-pipeline';
-
-/**
- * Helper to draw the top card of the encounter deck.
- * If empty, increments acceleration tokens, shuffles discard pile to create a new deck (RR v1.8 p. 11).
- */
-export function drawEncounterCard(state: GameState): CardInstance | undefined {
-  if (state.encounterDeck.length === 0) {
-    if (state.encounterDiscard.length === 0) return undefined;
-
-    // Place 1 acceleration token on main scheme
-    state.accelerationTokens += 1;
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      key: 'encounter.deck.empty',
-      onomatopoeia: 'ACCELERATION!',
-    });
-
-    // Shuffle encounter discard into deck
-    state.encounterDeck = [...state.encounterDiscard].sort(() => Math.random() - 0.5);
-    state.encounterDiscard = [];
-  }
-
-  return state.encounterDeck.shift();
-}
+import { drawEncounterCard } from './deck-exhaustion';
+export { drawEncounterCard };
 
 /**
  * Step 1: Place Threat on Main Scheme (RR v1.8 p. 31)

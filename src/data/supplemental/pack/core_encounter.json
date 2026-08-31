@@ -938,7 +938,7 @@
       }
     },
     "01164": {
-      "comment": "Treachery: Titania's Fury",
+      "comment": "Treachery: Titania's Fury. When Revealed: Deal 2 damage to hero. Star Boost: Give the villain 1 additional boost card for this activation.",
       "abilities": [
         {
           "id": "titanias_fury",
@@ -953,14 +953,26 @@
               }
             }
           ]
+        },
+        {
+          "id": "titanias_fury_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
+            }
+          ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "confidence": 100,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO; BOOST -> GIVE_ADDITIONAL_BOOST_CARD"
       }
     },
     "01165": {
@@ -988,15 +1000,37 @@
     "01166": {
       "comment": "Side Scheme: Highway Robbery. When Revealed: Each player places a random card from hand facedown here. When Defeated: Return each facedown card here to its owner's hand.",
       "isLandscape": true,
+      "abilities": [
+        {
+          "id": "highway_robbery_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ATTACH_FACEDOWN_CARDS_FROM_HAND",
+              "params": {}
+            }
+          ]
+        },
+        {
+          "id": "highway_robbery_when_defeated",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "DEFEATED",
+          "steps": [
+            {
+              "effect": "RETURN_FACEDOWN_CARDS_TO_OWNERS",
+              "params": {}
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:52",
-        "reviewedAt": "2026-08-31T03:52",
+        "updatedAt": "2026-08-31T14:20",
+        "reviewedAt": "2026-08-31T14:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; WHEN_DEFEATED -> RETURN_FACEDOWN_CARDS_TO_OWNERS",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01166_highway_robbery.md"
+        "confidence": 98,
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; FORCED_RESPONSE (Trigger: DEFEATED) -> RETURN_FACEDOWN_CARDS_TO_OWNERS"
       }
     },
     "01167": {
@@ -1026,7 +1060,7 @@
       }
     },
     "01168": {
-      "comment": "Treachery: Sweeping Swoop",
+      "comment": "Treachery: Sweeping Swoop. When Revealed: Deal 2 damage to hero. Star Boost: Stun defending character.",
       "abilities": [
         {
           "id": "sweeping_swoop",
@@ -1041,14 +1075,30 @@
               }
             }
           ]
+        },
+        {
+          "id": "sweeping_swoop_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "params": {
+                "status": "STUNNED",
+                "target": "DEFENDING_CHARACTER"
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "confidence": 100,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO; BOOST -> ADD_STATUS (status: STUNNED, target: DEFENDING_CHARACTER)"
       }
     },
     "01169": {
@@ -1155,27 +1205,43 @@
       }
     },
     "01173": {
-      "comment": "Attachment: Electric Whip Attack",
+      "comment": "Attachment: Electric Whip Attack. Constant: +1 ATK. Star Boost: Discard an upgrade or support you control.",
       "abilities": [
         {
           "id": "electric_whip_attack",
           "timing": "CONSTANT",
           "steps": [
             {
-              "effect": "ADD_STATUS",
+              "effect": "MODIFY_STAT",
               "params": {
-                "bonusAttack": 1
+                "stat": "ATTACK",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "electric_whip_attack_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "DISCARD_UPGRADE_OR_SUPPORT",
+              "params": {
+                "target": "DEFENDING_PLAYER"
               }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-08-31T13:08",
+        "reviewedAt": "2026-08-31T13:08",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "CONSTANT -> Give undefined status to target"
+        "confidence": 100,
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); BOOST -> DISCARD_UPGRADE_OR_SUPPORT (target: DEFENDING_PLAYER)"
       }
     },
     "01174": {
@@ -1695,113 +1761,6 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
-      }
-    },
-    "01164": {
-      "comment": "Treachery: Titania's Fury. Star Boost: Give the villain 1 additional boost card for this activation.",
-      "abilities": [
-        {
-          "id": "titanias_fury_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "GIVE_ADDITIONAL_BOOST_CARD"
-            }
-          ]
-        }
-      ],
-      "audit": {
-        "createdAt": "2026-08-31T13:08",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 100,
-        "reconstructedText": "BOOST -> GIVE_ADDITIONAL_BOOST_CARD"
-      }
-    },
-    "01168": {
-      "comment": "Treachery: Sweeping Swoop. Star Boost: Stun character.",
-      "abilities": [
-        {
-          "id": "sweeping_swoop_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "params": {
-                "status": "STUNNED",
-                "target": "DEFENDING_CHARACTER"
-              }
-            }
-          ]
-        }
-      ],
-      "audit": {
-        "createdAt": "2026-08-31T13:08",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 100,
-        "reconstructedText": "BOOST -> ADD_STATUS (status: STUNNED, target: DEFENDING_CHARACTER)"
-      }
-    },
-    "01173": {
-      "comment": "Treachery: Electric Whip Attack. Star Boost: Discard upgrade.",
-      "abilities": [
-        {
-          "id": "electric_whip_attack_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "DISCARD_UPGRADE_OR_SUPPORT",
-              "params": {
-                "target": "DEFENDING_PLAYER"
-              }
-            }
-          ]
-        }
-      ],
-      "audit": {
-        "createdAt": "2026-08-31T13:08",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 100,
-        "reconstructedText": "BOOST -> DISCARD_UPGRADE_OR_SUPPORT (target: DEFENDING_PLAYER)"
-      }
-    },
-    "01178": {
-      "comment": "Treachery: Kree Manipulator. Star Boost: Place 1 threat on main scheme.",
-      "abilities": [
-        {
-          "id": "kree_manipulator_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "ADD_THREAT",
-              "params": {
-                "amount": 1,
-                "target": "MAIN_SCHEME"
-              }
-            }
-          ]
-        }
-      ],
-      "audit": {
-        "createdAt": "2026-08-31T13:08",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 100,
-        "reconstructedText": "BOOST -> ADD_THREAT (amount: 1, target: MAIN_SCHEME)"
       }
     }
   }

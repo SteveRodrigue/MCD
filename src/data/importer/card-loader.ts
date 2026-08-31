@@ -41,7 +41,63 @@ export function parseResources(raw: RawUpstreamCard) {
 }
 
 import { supplementalRegistry } from '../supplemental';
-import { CardEnrichment } from '@engine/models';
+import { CardEnrichment, Keyword } from '@engine/models';
+
+/**
+ * Parses printed and supplemental keywords for a card.
+ */
+export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment): Keyword[] {
+  const keywords = new Set<Keyword>();
+  const text = (raw.text || '').toLowerCase();
+
+  if (text.includes('restricted.') || text.includes('<b>restricted</b>') || (raw as any).restricted) {
+    keywords.add(Keyword.RESTRICTED);
+  }
+  if (text.includes('permanent.') || text.includes('<b>permanent</b>') || raw.permanent) {
+    keywords.add(Keyword.PERMANENT);
+  }
+  if (text.includes('guard.') || text.includes('<b>guard</b>') || text.includes('guard <i>')) {
+    keywords.add(Keyword.GUARD);
+  }
+  if (text.includes('patrol.') || text.includes('<b>patrol</b>') || text.includes('patrol <i>')) {
+    keywords.add(Keyword.PATROL);
+  }
+  if (text.includes('crisis.') || text.includes('<b>crisis</b>') || text.includes('crisis <i>') || raw.scheme_crisis) {
+    keywords.add(Keyword.CRISIS);
+  }
+  if (text.includes('hazard.') || text.includes('<b>hazard</b>') || text.includes('hazard <i>') || raw.scheme_hazard) {
+    keywords.add(Keyword.HAZARD);
+  }
+  if (text.includes('overkill.') || text.includes('<b>overkill</b>') || text.includes('overkill <i>')) {
+    keywords.add(Keyword.OVERKILL);
+  }
+  if (text.includes('piercing.') || text.includes('<b>piercing</b>') || text.includes('piercing <i>')) {
+    keywords.add(Keyword.PIERCING);
+  }
+  if (text.includes('quickstrike.') || text.includes('<b>quickstrike</b>') || text.includes('quickstrike <i>')) {
+    keywords.add(Keyword.QUICKSTRIKE);
+  }
+  if (text.includes('ranged.') || text.includes('<b>ranged</b>') || text.includes('ranged <i>')) {
+    keywords.add(Keyword.RANGED);
+  }
+  if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
+    keywords.add(Keyword.RETALIATE);
+  }
+  if (text.includes('surge.') || text.includes('<b>surge</b>') || text.includes('surge <i>')) {
+    keywords.add(Keyword.SURGE);
+  }
+  if (text.includes('toughness.') || text.includes('<b>toughness</b>') || text.includes('toughness <i>')) {
+    keywords.add(Keyword.TOUGH);
+  }
+
+  if ((enrichment as any)?.keywords) {
+    for (const kw of (enrichment as any).keywords) {
+      keywords.add(kw as Keyword);
+    }
+  }
+
+  return Array.from(keywords);
+}
 
 /**
  * Converts a raw upstream MarvelsDB card into a normalized, strongly-typed card,
@@ -78,6 +134,7 @@ export function normalizeRawCard(
     text: raw.text || '',
     flavor: raw.flavor,
     traits: parseTraits(raw.traits),
+    keywords: parseKeywords(raw, enrichment),
     resources: parseResources(raw),
     setCode: raw.set_code,
     setPosition: raw.set_position,

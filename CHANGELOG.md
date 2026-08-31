@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero):**
+  - **Sub-Milestone 2D-1 (Restricted Keyword & Global Unicity Invariants - RR v1.8 p. 25, 29 / ADR-0018):**
+    - Implemented `Keyword` parser and dynamic restricted limit validator (`isCardRestricted`, `getCardRestrictedWeight`, `getPlayerRestrictedLimit`, `getPlayerRestrictedCount`) in [`src/engine/pipeline/legality-checker.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts).
+    - Supported heavy items ("counts as 2 restricted cards") and dynamic limit expansion modifiers (`RESTRICTED_LIMIT_BONUS`).
+    - Implemented global unicity engine (`checkUniqueCardPlayable`) validating unicity across all player tableaus, player allies, engaged minions, and active in-game Hero/Alter-Ego identities (e.g. preventing *Captain Marvel* ally when *Carol Danvers* is in play).
+  - **Sub-Milestone 2D-2 (Deck Exhaustion & Discard Loop Invariants - RR v1.8 p. 11, 18, 26):**
+    - Centralized deck exhaustion in [`src/engine/pipeline/deck-exhaustion.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/deck-exhaustion.ts) with `exhaustPlayerDeck`, `exhaustEncounterDeck`, `drawPlayerCard`, and `drawEncounterCard`.
+    - Enforced unconditional penalty invariant: 1 permanent acceleration token placed on Main Scheme on Encounter deck depletion; 1 facedown encounter card dealt to player on Player deck depletion.
+    - Enforced search & discard loop termination invariants: searches terminate cleanly if target is not in searched zone; discard loops (`discardFromEncounterDeckUntil`, `discardFromPlayerDeckUntil`) immediately STOP if deck empties and trigger sequential exhaustion without discarding into reshuffled deck.
+  - **Sub-Milestone 2D-3 & 2D-4 (Core Set & Aspect Card Promotions — 100% Inbox Zero):**
+    - Implemented effect primitives: `MODIFY_COUNTER`, `RETURN_TO_HAND`, `REPULSOR_BLAST`, `GENERATE_TOP_DISCARD_RESOURCES`, `RETRIEVE_TECH_UPGRADE_FROM_DISCARD`, `SEARCH_DECK_FOR_CARD`, `SHUFFLE_DISCARD_INTO_DECK`, `EXECUTE_WAKANDA_FOREVER`, `DEAL_DAMAGE_ALL_ENEMIES`, `TRANSFER_DAMAGE`, `BOOST_STAT_CHOICE`, `BUFF_ALL_FRIENDLY_CHARACTERS`, `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`, `ATTACH_FACEDOWN_CARDS_FROM_HAND`, `RETURN_FACEDOWN_CARDS_TO_OWNERS`.
+    - Promoted all 23 remaining ambiguity cards across Core Set Heroes (*Captain Marvel's Helmet*, *Energy Channel*, *Hellcat*, *Superhuman Strength*, *Repulsor Blast*, *Pepper Potts*, *Stark Tower*, *T'Challa*, *Shuri*, *Ancestral Knowledge*, *Wakanda Forever!*, *Energy Daggers*, *Vibranium Suit*), Aspect cards (*Vision*, *Get Ready*, *Lead from the Front*, *Black Widow*, *Tenacity*), and Encounter pool (*Highway Robbery*).
+    - Resolved and deleted all 23 ambiguity reports in `docs/ambiguities/` achieving **100% Inbox Zero (0 open ambiguities)**.
+    - Verified 247/247 tests passing across 46 test suites with 0 typecheck errors and clean production build.
+  - **Quality Gate & Data Integrity Guardrails (Duplicate JSON Key Detector):**
+    - Built and integrated character-by-character AST duplicate key detector ([`src/data/supplemental/duplicate-key-detector.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/duplicate-key-detector.ts)).
+    - Fixed duplicate card entries in `core_encounter.json` (`01164`, `01168`, `01173`, `01178`) by unifying their `WHEN_REVEALED` and `BOOST` abilities into single multi-ability entries.
+    - Enforced duplicate key checks in CI/CD schema test suite ([`tests/data/supplemental-schema.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/data/supplemental-schema.test.ts)) and declaration usage analyzer ([`tools/audit/supplemental-declarations-analyzer.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tools/audit/supplemental-declarations-analyzer.ts)).
+- **Approved Architecture Decision Records (ADR-0034, ADR-0035, ADR-0036):**
+  - Formally approved and promoted to **Accepted** status:
+    - [`ADR-0034: Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture`](docs/decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)
+    - [`ADR-0035: Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine`](docs/decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md)
+    - [`ADR-0036: Advanced Status Card Dynamics & Minion Activation Modifiers`](docs/decisions/0036-advanced-status-card-dynamics-and-minion-activations.md)
+- **Milestone 2C Implementation: Scenario Setup & Modular Plugin Pipeline (ADR-0033):**
+  - Implemented the official 15-step scenario setup sequence (RR v1.8 p. 27–28) in [`src/engine/state/game-setup.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/state/game-setup.ts).
+  - Enforced Step 1 `Permanent` keyword handling (cards with `Keyword.PERMANENT` are put directly into play in player tableaus and excluded from draw decks).
+  - Enforced Step 4 & Step 11 0-to-many player obligations support (`obligations?: NormalizedCard[] | NormalizedCard`).
+  - Supported Skirmish (Stage I only), Standard (Stages I & II), and Expert (Stages II & III) game modes with scaled villain hit points ($H \times N$).
+  - Standardized scenario plugins for **Rhino** ([`src/engine/scenarios/built-in/rhino/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/scenarios/built-in/rhino/)), **Klaw** ([`src/engine/scenarios/built-in/klaw/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/scenarios/built-in/klaw/)), and **Ultron** ([`src/engine/scenarios/built-in/ultron/`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/scenarios/built-in/ultron/)).
+  - Implemented declarative Stage 1A setup hooks (`resolveStage1ASetup`):
+    - Klaw Stage 1A: *Defense Network* (`01124`) side scheme search/reveal and starting minion engagement deal.
+    - Ultron Stage 1A: *Ultron Drones* (`01140`) environment card deployment and starting 1 HP/1 ATK/1 SCH drone minion spawning.
+  - Updated [`src/ui/components/setup/ScenarioSelector.tsx`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/components/setup/ScenarioSelector.tsx) with modular encounter set customizer, mandatory set badges (`[🔒 MANDATORY]`), and default reset button.
+  - Added test suites: [`tests/engine/scenario-setup-15-steps.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/scenario-setup-15-steps.test.ts), [`tests/engine/scenario-plugins-klaw-ultron.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/scenario-plugins-klaw-ultron.test.ts), and [`tests/engine/scenario-modular-customization.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/scenario-modular-customization.test.ts) (217 total tests passing).
 - **Catalog Expansion Architecture Records (ADR-0034, ADR-0035, ADR-0036):**
   - Authored `ADR-0034: Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture` (Proposed) supporting voluntary player side schemes (35 cards), permanent `state.victoryDisplay` zone, and scenario auxiliary decks (*Infinity Gauntlet*, *Holding Cell*, *Evidence*).
   - Authored `ADR-0035: Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine` (Proposed) supporting 3-sided identities (*Ant-Man*, *Wasp*), Mass/Energy states (*Spectrum*, *Vision*, *Shadowcat*), and universal `counters: Record<string, number>` map.

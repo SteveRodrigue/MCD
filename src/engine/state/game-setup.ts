@@ -202,6 +202,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     heroicLevel: options.heroicLevel || 0,
     firstPlayerIndex: 0,
     activePlayerIndex: 0,
+    pendingDecisionQueue: [],
+    executionStack: [],
     players,
     villains: [villain],
     activeVillainIndex: 0,

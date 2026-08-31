@@ -29,14 +29,21 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
           }}
         />
 
-        {/* Source Card Badge */}
+        {/* Source Card Badge & Queue Depth Badge */}
         <div className="relative flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 bg-black text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
             <span>{prompt.sourceCardName}</span>
           </div>
-          <div className="bg-red-500 border-2 border-black text-white px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-            DECISION REQUIRED
+          <div className="flex items-center gap-2">
+            {prompt.totalQueued && prompt.totalQueued > 1 && (
+              <div className="bg-amber-500 border-2 border-black text-slate-950 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+                QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
+              </div>
+            )}
+            <div className="bg-red-500 border-2 border-black text-white px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)]">
+              {prompt.isVoluntary ? 'OPTIONAL REACTION' : 'DECISION REQUIRED'}
+            </div>
           </div>
         </div>
 
@@ -144,6 +151,20 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               </button>
             );
           })}
+          {prompt.isVoluntary && !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
+            <button
+              onClick={() => onSelectOption('pass')}
+              className="group relative flex items-center justify-between p-3 border-3 border-black rounded-xl bg-slate-200 hover:bg-rose-900 text-slate-800 hover:text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer mt-1 font-black text-sm uppercase tracking-wide"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
+                  ✕
+                </span>
+                <span>Pass / Do Nothing</span>
+              </div>
+              <XCircle className="w-5 h-5 opacity-0 group-hover:opacity-100 text-rose-400 transition-opacity" />
+            </button>
+          )}
         </div>
       </div>
     </div>,

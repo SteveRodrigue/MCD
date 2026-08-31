@@ -7,3 +7,4 @@ export * from './scenario-helpers';
 export * from './player-phase';
 export * from './villain-phase';
 export * from './round-upkeep';
+export * from './prompt-queue';

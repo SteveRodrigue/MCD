@@ -1,6 +1,6 @@
 # [ADR-0032] Universal Resolution Stack, Decision Prompt Queue & Nested Interrupt Pipeline
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity

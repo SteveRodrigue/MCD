@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Formally updated superseded status on `ADR-0010` (superseded by `ADR-0033`), `ADR-0020` (superseded by `ADR-0032`), and `ADR-0028` (superseded by `ADR-0030`).
 - **Universal Resolution Stack & Nested Interrupt Pipeline (ADR-0032 / RR v1.8 p. 16, 24):**
   - Formulated the frame-based execution stack (`executionStack`) and multi-prompt queue (`pendingDecisionQueue`) replacing single prompt overwrites.
-  - Authored `docs/decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md` (Proposed) to support 318 Interrupt cards and 451 Response cards across all official packs.
+  - Authored `docs/decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md` (Accepted) to support 318 Interrupt cards and 451 Response cards across all official packs.
 - **Official 15-Step Scenario Setup Engine & Modular Plugin Pipeline (ADR-0033 / RR v1.8 p. 27–28):**
   - Formulated the declarative `ScenarioPlugin` interface and standardized 15-step setup protocol (`createGame(scenarioConfig, playerConfigs)`).
   - Authored `docs/decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md` (Proposed) supporting all 62 official scenario Stage 1A setups and modular encounter mixing.

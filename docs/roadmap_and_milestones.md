@@ -77,7 +77,7 @@ graph TD
   * Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.
 * [x] **Promoted 5 Ambiguity Cards to 100% Confidence:** *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), *Counter-Punch* (`01077`).
 
-### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031) 🚧 (In Progress)
+### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031) ✅ (Completed)
 * [x] **Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engine ✅ (Completed):**
   * Built modular 7-step combat pipeline in `src/engine/pipeline/combat-pipeline.ts`.
   * Step 1 Stun/Webbed Up check & Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / *Spider-Sense* card draw).
@@ -88,11 +88,11 @@ graph TD
   * Step 4 facedown boost deal queue ($N \ge 0$) and Step 5 iterative 1-by-1 boost reveal loop.
   * Boost Interrupt window (`WHEN_BOOST_CARD_REVEALED` / *Defiance*, *Target Acquired*).
   * ★ Star Boost abilities engine & dynamic boost card chaining (*Titania's Fury* `01164`, *Sweeping Swoop* `01168`, *Electric Whip Attack* `01173`, *Kree Manipulator* `01178`).
-* [ ] **Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant:**
+* [x] **Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant ✅ (Completed):**
   * Step 6 Damage Prevention Interrupts (*Backflip* `01003`, *Cosmic Flight* `01017`) and Tough preservation.
-  * Overkill excess damage routing and `RETALIATE X` return damage in Step 7.
-  * Direct damage vs. attack damage invariant.
-  * Promotes 10+ ambiguity cards: *Backflip* (`01003`), *Cosmic Flight* (`01017`), *Tigra* (`01051`), *Hulk* (`01050`), *Relentless Assault* (`01053`), *Gamma Slam* (`01021`), *Uppercut* (`01054`), *Enhanced Spider-Sense* (`01004`).
+  * Overkill excess damage routing (bidirectional: Enemy $\rightarrow$ Ally $\rightarrow$ Hero, Player $\rightarrow$ Minion $\rightarrow$ Villain) and `RETALIATE X` return damage in Step 7.
+  * Direct damage vs. attack damage invariant (`dealDirectDamage`).
+  * Promotes 8 Core Set cards: *Backflip* (`01003`), *Enhanced Spider-Sense* (`01004`), *Cosmic Flight* (`01017`), *Gamma Slam* (`01021`), *Hulk* (`01050`), *Tigra* (`01051`), *Relentless Assault* (`01053`), *Uppercut* (`01054`).
 
 ### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0033)
 * [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**
@@ -132,6 +132,8 @@ graph TD
    * Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
 2. 🔴 `[Must-Have]` **Multi-Hero Collaboration & Cooperative Triggers:**
    * Verify "Action: Ask another player to..." and cross-player resource/defense triggers (*Make the Call*, *Get Behind Me!*, *Helicarrier*, *Maria Hill*).
+   * **`Alliance` Keyword Engine (RR v1.8 p. 4):** Support collaborative multi-player resource pooling from hands and generators for Alliance cards.
+   * **`Team-Up` Prerequisite Validator (RR v1.8 p. 28):** Validate dual-identity prerequisites across active identities and tableaus.
 
 ---
 
@@ -156,11 +158,36 @@ graph TD
 
 ---
 
-## 📍 Phase 5: Expansions, Native Desktop & Ecosystem 🚀 (Planned)
-*Objective: Expansion packaging, native binaries, and multiplayer connectivity.*
+## 📍 Phase 5: Expansion Waves, Advanced Mechanics & Native Ecosystem 🚀 (Planned)
+*Objective: Scale the engine to support advanced expansion mechanics, new card types, multi-form identities, and native platforms.*
 
-* 🔴 `[Must-Have]` **Official Pack Rollout Pipeline:** Incremental releases for Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Green Goblin, etc.
-* 🟠 `[Should-Have]` **Power-User Keyboard Shortcuts:** Configurable hotkeys (`Space`, `F`, `A`, `T`, `R`, `1`–`9`, `Esc`).
-* 🟡 `[Nice-to-Have]` **Responsive Tablet / Mobile Portrait Mode:** Adaptive 1-column layout for mobile devices.
-* 🔵 `[Future / Experimental]` **Native Desktop Executable (Tauri):** Standalone Windows/Mac/Linux binaries with ultra-low memory footprint.
-* 🔵 `[Future / Experimental]` **Peer-to-Peer Network Multiplayer (WebRTC):** Synchronized state room for 2–4 players over WebSockets/WebRTC.
+### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks (ADR-0034)
+* [ ] **Player Side Scheme Execution Engine (`player_side_scheme`):**
+  * Support voluntary player side schemes with printed threat and "When Defeated" player reward step sequences.
+  * Enable heroes and allies to target player side schemes with basic thwart and thwart events.
+* [ ] **Persistent Victory Display (`state.victoryDisplay`):**
+  * Route defeated `Victory X` schemes and minions to the Victory Display zone to prevent deck recycling and track victory scores.
+* [ ] **Auxiliary Scenario Decks (`auxiliaryDecks` & `auxiliaryDiscards`):**
+  * Support modular auxiliary decks for complex campaign scenarios (*Infinity Gauntlet*, *Holding Cell*, *Market*, *Evidence*).
+
+### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine (ADR-0035)
+* [ ] **Multi-Form Identity Scaling (3-Sided & Mass/Energy Forms):**
+  * Support 3-sided identities (*Ant-Man*, *Wasp*), Energy Forms (*Spectrum*), Mass Forms (*Vision*, *Shadowcat*), and Progression levels (*Ironheart*).
+  * Dispatch discrete `FORM_CHANGED` lifecycle events with form-entry ability step triggers.
+* [ ] **Universal Dynamic Counter Map (`counters: Record<string, number>`):**
+  * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS` and `SPEND_COUNTERS` primitives.
+
+### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers (ADR-0036)
+* [ ] **Count-Based Status Thresholds (RR v1.8 p. 28):**
+  * Support **`Stalwart`** (status immunity) and **`Steady`** (requires 2 status cards to cancel actions).
+* [ ] **Minion Combat & Threat Modifiers:**
+  * **`Villainous` Keyword:** Minions draw and resolve facedown boost cards when activating.
+  * **`Quickstrike` Keyword:** Minions immediately trigger an attack activation upon engaging a Hero.
+  * **`Incite X` & `Hinder X`:** Threat modifiers executed upon encounter card entry.
+
+### 4. 🟠 `[Should-Have]` Official Pack Rollout Pipeline
+* [ ] Incremental pack integration: Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Green Goblin, Galaxy's Most Wanted, Mad Titan's Shadow, Sinister Motives, Mutant Genesis, Next Evolution, Age of Apocalypse.
+
+### 5. 🔵 `[Future / Experimental]` Native Desktop & Network Multiplayer
+* [ ] **Native Desktop Executable (Tauri):** Standalone Windows/Mac/Linux binaries with ultra-low memory footprint.
+* [ ] **Peer-to-Peer Network Multiplayer (WebRTC):** Synchronized state room for 2–4 players over WebSockets/WebRTC.

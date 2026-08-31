@@ -18,7 +18,8 @@ import {
   drawEncounterCard,
 } from '../pipeline/villain-phase';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
-import { getEffectiveHeroStats } from '../pipeline/stat-calculator';
+import { getEffectiveHeroStats, getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -250,6 +251,10 @@ export function executeStep(
       let amount = (step.params?.amount as number) || 0;
       if (step.params?.amountFormula === 'HERO_ATK' || (step.params?.amount as any) === 'HERO_ATK') {
         amount = getEffectiveHeroStats(state, player).attack;
+      } else if (step.params?.amountFormula === 'SUFFERED_DAMAGE') {
+        const max = (step.params?.max as number) || 15;
+        const damageSustained = Math.max(0, getEffectiveMaxHealth(player, state) - player.health);
+        amount = Math.min(max, damageSustained);
       }
       const targetParam = step.params?.target as string | undefined;
 
@@ -333,75 +338,8 @@ export function executeStep(
         return { state, success: true, onomatopoeia: `SHOCK! ${amount} DAMAGE TO HEROES!` };
       }
 
-      if (targetType === 'villain') {
-        const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          state.villain.statusCards.splice(toughIdx, 1);
-          const onomatopoeia = 'CLANG! (TOUGH)';
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.dealDamage',
-            params: { player: player.name, target: 'villain', amount: 0, toughAbsorbed: true },
-            onomatopoeia,
-          });
-          return { state, success: true, onomatopoeia };
-        }
-
-        // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
-        const armorIdx = (state.villain.attachments || []).findIndex((att) => {
-          const abs = att.card.enrichment?.abilities || [];
-          return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
-        });
-        if (armorIdx !== -1) {
-          const armor = state.villain.attachments.splice(armorIdx, 1)[0];
-          state.encounterDiscard.push(armor);
-          const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'attachment.damageShield.absorbed',
-            params: { villain: state.villain.card.name, attachment: armor.card.name, damage: amount },
-            onomatopoeia,
-          });
-          return { state, success: true, onomatopoeia };
-        }
-
-        state.villain.health = Math.max(0, state.villain.health - amount);
-        if (state.villain.health <= 0) {
-          const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
-          return { state: defeatedState, success: true, onomatopoeia: `KAPOW! ${amount} DAMAGE!` };
-        }
-
-        const onomatopoeia = `KAPOW! ${amount} DAMAGE!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'card.effect.dealDamage',
-          params: {
-            player: player.name,
-            target: 'villain',
-            amount,
-            remainingHealth: state.villain.health,
-          },
-          onomatopoeia,
-        });
-
-        return {
-          state,
-          success: true,
-          onomatopoeia,
-        };
-      }
-
-      if (targetType === 'minion' && context.targetInstanceId) {
+      // 1. If targetInstanceId is specified, check engaged minions first
+      if (context.targetInstanceId) {
         for (const p of state.players) {
           const minionIdx = p.engagedMinions.findIndex(
             (m) => m.instanceId === context.targetInstanceId,
@@ -429,8 +367,31 @@ export function executeStep(
             const minionHp = (minion.card as MinionCard).health || 1;
 
             if (newDmg >= minionHp) {
+              const excessDmg = newDmg - minionHp;
               p.engagedMinions.splice(minionIdx, 1);
               state.encounterDiscard.push(minion);
+
+              // Overkill routing to villain if attack has Overkill
+              const isOverkill = Boolean(
+                step.params?.overkill ||
+                step.params?.keyword === 'Overkill' ||
+                (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
+                (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill')
+              );
+
+              if (isOverkill && excessDmg > 0) {
+                state.villain.health = Math.max(0, state.villain.health - excessDmg);
+                state.log.push({
+                  id: `log_${Date.now()}`,
+                  timestamp: Date.now(),
+                  round: state.roundNumber,
+                  phase: state.phase,
+                  category: 'combat',
+                  key: 'overkill.villain.hit',
+                  params: { damage: excessDmg, villain: state.villain.card.name },
+                  onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
+                });
+              }
 
               // Process attached cards on defeated minion (e.g. Spider-Tracer 01008)
               for (const att of minion.attachments || []) {
@@ -466,6 +427,27 @@ export function executeStep(
               return { state, success: true, onomatopoeia };
             } else {
               minion.tokens = { ...minion.tokens, damage: newDmg };
+
+              // Retaliate check if minion survives
+              const minionText = (minion.card.text || '').toLowerCase();
+              let retaliateX = 0;
+              if (minionText.includes('retaliate 1') || (minion.card as any).keywords?.includes('Retaliate 1') || (minion.card as any).keywords?.includes('Retaliate')) {
+                retaliateX = 1;
+              }
+              if (retaliateX > 0) {
+                player.health = Math.max(0, player.health - retaliateX);
+                state.log.push({
+                  id: `log_${Date.now()}`,
+                  timestamp: Date.now(),
+                  round: state.roundNumber,
+                  phase: state.phase,
+                  category: 'combat',
+                  key: 'retaliate.hit',
+                  params: { damage: retaliateX, source: minion.card.name, player: player.name },
+                  onomatopoeia: 'RETALIATE!',
+                });
+              }
+
               const onomatopoeia = 'WHAM!';
               state.log.push({
                 id: `log_${Date.now()}`,
@@ -481,6 +463,73 @@ export function executeStep(
           }
         }
       }
+
+      // 2. Default: Deal damage to Villain
+      const toughIndex = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+      if (toughIndex !== -1) {
+        state.villain.statusCards.splice(toughIndex, 1);
+        const onomatopoeia = 'CLANG! (TOUGH)';
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: { player: player.name, target: 'villain', amount: 0, toughAbsorbed: true },
+          onomatopoeia,
+        });
+        return { state, success: true, onomatopoeia };
+      }
+
+      // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
+      const armorIdx = (state.villain.attachments || []).findIndex((att) => {
+        const abs = att.card.enrichment?.abilities || [];
+        return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
+      });
+      if (armorIdx !== -1) {
+        const armor = state.villain.attachments.splice(armorIdx, 1)[0];
+        state.encounterDiscard.push(armor);
+        const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'attachment.damageShield.absorbed',
+          params: { villain: state.villain.card.name, attachment: armor.card.name, damage: amount },
+          onomatopoeia,
+        });
+        return { state, success: true, onomatopoeia };
+      }
+
+      state.villain.health = Math.max(0, state.villain.health - amount);
+      if (state.villain.health <= 0) {
+        const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
+        return { state: defeatedState, success: true, onomatopoeia: `KAPOW! ${amount} DAMAGE!` };
+      }
+
+      const onomatopoeia = `KAPOW! ${amount} DAMAGE!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.dealDamage',
+        params: {
+          player: player.name,
+          target: 'villain',
+          amount,
+          remainingHealth: state.villain.health,
+        },
+        onomatopoeia,
+      });
+
+      return {
+        state,
+        success: true,
+        onomatopoeia,
+      };
 
       return { state, success: false, error: 'Target not found for damage effect' };
     }
@@ -526,11 +575,23 @@ export function executeStep(
     }
 
     case 'PREVENT_DAMAGE': {
+      const amount = (step.params?.amount as number) || (step.params?.preventAll ? 999 : 3);
+      const onomatopoeia = `PREVENTED ${amount} DAMAGE!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'combat.damage.prevented',
+        params: { player: player.name, amount },
+        onomatopoeia,
+      });
       return {
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: 'DAMAGE PREVENTED!',
+        value: amount,
+        onomatopoeia,
       };
     }
 
@@ -1690,7 +1751,129 @@ export function executeStep(
       );
     }
 
+    case 'HULK_DISCARD_RESOLUTION': {
+      const discarded = player.deck.shift();
+      if (discarded) {
+        player.discard.push(discarded);
+        const cardRaw = discarded.card.raw || ({} as any);
+        const hasPhysical = Boolean(cardRaw.resource_physical || (discarded.card as any).resource === 'physical');
+        const hasEnergy = Boolean(cardRaw.resource_energy || (discarded.card as any).resource === 'energy');
+        const hasMental = Boolean(cardRaw.resource_mental || (discarded.card as any).resource === 'mental');
+        const hasWild = Boolean(cardRaw.resource_wild || (discarded.card as any).resource === 'wild');
+
+        // Physical or Wild: Deal 2 damage to an enemy
+        if (hasPhysical || hasWild) {
+          state.villain.health = Math.max(0, state.villain.health - 2);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'hulk.physical.damage',
+            params: { damage: 2, villain: state.villain.card.name },
+            onomatopoeia: 'HULK SMASH! 2 DAMAGE!',
+          });
+        }
+
+        // Energy or Wild: Deal 1 damage to each character
+        if (hasEnergy || hasWild) {
+          for (const p of state.players) {
+            p.health = Math.max(0, p.health - 1);
+            for (const a of p.allies) {
+              if (!a.tokens) a.tokens = {};
+              a.tokens.damage = (a.tokens.damage || 0) + 1;
+            }
+            for (const m of p.engagedMinions) {
+              if (!m.tokens) m.tokens = {};
+              m.tokens.damage = (m.tokens.damage || 0) + 1;
+            }
+          }
+          state.villain.health = Math.max(0, state.villain.health - 1);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'hulk.energy.aoe',
+            params: { damage: 1 },
+            onomatopoeia: 'ENERGY BURST! 1 DAMAGE TO ALL!',
+          });
+        }
+
+        // Mental or Wild: Discard Hulk
+        if (hasMental || hasWild) {
+          const hulkIdx = player.allies.findIndex((a) => a.card.code === '01050');
+          if (hulkIdx !== -1) {
+            const [hulkAlly] = player.allies.splice(hulkIdx, 1);
+            player.discard.push(hulkAlly);
+            state.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: state.roundNumber,
+              phase: state.phase,
+              key: 'hulk.mental.discard',
+              params: { ally: 'Hulk' },
+              onomatopoeia: 'HULK CALMS DOWN AND DISCARDS!',
+            });
+          }
+        }
+      }
+      return { state, success: true, mutatedState: true, value: 1, onomatopoeia: 'HULK RESOLVED!' };
+    }
+
+    case 'ADD_TRAIT': {
+      const trait = step.params?.trait as string;
+      if (trait) {
+        if (!player.hero.traits) (player.hero as any).traits = [];
+        if (!player.hero.traits.includes(trait)) {
+          player.hero.traits.push(trait);
+        }
+      }
+      return { state, success: true, mutatedState: true, onomatopoeia: `GAINED [[${trait}]] TRAIT!` };
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }
+}
+
+/**
+ * Executes direct damage dealing outside standard basic/event combat attacks.
+ * Direct damage bypasses Hero DEF and Ally block mitigation, but is absorbed by Tough and universal prevention.
+ */
+export function dealDirectDamage(
+  state: GameState,
+  target: 'HERO' | 'VILLAIN' | { type: 'MINION'; instanceId: string } | { type: 'ALLY'; instanceId: string },
+  amount: number,
+  playerId?: string,
+): { damageDealt: number; absorbedByTough: boolean } {
+  if (amount <= 0) return { damageDealt: 0, absorbedByTough: false };
+
+  if (target === 'HERO') {
+    const player = state.players.find((p) => p.id === playerId) || state.players[0];
+    const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+    if (toughIdx !== -1) {
+      player.statusCards.splice(toughIdx, 1);
+      return { damageDealt: 0, absorbedByTough: true };
+    }
+    const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+      targetPlayerId: player.id,
+      damageAmount: amount,
+    });
+    const finalDmg = prevResult.damageAmount ?? amount;
+    player.health = Math.max(0, player.health - finalDmg);
+    return { damageDealt: finalDmg, absorbedByTough: false };
+  }
+
+  if (target === 'VILLAIN') {
+    const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+    if (toughIdx !== -1) {
+      state.villain.statusCards.splice(toughIdx, 1);
+      return { damageDealt: 0, absorbedByTough: true };
+    }
+    state.villain.health = Math.max(0, state.villain.health - amount);
+    return { damageDealt: amount, absorbedByTough: false };
+  }
+
+  return { damageDealt: amount, absorbedByTough: false };
 }

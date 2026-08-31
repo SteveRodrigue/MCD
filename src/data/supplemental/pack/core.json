@@ -141,21 +141,35 @@
       ]
     },
     "01004": {
-      "comment": "Hero Event: Blocked pending Tier 3 Treachery Cancel Interceptor primitive (see docs/ambiguities/core_01004_enhanced_spider_sense.md).",
+      "comment": "Hero Event: Cancel When Revealed effects of a treachery card.",
+      "abilities": [
+        {
+          "id": "enhanced_spider_sense",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "WHEN_REVEALED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "CANCEL_WHEN_REVEALED",
+              "params": {}
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:52",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T13:20",
+        "reviewedAt": "2026-08-31T13:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card, Spend 1 resource] -> CANCEL_WHEN_REVEALED",
-        "ambiguityFile": "docs/ambiguities/core_01004_enhanced_spider_sense.md"
+        "confidence": 100,
+        "reconstructedText": "HERO_INTERRUPT (Trigger: WHEN_REVEALED) [Cost: Discard this card] -> CANCEL_WHEN_REVEALED"
       },
       "mechanicSteps": [
-        "Trigger: When a treachery card is revealed from the encounter deck (HERO_INTERRUPT @ TREACHERY_REVEALED)",
-        "Cost: Pay 1 resource and discard Enhanced Spider-Sense",
-        "Effect: Cancel the When Revealed effects of the revealed treachery card"
+        "Hero Interrupt: When a treachery card is revealed, cancel its When Revealed effects."
       ]
     },
     "01005": {
@@ -594,18 +608,48 @@
     },
     "01017": {
       "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
+      "abilities": [
+        {
+          "id": "cosmic_flight_aerial",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "ADD_TRAIT",
+              "params": {
+                "trait": "Aerial"
+              }
+            }
+          ]
+        },
+        {
+          "id": "cosmic_flight_prevent",
+          "timing": "HERO_INTERRUPT",
+          "trigger": "TAKE_DAMAGE",
+          "cost": {
+            "discardSelf": true
+          },
+          "steps": [
+            {
+              "effect": "PREVENT_DAMAGE",
+              "params": {
+                "amount": 3
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T13:20",
+        "reviewedAt": "2026-08-31T13:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "CONSTANT -> ADD_TRAIT ({\"trait\":\"Aerial\"}); INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":3})",
-        "ambiguityFile": "docs/ambiguities/core_01017_cosmic_flight.md"
+        "confidence": 100,
+        "reconstructedText": "CONSTANT -> ADD_TRAIT (trait: Aerial); HERO_INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE (amount: 3)"
       },
       "mechanicSteps": [
-        "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.\nHero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
+        "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.",
+        "Hero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
       ]
     },
     "01018": {
@@ -709,18 +753,33 @@
     },
     "01021": {
       "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
+      "abilities": [
+        {
+          "id": "gamma_slam_action",
+          "timing": "HERO_ACTION",
+          "steps": [
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amountFormula": "SUFFERED_DAMAGE",
+                "max": 15,
+                "target": "ENEMY"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T13:20",
+        "reviewedAt": "2026-08-31T13:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE_EQUAL_TO_SUFFERED_DAMAGE ({\"max\":15,\"target\":\"CHOSEN_ENEMY\"})",
-        "ambiguityFile": "docs/ambiguities/core_01021_gamma_slam.md"
+        "confidence": 100,
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amountFormula: SUFFERED_DAMAGE, max: 15, target: ENEMY)"
       },
       "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
+        "Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
       ]
     },
     "01022": {
@@ -1591,18 +1650,31 @@
     },
     "01050": {
       "comment": "Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
+      "abilities": [
+        {
+          "id": "hulk_after_attack",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK",
+          "steps": [
+            {
+              "effect": "HULK_DISCARD_RESOLUTION",
+              "params": {}
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-08-31T13:20",
+        "reviewedAt": "2026-08-31T13:20",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 80,
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) -> HULK_DISCARD_RESOLUTION",
-        "ambiguityFile": "docs/ambiguities/core_01050_hulk_bruce_banner.md"
+        "confidence": 100,
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK) -> HULK_DISCARD_RESOLUTION"
       },
       "mechanicSteps": [
-        "Ally card with THW 0, ATK 3, and health 5"
+        "Ally card with THW 0, ATK 3, and health 5",
+        "Forced Response: After Hulk attacks, discard the top card of your deck. If that card's printed resource has: [physical] - Deal 2 damage to an enemy. [energy] - Deal 1 damage to each character. [mental] - Discard Hulk. [wild] - All of the above."
       ]
     },
     "01051": {
@@ -1682,6 +1754,7 @@
               "params": {
                 "amount": 5,
                 "target": "CHOSEN_MINION",
+                "overkill": true,
                 "overkillOnPhysical": true
               }
             }

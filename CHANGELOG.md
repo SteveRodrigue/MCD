@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Catalog Expansion Architecture Records (ADR-0034, ADR-0035, ADR-0036):**
+  - Authored `ADR-0034: Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture` (Proposed) supporting voluntary player side schemes (35 cards), permanent `state.victoryDisplay` zone, and scenario auxiliary decks (*Infinity Gauntlet*, *Holding Cell*, *Evidence*).
+  - Authored `ADR-0035: Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine` (Proposed) supporting 3-sided identities (*Ant-Man*, *Wasp*), Mass/Energy states (*Spectrum*, *Vision*, *Shadowcat*), and universal `counters: Record<string, number>` map.
+  - Authored `ADR-0036: Advanced Status Card Dynamics & Minion Activation Modifiers` (Proposed) supporting `Stalwart` immunity, `Steady` 2-card thresholds, `Villainous` minion boosts, `Quickstrike` entry combat, and `Incite`/`Hinder` entry modifiers.
+  - Updated `docs/decisions/README.md` lineage graph and registered all three records.
+  - Expanded `docs/roadmap_and_milestones.md` Phase 3 (Multi-Hero `Alliance`/`Team-Up`) and Phase 5 (Milestones 5A, 5B, 5C).
+- **Sub-Milestone 2B-3 Implementation: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant (ADR-0031):**
+  - Implemented universal damage prevention interrupt processing in Step 6 (`PREVENT_DAMAGE`) with *Backflip* (`01003`) and *Cosmic Flight* (`01017`).
+  - Enforced Tough status preservation invariant: `StatusCard.TOUGH` is preserved when incoming damage is mitigated down to 0, and consumed only when unmitigated damage $> 0$.
+  - Implemented bidirectional **Overkill** keyword routing:
+    - Enemy $\rightarrow$ Defending Ally $\rightarrow$ Hero Identity: Excess attack damage beyond defending ally's hit points deals direct damage to Hero identity upon ally defeat.
+    - Player $\rightarrow$ Minion $\rightarrow$ Villain: Excess player attack damage beyond target minion's hit points deals direct damage to Villain upon minion defeat (*Relentless Assault* `01053`).
+  - Implemented **Retaliate X** return damage in Step 7 for surviving heroes and minions (*Whiplash* `01172`).
+  - Added formal `dealDirectDamage` engine helper bypassing DEF mitigation and ally blocks while respecting Tough absorption and universal damage prevention.
+  - Added `SUFFERED_DAMAGE` formula (*Gamma Slam* `01021`), `HULK_DISCARD_RESOLUTION` (*Hulk* `01050`), and `ADD_TRAIT` (*Cosmic Flight* `01017`).
+  - Promoted 8 Core Set cards to 100% confidence: *Backflip* (`01003`), *Enhanced Spider-Sense* (`01004`), *Cosmic Flight* (`01017`), *Gamma Slam* (`01021`), *Hulk* (`01050`), *Tigra* (`01051`), *Relentless Assault* (`01053`), *Uppercut* (`01054`).
+  - Pruned 4 ambiguity reports from `docs/ambiguities/` (Inbox Zero).
+  - Added unit test suite [`tests/engine/combat-damage-prevention-and-overkill.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/combat-damage-prevention-and-overkill.test.ts) (10 tests, 207 total tests passing).
 - **Roadmap Expansion: Table Invariants, Restricted Keyword & Deck Depletion (Milestone 2D / RR v1.8):**
   - Formalized specifications for the **Restricted Keyword Engine** (max 2 limit, heavy item slot weights, dynamic modifiers, voluntary discard replacement prompts per RR v1.8 p. 25).
   - Formalized specifications for **Global Unicity & Identity Collision** (evaluating unicity across all player tableaus, allies, and Hero identities per RR v1.8 p. 29).

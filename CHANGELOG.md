@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Strategic Roadmap & Milestone Architecture Realignment (`docs/roadmap_and_milestones.md`):**
+  - Re-anchored the development roadmap on a **Capability-First, Headless-Simulation-Driven** milestone sequence to minimize tech debt and eliminate card-by-card refactor loops.
+  - Sequenced foundational engine pipelines (**Milestone 2A: Universal Resolution Stack & Prompt Queue / ADR-0030**, **Milestone 2B: Unified Combat & Damage Event Pipeline / ADR-0031**, **Milestone 2C: Scenario Setup & Modular Plugin Pipeline / ADR-0032**) ahead of card batch promotion (**Milestone 2D: The Great Core Set Promotion Pass / Inbox Zero**).
+  - Placed **Automated Headless Match Simulation** (Phase 3) as the quality gate prior to Tabletop UI polish (Phase 4).
 - **Documentation & Protocol Link Resolution:**
   - Fixed relative path depth resolution in `.agents/skills/card-integration-protocol/SKILL.md` (pointing from 3 directory levels deep to `../../../docs/` and `../../../references/`).
   - Fixed relative reference link in `docs/decisions/0007-official-rules-authority-rr-v18.md` (`../../references/`).

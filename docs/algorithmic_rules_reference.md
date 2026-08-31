@@ -239,17 +239,33 @@ for (const player of state.playersInTurnOrder) {
 
 ### Sequential Hazard Icon Distribution (Step 4):
 Encounter cards from Hazard icons are distributed sequentially in turn order starting from the First Player:
-$$\text{Extra Card } i \rightarrow \text{Player } ((\text{firstPlayerIndex} + i - 1) \pmod{\text{playerCount}}).$$
+$$\text{Extra Card } h \rightarrow \text{Player } ((\text{firstPlayerIndex} + h) \pmod{\text{playerCount}}).$$
+
+### Phase & Round Lifecycle Triggers:
+The engine pipeline dispatches discrete lifecycle triggers across turn and round boundaries:
+* `ROUND_BEGAN` / `ROUND_ENDED` (Round counter increments, First Player token passes)
+* `PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED` (Player turn loop starts/ends, `basicChangeFormUsedThisRound` resets)
+* `VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED` (Step 1 threat starts / Step 5 reveals complete)
 
 ---
 
-## 7. Reusable Effect Primitives Reference (`src/engine/effects/index.ts`)
+## 7. Form Change Invariants (RR v1.8 p. 8 "Change Form")
+
+* **Basic Form Change (1/Round):**
+  $$\text{Player.basicChangeFormUsedThisRound} = \begin{cases} \text{true} & \text{after basic flip action} \\ \text{false} & \text{upon } \text{ROUND\_BEGAN} \end{cases}$$
+* **Card-Driven Form Flips (*Split Personality* `01025`):**
+  Card abilities flip `Player.currentForm` directly and are **completely independent of** the basic 1/round limit.
+
+---
+
+## 8. Reusable Effect Primitives Reference (`src/engine/effects/index.ts`)
 
 | Primitive Name | Target Selector | Description |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | `CHOSEN_ENEMY` \| `ALL_ENEMIES` \| `ALL_HEROES` | Damage resolution with Tough card discard, armor counters, and overkill. |
 | `REMOVE_THREAT` | `MAIN_SCHEME` \| `CHOSEN_SCHEME` | Threat removal enforcing Crisis keyword restrictions. |
 | `DRAW_CARDS` | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand. |
+| `CHANGE_FORM_DRAW_TO_HAND_SIZE` | `SELF` | Flips identity card form without consuming basic flip, then draws up to new form's printed hand size limit (*Split Personality* `01025`). |
 | `MODIFY_HAND_SIZE` | `SELF_IDENTITY` | Dynamic aura modifying hand size based on in-play tableau upgrades. |
 | `PLAYER_CHOICE` | `SELF_IDENTITY` | Renders Pop-Art decision prompt modal (*Nick Fury* `01084` choose 1 of 3, *Hydra Bomber*). |
 | `SPAWN_NEMESIS` | `ACTIVE_PLAYER` | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (*Shadow of the Past* `01190`). |

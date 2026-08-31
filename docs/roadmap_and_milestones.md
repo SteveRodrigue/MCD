@@ -68,15 +68,24 @@ graph TD
 * [x] **Sequential Hazard Icon Distribution (RR v1.8 p. 11) & Heroic Mode:**
   * Distribute extra encounter cards from Hazard icons sequentially in player order starting from the First Player (round-robin), with orthogonal Heroic Level support.
 
-### 2. 🔴 `[Must-Have]` Nested Resolution Stack & Decision Prompt Queue (RR v1.8 p. 16, 24)
+### 2. 🔴 `[Must-Have]` Turn-Gated Form Changes (RR v1.8 p. 8 "Change Form")
+* [x] **Basic 1/Round Form Change Limit:**
+  * Track natural basic flip action separately via `basicChangeFormUsedThisRound: boolean` on `PlayerState`.
+  * Basic change form action sets this flag and prevents additional basic flips in the same round.
+* [x] **Card-Effect Form Change Independence:**
+  * Card-driven abilities that change identity form (e.g. *Split Personality* `01025`) execute independently and do NOT consume or depend on the basic 1/round limit.
+* [x] **Round Reset Automation:**
+  * Automatically reset `basicChangeFormUsedThisRound = false` for all players at the start of each round / Player Phase upon `ROUND_BEGAN`.
+
+### 3. 🔴 `[Must-Have]` Nested Resolution Stack & Decision Prompt Queue (RR v1.8 p. 16, 24)
 * [ ] **Nested Action & Trigger Execution Stack:**
   * Support interruption windows opening inside active action/activation windows without state corruption.
   * Allow voluntary reactions with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
   * Support player-ordered resolution when multiple `FORCED` triggers fire simultaneously (RR v1.8 p. 16).
-* [ ] **Turn-Gated Form Changes (`basicChangeFormUsedThisRound`):**
-  * Track natural 1/round basic flip action separately from card-effect flips (e.g. *Split Personality* `01025`).
+* [ ] **Decision Prompt Queue Management:**
+  * Transition from single prompt overwrite to structured FIFO/LIFO queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially.
 
-### 3. 🔴 `[Must-Have]` Event-Driven Combat & Action Signals
+### 4. 🔴 `[Must-Have]` Event-Driven Combat & Action Signals
 * [ ] **Direct Damage vs Attack Damage Distinction:**
   * Formally differentiate damage caused by an *Attack* (triggers Defense, Retaliate, Guard) from *Direct Damage* (e.g. *Ground Stomp*, *Energy Channel*).
 * [ ] **Event Dispatcher Hooks:**
@@ -86,12 +95,13 @@ graph TD
 * [ ] 🟠 `[Should-Have]` **Rules Review & Implementation of Information Visibility (RR v1.8 p. 8, 9):**
   * Formalize inspection rights in UI and engine:
     * **Discard Piles (Open Information):** Any player may inspect any discard pile (Player Discard, Encounter Discard) at any time during the game without altering the physical card order.
-### 4. 🔴 `[Must-Have]` Modular Scenario Setup Pipeline (Plug-in Architecture)
+
+### 5. 🔴 `[Must-Have]` Modular Scenario Setup Pipeline (Plug-in Architecture)
 * [ ] **Official 15-Step Scenario Setup Pipeline (RR v1.8 p. 27–28):**
   * Refactor Scenario Setup into a plug-in module system executing Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).
   * Eliminate ad-hoc setup logic, ensuring scenarios configure themselves via declarative scenario plugins (`src/engine/scenarios/`).
 
-### 5. 🔴 `[Must-Have]` 100% Rhino Scenario Card Pool Integration & Verification
+### 6. 🔴 `[Must-Have]` 100% Rhino Scenario Card Pool Integration & Verification
 * [ ] **Complete Rhino Encounter Pool Verification:**
   * Ensure 100% of cards in the Rhino Scenario encounter pool are fully enriched, schema-validated, and verified with unit tests:
     * **Rhino Signature Set:** *Rhino (Stage I, II, III)*, *The Break-In! (1A/1B)*, *Rhino's Charge* (`01098`), *Armored Rhino Suit* (`01099`), *Hard to Keep Down* (`01104`), *Stampede* (`01105`), *I'm Tough!* (`01106`), *Breakin' & Takin'* (`01107`), *Hydra Mercenary* (`01108`), *Hydra Bomber* (`01109`), *Crowd Control* (`01110`).

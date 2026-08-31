@@ -124,6 +124,7 @@ export function dispatchAction(
 
       player.activeFormCard = nextFormCard;
       player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
+      player.basicChangeFormUsedThisRound = true;
       player.formChangedThisRound = true;
 
       const onomatopoeia = player.currentForm === 'hero' ? 'SUIT UP!' : 'IDENTITY FLIP!';

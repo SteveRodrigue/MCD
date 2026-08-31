@@ -1079,6 +1079,48 @@ export function executeEffect(
       return { state, success: true, onomatopoeia };
     }
 
+    case 'CHANGE_FORM_DRAW_TO_HAND_SIZE': {
+      // 1. Flip form card to the alternate form
+      const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
+      if (nextFormCard) {
+        player.activeFormCard = nextFormCard;
+        player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
+        // Note: Card effect form flips do NOT consume or alter basicChangeFormUsedThisRound (RR v1.8 p. 8)
+      }
+
+      // 2. Determine target hand size of the new active form
+      const targetHandSize =
+        player.currentForm === 'hero'
+          ? (player.hero.handSize || 5)
+          : (player.alterEgo.handSize || 6);
+
+      // 3. Draw cards up to printed hand size
+      let drawnCount = 0;
+      while (player.hand.length < targetHandSize && player.deck.length > 0) {
+        const card = player.deck.shift();
+        if (card) {
+          player.hand.push(card);
+          drawnCount += 1;
+        }
+      }
+
+      const onomatopoeia = 'SPLIT PERSONALITY!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        key: 'card.effect.changeFormDrawToHandSize',
+        params: {
+          player: player.name,
+          form: player.activeFormCard.name,
+          drawnCount,
+          targetHandSize,
+        },
+        onomatopoeia,
+      });
+
+      return { state, success: true, onomatopoeia };
+    }
+
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }

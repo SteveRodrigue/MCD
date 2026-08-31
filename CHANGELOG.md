@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Declarative Effect Sequencing & Conditional Gates Pipeline (ADR-0028 / RR v1.8 p. 2, 24):**
+  - Extended `CardAbilitySchema` and engine pipeline with recursive `sequence: CardAbility[]` array.
+  - Implemented `ConditionGate` supporting `'ALWAYS'`, `'THEN'`, `'IF_PREVIOUS_SUCCESS'`, `'IF_AMOUNT_ZERO'`, `'IF_ZERO_HEALED'`, `'IF_FAILED'`, `'IF_ALREADY_HAS_STATUS'`, and `'IF_RESOURCE_MATCH'`.
+  - Added contextual entity and target passing (`target: "PREVIOUS_TARGET"`, `"PREVIOUS_SELECTED_CARD"`).
+  - Decomposed core set composite single-use primitives: *Split Personality* (`01025`), *Hard to Keep Down* (`01104`), *"I'm Tough"* (`01105`), and *Under Fire* (`01193`).
+  - Added comprehensive test suite in `tests/engine/effect-sequences-and-gates.test.ts`.
+  - Updated specification `docs/specifications/supplemental/09_sequences_and_prompts.md` to `🟢 IMPLEMENTED (v1.0)`.
 - **False-Vanilla Encounter Cards Remediation & Quality Gate Gate:**
   - Audited `core_encounter.json` to eliminate invalid `"noSupplementalNeeded": true` flags on cards with active printed rules text.
   - Implemented and promoted active declarations for *Personal Challenge* (`01161`), *Imminent Overload* (`01171`), *The Psyche-Magnitron* (`01176`), and *Kree Manipulator* (`01178`).

@@ -92,6 +92,33 @@ export interface AbilityCost {
   costCheck?: string;
 }
 
+export type ConditionGate =
+  | 'ALWAYS'
+  | 'THEN'
+  | 'IF_PREVIOUS_SUCCESS'
+  | 'IF_AMOUNT_ZERO'
+  | 'IF_ZERO_HEALED'
+  | 'IF_FAILED'
+  | 'IF_ALREADY_HAS_STATUS'
+  | 'IF_RESOURCE_MATCH';
+
+export interface StepResolutionResult {
+  success: boolean;
+  mutatedState: boolean;
+  value?: number;
+  selectedCardInstanceIds?: string[];
+  targetId?: string;
+  conditionMet?: boolean;
+}
+
+export interface SequenceExecutionContext {
+  previousResult?: StepResolutionResult;
+  collectedCardInstanceIds?: string[];
+  initiatingPlayerId?: string;
+  sourceInstanceId?: string;
+  resourcesSpent?: string[];
+}
+
 export interface CardAbility {
   id: string;
   timing: AbilityTiming;
@@ -100,9 +127,11 @@ export interface CardAbility {
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
   tags?: string[];
   cost?: AbilityCost;
-  effect: EffectType;
+  effect?: EffectType;
+  gate?: ConditionGate;
   filter?: Record<string, unknown>;
   params?: Record<string, unknown>;
+  sequence?: CardAbility[];
 }
 
 export interface CardUsesDefinition {

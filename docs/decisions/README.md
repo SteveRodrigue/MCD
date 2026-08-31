@@ -46,6 +46,7 @@ Each record documents:
 | [ADR-0025](0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md) | 2026-08-30 | Architectural Subsystem Completion & Mandatory Supplemental Review Pipeline | **Accepted** | Mandate an immediate card review pass upon completing any engine subsystem, promoting blocked cards with unit tests, Inbox Zero pruning, and closing GitHub issues. |
 | [ADR-0026](0026-daily-bugle-action-dispatcher-and-dynamic-fan-out-hand.md) | 2026-08-30 | 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture | **Accepted** | Provide centralized legal move discovery via retro Daily Bugle newspaper broadsheet, automatic turn-end verification, and responsive zero-overflow fan-out hand stacking. |
 | [ADR-0027](0027-modular-phase-pipeline-architecture.md) | 2026-08-30 | Modular Phase Pipelines & Lifecycle Hooks Architecture | **Accepted** | Modularize engine execution into dedicated phase files (`player-phase.ts`, `villain-phase.ts`, `round-upkeep.ts`) with discrete phase/round lifecycle triggers and ability limit resets. |
+| [ADR-0028](0028-declarative-effect-sequencing-and-conditional-gates.md) | 2026-08-31 | Declarative Effect Sequencing, Conditional Gates & Contextual Entity Passing | **Accepted** | Decompose complex abilities into generic atomic steps (`sequence: []`) with conditional gating (`gate: "ALWAYS" \| "THEN" \| "IF_AMOUNT_ZERO" \| "IF_ALREADY_HAS_STATUS"`) per RR v1.8. |
 
 ---
 

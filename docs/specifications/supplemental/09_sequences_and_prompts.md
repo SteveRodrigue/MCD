@@ -2,11 +2,20 @@
 
 ---
 
-## 1. Multi-Action Sequencing (`sequence: []`)
+## 1. Multi-Action Sequencing (`sequence: []`) & Conditional Gates
 
-* **Status:** 🟡 `ROADMAP` (Issue [#7](https://github.com/SteveRodrigue/MCD/issues/7) - *Split Personality* `01025` / Issue [#26](https://github.com/SteveRodrigue/MCD/issues/26) - *Get Behind Me!* `01078`)
-* **Description:** Decomposes complex cards into ordered sequences of discrete, reusable sub-actions.
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028 / *Split Personality* `01025`, *Hard to Keep Down* `01104`, *I'm Tough* `01105`, *Under Fire* `01193`)
+* **Description:** Decomposes complex cards into ordered sequences of discrete, reusable atomic sub-actions, with optional conditional gating (`gate: ...`) and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
 
+### Conditional Gates:
+* `"ALWAYS"` *(Default)*: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".
+* `"THEN"` / `"IF_PREVIOUS_SUCCESS"`: Executes Step $N$ only if Step $N-1$ mutated the game state (RR v1.8 p. 24 "Then").
+* `"IF_AMOUNT_ZERO"` / `"IF_ZERO_HEALED"`: Executes Step $N$ (e.g. `TRIGGER_SURGE`) if Step $N-1$ caused 0 state mutation (e.g. at full health).
+* `"IF_ALREADY_HAS_STATUS"`: Executes Step $N$ if the target already has the status card before applying.
+* `"IF_FAILED"`: Executes Step $N$ if Step $N-1$ could not resolve.
+* `"IF_RESOURCE_MATCH"`: Evaluates whether a required resource type was spent during action payment.
+
+### Example:
 ```json
 {
   "id": "split_personality_sequence",
@@ -15,14 +24,13 @@
     {
       "id": "step_1_flip",
       "timing": "ACTION",
-      "effect": "FLIP_FORM",
-      "params": {}
+      "effect": "FLIP_FORM"
     },
     {
       "id": "step_2_draw",
       "timing": "ACTION",
       "effect": "DRAW_UP_TO_HAND_SIZE",
-      "params": {}
+      "gate": "THEN"
     }
   ]
 }

@@ -6,6 +6,8 @@ import {
   CardAbility,
   CardType,
   SideSchemeCard,
+  ConditionGate,
+  StepResolutionResult,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
@@ -19,6 +21,9 @@ export interface EffectExecutionContext {
   sourceCardInstance?: CardInstance;
   targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme';
   targetInstanceId?: string;
+  resourcesSpent?: string[];
+  previousResult?: StepResolutionResult;
+  collectedCardInstanceIds?: string[];
 }
 
 export interface EffectResult {
@@ -26,6 +31,103 @@ export interface EffectResult {
   success: boolean;
   error?: string;
   onomatopoeia?: string;
+  mutatedState?: boolean;
+  value?: number;
+  selectedCardInstanceIds?: string[];
+  targetId?: string;
+  conditionMet?: boolean;
+}
+
+/**
+ * Evaluates whether a sequential step gate condition is satisfied (RR v1.8 p. 2, 24).
+ */
+export function shouldExecuteStep(
+  gate: ConditionGate | undefined,
+  prevResult: StepResolutionResult | undefined,
+  state: GameState,
+  step: CardAbility,
+  context: EffectExecutionContext,
+): boolean {
+  if (!gate || gate === 'ALWAYS') return true;
+
+  if (gate === 'THEN' || gate === 'IF_PREVIOUS_SUCCESS') {
+    return !!prevResult && prevResult.success && prevResult.mutatedState;
+  }
+
+  if (gate === 'IF_AMOUNT_ZERO' || gate === 'IF_ZERO_HEALED') {
+    return !!prevResult && (!prevResult.mutatedState || (prevResult.value ?? 0) === 0);
+  }
+
+  if (gate === 'IF_FAILED') {
+    return !prevResult || !prevResult.success || !prevResult.mutatedState;
+  }
+
+  if (gate === 'IF_ALREADY_HAS_STATUS') {
+    if (prevResult && prevResult.conditionMet !== undefined) {
+      return prevResult.conditionMet;
+    }
+    const statusParam = (step.params?.status as StatusCard) || StatusCard.TOUGH;
+    const targetParam = (step.params?.target as string) || 'VILLAIN';
+    if (targetParam === 'VILLAIN') {
+      return state.villain.statusCards.includes(statusParam as StatusCard);
+    }
+    return false;
+  }
+
+  if (gate === 'IF_RESOURCE_MATCH') {
+    const reqAspect = (step.params?.aspect as string) || (step.params?.resource as string);
+    return !!context.resourcesSpent?.includes(reqAspect);
+  }
+
+  return true;
+}
+
+/**
+ * Executes a declarative sequence of sub-action steps.
+ */
+export function executeSequence(
+  state: GameState,
+  sequence: CardAbility[],
+  context: EffectExecutionContext,
+): EffectResult {
+  let currentState = state;
+  let prevResult: StepResolutionResult | undefined = context.previousResult;
+  const onomatopoeias: string[] = [];
+
+  for (const step of sequence) {
+    const shouldRun = shouldExecuteStep(step.gate, prevResult, currentState, step, context);
+    if (!shouldRun) {
+      continue;
+    }
+
+    const stepContext: EffectExecutionContext = {
+      ...context,
+      previousResult: prevResult,
+      targetInstanceId:
+        step.params?.target === 'PREVIOUS_TARGET' ? prevResult?.targetId : context.targetInstanceId,
+    };
+
+    const res = executeEffect(currentState, step, stepContext);
+    currentState = res.state;
+    if (res.onomatopoeia) onomatopoeias.push(res.onomatopoeia);
+
+    prevResult = {
+      success: res.success,
+      mutatedState: res.mutatedState ?? res.success,
+      value: res.value,
+      selectedCardInstanceIds: res.selectedCardInstanceIds,
+      targetId: res.targetId,
+      conditionMet: res.conditionMet,
+    };
+  }
+
+  return {
+    state: currentState,
+    success: true,
+    onomatopoeia: onomatopoeias.join(' -> ') || 'SEQUENCE RESOLVED!',
+    mutatedState: prevResult?.mutatedState ?? true,
+    value: prevResult?.value,
+  };
 }
 
 /**
@@ -38,6 +140,10 @@ export function executeEffect(
 ): EffectResult {
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
+
+  if (Array.isArray(ability.sequence) && ability.sequence.length > 0) {
+    return executeSequence(state, ability.sequence, context);
+  }
 
   switch (ability.effect) {
     case 'DRAW_CARDS': {
@@ -316,8 +422,18 @@ export function executeEffect(
 
     case 'HEAL_DAMAGE': {
       const amount = (ability.params?.amount as number) || 0;
-      const healed = Math.min(player.maxHealth - player.health, amount);
-      player.health += healed;
+      const target = (ability.params?.target as string) || 'SELF';
+      let healed = 0;
+
+      if (target === 'VILLAIN') {
+        const currentHp = state.villain.health;
+        const maxHp = state.villain.maxHealth || 100;
+        healed = Math.min(maxHp - currentHp, amount);
+        state.villain.health += healed;
+      } else {
+        healed = Math.min(player.maxHealth - player.health, amount);
+        player.health += healed;
+      }
 
       const onomatopoeia = `HEAL +${healed} HP!`;
       state.log.push({
@@ -328,8 +444,9 @@ export function executeEffect(
         key: 'card.effect.heal',
         params: {
           player: player.name,
+          target,
           amount: healed,
-          health: player.health,
+          health: target === 'VILLAIN' ? state.villain.health : player.health,
         },
         onomatopoeia,
       });
@@ -337,6 +454,8 @@ export function executeEffect(
       return {
         state,
         success: true,
+        mutatedState: healed > 0,
+        value: healed,
         onomatopoeia,
       };
     }
@@ -345,6 +464,7 @@ export function executeEffect(
       return {
         state,
         success: true,
+        mutatedState: true,
         onomatopoeia: 'DAMAGE PREVENTED!',
       };
     }
@@ -361,10 +481,28 @@ export function executeEffect(
     }
 
     case 'REMOVE_THREAT': {
-      const amount = (ability.params?.amount as number) || 0;
-      state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+      const amount = (ability.params?.amount as number) || 1;
+      const targetParam = (ability.params?.target as string) || 'MAIN_SCHEME';
+      let removed = 0;
 
-      const onomatopoeia = `-${amount} THREAT!`;
+      if (targetParam === 'MAIN_SCHEME') {
+        removed = Math.min(state.mainScheme.threat, amount);
+        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+      } else if (context.targetInstanceId) {
+        const sideScheme = (state.sideSchemes || []).find(
+          (s) => s.instanceId === context.targetInstanceId,
+        );
+        if (sideScheme) {
+          const current = sideScheme.threat || 0;
+          removed = Math.min(current, amount);
+          sideScheme.threat = Math.max(0, current - amount);
+        }
+      } else {
+        removed = Math.min(state.mainScheme.threat, amount);
+        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+      }
+
+      const onomatopoeia = `-${removed} THREAT!`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -373,7 +511,7 @@ export function executeEffect(
         key: 'card.effect.removeThreat',
         params: {
           player: player.name,
-          amount,
+          amount: removed,
           remainingThreat: state.mainScheme.threat,
         },
         onomatopoeia,
@@ -382,6 +520,8 @@ export function executeEffect(
       return {
         state,
         success: true,
+        mutatedState: removed > 0,
+        value: removed,
         onomatopoeia,
       };
     }
@@ -394,15 +534,23 @@ export function executeEffect(
       if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED) status = StatusCard.STUNNED;
 
       const target = (ability.params?.target as string) || 'VILLAIN';
+      let mutatedState = false;
+      let alreadyHadStatus = false;
 
       if (target === 'VILLAIN' || target === 'CHOSEN_ENEMY') {
         if (!state.villain.statusCards.includes(status)) {
           state.villain.statusCards.push(status);
+          mutatedState = true;
+        } else {
+          alreadyHadStatus = true;
         }
       } else if (target === 'HERO' || target === 'ALL_HEROES') {
         for (const p of state.players) {
           if (!p.statusCards.includes(status)) {
             p.statusCards.push(status);
+            mutatedState = true;
+          } else {
+            alreadyHadStatus = true;
           }
         }
       }
@@ -417,11 +565,20 @@ export function executeEffect(
         params: {
           status,
           target,
+          mutatedState,
+          alreadyHadStatus,
         },
         onomatopoeia,
       });
 
-      return { state, success: true, onomatopoeia };
+      return {
+        state,
+        success: true,
+        mutatedState,
+        value: mutatedState ? 1 : 0,
+        conditionMet: alreadyHadStatus,
+        onomatopoeia,
+      };
     }
 
     case 'DISCARD_TOP_DECK_FILTER': {
@@ -1079,22 +1236,32 @@ export function executeEffect(
       return { state, success: true, onomatopoeia };
     }
 
-    case 'CHANGE_FORM_DRAW_TO_HAND_SIZE': {
-      // 1. Flip form card to the alternate form
+    case 'FLIP_FORM':
+    case 'CHANGE_FORM': {
       const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
       if (nextFormCard) {
         player.activeFormCard = nextFormCard;
         player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
-        // Note: Card effect form flips do NOT consume or alter basicChangeFormUsedThisRound (RR v1.8 p. 8)
       }
+      const onomatopoeia = 'FLIP FORM!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.flipForm',
+        params: { player: player.name, form: player.activeFormCard.name },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: true, value: 1, onomatopoeia };
+    }
 
-      // 2. Determine target hand size of the new active form
+    case 'DRAW_UP_TO_HAND_SIZE': {
       const targetHandSize =
         player.currentForm === 'hero'
           ? (player.hero.handSize || 5)
           : (player.alterEgo.handSize || 6);
 
-      // 3. Draw cards up to printed hand size
       let drawnCount = 0;
       while (player.hand.length < targetHandSize && player.deck.length > 0) {
         const card = player.deck.shift();
@@ -1104,21 +1271,96 @@ export function executeEffect(
         }
       }
 
-      const onomatopoeia = 'SPLIT PERSONALITY!';
+      const onomatopoeia = `REFILL HAND (+${drawnCount})!`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
-        key: 'card.effect.changeFormDrawToHandSize',
-        params: {
-          player: player.name,
-          form: player.activeFormCard.name,
-          drawnCount,
-          targetHandSize,
-        },
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.effect.drawUpToHandSize',
+        params: { player: player.name, drawnCount, targetHandSize },
         onomatopoeia,
       });
+      return { state, success: true, mutatedState: drawnCount > 0, value: drawnCount, onomatopoeia };
+    }
 
-      return { state, success: true, onomatopoeia };
+    case 'TRIGGER_SURGE':
+    case 'SURGE': {
+      const surgeCard = state.encounterDeck.shift();
+      if (surgeCard) {
+        player.dealtEncounterCards.push(surgeCard);
+      }
+      const onomatopoeia = 'SURGE!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'encounter.surge.triggered',
+        params: { player: player.name },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: true, value: 1, onomatopoeia };
+    }
+
+    case 'REVEAL_ENCOUNTER_CARD': {
+      const extraCard = state.encounterDeck.shift();
+      if (extraCard) {
+        player.dealtEncounterCards.push(extraCard);
+      }
+      const onomatopoeia = 'REVEAL ENCOUNTER CARD!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'encounter.card.revealed',
+        params: { player: player.name },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: true, value: 1, onomatopoeia };
+    }
+
+    case 'ADD_THREAT': {
+      const amount = (ability.params?.amount as number) || 1;
+      const target = (ability.params?.target as string) || 'MAIN_SCHEME';
+      state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
+      const onomatopoeia = `SCHEME THREAT +${amount}!`;
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'scheme.threat.added',
+        params: { target, amount, total: state.mainScheme.threat },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+    }
+
+    case 'CANCEL_WHEN_REVEALED': {
+      const onomatopoeia = 'CANCELLED!';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'encounter.whenRevealed.cancelled',
+        params: { player: player.name },
+        onomatopoeia,
+      });
+      return { state, success: true, mutatedState: true, value: 1, onomatopoeia };
+    }
+
+    case 'CHANGE_FORM_DRAW_TO_HAND_SIZE': {
+      return executeSequence(
+        state,
+        [
+          { id: 'step_1_flip', timing: 'ACTION', effect: 'FLIP_FORM' },
+          { id: 'step_2_draw', timing: 'ACTION', effect: 'DRAW_UP_TO_HAND_SIZE' },
+        ],
+        context,
+      );
     }
 
     default:

@@ -69,7 +69,7 @@ graph TD
 * [x] **Turn-Gated Form Changes (RR v1.8 p. 8):**
   * Basic 1/round form change limit tracked via `basicChangeFormUsedThisRound` with automatic reset on `ROUND_BEGAN`.
 
-### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue (ADR-0030)
+### 2. 🔴 `[Must-Have]` Milestone 2A: Universal Resolution Stack & Decision Prompt Queue (ADR-0032)
 * [ ] **Nested Action & Trigger Execution Stack (RR v1.8 p. 16, 24):**
   * Support interruption windows opening inside active action/activation windows without state corruption.
   * Support player-ordered resolution when multiple `FORCED` triggers fire simultaneously (RR v1.8 p. 16).
@@ -89,7 +89,7 @@ graph TD
   * Strictly separate Attack Damage from Direct / Indirect Damage (treacheries, hazards, consequential damage). Direct damage bypasses DEF, prohibits ally blocks, and forbids attack defense cards, while honoring universal prevention (*Cosmic Flight*, *Tough*).
 * [ ] **Unlocks 12+ Ambiguity Cards:** *Backflip* (`01003`), *Cosmic Flight* (`01017`), *Indomitable* (`01082`), *Counter-Punch* (`01077`), *Armored Vest* (`01081`), *Get Behind Me!* (`01078`), *Great Responsibility* (`01061`), *Gamma Slam* (`01021`), *Relentless Assault* (`01053`), *Uppercut* (`01054`), *Tigra* (`01051`), *Hulk* (`01050`).
 
-### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0032)
+### 4. 🔴 `[Must-Have]` Milestone 2C: Scenario Setup & Modular Plugin Pipeline (ADR-0033)
 * [ ] **Official 15-Step Scenario Setup Engine (RR v1.8 p. 27–28):**
   * Refactor scenario initialization into declarative plug-in modules (`createGame(scenarioConfig, playerConfigs)`).
   * Executes Main Scheme Stage 1A setup instructions (Villain placement, initial threat, starting side schemes, environments, attachments, encounter deck compilation, and player dealing).

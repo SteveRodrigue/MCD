@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Wrench, X, ShieldAlert, Check, Gauge, Zap } from 'lucide-react';
+import { Settings, Wrench, X, ShieldAlert, Check, Gauge, Zap, ZoomIn } from 'lucide-react';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface OptionsMenuProps {
@@ -13,6 +13,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
     toggleDevMode,
     edgeScrollSpeed,
     setEdgeScrollSpeed,
+    cardZoomLevel,
+    setCardZoomLevel,
     defaultDifficulty,
     setDefaultDifficulty,
     defaultHeroicLevel,
@@ -42,6 +44,39 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose }) => 
 
         {/* Settings Body */}
         <div className="space-y-4">
+          {/* Card Zooming Scale Setting */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <ZoomIn className="w-5 h-5 text-comic-blue" />
+                <span className="font-comic text-base text-comic-black">
+                  Card Zooming
+                </span>
+              </div>
+
+              {/* Segmented Zoom Controls */}
+              <div className="flex items-center bg-white rounded-lg border-2 border-comic-black p-0.5 shadow-comic-sm">
+                {(['small', 'normal', 'larger'] as const).map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => setCardZoomLevel(level)}
+                    className={`px-3 py-1 font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                      cardZoomLevel === level
+                        ? 'bg-comic-yellow text-comic-black border border-comic-black shadow-comic-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {level === 'small' ? 'Small (90%)' : level === 'normal' ? 'Normal (Default)' : 'Larger (110%)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Sets the constant hover zoom preview magnification (90%, 100%, 110%) across all cards on the board and in hand.
+            </p>
+          </div>
+
           {/* Panoramic Edge-Scroll Velocity Setting */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
             <div className="flex items-center justify-between gap-2 flex-wrap">

@@ -509,7 +509,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                   )}
                   <div className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-slate-600">
                     <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
-                    <span>Hover card to zoom (1.9×)</span>
+                    <span>Hover any card to zoom</span>
                   </div>
                 </div>
               </div>

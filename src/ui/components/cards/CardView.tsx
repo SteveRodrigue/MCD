@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { useCardArt } from '../../hooks/useCardArt';
 import { FormattedCardText } from './FormattedCardText';
+import { useGameSettings } from '../../context/GameSettingsContext';
 
 export interface CardViewProps {
   card: NormalizedCard;
@@ -42,6 +43,16 @@ export const CardView: React.FC<CardViewProps> = ({
   const { artUrl, loading, error } = useCardArt(card.code);
   const [imageFailed, setImageFailed] = useState(false);
 
+  let cardZoomLevel: 'small' | 'normal' | 'larger' = 'normal';
+  try {
+    const settings = useGameSettings();
+    if (settings && settings.cardZoomLevel) {
+      cardZoomLevel = settings.cardZoomLevel;
+    }
+  } catch {
+    cardZoomLevel = 'normal';
+  }
+
   const isLandscape =
     card.isLandscape === true ||
     card.orientation === 'landscape' ||
@@ -64,6 +75,26 @@ export const CardView: React.FC<CardViewProps> = ({
         xl: 'w-72 h-[410px] text-lg',
       }[size];
 
+  // Scale Factors to achieve a UNIFIED CONSTANT ZOOM SIZE across all UI locations (~308px portrait width, ~440px landscape width at 100%)
+  const zoomScaleFactors: Record<'portrait' | 'landscape', Record<'sm' | 'md' | 'lg' | 'xl', number>> = {
+    portrait: {
+      sm: 2.75, // 112px * 2.75 = 308px
+      md: 1.75, // 176px * 1.75 = 308px
+      lg: 1.375, // 224px * 1.375 = 308px
+      xl: 1.07, // 288px * 1.07 = 308px
+    },
+    landscape: {
+      sm: 2.5, // 176px * 2.5 = 440px
+      md: 1.72, // 256px * 1.72 = 440px
+      lg: 1.375, // 320px * 1.375 = 440px
+      xl: 1.07, // 410px * 1.07 = 438px
+    },
+  };
+
+  const baseZoomScale = zoomScaleFactors[isLandscape ? 'landscape' : 'portrait'][size];
+  const zoomMultiplier = cardZoomLevel === 'small' ? 0.9 : cardZoomLevel === 'larger' ? 1.1 : 1.0;
+  const effectiveZoomScale = Number((baseZoomScale * zoomMultiplier).toFixed(3));
+
   // Dynamic Viewport Boundary Detection on Hover
   const handleMouseEnter = () => {
     if (!enableHoverZoom || !cardRef.current) return;
@@ -71,7 +102,7 @@ export const CardView: React.FC<CardViewProps> = ({
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    const scale = 1.9;
+    const scale = effectiveZoomScale;
     const scaledWidth = rect.width * scale;
     const scaledHeight = rect.height * scale;
 
@@ -128,9 +159,12 @@ export const CardView: React.FC<CardViewProps> = ({
     >
       {/* Outer Comic Card Container with Dynamic Hover Zoom */}
       <div
+        style={{
+          '--card-zoom-scale': effectiveZoomScale,
+        } as React.CSSProperties}
         className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
-            ? 'group-hover:scale-[1.9] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.7)] group-hover:border-4'
+            ? 'group-hover:scale-[var(--card-zoom-scale)] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
           isPlayable === false

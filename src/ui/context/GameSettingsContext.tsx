@@ -2,12 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DifficultyMode } from '../../engine/models';
 
 export type EdgeScrollSpeed = 'slow' | 'normal' | 'fast';
+export type CardZoomLevel = 'small' | 'normal' | 'larger';
 
 export interface GameSettings {
   devMode: boolean;
   soundEnabled: boolean;
   animationsSpeed: 'normal' | 'fast' | 'instant';
   edgeScrollSpeed: EdgeScrollSpeed;
+  cardZoomLevel: CardZoomLevel;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
 }
@@ -16,11 +18,13 @@ interface GameSettingsContextType {
   settings: GameSettings;
   devMode: boolean;
   edgeScrollSpeed: EdgeScrollSpeed;
+  cardZoomLevel: CardZoomLevel;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
   setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
+  setCardZoomLevel: (level: CardZoomLevel) => void;
   setDefaultDifficulty: (difficulty: DifficultyMode) => void;
   setDefaultHeroicLevel: (level: number) => void;
   updateSettings: (partial: Partial<GameSettings>) => void;
@@ -31,6 +35,7 @@ const DEFAULT_SETTINGS: GameSettings = {
   soundEnabled: true,
   animationsSpeed: 'normal',
   edgeScrollSpeed: 'normal', // Default fast responsive panning
+  cardZoomLevel: 'normal', // Default 100% constant zoom preview
   defaultDifficulty: 'STANDARD',
   defaultHeroicLevel: 0,
 };
@@ -72,6 +77,10 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((prev) => ({ ...prev, edgeScrollSpeed: speed }));
   };
 
+  const setCardZoomLevel = (level: CardZoomLevel) => {
+    setSettings((prev) => ({ ...prev, cardZoomLevel: level }));
+  };
+
   const setDefaultDifficulty = (difficulty: DifficultyMode) => {
     setSettings((prev) => ({ ...prev, defaultDifficulty: difficulty }));
   };
@@ -90,11 +99,13 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         settings,
         devMode: settings.devMode,
         edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
+        cardZoomLevel: settings.cardZoomLevel || 'normal',
         defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
         defaultHeroicLevel: settings.defaultHeroicLevel || 0,
         setDevMode,
         toggleDevMode,
         setEdgeScrollSpeed,
+        setCardZoomLevel,
         setDefaultDifficulty,
         setDefaultHeroicLevel,
         updateSettings,

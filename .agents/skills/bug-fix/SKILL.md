@@ -1,17 +1,19 @@
 ---
 name: bug-fix
 description: >-
-  Deterministic 7-step Test-Driven Development (TDD) protocol for triaging,
-  reproducing, diagnosing, fixing, and verifying bugs across the engine, UI,
-  and data layers. Inspects real-time table state snapshots in logs/gamestates/,
-  enforces failing regression test creation first, blast-radius guardrails,
-  zero-regression full-suite verification, logging in logs/skills/, execution of the
-  mandatory 7-point post-task protocol, and clean Git commits. Trigger whenever a bug is reported or prefixed with 'bug-fix:'.
+  Deterministic 8-step Test-Driven Development (TDD) and GitHub Issue lifecycle
+  protocol for triaging, filing issues, reproducing, diagnosing, fixing, verifying,
+  and resolving bugs across the engine, UI, and data layers. Inspects real-time table
+  state snapshots in logs/gamestates/, opens tracked GitHub issues, enforces failing
+  regression test creation first, blast-radius guardrails, zero-regression full-suite
+  verification, logging in logs/skills/, execution of the mandatory 7-point post-task
+  protocol, and auto-closing Git commits (Fixes #XX). Trigger whenever a bug is reported
+  or prefixed with 'bug-fix:'.
 ---
 
-# 🛠️ Bug-Fix Protocol (Standard TDD & Remediation Workflow)
+# 🛠️ Bug-Fix Protocol (Standard TDD & GitHub Issue Lifecycle Workflow)
 
-This skill guides the agent through an authoritative, test-first protocol to resolve bugs safely, deterministically, and with zero regressions.
+This skill guides the agent through an authoritative, test-first, and issue-tracked protocol to resolve defects safely, deterministically, and with zero regressions.
 
 ---
 
@@ -21,10 +23,12 @@ Whenever a bug fix begins (triggered explicitly via `bug-fix: <description>` or 
 
 ```text
 YYYY-MM-DDTHH:mm:ss.sssZ [TRIAGE] Bug reported: "<description>" (Subsystem: <Engine|UI|Data|Assets>)
+YYYY-MM-DDTHH:mm:ss.sssZ [ISSUE] Opened GitHub Issue #<NUM>: "<title>" (<URL>)
 YYYY-MM-DDTHH:mm:ss.sssZ [REPRO] Added failing regression test in tests/<subsystem>/<test_file>.test.ts
 YYYY-MM-DDTHH:mm:ss.sssZ [FIX] Applied surgical fix in src/<path> (Blast-Radius Tier: <1|2|3>)
 YYYY-MM-DDTHH:mm:ss.sssZ [VERIFY] All test suites passing (258+ tests, 0 typecheck errors, clean build)
 YYYY-MM-DDTHH:mm:ss.sssZ [AUDIT] Completed 7-point post-task protocol & updated documentation
+YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Pushed commit "fix(...): ... (Fixes #<NUM>)" & verified issue closed
 ```
 
 ---
@@ -39,27 +43,30 @@ Before modifying any source code, classify the required bug fix into one of thre
   * Declarative supplemental JSON correction in `src/data/supplemental/`.
   * Adding or refining unit tests.
 * **Tier 2 (Shared Subsystem & State Reducer Fix — Verification Required):**
-  * Modifying shared pipeline functions (`action-dispatcher.ts`, `round-upkeep.ts`, `villain-phase.ts`, `combat-engine.ts`).
-  * Adjusting generic trigger dispatchers or status token counters.
+  * Modifying shared pipeline functions (`action-dispatcher.ts`, `round-upkeep.ts`, `villain-phase.ts`, `combat-pipeline.ts`).
+  * Adjusting generic trigger dispatchers, status token counters, or resolution stacks.
   * **Requirement:** Must execute the full test suite across all heroes and scenarios to prove 0 regressions.
 * **🛑 Tier 3 (Structural & Architectural Defect — Mandatory Plan & User Approval):**
   * Changing core state interfaces (`GameState`, `PlayerState`, `CardInstance`).
-  * Restructuring public action dispatch signatures or phase state machines.
+  * Restructuring public action dispatch signatures, execution stacks, or phase state machines.
   * **Requirement:** Stop immediately, create `implementation_plan.md` detailing the architectural changes, and wait for explicit user approval before touching source code.
 
 ---
 
-## 🔄 The 7-Step Bug Fix Lifecycle
+## 🔄 The 8-Step Bug Fix Lifecycle
 
 ```mermaid
 flowchart TD
-    S1["1. Triage & Subsystem Scoping (Engine / UI / Data / Asset)"] --> S2["2. Write Failing Regression Test First (Red)"]
-    S2 --> S3["3. Root-Cause Analysis & Blast-Radius Check (Tier 1/2/3)"]
-    S3 --> S4["4. Apply Surgical Fix (Green)"]
-    S4 --> S5["5. Full Verification Suite (npm test, typecheck, build, declarations)"]
-    S5 --> S6["6. Execute 7-Point Mandatory Post-Task Protocol (AGENTS.md)"]
-    S6 --> S7["7. Stage & Commit to Git (Conventional Commit)"]
+    S1["1. Triage & Subsystem Scoping (Engine / UI / Data / Asset)"] --> S2["2. Open Tracked GitHub Issue (gh issue create)"]
+    S2 --> S3["3. Write Failing Regression Test First (Red TDD)"]
+    S3 --> S4["4. Root-Cause Analysis & Blast-Radius Check (Tier 1/2/3)"]
+    S4 --> S5["5. Apply Surgical Fix (Green)"]
+    S5 --> S6["6. Full Verification Suite (test, typecheck, build, declarations)"]
+    S6 --> S7["7. Execute 7-Point Mandatory Post-Task Protocol (Update CHANGELOG with #Issue)"]
+    S7 --> S8["8. Commit to Git (Fixes #Issue), Push & Verify Issue Closed"]
 ```
+
+---
 
 ### Step 1: Triage & Subsystem Scoping
 1. Analyze the bug description, error messages, and reproduction steps.
@@ -72,7 +79,37 @@ flowchart TD
    * **📦 Data / Supplemental Layer (`src/data/`):** Supplemental card JSON definitions, missing keywords/abilities, erroneous traits/packs.
    * **⚙️ Assets & Offline Pipeline (`vite.config.ts`, `cache/`, `fonts/`):** Local image caching, offline webfont serving, bundling errors.
 
-### Step 2: Reproduce First (TDD Failing Test)
+---
+
+### Step 2: Open Tracked GitHub Issue (`gh issue create`)
+Create a standardized, well-structured GitHub issue using the GitHub CLI:
+
+```bash
+gh issue create \
+  --title "fix(<subsystem>): <concise bug title>" \
+  --label "bug,<subsystem>" \
+  --body "### 🐛 Bug Description
+<Detailed description of what is happening vs what should happen>
+
+### 📜 Rules Reference / Spec
+- Marvel Champions Rules Reference v1.8: <citation or N/A>
+
+### 🔍 Reproduction Context
+- Subsystem: <engine | ui | data | assets>
+- GameState Snapshot: <logs/gamestates/... if applicable>
+
+### 🛠️ Planned Remediation
+1. Add automated failing regression test in \`tests/<subsystem>/...\`
+2. Apply surgical fix
+3. Full verification suite passing"
+```
+
+* **Extract Issue Number:** Capture the created issue number `#<NUM>` for subsequent commit and log cross-references.
+* **Graceful Fallback:** If `gh` CLI is unauthenticated or offline, log the issue details in `logs/skills/` and proceed without blocking execution.
+
+---
+
+### Step 3: Reproduce First (TDD Failing Test)
 * **Golden Rule:** NEVER edit application source code before creating an automated reproduction test demonstrating the bug.
 * **Seed from Snapshots:** When applicable, use the saved snapshot data from `logs/gamestates/latest_gamestate.json` to construct a minimal reproduction state in your test fixture.
 * For Engine / Rules / Data bugs:
@@ -82,12 +119,16 @@ flowchart TD
 * For UI / Visual bugs:
   * Inspect the component props, state transitions, or CSS utility classes. If visual/unit testable (e.g. formatters, hooks, layouts), write a unit test in `tests/ui/`.
 
-### Step 3: Root-Cause Investigation & Blast-Radius Classification
+---
+
+### Step 4: Root-Cause Investigation & Blast-Radius Classification
 * Trace the code execution from action dispatch to state mutation.
 * Identify the exact line, condition, or missing state transition causing the defect.
 * Classify the fix as Tier 1, Tier 2, or Tier 3. If Tier 3, pause and write an `implementation_plan.md`.
 
-### Step 4: Surgical Implementation (Green)
+---
+
+### Step 5: Surgical Implementation (Green)
 * Apply the minimal, cleanest code change addressing the root cause.
 * Respect all project architectural principles:
   1. **Strict Engine Decoupling:** Never import React, DOM, `window`, `document`, or CSS into `src/engine/`.
@@ -96,32 +137,51 @@ flowchart TD
   4. **Local-First Reliability:** Never add external runtime network dependencies.
 * Run the reproduction test to verify it now **passes** (**Green**).
 
-### Step 5: Full-Suite Verification & Zero-Regression Proof
+---
+
+### Step 6: Full-Suite Verification & Zero-Regression Proof
 Run the automated verification suite:
 ```bash
 npm test && npm run typecheck && npm run build && npm run report:declarations
 ```
-* Confirm all 47+ test files (258+ tests) pass cleanly.
+* Confirm all test files and suites pass cleanly.
 * Confirm 0 TypeScript compilation errors (`tsc --noEmit`).
 * Confirm production bundle succeeds (`vite build`).
 
-### Step 6: Mandatory Post-Task Protocol (7-Point Audit Checklist)
+---
+
+### Step 7: Mandatory Post-Task Protocol (7-Point Audit Checklist)
 Before completing the turn, execute the 7 mandatory checks from `AGENTS.md`:
-1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` with the bug fix summary, affected components, and root cause.
+1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` with the bug fix summary, root cause, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
 2. **Check Documentation:** Update any relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or `docs/algorithmic_rules_reference.md` if rules mechanics or timing changed.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new invariants or design patterns were introduced.
 5. **Check ADRs:** Update or reference Architecture Decision Records in `docs/decisions/`.
-6. **Check Ambiguities & Issues:** Close or resolve any related files in `docs/ambiguities/` or git issues.
+6. **Check Ambiguities & Issues:** Close or resolve any related files in `docs/ambiguities/`.
 7. **Check Declarations Usage Report:** Run `npm run report:declarations` whenever cards or supplemental data are modified.
 
-### Step 7: Git Commit (Conventional Commits)
-Stage all modified files, test suites, and documentation, then create a clean Conventional Commit:
-```bash
-git add -A
-git commit -m "fix(<scope>): <concise description of bug fix>"
-```
-* **Scopes:** `fix(engine)`, `fix(ui)`, `fix(data)`, `fix(rules)`, `fix(assets)`, `fix(setup)`.
+---
+
+### Step 8: Git Commit (Auto-Close Issue), Push & Verification
+1. **Stage & Commit with Auto-Close Syntax:**
+   ```bash
+   git add -A
+   git commit -m "fix(<scope>): <concise description of bug fix> (Fixes #<NUM>)"
+   ```
+   * **Scopes:** `fix(engine)`, `fix(ui)`, `fix(data)`, `fix(rules)`, `fix(assets)`, `fix(setup)`.
+   * The `(Fixes #<NUM>)` trailer automatically links and closes the GitHub issue upon push.
+
+2. **Push to Remote:**
+   ```bash
+   git push origin main
+   ```
+
+3. **Post Verification Comment & Ensure Closed:**
+   If `gh` CLI is available, optionally post a verification note and confirm issue state:
+   ```bash
+   gh issue comment <NUM> --body "✅ **Verified**: Regression test passing cleanly. Full verification suite passing (0 typecheck errors, 0 build warnings)."
+   gh issue close <NUM> --comment "Resolved and closed via automated TDD protocol."
+   ```
 
 ---
 

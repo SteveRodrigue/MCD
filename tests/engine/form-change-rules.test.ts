@@ -137,7 +137,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     expect(res1.state.players[0].basicChangeFormUsedThisRound).toBe(true);
 
     // Run Villain Phase -> Upkeep -> New Round
-    const nextState = executeVillainPhase(res1.state);
+    const nextState = executeVillainPhase(res1.state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
     expect(nextState.roundNumber).toBe(2);
     expect(nextState.players[0].basicChangeFormUsedThisRound).toBe(false);
   });

@@ -88,8 +88,8 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
 
       const initialHealth = gameState.players[0].health; // 10
 
-      // Step 2 Villain Attacks
-      step2_villainActivations(gameState);
+      // Step 2 Villain Attacks (with TAKE_UNDEFENDED to reach damage calculation step)
+      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // All damage prevented by Backflip (HP remains 10)
       expect(gameState.players[0].health).toBe(initialHealth);

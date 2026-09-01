@@ -22,7 +22,7 @@ import {
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect } from '../effects';
-import { executeVillainPhase } from './villain-phase';
+import { executeVillainPhase, continueVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
 import { resolveDecisionPrompt } from './prompt-queue';
@@ -1019,7 +1019,8 @@ export function dispatchAction(
       };
     }
 
-    case 'END_PLAYER_TURN': {
+    case 'END_PLAYER_TURN':
+    case 'END_TURN' as any: {
       if (nextState.players[nextState.activePlayerIndex]?.id !== action.playerId) {
         return {
           state,
@@ -1139,18 +1140,33 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      return resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
+      const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
+      let resultingState = promptRes.state;
+
+      // If in villain phase and no decision prompts are pending, continue villain phase sequence
+      if (resultingState.phase === GamePhase.VILLAIN_PHASE && !resultingState.pendingDecisionPrompt) {
+        resultingState = continueVillainPhase(resultingState);
+      }
+
+      return {
+        ...promptRes,
+        state: resultingState,
+      };
     }
 
     case 'DECLARE_DEFENDER': {
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      const updatedState = resolveDefenderDeclaration(nextState, {
+      let updatedState = resolveDefenderDeclaration(nextState, {
         type: action.defenderType,
         playerId: action.playerId,
         allyInstanceId: action.allyInstanceId,
       });
+
+      if (updatedState.phase === GamePhase.VILLAIN_PHASE && !updatedState.pendingDecisionPrompt) {
+        updatedState = continueVillainPhase(updatedState);
+      }
 
       return {
         state: updatedState,

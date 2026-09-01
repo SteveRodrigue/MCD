@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix & Engine: Interactive Defender Declaration for Villain & Minion Attacks ([#28](https://github.com/SteveRodrigue/MCD/issues/28), `villain-phase.ts`, `action-dispatcher.ts`, `effects/index.ts`, `combat-pipeline.ts`, `combat-defender-prompt.test.ts`):**
+  - Resolved issue where villain and minion attacks in the Villain Phase or via encounter treacheries (e.g. *Assault*, *Gang-Up*) executed synchronously without presenting an interactive prompt modal to select a defender (Hero, Ally, or undefended) or trigger defense interrupts (e.g. *Spider-Sense*, *Backflip*).
+  - Updated [`step2_villainAndMinionActivations`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/villain-phase.ts) to manage an activation queue that pauses execution cleanly when interactive prompts are enqueued into `pendingDecisionPrompt`.
+  - Added [`continueVillainPhase()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/villain-phase.ts) to resume remaining activations, encounter dealing, and card reveals once defender declaration prompts are resolved.
+  - Wired `RESOLVE_DECISION_PROMPT` and `DECLARE_DEFENDER` in [`action-dispatcher.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/action-dispatcher.ts) and [`effects/index.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts) to trigger phase resumption in both single-player and multiplayer matches.
+  - Added comprehensive regression test suite in [`combat-defender-prompt.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/combat-defender-prompt.test.ts).
+
 - **Bug Fix & UI: Interactive Attack Target Selection Modal & Ally Minion Targeting (`AttackTargetModal.tsx`, `HeroZone.tsx`, `IdentityActionModal.tsx`, `action-dispatcher.ts`, `legality-checker.ts`):**
   - Implemented pop-art [`AttackTargetModal.tsx`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/components/board/AttackTargetModal.tsx) to prompt the player to select an enemy target whenever more than 1 valid target exists (e.g. Villain + Engaged Minions), while seamlessly fast-pathing single-target attacks when only 1 valid target is in play.
   - Enforced official Marvel Champions RR v1.8 p. 15 **Guard** invariants across `getValidAttackTargets()`, [`canBasicAttack()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts), and [`canAllyAttack()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) (blocking attacks against the villain while an engaged minion with Guard is in play, while allowing minions to be targeted).

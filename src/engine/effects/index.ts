@@ -18,6 +18,7 @@ import {
 } from '../pipeline/villain-phase';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { getEffectiveHeroStats, getEffectiveMaxHealth } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
@@ -1317,6 +1318,18 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'CHOOSE AN OPTION!' };
     }
 
+    case 'DECLARE_DEFENDER': {
+      const defenderType = (step.params?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
+      const allyInstanceId = step.params?.allyInstanceId as string | undefined;
+      const playerId = context.playerId || (step.params?.playerId as string) || player.id;
+      const resState = resolveDefenderDeclaration(state, {
+        type: defenderType,
+        playerId,
+        allyInstanceId,
+      });
+      return { state: resState, success: true, onomatopoeia: 'DEFENSE RESOLVED!' };
+    }
+
     case 'VILLAIN_SCHEMES': {
       executeVillainSchemeAgainstPlayer(state, player);
       return { state, success: true, onomatopoeia: 'VILLAIN SCHEMES!' };
@@ -1339,9 +1352,23 @@ export function executeStep(
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
         return { state, success: true, onomatopoeia: 'SURGE!' };
       } else {
-        executeVillainAttackAgainstPlayer(state, player);
-        for (const minion of [...player.engagedMinions]) {
-          executeMinionAttackAgainstPlayer(state, minion, player);
+        const activations: { type: 'VILLAIN' | 'MINION'; playerId: string; minionInstanceId?: string }[] = [
+          { type: 'VILLAIN', playerId: player.id },
+          ...player.engagedMinions.map((m) => ({ type: 'MINION' as const, playerId: player.id, minionInstanceId: m.instanceId })),
+        ];
+        (state as any).pendingActivations = [
+          ...((state as any).pendingActivations || []),
+          ...activations,
+        ];
+
+        if ((state as any).pendingActivations.length > 0) {
+          const act = (state as any).pendingActivations.shift()!;
+          if (act.type === 'VILLAIN') {
+            executeVillainAttackAgainstPlayer(state, player);
+          } else {
+            const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+            if (minion) executeMinionAttackAgainstPlayer(state, minion, player);
+          }
         }
         return { state, success: true, onomatopoeia: 'GANG UP!' };
       }

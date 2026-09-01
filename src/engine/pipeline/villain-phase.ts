@@ -15,7 +15,8 @@ import { handleMainSchemeCompletion } from './scenario-helpers';
 import {
   getEffectiveVillainStats,
 } from './stat-calculator';
-import { executeEnemyAttackSynchronously } from './combat-pipeline';
+import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
+export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 export { drawEncounterCard };
 
@@ -61,8 +62,12 @@ export function step1_placeThreat(state: GameState): GameState {
 /**
  * Executes a single villain attack against a target hero (including triggers, boost cards, and defense).
  */
-export function executeVillainAttackAgainstPlayer(state: GameState, player: PlayerState): void {
-  executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, player.id, 'TAKE_UNDEFENDED');
+export function executeVillainAttackAgainstPlayer(
+  state: GameState,
+  player: PlayerState,
+  options?: CombatOptions,
+): GameState {
+  return initiateEnemyAttack(state, { type: 'VILLAIN' }, player.id, options);
 }
 
 /**
@@ -121,16 +126,26 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
 /**
  * Executes a single minion attack against a hero.
  */
-export function executeMinionAttackAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
-  executeEnemyAttackSynchronously(state, { type: 'MINION', card: minion }, player.id, 'TAKE_UNDEFENDED');
+export function executeMinionAttackAgainstPlayer(
+  state: GameState,
+  minion: CardInstance,
+  player: PlayerState,
+  options?: CombatOptions,
+): GameState {
+  const nextState = initiateEnemyAttack(state, { type: 'MINION', card: minion }, player.id, options);
 
   // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
-  const abilities = minion.card.enrichment?.abilities || [];
-  for (const ability of abilities) {
-    if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
-      executeEffect(state, ability, { playerId: player.id, sourceCardInstance: minion });
+  // When resolved synchronously or immediately without pending prompt
+  if (!nextState.pendingDecisionPrompt) {
+    const abilities = minion.card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
+        executeEffect(nextState, ability, { playerId: player.id, sourceCardInstance: minion });
+      }
     }
   }
+
+  return nextState;
 }
 
 /**
@@ -166,9 +181,14 @@ export function executeMinionSchemeAgainstPlayer(state: GameState, minion: CardI
 /**
  * Executes a single minion activation against a player (Attack if hero, Scheme if alter-ego).
  */
-export function executeMinionActivationAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+export function executeMinionActivationAgainstPlayer(
+  state: GameState,
+  minion: CardInstance,
+  player: PlayerState,
+  options?: CombatOptions,
+): void {
   if (player.currentForm === 'hero') {
-    executeMinionAttackAgainstPlayer(state, minion, player);
+    executeMinionAttackAgainstPlayer(state, minion, player, options);
   } else {
     executeMinionSchemeAgainstPlayer(state, minion, player);
   }
@@ -180,31 +200,49 @@ export function executeMinionActivationAgainstPlayer(state: GameState, minion: C
  * 1. The villain activates against the player (Attack if hero, Scheme if alter-ego).
  * 2. Each minion engaged with that player activates against the player (Attack if hero, Scheme if alter-ego).
  */
-export function step2_villainAndMinionActivations(state: GameState): GameState {
+export function step2_villainAndMinionActivations(state: GameState, options?: CombatOptions): GameState {
   if (state.winner) return state;
+  state.phase = GamePhase.VILLAIN_PHASE;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 
-  for (let i = 0; i < state.players.length; i++) {
-    // In player order starting from firstPlayerIndex
-    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
-    const player = state.players[playerIdx];
+  if (!(state as any).pendingActivations) {
+    const activations: { type: 'VILLAIN' | 'MINION'; playerId: string; minionInstanceId?: string }[] = [];
+    for (let i = 0; i < state.players.length; i++) {
+      const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
+      const player = state.players[playerIdx];
 
-    // 1. Villain activates against this player
-    if (player.currentForm === 'hero') {
-      executeVillainAttackAgainstPlayer(state, player);
-    } else {
-      executeVillainSchemeAgainstPlayer(state, player);
+      activations.push({ type: 'VILLAIN', playerId: player.id });
+      for (const minion of player.engagedMinions) {
+        activations.push({ type: 'MINION', playerId: player.id, minionInstanceId: minion.instanceId });
+      }
+    }
+    (state as any).pendingActivations = activations;
+  }
+
+  while ((state as any).pendingActivations && (state as any).pendingActivations.length > 0) {
+    const act = (state as any).pendingActivations.shift()!;
+    const player = state.players.find((p) => p.id === act.playerId);
+    if (!player) continue;
+
+    if (act.type === 'VILLAIN') {
+      if (player.currentForm === 'hero') {
+        executeVillainAttackAgainstPlayer(state, player, options);
+      } else {
+        executeVillainSchemeAgainstPlayer(state, player);
+      }
+    } else if (act.type === 'MINION') {
+      const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+      if (minion) {
+        executeMinionActivationAgainstPlayer(state, minion, player, options);
+      }
     }
 
-    if (state.winner) return state;
-
-    // 2. Each minion engaged with this player activates against this player
-    for (const minion of player.engagedMinions) {
-      executeMinionActivationAgainstPlayer(state, minion, player);
-      if (state.winner) return state;
+    if (state.pendingDecisionPrompt || state.winner) {
+      return state;
     }
   }
 
+  delete (state as any).pendingActivations;
   return state;
 }
 
@@ -215,13 +253,13 @@ export const step2_villainActivations = step2_villainAndMinionActivations;
  * Step 3: Minion Activations (Deprecated standalone step; now interleaved in Step 2 per RR v1.8 p. 22).
  * Kept as an optional direct-call helper if needed by legacy tests.
  */
-export function step3_minionActivations(state: GameState): GameState {
+export function step3_minionActivations(state: GameState, options?: CombatOptions): GameState {
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.MINION_ACTIVATIONS;
 
   for (const player of state.players) {
     for (const minion of player.engagedMinions) {
-      executeMinionActivationAgainstPlayer(state, minion, player);
+      executeMinionActivationAgainstPlayer(state, minion, player, options);
       if (state.winner) return state;
     }
   }
@@ -379,6 +417,10 @@ export function step5_revealEncounterCards(state: GameState): GameState {
           onomatopoeia: 'TREACHERY!',
         });
       }
+
+      if (state.pendingDecisionPrompt || state.winner) {
+        return state;
+      }
     }
   }
 
@@ -389,14 +431,48 @@ import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';
 export { step6_passFirstPlayerAndRoundUpkeep };
 
 /**
+ * Resumes and continues Villain Phase progression after a prompt resolution (ADR-0031 / ADR-0032).
+ */
+export function continueVillainPhase(state: GameState, options?: CombatOptions): GameState {
+  if (state.winner) return state;
+
+  // Step 2: Activations
+  if (state.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
+    step2_villainAndMinionActivations(state, options);
+    if (state.pendingDecisionPrompt || state.winner) return state;
+    state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+  }
+
+  // Step 4: Deal Encounter Cards
+  if (state.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
+    step4_dealEncounterCards(state);
+    if (state.winner) return state;
+    state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+  }
+
+  // Step 5: Reveal Encounter Cards
+  if (state.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
+    step5_revealEncounterCards(state);
+    if (state.pendingDecisionPrompt || state.winner) return state;
+  }
+
+  // Dispatch Villain Phase Ended triggers across all players
+  for (const player of state.players) {
+    dispatchTrigger(state, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
+  }
+
+  return step6_passFirstPlayerAndRoundUpkeep(state);
+}
+
+/**
  * Complete Villain Phase Automation Runner (RR v1.8 p. 22)
  * 1. Sets phase to VILLAIN_PHASE and resets usedAbilitiesThisPhase for all players.
  * 2. Dispatches VILLAIN_PHASE_BEGAN.
- * 3. Executes Steps 1 through 5 sequentially.
+ * 3. Executes Steps 1 through 5 sequentially (pausing cleanly when interactive prompts are enqueued).
  * 4. Dispatches VILLAIN_PHASE_ENDED.
  * 5. Passes execution to Step 6 (Round Upkeep & Token Rotation).
  */
-export function executeVillainPhase(state: GameState): GameState {
+export function executeVillainPhase(state: GameState, options?: CombatOptions): GameState {
   const nextState: GameState = JSON.parse(JSON.stringify(state));
   nextState.phase = GamePhase.VILLAIN_PHASE;
 
@@ -423,22 +499,8 @@ export function executeVillainPhase(state: GameState): GameState {
   step1_placeThreat(nextState);
   if (nextState.winner) return nextState;
 
-  step2_villainActivations(nextState);
-  if (nextState.winner) return nextState;
+  nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
+  delete (nextState as any).pendingActivations;
 
-  step3_minionActivations(nextState);
-  if (nextState.winner) return nextState;
-
-  step4_dealEncounterCards(nextState);
-  if (nextState.winner) return nextState;
-
-  step5_revealEncounterCards(nextState);
-  if (nextState.winner) return nextState;
-
-  // Dispatch Villain Phase Ended triggers across all players
-  for (const player of nextState.players) {
-    dispatchTrigger(nextState, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
-  }
-
-  return step6_passFirstPlayerAndRoundUpkeep(nextState);
+  return continueVillainPhase(nextState, options);
 }

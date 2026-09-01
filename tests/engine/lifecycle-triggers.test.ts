@@ -88,7 +88,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     });
 
     endPlayerPhase(state);
-    const nextState = executeVillainPhase(state);
+    const nextState = executeVillainPhase(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
     const logKeys = nextState.log.map((l) => l.key);
     expect(logKeys).toContain('phase.villain_phase.start');

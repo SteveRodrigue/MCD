@@ -208,15 +208,16 @@ npm test && npm run typecheck && npm run build && npm run report:declarations
 
 ---
 
-### Step 7: Mandatory Post-Task Protocol (7-Point Audit Checklist)
-Before completing the turn, execute the 7 mandatory checks from `AGENTS.md`:
+### Step 7: Mandatory Post-Task Protocol (8-Point Audit Checklist)
+Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` detailing the new feature, affected subsystems, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
 2. **Check Documentation:** Update relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or schemas when mechanics or primitives change.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new design patterns were introduced.
 5. **Check ADRs:** Ensure referenced ADRs are linked and updated to **Accepted** status.
 6. **Check Ambiguities & Git Issues:** Verify resolved ambiguity cards are removed and issues linked.
-7. **Check Roadmap & Milestones:** Check off completed tasks in [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md).
+7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) synchronized.
+8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, search supplemental data, retrofit affected cards, update audit timestamps, and run `npm run report:declarations`.
 
 ---
 

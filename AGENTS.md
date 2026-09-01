@@ -24,7 +24,7 @@ BEFORE writing or modifying any source code (`src/`), test files (`tests/`), or 
 ---
 
 ## 📋 Mandatory Post-Task Protocol (Enforce on Every Turn)
-After executing automated tests and code verification (`npm test && npm run typecheck && npm run build`), **ALWAYS** execute this 7-point checklist before concluding the turn:
+After executing automated tests and code verification (`npm test && npm run typecheck && npm run build`), **ALWAYS** execute this 8-point checklist before concluding the turn:
 
 1. **Check CHANGELOG.md:** Update `[Unreleased]` with all new features, fixes, and engine changes.
 2. **Check Documentation:** Update relevant files in `docs/` or `README.md`.
@@ -32,7 +32,8 @@ After executing automated tests and code verification (`npm test && npm run type
 4. **Check Guidelines:** Update guidelines documentation (e.g. `docs/coding_guidelines.md`) when development standards, conventions, or design patterns change.
 5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed.
 6. **Check Git Issues & Ambiguities:** Check if an issue or `docs/ambiguities/` file can be closed/resolved.
-7. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:
+7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
+8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:
    * **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that use or benefit from this capability.
    * **Retrofit Card Definitions:** Apply the new/updated declarative schema to all affected card entries.
    * **Update Audit Metadata:** If card data was changed, update `"updatedAt"`, `"reviewedAt"` (current ISO timestamp with `HH:MM`, e.g. `2026-09-01T09:48:00Z`), and `"reviewedBy": "antigravity"`.

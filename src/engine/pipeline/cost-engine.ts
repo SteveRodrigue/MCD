@@ -62,22 +62,49 @@ export function canPayAbilityCost(
   }
 
   // 4. Token / Counter Depletion Validation
-  const spendTokens = cost.spendTokens;
-  const removeCounter = cost.removeCounter || (cost as any).spendCounter;
-  if (spendTokens) {
-    const currentTokens = (sourceCardInst?.tokens as any)?.[spendTokens.type] || 0;
-    if (currentTokens < spendTokens.count) {
+  if (cost.spendCounters) {
+    const counterType = cost.spendCounters.counterType || 'all_purpose';
+    const amount = cost.spendCounters.amount;
+    if (cost.spendCounters.target === 'IDENTITY') {
+      const current = player.counters?.[counterType] || 0;
+      if (current < amount) {
+        return {
+          allowed: false,
+          reason: `Insufficient '${counterType}' counters on Identity (Requires ${amount}, has ${current}).`,
+        };
+      }
+    } else {
+      const current =
+        sourceCardInst?.counters?.[counterType] ??
+        sourceCardInst?.tokens?.counters ??
+        0;
+      if (current < amount) {
+        return {
+          allowed: false,
+          reason: `Insufficient ${counterType} counters on card (Requires ${amount}, has ${current}).`,
+        };
+      }
+    }
+  } else if (cost.spendTokens) {
+    const currentTokens = (sourceCardInst?.tokens as any)?.[cost.spendTokens.type] || 0;
+    if (currentTokens < cost.spendTokens.count) {
       return {
         allowed: false,
-        reason: `Insufficient '${spendTokens.type}' tokens on card (Requires ${spendTokens.count}, has ${currentTokens}).`,
+        reason: `Insufficient '${cost.spendTokens.type}' tokens on card (Requires ${cost.spendTokens.count}, has ${currentTokens}).`,
       };
     }
-  } else if (removeCounter && removeCounter > 0) {
-    const currentCounters = sourceCardInst?.tokens?.counters || 0;
-    if (currentCounters < removeCounter) {
+  } else if (cost.removeCounter || (cost as any).spendCounter) {
+    const required = cost.removeCounter || (cost as any).spendCounter;
+    const current =
+      sourceCardInst?.counters?.['all_purpose'] ??
+      sourceCardInst?.counters?.['counter'] ??
+      (sourceCardInst?.counters ? Object.values(sourceCardInst.counters)[0] : undefined) ??
+      sourceCardInst?.tokens?.counters ??
+      0;
+    if (current < required) {
       return {
         allowed: false,
-        reason: `Insufficient counters on card (Requires ${removeCounter}, has ${currentCounters}).`,
+        reason: `Insufficient counters on card (Requires ${required}, has ${current}).`,
       };
     }
   }
@@ -147,7 +174,25 @@ export function executeAbilityCost(
   }
 
   // 3. Tokens / Counters
-  if (cost.spendTokens && sourceCardInst) {
+  if (cost.spendCounters) {
+    const counterType = cost.spendCounters.counterType || 'all_purpose';
+    const amount = cost.spendCounters.amount;
+    if (cost.spendCounters.target === 'IDENTITY') {
+      player.counters = player.counters || {};
+      const current = player.counters[counterType] || 0;
+      player.counters[counterType] = Math.max(0, current - amount);
+    } else if (sourceCardInst) {
+      sourceCardInst.counters = sourceCardInst.counters || {};
+      const current =
+        sourceCardInst.counters[counterType] ??
+        sourceCardInst.tokens?.counters ??
+        0;
+      sourceCardInst.counters[counterType] = Math.max(0, current - amount);
+      if (sourceCardInst.tokens) {
+        sourceCardInst.tokens.counters = Math.max(0, (sourceCardInst.tokens.counters || 0) - amount);
+      }
+    }
+  } else if (cost.spendTokens && sourceCardInst) {
     const tokenType = cost.spendTokens.type;
     const count = cost.spendTokens.count;
     const current = (sourceCardInst.tokens as any)?.[tokenType] || 0;
@@ -157,6 +202,11 @@ export function executeAbilityCost(
     };
   } else if ((cost.removeCounter || (cost as any).spendCounter) && sourceCardInst) {
     const count = cost.removeCounter || (cost as any).spendCounter;
+    if (sourceCardInst.counters) {
+      for (const k of Object.keys(sourceCardInst.counters)) {
+        sourceCardInst.counters[k] = Math.max(0, sourceCardInst.counters[k] - count);
+      }
+    }
     const current = sourceCardInst.tokens?.counters || 0;
     sourceCardInst.tokens = {
       ...sourceCardInst.tokens,

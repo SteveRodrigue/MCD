@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-01T16:29:29.167Z`  
+> **Generated:** `2026-09-01T17:15:39.219Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -22,7 +22,7 @@
 | **Unique Effects In Use** | **66** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **22** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **15** | Distinct timing categories actively declared |
-| **Unique Cost Keys In Use** | **12** | Distinct ability cost types actively declared |
+| **Unique Cost Keys In Use** | **10** | Distinct ability cost types actively declared |
 
 ---
 
@@ -106,7 +106,7 @@ These primitives are only declared on a single card. They represent high special
 
 | Category | Primitive Name | Card Code | Card Name & Pack | Ability ID |
 | :--- | :--- | :--- | :--- | :--- |
-| **Effect** | `ADD_COUNTER` | `01018` | Energy Channel (upgrade) (core) | `energy_channel_add` |
+| **Effect** | `ADD_COUNTERS` | `01018` | Energy Channel (upgrade) (core) | `energy_channel_add` |
 | **Effect** | `ADD_TRAIT` | `01017` | Cosmic Flight (upgrade) (core) | `cosmic_flight_aerial` |
 | **Effect** | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | `01166` | Highway Robbery (side_scheme) (core_encounter) | `highway_robbery_when_revealed` |
 | **Effect** | `ATTACHMENT_DAMAGE_SHIELD` | `01098` | Armored Rhino Suit (attachment) (core_encounter) | `armored_rhino_suit_shield` |
@@ -233,7 +233,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `WHEN_ATTACHED_HOST_DEFEATED` | **1** | `01007` (Spider-Tracer (upgrade)) |
 | `INTERCEPT_ATTACK` | **1** | `01009` (Webbed Up (upgrade)) |
 | `ADD_TRAIT` | **1** | `01017` (Cosmic Flight (upgrade)) |
-| `ADD_COUNTER` | **1** | `01018` (Energy Channel (upgrade)) |
+| `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
 | `RETURN_TO_HAND` | **1** | `01020` (Hellcat (ally)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `DRAW_UP_TO_HAND_SIZE` | **1** | `01025` (Split Personality (event)) |
@@ -332,12 +332,10 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Cost Primitives:
 | Cost Key | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `exhaustSelf` | **20** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) *(+15 more)* |
+| `exhaustSelf` | **21** | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01010a` Captain Marvel (hero), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support) *(+16 more)* |
 | `discardSelf` | **12** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+7 more)* |
 | `resourceCost` | **7** | `01018` Energy Channel (upgrade), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade), `01068` Vision (ally), `01075` Black Widow (ally) *(+2 more)* |
-| `removeCounter` | **4** | `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
-| `exhaust` | **1** | `01008` Web-Shooter (upgrade) |
-| `spendCounter` | **1** | `01008` Web-Shooter (upgrade) |
+| `spendCounters` | **5** | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
 | `costCheck` | **1** | `01010a` Captain Marvel (hero) |
 | `discardFromHand` | **1** | `01015` Alpha Flight Station (support) |
 | `discardCard` | **1** | `01023` Legal Practice (event) |
@@ -348,7 +346,7 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Target Selectors:
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `SELF` | **17** | `01001a` Spider-Man (hero), `01006` Aunt May (support), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+12 more)* |
+| `SELF` | **18** | `01001a` Spider-Man (hero), `01006` Aunt May (support), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally) *(+13 more)* |
 | `CHOSEN_ENEMY` | **14** | `01005` Swinging Web Kick (event), `01011` Spider-Woman (ally), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+9 more)* |
 | `CHOSEN_SCHEME` | **8** | `01012` Crisis Interdiction (event), `01019b` Jennifer Walters (alter_ego), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade), `01048` Tactical Genius (upgrade) *(+3 more)* |
 | `VILLAIN` | **7** | `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+1 more)* |

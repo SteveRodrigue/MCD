@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Universal Named Counter Map, Cross-Entity Targeting & Uses Zero-Counter Discard ([#33](https://github.com/SteveRodrigue/MCD/issues/33), `effects/index.ts`, `cost-engine.ts`, `schema.ts`, `core.json`, `universal-counter-engine.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 30 ("Uses") and ADR-0035 universal named counter dictionary across all in-play entities:
+    - **Named Counter Maps:** Replaced scalar counters with `counters: Record<string, number>` on `CardInstance` and `PlayerState`, seamlessly supporting all 51 catalog counter types (*Charge*, *Growth*, *Ammo*, *Arrow*, *Web*, *Invocation*, *Pym*, *Chi*, *Energy*, *Snoop*, *Medical*, *Attack*).
+    - **Atomic Cross-Entity Primitives:**
+      - `ADD_COUNTERS`: Adds $N$ named counters to `SELF`, `IDENTITY`, or target card.
+      - `SPEND_COUNTERS`: Removes $N$ named counters from `SELF` or `IDENTITY` with legality pre-validation in the cost engine.
+      - `REMOVE_COUNTERS_MATCHING_FILTER`: Purges/decrements named counters matching trait and zone filters (*Ebony Maw*, *The Green Gobbler*).
+      - `COUNTERS_ON_TARGET`: Dynamic damage/threat formula scaling by active counter count $\times$ multiplier (*Energy Channel* `01018`).
+    - **Uses Zero-Counter Card Discard Lifecycle (RR v1.8 p. 30):** Automatically removes cards from the tableau/allies to discard when their Uses counters reach 0, dispatching the `CARD_DISCARDED` trigger and emitting comic log event `card.discarded.uses_exhausted`.
+    - **Complete Core Set Retrofit:** Retrofitted Web-Shooter (`01008`), Energy Channel (`01018`), Tac Team (`01056`), Surveillance Team (`01064`), Hawkeye (`01066`), and Med Team (`01080`).
+  - Added comprehensive contract test suite in [`universal-counter-engine.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/universal-counter-engine.test.ts).
+
 - **Feature & Engine: SEARCH_AND_SELECT Extensible Filtering Engine & Core Set Retrofit ([#38](https://github.com/SteveRodrigue/MCD/issues/38), [#10](https://github.com/SteveRodrigue/MCD/issues/10), `effects/index.ts`, `action-dispatcher.ts`, `schema.ts`, `core.json`, `search-and-select-routing.test.ts`):**
   - Enhanced the universal declarative `SEARCH_AND_SELECT` primitive with comprehensive, extensible card filtering capabilities (`matchCardFilter`) adhering strictly to RR v1.8 p. 19 & 26:
     - **Extensible Declarative Filters:** Evaluates traits (`trait`, `traits`), card types (`type`, `types`, `cardTypes`), card codes (`targetCardCode`, `targetCardCodes`), card names (`targetCardName`), identity specificity (`isIdentitySpecific`), aspects (`aspect`, `aspects`), and printed cost bounds (`costMin`, `costMax`).

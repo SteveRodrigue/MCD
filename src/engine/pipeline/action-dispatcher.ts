@@ -28,7 +28,7 @@ import {
   getPlayerRestrictedLimit,
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
-import { executeEffect } from '../effects';
+import { executeEffect, checkAndDiscardZeroCounterCard } from '../effects';
 import { executeVillainPhase, continueVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
@@ -1082,17 +1082,9 @@ export function dispatchAction(
         targetInstanceId: action.targetInstanceId,
       });
 
-      // Discard on empty counters if configured
-      if (
-        targetCardInst &&
-        targetCardInst.card.enrichment?.uses?.discardOnEmpty &&
-        (targetCardInst.tokens?.counters || 0) <= 0
-      ) {
-        const idx = player.tableau.findIndex((c) => c.instanceId === targetCardInst!.instanceId);
-        if (idx !== -1) {
-          const [discarded] = player.tableau.splice(idx, 1);
-          player.discard.push(discarded);
-        }
+      // Discard on empty counters if Uses counters exhausted (RR v1.8 p. 30)
+      if (targetCardInst) {
+        checkAndDiscardZeroCounterCard(nextState, player, targetCardInst);
       }
 
       // Dynamic parameter scaling (e.g. Legal Practice 01023: Remove 1 threat per discarded card)

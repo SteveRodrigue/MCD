@@ -198,6 +198,13 @@ export const AbilityCostSchema = z.object({
   damageHero: z.number().optional(),
   removeCounter: z.number().optional(),
   spendCounter: z.number().optional(),
+  spendCounters: z
+    .object({
+      counterType: z.string().optional(),
+      amount: z.number(),
+      target: z.enum(['SELF', 'IDENTITY']).optional(),
+    })
+    .optional(),
   discardCard: z
     .object({
       count: z.number().optional(),
@@ -212,6 +219,26 @@ export const AbilityCostSchema = z.object({
     })
     .optional(),
   costCheck: z.string().optional(),
+});
+
+export const AddCountersParamsSchema = z.object({
+  target: z.string().optional(),
+  counterType: z.string().optional(),
+  amount: z.union([z.number(), z.string()]),
+});
+
+export const SpendCountersParamsSchema = z.object({
+  target: z.string().optional(),
+  counterType: z.string().optional(),
+  amount: z.union([z.number(), z.string()]),
+  discardWhenEmpty: z.boolean().optional(),
+});
+
+export const RemoveCountersMatchingFilterParamsSchema = z.object({
+  targetZone: z.string().optional(),
+  traitFilter: z.string().optional(),
+  counterType: z.string().optional(),
+  amount: z.union([z.number(), z.literal('ALL')]).optional(),
 });
 
 /**

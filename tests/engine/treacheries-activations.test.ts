@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
+import { resolveDefenderDeclaration } from '@engine/pipeline/combat-pipeline';
 
 describe('Standard Set & Modular Extra Activation Treacheries', () => {
   let state: GameState;
@@ -57,7 +58,11 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     const ability = assaultCard.enrichment!.abilities![0];
     const resHero = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: assaultInst });
     expect(resHero.success).toBe(true);
-    expect(resHero.state.players[0].health).toBeLessThan(initialHp);
+    expect(resHero.state.pendingDecisionPrompt).toBeDefined();
+
+    // Resolve defender declaration to complete attack
+    const resolvedHeroState = resolveDefenderDeclaration(resHero.state, { type: 'UNDEFENDED', playerId: 'p1' });
+    expect(resolvedHeroState.players[0].health).toBeLessThan(initialHp);
 
     // 2. In Alter-Ego Form -> Surges (deals encounter card)
     state.players[0].currentForm = 'alter_ego';
@@ -83,8 +88,15 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
 
     const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: gangUpInst });
     expect(res.success).toBe(true);
+    expect(res.state.pendingDecisionPrompt).toBeDefined();
+
+    // Resolve villain attack
+    const resAfterVillain = resolveDefenderDeclaration(res.state, { type: 'UNDEFENDED', playerId: 'p1' });
+    // Resolve minion attack
+    const resAfterMinion = resolveDefenderDeclaration(resAfterVillain, { type: 'UNDEFENDED', playerId: 'p1' });
+
     // Both villain and minion attacked
-    expect(res.state.players[0].health).toBeLessThanOrEqual(initialHp - 3);
+    expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
   });
 
   it('01111 Explosion: Deals threat damage if Bomb Scare is in play, otherwise surges', () => {

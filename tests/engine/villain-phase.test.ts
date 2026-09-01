@@ -121,7 +121,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       const initialHealth = gameState.players[0].health; // 10
 
-      step2_villainActivations(gameState);
+      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // Rhino base attack (2) + Boost (2) = 4 damage -> 10 - 4 = 6 HP
       expect(gameState.players[0].health).toBe(initialHealth - 4);
@@ -188,7 +188,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.firstPlayerIndex = 0;
       gameState.log = [];
 
-      step2_villainActivations(gameState);
+      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // Extract attack/scheme activation log keys
       const activationLogs = gameState.log.filter((l) =>
@@ -249,7 +249,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.firstPlayerIndex = 1; // P2 starts!
       gameState.log = [];
 
-      step2_villainActivations(gameState);
+      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       const activationLogs = gameState.log.filter((l) =>
         ['villain.attack.hit', 'minion.attack.hit'].includes(l.key),
@@ -283,7 +283,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.players[0].activeFormCard = gameState.players[0].hero;
       const initialHealth = gameState.players[0].health;
 
-      step3_minionActivations(gameState);
+      step3_minionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
       expect(gameState.players[0].health).toBe(initialHealth - 1);
     });
   });

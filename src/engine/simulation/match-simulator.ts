@@ -90,8 +90,8 @@ export function runMatch(
 
     if (state.winner) break;
 
-    // 2. VILLAIN PHASE: Complete 6-step automation
-    state = executeVillainPhase(state);
+    // 2. VILLAIN PHASE: Complete 6-step automation (with AUTO_OPTIMAL headless defense policy)
+    state = executeVillainPhase(state, { synchronousPolicy: 'AUTO_OPTIMAL' });
   }
 
   const finalWinner = state.winner || 'TIMEOUT';

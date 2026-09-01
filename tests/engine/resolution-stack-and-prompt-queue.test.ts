@@ -9,6 +9,7 @@ import {
   pushExecutionFrame,
   peekExecutionFrame,
   popExecutionFrame,
+  resolveDefenderDeclaration,
 } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
@@ -234,8 +235,11 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       });
 
       expect(effectRes.success).toBe(true);
+      expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+
+      const resolved = resolveDefenderDeclaration(effectRes.state, { type: 'UNDEFENDED', playerId: 'p1' });
       // Villain attacks player (Rhino base ATK = 2)
-      expect(effectRes.state.players[0].health).toBeLessThan(initialHp);
+      expect(resolved.players[0].health).toBeLessThan(initialHp);
     });
 
     it('01024 One-Two Punch: readies identity after basic attack', () => {

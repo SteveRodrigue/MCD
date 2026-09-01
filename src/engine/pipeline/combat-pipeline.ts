@@ -6,8 +6,9 @@ import {
   DefenderDeclaration,
   AttackExecutionContext,
   DecisionPromptOption,
+  GamePhase,
 } from '../models';
-import { enqueueDecisionPrompt } from './prompt-queue';
+import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { executeEffect } from '../effects';
 import { getEffectiveHeroStats, getEffectiveVillainStats } from './stat-calculator';
@@ -379,6 +380,28 @@ export function resolveDefenderDeclaration(
   step7_resolvePostAttackAndRetaliate(state, attackContext);
 
   state.activeAttackContext = undefined;
+
+  // Clear defender decision prompt from queue if present
+  if (state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
+    popDecisionPrompt(state);
+  }
+
+  // Trigger next pending activation if outside of Villain Phase (e.g. Gang-Up treachery)
+  if (state.phase !== GamePhase.VILLAIN_PHASE && !state.pendingDecisionPrompt && (state as any).pendingActivations && (state as any).pendingActivations.length > 0) {
+    const act = (state as any).pendingActivations.shift()!;
+    const targetPlayer = state.players.find((p) => p.id === act.playerId);
+    if (targetPlayer) {
+      if (act.type === 'VILLAIN') {
+        initiateEnemyAttack(state, { type: 'VILLAIN' }, targetPlayer.id);
+      } else if (act.type === 'MINION') {
+        const minion = targetPlayer.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+        if (minion) {
+          initiateEnemyAttack(state, { type: 'MINION', card: minion }, targetPlayer.id);
+        }
+      }
+    }
+  }
+
   return state;
 }
 

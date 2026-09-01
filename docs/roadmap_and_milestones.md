@@ -191,3 +191,14 @@ graph TD
 ### 5. 🔵 `[Future / Experimental]` Native Desktop & Network Multiplayer
 * [ ] **Native Desktop Executable (Tauri - [ADR-0003](decisions/0003-technology-stack-selection.md)):** Standalone Windows/Mac/Linux binaries with ultra-low memory footprint.
 * [ ] **Peer-to-Peer Network Multiplayer (WebRTC):** Synchronized state room for 2–4 players over WebSockets/WebRTC.
+
+---
+
+## ⚠️ Known Upstream Data Caveats & Upstream PR Backlog
+
+### 1. 🟡 `[Low-Priority Backlog]` Zzorba Core Set Main Scheme Inverted Image Naming Quirk
+* **Context:** In the upstream `zzorba/marvelsdb-json-data` Core Set encounter pack (`core_encounter.json` / pack code `01`), the asset file mapping for Main Scheme cards is inverted compared to all subsequent expansion sets:
+  * **Core Set (`01xxx`):** Stage 1A (Setup face) maps to image `xxxxb.png`, while Stage 1B (Active threat face) maps to image `xxxx.png`.
+  * **All Other Expansions (`02xxx`, `16xxx`, `24xxx`, etc.):** Stage A maps to `xxxx.png` (or `xxxxa.png`), while Stage B maps to `xxxxb.png`.
+* **MCD Handling:** Encapsulated in [`resolveMainSchemeArtFileName()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/services/card-cache-service.ts) in `src/ui/services/card-cache-service.ts`.
+* **Action Item:** Consider submitting a PR / issue upstream to `zzorba/marvelsdb-json-data` to standardize Core Set image naming conventions (Low priority).

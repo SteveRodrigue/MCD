@@ -164,6 +164,29 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(rhino2.text).toContain("Breakin' & Takin'");
     });
 
+    it('retrieves main scheme and villain cards via stage lookup helper', () => {
+      const mainScheme1A = catalog.getMainSchemeByStage('rhino', '1A');
+      expect(mainScheme1A).toBeDefined();
+      expect(mainScheme1A?.code).toBe('01097a');
+      expect(mainScheme1A?.stage).toBe('1A');
+
+      const mainScheme1B = catalog.getMainSchemeByStage('rhino', '1B');
+      expect(mainScheme1B).toBeDefined();
+      expect(mainScheme1B?.code).toBe('01097b');
+      expect(mainScheme1B?.stage).toBe('1B');
+      expect(mainScheme1B?.targetThreat).toBe(7);
+
+      const rhinoStage1 = catalog.getVillainByStage('rhino', 'I');
+      expect(rhinoStage1).toBeDefined();
+      expect(rhinoStage1?.code).toBe('01094');
+      expect(rhinoStage1?.stage).toBe('I');
+
+      const rhinoStage2 = catalog.getVillainByStage('rhino', 'II');
+      expect(rhinoStage2).toBeDefined();
+      expect(rhinoStage2?.code).toBe('01095');
+      expect(rhinoStage2?.stage).toBe('II');
+    });
+
     it('normalizes Bomb Scare modular encounter set cards', () => {
       const bombScareCards = catalog.getCardsBySet('bomb_scare');
       expect(bombScareCards.length).toBeGreaterThan(0);

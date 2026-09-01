@@ -149,12 +149,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     }
   };
 
-  // Dynamic Fan-Out Stack Layout Hook (Standard compact responsive sm-cards)
+  // Dynamic Fan-Out Stack Layout Hook (size="hand" ~130px card width, +15% over sm)
   const handFan = useHandFanLayout({
     cardCount: hand.length,
-    cardWidth: 112, // size="sm" portrait width is 112px (w-28)
-    defaultGap: 10,
-    padding: 12,
+    cardWidth: 130, // size="hand" portrait width (130px)
+    defaultGap: 12,
+    padding: 16,
   });
 
   const [hoveredHandCardId, setHoveredHandCardId] = useState<string | null>(null);
@@ -239,6 +239,17 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
     return groups;
   }, [processedDeckItems, sortMode]);
 
+  // Check if player has any playable cards remaining in hand
+  const hasPlayableCardInHand = useMemo(() => {
+    if (!player || !gameState || hand.length === 0) return false;
+    return hand.some((cardInst) => {
+      const playability = evaluateCardPlayability(gameState, player.id, cardInst);
+      return playability.isPlayable;
+    });
+  }, [hand, player, gameState]);
+
+  const shouldPulseEndTurn = isActivePlayerTurn && !hasPlayableCardInHand;
+
   return (
     <>
       <section
@@ -277,8 +288,14 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           {isActivePlayerTurn && (
             <button
               onClick={handleEndTurn}
-              className="bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black animate-pulse flex items-center gap-1"
-              title="End your hero's turn and pass to the next hero (or begin Villain Phase)"
+              className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${
+                shouldPulseEndTurn ? 'animate-pulse ring-2 ring-comic-yellow' : ''
+              }`}
+              title={
+                shouldPulseEndTurn
+                  ? 'No more playable cards in hand — Click to end your hero turn'
+                  : "End your hero's turn and pass to the next hero (or begin Villain Phase)"
+              }
             >
               <span>END TURN ➔</span>
             </button>
@@ -363,7 +380,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
             <div
               ref={handFan.containerRef}
-              className="flex items-center justify-start overflow-visible py-0.5 px-0.5 min-h-[160px] w-full"
+              className="flex items-center justify-start overflow-visible py-1 px-1 min-h-[188px] w-full"
             >
               {hand.map((cardInst, index) => {
                 const isHovered = hoveredHandCardId === cardInst.instanceId;
@@ -388,7 +405,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     <CardView
                       card={cardInst.card}
                       instance={cardInst}
-                      size="sm"
+                      size="hand"
                       isPlayable={playability.isPlayable}
                       unplayableReason={playability.reasons[0]}
                       enableHoverZoom={true}

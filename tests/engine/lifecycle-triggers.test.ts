@@ -87,6 +87,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       skipMulligan: true,
     });
 
+    endPlayerPhase(state);
     const nextState = executeVillainPhase(state);
 
     const logKeys = nextState.log.map((l) => l.key);

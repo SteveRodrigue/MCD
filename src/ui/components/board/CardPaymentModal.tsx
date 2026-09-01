@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard } from '../../../engine/models';
+import { getCardEnrichment } from '../../../data/supplemental';
 import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface CardPaymentModalProps {
@@ -29,10 +30,37 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const [selectedGeneratorIds, setSelectedGeneratorIds] = useState<string[]>([]);
   const [selectedTargetId, setSelectedTargetId] = useState<string | undefined>(undefined);
 
-  // Reset selections whenever a new card is selected
+  // Reset selections whenever a new card is selected, auto-selecting matching "The Power of..." cards
   useEffect(() => {
     if (cardToPlay) {
-      setSelectedHandCardIds([]);
+      // Auto-select "The Power of [Aspect]" matching resource cards as a QoL improvement
+      const autoSelectedHandIds: string[] = [];
+      const cardCost = cardToPlay.card.cost ?? 0;
+      const cardFaction = cardToPlay.card.faction;
+
+      if (cardCost > 0 && cardFaction) {
+        let accumulatedRes = 0;
+        for (const hCard of player.hand) {
+          if (hCard.instanceId === cardToPlay.instanceId) continue;
+          if (accumulatedRes >= cardCost) break;
+
+          const aspectDoubleStep = hCard.card.enrichment?.abilities
+            ?.flatMap((a) => a.steps || [])
+            .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+
+          const isMatchingPowerOf =
+            (aspectDoubleStep && aspectDoubleStep.params?.aspect === cardFaction) ||
+            (hCard.card.name.toLowerCase().startsWith('the power of') &&
+              hCard.card.faction === cardFaction);
+
+          if (isMatchingPowerOf) {
+            autoSelectedHandIds.push(hCard.instanceId);
+            accumulatedRes += 2;
+          }
+        }
+      }
+
+      setSelectedHandCardIds(autoSelectedHandIds);
       setSelectedGeneratorIds([]);
 
       // Default target: villain for attacks, main scheme for thwarts
@@ -48,7 +76,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         setSelectedTargetId(undefined);
       }
     }
-  }, [cardToPlay, gameState.villain.card.code, gameState.mainScheme.card.code]);
+  }, [cardToPlay, player.hand, gameState.villain.card.code, gameState.mainScheme.card.code]);
 
   // Keyboard shortcut: Esc to close
   useEffect(() => {
@@ -107,12 +135,30 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     // 2. Tableau Generators & Counter Cards
     for (const c of player.tableau) {
       if (c.exhausted) continue;
-      const uses = c.card.enrichment?.uses;
-      const hasResAbility = c.card.enrichment?.abilities?.some(
+      const enrichment = c.card.enrichment || getCardEnrichment(c.card.code);
+      const uses = enrichment?.uses;
+      const abilities = enrichment?.abilities || [];
+      const tableAbility = abilities.find(
         (a) =>
           a.timing === 'RESOURCE' ||
+          a.timing === 'HERO_ACTION' ||
+          a.timing === 'ALTER_EGO_ACTION' ||
+          a.timing === 'ACTION' ||
           a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
       );
+
+      const isHeroRestricted =
+        abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+        (c.card.text || '').toLowerCase().includes('hero resource:') ||
+        (c.card.text || '').toLowerCase().includes('hero action:');
+      const isAlterEgoRestricted =
+        abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+        (c.card.text || '').toLowerCase().includes('alter-ego resource:') ||
+        (c.card.text || '').toLowerCase().includes('alter-ego action:');
+
+      // Filter out generators that require a different form
+      if (isHeroRestricted && player.currentForm !== 'hero') continue;
+      if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') continue;
 
       if (uses) {
         if ((c.tokens?.counters || 0) > 0) {
@@ -124,7 +170,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             amount: 1,
           });
         }
-      } else if (hasResAbility) {
+      } else if (tableAbility) {
         list.push({
           id: c.instanceId,
           name: c.card.name,
@@ -136,7 +182,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     }
 
     return list;
-  }, [player.activeFormCard, player.tableau]);
+  }, [player.activeFormCard, player.tableau, player.currentForm]);
 
   // Calculate generated resources and breakdown
   const { totalGenerated, resourceBreakdown } = useMemo(() => {
@@ -401,7 +447,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       {/* Resource Yield Badge */}
                       <div className="flex items-center space-x-1 shrink-0">
                         {isDoubled ? (
-                          <span className="text-xs font-black px-2 py-0.5 bg-comic-green text-white rounded border border-comic-black flex items-center space-x-1">
+                          <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-600 text-white rounded-md border-2 border-comic-black shadow-comic-sm flex items-center space-x-1">
                             <span>2 Res (2× Aspect)</span>
                           </span>
                         ) : (

@@ -97,6 +97,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: Array(30).fill(cardCatalog.getCard('01108')!),
       skipMulligan: true,
+      skipScenarioPlugin: true,
     });
 
     // No hazard icons
@@ -120,6 +121,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: Array(30).fill(cardCatalog.getCard('01108')!),
       skipMulligan: true,
+      skipScenarioPlugin: true,
     });
 
     // 1 Hazard icon

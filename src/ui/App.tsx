@@ -54,12 +54,14 @@ export const AppContent: React.FC = () => {
     });
 
     const newGameState = setupGame({
+      scenarioId: selection.scenarioId,
       players,
       villain,
       mainScheme,
       encounterCards,
       difficulty: selection.difficulty,
       heroicLevel: selection.heroicLevel,
+      modularSetCodes: selection.selectedModularSetCodes,
     });
 
     setGameState(newGameState);

@@ -193,5 +193,25 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       expect(updatedShooter.tokens?.counters).toBe(2);
       expect(updatedShooter.exhausted).toBe(true);
     });
+
+    it('prevents Web-Shooter (01008) HERO_ACTION from being used while in Alter-Ego form', () => {
+      gameState.players[0].currentForm = 'alter_ego';
+      gameState.players[0].activeFormCard = gameState.players[0].alterEgo;
+
+      const webShooterCard = catalog.getCard('01008')!;
+      const shooterInst = createCardInstance(webShooterCard);
+      shooterInst.tokens = { counters: 3 };
+      gameState.players[0].tableau.push(shooterInst);
+
+      const resourceRes = dispatchAction(gameState, {
+        type: 'USE_CARD_ABILITY',
+        playerId: 'p1',
+        cardInstanceId: shooterInst.instanceId,
+        abilityId: 'web_shooter_resource',
+      });
+
+      expect(resourceRes.result.success).toBe(false);
+      expect(resourceRes.result.error).toContain('Hero form');
+    });
   });
 });

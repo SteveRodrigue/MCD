@@ -7,6 +7,7 @@ import {
   SideSchemeCard,
   GamePhase,
 } from '@engine/models';
+import { getCardEnrichment } from '../../data/supplemental';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -171,9 +172,20 @@ export function canBasicThwart(
     if (!sideScheme) {
       return { allowed: false, reason: 'Target side scheme is not in play.' };
     }
+    if (sideScheme.threat <= 0) {
+      return { allowed: false, reason: 'Cannot thwart a scheme with no threat.' };
+    }
   }
 
   if (targetType === 'main_scheme') {
+    // 0. Threat Check: Cannot thwart a scheme with no threat (RR v1.8 p. 29)
+    if (!state.mainScheme || state.mainScheme.threat <= 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot thwart a scheme with no threat.',
+      };
+    }
+
     // 1. Patrol Keyword Check: A minion with Patrol engaged with this player prevents thwarting main scheme
     const hasPatrolMinion = player.engagedMinions.some((m) => {
       const text = m.card.text || '';
@@ -595,6 +607,26 @@ export function canPlayCard(
         return { allowed: false, reason: `Resource generator ${gCard.card.name} is already exhausted.` };
       }
 
+      // Check generator abilities and form restrictions (RR v1.8 p. 16, 24)
+      const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
+      const abilities = enrichment?.abilities || [];
+
+      const isHeroRestricted =
+        abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+        (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
+        (gCard.card.text || '').toLowerCase().includes('hero action:');
+      const isAlterEgoRestricted =
+        abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+        (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
+        (gCard.card.text || '').toLowerCase().includes('alter-ego action:');
+
+      if (isHeroRestricted && player.currentForm !== 'hero') {
+        return { allowed: false, reason: `${gCard.card.name} ability requires Hero form.` };
+      }
+      if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') {
+        return { allowed: false, reason: `${gCard.card.name} ability requires Alter-Ego form.` };
+      }
+
       // Check if generator relies on counters (uses)
       if (gCard.card.enrichment?.uses) {
         if ((gCard.tokens?.counters || 0) <= 0) {
@@ -753,19 +785,36 @@ export function evaluateCardPlayability(
   // C. In-Play Tableau Generators
   for (const t of player.tableau) {
     if (t.exhausted) continue;
-    if (t.card.enrichment?.uses) {
+    const enrichment = t.card.enrichment || getCardEnrichment(t.card.code);
+    const uses = enrichment?.uses;
+    const abilities = enrichment?.abilities || [];
+    const tableAbility = abilities.find(
+      (a) =>
+        a.timing === 'RESOURCE' ||
+        a.timing === 'HERO_ACTION' ||
+        a.timing === 'ALTER_EGO_ACTION' ||
+        a.timing === 'ACTION' ||
+        a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+    );
+
+    const isHeroRestricted =
+      abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+      (t.card.text || '').toLowerCase().includes('hero resource:') ||
+      (t.card.text || '').toLowerCase().includes('hero action:');
+    const isAlterEgoRestricted =
+      abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+      (t.card.text || '').toLowerCase().includes('alter-ego resource:') ||
+      (t.card.text || '').toLowerCase().includes('alter-ego action:');
+
+    if (isHeroRestricted && player.currentForm !== 'hero') continue;
+    if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') continue;
+
+    if (uses) {
       if ((t.tokens?.counters || 0) > 0) {
         maxPotentialResources += 1;
       }
-    } else {
-      const hasResAbility = t.card.enrichment?.abilities?.some(
-        (a) =>
-          a.timing === 'RESOURCE' ||
-          a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
-      );
-      if (hasResAbility) {
-        maxPotentialResources += 1;
-      }
+    } else if (tableAbility) {
+      maxPotentialResources += 1;
     }
   }
 

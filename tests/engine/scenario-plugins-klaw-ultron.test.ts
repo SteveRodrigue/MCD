@@ -10,7 +10,6 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
 
   describe('Klaw Scenario Plugin', () => {
     it('sets up Klaw Stage 1A with Defense Network side scheme and starting engaged minion', () => {
-      const klawPlugin = ScenarioRegistry.get('klaw') as KlawScenarioPlugin;
       const villainCard = cardCatalog.getCard('01113') as VillainCard;
       const mainSchemeCard = cardCatalog.getCard('01116b') as MainSchemeCard;
 
@@ -29,11 +28,6 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
         villain: villainCard,
         mainScheme: mainSchemeCard,
         encounterCards: cardCatalog.getCardsBySet('klaw'),
-      });
-
-      klawPlugin.onGameSetup(state, {
-        scenarioId: 'klaw',
-        difficulty: 'STANDARD',
         modularSetCodes: ['masters_of_evil'],
       });
 
@@ -91,7 +85,6 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
 
   describe('Ultron Scenario Plugin', () => {
     it('sets up Ultron Stage 1A with Ultron Drones environment and spawns starting drone minion', () => {
-      const ultronPlugin = ScenarioRegistry.get('ultron') as UltronScenarioPlugin;
       const villainCard = cardCatalog.getCard('01134') as VillainCard;
       const mainSchemeCard = cardCatalog.getCard('01137b') as MainSchemeCard;
 
@@ -110,11 +103,6 @@ describe('Milestone 2C: Klaw & Ultron Scenario Plugins (ADR-0033)', () => {
         villain: villainCard,
         mainScheme: mainSchemeCard,
         encounterCards: cardCatalog.getCardsBySet('ultron'),
-      });
-
-      ultronPlugin.onGameSetup(state, {
-        scenarioId: 'ultron',
-        difficulty: 'STANDARD',
         modularSetCodes: ['under_attack'],
       });
 

@@ -275,4 +275,35 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
       }),
     ).toThrowError(/Supplemental data is missing for card unscanned_99999 \(Unscanned Card\)/);
   });
+
+  it('automatically executes official ScenarioPlugin onGameSetup when scenarioId is provided', () => {
+    const { identity, deck } = createSpiderManJusticeDeck();
+    const { villain, encounterCards } = createRhinoEncounterDeck();
+
+    // Pass Stage 1A card (Setup face) to setupGame
+    const stage1ACard = catalog.getCard('01097a') as MainSchemeCard;
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      difficulty: 'STANDARD',
+      players: [
+        {
+          id: 'p1',
+          name: 'Player 1',
+          hero: identity.hero,
+          alterEgo: identity.alterEgo,
+          deckCards: deck,
+        },
+      ],
+      villain,
+      mainScheme: stage1ACard,
+      encounterCards,
+    });
+
+    // Verify setupGame invoked ScenarioPlugin to enforce Stage 1B active main scheme
+    expect(state.mainScheme.stage).toBe('1B');
+    expect(state.mainScheme.card.code).toBe('01097b');
+    expect(state.mainScheme.card.stage).toBe('1B');
+    expect(state.mainScheme.targetThreat).toBe(7); // 7 x 1
+  });
 });

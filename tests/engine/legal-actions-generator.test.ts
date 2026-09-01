@@ -132,4 +132,17 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     expect(report.handCardActions).toHaveLength(0);
     expect(report.activeActionCount).toBe(0);
   });
+
+  it('disallows basic thwart and excludes Thwart action when main scheme has 0 threat (RR v1.8 p. 29)', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false;
+    state.mainScheme.threat = 0;
+    state.sideSchemes = [];
+
+    const report = getLegalActionsForPlayer(state, p1.id);
+    const thwartAction = report.identityActions.find((a) => a.action.type === 'BASIC_THWART');
+    expect(thwartAction).toBeUndefined();
+  });
 });

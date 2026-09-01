@@ -172,7 +172,7 @@ flowchart TD
 
 ---
 
-### Step 4: Composable & Modular Implementation (Green)
+### Step 5: Composable & Modular Implementation (Green)
 * Implement the capability cleanly in the appropriate subsystem:
   * **Phase Pipelines:** `src/engine/pipeline/` (`player-phase.ts`, `villain-phase.ts`, `round-upkeep.ts`, `combat-pipeline.ts`).
   * **Effect Primitives:** `src/engine/effects/index.ts` (parameterized, composable functions).
@@ -183,16 +183,20 @@ flowchart TD
 
 ---
 
-### Step 5: Declarative Supplemental Wiring & Card Promotion (if applicable)
-* If the feature enables cards that were previously blocked or listed in `docs/ambiguities/`:
-  1. Update card supplemental definitions in `src/data/supplemental/pack/*.json` to utilize the new primitive/schema.
-  2. Add dedicated card unit tests verifying real card execution.
-  3. Promote the card confidence to $\ge 98\%$ in the supplemental JSON (`audit.confidence: 1.0`).
-  4. Prune resolved ambiguity files from `docs/ambiguities/` (Inbox Zero).
+### Step 6: Declarative Supplemental Retrofit, Wiring & Audit Metadata Update 🃏
+* Whenever a feature, primitive, keyword, or mechanic is implemented or modified:
+  1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for every card that utilizes or is affected by the new capability.
+  2. **Retrofit Card Definitions:** Apply the new declarative schema and primitives to all affected card entries.
+  3. **Update Audit Metadata:** For every modified card entry, update:
+     * `"updatedAt"`: Current ISO timestamp with `HH:MM` (e.g. `2026-09-01T09:48:00Z`).
+     * `"reviewedAt"`: Current ISO timestamp with `HH:MM`.
+     * `"reviewedBy"`: `"antigravity"` (or current agent identity).
+  4. **Card Promotion & Ambiguity Pruning:** If previously blocked, promote `audit.confidence: 1.0` and prune resolved ambiguity files in `docs/ambiguities/` (Inbox Zero).
+  5. **Run Declarations Analyzer:** Execute `npm run report:declarations` to ensure zero schema violations.
 
 ---
 
-### Step 6: Full Verification Suite & Quality Gate
+### Step 7: Full Verification Suite & Quality Gate
 Execute the full multi-tier verification suite:
 ```bash
 npm test && npm run typecheck && npm run build && npm run report:declarations

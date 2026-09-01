@@ -152,9 +152,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   // Dynamic Fan-Out Stack Layout Hook (Standard compact responsive sm-cards)
   const handFan = useHandFanLayout({
     cardCount: hand.length,
-    cardWidth: 128, // size="sm" width ~128px
-    defaultGap: 12,
-    padding: 24,
+    cardWidth: 112, // size="sm" portrait width is 112px (w-28)
+    defaultGap: 10,
+    padding: 12,
   });
 
   const [hoveredHandCardId, setHoveredHandCardId] = useState<string | null>(null);
@@ -242,7 +242,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   return (
     <>
       <section
-        className={`comic-panel p-4 bg-amber-100/95 relative shadow-comic space-y-3 transition-all overflow-visible ${
+        className={`comic-panel px-3.5 pt-3 pb-2.5 bg-amber-100/95 relative shadow-comic transition-all overflow-visible ${
           !isFocused
             ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300'
             : 'ring-2 ring-comic-blue shadow-comic-lg'
@@ -285,7 +285,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row items-stretch gap-3 overflow-visible pt-1">
+        <div className="flex flex-col md:flex-row items-center gap-3 overflow-visible pt-1">
           {/* Turn Warning Toast (Mobile View) */}
           {turnWarning && (
             <div className="p-2 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse md:hidden">
@@ -295,12 +295,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           )}
 
           {/* Column 1: Vertical Piles & Utilities Sidebar */}
-          <div className="w-full md:w-36 lg:w-40 shrink-0 flex flex-row md:flex-col items-center justify-center gap-2 bg-white/90 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm">
+          <div className="w-full md:w-32 lg:w-36 shrink-0 flex flex-row md:flex-col items-stretch justify-center gap-1 bg-white/90 p-1.5 rounded-xl border-2 border-comic-black shadow-comic-sm">
             {/* Draw Pile & Tutor */}
-            <div className="flex flex-col items-stretch w-full gap-1">
+            <div className="flex flex-col items-stretch w-full gap-0.5">
               <div
                 onClick={() => devMode && setShowDeckModal(true)}
-                className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-comic-blue text-white border border-comic-black shadow-comic-sm ${
+                className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm ${
                   devMode ? 'cursor-pointer hover:bg-sky-600 transition-transform hover:scale-[1.02]' : 'cursor-default'
                 }`}
                 title={
@@ -310,7 +310,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 }
               >
                 <Layers className="w-3.5 h-3.5 text-comic-yellow shrink-0" />
-                <span className="font-comic text-xs font-bold whitespace-nowrap">DECK: {deck.length}</span>
+                <span className="font-comic text-[11px] font-bold whitespace-nowrap">DECK: {deck.length}</span>
               </div>
 
               {devMode && (
@@ -319,7 +319,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                     e.stopPropagation();
                     setShowDeckModal(true);
                   }}
-                  className="w-full px-2 py-0.5 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm font-comic text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-[1.02]"
+                  className="w-full px-2 py-0.5 rounded bg-comic-yellow text-comic-black hover:bg-amber-300 border border-comic-black shadow-comic-sm font-comic text-[9px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-transform hover:scale-[1.02]"
                   title="Dev Mode: Select card from deck and add to hand"
                 >
                   <Plus className="w-3 h-3" />
@@ -331,31 +331,31 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {/* Discard Pile */}
             <div
               onClick={() => discard.length > 0 && setShowDiscardModal(true)}
-              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-100 text-slate-800 border border-comic-black shadow-comic-sm text-center ${
+              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-slate-800 border border-comic-black shadow-comic-sm text-center ${
                 discard.length > 0 ? 'cursor-pointer hover:bg-amber-100 transition-transform hover:scale-[1.02]' : 'cursor-default opacity-60'
               }`}
               title="Inspect Discard Pile"
             >
-              <span className="font-comic text-xs font-bold whitespace-nowrap">DISCARD: {discard.length}</span>
+              <span className="font-comic text-[11px] font-bold whitespace-nowrap">DISCARD: {discard.length}</span>
             </div>
 
             {/* Nemesis Set */}
             <div
               onClick={() => setAsideCards.length > 0 && setShowNemesisModal(true)}
-              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-rose-50 text-rose-900 border border-comic-black shadow-comic-sm text-center ${
+              className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-900 border border-comic-black shadow-comic-sm text-center ${
                 setAsideCards.length > 0 ? 'cursor-pointer hover:bg-rose-100 transition-transform hover:scale-[1.02]' : 'cursor-default opacity-60'
               }`}
               title="Inspect Nemesis Set (Out of Play)"
             >
               <Skull className="w-3.5 h-3.5 text-rose-700 shrink-0" />
-              <span className="font-comic text-xs font-bold whitespace-nowrap">NEMESIS: {setAsideCards.length}</span>
+              <span className="font-comic text-[11px] font-bold whitespace-nowrap">NEMESIS: {setAsideCards.length}</span>
             </div>
           </div>
 
           {/* Column 2: Cards in Hand (Fan-Out Stack • Leftmost Card on Top) */}
           <div className="flex-1 min-w-0 flex flex-col justify-center overflow-visible">
             {turnWarning && (
-              <div className="hidden md:flex mb-2 p-2 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
+              <div className="hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
                 <span>⚠️ {turnWarning}</span>
                 <button onClick={() => setTurnWarning(null)} className="text-white hover:text-black font-bold ml-2">✕</button>
               </div>
@@ -363,7 +363,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
             <div
               ref={handFan.containerRef}
-              className="flex items-center justify-start overflow-visible py-2 px-1 min-h-[180px] w-full"
+              className="flex items-center justify-start overflow-visible py-0.5 px-0.5 min-h-[160px] w-full"
             >
               {hand.map((cardInst, index) => {
                 const isHovered = hoveredHandCardId === cardInst.instanceId;

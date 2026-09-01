@@ -207,7 +207,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           </div>
         ) : (
           /* Single Player (Solo Mode Tabletop) */
-          <div className="max-w-7xl w-full mx-auto px-4 md:px-6 space-y-6">
+          <div className="max-w-5xl lg:max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-6 space-y-6">
             <HeroZone
               player={singlePlayer}
               gameState={gameState}
@@ -216,29 +216,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               isMultiHero={false}
               onDispatchAction={onDispatchAction}
             />
+            <PlayerHandTray
+              hand={singlePlayer.hand}
+              deck={singlePlayer.deck}
+              discard={singlePlayer.discard}
+              setAsideCards={singlePlayer.setAsideCards}
+              heroName={singlePlayer.name}
+              handSizeLimit={(singlePlayer.activeFormCard as any).handSize ?? 6}
+              seatNumber={1}
+              isFocused={true}
+              isMultiHero={false}
+              player={singlePlayer}
+              gameState={gameState}
+              onDispatchAction={onDispatchAction}
+            />
           </div>
         )}
       </main>
 
-      {/* 3. Sticky Bottom Player Hand Dock (Single Player Mode Only) */}
-      {!isMultiHero && (
-        <PlayerHandTray
-          hand={singlePlayer.hand}
-          deck={singlePlayer.deck}
-          discard={singlePlayer.discard}
-          setAsideCards={singlePlayer.setAsideCards}
-          heroName={singlePlayer.name}
-          handSizeLimit={(singlePlayer.activeFormCard as any).handSize ?? 6}
-          seatNumber={1}
-          isFocused={true}
-          isMultiHero={false}
-          player={singlePlayer}
-          gameState={gameState}
-          onDispatchAction={onDispatchAction}
-        />
-      )}
-
-      {/* 4. 1960s Daily Bugle Newspaper Action Popover */}
+      {/* 3. 1960s Daily Bugle Newspaper Action Popover */}
       <DailyBugleActionNewspaper
         report={legalReport}
         isOpen={isNewspaperOpen}

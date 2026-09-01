@@ -377,5 +377,108 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const result = canPlayCard(state, 'p1', secondInstance.instanceId, [payInstance.instanceId]);
       expect(result.allowed).toBe(true);
     });
+
+    it('allows playing a unique ally with a different subtitle than the active hero (RR v1.8 p. 29 subtitle distinction)', () => {
+      // Spider-Man (Miles Morales) ally
+      const milesMoralesAlly: NormalizedCard = {
+        ...cardCatalog.getCard('01005')!,
+        code: 'miles_ally',
+        name: 'Spider-Man',
+        subname: 'Miles Morales',
+        type: CardType.ALLY,
+        isUnique: true,
+        cost: 3,
+      };
+
+      const paymentCard = cardCatalog.getCard('01005')!;
+
+      // Game has Player 1: Spider-Man (Peter Parker)
+      const state = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero, // Name: Spider-Man, Subname: Peter Parker
+            alterEgo: peterParkerAlterEgo,
+            deckCards: [milesMoralesAlly, paymentCard, paymentCard, paymentCard, paymentCard],
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      const milesInstance = createCardInstance(milesMoralesAlly);
+      const payCards = [
+        createCardInstance(paymentCard),
+        createCardInstance(paymentCard),
+        createCardInstance(paymentCard),
+      ];
+      state.players[0].hand = [milesInstance, ...payCards];
+      state.players[0].currentForm = 'hero';
+
+      const result = canPlayCard(
+        state,
+        'p1',
+        milesInstance.instanceId,
+        payCards.map((c) => c.instanceId),
+      );
+
+      // RR v1.8 p. 29: Miles Morales and Peter Parker are distinct characters with different subtitles -> ALLOWED!
+      expect(result.allowed).toBe(true);
+    });
+
+    it('blocks playing a unique ally with the same subtitle as the active hero (RR v1.8 p. 29)', () => {
+      // Spider-Man (Peter Parker) ally
+      const peterParkerAlly: NormalizedCard = {
+        ...cardCatalog.getCard('01005')!,
+        code: 'peter_ally',
+        name: 'Spider-Man',
+        subname: 'Peter Parker',
+        type: CardType.ALLY,
+        isUnique: true,
+        cost: 3,
+      };
+
+      const paymentCard = cardCatalog.getCard('01005')!;
+
+      const state = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero,
+            alterEgo: peterParkerAlterEgo,
+            deckCards: [peterParkerAlly, paymentCard, paymentCard, paymentCard, paymentCard],
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      const peterInstance = createCardInstance(peterParkerAlly);
+      const payCards = [
+        createCardInstance(paymentCard),
+        createCardInstance(paymentCard),
+        createCardInstance(paymentCard),
+      ];
+      state.players[0].hand = [peterInstance, ...payCards];
+      state.players[0].currentForm = 'hero';
+
+      const result = canPlayCard(
+        state,
+        'p1',
+        peterInstance.instanceId,
+        payCards.map((c) => c.instanceId),
+      );
+
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain("Global unicity violation (RR v1.8 p. 29)");
+    });
   });
 });

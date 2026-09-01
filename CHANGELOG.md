@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Global Cross-Player Unicity & Hero Identity Collision Validation ([#31](https://github.com/SteveRodrigue/MCD/issues/31), `legality-checker.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
+  - Upgraded [`checkUniqueCardPlayable()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) and introduced [`isUniqueCollision()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) adhering strictly to official Marvel Champions RR v1.8 p. 29 ("Unique"):
+    - **Cross-Player Unicity:** Evaluates uniqueness across all active players' tableaus, allies, and unique minions.
+    - **Hero & Alter-Ego Persona Collision:** Automatically maps a player's alter-ego persona to their hero identity subtitle, preventing playing unique allies/supports that share the same character persona (*Spider-Man: Peter Parker* ally or *Peter Parker* support while *Spider-Man / Peter Parker* identity is in the game).
+    - **Subtitle Differentiation Rule (RR v1.8 p. 29):** If two cards share the same title but have different subtitles (such as *Spider-Man: Peter Parker* and *Spider-Man: Miles Morales*), they are recognized as distinct characters and permitted to enter play simultaneously.
+  - Added comprehensive BDD test coverage in [`table-invariants-restricted-and-unicity.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/table-invariants-restricted-and-unicity.test.ts).
+
 - **Feature & Engine: Mid-Action Player and Encounter Deck Exhaustion & Penalty Invariants ([#32](https://github.com/SteveRodrigue/MCD/issues/32), `effects/index.ts`, `deck-exhaustion.ts`, `deck-exhaustion-invariants.test.ts`):**
   - Unified all card draw, search, milling, discard, and surge primitives across [`src/engine/effects/index.ts`](src/engine/effects/index.ts) to route through centralized [`drawPlayerCard()`](src/engine/pipeline/deck-exhaustion.ts) and [`drawEncounterCard()`](src/engine/pipeline/deck-exhaustion.ts).
   - Enforced official Marvel Champions RR v1.8 p. 11 & p. 18 deck exhaustion invariants:

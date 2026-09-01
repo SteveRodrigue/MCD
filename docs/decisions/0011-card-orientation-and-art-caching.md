@@ -49,13 +49,15 @@ Additionally, card art assets fetched from remote CDNs (MarvelCDB) must not intr
 * **Landscape Dimensions:** $40 \times 28$ (sm), $64 \times 44$ (md), $80 \times 56$ (lg), $410 \times 72$ (xl).
 * **Exhaustion Invariant:** Exhausted cards rotate $90^\circ$ clockwise regardless of base orientation.
 
-### 3. Cache-First Card Art Service ([`card-cache-service.ts`](../../src/ui/services/card-cache-service.ts))
+### 3. Local-First Card Art Static Serving & Fallback Architecture
 * **Strategy:**
-  1. In-memory `Map` Object URL cache.
-  2. Browser `CacheStorage` (`mcd-card-art-v1`).
-  3. Remote fetch from MarvelCDB CDN (`https://marvelcdb.com/bundles/cards/${code}.png`).
-  4. Graceful fallback to 60s Comic Pop-Art vector card if offline or image unavailable.
-* **Local CLI Script:** `npm run cache:cards` (`scripts/cache-card-images.ts`) to pre-download all card images locally into `cache/cards/` (ignored in `.gitignore`).
+  1. **Primary Local Static Endpoint (`/cards/:fileName`):** [`card-cache-service.ts`](../../src/ui/services/card-cache-service.ts) resolves local paths `/cards/${code}${side}.png` directly.
+  2. **Vite Local Static Middleware & Production Bundler (`vite.config.ts`):**
+     * **Dev Mode:** Intercepts `/cards/:fileName` requests and streams local card images directly from `cache/cards/` with immutable caching headers.
+     * **Production Build:** Copies `cache/cards/` into `dist/cards/` for self-contained, 100% offline distribution.
+  3. **Automatic CDN Fallback (`CardView.tsx`):** If a card image is not yet cached locally on disk (404), `CardView.tsx` catches `onError` on the `<img>` element and automatically falls back to remote MarvelCDB CDN (`https://marvelcdb.com/bundles/cards/${code}.png`).
+  4. **Vector Art Fallback:** If both local and remote assets fail, the system renders a stylized 60s Comic Pop-Art vector card.
+* **Local CLI Ingestion:** `npm run cache:cards` (`scripts/cache-card-images.ts`) fetches and caches card images locally into `cache/cards/`.
 
 ---
 
@@ -63,8 +65,10 @@ Additionally, card art assets fetched from remote CDNs (MarvelCDB) must not intr
 
 ### Positive:
 * **Tabletop Accuracy:** Main Schemes and Side Schemes automatically render in wide landscape mode.
-* **Instant Rendering:** Cached card images load with 0ms network latency.
+* **True Local-First & 0ms Latency:** Card images load directly from local static storage without network delay.
+* **Offline-Proof:** Opening images in new tabs or playing offline resolves entirely from local `/cards/` routes.
+* **Resilient Graceful Fallback:** Missing local assets transparently fall back to the MarvelCDB CDN without breaking game UI.
 * **Safe Overrides:** Future expansion cards with unique aspect ratios can override orientation without changing the core loader.
 
 ### Negative / Tradeoffs:
-* Requires handling differing flex/grid space for mixed portrait and landscape cards on the board layout.
+* Requires maintaining `cache/cards/` disk cache and copying static assets to `dist/cards/` during production builds.

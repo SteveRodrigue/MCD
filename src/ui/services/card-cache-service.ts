@@ -9,21 +9,93 @@ const MARVELCDB_CDN_BASE = 'https://marvelcdb.com/bundles/cards';
 // In-memory runtime Object URL cache to avoid re-generating blob URLs
 const objectUrlMemoryCache = new Map<string, string>();
 
-/**
- * Normalizes card codes, ensuring multi-sided cards retain their exact sub-identifier.
- * e.g. "01001a" (Spider-Man), "01001b" (Peter Parker), "01097b" (The Break-In 1B), "01006" (Swinging Web Kick).
- */
-export function normalizeCardCodeForArt(code: string): string {
-  if (!code) return '';
-  return code.trim().toLowerCase();
+import { CardType } from '../../engine/models';
+
+export interface CardArtIdentifier {
+  code: string;
+  type?: CardType | string;
+  stage?: string;
 }
 
 /**
- * Returns the remote MarvelCDB image CDN URL for a given card code.
+ * Returns the exact image asset filename for any card based on its code, type, and stage:
+ * - Main Scheme Stage 'A' (e.g. stage "1A", "2A", "3A"): MarvelCDB names the front image
+ *   using the base number without 'a' (e.g. "01097.png").
+ * - All other cards match their code directly:
+ *   - Main Scheme Stage '1B', '2B' -> "01097b.png"
+ *   - Hero cards -> "01001a.png"
+ *   - Alter-Ego cards -> "01001b.png"
+ *   - Villains, allies, events, upgrades, supports, minions, treacheries -> "01094.png", "01006.png", etc.
  */
-export function getRemoteMarvelCdbUrl(code: string): string {
-  const normalized = normalizeCardCodeForArt(code);
-  return `${MARVELCDB_CDN_BASE}/${normalized}.png`;
+export function getCardArtFileName(card: CardArtIdentifier | string): string {
+  if (!card) return '';
+  if (typeof card === 'string') {
+    const trimmed = card.trim().toLowerCase();
+    return `${trimmed}.png`;
+  }
+
+  const { code, type, stage } = card;
+  const trimmedCode = (code || '').trim().toLowerCase();
+  if (!trimmedCode) return '';
+
+  const isMainScheme =
+    type === CardType.MAIN_SCHEME ||
+    type === 'main_scheme' ||
+    (stage !== undefined && /^[0-9]+[ab]$/i.test(stage));
+
+  const isSideA =
+    (stage !== undefined && stage.toUpperCase().endsWith('A')) ||
+    (isMainScheme && trimmedCode.endsWith('a'));
+
+  if (isMainScheme && isSideA) {
+    return `${trimmedCode.replace(/a$/i, '')}.png`;
+  }
+
+  return `${trimmedCode}.png`;
+}
+
+/**
+ * Legacy compatibility alias for getCardArtFileName (without extension).
+ */
+export function normalizeCardCodeForArt(card: CardArtIdentifier | string): string {
+  const fileName = getCardArtFileName(card);
+  return fileName.replace(/\.png$/i, '');
+}
+
+/**
+ * Returns the local static URL for a cached card image (e.g. "/cards/01097.png").
+ */
+export function getLocalCardArtUrl(card: CardArtIdentifier | string): string {
+  const fileName = getCardArtFileName(card);
+  if (!fileName) return '';
+  return `/cards/${fileName}`;
+}
+
+/**
+ * Returns the remote MarvelCDB image CDN URL for a given card object or code.
+ */
+export function getRemoteMarvelCdbUrl(card: CardArtIdentifier | string): string {
+  const fileName = getCardArtFileName(card);
+  if (!fileName) return '';
+  return `${MARVELCDB_CDN_BASE}/${fileName}`;
+}
+
+/**
+ * Retrieves card art with a strict Local-First offline strategy:
+ * 1. Resolves immediately to the local static asset endpoint (`/cards/${fileName}`).
+ * 2. If running outside the local dev/prod server or missing on disk, CardView automatically
+ *    falls back to getRemoteMarvelCdbUrl.
+ */
+export async function getCardArtUrl(card: CardArtIdentifier | string): Promise<string> {
+  return getLocalCardArtUrl(card);
+}
+
+/**
+ * Preloads a list of card arts into CacheStorage in the background.
+ */
+export async function preloadCardArts(cards: (CardArtIdentifier | string)[]): Promise<void> {
+  if (!cards || cards.length === 0) return;
+  await Promise.allSettled(cards.map((card) => getCardArtUrl(card)));
 }
 
 /**
@@ -31,68 +103,6 @@ export function getRemoteMarvelCdbUrl(code: string): string {
  */
 function isCacheStorageAvailable(): boolean {
   return typeof window !== 'undefined' && 'caches' in window;
-}
-
-/**
- * Retrieves card art with a strict Cache-First strategy:
- * 1. Returns in-memory object URL if already created.
- * 2. Checks browser persistent CacheStorage ('mcd-card-art-v1').
- * 3. On cache miss: Fetches from MarvelCDB CDN, caches the response, and returns an Object URL.
- * 4. Falls back to direct CDN URL if Blob creation or Cache API fails.
- */
-export async function getCardArtUrl(code: string): Promise<string> {
-  const normalizedCode = normalizeCardCodeForArt(code);
-  if (!normalizedCode) return '';
-
-  // 1. Check in-memory cache
-  if (objectUrlMemoryCache.has(normalizedCode)) {
-    return objectUrlMemoryCache.get(normalizedCode)!;
-  }
-
-  const remoteUrl = getRemoteMarvelCdbUrl(normalizedCode);
-
-  // If running in environment without CacheStorage, return remote URL
-  if (!isCacheStorageAvailable()) {
-    return remoteUrl;
-  }
-
-  try {
-    const cache = await caches.open(CACHE_NAME);
-    const cachedResponse = await cache.match(remoteUrl);
-
-    if (cachedResponse) {
-      const blob = await cachedResponse.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      objectUrlMemoryCache.set(normalizedCode, objectUrl);
-      return objectUrl;
-    }
-
-    // 2. Fetch from MarvelCDB
-    const response = await fetch(remoteUrl, { mode: 'cors' });
-    if (!response.ok) {
-      throw new Error(`Failed to fetch card art: HTTP ${response.status}`);
-    }
-
-    // Clone response before consuming it to store in CacheStorage
-    await cache.put(remoteUrl, response.clone());
-
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    objectUrlMemoryCache.set(normalizedCode, objectUrl);
-    return objectUrl;
-  } catch (err) {
-    // Graceful fallback to direct remote CDN URL
-    console.warn(`[CardCacheService] Falling back to direct CDN for card ${normalizedCode}:`, err);
-    return remoteUrl;
-  }
-}
-
-/**
- * Preloads a list of card arts into CacheStorage in the background.
- */
-export async function preloadCardArts(codes: string[]): Promise<void> {
-  if (!codes || codes.length === 0) return;
-  await Promise.allSettled(codes.map((code) => getCardArtUrl(code)));
 }
 
 /**

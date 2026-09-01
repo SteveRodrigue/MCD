@@ -11,7 +11,7 @@ import {
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { executeEffect } from '../effects';
-import { getEffectiveHeroStats, getEffectiveVillainStats } from './stat-calculator';
+import { getEffectiveHeroStats, getEffectiveVillainStats, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
 
 export type DefensePolicy =
   | 'TAKE_UNDEFENDED'
@@ -92,10 +92,8 @@ export function step1_preAttackAndStunCheck(
       return true;
     }
 
-    // Check Stun status on Villain
-    const stunIndex = state.villain.statusCards.indexOf(StatusCard.STUNNED);
-    if (stunIndex !== -1) {
-      state.villain.statusCards.splice(stunIndex, 1);
+    // Check Stun status on Villain (taking into account Steady - RR v1.8 p. 28)
+    if (consumeEntityStatusCards(state.villain, StatusCard.STUNNED)) {
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -109,10 +107,8 @@ export function step1_preAttackAndStunCheck(
       return true;
     }
   } else if (attackerCard) {
-    // Minion stun check
-    const minionStunIdx = (attackerCard.statusCards || []).indexOf(StatusCard.STUNNED);
-    if (minionStunIdx !== -1) {
-      attackerCard.statusCards!.splice(minionStunIdx, 1);
+    // Minion stun check (taking into account Steady - RR v1.8 p. 28)
+    if (consumeEntityStatusCards(attackerCard, StatusCard.STUNNED)) {
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -414,7 +410,12 @@ export function step4_and_5_dealAndResolveBoostCards(
 ): void {
   attackContext.phase = 'REVEAL_BOOST';
 
-  if (attackContext.attackerType === 'VILLAIN') {
+  const isVillainousMinion =
+    attackContext.attackerType === 'MINION' &&
+    attackContext.attackerCard &&
+    hasEntityKeyword(attackContext.attackerCard, 'Villainous');
+
+  if (attackContext.attackerType === 'VILLAIN' || isVillainousMinion) {
     // Step 4: Deal base boost card
     const boostCard = drawEncounterCardForCombat(state);
     if (boostCard) {

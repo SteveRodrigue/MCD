@@ -14,6 +14,8 @@ import { executeEffect } from '../effects';
 import { handleMainSchemeCompletion } from './scenario-helpers';
 import {
   getEffectiveVillainStats,
+  hasEntityKeyword,
+  consumeEntityStatusCards,
 } from './stat-calculator';
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
@@ -73,10 +75,12 @@ export function executeVillainAttackAgainstPlayer(
 /**
  * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
  */
+/**
+ * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
+ */
 export function executeVillainSchemeAgainstPlayer(state: GameState, player: PlayerState): void {
-  const confuseIndex = state.villain.statusCards.indexOf(StatusCard.CONFUSED);
-  if (confuseIndex !== -1) {
-    state.villain.statusCards.splice(confuseIndex, 1);
+  // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
+  if (consumeEntityStatusCards(state.villain, StatusCard.CONFUSED)) {
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
@@ -152,8 +156,31 @@ export function executeMinionAttackAgainstPlayer(
  * Executes a single minion scheme against an alter-ego.
  */
 export function executeMinionSchemeAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+  // Check Confused status on Minion (taking into account Steady - RR v1.8 p. 28)
+  if (consumeEntityStatusCards(minion, StatusCard.CONFUSED)) {
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'minion.confused.cancelled',
+      params: { minion: minion.card.name },
+      onomatopoeia: 'CONFUSION CLEARED!',
+    });
+    return;
+  }
+
   const minionCard = minion.card as MinionCard;
-  const schemeThreat = minionCard.scheme || 1;
+  let schemeThreat = minionCard.scheme || 1;
+
+  // Villainous minion deals and resolves a facedown boost card (RR v1.8 p. 30)
+  if (hasEntityKeyword(minion, 'Villainous')) {
+    const boostCard = drawEncounterCard(state);
+    if (boostCard) {
+      const icons = boostCard.card.boostIcons || 0;
+      schemeThreat += icons;
+      state.encounterDiscard.push(boostCard);
+    }
+  }
+
   const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
     targetPlayerId: player.id,
     threatAmount: schemeThreat,
@@ -186,11 +213,12 @@ export function executeMinionActivationAgainstPlayer(
   minion: CardInstance,
   player: PlayerState,
   options?: CombatOptions,
-): void {
+): GameState {
   if (player.currentForm === 'hero') {
-    executeMinionAttackAgainstPlayer(state, minion, player, options);
+    return executeMinionAttackAgainstPlayer(state, minion, player, options);
   } else {
     executeMinionSchemeAgainstPlayer(state, minion, player);
+    return state;
   }
 }
 
@@ -226,14 +254,14 @@ export function step2_villainAndMinionActivations(state: GameState, options?: Co
 
     if (act.type === 'VILLAIN') {
       if (player.currentForm === 'hero') {
-        executeVillainAttackAgainstPlayer(state, player, options);
+        state = executeVillainAttackAgainstPlayer(state, player, options);
       } else {
         executeVillainSchemeAgainstPlayer(state, player);
       }
     } else if (act.type === 'MINION') {
       const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
       if (minion) {
-        executeMinionActivationAgainstPlayer(state, minion, player, options);
+        state = executeMinionActivationAgainstPlayer(state, minion, player, options);
       }
     }
 
@@ -438,21 +466,21 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
 
   // Step 2: Activations
   if (state.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
-    step2_villainAndMinionActivations(state, options);
+    state = step2_villainAndMinionActivations(state, options);
     if (state.pendingDecisionPrompt || state.winner) return state;
     state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
   }
 
   // Step 4: Deal Encounter Cards
   if (state.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
-    step4_dealEncounterCards(state);
+    state = step4_dealEncounterCards(state);
     if (state.winner) return state;
     state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
   }
 
   // Step 5: Reveal Encounter Cards
   if (state.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
-    step5_revealEncounterCards(state);
+    state = step5_revealEncounterCards(state);
     if (state.pendingDecisionPrompt || state.winner) return state;
   }
 

@@ -104,12 +104,12 @@ flowchart TD
     S1["1. Scope & GitHub Issue Linkage (gh issue view/create)"] --> S2["2. Rules Reference Audit (RR v1.8) & ADR Alignment"]
     S2 --> S2Check{"Confidence ≥ 95%?"}
     S2Check -- "No (< 95%)" --> RFC["🛑 Trigger RFC Circuit Breaker<br/>• Post RFC Comment on GitHub<br/>• Tag 'needs-review' & pause"]
-    S2Check -- "Yes (≥ 95%)" --> S3["3. Write Acceptance / Contract Tests (BDD Red)"]
-    S3 --> S4["4. Composable & Modular Implementation (Green)"]
-    S4 --> S5["5. Declarative Supplemental Wiring & Card Promotion"]
-    S5 --> S6["6. Full Verification Suite (npm test, typecheck, build, declarations)"]
-    S6 --> S7["7. Mandatory 7-Point Protocol (Update Roadmap Milestones)"]
-    S7 --> S8["8. Git Commit (Closes #Issue), Push & Issue Verification"]
+    S2Check -- "Yes (≥ 95%)" --> S3Plan["3. Author Implementation Plan & Wait for User Approval (implementation_plan.md)"]
+    S3Plan --> S4["4. Write Acceptance / Contract Tests (BDD Red)"]
+    S4 --> S5["5. Composable & Modular Implementation (Green)"]
+    S5 --> S6["6. Declarative Supplemental Wiring & Card Promotion"]
+    S6 --> S7["7. Full Verification Suite (npm test, typecheck, build, declarations)"]
+    S7 --> S8["8. Mandatory 7-Point Protocol & Commit (Closes #Issue)"]
 ```
 
 ---
@@ -148,7 +148,17 @@ flowchart TD
 
 ---
 
-### Step 3: Write Acceptance & Contract Tests (BDD Red)
+### Step 3: Author Implementation Plan & Wait for User Approval 🛑
+* **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing:
+  1. **Rules Reference & Spec Analysis:** Exact citations from RR v1.8, timing priority, and active ADRs.
+  2. **Proposed Changes:** File-by-file breakdown (`[NEW]`, `[MODIFY]`) across engine pipelines, effect primitives, and supplemental data.
+  3. **Verification Plan:** Planned unit/acceptance tests covering happy path and edge cases.
+  4. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
+* **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. You MUST NOT proceed to writing code or modifying files until the user explicitly reviews and approves the implementation plan.
+
+---
+
+### Step 4: Write Acceptance & Contract Tests (BDD Red)
 * **Golden Rule:** NEVER implement a feature before writing comprehensive, contract-defining tests demonstrating all intended behaviors and edge cases.
 * Create a dedicated test file in `tests/engine/`, `tests/ui/`, or `tests/scenarios/` (e.g. `tests/engine/feature-name.test.ts`).
 * Write unit and integration tests covering:

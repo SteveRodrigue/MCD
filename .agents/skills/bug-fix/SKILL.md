@@ -121,14 +121,18 @@ gh issue create \
 
 ---
 
-### Step 4: Root-Cause Investigation & Blast-Radius Classification
-* Trace the code execution from action dispatch to state mutation.
-* Identify the exact line, condition, or missing state transition causing the defect.
-* Classify the fix as Tier 1, Tier 2, or Tier 3. If Tier 3, pause and write an `implementation_plan.md`.
+### Step 4: Root-Cause Diagnosis & Implementation Plan Review 🛑
+* Diagnose the exact line of code, mutation logic, or missing condition responsible for the failure.
+* **MANDATORY REVIEW GATE:** Create an `implementation_plan.md` artifact detailing:
+  1. **Root-Cause Analysis:** Why the defect occurs with reference to game state snapshots in `logs/gamestates/` and RR v1.8 rules.
+  2. **Blast-Radius Classification:** Tier 1, 2, or 3.
+  3. **Proposed Code Fix:** Exact lines and files to modify.
+  4. **Regression Verification Strategy:** Specific test files to run.
+* **STOP AND WAIT:** Set `request_feedback: true` in artifact metadata. Wait for explicit user review and approval before modifying source code.
 
 ---
 
-### Step 5: Surgical Implementation (Green)
+### Step 5: Apply Surgical Code Fix (Green)
 * Apply the minimal, cleanest code change addressing the root cause.
 * Respect all project architectural principles:
   1. **Strict Engine Decoupling:** Never import React, DOM, `window`, `document`, or CSS into `src/engine/`.

@@ -7,16 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-- **Feature & Engine: SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking ([#10](https://github.com/SteveRodrigue/MCD/issues/10), `effects/index.ts`, `action-dispatcher.ts`, `schema.ts`, `search-and-select-routing.test.ts`):**
-  - Implemented the official Marvel Champions RR v1.8 p. 19 ("Look") & p. 26 ("Search") universal declarative effect primitive and interactive prompt lifecycle (ADR-0030, ADR-0032):
-    - **Flexible Source Zones:** Supports `PLAYER_DECK`, `ENCOUNTER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DISCARD`, and `PLAYER_HAND`.
-    - **Top-$N$ Look & Two-Pile Destination Routing:** Extracts top $N$ looked cards, opens interactive decision prompt for the player to select $M$ cards, and routes:
-      - Selected card(s) $\rightarrow$ `selectedDestination` (`HAND`, `TABLEAU`, `DECK_TOP`, `DISCARD`).
-      - Unselected looked card(s) $\rightarrow$ `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, `DECK_SHUFFLE`, `DECK_TOP`).
-    - **Relative Deck Order Preservation (RR v1.8 p. 19):** When unselected cards return to `DECK_TOP` or `DECK_BOTTOM`, their original relative sequence is strictly maintained.
-    - **Specific Card Picking & Targeted Searches (RR v1.8 p. 26):** Supports searching full deck/discard for specific cards (`targetCardCode`, `targetCardName`, `trait`, `type`) with `unselectedDestination: null | "LEAVE_IN_PLACE"`, leaving all other cards in their source pile intact followed by `shuffleAfter: true`.
-    - **Voluntary & Pass Logic:** Supports optional searches with `isVoluntary: true` and clean pass cancellation.
-    - **Core Set Retrofit:** Retrofitted Tony Stark (*Futurist* `01029b`) to the standardized `SEARCH_AND_SELECT` schema.
+- **Feature & Engine: SEARCH_AND_SELECT Extensible Filtering Engine & Core Set Retrofit ([#38](https://github.com/SteveRodrigue/MCD/issues/38), [#10](https://github.com/SteveRodrigue/MCD/issues/10), `effects/index.ts`, `action-dispatcher.ts`, `schema.ts`, `core.json`, `search-and-select-routing.test.ts`):**
+  - Enhanced the universal declarative `SEARCH_AND_SELECT` primitive with comprehensive, extensible card filtering capabilities (`matchCardFilter`) adhering strictly to RR v1.8 p. 19 & 26:
+    - **Extensible Declarative Filters:** Evaluates traits (`trait`, `traits`), card types (`type`, `types`, `cardTypes`), card codes (`targetCardCode`, `targetCardCodes`), card names (`targetCardName`), identity specificity (`isIdentitySpecific`), aspects (`aspect`, `aspects`), and printed cost bounds (`costMin`, `costMax`).
+    - **Filtered Look-Splitting:** When looking at top $N$ cards with filter criteria (e.g. *Futurist* filtering for *Tech* cards), only matching candidate cards are presented in the decision prompt; non-matching looked cards and unchosen matching cards are cleanly routed to `unselectedDestination` (`DISCARD`). If no looked cards match, all $N$ cards are discarded automatically.
+    - **Complete Core Set Retrofit:**
+      - **Tony Stark (*Futurist* `01029b`):** Filters top 3 cards for trait *Tech*, routing chosen card to hand and remaining looked cards to discard.
+      - **T'Challa (*King of Wakanda* Setup `01040b`):** Searches deck for *Black Panther* upgrade and puts directly into tableau.
+      - **Shuri (`01041`):** Searches deck for an upgrade and adds to hand.
   - Added comprehensive contract test suite in [`search-and-select-routing.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/search-and-select-routing.test.ts).
 
 - **Feature & Engine: Restricted Card Keyword Limit & Voluntary Replacement Prompt ([#30](https://github.com/SteveRodrigue/MCD/issues/30), `action-dispatcher.ts`, `legality-checker.ts`, `prompt-queue.ts`, `restricted-keyword-limit.test.ts`):**

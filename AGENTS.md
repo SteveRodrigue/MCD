@@ -32,4 +32,8 @@ After executing automated tests and code verification (`npm test && npm run type
 4. **Check Guidelines:** Update guidelines documentation (e.g. `docs/coding_guidelines.md`) when development standards, conventions, or design patterns change.
 5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed.
 6. **Check Git Issues & Ambiguities:** Check if an issue or `docs/ambiguities/` file can be closed/resolved.
-7. **Check Card Integration Protocol & Usage Report:** Check if card supplemental definitions were altered and validate supplemental schemas. **ALWAYS run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`)** whenever cards, abilities, effects, or ambiguity reports are modified to ensure `docs/reports/supplemental_declarations_usage_report.md` provides an accurate, up-to-date view of card integration metrics and open ambiguities.
+7. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:
+   * **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that use or benefit from this capability.
+   * **Retrofit Card Definitions:** Apply the new/updated declarative schema to all affected card entries.
+   * **Update Audit Metadata:** If card data was changed, update `"updatedAt"`, `"reviewedAt"` (current ISO timestamp with `HH:MM`, e.g. `2026-09-01T09:48:00Z`), and `"reviewedBy": "antigravity"`.
+   * **Run Declarations Analyzer:** **ALWAYS run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`)** whenever cards, abilities, effects, or ambiguity reports are modified to ensure `docs/reports/supplemental_declarations_usage_report.md` reflects updated metrics and zero schema violations.

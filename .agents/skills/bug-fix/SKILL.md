@@ -149,6 +149,17 @@ gh issue create \
 
 ---
 
+### Step 5B: Declarative Supplemental Retrofit & Audit Metadata Update 🃏
+* If the fix touched any card data or modified an engine primitive/keyword used by other cards:
+  1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that share the affected mechanic.
+  2. **Retrofit Card Definitions:** Apply the corrected declarations across all affected card entries.
+  3. **Update Audit Metadata:** For every modified card entry, update:
+     * `"updatedAt"`: Current ISO timestamp with `HH:MM` (e.g. `2026-09-01T09:48:00Z`).
+     * `"reviewedAt"`: Current ISO timestamp with `HH:MM`.
+     * `"reviewedBy"`: `"antigravity"` (or current agent identity).
+
+---
+
 ### Step 6: Full-Suite Verification & Zero-Regression Proof
 Run the automated verification suite:
 ```bash

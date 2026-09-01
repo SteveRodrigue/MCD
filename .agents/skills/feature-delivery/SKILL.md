@@ -4,15 +4,16 @@ description: >-
   Standard 8-step specification-driven Feature Delivery protocol for designing,
   architecting, testing, implementing, verifying, and shipping new engine capabilities,
   declarative primitives, scenario plugins, UI components, and roadmap milestone tasks.
-  Enforces ADR & Zod schema alignment, BDD acceptance tests first, composable modular
-  architecture, logging in logs/skills/, execution of the mandatory 7-point post-task
-  protocol, roadmap milestone updates, and auto-closing Git commits (Closes #XX).
+  Enforces mandatory Rules Reference (RR v1.8) audits, strict >=95% confidence thresholds,
+  GitHub RFC Peer Review circuit breakers, ADR & Zod schema alignment, BDD acceptance
+  tests first, composable modular architecture, logging in logs/skills/, execution of the
+  mandatory 7-point post-task protocol, roadmap milestone updates, and auto-closing Git commits (Closes #XX).
   Trigger whenever building a new feature or prefixed with 'feature-delivery:'.
 ---
 
 # 🚀 Feature Delivery Protocol (Specification-Driven Development & Milestone Lifecycle)
 
-This skill guides the agent through an authoritative, specification-first, and milestone-tracked protocol to deliver new features, capabilities, and primitives cleanly, composably, and with zero regressions.
+This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features, capabilities, and primitives cleanly, composably, and with zero regressions.
 
 ---
 
@@ -23,6 +24,7 @@ Whenever a feature delivery begins (triggered explicitly via `feature-delivery: 
 ```text
 YYYY-MM-DDTHH:mm:ss.sssZ [SCOPE] Feature scoped: "<title>" (Milestone: <Phase/Milestone>, Subsystem: <Engine|UI|Data|Setup>)
 YYYY-MM-DDTHH:mm:ss.sssZ [ISSUE] Linked/Created GitHub Issue #<NUM>: "<title>" (<URL>)
+YYYY-MM-DDTHH:mm:ss.sssZ [RULES_AUDIT] Audited RR v1.8 (Section: "<section>"), Confidence: <XX>% (Threshold: >=95%)
 YYYY-MM-DDTHH:mm:ss.sssZ [ADR] Aligned with ADR-<XXXX> and validated Zod schema in src/data/supplemental/schema.ts
 YYYY-MM-DDTHH:mm:ss.sssZ [SPEC_TEST] Added acceptance/contract tests in tests/<subsystem>/<feature>.test.ts (BDD Red)
 YYYY-MM-DDTHH:mm:ss.sssZ [BUILD] Implemented modular capability in src/<path> (Green)
@@ -33,18 +35,65 @@ YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Pushed commit "feat(...): ... (Closes #<NUM>)" 
 
 ---
 
-## 🚦 Architectural Pre-Conditions & ADR Alignment
+## 🚦 Architectural Pre-Conditions & Rules Authority
 
-Before writing any implementation code for a new feature, verify the following three architectural prerequisites:
+Before writing any implementation code or tests for a new feature, verify the following four architectural prerequisites:
 
-1. **Approved Architecture Decision Record (ADR):**
+1. **📖 Authoritative Rules Reference Audit (RR v1.8):**
+   * Consult [`references/rules_reference_v18.md`](../../references/rules_reference_v18.md) and official FFG Rulings for every rule, timing window, cost interaction, and state transition involved.
+   * **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** (see below). Never implement speculative or guessed heuristics.
+2. **Approved Architecture Decision Record (ADR):**
    * Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR (e.g. ADR-0030 for Ability Sequences, ADR-0031 for Combat/Defense, ADR-0032 for Resolution Stack, ADR-0033 for Scenario Setup, ADR-0034 for Player Side Schemes, ADR-0035 for Multi-Form/Counters, ADR-0036 for Status Scaling).
    * If the feature introduces a new major paradigm not covered by an existing ADR, draft a **Proposed ADR** first before coding.
-2. **Schema & Model Design Alignment:**
+3. **Schema & Model Design Alignment:**
    * If the feature introduces new effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
    * If the feature extends game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts) and export all relevant interfaces.
-3. **Headless & Decoupled Invariant:**
+4. **Headless & Decoupled Invariant:**
    * Pure engine logic belongs strictly in `src/engine/`. Never import React, DOM, `window`, `document`, or CSS into engine modules.
+
+---
+
+## 🛑 Ambiguity RFC / Peer Review Circuit Breaker (When Confidence $< 95\%$)
+
+If the rules interpretation, timing trigger sequence, or card interactions are ambiguous or disputed (confidence $< 95\%$):
+
+1. **Halt Execution:** Do NOT proceed to writing acceptance tests or modifying code.
+2. **Post RFC Peer Review Comment on GitHub Issue:**
+   Use `gh issue comment <NUM> --body "..."` with this structured template:
+   ```markdown
+   ### 📢 RFC / Peer Review Request: Rules Ambiguity on Feature #<NUM>
+
+   **Confidence Level:** <XX>% (< 95% threshold required for automated implementation)
+
+   #### ❓ The Ambiguity / Edge Case
+   <Detailed description of the conflicting rules interpretations, timing windows, or underspecified state interactions>
+
+   #### 📜 Rules Reference Citations
+   - Marvel Champions Rules Reference v1.8 Section: `<Citation>`
+   - Official Rulings / Precedents: `<Citation or N/A>`
+
+   #### ⚖️ Architectural Options for Review
+   * **Option A (<Short Title>):**
+     * *Implementation:* <How it works mechanically>
+     * *Pros:* <Advantages>
+     * *Cons / Risks:* <Drawbacks / Potential edge cases>
+   * **Option B (<Short Title>):**
+     * *Implementation:* <How it works mechanically>
+     * *Pros:* <Advantages>
+     * *Cons / Risks:* <Drawbacks / Potential edge cases>
+
+   #### 💡 Architect Recommendation
+   <Clear recommendation with underlying rationale>
+
+   ---
+   *Awaiting peer review and alignment before proceeding with implementation.*
+   ```
+3. **Tag GitHub Issue:**
+   ```bash
+   gh issue edit <NUM> --add-label "needs-review,status:blocked-by-rfc"
+   ```
+4. **Log Ambiguity:** Append `[AMBIGUITY_RFC]` entry in `logs/skills/feature_delivery_{YYYY-MM-DD}.log`. If card-specific, create or update a 1-file report in `docs/ambiguities/`.
+5. **End Turn Safely:** Report the RFC link to the user and pause until alignment is reached.
 
 ---
 
@@ -52,8 +101,10 @@ Before writing any implementation code for a new feature, verify the following t
 
 ```mermaid
 flowchart TD
-    S1["1. Scope & GitHub Issue Linkage (gh issue view/create)"] --> S2["2. ADR & Zod Schema Alignment (docs/decisions & schema.ts)"]
-    S2 --> S3["3. Write Acceptance / Contract Tests (BDD Red)"]
+    S1["1. Scope & GitHub Issue Linkage (gh issue view/create)"] --> S2["2. Rules Reference Audit (RR v1.8) & ADR Alignment"]
+    S2 --> S2Check{"Confidence ≥ 95%?"}
+    S2Check -- "No (< 95%)" --> RFC["🛑 Trigger RFC Circuit Breaker<br/>• Post RFC Comment on GitHub<br/>• Tag 'needs-review' & pause"]
+    S2Check -- "Yes (≥ 95%)" --> S3["3. Write Acceptance / Contract Tests (BDD Red)"]
     S3 --> S4["4. Composable & Modular Implementation (Green)"]
     S4 --> S5["5. Declarative Supplemental Wiring & Card Promotion"]
     S5 --> S6["6. Full Verification Suite (npm test, typecheck, build, declarations)"]
@@ -86,10 +137,12 @@ flowchart TD
 
 ---
 
-### Step 2: ADR & Schema Alignment Check
-1. Read the controlling ADR in `docs/decisions/` to review design decisions, invariants, and edge cases.
-2. If introducing new effect primitives, conditions, or card types:
-   * Update `src/data/supplemental/schema.ts` with strict Zod types.
+### Step 2: Rules Reference Audit (RR v1.8) & ADR Alignment
+1. **Audit Rules Reference:** Thoroughly inspect `references/rules_reference_v18.md` for all timing, cost, and trigger definitions.
+2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, trigger the **Ambiguity RFC Circuit Breaker** and stop.
+3. **Audit ADR & Schemas:**
+   * Read the controlling ADR in `docs/decisions/`.
+   * Update `src/data/supplemental/schema.ts` with strict Zod types if introducing new primitives.
    * Update `src/engine/models/abilities.ts` or `src/engine/models/state.ts`.
    * Run schema tests: `npm test tests/data/supplemental-validation.test.ts`.
 
@@ -131,7 +184,7 @@ Execute the full multi-tier verification suite:
 ```bash
 npm test && npm run typecheck && npm run build && npm run report:declarations
 ```
-* **Vitest Suite:** All 49+ test files (260+ tests) pass with 0 failures.
+* **Vitest Suite:** All test files and suites pass with 0 failures.
 * **TypeScript:** 0 compilation errors (`tsc --noEmit`).
 * **Vite Production Build:** Production bundle compiles cleanly without warnings.
 * **Declarations Analyzer:** `docs/reports/supplemental_declarations_usage_report.md` compiles with 0 schema violations.

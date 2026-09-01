@@ -481,4 +481,141 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       expect(result.reason).toContain("Global unicity violation (RR v1.8 p. 29)");
     });
   });
+
+  describe('Max [X] Per Player Board Invariants (RR v1.8 p. 17 / Issue #3)', () => {
+    it('parses maxPerPlayer: 1 from Zzorba raw text for Energy Channel, Armored Vest, Combat Training, etc.', () => {
+      const energyChannel = cardCatalog.getCard('01018')!;
+      const armoredVest = cardCatalog.getCard('01081')!;
+      const combatTraining = cardCatalog.getCard('01057')!;
+      const avengersMansion = cardCatalog.getCard('01091')!;
+      const helicarrier = cardCatalog.getCard('01092')!;
+      const standardWebShooter = cardCatalog.getCard('01008')!; // Restricted, but no max per player limit
+
+      expect(energyChannel.maxPerPlayer).toBe(1);
+      expect(armoredVest.maxPerPlayer).toBe(1);
+      expect(combatTraining.maxPerPlayer).toBe(1);
+      expect(avengersMansion.maxPerPlayer).toBe(1);
+      expect(helicarrier.maxPerPlayer).toBe(1);
+      expect(standardWebShooter.maxPerPlayer).toBeUndefined();
+    });
+
+    it('blocks playing a 2nd copy of Energy Channel (01018) when 1 copy is already in tableau', () => {
+      const energyChannelCard = cardCatalog.getCard('01018')!;
+      const paymentCard = cardCatalog.getCard('01005')!;
+
+      const state = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Captain Marvel',
+            hero: captainMarvelHero,
+            alterEgo: carolDanversAlterEgo,
+            deckCards: [energyChannelCard, energyChannelCard, paymentCard, paymentCard, paymentCard],
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      const player = state.players[0];
+      player.currentForm = 'hero';
+
+      // 1. First copy is in tableau
+      const copy1 = createCardInstance(energyChannelCard);
+      player.tableau.push(copy1);
+
+      // 2. Player attempts to play a 2nd copy from hand
+      const copy2 = createCardInstance(energyChannelCard);
+      player.hand = [copy2];
+
+      const result = canPlayCard(state, 'p1', copy2.instanceId, []);
+
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain("Max 1 per player limit reached for 'Energy Channel'");
+    });
+
+    it('blocks playing a 2nd copy of Armored Vest (01081) when 1 copy is already in tableau', () => {
+      const armoredVestCard = cardCatalog.getCard('01081')!;
+      const paymentCard = cardCatalog.getCard('01005')!;
+
+      const state = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero,
+            alterEgo: peterParkerAlterEgo,
+            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      const player = state.players[0];
+      player.currentForm = 'hero';
+
+      // First copy in tableau
+      player.tableau.push(createCardInstance(armoredVestCard));
+
+      // Attempt to play 2nd copy
+      const secondVest = createCardInstance(armoredVestCard);
+      const payCard = createCardInstance(paymentCard);
+      player.hand = [secondVest, payCard];
+
+      const result = canPlayCard(state, 'p1', secondVest.instanceId, [payCard.instanceId]);
+
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain("Max 1 per player limit reached for 'Armored Vest'");
+    });
+
+    it('allows different players to each control 1 copy of a Max 1 per player non-unique card', () => {
+      const armoredVestCard = cardCatalog.getCard('01081')!;
+      const paymentCard = cardCatalog.getCard('01005')!;
+
+      const state = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Spider-Man',
+            hero: spiderManHero,
+            alterEgo: peterParkerAlterEgo,
+            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+          },
+          {
+            id: 'p2',
+            name: 'Captain Marvel',
+            hero: captainMarvelHero,
+            alterEgo: carolDanversAlterEgo,
+            deckCards: [armoredVestCard, paymentCard, paymentCard, paymentCard],
+          },
+        ],
+        villain: rhinoVillain,
+        mainScheme,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      // Player 1 has 1 Armored Vest in tableau
+      state.players[0].tableau.push(createCardInstance(armoredVestCard));
+
+      // Player 2 can still play their 1st Armored Vest
+      const p2Vest = createCardInstance(armoredVestCard);
+      const p2Pay = createCardInstance(paymentCard);
+      state.players[1].hand = [p2Vest, p2Pay];
+      state.players[1].currentForm = 'hero';
+      state.activePlayerIndex = 1;
+
+      const result = canPlayCard(state, 'p2', p2Vest.instanceId, [p2Pay.instanceId]);
+
+      expect(result.allowed).toBe(true);
+    });
+  });
 });

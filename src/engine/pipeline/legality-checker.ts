@@ -639,6 +639,26 @@ export function canPlayCard(
     }
   }
 
+  // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
+  if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
+    const controlledCount =
+      player.tableau.filter(
+        (c) => c.card.code === card.code || c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+      ).length +
+      (card.type === CardType.ALLY
+        ? player.allies.filter(
+            (a) => a.card.code === card.code || a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+          ).length
+        : 0);
+
+    if (controlledCount >= card.maxPerPlayer) {
+      return {
+        allowed: false,
+        reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
+      };
+    }
+  }
+
   // Global Unicity Constraint Check (RR v1.8 p. 29)
   const unicityCheck = checkUniqueCardPlayable(state, card);
   if (!unicityCheck.allowed) {

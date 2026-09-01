@@ -40,6 +40,30 @@ export function parseResources(raw: RawUpstreamCard) {
   };
 }
 
+/**
+ * Parses the "Max [X] per player" board limit for a card (RR v1.8 p. 17).
+ * Filters out parenthesized Restricted reminder text: "(Max 2 restricted cards per player.)".
+ */
+export function parseMaxPerPlayer(raw: RawUpstreamCard, enrichment?: CardEnrichment): number | undefined {
+  if (enrichment?.maxPerPlayer !== undefined) {
+    return enrichment.maxPerPlayer;
+  }
+
+  const rawText = raw.text || '';
+  if (!rawText) return undefined;
+
+  // Remove parenthesized reminder text (e.g. "(Max 2 restricted cards per player.)")
+  const textWithoutParentheses = rawText.replace(/\([^)]*\)/g, '');
+
+  // Match "Max X per player" or "Max X [Trait] card per player"
+  const match = textWithoutParentheses.match(/\bmax\s+(\d+)(?:\s+\[\[?[^\]]+\]\]?)?\s*(?:card)?\s+per\s+player\b/i);
+  if (match && match[1]) {
+    return parseInt(match[1], 10);
+  }
+
+  return undefined;
+}
+
 import { supplementalRegistry } from '../supplemental';
 import { CardEnrichment, Keyword } from '@engine/models';
 
@@ -129,6 +153,7 @@ export function normalizeRawCard(
     quantity: raw.quantity || 1,
     deckLimit: raw.deck_limit || 1,
     isUnique: !!raw.is_unique,
+    maxPerPlayer: parseMaxPerPlayer(raw, enrichment),
     cost: raw.cost,
     costPerHero: !!raw.cost_per_hero,
     text: raw.text || '',

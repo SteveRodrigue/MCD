@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-01T14:20:16.141Z`  
+> **Generated:** `2026-09-01T16:29:29.167Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **5** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **5** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **67** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **66** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **22** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **15** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **12** | Distinct ability cost types actively declared |
@@ -141,7 +141,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `RETURN_TO_HAND` | `01020` | Hellcat (ally) (core) | `hellcat_return` |
 | **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_when_revealed` |
 | **Effect** | `SEARCH_AND_REVEAL_SIDE_SCHEME` | `01095` | Rhino (villain) (core_encounter) | `rhino_stage_ii_when_revealed` |
-| **Effect** | `SEARCH_AND_SELECT` | `01029b` | Tony Stark (alter_ego) (core) | `futurist` |
 | **Effect** | `SHUFFLE_DISCARD_INTO_DECK` | `01042` | Ancestral Knowledge (event) (core) | `ancestral_knowledge_action` |
 | **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `shadow_of_the_past_when_revealed` |
 | **Effect** | `TAKE_THREAT_AS_DAMAGE` | `01061` | Great Responsibility (event) (core) | `great_responsibility_interrupt` |
@@ -221,11 +220,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `TRIGGER_SURGE` | **4** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
 | `READY_IDENTITY` | **3** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01093` (Tenacity (upgrade)) |
+| `SEARCH_AND_SELECT` | **3** | `01029b` (Tony Stark (alter_ego)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)) |
 | `PLAYER_CHOICE` | **3** | `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
-| `SEARCH_DECK_FOR_CARD` | **2** | `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)) |
 | `READY_CHARACTER` | **2** | `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)) |
 | `ADD_THREAT` | **2** | `01178` (Kree Manipulator (treachery)) |
 | `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
@@ -239,7 +238,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `DRAW_UP_TO_HAND_SIZE` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
-| `SEARCH_AND_SELECT` | **1** | `01029b` (Tony Stark (alter_ego)) |
 | `REPULSOR_BLAST` | **1** | `01031` (Repulsor Blast (event)) |
 | `GENERATE_TOP_DISCARD_RESOURCES` | **1** | `01033` (Pepper Potts (support)) |
 | `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` | **1** | `01034` (Stark Tower (support)) |

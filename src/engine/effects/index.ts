@@ -11,6 +11,8 @@ import {
   StepResolutionResult,
   DecisionPromptOption,
   PendingDecisionPrompt,
+  NormalizedCard,
+  PlayerState,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
@@ -47,6 +49,113 @@ export interface EffectResult {
   selectedCardInstanceIds?: string[];
   targetId?: string;
   conditionMet?: boolean;
+}
+
+/**
+ * Evaluates whether a card definition satisfies a declarative FilterSchema predicate (RR v1.8 p. 19, 26).
+ */
+export function matchCardFilter(
+  card: NormalizedCard,
+  filter?: any,
+  player?: PlayerState,
+): boolean {
+  if (!filter) return true;
+
+  // Exact card code matching
+  if (filter.targetCardCode && card.code !== filter.targetCardCode) return false;
+  if (filter.targetCardCodes && Array.isArray(filter.targetCardCodes) && !filter.targetCardCodes.includes(card.code)) {
+    return false;
+  }
+
+  // Exact card name matching (case-insensitive)
+  if (
+    filter.targetCardName &&
+    card.name.toLowerCase().trim() !== filter.targetCardName.toLowerCase().trim()
+  ) {
+    return false;
+  }
+
+  // Trait matching (case-insensitive item or substring matches)
+  if (filter.trait) {
+    const targetTrait = filter.trait.toLowerCase().trim();
+    const hasTrait = (card.traits || []).some(
+      (t) => t.toLowerCase().trim() === targetTrait || t.toLowerCase().includes(targetTrait),
+    );
+    if (!hasTrait) return false;
+  }
+
+  if (filter.traits && Array.isArray(filter.traits)) {
+    const normalizedTargetTraits = filter.traits.map((t: string) => t.toLowerCase().trim());
+    const hasAnyTrait = (card.traits || []).some((t) =>
+      normalizedTargetTraits.some(
+        (target: string) => t.toLowerCase().trim() === target || t.toLowerCase().includes(target),
+      ),
+    );
+    if (!hasAnyTrait) return false;
+  }
+
+  // Card Type matching
+  if (filter.type) {
+    const targetType = filter.type.toLowerCase().trim();
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
+    if (cardType !== targetType && rawType !== targetType) return false;
+  }
+
+  if (filter.type_code) {
+    const targetTypeCode = filter.type_code.toLowerCase().trim();
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
+    if (cardType !== targetTypeCode && rawType !== targetTypeCode) return false;
+  }
+
+  if (filter.types && Array.isArray(filter.types)) {
+    const normalizedTypes = filter.types.map((t: string) => t.toLowerCase().trim());
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
+    if (!normalizedTypes.includes(cardType) && !normalizedTypes.includes(rawType)) return false;
+  }
+
+  if (filter.cardTypes && Array.isArray(filter.cardTypes)) {
+    if (!filter.cardTypes.includes(card.type)) return false;
+  }
+
+  // Aspect matching
+  if (filter.aspect) {
+    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
+    if (cardFaction !== filter.aspect.toLowerCase().trim()) return false;
+  }
+
+  if (filter.aspects && Array.isArray(filter.aspects)) {
+    const normalizedAspects = filter.aspects.map((a: string) => a.toLowerCase().trim());
+    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
+    if (!normalizedAspects.includes(cardFaction)) return false;
+  }
+
+  // Unicity
+  if (filter.isUnique !== undefined && card.isUnique !== filter.isUnique) {
+    return false;
+  }
+
+  // Identity specificity
+  if (filter.isIdentitySpecific && player) {
+    const heroCode = player.hero.code;
+    const heroSet = (player.hero.raw as any)?.card_set_code || player.hero.name.toLowerCase();
+    const cardSet = (card.raw as any)?.card_set_code || '';
+    if (cardSet !== heroSet && !(card.code || '').startsWith(heroCode.slice(0, 3))) {
+      return false;
+    }
+  }
+
+  // Cost bounds
+  if (typeof filter.costMin === 'number' && (card.cost === undefined || card.cost < filter.costMin)) {
+    return false;
+  }
+  if (typeof filter.costMax === 'number' && (card.cost === undefined || card.cost > filter.costMax)) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -2106,32 +2215,9 @@ export function executeStep(
       }
 
       // Filter matching candidate cards
-      const matchingCandidates = lookedCards.filter((c) => {
-        if (!filter) return true;
-        if (filter.targetCardCode && c.card.code !== filter.targetCardCode) return false;
-        if (
-          filter.targetCardName &&
-          c.card.name.toLowerCase().trim() !== filter.targetCardName.toLowerCase().trim()
-        )
-          return false;
-        if (filter.trait && !c.card.traits?.includes(filter.trait)) return false;
-        if (filter.traits && !filter.traits.some((t: string) => c.card.traits?.includes(t)))
-          return false;
-        if (
-          filter.type &&
-          c.card.type !== filter.type &&
-          (c.card.raw as any)?.type_code !== filter.type
-        )
-          return false;
-        if (
-          filter.type_code &&
-          (c.card.raw as any)?.type_code !== filter.type_code &&
-          c.card.type !== filter.type_code
-        )
-          return false;
-        if (filter.cardTypes && !filter.cardTypes.includes(c.card.type)) return false;
-        return true;
-      });
+      const matchingCandidates = lookedCards.filter((c) =>
+        matchCardFilter(c.card, filter, player),
+      );
 
       if (matchingCandidates.length === 0) {
         // Return looked cards to source if they were spliced

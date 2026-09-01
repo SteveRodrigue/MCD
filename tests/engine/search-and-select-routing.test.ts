@@ -18,7 +18,97 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     mainScheme = cardCatalog.getCard('01097')!;
   });
 
-  it('looks at top 3 cards, routes selected card to HAND, and unselected cards to DISCARD (Tony Stark Futurist)', () => {
+  it('looks at top 3 cards with Trait: Tech filter (1 Tech, 2 non-Tech): prompts only for Tech card and discards all non-selected looked cards', () => {
+    const techCard: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'tech_a', name: 'Arc Reactor', type: CardType.UPGRADE, traits: ['Tech'] };
+    const nonTech1: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'event_b', name: 'Repulsor Blast', type: CardType.EVENT, traits: ['Attack'] };
+    const nonTech2: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'event_c', name: 'First Aid', type: CardType.EVENT };
+    const deckD: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_d', name: 'Card Delta' };
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Iron Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [techCard, nonTech1, nonTech2, deckD],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    const instTech = createCardInstance(techCard);
+    const instNonTech1 = createCardInstance(nonTech1);
+    const instNonTech2 = createCardInstance(nonTech2);
+    const instD = createCardInstance(deckD);
+    player.deck = [instTech, instNonTech1, instNonTech2, instD]; // Top 3: instTech, instNonTech1, instNonTech2
+    player.hand = [];
+    player.discard = [];
+
+    // Trigger SEARCH_AND_SELECT with lookCount 3 and filter on Trait: Tech (Tony Stark Futurist)
+    const effectRes = executeEffect(
+      state,
+      {
+        id: 'futurist_ability',
+        timing: 'ALTER_EGO_ACTION',
+        steps: [
+          {
+            effect: 'SEARCH_AND_SELECT',
+            params: {
+              source: 'PLAYER_DECK',
+              lookCount: 3,
+              filter: {
+                trait: 'Tech',
+              },
+              takeCount: 1,
+              selectedDestination: 'HAND',
+              unselectedDestination: 'DISCARD',
+              shuffleAfter: false,
+              promptTitle: 'Futurist: Choose 1 Tech card to add to hand',
+            },
+          },
+        ],
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(effectRes.success).toBe(true);
+    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+    // Only 1 option presented: instTech (the other 2 non-Tech cards are filtered out)
+    expect(effectRes.state.pendingDecisionPrompt?.options.length).toBe(1);
+    expect(effectRes.state.pendingDecisionPrompt?.options[0].id).toBe(instTech.instanceId);
+
+    // Player selects the Tech card
+    const resolveRes = dispatchAction(effectRes.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: instTech.instanceId,
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+
+    // 1. Chosen Tech card is in hand
+    expect(resolveRes.state.players[0].hand.length).toBe(1);
+    expect(resolveRes.state.players[0].hand[0].instanceId).toBe(instTech.instanceId);
+
+    // 2. Both non-Tech looked cards are in discard pile
+    expect(resolveRes.state.players[0].discard.length).toBe(2);
+    const discardIds = resolveRes.state.players[0].discard.map((c) => c.instanceId);
+    expect(discardIds).toContain(instNonTech1.instanceId);
+    expect(discardIds).toContain(instNonTech2.instanceId);
+
+    // 3. Card Delta remains in deck untouched
+    expect(resolveRes.state.players[0].deck.length).toBe(1);
+    expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instD.instanceId);
+  });
+
+  it('looks at top 3 cards with Trait: Tech filter (0 Tech cards): automatically discards all 3 looked cards', () => {
     const cardA: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_a', name: 'Card Alpha' };
     const cardB: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_b', name: 'Card Beta' };
     const cardC: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_c', name: 'Card Gamma' };
@@ -46,11 +136,11 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     const instB = createCardInstance(cardB);
     const instC = createCardInstance(cardC);
     const instD = createCardInstance(cardD);
-    player.deck = [instA, instB, instC, instD]; // Top is instA
+    player.deck = [instA, instB, instC, instD];
     player.hand = [];
     player.discard = [];
 
-    // Trigger SEARCH_AND_SELECT with lookCount 3
+    // Trigger Futurist with 0 matching tech cards in top 3
     const effectRes = executeEffect(
       state,
       {
@@ -62,11 +152,13 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
             params: {
               source: 'PLAYER_DECK',
               lookCount: 3,
+              filter: {
+                trait: 'Tech',
+              },
               takeCount: 1,
               selectedDestination: 'HAND',
               unselectedDestination: 'DISCARD',
               shuffleAfter: false,
-              promptTitle: 'Futurist: Choose 1 card to add to hand',
             },
           },
         ],
@@ -75,38 +167,22 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     );
 
     expect(effectRes.success).toBe(true);
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(effectRes.state.pendingDecisionPrompt?.options.length).toBe(3);
+    // No prompt is enqueued since 0 cards matched
+    expect(effectRes.state.pendingDecisionPrompt).toBeUndefined();
 
-    // Options correspond to top 3 cards (Card Alpha, Card Beta, Card Gamma)
-    const optionCardIds = effectRes.state.pendingDecisionPrompt!.options.map((o) => o.id);
-    expect(optionCardIds).toContain(instA.instanceId);
-    expect(optionCardIds).toContain(instB.instanceId);
-    expect(optionCardIds).toContain(instC.instanceId);
+    // Hand remains empty
+    expect(effectRes.state.players[0].hand.length).toBe(0);
 
-    // Player selects Card Beta (instB)
-    const resolveRes = dispatchAction(effectRes.state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: 'p1',
-      selectedOptionId: instB.instanceId,
-    });
-
-    expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
-
-    // 1. Chosen card (Card Beta) is in hand
-    expect(resolveRes.state.players[0].hand.length).toBe(1);
-    expect(resolveRes.state.players[0].hand[0].instanceId).toBe(instB.instanceId);
-
-    // 2. Unchosen looked cards (Card Alpha, Card Gamma) are in discard pile
-    expect(resolveRes.state.players[0].discard.length).toBe(2);
-    const discardIds = resolveRes.state.players[0].discard.map((c) => c.instanceId);
+    // All 3 looked non-matching cards are discarded
+    expect(effectRes.state.players[0].discard.length).toBe(3);
+    const discardIds = effectRes.state.players[0].discard.map((c) => c.instanceId);
     expect(discardIds).toContain(instA.instanceId);
+    expect(discardIds).toContain(instB.instanceId);
     expect(discardIds).toContain(instC.instanceId);
 
-    // 3. Card Delta remains in deck untouched
-    expect(resolveRes.state.players[0].deck.length).toBe(1);
-    expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instD.instanceId);
+    // Card Delta remains in deck
+    expect(effectRes.state.players[0].deck.length).toBe(1);
+    expect(effectRes.state.players[0].deck[0].instanceId).toBe(instD.instanceId);
   });
 
   it('searches entire deck for a specific named card and leaves all other cards in deck untouched (unselectedDestination: null, shuffleAfter: true)', () => {
@@ -164,7 +240,6 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       { playerId: 'p1' },
     );
 
-    // If prompt was enqueued
     let finalState = effectRes.state;
     if (finalState.pendingDecisionPrompt) {
       const res = dispatchAction(finalState, {
@@ -182,6 +257,142 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     // Other 2 cards remain in deck
     expect(finalState.players[0].deck.length).toBe(2);
     expect(finalState.players[0].discard.length).toBe(0);
+  });
+
+  it('searches deck for a Black Panther upgrade and puts it directly into tableau (T Challa King of Wakanda Setup)', () => {
+    const bpSuit: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: '01046', name: 'Panther Spacesuit', type: CardType.UPGRADE, traits: ['Black Panther', 'Armor'] };
+    const filler1: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'filler_1', name: 'Filler 1' };
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: "T'Challa",
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [filler1, bpSuit],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    const instFiller = createCardInstance(filler1);
+    const instSuit = createCardInstance(bpSuit);
+    player.deck = [instFiller, instSuit];
+    player.tableau = [];
+
+    const effectRes = executeEffect(
+      state,
+      {
+        id: 't_challa_foresight',
+        timing: 'SETUP',
+        steps: [
+          {
+            effect: 'SEARCH_AND_SELECT',
+            params: {
+              source: 'PLAYER_DECK',
+              filter: {
+                trait: 'Black Panther',
+                type: 'upgrade',
+              },
+              takeCount: 1,
+              selectedDestination: 'TABLEAU',
+              unselectedDestination: null,
+              shuffleAfter: true,
+            },
+          },
+        ],
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+
+    const resolveRes = dispatchAction(effectRes.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: instSuit.instanceId,
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    // BP Suit is in tableau
+    expect(resolveRes.state.players[0].tableau.length).toBe(1);
+    expect(resolveRes.state.players[0].tableau[0].instanceId).toBe(instSuit.instanceId);
+    // Filler remains in deck
+    expect(resolveRes.state.players[0].deck.length).toBe(1);
+    expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instFiller.instanceId);
+  });
+
+  it('searches encounter deck for a Masters of Evil minion and puts it into play (Masters of Evil Encounter Side Scheme)', () => {
+    const minionTigerShark: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'tiger_shark', name: 'Tiger Shark', type: CardType.MINION, traits: ['Masters of Evil'] };
+    const encounterTreachery: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'enc_treachery', name: 'Stampede', type: CardType.TREACHERY };
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Iron Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [cardCatalog.getCard('01005')!],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: [minionTigerShark, encounterTreachery],
+      skipMulligan: true,
+    });
+
+    const instMinion = createCardInstance(minionTigerShark);
+    const instTreachery = createCardInstance(encounterTreachery);
+    state.encounterDeck = [instTreachery, instMinion];
+    state.encounterDiscard = [];
+
+    const effectRes = executeEffect(
+      state,
+      {
+        id: 'masters_of_evil_when_revealed',
+        timing: 'WHEN_REVEALED',
+        steps: [
+          {
+            effect: 'SEARCH_AND_SELECT',
+            params: {
+              source: 'ENCOUNTER_DECK',
+              filter: {
+                trait: 'Masters of Evil',
+                type: 'minion',
+              },
+              takeCount: 1,
+              selectedDestination: 'TABLEAU',
+              unselectedDestination: null,
+              shuffleAfter: true,
+            },
+          },
+        ],
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+
+    const resolveRes = dispatchAction(effectRes.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: instMinion.instanceId,
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    // Minion is put into play
+    expect(resolveRes.state.players[0].tableau.some((c) => c.instanceId === instMinion.instanceId)).toBe(true);
+    // Treachery remains in encounter deck
+    expect(resolveRes.state.encounterDeck.length).toBe(1);
+    expect(resolveRes.state.encounterDeck[0].instanceId).toBe(instTreachery.instanceId);
   });
 
   it('preserves exact deck ordering when unselected cards return to DECK_TOP', () => {
@@ -249,203 +460,5 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     expect(resolveRes.state.players[0].deck.length).toBe(2);
     expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instA.instanceId);
     expect(resolveRes.state.players[0].deck[1].instanceId).toBe(instC.instanceId);
-  });
-
-  it('routes unselected cards to DECK_BOTTOM without shuffling', () => {
-    const cardA: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_a', name: 'Card Alpha' };
-    const cardB: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_b', name: 'Card Beta' };
-    const cardC: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_c', name: 'Card Gamma' };
-    const cardD: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_d', name: 'Card Delta' };
-
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Spider-Man',
-          hero: spiderManHero,
-          alterEgo: peterParkerAlterEgo,
-          deckCards: [cardA, cardB, cardC, cardD],
-        },
-      ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
-    });
-
-    const player = state.players[0];
-    const instA = createCardInstance(cardA);
-    const instB = createCardInstance(cardB);
-    const instC = createCardInstance(cardC);
-    const instD = createCardInstance(cardD);
-    player.deck = [instA, instB, instC, instD]; // Top is instA, instB, instC, instD
-    player.hand = [];
-
-    // Look at top 2 (instA, instB), pick instA to HAND, send instB to DECK_BOTTOM
-    const effectRes = executeEffect(
-      state,
-      {
-        id: 'look_and_bottom',
-        timing: 'ACTION',
-        steps: [
-          {
-            effect: 'SEARCH_AND_SELECT',
-            params: {
-              source: 'PLAYER_DECK',
-              lookCount: 2,
-              takeCount: 1,
-              selectedDestination: 'HAND',
-              unselectedDestination: 'DECK_BOTTOM',
-              shuffleAfter: false,
-            },
-          },
-        ],
-      },
-      { playerId: 'p1' },
-    );
-
-    // Pick instA
-    const resolveRes = dispatchAction(effectRes.state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: 'p1',
-      selectedOptionId: instA.instanceId,
-    });
-
-    expect(resolveRes.state.players[0].hand[0].instanceId).toBe(instA.instanceId);
-
-    // Deck should have instC, instD on top, and instB at bottom
-    expect(resolveRes.state.players[0].deck.length).toBe(3);
-    expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instC.instanceId);
-    expect(resolveRes.state.players[0].deck[1].instanceId).toBe(instD.instanceId);
-    expect(resolveRes.state.players[0].deck[2].instanceId).toBe(instB.instanceId);
-  });
-
-  it('searches discard pile for any Tech upgrade and puts it into hand (e.g. Pepper Potts / Tech search)', () => {
-    const techCard: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'tech_upgrade', name: 'Arc Reactor', type: CardType.UPGRADE, traits: ['Tech'] };
-    const eventCard: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'event_card', name: 'Repulsor Blast', type: CardType.EVENT };
-
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Iron Man',
-          hero: spiderManHero,
-          alterEgo: peterParkerAlterEgo,
-          deckCards: [techCard, eventCard],
-        },
-      ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
-    });
-
-    const player = state.players[0];
-    const instTech = createCardInstance(techCard);
-    const instEvent = createCardInstance(eventCard);
-    player.discard = [instTech, instEvent];
-    player.hand = [];
-
-    // Retrieve Tech Upgrade from discard
-    const effectRes = executeEffect(
-      state,
-      {
-        id: 'retrieve_tech',
-        timing: 'ACTION',
-        steps: [
-          {
-            effect: 'SEARCH_AND_SELECT',
-            params: {
-              source: 'PLAYER_DISCARD',
-              filter: {
-                trait: 'Tech',
-                type: CardType.UPGRADE,
-              },
-              takeCount: 1,
-              selectedDestination: 'HAND',
-              unselectedDestination: null,
-              shuffleAfter: false,
-            },
-          },
-        ],
-      },
-      { playerId: 'p1' },
-    );
-
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
-
-    const resolveRes = dispatchAction(effectRes.state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: 'p1',
-      selectedOptionId: instTech.instanceId,
-    });
-
-    expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.players[0].hand.length).toBe(1);
-    expect(resolveRes.state.players[0].hand[0].instanceId).toBe(instTech.instanceId);
-    expect(resolveRes.state.players[0].discard.length).toBe(1);
-    expect(resolveRes.state.players[0].discard[0].instanceId).toBe(instEvent.instanceId);
-  });
-
-  it('supports voluntary pass and cancellation during search', () => {
-    const cardA: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_a', name: 'Card Alpha' };
-
-    const state = setupGame({
-      scenarioId: 'rhino',
-      players: [
-        {
-          id: 'p1',
-          name: 'Spider-Man',
-          hero: spiderManHero,
-          alterEgo: peterParkerAlterEgo,
-          deckCards: [cardA],
-        },
-      ],
-      villain: rhinoVillain,
-      mainScheme,
-      encounterCards: cardCatalog.getCardsBySet('rhino'),
-      skipMulligan: true,
-    });
-
-    const player = state.players[0];
-    const instA = createCardInstance(cardA);
-    player.deck = [instA];
-    player.hand = [];
-
-    const effectRes = executeEffect(
-      state,
-      {
-        id: 'voluntary_search',
-        timing: 'ACTION',
-        steps: [
-          {
-            effect: 'SEARCH_AND_SELECT',
-            params: {
-              source: 'PLAYER_DECK',
-              lookCount: 1,
-              takeCount: 1,
-              selectedDestination: 'HAND',
-              unselectedDestination: 'DISCARD',
-              isVoluntary: true,
-            },
-          },
-        ],
-      },
-      { playerId: 'p1' },
-    );
-
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(effectRes.state.pendingDecisionPrompt?.options.some((o) => o.id === 'pass_search')).toBe(true);
-
-    const resolveRes = dispatchAction(effectRes.state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: 'p1',
-      selectedOptionId: 'pass_search',
-    });
-
-    expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.players[0].hand.length).toBe(0);
   });
 });

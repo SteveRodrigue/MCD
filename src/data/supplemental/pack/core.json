@@ -1135,7 +1135,7 @@
       ]
     },
     "01029b": {
-      "comment": "Alter-Ego Identity: Futurist — Action: Look at top 3 cards of deck. Add 1 to your hand and discard the others. (Limit once per round.)",
+      "comment": "Alter-Ego Identity: Futurist — Action: Look at top 3 cards of deck. Add 1 Tech card to hand, discard rest. (Limit once per round.)",
       "abilities": [
         {
           "id": "futurist",
@@ -1147,11 +1147,14 @@
               "params": {
                 "source": "PLAYER_DECK",
                 "lookCount": 3,
+                "filter": {
+                  "trait": "Tech"
+                },
                 "takeCount": 1,
                 "selectedDestination": "HAND",
                 "unselectedDestination": "DISCARD",
                 "shuffleAfter": false,
-                "promptTitle": "Futurist: Choose 1 card to add to hand"
+                "promptTitle": "Futurist: Choose 1 Tech card to add to hand"
               }
             }
           ]
@@ -1159,12 +1162,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T10:19:00Z",
-        "reviewedAt": "2026-09-01T10:19:00Z",
+        "updatedAt": "2026-09-01T12:28:00Z",
+        "reviewedAt": "2026-09-01T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> SEARCH_AND_SELECT (source: PLAYER_DECK, lookCount: 3, takeCount: 1, selectedDestination: HAND, unselectedDestination: DISCARD)"
+        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> SEARCH_AND_SELECT (source: PLAYER_DECK, lookCount: 3, filter: { trait: Tech }, takeCount: 1, selectedDestination: HAND, unselectedDestination: DISCARD)"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for Tony Stark"
@@ -1556,10 +1559,18 @@
           "timing": "SETUP",
           "steps": [
             {
-              "effect": "SEARCH_DECK_FOR_CARD",
+              "effect": "SEARCH_AND_SELECT",
               "params": {
-                "trait": "Black Panther",
-                "type": "upgrade"
+                "source": "PLAYER_DECK",
+                "filter": {
+                  "trait": "Black Panther",
+                  "type": "upgrade"
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "unselectedDestination": null,
+                "shuffleAfter": true,
+                "promptTitle": "King of Wakanda: Choose 1 Black Panther upgrade"
               }
             }
           ]
@@ -1567,12 +1578,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-01T12:28:00Z",
+        "reviewedAt": "2026-09-01T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "SETUP -> SEARCH_DECK_FOR_CARD (trait: Black Panther, type: upgrade)"
+        "confidence": 100,
+        "reconstructedText": "SETUP -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { trait: Black Panther, type: upgrade }, selectedDestination: TABLEAU, shuffleAfter: true)"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for T'Challa"
@@ -1587,9 +1598,17 @@
           "trigger": "CARD_PLAYED",
           "steps": [
             {
-              "effect": "SEARCH_DECK_FOR_CARD",
+              "effect": "SEARCH_AND_SELECT",
               "params": {
-                "type": "upgrade"
+                "source": "PLAYER_DECK",
+                "filter": {
+                  "type": "upgrade"
+                },
+                "takeCount": 1,
+                "selectedDestination": "HAND",
+                "unselectedDestination": null,
+                "shuffleAfter": true,
+                "promptTitle": "Shuri: Choose 1 upgrade to add to hand"
               }
             }
           ]
@@ -1597,15 +1616,15 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-01T12:28:00Z",
+        "reviewedAt": "2026-09-01T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> SEARCH_DECK_FOR_CARD (type: upgrade)"
+        "confidence": 100,
+        "reconstructedText": "RESPONSE [Trigger: CARD_PLAYED] -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { type: upgrade }, selectedDestination: HAND, shuffleAfter: true)"
       },
       "mechanicSteps": [
-        "Ally card with THW 1, ATK 1, and health 3"
+        "Ally: Response: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck."
       ]
     },
     "01042": {

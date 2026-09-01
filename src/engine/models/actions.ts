@@ -12,7 +12,9 @@ export type ActionType =
   | 'RESOLVE_DECISION_PROMPT'
   | 'DECLARE_DEFENDER'
   | 'END_PLAYER_TURN'
-  | 'DEV_ADD_CARD_TO_HAND';
+  | 'DEV_ADD_CARD_TO_HAND'
+  | 'MINION_ENGAGES_PLAYER'
+  | 'REVEAL_ENCOUNTER_CARD';
 
 export interface ResolveMulliganAction {
   type: 'RESOLVE_MULLIGAN';
@@ -113,6 +115,19 @@ export interface DevAddCardToHandAction {
   cardInstanceId: string;
 }
 
+export interface MinionEngagesPlayerAction {
+  type: 'MINION_ENGAGES_PLAYER';
+  playerId: string;
+  minionInstance: any;
+}
+
+export interface RevealEncounterCardAction {
+  type: 'REVEAL_ENCOUNTER_CARD';
+  playerId?: string;
+  targetPlayerId?: string;
+  encounterCard: any;
+}
+
 export type GameAction =
   | ResolveMulliganAction
   | ChangeFormAction
@@ -127,7 +142,9 @@ export type GameAction =
   | ResolveDecisionPromptAction
   | DeclareDefenderAction
   | EndPlayerTurnAction
-  | DevAddCardToHandAction;
+  | DevAddCardToHandAction
+  | MinionEngagesPlayerAction
+  | RevealEncounterCardAction;
 
 export interface ActionResult {
   success: boolean;

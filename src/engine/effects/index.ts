@@ -23,7 +23,7 @@ import {
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
-import { getEffectiveHeroStats, getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import { getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 export interface EffectExecutionContext {
@@ -943,44 +943,75 @@ export function executeStep(
       const target = (step.params?.target as string) || 'VILLAIN';
       let mutatedState = false;
       let alreadyHadStatus = false;
+      let isImmune = false;
+
+      // Helper to apply status to a target entity considering Stalwart and Steady
+      const applyStatusToEntity = (entity: any) => {
+        if (!entity) return;
+        if (!entity.statusCards) entity.statusCards = [];
+
+        // Stalwart check (RR v1.8 p. 28)
+        if (
+          (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) &&
+          hasEntityKeyword(entity, 'Stalwart')
+        ) {
+          isImmune = true;
+          return;
+        }
+
+        // Steady check (RR v1.8 p. 28)
+        const isSteady = hasEntityKeyword(entity, 'Steady');
+        const maxLimit =
+          isSteady && (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) ? 2 : 1;
+        const currentCount = entity.statusCards.filter((s: StatusCard) => s === status).length;
+
+        if (currentCount < maxLimit) {
+          entity.statusCards.push(status);
+          mutatedState = true;
+        } else {
+          alreadyHadStatus = true;
+        }
+      };
 
       if (
         target === 'VILLAIN' ||
         target === 'CHOSEN_ENEMY' ||
         target === 'ATTACK_TARGET' ||
         target === 'ATTACKED_ENEMY' ||
-        target === 'TARGET_ENEMY'
+        target === 'TARGET_ENEMY' ||
+        target === 'MINION'
       ) {
-        if (context.targetType === 'minion' && context.targetInstanceId) {
-          const minion = player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId);
-          if (minion) {
-            if (!minion.statusCards) minion.statusCards = [];
-            if (!minion.statusCards.includes(status)) {
-              minion.statusCards.push(status);
-              mutatedState = true;
-            } else {
-              alreadyHadStatus = true;
+        if (
+          (target === 'MINION' || context.targetType === 'minion') &&
+          context.targetInstanceId
+        ) {
+          for (const p of state.players) {
+            const minion = p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId);
+            if (minion) {
+              applyStatusToEntity(minion);
+              break;
             }
           }
         } else {
-          if (!state.villain.statusCards.includes(status)) {
-            state.villain.statusCards.push(status);
-            mutatedState = true;
-          } else {
-            alreadyHadStatus = true;
-          }
+          applyStatusToEntity(state.villain);
         }
-      } else if (target === 'HERO' || target === 'ALL_HEROES' || target === 'DEFENDING_CHARACTER' || target === 'DEFENDING_PLAYER') {
+      } else if (
+        target === 'HERO' ||
+        target === 'ALL_HEROES' ||
+        target === 'DEFENDING_CHARACTER' ||
+        target === 'DEFENDING_PLAYER' ||
+        target === 'PLAYER'
+      ) {
         const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
-        if (!targetPlayer.statusCards.includes(status)) {
-          targetPlayer.statusCards.push(status);
-          mutatedState = true;
-        } else {
-          alreadyHadStatus = true;
-        }
+        applyStatusToEntity(targetPlayer);
       }
 
-      const onomatopoeia = `${status} APPLIED!`;
+      const onomatopoeia = isImmune
+        ? 'IMMUNE! (STALWART)'
+        : mutatedState
+        ? `${status} APPLIED!`
+        : `${status} ALREADY APPLIED!`;
+
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -992,6 +1023,7 @@ export function executeStep(
           target,
           mutatedState,
           alreadyHadStatus,
+          isImmune,
         },
         onomatopoeia,
       });

@@ -29,9 +29,9 @@ import {
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect, checkAndDiscardZeroCounterCard } from '../effects';
-import { executeVillainPhase, continueVillainPhase } from './villain-phase';
+import { executeVillainPhase, continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
-import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
+import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
 import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
 
@@ -272,10 +272,8 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId)!;
       player.exhausted = true;
 
-      // 1. Stunned Status Replacement Check (RR v1.8 p. 26)
-      const stunIndex = player.statusCards.indexOf(StatusCard.STUNNED);
-      if (stunIndex !== -1) {
-        player.statusCards.splice(stunIndex, 1);
+      // 1. Stunned Status Replacement Check (RR v1.8 p. 28, taking into account Steady)
+      if (consumeEntityStatusCards(player, StatusCard.STUNNED)) {
         const onomatopoeia = 'STUN CLEARED!';
         nextState.log.push({
           id: `log_${Date.now()}`,
@@ -661,10 +659,8 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId)!;
       player.exhausted = true;
 
-      // 1. Confused Status Replacement Check (RR v1.8 p. 10)
-      const confuseIndex = player.statusCards.indexOf(StatusCard.CONFUSED);
-      if (confuseIndex !== -1) {
-        player.statusCards.splice(confuseIndex, 1);
+      // 1. Confused Status Replacement Check (RR v1.8 p. 28, taking into account Steady)
+      if (consumeEntityStatusCards(player, StatusCard.CONFUSED)) {
         const onomatopoeia = 'CONFUSION CLEARED!';
         nextState.log.push({
           id: `log_${Date.now()}`,
@@ -674,16 +670,6 @@ export function dispatchAction(
           key: 'status.confused.cleared',
           params: { player: player.name },
           onomatopoeia,
-        });
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
-          category: 'status',
-          key: 'card.state.exhausted',
-          params: { card: player.activeFormCard.name },
-          onomatopoeia: 'EXHAUST',
         });
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
@@ -1470,6 +1456,59 @@ export function dispatchAction(
         state: updatedState,
         result: { success: true, onomatopoeia: 'DEFENSE RESOLVED!' },
       };
+    }
+
+    case 'MINION_ENGAGES_PLAYER': {
+      const player = getPlayer(nextState, action.playerId);
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const minionInst = (action as any).minionInstance as CardInstance;
+      if (minionInst) {
+        player.engagedMinions.push(minionInst);
+
+        // Quickstrike Keyword check (RR v1.8 p. 18)
+        if (hasEntityKeyword(minionInst, 'Quickstrike') && player.currentForm === 'hero') {
+          const updated = executeMinionAttackAgainstPlayer(nextState, minionInst, player, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+          return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
+        }
+      }
+
+      return { state: nextState, result: { success: true } };
+    }
+
+    case 'REVEAL_ENCOUNTER_CARD': {
+      const targetPlayer = getPlayer(nextState, (action as any).targetPlayerId || (action as any).playerId) || nextState.players[0];
+      const encounterCard = (action as any).encounterCard as CardInstance;
+      if (!encounterCard) return { state, result: { success: false, error: 'Encounter card required' } };
+
+      // Incite X Keyword check (RR v1.8 p. 16)
+      let inciteAmount = (encounterCard.card.enrichment as any)?.incite || 0;
+      if (!inciteAmount) {
+        const match = (encounterCard.card.raw?.text || encounterCard.card.text || '').match(/Incite\s+(\d+)/i);
+        if (match) inciteAmount = parseInt(match[1], 10);
+      }
+      if (inciteAmount > 0) {
+        nextState.mainScheme.threat += inciteAmount;
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          category: 'scheme',
+          key: 'card.effect.incite',
+          params: { scheme: nextState.mainScheme.card.name, amount: inciteAmount, source: encounterCard.card.name },
+          onomatopoeia: `INCITE ${inciteAmount}!`,
+        });
+      }
+
+      // Route card according to type
+      if (encounterCard.card.type === CardType.MINION) {
+        targetPlayer.engagedMinions.push(encounterCard);
+        if (hasEntityKeyword(encounterCard, 'Quickstrike') && targetPlayer.currentForm === 'hero') {
+          const updated = executeMinionAttackAgainstPlayer(nextState, encounterCard, targetPlayer, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+          return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
+        }
+      }
+
+      return { state: nextState, result: { success: true, onomatopoeia: 'REVEALED!' } };
     }
 
     default:

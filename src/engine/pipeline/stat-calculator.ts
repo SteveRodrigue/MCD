@@ -271,3 +271,96 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
 
   return Math.max(1, baseHealth + bonus);
 }
+
+/**
+ * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword.
+ */
+export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
+  if (!entity) return false;
+  const kw = targetKeyword.toLowerCase().trim();
+
+  // 1. Direct keywords array on card/entity
+  const directKeywords = entity.keywords || entity.card?.keywords || entity.hero?.keywords || [];
+  if (directKeywords.some((k: any) => String(k).toLowerCase().trim() === kw)) {
+    return true;
+  }
+
+  // 2. Card enrichment keywords
+  const enrichmentKws = entity.enrichment?.keywords || entity.card?.enrichment?.keywords || [];
+  if (enrichmentKws.some((k: any) => String(k).toLowerCase().trim() === kw)) {
+    return true;
+  }
+
+  // 3. Card raw text / traits fallback (e.g. "Stalwart.", "Steady.")
+  const text = entity.text || entity.card?.text || entity.hero?.text || entity.card?.raw?.text || '';
+  if (new RegExp(`\\b${kw}\\b`, 'i').test(text)) {
+    return true;
+  }
+
+  // 4. Attachments granting keyword
+  const attachments = entity.attachments || [];
+  for (const att of attachments) {
+    const abilities = att.card?.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'GRANT_KEYWORD') {
+            const granted = String(step.params?.keyword || '').toLowerCase().trim();
+            if (granted === kw) return true;
+          }
+        }
+      }
+    }
+  }
+
+  // 5. Tableau upgrades granting keyword to hero (for player)
+  if (entity.tableau) {
+    for (const item of entity.tableau) {
+      const abilities = item.card?.enrichment?.abilities || [];
+      for (const ab of abilities) {
+        if (ab.timing === 'CONSTANT') {
+          for (const step of ab.steps || []) {
+            if (step.effect === 'GRANT_KEYWORD') {
+              const granted = String(step.params?.keyword || '').toLowerCase().trim();
+              if (granted === kw) return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a character is incapacitated by a status card (taking into account Steady - RR v1.8 p. 28).
+ */
+export function isEntityIncapacitatedByStatus(entity: any, status: any): boolean {
+  if (!entity || !entity.statusCards) return false;
+  const count = (entity.statusCards as any[]).filter((s) => s === status).length;
+  const isSteady = hasEntityKeyword(entity, 'Steady');
+  if (isSteady) {
+    return count >= 2;
+  }
+  return count >= 1;
+}
+
+/**
+ * Consumes status cards when an incapacitated character attempts an action (RR v1.8 p. 28).
+ * Discards 2 copies if Steady, or 1 copy if Standard. Returns true if status was consumed.
+ */
+export function consumeEntityStatusCards(entity: any, status: any): boolean {
+  if (!isEntityIncapacitatedByStatus(entity, status)) return false;
+  const isSteady = hasEntityKeyword(entity, 'Steady');
+  const discardCount = isSteady ? 2 : 1;
+
+  let discarded = 0;
+  for (let i = entity.statusCards.length - 1; i >= 0 && discarded < discardCount; i--) {
+    if (entity.statusCards[i] === status) {
+      entity.statusCards.splice(i, 1);
+      discarded++;
+    }
+  }
+  return discarded > 0;
+}

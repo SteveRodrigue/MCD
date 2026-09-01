@@ -61,6 +61,11 @@ export enum Keyword {
   VICTORY = 'Victory',
   SETUP = 'Setup',
   TEAMWORK = 'Teamwork',
+  STALWART = 'Stalwart',
+  STEADY = 'Steady',
+  VILLAINOUS = 'Villainous',
+  INCITE = 'Incite',
+  HINDER = 'Hinder',
 }
 
 export enum StatusCard {

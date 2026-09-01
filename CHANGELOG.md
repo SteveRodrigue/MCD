@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Advanced Status Dynamics (Stalwart, Steady) & Minion Activation Modifiers (Villainous, Quickstrike, Incite, Hinder) ([#35](https://github.com/SteveRodrigue/MCD/issues/35), `effects/index.ts`, `stat-calculator.ts`, `action-dispatcher.ts`, `villain-phase.ts`, `combat-pipeline.ts`, `advanced-status-and-minion-modifiers.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 14, 16, 18, 28, 30 advanced status mechanics and minion activation modifiers per ADR-0036:
+    - **Stalwart Immunity (RR v1.8 p. 28):** Complete immunity to `STUNNED` and `CONFUSED` status card applications across heroes, villains, and minions, emitting comic onomatopoeia `"IMMUNE! (STALWART)"`.
+    - **Steady Count-Based Status Thresholds (RR v1.8 p. 28):** Steady characters require **2 copies** of a status card to be incapacitated (1st Stun/Confuse does not cancel actions; 2nd copy cancels the activation and discards both status cards simultaneously).
+    - **Villainous Minion Activations (RR v1.8 p. 30):** Elite minions deal and resolve facedown boost cards from the encounter deck during attacks and schemes, accumulating boost icons and star boost effects.
+    - **Quickstrike Minion Engagement (RR v1.8 p. 18):** Minions with Quickstrike immediately initiate an attack against engaging heroes upon entering play.
+    - **Incite $X$ & Hinder $X$ Threat Modifiers (RR v1.8 p. 14, 16):** Direct main scheme threat placement upon encounter card reveal (Incite) and per-player scaled initial threat on side schemes (Hinder).
+    - **Core Encounter Retrofit:** Retrofitted Vulture (`01167`) in `core_encounter.json` to natively utilize the engine's universal Quickstrike keyword pipeline.
+  - Added comprehensive contract test suite in [`advanced-status-and-minion-modifiers.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/advanced-status-and-minion-modifiers.test.ts).
+
 - **Feature & Engine: Universal Named Counter Map, Cross-Entity Targeting & Uses Zero-Counter Discard ([#33](https://github.com/SteveRodrigue/MCD/issues/33), `effects/index.ts`, `cost-engine.ts`, `schema.ts`, `core.json`, `universal-counter-engine.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 30 ("Uses") and ADR-0035 universal named counter dictionary across all in-play entities:
     - **Named Counter Maps:** Replaced scalar counters with `counters: Record<string, number>` on `CardInstance` and `PlayerState`, seamlessly supporting all 51 catalog counter types (*Charge*, *Growth*, *Ammo*, *Arrow*, *Web*, *Invocation*, *Pym*, *Chi*, *Energy*, *Snoop*, *Medical*, *Attack*).

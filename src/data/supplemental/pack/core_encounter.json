@@ -1034,29 +1034,14 @@
       }
     },
     "01167": {
-      "comment": "Minion: Vulture (Quickstrike)",
-      "abilities": [
-        {
-          "id": "vulture_quickstrike",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "params": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        }
-      ],
+      "comment": "Minion: Vulture. Printed Quickstrike keyword is natively handled by engine.",
+      "noSupplementalNeeded": true,
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-01T13:31:00Z",
+        "reviewedAt": "2026-09-01T13:31:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "reconstructedText": "Quickstrike."
       }
     },
     "01168": {

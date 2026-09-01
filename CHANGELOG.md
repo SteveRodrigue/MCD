@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix & Engine: Interactive Player Choice for Target `CHOSEN_PLAYER` Card Draw Abilities ([#29](https://github.com/SteveRodrigue/MCD/issues/29), `effects/index.ts`, `decision-prompts.test.ts`):**
+  - Resolved issue where Carol Danvers' *Commander* alter-ego ability (`01010b`) and Avengers Mansion (`01091`) with `target: "CHOSEN_PLAYER"` drew cards for self without prompting player choice in 2+ player matches.
+  - Implemented smart targeting in `DRAW_CARDS` ([`src/engine/effects/index.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts)): seamlessly fast-paths to self in 1-player games without opening extra prompts, while enqueuing an interactive `Choose a Player` decision prompt modal in 2–4 player games.
+  - Added regression test suite in [`decision-prompts.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/decision-prompts.test.ts) verifying single-player direct draw and multiplayer target prompt resolution for Carol Danvers (*Commander*) and Avengers Mansion.
+
 - **Bug Fix & Engine: Interactive Defender Declaration for Villain & Minion Attacks ([#28](https://github.com/SteveRodrigue/MCD/issues/28), `villain-phase.ts`, `action-dispatcher.ts`, `effects/index.ts`, `combat-pipeline.ts`, `combat-defender-prompt.test.ts`):**
   - Resolved issue where villain and minion attacks in the Villain Phase or via encounter treacheries (e.g. *Assault*, *Gang-Up*) executed synchronously without presenting an interactive prompt modal to select a defender (Hero, Ally, or undefended) or trigger defense interrupts (e.g. *Spider-Sense*, *Backflip*).
   - Updated [`step2_villainAndMinionActivations`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/villain-phase.ts) to manage an activation queue that pauses execution cleanly when interactive prompts are enqueued into `pendingDecisionPrompt`.

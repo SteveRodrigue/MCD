@@ -213,6 +213,86 @@ export function executeStep(
     case 'DRAW_CARDS': {
       const count = (step.params?.count as number) || 1;
       const targetParam = step.params?.target as string | undefined;
+      const targetPlayerId =
+        (step.params?.targetPlayerId as string) ||
+        (step.params?.playerId as string) ||
+        (context.targetInstanceId && state.players.some((p) => p.id === context.targetInstanceId)
+          ? context.targetInstanceId
+          : undefined);
+
+      // If a specific target player was designated (e.g. from decision prompt resolution)
+      if (targetPlayerId) {
+        const targetP = state.players.find((p) => p.id === targetPlayerId);
+        if (targetP) {
+          let drawnForP = 0;
+          for (let i = 0; i < count; i++) {
+            const drawn = drawPlayerCard(state, targetP.id);
+            if (drawn) {
+              targetP.hand.push(drawn);
+              drawnForP += 1;
+            }
+          }
+          state.log.push({
+            id: `log_${Date.now()}_${targetP.id}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.drawCards',
+            params: {
+              player: targetP.name,
+              count: drawnForP,
+              handSize: targetP.hand.length,
+            },
+            onomatopoeia: `DRAW +${drawnForP}!`,
+          });
+          return {
+            state,
+            success: true,
+            onomatopoeia: `DRAW +${drawnForP}!`,
+          };
+        }
+      }
+
+      // If targeting CHOSEN_PLAYER in multiplayer mode, prompt the player to select the recipient
+      if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1) {
+        const sourceCardName = context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
+        const promptId = `prompt_${Date.now()}_choose_player`;
+        state = enqueueDecisionPrompt(state, {
+          promptId,
+          playerId: player.id,
+          title: 'Choose a Player',
+          description: `Choose a player to draw ${count} card${count > 1 ? 's' : ''}:`,
+          sourceCardName,
+          options: state.players.map((p) => ({
+            id: `draw_${p.id}`,
+            label: `${p.name} (${p.hero?.name || 'Hero'})`,
+            description: `Give ${count} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
+            effect: 'DRAW_CARDS',
+            params: {
+              count,
+              targetPlayerId: p.id,
+            },
+          })),
+        });
+
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'ability',
+          key: 'decision.prompt.opened',
+          params: { player: player.name, promptId, source: sourceCardName },
+          onomatopoeia: 'CHOOSE PLAYER!',
+        });
+
+        return {
+          state,
+          success: true,
+          onomatopoeia: 'CHOOSE PLAYER!',
+        };
+      }
+
       const targetPlayers = targetParam === 'ALL_PLAYERS' ? state.players : [player];
       let totalDrawn = 0;
 

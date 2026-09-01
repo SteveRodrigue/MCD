@@ -5,6 +5,7 @@ description: >-
   GitHub issues, active roadmap milestones, and 170-pack card catalog ROI. Computes a
   weighted composite score to recommend the Top 3-5 next actionable tasks with ready-to-trigger
   prompts for feature-delivery, bug-fix, or card-integration-protocol.
+  Enforces automatic transition to the Mandatory Pre-Execution Plan Review Gate upon selection.
   Trigger whenever asking "What should I work on next?" or prefixed with 'next-task'.
 ---
 
@@ -18,38 +19,54 @@ This skill acts as the **Automated Release Orchestrator & Technical Product Mana
 
 ---
 
-## 🚀 Execution Workflow
-
-Whenever invoked (`next-task`, `"What should we work on next?"`, or `"prioritize work"`), execute the following steps:
+## 🔄 Dual-Phase Execution Workflow
 
 ```mermaid
 flowchart TD
-    S1["1. Run Automated Task Evaluator (npx tsx tools/audit/next-task-evaluator.ts)"] --> S2["2. Ingest GitHub Issues, Active Milestone & Card Data"]
-    S2 --> S3["3. Compute Weighted Composite Scores"]
-    S3 --> S4["4. Format Top 3-5 Ranked Recommendations with Action Triggers"]
-    S4 --> S5["5. Present Options to User for Immediate One-Click Selection"]
+    subgraph Phase1["Phase 1: Prioritized Task Recommendation"]
+        S1["1. Run Automated Task Evaluator (npx tsx tools/audit/next-task-evaluator.ts)"]
+        S1 --> S2["2. Ingest GitHub Issues, Active Milestone & Card Data"]
+        S2 --> S3["3. Compute Weighted Composite Scores"]
+        S3 --> S4["4. Present Ranked Options Table to User"]
+    end
+
+    subgraph Phase2["Phase 2: Task Selection & Mandatory Plan Review Gate"]
+        S4 --> S5["5. User Selects Option (e.g. 'Option 1')"]
+        S5 --> S6["6. Agent Researches RR v1.8 Rules & Codebase"]
+        S6 --> S7["7. Agent Creates 'implementation_plan.md' (request_feedback: true)"]
+        S7 --> S8["🛑 HARD STOP: Interactive Review UI ('Approve / Proceed')"]
+        S8 --> S9["8. User Reviews & Approves → Execution Begins"]
+    end
 ```
 
-### Step 1: Execute Automated Evaluator
-Run the dynamic evaluator tool:
-```bash
-npx tsx tools/audit/next-task-evaluator.ts
-```
+---
 
-### Step 2: Weighted Composite Scoring Formula
-The evaluator calculates a score out of **100 points** using:
-$$\text{Score} = \text{Priority (40 pts)} + \text{Milestone (30 pts)} + \text{Card ROI (20 pts)} + \text{Architectural Impact (10 pts)}$$
+### Phase 1: Evaluation & Recommendation
+1. Run the dynamic evaluator tool:
+   ```bash
+   npx tsx tools/audit/next-task-evaluator.ts
+   ```
+2. Present the Top 3 to 5 ranked candidates to the user in a clean table with medals (🥇, 🥈, 🥉), scores, card impact, and clickable option triggers.
 
-* **Priority:** `P0` = 40 pts, `P1` = 30 pts, `P2` = 20 pts, `P3` = 10 pts.
-* **Milestone Alignment:** Active Milestone (e.g. Milestone 2D) = 30 pts, Next Phase = 20 pts, Future = 10 pts.
-* **Card ROI:** $\min(20, \lfloor \text{Card Count} \times 0.4 \rfloor)$.
-* **Architectural Impact:** `impact:high` = 10 pts, `impact:medium` = 5 pts, `impact:low` = 2 pts.
+---
+
+### Phase 2: Selection & Mandatory Implementation Plan Gate 🛑
+When the user selects an option (e.g., replying `"Option 1"`, `"1"`, or triggering `feature-delivery: ...`):
+
+1. **Do NOT write or modify code yet.**
+2. **Research Rules & Codebase:** Audit `references/rules_reference_v18.md`, relevant ADRs, and related engine pipelines.
+3. **Create `implementation_plan.md` Artifact:**
+   Create `<appDataDir>\brain\<conversation-id>/implementation_plan.md` with:
+   * **`ArtifactMetadata: { RequestFeedback: true, UserFacing: true }`**
+   * Detailed Rules Reference analysis
+   * Proposed file changes (`[NEW]`, `[MODIFY]`)
+   * Acceptance / contract tests plan
+   * Open questions or design decisions
+4. **STOP AND WAIT:** Conclude the turn immediately so the interactive "Approve / Proceed" review modal is presented to the user. Do not begin implementation until explicit user approval is granted.
 
 ---
 
 ## 📊 Standard Presentation Template
-
-Format the output cleanly for the user:
 
 ```markdown
 ### 🎯 Next-Task Recommendations: Ranked Priority & Card ROI
@@ -78,7 +95,7 @@ Here are the Top ranked candidates evaluated against active roadmap milestones, 
    * **Prompt:** \`feature-delivery: <Title> (Issue #ZZ)\`
    * **Why:** <Concise rationale>
 
-*Reply with your choice (e.g., "1" or "Let's do Option 1") to start execution immediately!*
+*Reply with your choice (e.g. "1" or "Let's do Option 1"). I will immediately author the detailed \`implementation_plan.md\` and prompt you for review and approval before modifying any code!*
 ```
 
 ---

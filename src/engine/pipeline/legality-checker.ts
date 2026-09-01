@@ -351,7 +351,47 @@ export function getPlayerRestrictedCount(player: PlayerState): number {
 }
 
 /**
- * Validates the Global Unique Card Rule & Identity Collision (RR v1.8 p. 29).
+ * Helper to determine whether two unique cards or identities collide per RR v1.8 p. 29.
+ * Subtitle Rule: If two cards share the same title, but have different subtitles
+ * (such as Spider-Man: Peter Parker and Spider-Man: Miles Morales), they are different
+ * characters and are not restricted by this rule.
+ */
+export function isUniqueCollision(
+  targetName: string,
+  targetSubname: string | undefined,
+  existingName: string,
+  existingSubname: string | undefined,
+): boolean {
+  // If both have titles and subtitles:
+  if (targetSubname && existingSubname) {
+    if (targetName === existingName) {
+      // Same title: conflict ONLY if subtitles also match
+      return targetSubname === existingSubname;
+    }
+    // Different titles: conflict if subtitles match (same alter-ego persona)
+    return targetSubname === existingSubname;
+  }
+
+  // If target card has a subtitle, check if subtitle matches existing title or subtitle
+  if (targetSubname) {
+    if (targetSubname === existingName || (existingSubname && targetSubname === existingSubname)) {
+      return true;
+    }
+  }
+
+  // If existing card has a subtitle, check if target title matches existing subtitle
+  if (existingSubname) {
+    if (targetName === existingSubname) {
+      return true;
+    }
+  }
+
+  // Default title comparison
+  return targetName === existingName;
+}
+
+/**
+ * Validates that playing a unique card does not violate the Unique Card rule (RR v1.8 p. 29).
  * Unique cards are evaluated globally across all player tableaus, all player allies,
  * all in-game Hero/Alter-Ego identities, and in-play villain/minion cards.
  */
@@ -362,26 +402,26 @@ export function checkUniqueCardPlayable(
   if (!card.isUnique) return { allowed: true };
 
   const targetName = card.name.toLowerCase().trim();
-  const targetSubname = card.subname?.toLowerCase().trim();
+  const targetSubname = card.subname ? card.subname.toLowerCase().trim() : undefined;
 
   // 1. Check against active Hero & Alter-Ego identities in the game
   for (const p of state.players) {
     const heroName = p.hero.name.toLowerCase().trim();
-    const heroSubname = p.hero.subname?.toLowerCase().trim();
+    // In Marvel Champions, a hero identity's persona is defined by their alter-ego persona (RR v1.8 p. 29)
+    const heroSubname = p.hero.subname
+      ? p.hero.subname.toLowerCase().trim()
+      : p.alterEgo.name
+      ? p.alterEgo.name.toLowerCase().trim()
+      : undefined;
     const alterEgoName = p.alterEgo.name.toLowerCase().trim();
-    const alterEgoSubname = p.alterEgo.subname?.toLowerCase().trim();
+    const alterEgoSubname = p.alterEgo.subname ? p.alterEgo.subname.toLowerCase().trim() : undefined;
 
-    // Match card name or subname with Hero/Alter-Ego name or subname
-    const matchesHero =
-      targetName === heroName ||
-      (targetSubname && targetSubname === heroName) ||
-      (heroSubname && targetName === heroSubname);
-    const matchesAlterEgo =
-      targetName === alterEgoName ||
-      (targetSubname && targetSubname === alterEgoName) ||
-      (alterEgoSubname && targetName === alterEgoSubname);
+    // Check collision against Hero identity (e.g. Spider-Man / Peter Parker)
+    const heroCollision = isUniqueCollision(targetName, targetSubname, heroName, heroSubname);
+    // Check collision against Alter-Ego identity (e.g. Peter Parker)
+    const alterEgoCollision = isUniqueCollision(targetName, targetSubname, alterEgoName, alterEgoSubname);
 
-    if (matchesHero || matchesAlterEgo) {
+    if (heroCollision || alterEgoCollision) {
       return {
         allowed: false,
         reason: `Global unicity violation (RR v1.8 p. 29): Unique card '${card.name}' shares identity with player '${p.name}'.`,
@@ -395,13 +435,9 @@ export function checkUniqueCardPlayable(
     for (const ally of p.allies) {
       if (ally.card.isUnique) {
         const allyName = ally.card.name.toLowerCase().trim();
-        const allySubname = ally.card.subname?.toLowerCase().trim();
+        const allySubname = ally.card.subname ? ally.card.subname.toLowerCase().trim() : undefined;
 
-        const nameMatch = targetName === allyName;
-        const subnameMatch =
-          targetSubname && allySubname ? targetSubname === allySubname : nameMatch;
-
-        if (nameMatch && subnameMatch) {
+        if (isUniqueCollision(targetName, targetSubname, allyName, allySubname)) {
           return {
             allowed: false,
             reason: `Global unicity violation (RR v1.8 p. 29): A unique copy of '${card.name}' is already in play under ${p.name}'s control.`,
@@ -414,13 +450,9 @@ export function checkUniqueCardPlayable(
     for (const item of p.tableau) {
       if (item.card.isUnique) {
         const itemName = item.card.name.toLowerCase().trim();
-        const itemSubname = item.card.subname?.toLowerCase().trim();
+        const itemSubname = item.card.subname ? item.card.subname.toLowerCase().trim() : undefined;
 
-        const nameMatch = targetName === itemName;
-        const subnameMatch =
-          targetSubname && itemSubname ? targetSubname === itemSubname : nameMatch;
-
-        if (nameMatch && subnameMatch) {
+        if (isUniqueCollision(targetName, targetSubname, itemName, itemSubname)) {
           return {
             allowed: false,
             reason: `Global unicity violation (RR v1.8 p. 29): A unique copy of '${card.name}' is already in play in ${p.name}'s tableau.`,
@@ -433,7 +465,8 @@ export function checkUniqueCardPlayable(
     for (const minion of p.engagedMinions) {
       if (minion.card.isUnique) {
         const minionName = minion.card.name.toLowerCase().trim();
-        if (targetName === minionName) {
+        const minionSubname = minion.card.subname ? minion.card.subname.toLowerCase().trim() : undefined;
+        if (isUniqueCollision(targetName, targetSubname, minionName, minionSubname)) {
           return {
             allowed: false,
             reason: `Global unicity violation (RR v1.8 p. 29): A unique minion '${card.name}' is already in play.`,
@@ -446,10 +479,11 @@ export function checkUniqueCardPlayable(
   // 3. Check against active Villain
   if (state.villain?.card.isUnique) {
     const villainName = state.villain.card.name.toLowerCase().trim();
-    if (targetName === villainName) {
+    const villainSubname = state.villain.card.subname ? state.villain.card.subname.toLowerCase().trim() : undefined;
+    if (isUniqueCollision(targetName, targetSubname, villainName, villainSubname)) {
       return {
         allowed: false,
-        reason: `Global unicity violation (RR v1.8 p. 29): A unique character '${card.name}' is active as the villain.`,
+        reason: `Global unicity violation (RR v1.8 p. 29): Unique card '${card.name}' is already in play as the active Villain.`,
       };
     }
   }

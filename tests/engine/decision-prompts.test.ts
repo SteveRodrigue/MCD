@@ -123,8 +123,120 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
     expect(resolveRes.result.success).toBe(true);
     expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
-    // Hand should now contain 3 newly drawn cards
     expect(resolveRes.state.players[0].hand.length).toBe(3);
     expect(resolveRes.state.players[0].deck.length).toBe(initialDeckSize - 3);
+  });
+
+  it('01010b Carol Danvers Commander: in 1-player mode draws 1 card directly without prompt', () => {
+    const carolAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+    const carolHero = cardCatalog.getCard('01010a') as HeroCard;
+    state.players[0].hero = carolHero;
+    state.players[0].alterEgo = carolAlterEgo;
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = carolAlterEgo;
+
+    const initialHand = state.players[0].hand.length;
+    const initialDeck = state.players[0].deck.length;
+
+    const res = dispatchAction(state, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p1',
+      cardInstanceId: '01010b',
+      abilityId: 'commander',
+    });
+
+    expect(res.result.success).toBe(true);
+    // 1-player mode should not open prompt
+    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(res.state.players[0].hand.length).toBe(initialHand + 1);
+    expect(res.state.players[0].deck.length).toBe(initialDeck - 1);
+  });
+
+  it('01010b Carol Danvers Commander: in 2+ player mode enqueues CHOSEN_PLAYER prompt and resolves for target player', () => {
+    const carolAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+    const carolHero = cardCatalog.getCard('01010a') as HeroCard;
+    state.players[0].hero = carolHero;
+    state.players[0].alterEgo = carolAlterEgo;
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = carolAlterEgo;
+
+    // Add Player 2
+    state.players.push({
+      ...state.players[0],
+      id: 'p2',
+      name: 'Player 2',
+      hero: spiderManHero,
+      alterEgo: peterParkerAlterEgo,
+      activeFormCard: spiderManHero,
+      hand: [],
+      deck: Array(10).fill(cardCatalog.getCard('01005')!),
+    });
+
+    const res = dispatchAction(state, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p1',
+      cardInstanceId: '01010b',
+      abilityId: 'commander',
+    });
+
+    expect(res.result.success).toBe(true);
+    // In 2-player mode, prompt MUST be opened to choose player
+    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(res.state.pendingDecisionPrompt!.title).toContain('Choose a Player');
+    expect(res.state.pendingDecisionPrompt!.options.length).toBe(2);
+
+    // Resolve decision for Player 2
+    const resolveRes = dispatchAction(res.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'draw_p2',
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    // Player 2 drew 1 card
+    expect(resolveRes.state.players[1].hand.length).toBe(1);
+    expect(resolveRes.state.players[1].deck.length).toBe(9);
+  });
+
+  it('01091 Avengers Mansion: in 2+ player mode enqueues CHOSEN_PLAYER prompt and resolves for chosen player', () => {
+    // Add Player 2
+    state.players.push({
+      ...state.players[0],
+      id: 'p2',
+      name: 'Player 2',
+      hero: spiderManHero,
+      alterEgo: peterParkerAlterEgo,
+      activeFormCard: spiderManHero,
+      hand: [],
+      deck: Array(10).fill(cardCatalog.getCard('01005')!),
+    });
+
+    const mansionCard = cardCatalog.getCard('01091')!;
+    const mansionInstance = createCardInstance(mansionCard);
+    state.players[0].tableau.push(mansionInstance);
+
+    const res = dispatchAction(state, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p1',
+      cardInstanceId: mansionInstance.instanceId,
+      abilityId: 'avengers_mansion',
+    });
+
+    expect(res.result.success).toBe(true);
+    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(res.state.pendingDecisionPrompt!.title).toContain('Choose a Player');
+
+    // Resolve for Player 2
+    const resolveRes = dispatchAction(res.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'draw_p2',
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(resolveRes.state.players[1].hand.length).toBe(1);
+    expect(resolveRes.state.players[0].tableau[0].exhausted).toBe(true);
   });
 });

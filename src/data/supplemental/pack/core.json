@@ -669,6 +669,7 @@
     },
     "01018": {
       "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
+      "maxPerPlayer": 1,
       "uses": {
         "type": "energy_counters",
         "count": 0,
@@ -2147,6 +2148,7 @@
     },
     "01057": {
       "comment": "UPGRADE: Combat Training. You get +1 ATK.",
+      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "combat_training_atk",
@@ -2337,6 +2339,7 @@
     },
     "01063": {
       "comment": "Support: Response: After you defeat a minion, exhaust to remove 1 threat from a scheme.",
+      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "interrogation_room_response",
@@ -2413,6 +2416,7 @@
     },
     "01065": {
       "comment": "UPGRADE: Heroic Intuition. You get +1 THW.",
+      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "heroic_intuition_thw",
@@ -2955,6 +2959,7 @@
     },
     "01081": {
       "comment": "Upgrade: Attached hero gets +1 DEF.",
+      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "armored_vest_def",
@@ -3272,6 +3277,7 @@
     },
     "01091": {
       "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",
+      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "avengers_mansion",
@@ -3305,6 +3311,7 @@
     },
     "01092": {
       "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
+      "maxPerPlayer": 1,
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-31T03:45",

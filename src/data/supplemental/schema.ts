@@ -278,6 +278,7 @@ export const CardEnrichmentSchema = z.object({
   audit: CardAuditRecordSchema.optional(),
   mechanicSteps: z.array(z.string()).optional(),
   noSupplementalNeeded: z.boolean().optional(),
+  maxPerPlayer: z.number().optional(),
   errata: z.string().nullable().optional(),
 });
 

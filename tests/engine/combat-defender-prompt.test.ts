@@ -32,6 +32,7 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
 
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderManHero;
+    state.players[0].hand = [];
   });
 
   it('opens a DEFENDER declaration modal when Villain attacks during Villain Phase on END_TURN', () => {

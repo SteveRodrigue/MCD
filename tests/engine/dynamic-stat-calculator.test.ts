@@ -9,7 +9,7 @@ import {
   getEffectiveAllyStats,
 } from '../../src/engine/pipeline/stat-calculator';
 import { evaluateCardPlayability, canPlayCard } from '../../src/engine/pipeline/legality-checker';
-import { step6_passFirstPlayerAndRoundUpkeep } from '../../src/engine/pipeline/villain-phase';
+import { executePlayerCleanup } from '../../src/engine/pipeline/player-phase-cleanup';
 
 describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
   let state: GameState;
@@ -78,7 +78,7 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
       expect(getEffectiveHandSize(p1, state)).toBe(4);
     });
 
-    it('Step 6 upkeep draws up to dynamic effective hand size', () => {
+    it('Player phase clean-up draws up to dynamic effective hand size', () => {
       const p1 = state.players[0];
       p1.currentForm = 'hero';
       p1.activeFormCard = ironManHero;
@@ -88,8 +88,8 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
       p1.tableau.push({ instanceId: 'u1', card: cardCatalog.getCard('01035')!, exhausted: false });
       p1.tableau.push({ instanceId: 'u2', card: cardCatalog.getCard('01036')!, exhausted: false });
 
-      const afterUpkeep = step6_passFirstPlayerAndRoundUpkeep(state);
-      expect(afterUpkeep.players[0].hand).toHaveLength(3);
+      const afterCleanup = executePlayerCleanup(state, p1.id, []);
+      expect(afterCleanup.players[0].hand).toHaveLength(3);
     });
   });
 

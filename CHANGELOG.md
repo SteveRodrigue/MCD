@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix & Engine: End of Player Phase Clean-Up & Voluntary Hand Discard ([#41](https://github.com/SteveRodrigue/MCD/issues/41), `player-phase-cleanup.ts`, `action-dispatcher.ts`, `round-upkeep.ts`, `end-of-player-phase-cleanup.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 23 End of Player Phase Clean-Up state machine in a dedicated module (`src/engine/pipeline/player-phase-cleanup.ts`):
+    - **Voluntary Hand Discard Window:** When the player phase concludes, players in player order are presented with an interactive multi-select decision prompt to discard any number of cards from hand or keep all.
+    - **Hand Replenishment & Readying (RR v1.8 p. 23):** Draws cards until hand contains cards equal to effective hand size, readies identity, all allies, and tableau upgrades/supports *before* the Villain Phase begins.
+    - **Prompt Queue Integration:** Seamlessly handles multi-card voluntary discards (`PLAYER_PHASE_DISCARD_CARD`) and completion (`FINISH_PLAYER_CLEANUP`) before advancing to next player or launching `executeVillainPhase`.
+    - **Upkeep Decoupling:** Cleaned up redundant drawing and readying from round upkeep Step 6, which strictly handles round token rotations, round-end forced ally dismissals (Nick Fury), and round number increments per RR v1.8 p. 32.
+  - Added comprehensive contract test suite in [`end-of-player-phase-cleanup.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/end-of-player-phase-cleanup.test.ts).
+
 - **Feature & Engine: Advanced Status Dynamics (Stalwart, Steady) & Minion Activation Modifiers (Villainous, Quickstrike, Incite, Hinder) ([#35](https://github.com/SteveRodrigue/MCD/issues/35), `effects/index.ts`, `stat-calculator.ts`, `action-dispatcher.ts`, `villain-phase.ts`, `combat-pipeline.ts`, `advanced-status-and-minion-modifiers.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 14, 16, 18, 28, 30 advanced status mechanics and minion activation modifiers per ADR-0036:
     - **Stalwart Immunity (RR v1.8 p. 28):** Complete immunity to `STUNNED` and `CONFUSED` status card applications across heroes, villains, and minions, emitting comic onomatopoeia `"IMMUNE! (STALWART)"`.

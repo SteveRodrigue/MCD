@@ -21,6 +21,7 @@ export interface CardInstance {
     threat?: number;
     counters?: number; // e.g. web-counter, all-purpose counter
   };
+  counters?: Record<string, number>; // Universal named counter map per ADR-0035
   statusCards?: StatusCard[];
   attachments?: CardInstance[];
 }
@@ -50,6 +51,7 @@ export interface PlayerState {
   tableau: CardInstance[]; // Supports & Upgrades in play
   allies: CardInstance[]; // Allies in play
   engagedMinions: CardInstance[]; // Minions engaged with this player
+  counters?: Record<string, number>; // Universal identity counter map per ADR-0035 (e.g. charge, growth)
   basicChangeFormUsedThisRound: boolean;
   formChangedThisRound: boolean;
   recoveryUsedThisRound: boolean;

@@ -159,6 +159,76 @@ export function matchCardFilter(
 }
 
 /**
+ * Checks if an in-play card has exhausted its 'Uses' counters and discards it per RR v1.8 p. 30.
+ * Dispatches the CARD_DISCARDED trigger.
+ */
+export function checkAndDiscardZeroCounterCard(
+  state: GameState,
+  player: PlayerState,
+  cardInstance: CardInstance,
+  counterType?: string,
+): boolean {
+  // Check if card has 'Uses' keyword or enrichment discardOnEmpty
+  const hasUsesKeyword =
+    Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
+    Boolean((cardInstance.card as any).uses) ||
+    Boolean(cardInstance.card.raw?.text?.includes('Uses ('));
+
+  if (!hasUsesKeyword) return false;
+
+  // Calculate remaining counters
+  let remainingCounters = 0;
+  if (cardInstance.counters) {
+    if (counterType && cardInstance.counters[counterType] !== undefined) {
+      remainingCounters = cardInstance.counters[counterType];
+    } else {
+      remainingCounters = Object.values(cardInstance.counters).reduce((sum, v) => sum + v, 0);
+    }
+  } else {
+    remainingCounters = cardInstance.tokens?.counters || 0;
+  }
+
+  if (remainingCounters <= 0) {
+    // 1. Remove from tableau or allies
+    const tabIdx = player.tableau.findIndex((c) => c.instanceId === cardInstance.instanceId);
+    let discarded: CardInstance | undefined;
+    if (tabIdx !== -1) {
+      [discarded] = player.tableau.splice(tabIdx, 1);
+    } else {
+      const allyIdx = player.allies.findIndex((c) => c.instanceId === cardInstance.instanceId);
+      if (allyIdx !== -1) {
+        [discarded] = player.allies.splice(allyIdx, 1);
+      }
+    }
+
+    if (discarded) {
+      player.discard.push(discarded);
+
+      // 2. Dispatch CARD_DISCARDED trigger
+      dispatchTrigger(state, 'CARD_DISCARDED', {
+        targetPlayerId: player.id,
+        sourceInstanceId: discarded.instanceId,
+      });
+
+      // 3. Comic Log
+      state.log.push({
+        id: `log_${Date.now()}_uses_exhausted`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'card_play',
+        actor: { name: player.name, type: player.currentForm },
+        key: 'card.discarded.uses_exhausted',
+        params: { player: player.name, card: discarded.card.name },
+        onomatopoeia: 'USES EXHAUSTED!',
+      });
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Evaluates whether a sequential step gate condition is satisfied (RR v1.8 p. 2, 24).
  */
 export function shouldExecuteStep(
@@ -448,6 +518,24 @@ export function executeStep(
         const max = (step.params?.max as number) || 15;
         const damageSustained = Math.max(0, getEffectiveMaxHealth(player, state) - player.health);
         amount = Math.min(max, damageSustained);
+      } else if (
+        step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
+        step.params?.amountFormula === 'COUNTERS_MULTIPLIER'
+      ) {
+        const target = step.params?.target || 'SELF';
+        const counterType = (step.params?.counterType as string) || 'energy';
+        const multiplier = (step.params?.multiplier as number) || 1;
+        const max = (step.params?.max as number) || 999;
+        let counterCount = 0;
+        if (target === 'IDENTITY') {
+          counterCount = player.counters?.[counterType] || 0;
+        } else if (context.sourceCardInstance) {
+          counterCount =
+            context.sourceCardInstance.counters?.[counterType] ??
+            context.sourceCardInstance.tokens?.counters ??
+            0;
+        }
+        amount = Math.min(max, counterCount * multiplier);
       }
       const targetParam = step.params?.target as string | undefined;
 
@@ -2075,16 +2163,134 @@ export function executeStep(
       return { state, success: true, mutatedState: true, value: 1, onomatopoeia: 'HULK RESOLVED!' };
     }
 
+    case 'ADD_COUNTERS':
     case 'ADD_COUNTER':
     case 'MODIFY_COUNTER': {
-      const amount = (step.params?.amount as number) || 1;
-      if (context.sourceCardInstance) {
+      const targetParam = (step.params?.target as string) || 'SELF';
+      const counterType = (step.params?.counterType as string) || 'all_purpose';
+      let amount = (step.params?.amount as number) || 1;
+      if (typeof amount !== 'number') amount = 1;
+
+      if (targetParam === 'IDENTITY') {
+        player.counters = player.counters || {};
+        player.counters[counterType] = (player.counters[counterType] || 0) + amount;
+      } else if (context.sourceCardInstance) {
+        context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
+        context.sourceCardInstance.counters[counterType] =
+          (context.sourceCardInstance.counters[counterType] || 0) + amount;
         if (!context.sourceCardInstance.tokens) {
           context.sourceCardInstance.tokens = { damage: 0, threat: 0, counters: 0 };
         }
-        context.sourceCardInstance.tokens.counters = (context.sourceCardInstance.tokens.counters || 0) + amount;
+        context.sourceCardInstance.tokens.counters =
+          (context.sourceCardInstance.tokens.counters || 0) + amount;
       }
-      return { state, success: true, mutatedState: true, value: amount, onomatopoeia: `+${amount} COUNTERS!` };
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: amount,
+        onomatopoeia: `+${amount} ${counterType.toUpperCase()} COUNTERS!`,
+      };
+    }
+
+    case 'SPEND_COUNTERS':
+    case 'REMOVE_COUNTERS':
+    case 'REMOVE_COUNTER': {
+      const targetParam = (step.params?.target as string) || 'SELF';
+      const counterType = (step.params?.counterType as string) || 'all_purpose';
+      let amount = (step.params?.amount as number) || 1;
+      if (typeof amount !== 'number') amount = 1;
+
+      if (targetParam === 'IDENTITY') {
+        player.counters = player.counters || {};
+        const current = player.counters[counterType] || 0;
+        player.counters[counterType] = Math.max(0, current - amount);
+      } else if (context.sourceCardInstance) {
+        context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
+        const current =
+          context.sourceCardInstance.counters[counterType] ??
+          context.sourceCardInstance.tokens?.counters ??
+          0;
+        context.sourceCardInstance.counters[counterType] = Math.max(0, current - amount);
+        if (context.sourceCardInstance.tokens) {
+          context.sourceCardInstance.tokens.counters = Math.max(
+            0,
+            (context.sourceCardInstance.tokens.counters || 0) - amount,
+          );
+        }
+
+        // Check and discard if Uses counters reached 0 per RR v1.8 p. 30
+        checkAndDiscardZeroCounterCard(
+          state,
+          player,
+          context.sourceCardInstance,
+          counterType,
+        );
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        value: amount,
+        onomatopoeia: `-${amount} ${counterType.toUpperCase()} COUNTERS!`,
+      };
+    }
+
+    case 'REMOVE_COUNTERS_MATCHING_FILTER': {
+      const targetZone = (step.params?.targetZone as string) || 'TABLEAU';
+      const traitFilter = step.params?.traitFilter as string | undefined;
+      const counterType = step.params?.counterType as string | undefined;
+      const amountParam = step.params?.amount;
+
+      let targetCards: CardInstance[] = [];
+      if (targetZone === 'TABLEAU' || targetZone === 'ALL_CONTROLLED') {
+        targetCards = [...player.tableau, ...player.allies];
+      }
+
+      if (traitFilter) {
+        targetCards = targetCards.filter((c) =>
+          (c.card.traits || []).some(
+            (t) => t.toLowerCase().trim() === traitFilter.toLowerCase().trim(),
+          ),
+        );
+      }
+
+      let totalRemoved = 0;
+      for (const cardInst of targetCards) {
+        if (cardInst.counters) {
+          for (const [k, count] of Object.entries(cardInst.counters)) {
+            if (!counterType || counterType === 'ALL' || counterType.toLowerCase() === k.toLowerCase()) {
+              if (amountParam === 'ALL') {
+                totalRemoved += count;
+                cardInst.counters[k] = 0;
+              } else if (typeof amountParam === 'number') {
+                const toRemove = Math.min(count, amountParam);
+                totalRemoved += toRemove;
+                cardInst.counters[k] = count - toRemove;
+              }
+            }
+          }
+        }
+        if (cardInst.tokens?.counters) {
+          if (amountParam === 'ALL') {
+            totalRemoved += cardInst.tokens.counters;
+            cardInst.tokens.counters = 0;
+          } else if (typeof amountParam === 'number') {
+            const toRemove = Math.min(cardInst.tokens.counters, amountParam);
+            totalRemoved += toRemove;
+            cardInst.tokens.counters -= toRemove;
+          }
+        }
+        checkAndDiscardZeroCounterCard(state, player, cardInst, counterType);
+      }
+
+      return {
+        state,
+        success: true,
+        mutatedState: totalRemoved > 0,
+        value: totalRemoved,
+        onomatopoeia: `PURGED ${totalRemoved} COUNTERS!`,
+      };
     }
 
     case 'RETURN_TO_HAND': {

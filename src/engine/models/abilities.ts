@@ -50,6 +50,8 @@ export type TriggerType =
   | 'PLAYER_PHASE_ENDED'
   | 'VILLAIN_PHASE_BEGAN'
   | 'VILLAIN_PHASE_ENDED'
+  | 'CARD_DISCARDED'
+  | 'CARD_LEFT_PLAY'
   | 'ROUND_END'; // backward-compatible alias
 
 export type EffectType =
@@ -85,7 +87,13 @@ export interface AbilityCost {
   exhaustCard?: string;
   discardSelf?: boolean;
   removeCounter?: number;
+  spendCounter?: number;
   spendTokens?: { type: string; count: number };
+  spendCounters?: {
+    counterType?: string;
+    amount: number;
+    target?: 'SELF' | 'IDENTITY';
+  };
   resourceCost?: number | Record<string, number>;
   resources?: string[];
   discardCard?: { count?: number; maxCount?: number; from: 'HAND' | 'DECK' | 'PLAY' };
@@ -143,7 +151,8 @@ export interface CardAbility {
 }
 
 export interface CardUsesDefinition {
-  type: string;
+  type?: string;
+  counterType?: string;
   count: number;
   max?: number;
   discardOnEmpty?: boolean;

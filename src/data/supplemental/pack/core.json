@@ -294,8 +294,11 @@
           "id": "web_shooter_resource",
           "timing": "HERO_ACTION",
           "cost": {
-            "exhaust": true,
-            "spendCounter": 1
+            "exhaustSelf": true,
+            "spendCounters": {
+              "counterType": "web",
+              "amount": 1
+            }
           },
           "steps": [
             {
@@ -315,12 +318,12 @@
       },
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T21:06",
-        "reviewedAt": "2026-08-31T21:06",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF, Spend 1 counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF, Spend 1 web counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
       },
       "mechanicSteps": [
         "Enters play with 3 web counters.",
@@ -671,7 +674,7 @@
       "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
       "maxPerPlayer": 1,
       "uses": {
-        "type": "energy_counters",
+        "type": "energy",
         "count": 0,
         "max": 5
       },
@@ -686,8 +689,10 @@
           },
           "steps": [
             {
-              "effect": "ADD_COUNTER",
+              "effect": "ADD_COUNTERS",
               "params": {
+                "target": "SELF",
+                "counterType": "energy",
                 "amount": 1
               }
             }
@@ -704,7 +709,8 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amountFormula": "COUNTERS_MULTIPLIER",
+                "amountFormula": "COUNTERS_ON_TARGET",
+                "counterType": "energy",
                 "multiplier": 2,
                 "max": 10,
                 "target": "CHOSEN_ENEMY"
@@ -715,12 +721,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTER (amount: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_MULTIPLIER, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
+        "confidence": 100,
+        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTERS (counterType: energy, amount: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_ON_TARGET, counterType: energy, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
@@ -2133,7 +2139,7 @@
     "01056": {
       "comment": "Support: Enters play with 3 counters. Action: Exhaust and remove 1 counter -> deal 2 damage to an enemy.",
       "uses": {
-        "type": "counters",
+        "type": "attack",
         "count": 3,
         "discardOnEmpty": true
       },
@@ -2143,7 +2149,10 @@
           "timing": "ACTION",
           "cost": {
             "exhaustSelf": true,
-            "removeCounter": 1
+            "spendCounters": {
+              "counterType": "attack",
+              "amount": 1
+            }
           },
           "steps": [
             {
@@ -2158,12 +2167,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust, Remove 1 counter] -> Deal 2 damage to CHOSEN_ENEMY"
+        "confidence": 100,
+        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 attack counter] -> Deal 2 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
         "Permanent/attached card: Uses (3 attack counters). (Enters play with 3 counters. When those are gone, discard this card)\nAction: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy."
@@ -2400,7 +2409,7 @@
     "01064": {
       "comment": "Support: Enters play with 3 snoop counters. Action: Exhaust and remove 1 counter -> remove 1 threat from a scheme.",
       "uses": {
-        "type": "snoop_counters",
+        "type": "snoop",
         "count": 3,
         "discardOnEmpty": true
       },
@@ -2410,7 +2419,10 @@
           "timing": "ACTION",
           "cost": {
             "exhaustSelf": true,
-            "removeCounter": 1
+            "spendCounters": {
+              "counterType": "snoop",
+              "amount": 1
+            }
           },
           "steps": [
             {
@@ -2425,12 +2437,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust, Remove 1 counter] -> Remove 1 threat from CHOSEN_SCHEME"
+        "confidence": 100,
+        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 snoop counter] -> Remove 1 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
         "Play Condition: Attach to a hero. Max 1 per hero.",
@@ -2471,7 +2483,7 @@
     "01066": {
       "comment": "Ally: Enters play with 4 arrow counters. Response: After a minion enters play, remove 1 arrow counter -> deal 2 damage to that minion.",
       "uses": {
-        "type": "arrow_counters",
+        "type": "arrow",
         "count": 4,
         "discardOnEmpty": false
       },
@@ -2481,7 +2493,10 @@
           "timing": "RESPONSE",
           "trigger": "MINION_ENTERS_PLAY",
           "cost": {
-            "removeCounter": 1
+            "spendCounters": {
+              "counterType": "arrow",
+              "amount": 1
+            }
           },
           "steps": [
             {
@@ -2496,12 +2511,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESPONSE (Trigger: MINION_ENTERS_PLAY) [Cost: Remove 1 counter] -> Deal 2 damage to TRIGGERING_MINION"
+        "confidence": 100,
+        "reconstructedText": "RESPONSE (Trigger: MINION_ENTERS_PLAY) [Cost: Spend 1 arrow counter] -> Deal 2 damage to TRIGGERING_MINION"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 1, and health 3"
@@ -2944,7 +2959,7 @@
     "01080": {
       "comment": "Support: Enters play with 3 medical counters. Action: Exhaust and remove 1 medical counter -> heal 2 damage from any friendly character.",
       "uses": {
-        "type": "medical_counters",
+        "type": "medical",
         "count": 3,
         "discardOnEmpty": true
       },
@@ -2954,7 +2969,10 @@
           "timing": "ACTION",
           "cost": {
             "exhaustSelf": true,
-            "removeCounter": 1
+            "spendCounters": {
+              "counterType": "medical",
+              "amount": 1
+            }
           },
           "steps": [
             {
@@ -2969,12 +2987,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-01T13:14:00Z",
+        "reviewedAt": "2026-09-01T13:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust, Remove 1 counter] -> Heal 2 damage from CHOSEN_CHARACTER"
+        "confidence": 100,
+        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 medical counter] -> Heal 2 damage from CHOSEN_CHARACTER"
       },
       "mechanicSteps": [
         "Permanent/attached card: Uses (3 medical counters). (Enters play with 3 counters. When those are gone, discard this card.)\nAction: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character."

@@ -244,3 +244,27 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
    * Sticky Navigation / Header: `z-30`
    * Hovered / Elevated Interactive Cards: `z-50` (with deep drop shadows)
    * Modals & Drawers (Combat Log, Payment Modal): `z-50` to `z-60`
+
+---
+
+## 9. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
+
+1. **Local-First Font Assets:**
+   * Never rely on runtime external CDNs for typography. All comic fonts (`Komika Text`, `Comic Relief`, `Bangers`) must be bundled locally in `public/fonts/` or `@fontsource` packages for complete offline play.
+2. **Typographic Roles:**
+   * **Dialogue & Narrative Prose:** Use `font-dialogue` (`Komika Text` / `Comic Relief`) with bold weight for high legibility in multi-line speech bubbles.
+   * **Sound Effects & Banners:** Use `font-comic` (`Bangers`) for explosive onomatopoeias (`POW!`, `HEROES ASSEMBLE!`) and mastheads.
+3. **Base UI Scale:**
+   * The application uses `html { font-size: 110%; }` to deliver an immersive tabletop scale at standard 100% browser zoom. All component dimensions and spacings should utilize Tailwind `rem`-based classes (`p-4`, `w-44`, `text-sm`, etc.) to benefit from uniform scaling.
+
+---
+
+## 10. Local-First Card Art & Static Asset Pipeline (ADR-0011)
+
+1. **Local Static Art Resolution (`/cards/:fileName`):**
+   * The primary resolution route for all card artwork is the local static endpoint `/cards/${code}${side}.png`.
+   * In development mode, the Vite server plugin intercepts `/cards/:fileName` and streams assets from `cache/cards/`.
+   * In production builds, `cache/cards/` is bundled directly to `dist/cards/` to ensure offline desktop/web play without internet access.
+2. **Dual-Tier CDN & Vector Fallback (`CardView.tsx`):**
+   * If a card image is missing from the local disk cache (404), the `CardView` component catches `onError` and falls back dynamically to the remote MarvelCDB CDN.
+   * If offline and without cached images, it falls back to the stylized Comic Pop-Art vector card.

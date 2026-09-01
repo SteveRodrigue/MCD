@@ -1,6 +1,4 @@
 import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
 
 export interface TaskCandidate {
   issueNumber: number;
@@ -30,17 +28,6 @@ export function evaluateNextTasks(): TaskCandidate[] {
     return [];
   }
 
-  // 2. Read Card Data to calculate Card Impact
-  const supplementalDir = path.join(process.cwd(), 'src', 'data', 'supplemental', 'pack');
-  let supplementalText = '';
-  if (fs.existsSync(supplementalDir)) {
-    const files = fs.readdirSync(supplementalDir).filter(f => f.endsWith('.json'));
-    for (const f of files) {
-      supplementalText += fs.readFileSync(path.join(supplementalDir, f), 'utf8') + '\n';
-    }
-  }
-
-  const combinedCardData = supplementalText;
   const candidates: TaskCandidate[] = [];
 
   for (const issue of rawIssues) {

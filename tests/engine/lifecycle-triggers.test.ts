@@ -30,6 +30,9 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       skipMulligan: true,
     });
 
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = peterParkerAlterEgo;
+
     // Simulate an ability used in Player Phase (e.g. once per phase)
     state.players[0].usedAbilitiesThisPhase = { 'spider_sense': 1 };
     state.players[0].usedAbilitiesThisRound = { 'spider_sense': 1 };

@@ -810,13 +810,20 @@ export function executeStep(
     case 'DISCARD_TOP_DECK_FILTER': {
       // Black Cat: Discard top 2 cards, add each Mental resource to hand
       const count = (step.params?.count as number) || 2;
-      const filterRes = (step.params?.filterResource as string) || 'mental';
+      const filterRes = ((step.params?.filterResource as string) || 'mental').toLowerCase();
       let matchedCount = 0;
 
       for (let i = 0; i < count; i++) {
-        const discarded = player.deck.shift();
+        const discarded = drawPlayerCard(state, player.id);
         if (discarded) {
-          const hasResource = discarded.card.resources[filterRes as keyof typeof discarded.card.resources] > 0;
+          const resMap = (discarded.card.resources || {}) as any;
+          const raw = (discarded.card.raw || {}) as any;
+          const hasResource =
+            (resMap[filterRes] || 0) > 0 ||
+            (raw[`resource_${filterRes}`] || 0) > 0 ||
+            (resMap.wild || 0) > 0 ||
+            (raw.resource_wild || 0) > 0;
+
           if (hasResource) {
             player.hand.push(discarded);
             matchedCount += 1;
@@ -1782,17 +1789,17 @@ export function executeStep(
 
     case 'DRAW_UP_TO_HAND_SIZE': {
       const targetHandSize =
-        player.currentForm === 'hero'
+        (step.params?.targetHandSize as number) ||
+        (player.currentForm === 'hero'
           ? (player.hero.handSize || 5)
-          : (player.alterEgo.handSize || 6);
+          : (player.alterEgo.handSize || 6));
 
       let drawnCount = 0;
-      while (player.hand.length < targetHandSize && player.deck.length > 0) {
-        const card = player.deck.shift();
-        if (card) {
-          player.hand.push(card);
-          drawnCount += 1;
-        }
+      while (player.hand.length < targetHandSize) {
+        const card = drawPlayerCard(state, player.id);
+        if (!card) break;
+        player.hand.push(card);
+        drawnCount += 1;
       }
 
       const onomatopoeia = `REFILL HAND (+${drawnCount})!`;
@@ -1810,7 +1817,7 @@ export function executeStep(
 
     case 'TRIGGER_SURGE':
     case 'SURGE': {
-      const surgeCard = state.encounterDeck.shift();
+      const surgeCard = drawEncounterCard(state);
       if (surgeCard) {
         player.dealtEncounterCards.push(surgeCard);
       }
@@ -1821,14 +1828,14 @@ export function executeStep(
         round: state.roundNumber,
         phase: state.phase,
         key: 'encounter.surge.triggered',
-        params: { player: player.name },
+        params: { card: context.sourceCardInstance?.card.name || 'Encounter', player: player.name },
         onomatopoeia,
       });
       return { state, success: true, mutatedState: true, value: 1, onomatopoeia };
     }
 
     case 'REVEAL_ENCOUNTER_CARD': {
-      const extraCard = state.encounterDeck.shift();
+      const extraCard = drawEncounterCard(state);
       if (extraCard) {
         player.dealtEncounterCards.push(extraCard);
       }
@@ -1888,7 +1895,7 @@ export function executeStep(
     }
 
     case 'HULK_DISCARD_RESOLUTION': {
-      const discarded = player.deck.shift();
+      const discarded = drawPlayerCard(state, player.id);
       if (discarded) {
         player.discard.push(discarded);
         const cardRaw = discarded.card.raw || ({} as any);

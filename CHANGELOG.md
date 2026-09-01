@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature (UI & Logging): Hierarchical Combat Log Entry Formatting (`comic-log-formatter.ts`, `comic-log-formatter.test.ts`):**
+  - Added [`formatHierarchicalLogKey()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/utils/comic-log-formatter.ts) in the Comic Log & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037).
+  - Automatically translates dotted hierarchical engine keys into readable, contextual action labels with character/card name prefixes:
+    - `card.*` $\rightarrow$ `card.name: remainder` (e.g. `Arc Reactor: effect.readyCharacter`).
+    - `player.*` $\rightarrow$ `player.name: remainder` (e.g. `Spider-Man: action.allyAttack`).
+    - `villain.*` $\rightarrow$ `villain.name: remainder` (e.g. `Rhino: attack`, `Rhino: boost.revealed`).
+    - `minion.*`, `attachment.*`, `scheme.*`, `identity.*`, `status.*`, etc. are similarly formatted with their active entity names.
+  - Added comprehensive BDD test suite in [`comic-log-formatter.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/ui/comic-log-formatter.test.ts).
+
+- **Bug Fix: Nick Fury Forced Response Round-End Discard (`core.json`, `round-upkeep.ts`, `advanced-mechanics.test.ts`):**
+  - Added missing `nick_fury_round_end_discard` ability (`timing: "FORCED_RESPONSE"`, `trigger: "ROUND_END"`, `effect: "DISCARD_SELF"`) to Nick Fury (`01084`) in [`core.json`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/pack/core.json).
+  - Verified in [`advanced-mechanics.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/advanced-mechanics.test.ts) that Nick Fury is cleanly discarded to player discard at the end of the round during Step 6 round upkeep.
+
 - **Bug Fix & Engine: Interactive Player Choice for Target `CHOSEN_PLAYER` Card Draw Abilities ([#29](https://github.com/SteveRodrigue/MCD/issues/29), `effects/index.ts`, `decision-prompts.test.ts`):**
   - Resolved issue where Carol Danvers' *Commander* alter-ego ability (`01010b`) and Avengers Mansion (`01091`) with `target: "CHOSEN_PLAYER"` drew cards for self without prompting player choice in 2+ player matches.
   - Implemented smart targeting in `DRAW_CARDS` ([`src/engine/effects/index.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts)): seamlessly fast-paths to self in 1-player games without opening extra prompts, while enqueuing an interactive `Choose a Player` decision prompt modal in 2–4 player games.

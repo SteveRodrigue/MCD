@@ -28,6 +28,7 @@ import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 export interface EffectExecutionContext {
   playerId: string;
+  targetPlayerId?: string;
   sourceCardInstance?: CardInstance;
   targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'ally' | 'hero' | 'character';
   targetInstanceId?: string;
@@ -226,6 +227,63 @@ export function checkAndDiscardZeroCounterCard(
     }
   }
   return false;
+}
+
+/**
+ * Checks whether a card belongs to the encounter deck pool (RR v1.8 p. 11).
+ */
+export function isEncounterCard(card: NormalizedCard): boolean {
+  if (!card) return false;
+  const t = card.type?.toLowerCase();
+  return (
+    t === 'attachment' ||
+    t === 'minion' ||
+    t === 'treachery' ||
+    t === 'main_scheme' ||
+    t === 'side_scheme' ||
+    t === 'villain' ||
+    t === 'obligation' ||
+    t === 'environment' ||
+    (card as any).faction_code === 'encounter' ||
+    Boolean((card as any).card_set_code)
+  );
+}
+
+/**
+ * Universal helper to cleanly discard all attachments and cards underneath when a host leaves play (RR v1.8 p. 5, 6).
+ */
+export function discardHostAttachmentsAndTuckedCards(
+  state: GameState,
+  host: { attachments?: CardInstance[]; cardsUnderneath?: CardInstance[] },
+  ownerPlayerId?: string,
+): void {
+  if (!host) return;
+
+  // 1. Discard all active attachments to appropriate discard piles
+  if (host.attachments && host.attachments.length > 0) {
+    for (const attachment of host.attachments) {
+      if (isEncounterCard(attachment.card)) {
+        state.encounterDiscard.push(attachment);
+      } else {
+        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        targetP.discard.push(attachment);
+      }
+    }
+    host.attachments = [];
+  }
+
+  // 2. Discard all face-down/out-of-play cards placed underneath
+  if (host.cardsUnderneath && host.cardsUnderneath.length > 0) {
+    for (const tucked of host.cardsUnderneath) {
+      if (isEncounterCard(tucked.card)) {
+        state.encounterDiscard.push(tucked);
+      } else {
+        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        targetP.discard.push(tucked);
+      }
+    }
+    host.cardsUnderneath = [];
+  }
 }
 
 /**
@@ -1394,27 +1452,112 @@ export function executeStep(
       if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
         if (!state.villain.attachments) state.villain.attachments = [];
         state.villain.attachments.push(sourceCard);
-        return { state, success: true, onomatopoeia: 'ATTACHED TO VILLAIN!' };
+        return { state, success: true, mutatedState: true, onomatopoeia: 'ATTACHED TO VILLAIN!' };
+      } else if (
+        targetHost === 'HERO' ||
+        targetHost === 'IDENTITY' ||
+        targetHost === 'PLAYER' ||
+        targetHost === 'DEFENDING_CHARACTER'
+      ) {
+        const targetPlayer =
+          state.players.find((p) => p.id === (context.targetPlayerId || context.playerId)) || player;
+        if (!targetPlayer.attachments) targetPlayer.attachments = [];
+        targetPlayer.attachments.push(sourceCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${targetPlayer.name}!` };
       } else if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
-        const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId) || player.allies[0];
+        let ally: CardInstance | undefined;
+        if (context.targetInstanceId) {
+          for (const p of state.players) {
+            ally = p.allies.find((a) => a.instanceId === context.targetInstanceId);
+            if (ally) break;
+          }
+        }
+        if (!ally) ally = player.allies[0];
         if (ally) {
           if (!ally.attachments) ally.attachments = [];
           ally.attachments.push(sourceCard);
-          return { state, success: true, onomatopoeia: `ATTACHED TO ${ally.card.name}!` };
+          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${ally.card.name}!` };
         }
       } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
         let foundMinion: CardInstance | undefined;
         for (const p of state.players) {
-          foundMinion = p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId) || p.engagedMinions[0];
+          foundMinion =
+            p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId) || p.engagedMinions[0];
           if (foundMinion) break;
         }
         if (foundMinion) {
           if (!foundMinion.attachments) foundMinion.attachments = [];
           foundMinion.attachments.push(sourceCard);
-          return { state, success: true, onomatopoeia: `ATTACHED TO ${foundMinion.card.name}!` };
+          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${foundMinion.card.name}!` };
+        }
+      } else if (targetHost === 'MAIN_SCHEME' || targetHost === 'SCHEME') {
+        if (!state.mainScheme.attachments) state.mainScheme.attachments = [];
+        state.mainScheme.attachments.push(sourceCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: 'ATTACHED TO MAIN SCHEME!' };
+      } else if (targetHost === 'SIDE_SCHEME' || targetHost === 'CHOSEN_SIDE_SCHEME') {
+        const scheme =
+          state.sideSchemes.find((s) => s.instanceId === context.targetInstanceId) || state.sideSchemes[0];
+        if (scheme) {
+          if (!scheme.attachments) scheme.attachments = [];
+          scheme.attachments.push(sourceCard);
+          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${scheme.card.name}!` };
         }
       }
       return { state, success: true, onomatopoeia: 'ATTACHED!' };
+    }
+
+    case 'PLACE_CARD_UNDER_HOST': {
+      const targetHost = (step.params?.target as string) || 'SELF';
+      const sourceCard = context.sourceCardInstance;
+      if (!sourceCard) return { state, success: true };
+
+      if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
+        if (!state.villain.cardsUnderneath) state.villain.cardsUnderneath = [];
+        state.villain.cardsUnderneath.push(sourceCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: 'PLACED UNDER VILLAIN!' };
+      } else if (targetHost === 'MAIN_SCHEME' || targetHost === 'SCHEME') {
+        if (!state.mainScheme.cardsUnderneath) state.mainScheme.cardsUnderneath = [];
+        state.mainScheme.cardsUnderneath.push(sourceCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: 'PLACED UNDER SCHEME!' };
+      } else if (targetHost === 'HERO' || targetHost === 'IDENTITY' || targetHost === 'PLAYER') {
+        const targetP =
+          state.players.find((p) => p.id === (context.targetPlayerId || context.playerId)) || player;
+        if (!targetP.cardsUnderneath) targetP.cardsUnderneath = [];
+        targetP.cardsUnderneath.push(sourceCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: 'PLACED UNDER IDENTITY!' };
+      }
+      return { state, success: true, onomatopoeia: 'PLACED UNDER CARD!' };
+    }
+
+    case 'DISCARD_CARDS_UNDER_HOST': {
+      const targetHost = (step.params?.target as string) || 'SELF';
+      let cardsToDiscard: CardInstance[] = [];
+
+      if (targetHost === 'VILLAIN') {
+        cardsToDiscard = state.villain.cardsUnderneath || [];
+        state.villain.cardsUnderneath = [];
+      } else if (targetHost === 'MAIN_SCHEME') {
+        cardsToDiscard = state.mainScheme.cardsUnderneath || [];
+        state.mainScheme.cardsUnderneath = [];
+      }
+
+      for (const card of cardsToDiscard) {
+        if (
+          card.card.type === CardType.MINION ||
+          card.card.type === CardType.TREACHERY ||
+          (card.card as any).faction_code === 'encounter'
+        ) {
+          state.encounterDiscard.push(card);
+        } else {
+          player.discard.push(card);
+        }
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: cardsToDiscard.length > 0,
+        onomatopoeia: 'CARDS DISCARDED FROM UNDER!',
+      };
     }
 
     case 'MODIFY_STAT':

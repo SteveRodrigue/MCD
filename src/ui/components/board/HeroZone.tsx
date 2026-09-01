@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles, RefreshCw, Swords, Target } from 'lucide-react';
 import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { IdentityActionModal } from './IdentityActionModal';
 import { AttackTargetModal, EnemyTarget, getValidAttackTargets } from './AttackTargetModal';
 import {
@@ -332,7 +333,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           )}
 
           {/* Identity Card */}
-          <div className="pt-0.5 flex justify-center items-center w-full">
+          <div className="pt-0.5 flex flex-col justify-center items-center w-full">
             <CardView
               card={player.activeFormCard}
               isExhausted={player.exhausted}
@@ -340,6 +341,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               showTokens={false}
               enableHoverZoom={true}
               onClick={() => setIsIdentityModalOpen(true)}
+            />
+            <CardAttachmentFan
+              attachments={player.attachments}
+              cardsUnderneath={player.cardsUnderneath}
             />
           </div>
 
@@ -472,6 +477,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           }
                         }
                       }}
+                    />
+                    <CardAttachmentFan
+                      attachments={ally.attachments}
+                      cardsUnderneath={ally.cardsUnderneath}
                     />
                     {/* Ally Action Mini-Console */}
                     <div className="flex items-center gap-1 w-full justify-center">

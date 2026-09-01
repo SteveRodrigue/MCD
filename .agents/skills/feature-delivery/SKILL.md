@@ -50,6 +50,9 @@ Before writing any implementation code or tests for a new feature, verify the fo
    * If the feature extends game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts) and export all relevant interfaces.
 4. **Headless & Decoupled Invariant:**
    * Pure engine logic belongs strictly in `src/engine/`. Never import React, DOM, `window`, `document`, or CSS into engine modules.
+5. **Declarative Data-First & Generic Primitive Invariant:**
+   * Never create bespoke, hardcoded card functions in `src/engine/` (e.g. `resolveSpiderSense()`, `executeGammaSlam()`).
+   * All card abilities must be composed of universal, reusable effect primitives in `src/engine/effects/index.ts` parameterized purely via `src/data/supplemental/`. If a capability is missing, implement it as a generic, reusable primitive.
 
 ---
 

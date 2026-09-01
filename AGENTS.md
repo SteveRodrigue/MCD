@@ -4,6 +4,7 @@
 1. **Marvel Champions Rules Reference (RR v1.8):** Adhere strictly to the official rules, timing priority, costs, and state machine transitions.
 2. **Headless Engine / Presentation Decoupling:** Engine logic in `src/engine/` is pure TypeScript and decoupled from React UI in `src/ui/`.
 3. **1960s Comic Pop-Art Aesthetics:** Vibrant colors, Ben-Day halftone patterns, bold typography, and comic onomatopoeias.
+4. **Declarative Data-First Invariant:** All card-specific logic resides exclusively in `src/data/supplemental/`. The engine (`src/engine/`) only contains universal, card-agnostic state machines and effect primitives. When triaging any card issue, **always audit and correct the supplemental JSON first**. Altering engine code for a single card is an anti-pattern unless a truly universal primitive is missing.
 
 ---
 

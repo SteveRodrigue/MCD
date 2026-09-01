@@ -29,7 +29,8 @@ import {
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect, checkAndDiscardZeroCounterCard } from '../effects';
-import { executeVillainPhase, continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
+import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
+import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
 import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
@@ -1141,12 +1142,12 @@ export function dispatchAction(
         onomatopoeia: 'PASS',
       });
 
-      // If all players have taken their turns in this round -> execute Villain Phase!
+      // If all players have taken their turns in this round -> proceed to End of Player Phase Clean-Up (RR v1.8 p. 23)
       if (nextIndex === nextState.firstPlayerIndex) {
-        const finalState = executeVillainPhase(nextState);
+        const finalState = initiatePlayerPhaseCleanup(nextState);
         return {
           state: finalState,
-          result: { success: true, onomatopoeia: 'NEW ROUND!' },
+          result: { success: true, onomatopoeia: 'END OF PLAYER PHASE' },
         };
       } else {
         nextState.activePlayerIndex = nextIndex;
@@ -1239,6 +1240,82 @@ export function dispatchAction(
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       const activePrompt = peekDecisionPrompt(nextState);
+
+      // 1. End of Player Phase Voluntary Discard & Clean-Up Prompt (RR v1.8 p. 23)
+      if (
+        activePrompt &&
+        activePrompt.options.some(
+          (o) => o.effect === 'PLAYER_PHASE_DISCARD_CARD' || o.effect === 'FINISH_PLAYER_CLEANUP',
+        )
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId);
+        if (!targetPlayer) return { state: poppedState, result: { success: false, error: 'Player not found' } };
+
+        if (!selectedOption || selectedOption.id === 'done_cleanup' || selectedOption.effect === 'FINISH_PLAYER_CLEANUP') {
+          // Finish this player's cleanup without any more discards -> refills hand & readies cards
+          const finishedState = executePlayerCleanup(poppedState, action.playerId, []);
+          return { state: finishedState, result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' } };
+        }
+
+        if (selectedOption.effect === 'PLAYER_PHASE_DISCARD_CARD') {
+          const cardId = selectedOption.params?.cardInstanceId as string;
+          const cardIdx = targetPlayer.hand.findIndex((c) => c.instanceId === cardId);
+          if (cardIdx !== -1) {
+            const [discarded] = targetPlayer.hand.splice(cardIdx, 1);
+            targetPlayer.discard.push(discarded);
+            poppedState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: poppedState.roundNumber,
+              phase: poppedState.phase,
+              category: 'phase',
+              actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+              key: 'player.phase.cleanup.cardDiscarded',
+              params: { player: targetPlayer.name, card: discarded.card.name },
+              onomatopoeia: 'DISCARD',
+            });
+          }
+
+          // If still has cards in hand, re-enqueue prompt with remaining hand cards
+          if (targetPlayer.hand.length > 0) {
+            const remainingOptions: DecisionPromptOption[] = targetPlayer.hand.map((c) => ({
+              id: `discard_${c.instanceId}`,
+              label: `Discard ${c.card.name}`,
+              description: `Discard ${c.card.name} to discard pile`,
+              effect: 'PLAYER_PHASE_DISCARD_CARD',
+              params: { cardInstanceId: c.instanceId, playerId: targetPlayer.id },
+            }));
+
+            remainingOptions.push({
+              id: 'done_cleanup',
+              label: 'Done / Keep Remaining Cards',
+              description: 'Proceed to refill hand and ready all cards',
+              effect: 'FINISH_PLAYER_CLEANUP',
+              params: { playerId: targetPlayer.id },
+            });
+
+            const rePrompt: PendingDecisionPrompt = {
+              promptId: `prompt_cleanup_${targetPlayer.id}_${Date.now()}`,
+              playerId: targetPlayer.id,
+              title: 'End of Player Phase: Voluntary Discard',
+              description: `${targetPlayer.name}: Select any additional cards in your hand you wish to discard:`,
+              sourceCardName: targetPlayer.hero?.name || targetPlayer.name,
+              options: remainingOptions,
+              isVoluntary: true,
+            };
+
+            const enqueuedState = enqueueDecisionPrompt(poppedState, rePrompt);
+            return { state: enqueuedState, result: { success: true, onomatopoeia: 'DISCARDED' } };
+          } else {
+            // No more cards in hand -> finish cleanup
+            const finishedState = executePlayerCleanup(poppedState, action.playerId, []);
+            return { state: finishedState, result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' } };
+          }
+        }
+      }
+
       if (
         activePrompt &&
         activePrompt.options.some(

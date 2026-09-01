@@ -334,22 +334,15 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
   });
 
   describe('Step 6: Round Upkeep & Full Phase Execution (RR v1.8 p. 32)', () => {
-    it('readies exhausted player, resets round flags, draws up to hand size, and advances round', () => {
-      // Set player as exhausted, with 3 cards in hand (spent 3 cards during turn)
-      gameState.players[0].exhausted = true;
+    it('resets round flags, advances round, and returns to Player Phase', () => {
       gameState.players[0].formChangedThisRound = true;
       gameState.players[0].recoveryUsedThisRound = true;
-      gameState.players[0].hand = gameState.players[0].hand.slice(0, 3); // 3 cards left
 
       step6_passFirstPlayerAndRoundUpkeep(gameState);
 
-      // Verified ready & flags reset
-      expect(gameState.players[0].exhausted).toBe(false);
+      // Verified flags reset
       expect(gameState.players[0].formChangedThisRound).toBe(false);
       expect(gameState.players[0].recoveryUsedThisRound).toBe(false);
-
-      // Peter Parker draws back up to hand size 6
-      expect(gameState.players[0].hand.length).toBe(6);
 
       // Round advances to 2, returns to Player Phase
       expect(gameState.roundNumber).toBe(2);

@@ -3,8 +3,6 @@ import {
   VillainPhaseStep,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
-import { getEffectiveHandSize } from './stat-calculator';
-import { drawPlayerCard } from './deck-exhaustion';
 import { startPlayerPhase } from './player-phase';
 
 /**
@@ -56,33 +54,11 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       }
     }
 
-    // Ready identity
-    player.exhausted = false;
+    // Reset round-level ability and form change limits
     player.basicChangeFormUsedThisRound = false;
     player.formChangedThisRound = false;
     player.recoveryUsedThisRound = false;
     player.usedAbilitiesThisRound = {};
-
-    // Ready allies
-    for (const ally of player.allies) {
-      ally.exhausted = false;
-    }
-
-    // Ready tableau
-    for (const card of player.tableau) {
-      card.exhausted = false;
-    }
-
-    // 4. Draw up to effective Hand Size (Hero vs Alter-Ego + constant auras e.g. Iron Man Tech upgrades)
-    const targetHandSize = getEffectiveHandSize(player, state);
-
-    const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
-    for (let d = 0; d < cardsToDraw; d++) {
-      const drawn = drawPlayerCard(state, player.id);
-      if (drawn) {
-        player.hand.push(drawn);
-      }
-    }
   }
 
   // 5. Increment Round Number

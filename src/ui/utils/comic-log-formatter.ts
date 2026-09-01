@@ -177,6 +177,114 @@ function getCharacterQuote(
 }
 
 /**
+ * Formats dotted hierarchical action keys into readable actor/card prefix strings:
+ * - card.effect.readyCharacter -> `${cardName}: effect.readyCharacter`
+ * - player.action.allyAttack -> `${playerName}: action.allyAttack`
+ * - villain.attack / villain.boost -> `${villainName}: attack` / `${villainName}: boost`
+ */
+export function formatHierarchicalLogKey(key: string, entry: GameLogEntry): string {
+  const params = entry.params || {};
+
+  if (key.startsWith('card.')) {
+    const remainder = key.slice(5);
+    const cardName =
+      (params.card ? String(params.card) : undefined) ||
+      (params.cardName ? String(params.cardName) : undefined) ||
+      (params.sourceCard ? String(params.sourceCard) : undefined) ||
+      (entry.actor?.type === 'ally' || entry.actor?.type === 'minion' ? entry.actor.name : undefined) ||
+      'Card';
+    return `${cardName}: ${remainder}`;
+  }
+
+  if (key.startsWith('player.')) {
+    const remainder = key.slice(7);
+    const playerName =
+      entry.actor?.name ||
+      (params.player ? String(params.player) : undefined) ||
+      (params.actor ? String(params.actor) : undefined) ||
+      'Player';
+    return `${playerName}: ${remainder}`;
+  }
+
+  if (key.startsWith('villain.')) {
+    const remainder = key.slice(8);
+    const villainName =
+      entry.actor?.name ||
+      (params.villain ? String(params.villain) : undefined) ||
+      (params.actor ? String(params.actor) : undefined) ||
+      'Villain';
+    return `${villainName}: ${remainder}`;
+  }
+
+  if (key.startsWith('minion.')) {
+    const remainder = key.slice(7);
+    const minionName =
+      (params.minion ? String(params.minion) : undefined) ||
+      (entry.actor?.type === 'minion' ? entry.actor.name : undefined) ||
+      'Minion';
+    return `${minionName}: ${remainder}`;
+  }
+
+  if (key.startsWith('attachment.')) {
+    const remainder = key.slice(11);
+    const attachmentName =
+      (params.attachment ? String(params.attachment) : undefined) ||
+      (params.card ? String(params.card) : undefined) ||
+      'Attachment';
+    return `${attachmentName}: ${remainder}`;
+  }
+
+  if (key.startsWith('identity.')) {
+    const remainder = key.slice(9);
+    const idName =
+      (params.hero ? String(params.hero) : undefined) ||
+      entry.actor?.name ||
+      'Identity';
+    return `${idName}: ${remainder}`;
+  }
+
+  if (key.startsWith('scheme.')) {
+    const remainder = key.slice(7);
+    const schemeName =
+      (params.scheme ? String(params.scheme) : undefined) ||
+      (params.target ? String(params.target) : undefined) ||
+      'Scheme';
+    return `${schemeName}: ${remainder}`;
+  }
+
+  if (key.startsWith('encounter.')) {
+    const remainder = key.slice(10);
+    const encName =
+      (params.card ? String(params.card) : undefined) ||
+      'Encounter';
+    return `${encName}: ${remainder}`;
+  }
+
+  if (key.startsWith('status.')) {
+    const remainder = key.slice(7);
+    const statusTarget =
+      (params.target ? String(params.target) : undefined) ||
+      entry.actor?.name ||
+      'Status';
+    return `${statusTarget}: ${remainder}`;
+  }
+
+  if (key.includes('.')) {
+    const dotIndex = key.indexOf('.');
+    const prefix = key.slice(0, dotIndex);
+    const remainder = key.slice(dotIndex + 1);
+    const capitalPrefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    const entityName =
+      entry.actor?.name ||
+      (params[prefix] ? String(params[prefix]) : undefined) ||
+      capitalPrefix;
+    return `${entityName}: ${remainder}`;
+  }
+
+  return key.replace(/_/g, ' ');
+}
+
+/**
  * Formats a GameLogEntry into an authentic, localized Comic Book Dialogue entry
  */
 export function formatComicLogEntry(
@@ -192,7 +300,9 @@ export function formatComicLogEntry(
     (params.actor ? String(params.actor) : undefined) ||
     (params.villain ? String(params.villain) : undefined) ||
     (params.minion ? String(params.minion) : undefined) ||
-    (params.player ? String(params.player) : undefined);
+    (params.player ? String(params.player) : undefined) ||
+    (params.card ? String(params.card) : undefined) ||
+    (params.cardName ? String(params.cardName) : undefined);
 
   const speakerRole = entry.actor?.type;
   const speakerAvatar = getSpeakerAvatar(speakerName, speakerRole);
@@ -265,9 +375,13 @@ export function formatComicLogEntry(
     narrativeAction = interpolateTemplate((dict.templates as Record<string, string>)[templateKey], params);
   }
 
-  // Fallback to entry.text or raw key if no template matched
+  // Fallback to entry.text or hierarchical key formatting if no template matched
   if (!narrativeAction) {
-    narrativeAction = entry.text || templateKey.replace(/_/g, ' ');
+    if (entry.text) {
+      narrativeAction = entry.text;
+    } else if (templateKey) {
+      narrativeAction = formatHierarchicalLogKey(templateKey, entry);
+    }
   }
 
   // 4. Extract Structured Stats for Badges

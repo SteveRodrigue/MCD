@@ -141,4 +141,58 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
     expect(formatted.type).toBe('narrator_caption');
     expect(formatted.narrativeAction).toContain('The Encounter deck runs completely dry!');
   });
+
+  it('formats card.* keys with card.name: remainder (e.g. card.effect.readyCharacter)', () => {
+    const cardEffectEntry: GameLogEntry = {
+      id: 'log-400',
+      timestamp: 4000,
+      round: 1,
+      key: 'card.effect.readyCharacter',
+      actor: { name: 'Tony Stark', type: 'hero' },
+      params: { card: 'Arc Reactor', target: 'Iron Man' },
+    };
+
+    const formatted = formatComicLogEntry(cardEffectEntry, 'en');
+    expect(formatted.narrativeAction).toBe('Arc Reactor: effect.readyCharacter');
+  });
+
+  it('formats player.* keys with player.name: remainder (e.g. player.action.allyAttack)', () => {
+    const playerActionEntry: GameLogEntry = {
+      id: 'log-401',
+      timestamp: 4001,
+      round: 1,
+      key: 'player.action.allyAttack',
+      actor: { name: 'Spider-Man', type: 'hero' },
+      params: { player: 'Spider-Man', ally: 'Black Cat', damage: 1 },
+    };
+
+    const formatted = formatComicLogEntry(playerActionEntry, 'en');
+    expect(formatted.narrativeAction).toBe('Spider-Man: action.allyAttack');
+  });
+
+  it('formats villain.* keys with villain.name: remainder (e.g. villain.attack, villain.boost)', () => {
+    const villainAttackEntry: GameLogEntry = {
+      id: 'log-402',
+      timestamp: 4002,
+      round: 1,
+      key: 'villain.attack',
+      actor: { name: 'Rhino', type: 'villain' },
+      params: { villain: 'Rhino', target: 'Spider-Man' },
+    };
+
+    const formattedAttack = formatComicLogEntry(villainAttackEntry, 'en');
+    expect(formattedAttack.narrativeAction).toBe('Rhino: attack');
+
+    const villainBoostEntry: GameLogEntry = {
+      id: 'log-403',
+      timestamp: 4003,
+      round: 1,
+      key: 'villain.boost.revealed',
+      actor: { name: 'Rhino', type: 'villain' },
+      params: { villain: 'Rhino', card: 'Hydra Soldier', boostIcons: 2 },
+    };
+
+    const formattedBoost = formatComicLogEntry(villainBoostEntry, 'en');
+    expect(formattedBoost.narrativeAction).toBe('Rhino: boost.revealed');
+  });
 });

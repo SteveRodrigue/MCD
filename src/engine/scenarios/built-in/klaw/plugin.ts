@@ -5,7 +5,6 @@ import {
   SideSchemeCard,
   StatusCard,
   VillainCard,
-  MainSchemeCard,
   NormalizedCard,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
@@ -57,18 +56,17 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     state.activeVillainIndex = 0;
     state.villain = initialVillain;
 
-    // 2. Setup Main Scheme (Underground Distribution 1A/1B)
-    const mainSchemeCode = '01116b';
-    const mainSchemeCard = cardCatalog.getCard(mainSchemeCode) as MainSchemeCard;
+    // 2. Setup Main Scheme (Underground Distribution Stage 1B)
+    const mainSchemeCard = cardCatalog.getMainSchemeByStage('klaw', '1B');
     if (!mainSchemeCard) {
-      throw new Error(`Main scheme card '${mainSchemeCode}' not found in catalog.`);
+      throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'klaw'.`);
     }
 
-    const targetThreat = this.definition.mainSchemeSetup.targetThreatPerPlayer * numPlayers;
+    const targetThreat = (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * numPlayers;
     const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${Date.now()}_${mainSchemeCode}`,
+      instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
-      threat: this.definition.mainSchemeSetup.startingThreat,
+      threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
       targetThreat,
       stage: '1B',
     };
@@ -364,14 +362,17 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     const currentStage = state.mainScheme.stage;
 
     if (currentStage === '1B') {
-      // Advance to Stage 2B (Secret Rendezvous 01117b)
-      const nextSchemeCard = cardCatalog.getCard('01117b') as MainSchemeCard;
-      const targetThreat = 8 * numPlayers;
+      // Advance to Stage 2B (Secret Rendezvous)
+      const nextSchemeCard = cardCatalog.getMainSchemeByStage('klaw', '2B');
+      if (!nextSchemeCard) {
+        throw new Error(`Main scheme stage '2B' not found in catalog for scenario 'klaw'.`);
+      }
+      const targetThreat = (nextSchemeCard.targetThreat || 8) * numPlayers;
 
       const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${Date.now()}_01117b`,
+        instanceId: `main_scheme_${Date.now()}_${nextSchemeCard.code}`,
         card: nextSchemeCard,
-        threat: 0,
+        threat: nextSchemeCard.baseThreat || 0,
         targetThreat,
         stage: '2B',
       };

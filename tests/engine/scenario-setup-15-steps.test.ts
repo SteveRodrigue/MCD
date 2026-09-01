@@ -101,8 +101,6 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
       mainScheme,
       encounterCards: cardCatalog.getCardsBySet('rhino'),
     });
-    rhinoPlugin.onGameSetup(skirmishState, { scenarioId: 'rhino', difficulty: 'SKIRMISH' });
-
     expect(skirmishState.villain.card.code).toBe('01094'); // Stage I
     expect(skirmishState.villain.health).toBe(14); // 14 x 1
 
@@ -128,7 +126,6 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
       mainScheme,
       encounterCards: cardCatalog.getCardsBySet('rhino'),
     });
-    rhinoPlugin.onGameSetup(expertState, { scenarioId: 'rhino', difficulty: 'EXPERT' });
 
     expect(expertState.villain.card.code).toBe('01095'); // Starts on Stage II
     expect(expertState.villain.health).toBe(15); // 15 x 1

@@ -46,6 +46,13 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       if (idx !== -1) {
         player.allies.splice(idx, 1);
         player.discard.push(ally);
+        state.log.push({
+          id: `log_${Date.now()}_${ally.instanceId}`,
+          timestamp: Date.now(),
+          key: 'ally.round_end.discarded',
+          params: { ally: ally.card.name, player: player.name },
+          onomatopoeia: 'DISMISSED!',
+        });
       }
     }
 

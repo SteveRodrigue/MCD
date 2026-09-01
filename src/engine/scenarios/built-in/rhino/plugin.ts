@@ -5,7 +5,6 @@ import {
   SideSchemeCard,
   StatusCard,
   VillainCard,
-  MainSchemeCard,
   NormalizedCard,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
@@ -57,18 +56,17 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     state.activeVillainIndex = 0;
     state.villain = initialVillain;
 
-    // 2. Setup Main Scheme (The Break-In! 1A/1B)
-    const mainSchemeCode = this.definition.mainSchemeSetup.stages[0];
-    const mainSchemeCard = cardCatalog.getCard(mainSchemeCode) as MainSchemeCard;
+    // 2. Setup Main Scheme (The Break-In! Stage 1B)
+    const mainSchemeCard = cardCatalog.getMainSchemeByStage('rhino', '1B');
     if (!mainSchemeCard) {
-      throw new Error(`Main scheme card '${mainSchemeCode}' not found in catalog.`);
+      throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'rhino'.`);
     }
 
-    const targetThreat = this.definition.mainSchemeSetup.targetThreatPerPlayer * numPlayers;
+    const targetThreat = (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * numPlayers;
     const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${Date.now()}_${mainSchemeCode}`,
+      instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
-      threat: this.definition.mainSchemeSetup.startingThreat,
+      threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
       targetThreat,
       stage: '1B',
     };

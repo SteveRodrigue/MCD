@@ -14,7 +14,7 @@ export interface CardViewProps {
   isSelected?: boolean;
   isMulliganSelected?: boolean;
   isKeepSelected?: boolean;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'hand';
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
@@ -80,27 +80,31 @@ export const CardView: React.FC<CardViewProps> = ({
   const sizeClasses = isLandscape
     ? {
         sm: 'w-44 h-32 text-xs',
+        hand: 'w-[202px] h-[148px] text-xs',
         md: 'w-64 h-44 text-sm',
         lg: 'w-80 h-56 text-base',
         xl: 'w-[410px] h-72 text-lg',
       }[size]
     : {
         sm: 'w-28 h-40 text-xs',
+        hand: 'w-[130px] h-[184px] text-xs',
         md: 'w-44 h-64 text-sm',
         lg: 'w-56 h-80 text-base',
         xl: 'w-72 h-[410px] text-lg',
       }[size];
 
   // Scale Factors to achieve a UNIFIED CONSTANT ZOOM SIZE across all UI locations (~308px portrait width, ~440px landscape width at 100%)
-  const zoomScaleFactors: Record<'portrait' | 'landscape', Record<'sm' | 'md' | 'lg' | 'xl', number>> = {
+  const zoomScaleFactors: Record<'portrait' | 'landscape', Record<'sm' | 'md' | 'lg' | 'xl' | 'hand', number>> = {
     portrait: {
       sm: 2.75, // 112px * 2.75 = 308px
+      hand: 2.37, // 130px * 2.37 = 308px
       md: 1.75, // 176px * 1.75 = 308px
       lg: 1.375, // 224px * 1.375 = 308px
       xl: 1.07, // 288px * 1.07 = 308px
     },
     landscape: {
       sm: 2.5, // 176px * 2.5 = 440px
+      hand: 2.18, // 202px * 2.18 = 440px
       md: 1.72, // 256px * 1.72 = 440px
       lg: 1.375, // 320px * 1.375 = 440px
       xl: 1.07, // 410px * 1.07 = 438px

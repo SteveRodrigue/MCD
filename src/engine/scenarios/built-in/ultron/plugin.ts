@@ -3,7 +3,6 @@ import {
   VillainState,
   MainSchemeState,
   VillainCard,
-  MainSchemeCard,
   NormalizedCard,
   CardInstance,
   CardType,
@@ -103,18 +102,17 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     state.activeVillainIndex = 0;
     state.villain = initialVillain;
 
-    // 2. Setup Main Scheme (The Crimson Cowl 1A/1B)
-    const mainSchemeCode = '01137b';
-    const mainSchemeCard = cardCatalog.getCard(mainSchemeCode) as MainSchemeCard;
+    // 2. Setup Main Scheme (The Crimson Cowl Stage 1B)
+    const mainSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '1B');
     if (!mainSchemeCard) {
-      throw new Error(`Main scheme card '${mainSchemeCode}' not found in catalog.`);
+      throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'ultron'.`);
     }
 
-    const targetThreat = this.definition.mainSchemeSetup.targetThreatPerPlayer * numPlayers;
+    const targetThreat = (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * numPlayers;
     const initialMainScheme: MainSchemeState = {
-      instanceId: `main_scheme_${Date.now()}_${mainSchemeCode}`,
+      instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
-      threat: this.definition.mainSchemeSetup.startingThreat,
+      threat: mainSchemeCard.baseThreat || this.definition.mainSchemeSetup.startingThreat,
       targetThreat,
       stage: '1B',
     };
@@ -346,14 +344,17 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     const currentStage = state.mainScheme.stage;
 
     if (currentStage === '1B') {
-      // Advance to Stage 2B (Assault on NORAD 01138b)
-      const nextSchemeCard = cardCatalog.getCard('01138b') as MainSchemeCard;
-      const targetThreat = 10 * numPlayers;
+      // Advance to Stage 2B (Assault on NORAD)
+      const nextSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '2B');
+      if (!nextSchemeCard) {
+        throw new Error(`Main scheme stage '2B' not found in catalog for scenario 'ultron'.`);
+      }
+      const targetThreat = (nextSchemeCard.targetThreat || 10) * numPlayers;
 
       const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${Date.now()}_01138b`,
+        instanceId: `main_scheme_${Date.now()}_${nextSchemeCard.code}`,
         card: nextSchemeCard,
-        threat: 0,
+        threat: nextSchemeCard.baseThreat || 0,
         targetThreat,
         stage: '2B',
       };
@@ -375,14 +376,17 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     }
 
     if (currentStage === '2B') {
-      // Advance to Stage 3B (Countdown to Oblivion 01139b)
-      const nextSchemeCard = cardCatalog.getCard('01139b') as MainSchemeCard;
-      const targetThreat = 5 * numPlayers;
+      // Advance to Stage 3B (Countdown to Oblivion)
+      const nextSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '3B');
+      if (!nextSchemeCard) {
+        throw new Error(`Main scheme stage '3B' not found in catalog for scenario 'ultron'.`);
+      }
+      const targetThreat = (nextSchemeCard.targetThreat || 5) * numPlayers;
 
       const nextMainScheme: MainSchemeState = {
-        instanceId: `main_scheme_${Date.now()}_01139b`,
+        instanceId: `main_scheme_${Date.now()}_${nextSchemeCard.code}`,
         card: nextSchemeCard,
-        threat: 0,
+        threat: nextSchemeCard.baseThreat || 0,
         targetThreat,
         stage: '3B',
       };

@@ -10,6 +10,8 @@ import {
   MainSchemeCard,
   createCardInstance,
   SideSchemeCard,
+  canBasicThwart,
+  step6_passFirstPlayerAndRoundUpkeep,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -222,6 +224,13 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       // Hand had 0 cards after paying 4 cards -> drew 3 cards
       expect(resolveRes.state.players[0].hand.length).toBe(3);
       expect(resolveRes.state.players[0].deck.length).toBe(initialDeck - 3);
+
+      // Advance to round upkeep (Pass First Player and Round Upkeep)
+      const endRoundState = step6_passFirstPlayerAndRoundUpkeep(resolveRes.state);
+
+      // Nick Fury was discarded at round end (RR v1.8 p. 32, Nick Fury 01084)
+      expect(endRoundState.players[0].allies.some((a) => a.card.code === '01084')).toBe(false);
+      expect(endRoundState.players[0].discard.some((c) => c.card.code === '01084')).toBe(true);
     });
 
     it('Caught Off Guard (01188) discards upgrade or surges if none', () => {
@@ -252,6 +261,16 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
 
       // Healed 4 HP: 10 + 4 = 14
       expect(nextState.villain.health).toBe(14);
+    });
+
+    it('canBasicThwart rejects action when target main scheme or side scheme has 0 threat (RR v1.8 p. 29)', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].exhausted = false;
+      gameState.mainScheme.threat = 0;
+
+      const check = canBasicThwart(gameState, 'p1', 'main_scheme');
+      expect(check.allowed).toBe(false);
+      expect(check.reason).toContain('threat');
     });
   });
 });

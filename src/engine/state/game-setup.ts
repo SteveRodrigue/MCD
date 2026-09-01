@@ -14,6 +14,7 @@ import {
   Keyword,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
+import { ScenarioRegistry } from '../scenarios/registry';
 
 let instanceCounter = 0;
 
@@ -60,11 +61,13 @@ export interface GameSetupOptions {
   difficulty?: DifficultyMode;
   heroicLevel?: number;
   players: PlayerSetupConfig[];
-  villain: VillainCard;
-  mainScheme: MainSchemeCard;
-  encounterCards: NormalizedCard[];
+  villain?: VillainCard;
+  mainScheme?: MainSchemeCard;
+  encounterCards?: NormalizedCard[];
+  modularSetCodes?: string[];
   shuffleFn?: <T>(array: T[]) => T[];
   skipMulligan?: boolean;
+  skipScenarioPlugin?: boolean;
 }
 
 /**
@@ -170,14 +173,15 @@ export function setupGame(options: GameSetupOptions): GameState {
     };
   });
 
-  // 2. Setup Villain
-  const villainHealth = options.villain.healthPerHero
-    ? options.villain.health * playerCount
-    : options.villain.health;
+  // 2. Setup Default / Fallback Villain
+  const rawVillain = options.villain || (cardCatalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) || (cardCatalog.getCard('01094') as VillainCard);
+  const villainHealth = rawVillain.healthPerHero
+    ? rawVillain.health * playerCount
+    : rawVillain.health;
 
   const villain: VillainState = {
-    instanceId: `villain_${Date.now()}_${options.villain.code}`,
-    card: options.villain,
+    instanceId: `villain_${Date.now()}_${rawVillain.code}`,
+    card: rawVillain,
     health: villainHealth,
     maxHealth: villainHealth,
     exhausted: false,
@@ -185,13 +189,18 @@ export function setupGame(options: GameSetupOptions): GameState {
     attachments: [],
   };
 
-  // 3. Setup Main Scheme
+  // 3. Setup Default / Fallback Main Scheme
+  const rawMainScheme =
+    options.mainScheme ||
+    (cardCatalog.getMainSchemeByStage(options.scenarioId || 'rhino', '1B') as MainSchemeCard) ||
+    (cardCatalog.getCard('01097b') as MainSchemeCard);
+
   const mainScheme: MainSchemeState = {
-    instanceId: `main_scheme_${Date.now()}_${options.mainScheme.code}`,
-    card: options.mainScheme,
-    threat: options.mainScheme.baseThreat * (options.mainScheme.baseThreatFixed ? 1 : playerCount),
-    targetThreat: options.mainScheme.targetThreat * playerCount,
-    stage: options.mainScheme.stage,
+    instanceId: `main_scheme_${Date.now()}_${rawMainScheme.code}`,
+    card: rawMainScheme,
+    threat: rawMainScheme.baseThreat * (rawMainScheme.baseThreatFixed ? 1 : playerCount),
+    targetThreat: (rawMainScheme.targetThreat || 7) * playerCount,
+    stage: rawMainScheme.stage || '1B',
   };
 
   // 4. Setup Encounter Deck (Step 11: Shuffle all player obligations into encounter deck)
@@ -204,7 +213,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     }
   }
 
-  const allEncounterCards = [...options.encounterCards, ...playerObligations];
+  const rawEncounterCards = options.encounterCards || cardCatalog.getCardsBySet(options.scenarioId || 'rhino');
+  const allEncounterCards = [...rawEncounterCards, ...playerObligations];
   const encounterInstances = allEncounterCards.map(createCardInstance);
   const shuffledEncounterDeck = shuffle(encounterInstances);
 
@@ -217,8 +227,8 @@ export function setupGame(options: GameSetupOptions): GameState {
         mulliganCompleted: {},
       };
 
-  // 6. Initialize Complete GameState
-  return {
+  // 6. Initialize Base GameState
+  let state: GameState = {
     id: options.id || `game_${Date.now()}`,
     roundNumber: 1,
     phase: initialPhase,
@@ -251,12 +261,35 @@ export function setupGame(options: GameSetupOptions): GameState {
         timestamp: Date.now(),
         key: 'game.setup.complete',
         params: {
-          villain: options.villain.name,
-          scheme: options.mainScheme.name,
+          villain: rawVillain.name,
+          scheme: rawMainScheme.name,
           playerCount,
           difficulty,
         },
       },
     ],
   };
+
+  // 7. Invoke Scenario Plugin Lifecycle Setup if registered (Enforces official 15-step scenario setup)
+  if (!options.skipScenarioPlugin && options.scenarioId && ScenarioRegistry.has(options.scenarioId)) {
+    const plugin = ScenarioRegistry.get(options.scenarioId);
+    state = plugin.onGameSetup(state, {
+      scenarioId: options.scenarioId,
+      difficulty,
+      heroicLevel: options.heroicLevel,
+      modularSetCodes: options.modularSetCodes,
+    });
+
+    // Ensure player obligations remain included in encounter deck if plugin constructed the deck
+    if (playerObligations.length > 0) {
+      for (const ob of playerObligations) {
+        if (!state.encounterDeck.some((c) => c.card.code === ob.code)) {
+          state.encounterDeck.push(createCardInstance(ob));
+        }
+      }
+      state.encounterDeck = shuffle(state.encounterDeck);
+    }
+  }
+
+  return state;
 }

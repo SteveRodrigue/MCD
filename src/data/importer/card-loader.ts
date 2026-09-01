@@ -307,6 +307,32 @@ export class CardCatalog {
     }
     return result;
   }
+
+  /**
+   * Resolves a Main Scheme card for a specific encounter stage (e.g., '1B', '2B', '3B')
+   * by filtering the scenario encounter set on canonical card.stage.
+   */
+  public getMainSchemeByStage(scenarioSetCode: string, stage: string): MainSchemeCard | undefined {
+    const setCards = this.getCardsBySet(scenarioSetCode);
+    return setCards.find(
+      (c) =>
+        (c.type === CardType.MAIN_SCHEME || (c as any).type_code === 'main_scheme') &&
+        (c as MainSchemeCard).stage?.toUpperCase() === stage.toUpperCase(),
+    ) as MainSchemeCard | undefined;
+  }
+
+  /**
+   * Resolves a Villain card for a specific villain stage (e.g., 'I', 'II', 'III')
+   * by filtering the scenario encounter set on canonical card.stage.
+   */
+  public getVillainByStage(scenarioSetCode: string, stage: string): VillainCard | undefined {
+    const setCards = this.getCardsBySet(scenarioSetCode);
+    return setCards.find(
+      (c) =>
+        (c.type === CardType.VILLAIN || (c as any).type_code === 'villain') &&
+        (c as VillainCard).stage?.toUpperCase() === stage.toUpperCase(),
+    ) as VillainCard | undefined;
+  }
 }
 
 import coreCards from '../../../data/upstream/pack/core.json';

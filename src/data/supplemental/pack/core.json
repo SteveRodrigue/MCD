@@ -292,7 +292,7 @@
       "abilities": [
         {
           "id": "web_shooter_resource",
-          "timing": "RESOURCE",
+          "timing": "HERO_ACTION",
           "cost": {
             "exhaust": true,
             "spendCounter": 1
@@ -315,12 +315,12 @@
       },
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-08-31T21:06",
+        "reviewedAt": "2026-08-31T21:06",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "RESOURCE [Cost: Exhaust SELF, Spend 1 counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
+        "confidence": 100,
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF, Spend 1 counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
       },
       "mechanicSteps": [
         "Enters play with 3 web counters.",
@@ -3095,16 +3095,26 @@
               }
             }
           ]
+        },
+        {
+          "id": "nick_fury_round_end_discard",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ROUND_END",
+          "steps": [
+            {
+              "effect": "DISCARD_SELF"
+            }
+          ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-01T06:38",
+        "reviewedAt": "2026-09-01T06:38",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage])"
+        "confidence": 100,
+        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]) + FORCED_RESPONSE (ROUND_END) -> DISCARD_SELF"
       },
       "mechanicSteps": [
         "Ally: THW 2, ATK 2, Health 3.",

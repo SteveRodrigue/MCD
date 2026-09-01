@@ -11,6 +11,7 @@ export default {
           yellow: '#FFDE00',
           red: '#ED1D24',
           blue: '#0284C7',
+          green: '#16A34A',
           darkBlue: '#0F172A',
           black: '#111111',
           paper: '#FBF8EE',

@@ -45,8 +45,11 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const canAttack = isHero && isPlayerTurn && attackCheck.allowed;
 
   // 4. Thwart Check
-  const thwartCheck = gameState ? canBasicThwart(gameState, player.id, 'main_scheme') : { allowed: isHero && !player.exhausted };
-  const canThwart = isHero && isPlayerTurn && thwartCheck.allowed;
+  const canThwartMain = gameState ? canBasicThwart(gameState, player.id, 'main_scheme').allowed : false;
+  const eligibleSideScheme = gameState?.sideSchemes.find(
+    (s) => canBasicThwart(gameState, player.id, 'side_scheme', s.instanceId).allowed
+  );
+  const canThwart = isHero && isPlayerTurn && (canThwartMain || !!eligibleSideScheme);
 
   // 5. Identity Abilities (e.g. Tony Stark Futurist, Carol Danvers Rechannel, Peter Parker Scientist)
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
@@ -125,7 +128,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                     </span>
                   </div>
                 </div>
-                <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-300 shrink-0">
+                <span className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canRecover ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}>
                   REC: {effectiveStats.recovery}
                 </span>
               </button>
@@ -177,7 +180,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-300 shrink-0">
+                  <span className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canTrigger ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}>
                     ACTION
                   </span>
                 </button>
@@ -215,7 +218,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-rose-300 shrink-0">
+                  <span className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canAttack ? 'bg-slate-900 text-rose-300' : 'bg-slate-300 text-slate-500'} shrink-0`}>
                     {effectiveStats.attack} ATK
                   </span>
                 </button>
@@ -226,7 +229,16 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 <button
                   disabled={!canThwart}
                   onClick={() => {
-                    onDispatchAction?.({ type: 'BASIC_THWART', playerId: player.id, targetType: 'main_scheme' });
+                    if (canThwartMain) {
+                      onDispatchAction?.({ type: 'BASIC_THWART', playerId: player.id, targetType: 'main_scheme' });
+                    } else if (eligibleSideScheme) {
+                      onDispatchAction?.({
+                        type: 'BASIC_THWART',
+                        playerId: player.id,
+                        targetType: 'side_scheme',
+                        targetInstanceId: eligibleSideScheme.instanceId,
+                      });
+                    }
                     onClose();
                   }}
                   className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
@@ -246,13 +258,15 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                       <span className="text-[10px] text-slate-600 block">
                         {player.exhausted
                           ? 'Hero is exhausted'
-                          : (gameState?.mainScheme?.threat || 0) <= 0
-                            ? 'No threat on main scheme (Target not valid)'
-                            : `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`}
+                          : !canThwart
+                            ? 'No threat on schemes (Target not valid)'
+                            : canThwartMain
+                              ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
+                              : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`}
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 shrink-0">
+                  <span className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canThwart ? 'bg-slate-900 text-sky-300' : 'bg-slate-300 text-slate-500'} shrink-0`}>
                     {effectiveStats.thwart} THW
                   </span>
                 </button>
@@ -289,7 +303,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                   </span>
                 </div>
               </div>
-              <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-amber-300 shrink-0">
+              <span className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canFlip ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}>
                 1 / ROUND
               </span>
             </button>

@@ -18,14 +18,40 @@ export interface CardArtIdentifier {
 }
 
 /**
- * Returns the exact image asset filename for any card based on its code, type, and stage:
- * - Main Scheme Stage 'A' (e.g. stage "1A", "2A", "3A"): MarvelCDB names the front image
- *   using the base number without 'a' (e.g. "01097.png").
- * - All other cards match their code directly:
- *   - Main Scheme Stage '1B', '2B' -> "01097b.png"
- *   - Hero cards -> "01001a.png"
- *   - Alter-Ego cards -> "01001b.png"
- *   - Villains, allies, events, upgrades, supports, minions, treacheries -> "01094.png", "01006.png", etc.
+ * Resolves the image asset file name for Main Scheme cards, handling
+ * the inverted naming quirk in the upstream Core Set (01xxx) encounter data:
+ *
+ * - Core Set Main Schemes (pack "01", e.g. Rhino 01097, Klaw 01116/01117, Ultron 01137/01138/01139):
+ *   - Stage 'A' (Setup face): maps to `${baseCode}b.png` (e.g. "01097b.png")
+ *   - Stage 'B' (Active threat face): maps to `${baseCode}.png` (e.g. "01097.png")
+ *
+ * - All other expansion sets (Green Goblin, The Hood, Galaxy's Most Wanted, Mutant Genesis, etc.):
+ *   - Stage 'A' (Setup face): maps to `${baseCode}.png` (e.g. "02004.png", "24004.png", "16061.png")
+ *   - Stage 'B' (Active threat face): maps to `${baseCode}b.png` (e.g. "02004b.png", "24004b.png", "16061b.png")
+ */
+export function resolveMainSchemeArtFileName(code: string, stage?: string): string {
+  const trimmedCode = (code || '').trim().toLowerCase();
+  if (!trimmedCode) return '';
+
+  const baseCode = trimmedCode.replace(/[ab]$/i, '');
+  const isCoreSet = baseCode.startsWith('01');
+
+  const normalizedStage = (stage || '').toUpperCase();
+  const isSideA =
+    normalizedStage.endsWith('A') ||
+    (!normalizedStage && trimmedCode.endsWith('a'));
+
+  if (isCoreSet) {
+    // Core set inverted image asset quirk
+    return isSideA ? `${baseCode}b.png` : `${baseCode}.png`;
+  }
+
+  // Standard expansion set convention
+  return isSideA ? `${baseCode}.png` : `${baseCode}b.png`;
+}
+
+/**
+ * Returns the exact image asset filename for any card based on its code, type, and stage.
  */
 export function getCardArtFileName(card: CardArtIdentifier | string): string {
   if (!card) return '';
@@ -43,12 +69,8 @@ export function getCardArtFileName(card: CardArtIdentifier | string): string {
     type === 'main_scheme' ||
     (stage !== undefined && /^[0-9]+[ab]$/i.test(stage));
 
-  const isSideA =
-    (stage !== undefined && stage.toUpperCase().endsWith('A')) ||
-    (isMainScheme && trimmedCode.endsWith('a'));
-
-  if (isMainScheme && isSideA) {
-    return `${trimmedCode.replace(/a$/i, '')}.png`;
+  if (isMainScheme) {
+    return resolveMainSchemeArtFileName(trimmedCode, stage);
   }
 
   return `${trimmedCode}.png`;

@@ -370,26 +370,29 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       expect(res.state.players[0].allies.some((a) => a.card.code === '01002')).toBe(true);
     });
 
-    it('pays for a card using an in-play generator (Web-Shooter counters)', () => {
+    it('pays for a card using an in-play generator (Web-Shooter counters in Hero form)', () => {
       const player = gameState.players[0];
+      player.currentForm = 'hero';
+      player.activeFormCard = gameState.players[0].hero;
+
       const webShooterInPlay = createCardInstance(catalog.getCard('01008')!);
       webShooterInPlay.tokens = { counters: 3 };
       player.tableau.push(webShooterInPlay);
 
-      const auntMayCard = catalog.getCard('01006')!; // Aunt May (Cost 1)
-      const auntMayInstance = createCardInstance(auntMayCard);
-      player.hand = [auntMayInstance];
+      const spiderTracerCard = catalog.getCard('01007')!; // Spider-Tracer (Cost 1)
+      const spiderTracerInstance = createCardInstance(spiderTracerCard);
+      player.hand = [spiderTracerInstance];
 
       const res = dispatchAction(gameState, {
         type: 'PLAY_CARD',
         playerId: 'p1',
-        cardInstanceId: auntMayInstance.instanceId,
+        cardInstanceId: spiderTracerInstance.instanceId,
         paymentCardInstanceIds: [],
         generatorInstanceIds: [webShooterInPlay.instanceId],
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.players[0].tableau.some((c) => c.card.code === '01006')).toBe(true);
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01007')).toBe(true);
       // Web-Shooter should have 2 counters remaining
       const shooter = res.state.players[0].tableau.find((c) => c.card.code === '01008')!;
       expect(shooter.tokens?.counters).toBe(2);

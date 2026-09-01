@@ -236,44 +236,61 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             </div>
           </div>
 
-          {/* 3. Main Scheme Panel (Shrunk to exact width of landscape card + borders) */}
+          {/* 3. Main Scheme Panel (Landscape Card + Vertical Threat Meter on the Right) */}
           <div className="w-fit flex flex-col gap-2 bg-amber-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
-            {/* Header */}
-            <div className="flex items-center justify-between gap-2 w-full">
-              <div className="flex items-center gap-1">
+            {/* Header: Title on Left, Text Version Threat Limit on Top Right */}
+            <div className="flex items-center justify-between gap-3 w-full">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
-                <span className="font-comic text-sm text-comic-black">
+                <span className="font-comic text-sm text-comic-black truncate">
                   {mainScheme.card.name}
                 </span>
+                {accelerationTokens > 0 && (
+                  <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm animate-pulse shrink-0">
+                    ⚡ +{accelerationTokens}
+                  </span>
+                )}
               </div>
-              {accelerationTokens > 0 && (
-                <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm animate-pulse shrink-0">
-                  ⚡ +{accelerationTokens}
-                </span>
-              )}
-            </div>
 
-            {/* Threat Meter Gauge (Exact width of landscape card) */}
-            <div className="w-full space-y-0.5">
-              <div className="flex justify-between text-[11px] font-bold">
-                <span className="text-slate-600">Threat Limit:</span>
-                <span className="text-comic-blue font-comic text-xs">
+              {/* Text version of threat on the top right */}
+              <div className="shrink-0">
+                <span
+                  className={`font-comic text-xs px-2 py-0.5 rounded-md border border-comic-black shadow-comic-sm tracking-wide ${
+                    threatPercent > 75
+                      ? 'bg-comic-red text-white'
+                      : threatPercent > 40
+                        ? 'bg-comic-yellow text-comic-black'
+                        : 'bg-comic-blue text-white'
+                  }`}
+                >
                   {mainScheme.threat} / {mainScheme.targetThreat} THREAT
                 </span>
               </div>
-              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-comic-black shadow-comic-sm">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    threatPercent > 75 ? 'bg-comic-red' : threatPercent > 40 ? 'bg-comic-yellow' : 'bg-comic-blue'
-                  }`}
-                  style={{ width: `${threatPercent}%` }}
-                />
-              </div>
             </div>
 
-            {/* Main Scheme Card in Landscape */}
-            <div className="pt-0.5">
+            {/* Main Scheme Card with Vertical Threat Meter on the Right */}
+            <div className="flex items-stretch gap-2.5 pt-0.5">
               <CardView card={mainScheme.card} size="md" showTokens={false} enableHoverZoom={true} />
+
+              {/* Vertical Threat Meter Gauge on the Right */}
+              <div className="flex flex-col items-center justify-between h-[176px] py-0.5 shrink-0">
+                <div
+                  className="relative w-5 h-full bg-slate-200 rounded-full border-2 border-comic-black shadow-comic-sm overflow-hidden flex flex-col justify-end"
+                  title={`Threat: ${mainScheme.threat} / {mainScheme.targetThreat} (${Math.round(threatPercent)}%)`}
+                >
+                  {/* Dynamic Vertical Fill Bar (Bottom to Top) with color transition from Blue -> Yellow -> Red */}
+                  <div
+                    className={`w-full transition-all duration-300 ${
+                      threatPercent > 75
+                        ? 'bg-gradient-to-t from-amber-400 via-orange-500 to-comic-red'
+                        : threatPercent > 40
+                          ? 'bg-gradient-to-t from-comic-blue via-sky-400 to-amber-400'
+                          : 'bg-gradient-to-t from-sky-600 to-comic-blue'
+                    }`}
+                    style={{ height: `${threatPercent}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

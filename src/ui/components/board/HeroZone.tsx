@@ -3,6 +3,7 @@ import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles, RefreshCw, Swords, T
 import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard, GameAction } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { IdentityActionModal } from './IdentityActionModal';
+import { AttackTargetModal, EnemyTarget, getValidAttackTargets } from './AttackTargetModal';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -61,10 +62,76 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handBonus = effectiveHandSize - baseHandSize;
 
   // Action Permissions
+  const validHeroAttackTargets = gameState ? getValidAttackTargets(gameState, player.id, 'hero') : [];
   const canFlip = !player.basicChangeFormUsedThisRound && !player.formChangedThisRound;
   const canRecover = !isHero && !player.exhausted && !player.recoveryUsedThisRound && player.health < effectiveMaxHealth;
-  const canAttack = isHero && !player.exhausted;
+  const canAttack = isHero && !player.exhausted && isPlayerTurn && (validHeroAttackTargets.length > 0);
   const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;
+
+  // Attack Target Selection State
+  const [attackModalState, setAttackModalState] = useState<{
+    isOpen: boolean;
+    attackerName: string;
+    attackerType: 'hero' | 'ally';
+    allyInstanceId?: string;
+    attackDamage: number;
+    targets: EnemyTarget[];
+  }>({
+    isOpen: false,
+    attackerName: '',
+    attackerType: 'hero',
+    attackDamage: 0,
+    targets: [],
+  });
+
+  const handleInitiateAttack = (attackerType: 'hero' | 'ally', allyInstanceId?: string) => {
+    if (!gameState || !onDispatchAction) return;
+
+    if (attackerType === 'hero') {
+      const targets = getValidAttackTargets(gameState, player.id, 'hero');
+      if (targets.length === 0) return;
+      if (targets.length === 1) {
+        onDispatchAction({
+          type: 'BASIC_ATTACK',
+          playerId: player.id,
+          targetType: targets[0].type,
+          targetInstanceId: targets[0].instanceId,
+        });
+      } else {
+        setAttackModalState({
+          isOpen: true,
+          attackerName: player.activeFormCard.name,
+          attackerType: 'hero',
+          attackDamage: effectiveStats.attack,
+          targets,
+        });
+      }
+    } else if (allyInstanceId) {
+      const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
+      if (!ally) return;
+      const allyStats = getEffectiveAllyStats(gameState, ally);
+      const targets = getValidAttackTargets(gameState, player.id, 'ally', allyInstanceId);
+      if (targets.length === 0) return;
+      if (targets.length === 1) {
+        onDispatchAction({
+          type: 'ALLY_ATTACK',
+          playerId: player.id,
+          allyInstanceId,
+          targetType: targets[0].type,
+          targetInstanceId: targets[0].instanceId,
+        });
+      } else {
+        setAttackModalState({
+          isOpen: true,
+          attackerName: ally.card.name,
+          attackerType: 'ally',
+          allyInstanceId,
+          attackDamage: allyStats.attack,
+          targets,
+        });
+      }
+    }
+  };
 
   return (
     <section
@@ -324,13 +391,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 <div className="grid grid-cols-2 gap-1.5">
                   <button
                     disabled={!canAttack}
-                    onClick={() =>
-                      onDispatchAction({
-                        type: 'BASIC_ATTACK',
-                        playerId: player.id,
-                        targetType: 'villain',
-                      })
-                    }
+                    onClick={() => handleInitiateAttack('hero')}
                     className={`font-comic text-xs py-1 px-1.5 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm ${
                       canAttack
                         ? 'bg-comic-red hover:bg-red-600 text-white font-bold active:translate-y-0.5'
@@ -398,7 +459,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       enableHoverZoom={true}
                       onClick={() => {
                         if (canAct && onDispatchAction) {
-                          // Default action: Thwart if threat > 0, else attack villain
+                          // Default action: Thwart if threat > 0, else attack
                           if (canThw) {
                             onDispatchAction({
                               type: 'ALLY_THWART',
@@ -407,12 +468,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                               targetType: 'main_scheme',
                             });
                           } else {
-                            onDispatchAction({
-                              type: 'ALLY_ATTACK',
-                              playerId: player.id,
-                              allyInstanceId: ally.instanceId,
-                              targetType: 'villain',
-                            });
+                            handleInitiateAttack('ally', ally.instanceId);
                           }
                         }
                       }}
@@ -420,17 +476,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     {/* Ally Action Mini-Console */}
                     <div className="flex items-center gap-1 w-full justify-center">
                       <button
-                        onClick={() =>
-                          onDispatchAction?.({
-                            type: 'ALLY_ATTACK',
-                            playerId: player.id,
-                            allyInstanceId: ally.instanceId,
-                            targetType: 'villain',
-                          })
-                        }
+                        onClick={() => handleInitiateAttack('ally', ally.instanceId)}
                         disabled={!canAct}
                         className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={canAct ? `Attack villain for ${allyStats.attack} damage` : 'Ally exhausted'}
+                        title={canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'}
                       >
                         ⚔️ {allyStats.attack}
                       </button>
@@ -546,6 +595,36 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         gameState={gameState}
         onClose={() => setIsIdentityModalOpen(false)}
         onDispatchAction={onDispatchAction}
+        onInitiateHeroAttack={() => handleInitiateAttack('hero')}
+      />
+
+      {/* Attack Target Selection Modal (ADR-0020 / Target Prompt) */}
+      <AttackTargetModal
+        isOpen={attackModalState.isOpen}
+        attackerName={attackModalState.attackerName}
+        attackerType={attackModalState.attackerType}
+        attackDamage={attackModalState.attackDamage}
+        targets={attackModalState.targets}
+        onSelectTarget={(target) => {
+          if (attackModalState.attackerType === 'hero') {
+            onDispatchAction?.({
+              type: 'BASIC_ATTACK',
+              playerId: player.id,
+              targetType: target.type,
+              targetInstanceId: target.instanceId,
+            });
+          } else if (attackModalState.allyInstanceId) {
+            onDispatchAction?.({
+              type: 'ALLY_ATTACK',
+              playerId: player.id,
+              allyInstanceId: attackModalState.allyInstanceId,
+              targetType: target.type,
+              targetInstanceId: target.instanceId,
+            });
+          }
+          setAttackModalState((prev) => ({ ...prev, isOpen: false }));
+        }}
+        onClose={() => setAttackModalState((prev) => ({ ...prev, isOpen: false }))}
       />
     </section>
   );

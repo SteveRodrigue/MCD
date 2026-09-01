@@ -9,6 +9,8 @@ import {
   SideSchemeCard,
   ConditionGate,
   StepResolutionResult,
+  DecisionPromptOption,
+  PendingDecisionPrompt,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
@@ -2056,6 +2058,147 @@ export function executeStep(
         }
       }
       return { state, success: true, mutatedState: false, onomatopoeia: 'NO TECH UPGRADE IN DISCARD' };
+    }
+
+    case 'SEARCH_AND_SELECT': {
+      const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
+      const lookCount = step.params?.lookCount as number | undefined;
+      const takeCount = (step.params?.takeCount as number) || 1;
+      const filter = (step.params?.filter || step.filter) as any;
+      const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
+      const unselectedDestination = step.params?.unselectedDestination as string | null | undefined;
+      const shuffleAfter =
+        step.params?.shuffleAfter !== undefined
+          ? (step.params.shuffleAfter as boolean)
+          : lookCount === undefined;
+      const isVoluntary = (step.params?.isVoluntary as boolean) || false;
+      const promptTitle =
+        (step.params?.promptTitle as string) ||
+        (context.sourceCardInstance
+          ? `${context.sourceCardInstance.card.name}: Choose card(s)`
+          : 'Search & Select: Choose card(s)');
+
+      let pile: CardInstance[] = [];
+      let isDeck = false;
+
+      if (sourceZone === 'PLAYER_DISCARD') {
+        pile = player.discard;
+      } else if (sourceZone === 'PLAYER_HAND') {
+        pile = player.hand;
+      } else if (sourceZone === 'ENCOUNTER_DECK') {
+        pile = state.encounterDeck;
+        isDeck = true;
+      } else if (sourceZone === 'ENCOUNTER_DISCARD') {
+        pile = state.encounterDiscard;
+      } else {
+        // PLAYER_DECK
+        pile = player.deck;
+        isDeck = true;
+      }
+
+      // Determine candidate pool
+      let lookedCards: CardInstance[] = [];
+      const isLookCountSpliced = typeof lookCount === 'number' && lookCount > 0;
+      if (isLookCountSpliced) {
+        lookedCards = pile.splice(0, Math.min(lookCount!, pile.length));
+      } else {
+        lookedCards = [...pile];
+      }
+
+      // Filter matching candidate cards
+      const matchingCandidates = lookedCards.filter((c) => {
+        if (!filter) return true;
+        if (filter.targetCardCode && c.card.code !== filter.targetCardCode) return false;
+        if (
+          filter.targetCardName &&
+          c.card.name.toLowerCase().trim() !== filter.targetCardName.toLowerCase().trim()
+        )
+          return false;
+        if (filter.trait && !c.card.traits?.includes(filter.trait)) return false;
+        if (filter.traits && !filter.traits.some((t: string) => c.card.traits?.includes(t)))
+          return false;
+        if (
+          filter.type &&
+          c.card.type !== filter.type &&
+          (c.card.raw as any)?.type_code !== filter.type
+        )
+          return false;
+        if (
+          filter.type_code &&
+          (c.card.raw as any)?.type_code !== filter.type_code &&
+          c.card.type !== filter.type_code
+        )
+          return false;
+        if (filter.cardTypes && !filter.cardTypes.includes(c.card.type)) return false;
+        return true;
+      });
+
+      if (matchingCandidates.length === 0) {
+        // Return looked cards to source if they were spliced
+        if (isLookCountSpliced) {
+          if (unselectedDestination === 'DISCARD') {
+            player.discard.push(...lookedCards);
+          } else {
+            pile.unshift(...lookedCards);
+          }
+        }
+        if (shuffleAfter && isDeck) {
+          pile.sort(() => Math.random() - 0.5);
+        }
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          onomatopoeia: 'NO MATCHING TARGET FOUND',
+        };
+      }
+
+      const options: DecisionPromptOption[] = matchingCandidates.map((c) => ({
+        id: c.instanceId,
+        label: `${c.card.name} (${c.card.type}${c.card.cost !== undefined ? `, Cost: ${c.card.cost}` : ''})`,
+        description: c.card.text || `Select ${c.card.name}`,
+        effect: 'SEARCH_AND_SELECT_RESOLUTION',
+        params: {
+          chosenInstanceId: c.instanceId,
+          lookedCards,
+          lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
+          sourceZone,
+          selectedDestination,
+          unselectedDestination,
+          shuffleAfter: shuffleAfter && isDeck,
+          isLookCountSpliced,
+        },
+      }));
+
+      if (isVoluntary) {
+        options.push({
+          id: 'pass_search',
+          label: 'Pass / Do not select',
+          description: 'Pass and do not choose any card',
+          effect: 'SEARCH_AND_SELECT_PASS',
+          params: {
+            lookedCards,
+            lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
+            sourceZone,
+            unselectedDestination,
+            shuffleAfter: shuffleAfter && isDeck,
+            isLookCountSpliced,
+          },
+        });
+      }
+
+      const prompt: PendingDecisionPrompt = {
+        promptId: `prompt_search_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        playerId: context.playerId,
+        title: promptTitle,
+        description: `Select up to ${takeCount} card(s):`,
+        sourceCardName: context.sourceCardInstance?.card.name || 'Search & Select',
+        options,
+        isVoluntary,
+      };
+
+      const enqueuedState = enqueueDecisionPrompt(state, prompt);
+      return { state: enqueuedState, success: true, onomatopoeia: 'CHOOSE CARD!' };
     }
 
     case 'SEARCH_DECK_FOR_CARD':

@@ -757,10 +757,10 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
         expect(res1.result.success).toBe(true);
         expect(res1.state.pendingDecisionPrompt).toBeDefined();
-        expect(res1.state.pendingDecisionPrompt?.title).toContain('FUTURIST');
-        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(2); // Arc Reactor + Do not take any card
+        expect(res1.state.pendingDecisionPrompt?.title).toMatch(/futurist/i);
+        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(3); // 3 looked cards
 
-        // 2. Select the Tech card
+        // 2. Select the Arc Reactor card (first option)
         const techOptionId = res1.state.pendingDecisionPrompt!.options[0].id;
         const res2 = dispatchAction(res1.state, {
           type: 'RESOLVE_DECISION_PROMPT',
@@ -777,7 +777,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 2);
       });
 
-      it('executes Tony Stark Futurist ability with decline option: discards all 3 revealed cards', () => {
+      it('executes Tony Stark Futurist ability selecting a non-tech card: puts chosen card in hand and discards the other 2', () => {
         const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
         gameState.players[0].alterEgo = ironManIdentity.alterEgo;
         gameState.players[0].hero = ironManIdentity.hero;
@@ -800,18 +800,22 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
           abilityId: 'futurist',
         });
 
-        // Decline / take none option
+        // Select the second card (nonTech1)
+        const secondOptionId = res1.state.pendingDecisionPrompt!.options[1].id;
         const res2 = dispatchAction(res1.state, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',
-          selectedOptionId: 'take_none',
+          selectedOptionId: secondOptionId,
         });
 
         expect(res2.result.success).toBe(true);
-        // Hand size unchanged
-        expect(res2.state.players[0].hand.length).toBe(initialHandLength);
-        // All 3 cards discarded
-        expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 3);
+        // Hand has 1 new card
+        expect(res2.state.players[0].hand.length).toBe(initialHandLength + 1);
+        expect(res2.state.players[0].hand.some((c) => c.instanceId === nonTech1.instanceId)).toBe(true);
+        // The other 2 cards (arcReactor and nonTech2) are discarded
+        expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 2);
+        expect(res2.state.players[0].discard.some((c) => c.instanceId === arcReactor.instanceId)).toBe(true);
+        expect(res2.state.players[0].discard.some((c) => c.instanceId === nonTech2.instanceId)).toBe(true);
       });
     });
   });

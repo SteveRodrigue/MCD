@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-01T14:05:39.760Z`  
+> **Generated:** `2026-09-01T14:20:16.141Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -140,8 +140,8 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `RETURN_FACEDOWN_CARDS_TO_OWNERS` | `01166` | Highway Robbery (side_scheme) (core_encounter) | `highway_robbery_when_defeated` |
 | **Effect** | `RETURN_TO_HAND` | `01020` | Hellcat (ally) (core) | `hellcat_return` |
 | **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_when_revealed` |
-| **Effect** | `SCRY_AND_SELECT_TRAIT` | `01029b` | Tony Stark (alter_ego) (core) | `futurist` |
 | **Effect** | `SEARCH_AND_REVEAL_SIDE_SCHEME` | `01095` | Rhino (villain) (core_encounter) | `rhino_stage_ii_when_revealed` |
+| **Effect** | `SEARCH_AND_SELECT` | `01029b` | Tony Stark (alter_ego) (core) | `futurist` |
 | **Effect** | `SHUFFLE_DISCARD_INTO_DECK` | `01042` | Ancestral Knowledge (event) (core) | `ancestral_knowledge_action` |
 | **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `shadow_of_the_past_when_revealed` |
 | **Effect** | `TAKE_THREAT_AS_DAMAGE` | `01061` | Great Responsibility (event) (core) | `great_responsibility_interrupt` |
@@ -181,6 +181,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | **Effect** | `PLAY_FROM_ZONE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RESOURCE_GENERATION` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `SCRY_AND_SELECT_TRAIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `SPAWN_NEMESIS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `TOUGHNESS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Trigger** | `ATTACHED_ENEMY_ATTACKS` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
@@ -238,7 +239,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `DRAW_UP_TO_HAND_SIZE` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
-| `SCRY_AND_SELECT_TRAIT` | **1** | `01029b` (Tony Stark (alter_ego)) |
+| `SEARCH_AND_SELECT` | **1** | `01029b` (Tony Stark (alter_ego)) |
 | `REPULSOR_BLAST` | **1** | `01031` (Repulsor Blast (event)) |
 | `GENERATE_TOP_DISCARD_RESOURCES` | **1** | `01033` (Pepper Potts (support)) |
 | `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` | **1** | `01034` (Stark Tower (support)) |

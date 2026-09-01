@@ -169,6 +169,7 @@ export interface CardEnrichment {
   isLandscape?: boolean;
   attackCost?: number;
   thwartCost?: number;
+  maxPerPlayer?: number;
   uses?: CardUsesDefinition;
   abilities?: CardAbility[];
 }

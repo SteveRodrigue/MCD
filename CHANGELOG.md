@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Enforce "Max [X] Per Player" Board Invariants ([#3](https://github.com/SteveRodrigue/MCD/issues/3), `card-loader.ts`, `legality-checker.ts`, `card.ts`, `abilities.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
+  - Added automatic text signal parsing via [`parseMaxPerPlayer()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/importer/card-loader.ts) extracting printed "Max [X] per player" limits across 100+ cards from the upstream Zzorba dataset while cleanly ignoring parenthesized Restricted reminder text.
+  - Implemented the Max [X] per player board constraint (RR v1.8 p. 17 "Max") in [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts): prevents playing upgrades/supports (e.g. *Energy Channel* `01018`, *Armored Vest* `01081`, *Combat Training* `01057`, *Down Time* `01061`, *Avengers Mansion* `01091`, *Helicarrier* `01092`) if the player already controls the printed maximum number of copies in their tableau.
+  - Added contract test suite in [`table-invariants-restricted-and-unicity.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/table-invariants-restricted-and-unicity.test.ts).
+
 - **Feature & Engine: Global Cross-Player Unicity & Hero Identity Collision Validation ([#31](https://github.com/SteveRodrigue/MCD/issues/31), `legality-checker.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
   - Upgraded [`checkUniqueCardPlayable()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) and introduced [`isUniqueCollision()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) adhering strictly to official Marvel Champions RR v1.8 p. 29 ("Unique"):
     - **Cross-Player Unicity:** Evaluates uniqueness across all active players' tableaus, allies, and unique minions.

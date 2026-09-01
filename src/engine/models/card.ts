@@ -89,6 +89,7 @@ export interface NormalizedCard {
   quantity: number;
   deckLimit: number;
   isUnique: boolean;
+  maxPerPlayer?: number;
   cost?: number;
   costPerHero?: boolean;
   text: string;

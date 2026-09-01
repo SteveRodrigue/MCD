@@ -69,15 +69,21 @@ flowchart TD
 ---
 
 ### Step 1: Triage & Subsystem Scoping
-1. Analyze the bug description, error messages, and reproduction steps.
-2. **Inspect GameState Snapshots (`logs/gamestates/`):**
-   * If the bug occurred during gameplay, inspect `logs/gamestates/latest_gamestate.json` (or timestamped snapshot archives in `logs/gamestates/`).
-   * Examine active player status, villain HP, threat values, cards in hand, attachments, counters, and the resolution stack to understand the exact table condition.
-3. Isolate the responsible layer:
-   * **🧠 Headless Rules Engine (`src/engine/`):** Timing priority, trigger resolution, card costs, dynamic stat calculations, RR v1.8 rules violations.
-   * **🎨 Presentation Layer (`src/ui/`):** React rendering, Tailwind styles, z-index layering, hover-zoom, animation glitches, speech balloon formatting.
-   * **📦 Data / Supplemental Layer (`src/data/`):** Supplemental card JSON definitions, missing keywords/abilities, erroneous traits/packs.
-   * **⚙️ Assets & Offline Pipeline (`vite.config.ts`, `cache/`, `fonts/`):** Local image caching, offline webfont serving, bundling errors.
+1. Capture the failure mode from user report or test runner.
+2. If available, inspect the real-time table state snapshots in `logs/gamestates/` (e.g. `latest_gamestate.json`, `latest_engine_log.json`).
+3. Classify subsystem: `Engine` (state/mechanics), `UI` (presentation/interaction), `Data` (supplemental JSON), or `Assets`.
+
+---
+
+### Step 1B: Declarative Supplemental Card Audit (Enforce on all card defects) 🃏
+* If the defect pertains to a specific card (Player card, Encounter card, Villain stage, Attachment, or Ally):
+  1. **Do NOT inspect or modify `src/engine/` code yet.**
+  2. Open the card's definition in `src/data/supplemental/pack/<pack_code>.json`.
+  3. Compare the printed card text against the supplemental JSON declaration:
+     * Is the `timing` accurate (`ACTION`, `HERO_ACTION`, `FORCED_RESPONSE`, `INTERRUPT`)?
+     * Are all `costs` present (`EXHAUST_SELF`, `SPEND_RESOURCE`, `DAMAGE_SELF`)?
+     * Are `steps: AbilityStep[]` using the right primitives, target selectors, and conditional gates (`THEN`, `ALWAYS`)?
+  4. **Data-Only Resolution:** If the bug is caused by a missing/malformed JSON field or misconfigured primitive, the `implementation_plan.md` must be classified as **Tier 1 (Declarative Data Fix)** with ZERO engine code modifications.
 
 ---
 

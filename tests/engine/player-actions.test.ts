@@ -208,6 +208,57 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       });
       expect(res2.result.success).toBe(true);
     });
+
+    it('ally attacks minion, deals damage, and applies consequential damage', () => {
+      const allyCard = catalog.getCard('01011')!; // Spider-Woman (ATK 2, HP 2, Consequential 1)
+      const allyInstance = createCardInstance(allyCard);
+      gameState.players[0].allies.push(allyInstance);
+
+      const minionCard = catalog.getCard('01103')!; // Armored Guard (HP 3)
+      const minionInstance = createCardInstance(minionCard);
+      minionInstance.statusCards = []; // Remove Tough so it takes damage directly
+      gameState.players[0].engagedMinions.push(minionInstance);
+
+      const res = dispatchAction(gameState, {
+        type: 'ALLY_ATTACK',
+        playerId: 'p1',
+        allyInstanceId: allyInstance.instanceId,
+        targetType: 'minion',
+        targetInstanceId: minionInstance.instanceId,
+      });
+
+      expect(res.result.success).toBe(true);
+      // Minion took 2 damage (HP 3 -> remaining damage token = 2)
+      const updatedMinion = res.state.players[0].engagedMinions.find((m) => m.instanceId === minionInstance.instanceId)!;
+      expect(updatedMinion.tokens?.damage).toBe(2);
+      // Ally took 1 consequential damage
+      const updatedAlly = res.state.players[0].allies.find((a) => a.instanceId === allyInstance.instanceId)!;
+      expect(updatedAlly.tokens?.damage).toBe(1);
+      expect(updatedAlly.exhausted).toBe(true);
+    });
+
+    it('blocks ally attacking Villain when an engaged minion has Guard (RR v1.8 p. 15)', () => {
+      const allyCard = catalog.getCard('01011')!;
+      const allyInstance = createCardInstance(allyCard);
+      gameState.players[0].allies.push(allyInstance);
+
+      const guardMinionCard = catalog.getCard('01108')!;
+      const guardMinionInstance = createCardInstance({
+        ...guardMinionCard,
+        text: 'Guard.',
+      });
+      gameState.players[0].engagedMinions.push(guardMinionInstance);
+
+      const res = dispatchAction(gameState, {
+        type: 'ALLY_ATTACK',
+        playerId: 'p1',
+        allyInstanceId: allyInstance.instanceId,
+        targetType: 'villain',
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toContain('Guard');
+    });
   });
 
   describe('Basic Thwart & Crisis/Patrol Checks (RR v1.8 p. 29, 11, 10)', () => {

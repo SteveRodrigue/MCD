@@ -14,6 +14,7 @@ interface IdentityActionModalProps {
   gameState?: GameState;
   onClose: () => void;
   onDispatchAction?: (action: GameAction) => void;
+  onInitiateHeroAttack?: () => void;
 }
 
 export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
@@ -22,6 +23,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   gameState,
   onClose,
   onDispatchAction,
+  onInitiateHeroAttack,
 }) => {
   if (!isOpen) return null;
 
@@ -196,8 +198,12 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 <button
                   disabled={!canAttack}
                   onClick={() => {
-                    onDispatchAction?.({ type: 'BASIC_ATTACK', playerId: player.id, targetType: 'villain' });
                     onClose();
+                    if (onInitiateHeroAttack) {
+                      onInitiateHeroAttack();
+                    } else {
+                      onDispatchAction?.({ type: 'BASIC_ATTACK', playerId: player.id, targetType: 'villain' });
+                    }
                   }}
                   className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
                     canAttack

@@ -122,7 +122,72 @@ export function canBasicAttack(
     // Guard keyword check: While an engaged minion with Guard is in play with this player, villain cannot be attacked.
     const hasGuardMinion = player.engagedMinions.some((m) => {
       const text = m.card.text || '';
-      return text.includes('Guard') || (m.card.traits || []).includes('Guard');
+      return (
+        m.card.keywords?.includes(Keyword.GUARD) ||
+        text.includes('Guard') ||
+        (m.card.traits || []).includes('Guard')
+      );
+    });
+
+    if (hasGuardMinion) {
+      return {
+        allowed: false,
+        reason: 'Cannot attack the villain while an engaged minion with Guard is in play.',
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Checks if an ally can perform an Attack (RR v1.8 p. 6, 15 "Guard").
+ * Ally must not be exhausted and respect Guard keyword.
+ */
+export function canAllyAttack(
+  state: GameState,
+  playerId: string,
+  allyInstanceId: string,
+  targetType: 'villain' | 'minion',
+  targetInstanceId?: string,
+): { allowed: boolean; reason?: string } {
+  const player = getPlayer(state, playerId);
+  if (!player) return { allowed: false, reason: 'Player not found' };
+
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
+
+  const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
+  if (!ally) return { allowed: false, reason: 'Ally not found in play.' };
+
+  if (ally.exhausted) {
+    return { allowed: false, reason: 'Ally is exhausted.' };
+  }
+
+  if (targetType === 'minion') {
+    if (!targetInstanceId) {
+      return { allowed: false, reason: 'Minion target instance ID must be specified.' };
+    }
+    const allMinions = state.players.flatMap((p) => p.engagedMinions);
+    const minion = allMinions.find((m) => m.instanceId === targetInstanceId);
+    if (!minion) {
+      return { allowed: false, reason: 'Target minion is not in play.' };
+    }
+  }
+
+  if (targetType === 'villain') {
+    // Guard keyword check: While an engaged minion with Guard is engaged with this player, villain cannot be attacked.
+    const hasGuardMinion = player.engagedMinions.some((m) => {
+      const text = m.card.text || '';
+      return (
+        m.card.keywords?.includes(Keyword.GUARD) ||
+        text.includes('Guard') ||
+        (m.card.traits || []).includes('Guard')
+      );
     });
 
     if (hasGuardMinion) {

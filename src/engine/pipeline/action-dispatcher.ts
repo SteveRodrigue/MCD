@@ -16,6 +16,7 @@ import {
   canChangeForm,
   canBasicRecover,
   canBasicAttack,
+  canAllyAttack,
   canBasicThwart,
   canPlayCard,
 } from './legality-checker';
@@ -386,15 +387,20 @@ export function dispatchAction(
     }
 
     case 'ALLY_ATTACK': {
-      const player = getPlayer(nextState, action.playerId);
-      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+      const check = canAllyAttack(
+        nextState,
+        action.playerId,
+        action.allyInstanceId,
+        action.targetType,
+        action.targetInstanceId,
+      );
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
 
+      const player = getPlayer(nextState, action.playerId)!;
       const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
-      if (allyIdx === -1) return { state, result: { success: false, error: 'Ally not found in play' } };
-
       const ally = player.allies[allyIdx];
-      if (ally.exhausted) return { state, result: { success: false, error: 'Ally is exhausted' } };
-
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
       const allyStats = getEffectiveAllyStats(nextState, ally);
@@ -444,6 +450,56 @@ export function dispatchAction(
             nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
             if (nextState.villain.health <= 0) {
               handleVillainDefeat(nextState, nextState.villain.instanceId);
+            }
+          }
+        }
+      } else if (action.targetType === 'minion' && action.targetInstanceId) {
+        const targetMinionPlayer = nextState.players.find((p) =>
+          p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
+        );
+
+        if (targetMinionPlayer) {
+          const minionIndex = targetMinionPlayer.engagedMinions.findIndex(
+            (m) => m.instanceId === action.targetInstanceId,
+          );
+          const minion = targetMinionPlayer.engagedMinions[minionIndex];
+
+          // Check Tough on Minion
+          const toughIndex = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+          if (toughIndex !== -1) {
+            minion.statusCards!.splice(toughIndex, 1);
+          } else {
+            const currentDamage = minion.tokens?.damage || 0;
+            const newDamage = currentDamage + attackDmg;
+            const minionHealth = (minion.card as MinionCard).health || 1;
+
+            if (newDamage >= minionHealth) {
+              // Defeated minion -> discard
+              targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
+              nextState.encounterDiscard.push(minion);
+
+              // Trigger minion attachments (e.g. Spider-Tracer 01007)
+              for (const att of minion.attachments || []) {
+                const attAbs = att.card.enrichment?.abilities || [];
+                for (const ab of attAbs) {
+                  const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
+                  if (hostDefStep) {
+                    const removeAmount = (hostDefStep.params?.amount as number) || 3;
+                    nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removeAmount);
+                    nextState.log.push({
+                      id: `log_${Date.now()}`,
+                      timestamp: Date.now(),
+                      category: 'scheme',
+                      key: 'card.effect.removeThreat',
+                      params: { scheme: nextState.mainScheme.card.name, amount: removeAmount, source: att.card.name },
+                      onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
+                    });
+                  }
+                }
+                player.discard.push(att);
+              }
+            } else {
+              minion.tokens = { ...minion.tokens, damage: newDamage };
             }
           }
         }

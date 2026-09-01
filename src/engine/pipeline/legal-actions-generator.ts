@@ -8,6 +8,7 @@ import {
   canChangeForm,
   canBasicRecover,
   canBasicAttack,
+  canAllyAttack,
   canBasicThwart,
   evaluateCardPlayability,
 } from './legality-checker';
@@ -270,22 +271,48 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       if (!ally.exhausted) {
         const allyStats = getEffectiveAllyStats(state, ally);
 
-        // Ally Attack
-        boardActions.push({
-          id: `action_ally_attack_${ally.instanceId}`,
-          category: 'board',
-          headline: `Ally Attack: ${ally.card.name}`,
-          subtext: `Exhaust ${ally.card.name} to deal ${allyStats.attack} damage to villain`,
-          action: {
-            type: 'ALLY_ATTACK',
-            playerId: player.id,
-            allyInstanceId: ally.instanceId,
-            targetType: 'villain',
-          },
-          badge: `${allyStats.attack} ATK`,
-          iconType: 'attack',
-          targetCardInstance: ally,
-        });
+        // Ally Attack on Villain
+        const villainAtkCheck = canAllyAttack(state, player.id, ally.instanceId, 'villain');
+        if (villainAtkCheck.allowed) {
+          boardActions.push({
+            id: `action_ally_attack_villain_${ally.instanceId}`,
+            category: 'board',
+            headline: `Ally Attack: ${ally.card.name}`,
+            subtext: `Exhaust ${ally.card.name} to deal ${allyStats.attack} damage to villain`,
+            action: {
+              type: 'ALLY_ATTACK',
+              playerId: player.id,
+              allyInstanceId: ally.instanceId,
+              targetType: 'villain',
+            },
+            badge: `${allyStats.attack} ATK`,
+            iconType: 'attack',
+            targetCardInstance: ally,
+          });
+        }
+
+        // Ally Attack on engaged minions
+        for (const minion of player.engagedMinions || []) {
+          const minionAtkCheck = canAllyAttack(state, player.id, ally.instanceId, 'minion', minion.instanceId);
+          if (minionAtkCheck.allowed) {
+            boardActions.push({
+              id: `action_ally_attack_minion_${ally.instanceId}_${minion.instanceId}`,
+              category: 'board',
+              headline: `Ally Strike: ${ally.card.name} ➔ ${minion.card.name}`,
+              subtext: `Exhaust ${ally.card.name} to deal ${allyStats.attack} damage to minion`,
+              action: {
+                type: 'ALLY_ATTACK',
+                playerId: player.id,
+                allyInstanceId: ally.instanceId,
+                targetType: 'minion',
+                targetInstanceId: minion.instanceId,
+              },
+              badge: `${allyStats.attack} ATK`,
+              iconType: 'attack',
+              targetCardInstance: ally,
+            });
+          }
+        }
 
         // Ally Thwart (Main Scheme)
         if ((state.mainScheme?.threat || 0) > 0) {

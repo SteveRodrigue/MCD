@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Dev Tooling & Telemetry: Automated GameState Snapshot Recording (`logs/gamestates/`):**
+  - Added `gameStateSnapshotPlugin` to Vite dev server to intercept `POST /api/logs/gamestate` and automatically persist `logs/gamestates/latest_gamestate.json` along with rolling timestamped archives (`gamestate_{timestamp}_rnd{round}_{phase}.json`).
+  - Added `gamestate-logger-service.ts` and wired `useEffect` snapshotting on state transitions in `App.tsx`.
+  - Added a manual **"📸 Save Snapshot"** button in `OptionsMenu.tsx` (Options Modal & Dev Mode) with visual feedback.
+  - Linked snapshot inspection directly into Step 1 and Step 2 of the `bug-fix` skill for rapid triage and 100% faithful test fixture generation.
+- **Dev Tooling & Agents: Standardized `bug-fix` Skill (`.agents/skills/bug-fix/SKILL.md`):**
+  - Created a deterministic 6-step Test-Driven Development (TDD) protocol skill for triaging, reproducing, diagnosing, fixing, and verifying bugs across the rules engine, UI, data, and asset layers.
+  - Enforces failing regression tests first, 3-tier blast-radius guardrails, structured execution logging to `logs/skills/`, and automatic execution of the mandatory 7-point post-task protocol.
+- **UI Layout: Permanently Fixed Top Navigation Bar (`TopBar.tsx`, `GameBoard.tsx`):**
+  - Converted the TopBar from `sticky` to `fixed top-0 left-0 right-0 z-40`, guaranteeing that the round badges, phase indicator, multi-hero jump selector, Daily Bugle, and combat log controls remain permanently pinned to the top of the viewport regardless of board scrolling.
+  - Added dedicated top padding (`pt-20 md:pt-24`) to the panoramic tabletop stage to prevent overlap.
+- **UI Polish: Interactive Font Cycling in Combat Log (`CombatLogDrawer.tsx`, `ComicSpeechBalloon.tsx`):**
+  - Added a dedicated **"Cycle Font"** button in the Combat Log footer beside "Show Debug" to dynamically cycle and live-preview comic dialogue typography between **Komika Text**, **Comic Relief**, **Comic Neue**, **Clean (Inter)**, and **Bangers**.
+  - Persisted user font selection in `localStorage` (`'mcd_combat_log_font'`).
+- **UI Polish: Authentic Local-Bundled Comic Dialogue Typography (`Komika Text`, `Comic Relief`, & `Bangers`):**
+  - Integrated and bundled **`Komika Text`** (Apostrophic Labs comic dialogue standard via `@typopro/dtp-komika-text`), **`Comic Relief`** (official [`loudifier/Comic-Relief`](https://github.com/loudifier/Comic-Relief) via `@fontsource/comic-relief`), and **`Bangers`** directly into local game resources (`public/fonts/`, `src/assets/fonts/`, `src/ui/styles/index.css`, `tailwind.config.js`).
+  - Completely decoupled font delivery from external CDNs, ensuring 100% offline font availability with zero flash-of-unstyled-text (FOUT) across dev and standalone production builds (`dist/assets/*.woff2`).
+- **UI Polish: Large-Scale Readable Visual Cards & Banners (`ComicSpeechBalloon.tsx`, `TopBar.tsx`):**
+  - Significantly enlarged the Narrator dispatch cards (`HEROES ASSEMBLE!`, `NEW ROUND!`, `DANGER STRIKES!`) with heavier comic typography, expanded padding (`p-4`), prominent onomatopoeia banners (`text-sm sm:text-base font-black px-3 py-1`), and heavy drop shadows (`shadow-comic`).
+  - Scaled up the TopBar Round badge (`text-xl px-4 py-1`) and Phase transition badge (`text-base px-4 py-1.5 font-black`) for effortless legibility.
+- **UI Polish: Root 110% Base UI Scaling (`src/ui/styles/index.css`):**
+  - Enhanced the overall application scale by configuring `html { font-size: 110%; }` in Tailwind base layers, uniformly scaling cards, tableaus, boards, modals, and typography by +10% without requiring browser manual zoom adjustments.
+- **UI Polish: Comic Book Dialogue Game Log & Narrative Stream (ADR-0005, ADR-0009, ADR-0037):**
+  - Overhauled [`src/ui/components/board/CombatLogDrawer.tsx`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/components/board/CombatLogDrawer.tsx) from raw JSON dumps into an authentic, living **1960s Comic Book Dialogue & Story Stream**.
+  - Implemented 4-tier visual dialogue differentiation via [`src/ui/components/board/ComicSpeechBalloon.tsx`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/components/board/ComicSpeechBalloon.tsx):
+    - **Hero Speech Balloons (`hero_speech`):** White rounded speech balloon with pointer tail, avatar badge (`🕷️ SPIDER-MAN`), in-character quips, and action prose with damage/threat/cost pills.
+    - **Alter-Ego Thought Balloons (`hero_thought`):** Scalloped cloud thought balloons for recovery and planning.
+    - **Villain Spiky Burst Balloons (`villain_shout`):** Jagged crimson burst balloons with aggressive capitalized shouting threats and attack/scheme actions.
+    - **Stan Lee Yellow Caption Boxes (`narrator_caption`):** Golden-yellow rectangular narration boxes (`bg-comic-yellow`) with comic panel headers for round upkeep, phase transitions, and deck exhaustion.
+  - Implemented pure narrative formatting and template interpolation engine in [`src/ui/utils/comic-log-formatter.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/utils/comic-log-formatter.ts).
+  - Built multilingual localization dictionaries ([`src/locales/en/combat-log.json`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/locales/en/combat-log.json), [`src/locales/fr/combat-log.json`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/locales/fr/combat-log.json)) supporting dynamic on-the-fly language switching and localized onomatopoeias (`POW!` vs. `VLAM !`, `THWIP!` vs. `TCHWIP !`).
+  - Authored [**ADR-0037**](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/docs/decisions/0037-comic-dialogue-presentation-and-voice-localization-engine.md) and updated **ADR-0005**, **ADR-0009**, and master ADR index.
+- **UI Polish: Comic Book Carousel Scenario Selector (`ScenarioSelector.tsx`):**
+  - Designed and deployed an authentic **1960s Pop-Art Comic Book Carousel** for scenario setup.
+  - Implemented an open two-page comic spread featuring:
+    - **Left Page (Villain Dossier):** Stage-appropriate Villain card preview (`CardView`), subtitle, and hit points formula badge.
+    - **Right Page (Main Scheme Setup):** Main Scheme Stage 1A card preview (`CardView`), setup rules text, and mission briefing.
+    - **Spine & Binding Details:** Center fold binding crease, realistic paper texture with halftone pattern, and silver staples.
+    - **Vintage Comic Badges:** Price box ("12¢"), Comics Code Authority seal, and issue number banner ("Issue #1 of 3: Rhino").
+  - Implemented page-flip navigation (`◀ PREV ISSUE` and `NEXT ISSUE ▶`) and quick-jump scenario issue buttons.
+  - Positioned **Encounter Sets & Modular Customizer** and **Difficulty Selection (Skirmish, Standard, Expert + Heroic Mode)** directly below the comic book spread.
+  - Re-architected card art URL resolution in [`src/ui/services/card-cache-service.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/services/card-cache-service.ts) using `getCardArtFileName`: directly reads `card.type` (`type_code`) and `card.stage` to accurately map Main Scheme Stage 1A cards (e.g. `01097a` $\rightarrow$ `01097.png`), Stage 1B cards (e.g. `01097b` $\rightarrow$ `01097b.png`), Hero faces (`01001a` $\rightarrow$ `01001a.png`), and Alter-Ego faces (`01001b` $\rightarrow$ `01001b.png`).
+  - Implemented **Local-First Static Card Asset Serving** for complete offline play: configured Vite dev server plugin in [`vite.config.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/vite.config.ts) and production bundle asset pipeline to serve disk-cached card assets at `/cards/:fileName` with automatic fallback to MarvelCDB CDN.
 - **Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero):**
   - **Sub-Milestone 2D-1 (Restricted Keyword & Global Unicity Invariants - RR v1.8 p. 25, 29 / ADR-0018):**
     - Implemented `Keyword` parser and dynamic restricted limit validator (`isCardRestricted`, `getCardRestrictedWeight`, `getPlayerRestrictedLimit`, `getPlayerRestrictedCount`) in [`src/engine/pipeline/legality-checker.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts).

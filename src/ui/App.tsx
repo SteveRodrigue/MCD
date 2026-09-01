@@ -12,6 +12,7 @@ import {
 import { ScenarioSelector, SetupSelection } from './components/setup/ScenarioSelector';
 import { MulliganScreen } from './components/setup/MulliganScreen';
 import { GameBoard } from './components/board/GameBoard';
+import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
 import { GameSettingsProvider } from './context/GameSettingsContext';
 
@@ -19,6 +20,13 @@ export const AppContent: React.FC = () => {
   const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME'>('SETUP');
   const [gameState, setGameState] = useState<GameState | null>(null);
+
+  // Automatically snapshot game state changes to logs/gamestates/
+  React.useEffect(() => {
+    if (gameState) {
+      logGameStateSnapshot(gameState);
+    }
+  }, [gameState]);
 
   const handleStartSetup = (selection: SetupSelection) => {
     const scenario = getScenario(selection.scenarioId) || getScenario('rhino')!;

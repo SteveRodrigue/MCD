@@ -24,13 +24,14 @@ We establish a **Structured Invariant Game History Log (`state.log`)**:
      * `onomatopoeia`: Stylized comic book sound effect (e.g. `POW!`, `THWIP!`, `WHAM!`).
      * `text`: Fallback human-readable formatted string for instant display.
 
-2. **Dual-Use Presentation:**
-   * **In-Game (Live HUD):** A collapsible comic narrative strip / sidebar and pop-up action toasts.
+2. **Dual-Use Presentation & Comic Book Dialogue Engine (ADR-0037):**
+   * **In-Game (Action Chronicle Drawer):** A full-height comic issue drawer featuring 4-tier visual dialogue differentiation (`hero_speech`, `hero_thought`, `villain_shout`, `narrator_caption`), localized sound effects, and character flavor quotes.
    * **Post-Game (Match Review Modal / Log Export):** Full searchable, filterable chronological timeline with round headers, damage summaries, and exportable Markdown report format.
 
 ## Consequences
 ### Positive
 * **100% Rule Transparency:** Eliminates player confusion regarding hidden boost cards, interrupt timings, or consequential damage.
+* **Immersive Comic Dialogue:** Transforms mechanical actions into a dynamic, character-driven story stream.
 * **Streamlined Debugging & AI Testing:** Automated bot simulations and test suites can generate human-readable reports from the exact same log structure.
 * **i18n Compatible:** `key` + `params` allows instant on-the-fly language switching without re-logging.
 

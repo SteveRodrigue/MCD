@@ -2,13 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Local Comic Dialogue Fonts */
+@font-face {
+  font-family: 'Komika Text';
+  src: url('/fonts/TypoPRO-KomikaText-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Komika Text';
+  src: url('/fonts/TypoPRO-KomikaText-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Komika Text';
+  src: url('/fonts/TypoPRO-KomikaText-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Komika Text';
+  src: url('/fonts/TypoPRO-KomikaText-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    font-size: 110%;
+  }
+}
+
 @layer utilities {
   /* Ben-Day Halftone Dot Pattern */
   .bg-bendy-dots {
-    background-image: radial-gradient(#ED1D24 15%, transparent 16%), radial-gradient(#0284C7 15%, transparent 16%);
+    background-image: radial-gradient(rgba(237, 29, 36, 0.08) 15%, transparent 16%), radial-gradient(rgba(2, 132, 199, 0.08) 15%, transparent 16%);
     background-size: 20px 20px;
     background-position: 0 0, 10px 10px;
-    opacity: 0.08;
   }
 
   /* Comic Panel Outline */
@@ -24,5 +62,22 @@
     border-radius: 12px;
     box-shadow: 3px 3px 0px 0px #111111;
     background-color: #FFFFFF;
+  }
+
+  /* Combat Log Font Presets */
+  .font-komika {
+    font-family: 'Komika Text', 'Comic Relief', 'Comic Sans MS', cursive, sans-serif;
+  }
+  .font-comic-relief {
+    font-family: 'Comic Relief', 'Comic Sans MS', cursive, sans-serif;
+  }
+  .font-comic-neue {
+    font-family: 'Comic Neue', 'Comic Relief', cursive, sans-serif;
+  }
+  .font-clean {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .font-bangers {
+    font-family: 'Bangers', Impact, 'Arial Black', sans-serif;
   }
 }

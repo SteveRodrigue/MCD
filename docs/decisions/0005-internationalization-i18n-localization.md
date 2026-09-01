@@ -66,8 +66,9 @@ To ensure the game is accessible to an international audience, all UI text, game
      ```typescript
      getCardText(cardId: string, locale: string)
      ```
-3. **Onomatopoeia Localizations:**
-   * Sound effect badges can be mapped by locale (or customizable by player theme preference).
+3. **Onomatopoeia & Comic Dialogue Localizations (ADR-0037):**
+   * Sound effect badges and in-character quotes are mapped by locale in `src/locales/{lang}/combat-log.json` (e.g. English *POW! / BAM! / THWIP!* vs. French *VLAM! / PAF! / TCHWIP!*).
+   * Hero and villain flavor dialogue quips are organized by character ID and context for dynamic speech bubble translation.
 
 ---
 

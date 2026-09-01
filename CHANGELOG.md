@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **UI Layout: Space-Saving 2-Column Hero Hand Tray (`PlayerHandTray.tsx`):**
   - Refactored `PlayerHandTray` from a stacked 2-row layout into a streamlined **2-column layout** (Column 1: left vertical sidebar stacking Draw Deck, +Add tutor, Discard Pile, and Nemesis Set buttons; Column 2: wide horizontal card fan-out area).
-  - Maximized vertical screen real estate for playmats, reducing tray height by ~70px while maintaining full card fan width and hover-zoom fidelity.
+  - Tightened vertical padding and card container boundaries (`cardWidth: 112`, `min-h-[160px]`, `items-center`), eliminating excess white space above/below hand cards and maximizing vertical screen real estate for playmats.
 - **Bug Fix: Single-Hero Hand Tray Viewport Containment & Unified Fan-Out Architecture (`PlayerHandTray.tsx`, `GameBoard.tsx`):**
   - Resolved viewport overflow in single-hero mode by eliminating the separate, oversized sticky footer dock and standardizing `PlayerHandTray` on the proven, compact `useHandFanLayout` algorithm (`size="sm"`, `cardWidth: 128`, `defaultGap: 12`, `padding: 24`).
   - Embedded `PlayerHandTray` directly below `HeroZone` within the solo tabletop container, matching the multi-hero station experience with responsive dynamic overlap, clean status indicators, and full-fidelity hover zoom.

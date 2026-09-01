@@ -171,15 +171,16 @@ npm test && npm run typecheck && npm run build && npm run report:declarations
 
 ---
 
-### Step 7: Mandatory Post-Task Protocol (7-Point Audit Checklist)
-Before completing the turn, execute the 7 mandatory checks from `AGENTS.md`:
+### Step 7: Mandatory Post-Task Protocol (8-Point Audit Checklist)
+Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` with the bug fix summary, root cause, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
 2. **Check Documentation:** Update any relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or `docs/algorithmic_rules_reference.md` if rules mechanics or timing changed.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new invariants or design patterns were introduced.
 5. **Check ADRs:** Update or reference Architecture Decision Records in `docs/decisions/`.
 6. **Check Ambiguities & Issues:** Close or resolve any related files in `docs/ambiguities/`.
-7. **Check Declarations Usage Report:** Run `npm run report:declarations` whenever cards or supplemental data are modified.
+7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
+8. **Check Declarations Usage Report:** Run `npm run report:declarations` whenever cards or supplemental data are modified.
 
 ---
 

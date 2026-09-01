@@ -30,8 +30,8 @@ All uncompleted and future roadmap items are categorized using the following pri
 ```mermaid
 graph TD
     P0["Phase 0: Foundation & Governance ✅<br/>(Scaffolding, ADRs, Tooling, CI/CD)"] --> P1["Phase 1: Headless Engine & Schema Verification ✅<br/>(Deterministic State Tree, Supplemental Zod Schema, CI Tests)"]
-    P1 --> P2["Phase 2: Rules Engine Robustness & Capability-Driven Pipeline 🚧<br/>(Resolution Stack, Combat Event Pipeline, Scenario Setup Plugin, Inbox Zero)"]
-    P2 --> P3["Phase 3: Automated Headless Match Simulation 📅<br/>(Deterministic 100-Game Simulation Runner, Multi-Hero Collaboration)"]
+    P1 --> P2["Phase 2: Rules Engine Robustness & Capability-Driven Pipeline ✅<br/>(Resolution Stack, Combat Event Pipeline, Scenario Setup Plugin, Clean-Up Pipeline, Inbox Zero)"]
+    P2 --> P3["Phase 3: Automated Headless Match Simulation 🚧<br/>(Deterministic 100-Game Simulation Runner, Multi-Hero Collaboration, Wakanda Forever)"]
     P3 --> P4["Phase 4: Comic Tabletop UI, Deck Import & Polish 🃏<br/>(MarvelCDB URL Import, Discard Inspectors, Payment Modals, Pop-Art UI)"]
     P4 --> P5["Phase 5: Expansions & Desktop Packaging 🚀<br/>(Hero & Scenario Packs, Tauri Desktop Binary, WebRTC P2P Multiplayer)"]
 ```
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 📍 Phase 2: Rules Engine Robustness & Capability-Driven Pipeline 🚧 (Current Phase)
+## 📍 Phase 2: Rules Engine Robustness & Capability-Driven Pipeline ✅ (Completed)
 *Objective: Build an industrial-grade, capability-driven rules engine with complete nested resolution, a unified combat event pipeline, standardized scenario setup, and 100% Core Set card pool promotion (Inbox Zero).*
 
 ### 1. 🔴 `[Must-Have]` Completed Engine Foundations
@@ -121,6 +121,10 @@ graph TD
   - Evaluated uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
 * [x] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18 / [Issue #32](https://github.com/SteveRodrigue/MCD/issues/32)) ✅ (Completed):**
   - Guaranteed immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws (`drawPlayerCard`, `drawEncounterCard`, `discardFromEncounterDeckUntil`, `discardFromPlayerDeckUntil`).
+* [x] **End of Player Phase Clean-Up & Voluntary Hand Discard (RR v1.8 p. 23 / [Issue #41](https://github.com/SteveRodrigue/MCD/issues/41)) ✅ (Completed):**
+  - Implemented the official End of Player Phase clean-up sequence in a dedicated module (`src/engine/pipeline/player-phase-cleanup.ts`):
+  - In player order starting from the First Player, prompts active players with voluntary multi-select discard decision prompts.
+  - Draws up to effective hand size and readies identities, allies, and tableau upgrades/supports *before* the Villain Phase begins.
 * [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
   - Executed Card Integration Protocol across all 23 ambiguity files.
   - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.
@@ -129,17 +133,19 @@ graph TD
 
 ---
 
-## 📍 Phase 3: Automated Headless Match Simulation & Multi-Hero Verification 📅 (Planned Next)
+## 📍 Phase 3: Automated Headless Match Simulation & Multi-Hero Verification 🚧 (Current Phase)
 *Objective: Deliver a 100% automated, headless, deterministic game simulator capable of running full multi-round matches across all 5 Core Heroes against Rhino, Klaw, and Ultron ([ADR-0002](decisions/0002-decoupled-headless-rules-engine.md), [ADR-0009](decisions/0009-game-history-and-action-log.md)).*
 
 ### Milestones & Tasks
 1. 🔴 `[Must-Have]` **Deterministic Monte Carlo Simulation Engine:**
-   * Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) using heuristic legal action dispatchers.
-   * Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
+   * Automated headless runner executing complete simulated games (`tests/engine/match-simulator.test.ts`) using heuristic legal action dispatchers.
+   * Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations across 100-game headless batches.
 2. 🔴 `[Must-Have]` **Multi-Hero Collaboration & Cooperative Triggers ([Issue #37](https://github.com/SteveRodrigue/MCD/issues/37)):**
    * Verify "Action: Ask another player to..." and cross-player resource/defense triggers (*Make the Call*, *Get Behind Me!*, *Helicarrier*, *Maria Hill*).
    * **`Alliance` Keyword Engine (RR v1.8 p. 4 / [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)):** Support collaborative multi-player resource pooling from hands and generators for Alliance cards.
    * **`Team-Up` Prerequisite Validator (RR v1.8 p. 28):** Validate dual-identity prerequisites across active identities and tableaus.
+3. 🔴 `[Must-Have]` **Special Ability Multi-Upgrade Sequences ([Issue #18](https://github.com/SteveRodrigue/MCD/issues/18)):**
+   * Support sequential multi-upgrade resolution chains (*Wakanda Forever!* triggering all in-play *Black Panther* upgrades: *Energy Daggers*, *Panther Suit*, *Vibranium Claws*, *Tactical Genius* in chosen order).
 
 ---
 
@@ -180,17 +186,18 @@ graph TD
 * [ ] **Multi-Form Identity Scaling (3-Sided & Mass/Energy Forms - RR v1.8 p. 12 / [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md)):**
   * Support 3-sided identities (*Ant-Man*, *Wasp*), Energy Forms (*Spectrum*), Mass Forms (*Vision*, *Shadowcat*), and Progression levels (*Ironheart*).
   * Dispatch discrete `FORM_CHANGED` lifecycle events with form-entry ability step triggers.
-* [ ] **Universal Dynamic Counter Map (`counters: Record<string, number>`):**
-  * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS`, `SPEND_COUNTERS`, and `REMOVE_COUNTERS_MATCHING_FILTER` primitives.
+* [x] **Universal Dynamic Counter Map (`counters: Record<string, number>` - [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #33](https://github.com/SteveRodrigue/MCD/issues/33)) ✅ (Completed):**
+  * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS`, `SPEND_COUNTERS`, `REMOVE_COUNTERS_MATCHING_FILTER`, and dynamic `COUNTERS_ON_TARGET` scaling.
+  * Built-in Uses zero-counter card discard lifecycle dispatching `CARD_DISCARDED` triggers.
 
-### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers ([ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35))
-* [ ] **Advanced Status Dynamics (`Stalwart`, `Steady` - RR v1.8 p. 28 / [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md)):**
-  * Enforce `Stalwart` keyword immunity to Stun/Confuse.
-  * Implement count-based status card scaling for `Steady` (requires 2 copies to incapacitate character).
-* [ ] **Minion Combat Entry & Activation Modifiers ([Issue #36](https://github.com/SteveRodrigue/MCD/issues/36)):**
-  * Support `Villainous` minion activations resolving facedown boost cards.
+### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers ([ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35)) ✅ (Completed)
+* [x] **Advanced Status Dynamics (`Stalwart`, `Steady` - RR v1.8 p. 28 / [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35)) ✅ (Completed):**
+  * Enforce `Stalwart` keyword complete immunity to Stun and Confuse status cards (`"IMMUNE! (STALWART)"`).
+  * Implement count-based status card scaling for `Steady` (requires 2 copies of Stun or Confuse to incapacitate character; discards both upon cancellation).
+* [x] **Minion Combat Entry & Activation Modifiers ([Issue #35](https://github.com/SteveRodrigue/MCD/issues/35)) ✅ (Completed):**
+  * Support `Villainous` minion activations dealing and resolving facedown boost cards from encounter deck.
   * Support `Quickstrike` immediate minion attacks on engagement in Hero form.
-  * Resolve `Incite X` and `Hinder X` entry threat triggers.
+  * Resolve `Incite X` (direct threat on reveal) and `Hinder X` (per-player side scheme threat) entry triggers.
 
 ### 4. 🟠 `[Should-Have]` Official Pack Rollout Pipeline
 * [ ] Incremental pack integration: Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Green Goblin, Galaxy's Most Wanted, Mad Titan's Shadow, Sinister Motives, Mutant Genesis, Next Evolution, Age of Apocalypse.

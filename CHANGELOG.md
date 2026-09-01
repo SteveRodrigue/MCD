@@ -205,6 +205,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `DeclareDefenderAction` action handler in `action-dispatcher.ts` and refactored `villain-phase.ts` to route attacks through `combat-pipeline.ts`.
   - Promoted *Armored Vest* (`01081`) and *Indomitable* (`01082`) to 100% confidence.
   - Added test suite [`tests/engine/combat-pipeline-step1-3.test.ts`](tests/engine/combat-pipeline-step1-3.test.ts) (9 new tests, 190 total tests passing).
+
+## [Unreleased]
+
+### Added
+- **Supplemental Retrofit & Audit Metadata Protocol (`AGENTS.md`, `feature-delivery`, `bug-fix`):** Mandatory rule requiring agents to search `src/data/supplemental/pack/*.json` for all cards affected by any engine, primitive, keyword, or timing changes, retrofit the updated declarative definitions, and update `"updatedAt"`, `"reviewedAt"`, and `"reviewedBy"` metadata with current ISO timestamps.
+- **Declarative Data-First Invariant (`AGENTS.md`, `bug-fix`, `feature-delivery`):** Architectural rule mandating that card-specific defects must always be triaged and audited against `src/data/supplemental/` first, avoiding bespoke engine functions and ensuring fixes are classified as Tier 1 Data-Only fixes whenever existing primitives suffice.
+
 - **Mandatory Usage Audit Protocol Enforcement (`AGENTS.md` & `SKILL.md`):**
   - Updated Point 7 of the Mandatory Post-Task Protocol in `AGENTS.md` to require running `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) whenever cards, abilities, effects, or ambiguity reports change.
   - Updated Step 8 Verification Protocol in `.agents/skills/card-integration-protocol/SKILL.md` to mandate running the declarations analyzer on every card modification.

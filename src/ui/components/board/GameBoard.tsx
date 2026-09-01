@@ -121,7 +121,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
       />
 
       {/* 2. Panoramic Tabletop Main Stage */}
-      <main className="flex-1 w-full flex flex-col items-center justify-start p-2 md:p-4 gap-4 max-w-full">
+      <main className="flex-1 w-full flex flex-col items-center justify-start p-2 md:p-4 pt-20 md:pt-24 gap-4 max-w-full">
         {/* Scenario Main Villain & Schemes Console */}
         <VillainZone
           villain={gameState.villain}

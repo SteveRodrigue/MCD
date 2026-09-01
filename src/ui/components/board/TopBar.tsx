@@ -32,24 +32,24 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <>
-      <header className="w-full bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-30 sticky top-0">
+      <header className="w-full bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-40 fixed top-0 left-0 right-0">
         {/* Left: Round & Phase Badges */}
         <div className="flex items-center gap-3">
           {/* Round Badge */}
-          <div className="bg-comic-red text-white border-2 border-comic-black font-comic text-lg px-3 py-0.5 rounded shadow-comic-sm flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-comic-yellow" />
-            <span>ROUND {gameState.roundNumber}</span>
+          <div className="bg-comic-red text-white border-3 border-comic-black font-comic text-xl px-4 py-1 rounded shadow-comic flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-comic-yellow fill-comic-yellow animate-pulse" />
+            <span className="tracking-wide">ROUND {gameState.roundNumber}</span>
           </div>
 
           {/* Phase Badge */}
           <div
-            className={`font-comic text-sm tracking-wider px-3 py-1 rounded border-2 border-comic-black shadow-comic-sm uppercase ${
+            className={`font-comic text-base tracking-wider px-4 py-1.5 rounded border-3 border-comic-black shadow-comic uppercase font-black ${
               gameState.phase === GamePhase.PLAYER_PHASE
                 ? 'bg-comic-yellow text-comic-black'
                 : 'bg-rose-600 text-white'
             }`}
           >
-            {gameState.phase === GamePhase.PLAYER_PHASE ? 'HEROES ACT! (PLAYER PHASE)' : 'VILLAIN PHASE'}
+            {gameState.phase === GamePhase.PLAYER_PHASE ? 'HEROES ASSEMBLE! (PLAYER PHASE)' : 'VILLAIN PHASE'}
           </div>
         </div>
 
@@ -168,7 +168,11 @@ export const TopBar: React.FC<TopBarProps> = ({
       </header>
 
       {/* Options Menu Modal */}
-      <OptionsMenu isOpen={isOptionsOpen} onClose={() => setIsOptionsOpen(false)} />
+      <OptionsMenu
+        isOpen={isOptionsOpen}
+        onClose={() => setIsOptionsOpen(false)}
+        gameState={gameState}
+      />
     </>
   );
 };

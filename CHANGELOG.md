@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Mid-Action Player and Encounter Deck Exhaustion & Penalty Invariants ([#32](https://github.com/SteveRodrigue/MCD/issues/32), `effects/index.ts`, `deck-exhaustion.ts`, `deck-exhaustion-invariants.test.ts`):**
+  - Unified all card draw, search, milling, discard, and surge primitives across [`src/engine/effects/index.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts) to route through centralized [`drawPlayerCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/deck-exhaustion.ts) and [`drawEncounterCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/deck-exhaustion.ts).
+  - Enforced official Marvel Champions RR v1.8 p. 11 & p. 18 deck exhaustion invariants:
+    - **Player Deck Exhaustion (RR v1.8 p. 18):** Immediately shuffles player discard pile to form a new draw deck, deals 1 facedown encounter card to that player as a penalty, and seamlessly continues mid-card effects (e.g. *Repulsor Blast*, *Black Cat*, *Hulk*, *Draw up to hand size*).
+    - **Encounter Deck Exhaustion (RR v1.8 p. 11):** Immediately places 1 permanent acceleration token on the Main Scheme, shuffles encounter discard pile to form a new encounter deck, and continues the current activation/reveal.
+  - Added comprehensive contract test suite in [`deck-exhaustion-invariants.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/deck-exhaustion-invariants.test.ts).
+
 - **Feature (UI & Logging): Hierarchical Combat Log Entry Formatting (`comic-log-formatter.ts`, `comic-log-formatter.test.ts`):**
   - Added [`formatHierarchicalLogKey()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/utils/comic-log-formatter.ts) in the Comic Log & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037).
   - Automatically translates dotted hierarchical engine keys into readable, contextual action labels with character/card name prefixes:

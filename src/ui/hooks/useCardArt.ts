@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCardArtUrl } from '../services/card-cache-service';
+import { getCardArtUrl, CardArtIdentifier } from '../services/card-cache-service';
 
 export interface UseCardArtResult {
   artUrl: string | null;
@@ -7,10 +7,14 @@ export interface UseCardArtResult {
   error: Error | null;
 }
 
-export function useCardArt(code: string | undefined): UseCardArtResult {
+export function useCardArt(cardOrCode: CardArtIdentifier | string | undefined): UseCardArtResult {
   const [artUrl, setArtUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+
+  const code = typeof cardOrCode === 'string' ? cardOrCode : cardOrCode?.code;
+  const type = typeof cardOrCode === 'object' ? cardOrCode?.type : undefined;
+  const stage = typeof cardOrCode === 'object' ? cardOrCode?.stage : undefined;
 
   useEffect(() => {
     if (!code) {
@@ -23,7 +27,7 @@ export function useCardArt(code: string | undefined): UseCardArtResult {
     setLoading(true);
     setError(null);
 
-    getCardArtUrl(code)
+    getCardArtUrl(typeof cardOrCode === 'object' && cardOrCode !== null ? cardOrCode : code)
       .then((url) => {
         if (isMounted) {
           setArtUrl(url);
@@ -40,7 +44,7 @@ export function useCardArt(code: string | undefined): UseCardArtResult {
     return () => {
       isMounted = false;
     };
-  }, [code]);
+  }, [code, type, stage]);
 
   return { artUrl, loading, error };
 }

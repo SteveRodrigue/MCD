@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { useCardArt } from '../../hooks/useCardArt';
+import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
 import { FormattedCardText } from './FormattedCardText';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
@@ -40,8 +41,23 @@ export const CardView: React.FC<CardViewProps> = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
 
-  const { artUrl, loading, error } = useCardArt(card.code);
+  const { artUrl, loading, error } = useCardArt(card);
+  const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
   const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageSrc(artUrl);
+    setImageFailed(false);
+  }, [artUrl]);
+
+  const handleImageError = () => {
+    if (imageSrc && !imageSrc.startsWith('http')) {
+      // Local image failed, attempt remote MarvelCDB CDN fallback
+      setImageSrc(getRemoteMarvelCdbUrl(card));
+    } else {
+      setImageFailed(true);
+    }
+  };
 
   let cardZoomLevel: 'small' | 'normal' | 'larger' = 'normal';
   try {
@@ -207,12 +223,12 @@ export const CardView: React.FC<CardViewProps> = ({
               </div>
             )}
 
-            {artUrl && (
+            {imageSrc && (
               <img
-                src={artUrl}
+                src={imageSrc}
                 alt={card.name}
                 loading="lazy"
-                onError={() => setImageFailed(true)}
+                onError={handleImageError}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${
                   loading ? 'opacity-0' : 'opacity-100'
                 }`}

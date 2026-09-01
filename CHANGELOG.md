@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix: Single-Hero Hand Tray Viewport Containment & Unified Fan-Out Architecture (`PlayerHandTray.tsx`, `GameBoard.tsx`):**
+  - Resolved viewport overflow in single-hero mode by eliminating the separate, oversized sticky footer dock and standardizing `PlayerHandTray` on the proven, compact `useHandFanLayout` algorithm (`size="sm"`, `cardWidth: 128`, `defaultGap: 12`, `padding: 24`).
+  - Embedded `PlayerHandTray` directly below `HeroZone` within the solo tabletop container, matching the multi-hero station experience with responsive dynamic overlap, clean status indicators, and full-fidelity hover zoom.
 - **Dev Tooling & Telemetry: Automated GameState Snapshot Recording (`logs/gamestates/`):**
   - Added `gameStateSnapshotPlugin` to Vite dev server to intercept `POST /api/logs/gamestate` and automatically persist `logs/gamestates/latest_gamestate.json` along with rolling timestamped archives (`gamestate_{timestamp}_rnd{round}_{phase}.json`).
   - Added `gamestate-logger-service.ts` and wired `useEffect` snapshotting on state transitions in `App.tsx`.

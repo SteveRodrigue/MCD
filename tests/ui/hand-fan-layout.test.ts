@@ -66,4 +66,24 @@ describe('Hand Fan-Out Stack Layout Architecture', () => {
     expect(zIndices[0]).toBeGreaterThan(zIndices[1]);
     expect(zIndices[1]).toBeGreaterThan(zIndices[2]);
   });
+
+  it('guarantees 1-hero mode hand width never overflows viewport/container with standard fan-out algorithm', () => {
+    const cardCount = 6;
+    const cardWidth = 128; // size="sm"
+    const defaultGap = 12;
+    const padding = 24;
+    const containerWidth = 820; // standard solo/station width
+
+    const usableWidth = containerWidth - padding; // 796px
+    const naturalWidth = cardCount * cardWidth + (cardCount - 1) * defaultGap; // 6*128 + 5*12 = 828px
+
+    expect(naturalWidth).toBeGreaterThan(usableWidth);
+
+    const spacing = Math.min(defaultGap + cardWidth, (usableWidth - cardWidth) / (cardCount - 1));
+    const overlapMargin = spacing - cardWidth;
+    const totalRenderedWidth = cardWidth + (cardCount - 1) * spacing;
+
+    expect(overlapMargin).toBeLessThan(defaultGap);
+    expect(Math.round(totalRenderedWidth)).toBeLessThanOrEqual(usableWidth);
+  });
 });

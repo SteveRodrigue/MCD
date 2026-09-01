@@ -1,0 +1,183 @@
+{
+  "onomatopoeia": {
+    "POW": "💥 POW!",
+    "BAM": "💥 BAM!",
+    "THWIP": "🕷️ THWIP!",
+    "CLANG": "🛡️ CLANG!",
+    "ZAP": "⚡ ZAP!",
+    "SMASH": "💥 SMASH!",
+    "CRUNCH": "💥 CRUNCH!",
+    "SWOOSH": "💨 SWOOSH!",
+    "SHIELD": "🛡️ DEFEND!",
+    "DOOM": "💀 DOOM!",
+    "ALERT": "⚠️ ALERT!",
+    "CHARGE": "🦹 CHARGE!",
+    "HEAL": "✨ RECOVER!"
+  },
+  "narrator": {
+    "default_header": "MEANWHILE...",
+    "round_header": "ROUND {{round}}: THE BATTLE INTENSIFIES!",
+    "player_phase": "HEROES ASSEMBLE! PLAYER PHASE BEGINS.",
+    "villain_phase": "DANGER STRIKES! VILLAIN PHASE INITIATED.",
+    "game_started": "A NEW THREAT EMERGES! THE SCENARIO BEGINS.",
+    "mulligan_resolved": "{{player}} adjusts tactical hand: discards {{discardCount}} and draws {{drawCount}} replacements.",
+    "first_player_passed": "The First Player token passes to {{player}}.",
+    "deck_exhausted": "ALARM! The {{deckType}} deck runs completely dry! Reshuffling discard pile...",
+    "acceleration_added": "CRISIS MOUNTS! Main Scheme gains 1 permanent Acceleration Token (Total: {{count}}).",
+    "hazard_encounter_dealt": "HAZARD! {{player}} is dealt an extra facedown encounter card due to deck exhaustion.",
+    "main_scheme_advanced": "CATASTROPHE! {{scheme}} threshold breached! Advancing to {{nextStage}}!",
+    "side_scheme_defeated": "OBJECTIVE COMPLETE! {{scheme}} has been completely thwarted and removed from play!"
+  },
+  "templates": {
+    "FORM_CHANGED": "{{actor}} changes stance to {{newForm}}!",
+    "BASIC_ATTACK": "{{actor}} strikes {{target}} for {{damage}} damage!",
+    "BASIC_THWART": "{{actor}} intervenes on {{target}}, foiling {{threat}} threat!",
+    "BASIC_RECOVER": "{{actor}} takes a breather to patch up wounds, recovering {{recovery}} HP!",
+    "CARD_PLAYED": "{{actor}} plays {{card}} (Cost: {{cost}} resources).",
+    "HERO_ABILITY_TRIGGERED": "{{actor}} activates {{ability}}!",
+    "ALLY_ENTERED": "{{ally}} joins the fray alongside {{actor}}!",
+    "UPGRADE_ATTACHED": "{{actor}} equips {{upgrade}} to {{target}}.",
+    "SUPPORT_BUILT": "{{actor}} establishes {{support}} in their tactical tableau.",
+    "EVENT_RESOLVED": "{{actor}} executes {{event}} with dramatic effect!",
+    "DAMAGE_DEALT": "{{target}} suffers {{damage}} damage from {{source}} (HP remaining: {{remainingHp}}).",
+    "OVERKILL_DAMAGE": "OVERKILL! Excess {{overkill}} damage tears through to {{target}}!",
+    "DAMAGE_PREVENTED": "Tough barrier holds! {{target}} prevents {{damage}} incoming damage.",
+    "CHARACTER_DEFEATED": "{{target}} has been defeated and knocked out of the battle!",
+    "THREAT_PLACED": "{{threat}} threat placed on {{target}} (Total: {{totalThreat}} / {{targetThreat}}).",
+    "THREAT_REMOVED": "{{threat}} threat cleared from {{target}} (Threat remaining: {{remainingThreat}}).",
+    "VILLAIN_ATTACK": "{{villain}} attacks {{target}}! (Base ATK: {{baseAtk}} + Boost: {{boost}} = {{totalDamage}} DMG).",
+    "VILLAIN_SCHEME": "{{villain}} executes scheme on {{target}}! (Base SCH: {{baseSch}} + Boost: {{boost}} = {{totalThreat}} Threat).",
+    "MINION_ATTACK": "{{minion}} attacks {{target}} for {{damage}} damage!",
+    "MINION_SCHEME": "{{minion}} schemes on {{target}}, placing {{threat}} threat!",
+    "BOOST_REVEALED": "Boost card revealed: {{card}} (Icons: {{icons}} | Star: {{star}}).",
+    "ENCOUNTER_REVEALED": "Encounter revealed: {{card}} ({{type}}).",
+    "TREACHERY_SURGED": "SURGE! {{card}} surges into another encounter card!",
+    "STATUS_APPLIED": "{{target}} is now afflicted with {{status}}!",
+    "STATUS_REMOVED": "{{target}} discards {{status}} status card.",
+    "CARD_DRAWN": "{{player}} draws {{count}} card(s) into hand.",
+    "CARD_DISCARDED": "{{player}} discards {{card}}."
+  },
+  "dialogue": {
+    "spider_man": {
+      "attack": [
+        "Take that, horn-head!",
+        "With great power comes great right hooks!",
+        "Courtesy of your friendly neighborhood Spider-Man!",
+        "Look out, incoming web-slinger!"
+      ],
+      "thwart": [
+        "Not on my watch, pal!",
+        "Let me just web up those blueprints for you.",
+        "Your villainous plot is officially untangled!"
+      ],
+      "defense": [
+        "My Spider-Sense is tingling!",
+        "Missed me by an inch!",
+        "Too slow, bulky!"
+      ],
+      "play_card": [
+        "Let's turn up the heat!",
+        "Web-shooters locked and loaded!"
+      ]
+    },
+    "peter_parker": {
+      "recover": [
+        "Aunt May makes the best wheatcakes for recovery.",
+        "Need a quick rest to recalibrate my web-fluid formula."
+      ],
+      "resource": [
+        "Daily Bugle freelancing pays off!",
+        "Just a little scientific ingenuity."
+      ]
+    },
+    "captain_marvel": {
+      "attack": [
+        "Higher, further, faster, baby!",
+        "Feel the photonic blast!",
+        "Let's see how tough you really are!"
+      ],
+      "thwart": [
+        "Alpha Flight surveillance has you pinpointed.",
+        "Shutting down enemy operations now."
+      ]
+    },
+    "carol_danvers": {
+      "recover": [
+        "Military discipline: shake it off and get back in the fight.",
+        "Focusing energy reserves to restore vitality."
+      ]
+    },
+    "she_hulk": {
+      "attack": [
+        "Hulk SMASH! Legal edition!",
+        "You're in contempt of court!",
+        "Court is now in session!"
+      ],
+      "thwart": [
+        "Time for a little legal injunction!",
+        "I'm filing a motion to dismiss your scheme!"
+      ]
+    },
+    "iron_man": {
+      "attack": [
+        "Repulsor beams charged to maximum!",
+        "Jarvis, redirect all power to offensive thrusters!",
+        "I am Iron Man."
+      ],
+      "thwart": [
+        "Stark Satellite uplink scanning for enemy schematics.",
+        "Hacking your mainframe right now."
+      ]
+    },
+    "black_panther": {
+      "attack": [
+        "For Wakanda!",
+        "The Panther's claws strike without mercy!",
+        "Wakanda Forever!"
+      ],
+      "thwart": [
+        "Bast grants us wisdom to see through your deception.",
+        "Wakandan intelligence has already outmaneuvered you."
+      ]
+    },
+    "rhino": {
+      "attack": [
+        "I'M GONNA CRUSH YOU FLAT, BUG!",
+        "OUT OF MY WAY!",
+        "NOTHING STOPS THE RHINO CHARGE!",
+        "YOU BROUGHT THIS ON YOURSELF!"
+      ],
+      "scheme": [
+        "THE VIBRANIUM SHIPMENT IS MINE!",
+        "SMASH THE FACILITY! GRAB THE LOOT!",
+        "NO HERO CAN STOP THIS HEIST!"
+      ],
+      "boost": [
+        "GET READY FOR IMPACT!",
+        "HERE COMES THE HORN!"
+      ]
+    },
+    "klaw": {
+      "attack": [
+        "FEEL THE ROAR OF SOLID SOUND!",
+        "MY SONIC BLASTER WILL SHRED YOU TO RIBBONS!",
+        "A SYMPHONY OF DESTRUCTION!"
+      ],
+      "scheme": [
+        "UNDERGROUND DISTRIBUTION IS PROCEEDING AS PLANNED!",
+        "THE BLACK MARKET WILL PAY BILLIONS FOR THIS!"
+      ]
+    },
+    "ultron": {
+      "attack": [
+        "EXTINCTION OF ALL ORGANIC LIFE IS INEVITABLE.",
+        "YOU ARE FLAWED. I AM PERFECTION.",
+        "THE AGE OF ULTRON HAS BEGUN."
+      ],
+      "scheme": [
+        "DRONE SWARM UPLINK COMPLETE. NORAD SYSTEMS COMPROMISED.",
+        "COUNTDOWN TO OBLIVION HAS COMMENCED."
+      ]
+    }
+  }
+}

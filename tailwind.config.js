@@ -24,7 +24,8 @@ export default {
         },
       },
       fontFamily: {
-        comic: ['Bangers', 'Impact', 'system-ui', 'sans-serif'],
+        comic: ['"Bangers"', 'Impact', 'system-ui', 'sans-serif'],
+        dialogue: ['"Komika Text"', '"Comic Relief"', '"Comic Sans MS"', 'cursive', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {

@@ -1,0 +1,183 @@
+{
+  "onomatopoeia": {
+    "POW": "💥 VLAM !",
+    "BAM": "💥 PAF !",
+    "THWIP": "🕷️ TCHWIP !",
+    "CLANG": "🛡️ KLANG !",
+    "ZAP": "⚡ ZZZAP !",
+    "SMASH": "💥 FRACAS !",
+    "CRUNCH": "💥 CRAC !",
+    "SWOOSH": "💨 VROUUM !",
+    "SHIELD": "🛡️ DÉFENSE !",
+    "DOOM": "💀 TRÉPAS !",
+    "ALERT": "⚠️ ALERTE !",
+    "CHARGE": "🦹 CHARGE !",
+    "HEAL": "✨ SOIN !"
+  },
+  "narrator": {
+    "default_header": "PENDANT CE TEMPS...",
+    "round_header": "ROUND {{round}} : LE COMBAT S'INTENSIFIE !",
+    "player_phase": "HÉROS, RASSEMBLEMENT ! DÉBUT DE LA PHASE JOUEURS.",
+    "villain_phase": "LE DANGER APPROCHE ! DÉBUT DE LA PHASE DU MÉCHANT.",
+    "game_started": "UNE NOUVELLE MENACE SURGIT ! LE SCÉNARIO COMMENCE.",
+    "mulligan_resolved": "{{player}} ajuste sa main tactique : défausse {{discardCount}} et pioche {{drawCount}} cartes.",
+    "first_player_passed": "Le jeton Premier Joueur passe à {{player}}.",
+    "deck_exhausted": "ALERTE ! Le deck {{deckType}} est épuisé ! Remélange de la défausse...",
+    "acceleration_added": "LA CRISE S'ACCÉLÈRE ! La manigance principale gagne 1 jeton Accélération permanent (Total: {{count}}).",
+    "hazard_encounter_dealt": "PÉRIL ! {{player}} reçoit une carte de rencontre face cachée suite à l'épuisement du deck.",
+    "main_scheme_advanced": "CATASTROPHE ! Seuil de {{scheme}} franchi ! Passage au {{nextStage}} !",
+    "side_scheme_defeated": "OBJECTIF ACCOMPLI ! {{scheme}} a été entièrement déjouée et retirée du jeu !"
+  },
+  "templates": {
+    "FORM_CHANGED": "{{actor}} change de posture et passe en {{newForm}} !",
+    "BASIC_ATTACK": "{{actor}} frappe {{target}} et inflige {{damage}} dégâts !",
+    "BASIC_THWART": "{{actor}} intervient sur {{target}} et retire {{threat}} menace !",
+    "BASIC_RECOVER": "{{actor}} souffle un instant pour soigner ses blessures et récupère {{recovery}} PV !",
+    "CARD_PLAYED": "{{actor}} joue {{card}} (Coût : {{cost}} ressources).",
+    "HERO_ABILITY_TRIGGERED": "{{actor}} active {{ability}} !",
+    "ALLY_ENTERED": "{{ally}} rejoint le combat aux côtés de {{actor}} !",
+    "UPGRADE_ATTACHED": "{{actor}} équipe {{upgrade}} sur {{target}}.",
+    "SUPPORT_BUILT": "{{actor}} met en place {{support}} dans son tableau tactique.",
+    "EVENT_RESOLVED": "{{actor}} déclenche {{event}} avec brio !",
+    "DAMAGE_DEALT": "{{target}} subit {{damage}} dégâts de {{source}} (PV restants : {{remainingHp}}).",
+    "OVERKILL_DAMAGE": "DÉBORDEMENT ! L'excédent de {{overkill}} dégâts frappe {{target}} !",
+    "DAMAGE_PREVENTED": "La barrière Tenace tient bon ! {{target}} prévient {{damage}} dégâts reçus.",
+    "CHARACTER_DEFEATED": "{{target}} est vaincu et mis hors de combat !",
+    "THREAT_PLACED": "{{threat}} menace placée sur {{target}} (Total : {{totalThreat}} / {{targetThreat}}).",
+    "THREAT_REMOVED": "{{threat}} menace retirée de {{target}} (Menace restante : {{remainingThreat}}).",
+    "VILLAIN_ATTACK": "{{villain}} attaque {{target}} ! (ATQ de base: {{baseAtk}} + Boost: {{boost}} = {{totalDamage}} DÉG).",
+    "VILLAIN_SCHEME": "{{villain}} manigance sur {{target}} ! (MAN de base: {{baseSch}} + Boost: {{boost}} = {{totalThreat}} Menace).",
+    "MINION_ATTACK": "{{minion}} attaque {{target}} et inflige {{damage}} dégâts !",
+    "MINION_SCHEME": "{{minion}} manigance sur {{target}} et place {{threat}} menace !",
+    "BOOST_REVEALED": "Carte de Boost révélée : {{card}} (Icônes: {{icons}} | Étoile: {{star}}).",
+    "ENCOUNTER_REVEALED": "Rencontre révélée : {{card}} ({{type}}).",
+    "TREACHERY_SURGED": "RENFORT ! {{card}} déclenche une carte de rencontre supplémentaire !",
+    "STATUS_APPLIED": "{{target}} reçoit l'état {{status}} !",
+    "STATUS_REMOVED": "{{target}} défausse la carte d'état {{status}}.",
+    "CARD_DRAWN": "{{player}} pioche {{count}} carte(s) en main.",
+    "CARD_DISCARDED": "{{player}} défausse {{card}}."
+  },
+  "dialogue": {
+    "spider_man": {
+      "attack": [
+        "Prends ça, tête de corne !",
+        "Un grand pouvoir implique de grands crochets du droit !",
+        "Avec les compliments de votre fidèle serviteur Spider-Man !",
+        "Attention, tisseur en approche !"
+      ],
+      "thwart": [
+        "Pas sous mes yeux, mon vieux !",
+        "Laisse-moi entoiler ces plans pour toi.",
+        "Ton complot diabolique est officiellement dénoué !"
+      ],
+      "defense": [
+        "Mon sens d'araignée est en alerte !",
+        "Raté d'un cheveu !",
+        "Trop lent, mastodonte !"
+      ],
+      "play_card": [
+        "Montons d'un cran !",
+        "Lance-toiles verrouillés et parés !"
+      ]
+    },
+    "peter_parker": {
+      "recover": [
+        "Les pancakes de tante May sont le meilleur des remèdes.",
+        "Besoin d'un instant pour recalibrer ma formule de fluide de toile."
+      ],
+      "resource": [
+        "Mes piges au Daily Bugle paient enfin !",
+        "Un peu d'ingéniosité scientifique."
+      ]
+    },
+    "captain_marvel": {
+      "attack": [
+        "Plus haut, plus loin, plus vite !",
+        "Ressens le souffle photonique !",
+        "Voyons voir si tu es si résistant !"
+      ],
+      "thwart": [
+        "La surveillance d'Alpha Flight t'a repéré.",
+        "Neutralisation des opérations ennemies en cours."
+      ]
+    },
+    "carol_danvers": {
+      "recover": [
+        "Discipline militaire : on encaisse et on retourne au combat.",
+        "Concentration de mes réserves d'énergie pour rétablir ma vitalité."
+      ]
+    },
+    "she_hulk": {
+      "attack": [
+        "Hulk ÉCRASE ! Version juridique !",
+        "Vous êtes coupable d'outrage à magistrat !",
+        "L'audience est ouverte !"
+      ],
+      "thwart": [
+        "L'heure d'une petite injonction légale !",
+        "Je dépose une motion de rejet contre votre manigance !"
+      ]
+    },
+    "iron_man": {
+      "attack": [
+        "Rayons répulseurs chargés à pleine puissance !",
+        "Jarvis, redirige toute la puissance vers les propulseurs d'attaque !",
+        "Je suis Iron Man."
+      ],
+      "thwart": [
+        "Liaison satellite Stark scannant les plans ennemis.",
+        "Piratage de ton serveur principal en cours."
+      ]
+    },
+    "black_panther": {
+      "attack": [
+        "Pour le Wakanda !",
+        "Les griffes de la Panthère frappent sans pitié !",
+        "Wakanda Éternel !"
+      ],
+      "thwart": [
+        "Bast nous accorde la sagesse de déjouer tes ruses.",
+        "Les services secrets wakandais t'ont déjà devancé."
+      ]
+    },
+    "rhino": {
+      "attack": [
+        "JE VAIS T'ÉCRASER COMME UN INSECTE !",
+        "HORS DE MON CHEMIN !",
+        "RIEN N'ARRÊTE LA CHARGE DU RHINO !",
+        "TU L'AS CHERCHÉ !"
+      ],
+      "scheme": [
+        "LA CARGAISON DE VIBRANIUM EST À MOI !",
+        "DÉFONCEZ LE BÂTIMENT ! EMBARQUEZ LE BUTIN !",
+        "AUCUN HÉROS NE M'ARRÊTERA !"
+      ],
+      "boost": [
+        "PRÉPARE-TOI AU CHOC !",
+        "VOICI LA CORNE !"
+      ]
+    },
+    "klaw": {
+      "attack": [
+        "RESSENS LE RUGISSEMENT DU SON PUR !",
+        "MON CANON SONIQUE VA TE METTRE EN PIÈCES !",
+        "UNE SYMPHONIE DE DESTRUCTION !"
+      ],
+      "scheme": [
+        "LA DISTRIBUTION CLANDESTINE AVANCE COMME PRÉVU !",
+        "LE MARCHÉ NOIR PAIE DES MILLIARDS POUR ÇA !"
+      ]
+    },
+    "ultron": {
+      "attack": [
+        "L'EXTINCTION DE TOUTE VIE ORGANIQUE EST INÉVITABLE.",
+        "VOUS ÊTES IMPARFAITS. JE SUIS LA PERFECTION.",
+        "L'ÈRE D'ULTRON A COMMENCÉ."
+      ],
+      "scheme": [
+        "LIAISON DRONE ACCOMPLIE. SYSTÈMES DU NORAD COMPROMIS.",
+        "LE COMPTE À REBOURS VERS L'OUBLI A COMMENCÉ."
+      ]
+    }
+  }
+}

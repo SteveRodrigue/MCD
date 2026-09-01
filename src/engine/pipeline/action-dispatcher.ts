@@ -28,7 +28,7 @@ import {
   getPlayerRestrictedLimit,
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
-import { executeEffect, checkAndDiscardZeroCounterCard } from '../effects';
+import { executeEffect, checkAndDiscardZeroCounterCard, discardHostAttachmentsAndTuckedCards } from '../effects';
 import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
@@ -437,8 +437,8 @@ export function dispatchAction(
                 });
               }
             }
-            player.discard.push(att);
           }
+          discardHostAttachmentsAndTuckedCards(nextState, minion, player.id);
 
           const onomatopoeia = 'KAPOW! DEFEATED!';
           return { state: nextState, result: { success: true, onomatopoeia } };
@@ -562,8 +562,8 @@ export function dispatchAction(
                     });
                   }
                 }
-                player.discard.push(att);
               }
+              discardHostAttachmentsAndTuckedCards(nextState, minion, player.id);
             } else {
               minion.tokens = { ...minion.tokens, damage: newDamage };
             }
@@ -1201,10 +1201,80 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      const attIdx = (nextState.villain.attachments || []).findIndex(
+      let foundAttachment: CardInstance | undefined;
+      let containerArray: CardInstance[] | undefined;
+
+      // 1. Check Villain
+      const vIdx = (nextState.villain.attachments || []).findIndex(
         (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
       );
-      if (attIdx === -1) return { state, result: { success: false, error: 'Attachment not found on villain' } };
+      if (vIdx !== -1) {
+        containerArray = nextState.villain.attachments;
+        foundAttachment = containerArray[vIdx];
+      }
+
+      // 2. Check Player Identity attachments (e.g. Caught in a Web)
+      if (!foundAttachment) {
+        for (const p of nextState.players) {
+          const pIdx = (p.attachments || []).findIndex(
+            (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+          );
+          if (pIdx !== -1 && p.attachments) {
+            containerArray = p.attachments;
+            foundAttachment = containerArray[pIdx];
+            break;
+          }
+        }
+      }
+
+      // 3. Check Minions
+      if (!foundAttachment) {
+        for (const p of nextState.players) {
+          for (const m of p.engagedMinions) {
+            const mIdx = (m.attachments || []).findIndex(
+              (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+            );
+            if (mIdx !== -1 && m.attachments) {
+              containerArray = m.attachments;
+              foundAttachment = containerArray[mIdx];
+              break;
+            }
+          }
+          if (foundAttachment) break;
+        }
+      }
+
+      // 4. Check Allies
+      if (!foundAttachment) {
+        for (const p of nextState.players) {
+          for (const a of p.allies) {
+            const aIdx = (a.attachments || []).findIndex(
+              (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+            );
+            if (aIdx !== -1 && a.attachments) {
+              containerArray = a.attachments;
+              foundAttachment = containerArray[aIdx];
+              break;
+            }
+          }
+          if (foundAttachment) break;
+        }
+      }
+
+      // 5. Check Main Scheme & Side Schemes
+      if (!foundAttachment) {
+        const msIdx = (nextState.mainScheme.attachments || []).findIndex(
+          (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+        );
+        if (msIdx !== -1 && nextState.mainScheme.attachments) {
+          containerArray = nextState.mainScheme.attachments;
+          foundAttachment = containerArray[msIdx];
+        }
+      }
+
+      if (!foundAttachment || !containerArray) {
+        return { state, result: { success: false, error: 'Attachment not found on any entity' } };
+      }
 
       // Discard payment cards from player hand if provided
       if (action.paymentCardInstanceIds) {
@@ -1217,8 +1287,20 @@ export function dispatchAction(
         }
       }
 
-      const [attachment] = nextState.villain.attachments.splice(attIdx, 1);
-      nextState.encounterDiscard.push(attachment);
+      const removeIdx = containerArray.indexOf(foundAttachment);
+      if (removeIdx !== -1) {
+        containerArray.splice(removeIdx, 1);
+      }
+
+      if (
+        foundAttachment.card.type === CardType.ATTACHMENT ||
+        (foundAttachment.card as any).faction_code === 'encounter' ||
+        (foundAttachment.card as any).card_set_code
+      ) {
+        nextState.encounterDiscard.push(foundAttachment);
+      } else {
+        player.discard.push(foundAttachment);
+      }
 
       const onomatopoeia = 'ATTACHMENT DISCARDED!';
       nextState.log.push({
@@ -1228,7 +1310,7 @@ export function dispatchAction(
         phase: nextState.phase,
         category: 'ability',
         key: 'attachment.discarded.byPlayer',
-        params: { player: player.name, attachment: attachment.card.name },
+        params: { player: player.name, attachment: foundAttachment.card.name },
         onomatopoeia,
       });
 

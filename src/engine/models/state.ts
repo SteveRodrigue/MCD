@@ -24,6 +24,7 @@ export interface CardInstance {
   counters?: Record<string, number>; // Universal named counter map per ADR-0035
   statusCards?: StatusCard[];
   attachments?: CardInstance[];
+  cardsUnderneath?: CardInstance[]; // Out-of-play cards placed/tucked under this card (RR v1.8 p. 6)
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';
@@ -51,6 +52,8 @@ export interface PlayerState {
   tableau: CardInstance[]; // Supports & Upgrades in play
   allies: CardInstance[]; // Allies in play
   engagedMinions: CardInstance[]; // Minions engaged with this player
+  attachments?: CardInstance[]; // Attachments attached directly to player identity (e.g. Caught in a Web)
+  cardsUnderneath?: CardInstance[]; // Out-of-play cards placed under identity
   counters?: Record<string, number>; // Universal identity counter map per ADR-0035 (e.g. charge, growth)
   basicChangeFormUsedThisRound: boolean;
   formChangedThisRound: boolean;
@@ -73,6 +76,7 @@ export interface VillainState {
   exhausted: boolean;
   statusCards: StatusCard[];
   attachments: CardInstance[];
+  cardsUnderneath?: CardInstance[];
 }
 
 export interface MainSchemeState {
@@ -81,12 +85,16 @@ export interface MainSchemeState {
   threat: number;
   targetThreat: number;
   stage: string;
+  attachments?: CardInstance[];
+  cardsUnderneath?: CardInstance[];
 }
 
 export interface SideSchemeState {
   instanceId: string;
   card: SideSchemeCard;
   threat: number;
+  attachments?: CardInstance[];
+  cardsUnderneath?: CardInstance[];
 }
 
 export enum GamePhase {

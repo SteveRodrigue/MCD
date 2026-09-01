@@ -356,6 +356,63 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         }
       }
     }
+
+    // 3C. In-Play Attachment Actions (e.g. Discard Caught in a Web, Armored Rhino Suit)
+    const allAttachments: { attachment: CardInstance; hostName: string }[] = [];
+    for (const att of player.attachments || []) {
+      allAttachments.push({ attachment: att, hostName: player.name });
+    }
+    for (const att of state.villain.attachments || []) {
+      allAttachments.push({ attachment: att, hostName: state.villain.card.name });
+    }
+    for (const m of player.engagedMinions || []) {
+      for (const att of m.attachments || []) {
+        allAttachments.push({ attachment: att, hostName: m.card.name });
+      }
+    }
+    for (const a of player.allies || []) {
+      for (const att of a.attachments || []) {
+        allAttachments.push({ attachment: att, hostName: a.card.name });
+      }
+    }
+    for (const att of state.mainScheme.attachments || []) {
+      allAttachments.push({ attachment: att, hostName: state.mainScheme.card.name });
+    }
+
+    for (const { attachment, hostName } of allAttachments) {
+      const abilities = attachment.card.enrichment?.abilities || [];
+      for (const ab of abilities) {
+        if (
+          ab.timing === 'HERO_ACTION' ||
+          ab.timing === 'ALTER_EGO_ACTION' ||
+          ab.timing === 'ACTION' ||
+          ab.steps?.some(
+            (s) =>
+              s.effect === 'DISCARD_ATTACHMENT' ||
+              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
+          )
+        ) {
+          // Check form compatibility
+          if (ab.timing === 'HERO_ACTION' && player.currentForm !== 'hero') continue;
+          if (ab.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') continue;
+
+          boardActions.push({
+            id: `action_attachment_${attachment.instanceId}_${ab.id}`,
+            category: 'board',
+            headline: `Discard: ${attachment.card.name}`,
+            subtext: `Pay resources to discard ${attachment.card.name} from ${hostName}`,
+            action: {
+              type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
+              playerId: player.id,
+              attachmentInstanceId: attachment.instanceId,
+            },
+            badge: 'DISCARD ATTACHMENT',
+            iconType: 'ability',
+            targetCardInstance: attachment,
+          });
+        }
+      }
+    }
   }
 
   // 4. Turn Control Action (End Player Turn)

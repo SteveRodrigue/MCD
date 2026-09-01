@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Skull, AlertTriangle, Layers, Flame, X, Eye, ArrowDownUp, Filter } from 'lucide-react';
 import { VillainState, MainSchemeState, SideSchemeState, CardInstance, StatusCard, NormalizedCard } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { useGameSettings } from '../../context/GameSettingsContext';
 
 interface VillainZoneProps {
@@ -223,16 +224,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             )}
 
             {/* Villain Card & Attachments */}
-            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+            <div className="flex flex-col items-center w-full pt-0.5">
               <CardView card={villain.card} size="sm" showTokens={false} enableHoverZoom={true} />
-
-              {/* Attachments */}
-              {villain.attachments.map((att) => (
-                <div key={att.instanceId} className="flex flex-col items-center">
-                  <CardView card={att.card} instance={att} size="sm" enableHoverZoom={true} />
-                  <span className="text-[9px] font-bold uppercase text-comic-red mt-0.5">Attachment</span>
-                </div>
-              ))}
+              <CardAttachmentFan
+                attachments={villain.attachments}
+                cardsUnderneath={villain.cardsUnderneath}
+              />
             </div>
           </div>
 

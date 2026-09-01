@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Universal Card Attachment & Tucked Card Architecture ([#40](https://github.com/SteveRodrigue/MCD/issues/40), `effects/index.ts`, `action-dispatcher.ts`, `legal-actions-generator.ts`, `state.ts`, `CardAttachmentFan.tsx`, `universal-card-attachments.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 5 ("Attachment") and p. 6 ("Cards Under Cards") universal attachment and reserve card engine:
+    - **Multi-Target Attachment Scope:** Universal attachment resolution across Villains, Heroes/Identities (*Caught in a Web*), Allies (*Honorary Avenger*), Minions (*Webbed Up*), and Schemes via expanded `ATTACH_TO_HOST` primitive.
+    - **Cascading Discard on Host Departure:** Guarantees that when any host entity (minion, ally, side scheme, tableau card) leaves play, all attached cards and cards placed underneath are cleanly discarded to their respective owner discard piles (`discardHostAttachmentsAndTuckedCards`).
+    - **Cards Underneath / Tucked Reserves:** Added engine support for out-of-play cards placed under hosts (`cardsUnderneath: CardInstance[]`) via `PLACE_CARD_UNDER_HOST` and `DISCARD_CARDS_UNDER_HOST`.
+    - **Attachment Actions Discovery:** Dynamically surfaces in-play attachment actions and resource-spend discard triggers in legal actions (`getLegalActionsForPlayer`).
+    - **1960s Pop-Art UI Stacking:** Created dedicated `CardAttachmentFan.tsx` component rendering face-up attached cards tucked under parent hosts in a vertical fan-down layout with readable stat modifiers and action badges, alongside compact face-down reserve badges for cards underneath.
+  - Added comprehensive contract test suite in [`universal-card-attachments.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/universal-card-attachments.test.ts).
+
 - **Bug Fix & Engine: End of Player Phase Clean-Up & Voluntary Hand Discard ([#41](https://github.com/SteveRodrigue/MCD/issues/41), `player-phase-cleanup.ts`, `action-dispatcher.ts`, `round-upkeep.ts`, `end-of-player-phase-cleanup.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 23 End of Player Phase Clean-Up state machine in a dedicated module (`src/engine/pipeline/player-phase-cleanup.ts`):
     - **Voluntary Hand Discard Window:** When the player phase concludes, players in player order are presented with an interactive multi-select decision prompt to discard any number of cards from hand or keep all.

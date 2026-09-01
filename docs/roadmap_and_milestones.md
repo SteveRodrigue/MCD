@@ -106,14 +106,14 @@ graph TD
   * Provided a "Reset to Defaults" button and passed `selectedModularSetCodes` in `SetupSelection`.
 
 ### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero) ✅ (Completed)
-* [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md)) ✅ (Completed):**
+* [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md) / [Issue #30](https://github.com/SteveRodrigue/MCD/issues/30)) ✅ (Completed):**
   - Implemented dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
   - Supported heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).
   - Supported dynamic limit expansion modifiers (e.g. *Side Holster*, *Venom*, *Prehensile Tail*).
   - Validated voluntary discard replacement policy in `canPlayCard()` when playing a restricted card at capacity.
-* [x] **Global Unique Card Rule & Identity Collision (RR v1.8 p. 29) ✅ (Completed):**
+* [x] **Global Unique Card Rule & Identity Collision (RR v1.8 p. 29 / [Issue #31](https://github.com/SteveRodrigue/MCD/issues/31)) ✅ (Completed):**
   - Evaluated uniqueness globally across all active player tableaus, all player allies, and all in-game **Hero / Alter-Ego identities** (e.g. preventing *Captain Marvel* ally when *Carol Danvers* identity is in the game).
-* [x] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18) ✅ (Completed):**
+* [x] **Mid-Action Player & Encounter Deck Exhaustion Invariants (RR v1.8 p. 11, 18 / [Issue #32](https://github.com/SteveRodrigue/MCD/issues/32)) ✅ (Completed):**
   - Guaranteed immediate discard pile reshuffle and penalty application (1 acceleration token on main scheme for encounter deck; 1 facedown encounter card dealt to player for player deck) at any point during turn execution, milling, or card draws (`drawPlayerCard`, `drawEncounterCard`, `discardFromEncounterDeckUntil`, `discardFromPlayerDeckUntil`).
 * [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
   - Executed Card Integration Protocol across all 23 ambiguity files.
@@ -130,7 +130,7 @@ graph TD
 1. 🔴 `[Must-Have]` **Deterministic Monte Carlo Simulation Engine:**
    * Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) using heuristic legal action dispatchers.
    * Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
-2. 🔴 `[Must-Have]` **Multi-Hero Collaboration & Cooperative Triggers:**
+2. 🔴 `[Must-Have]` **Multi-Hero Collaboration & Cooperative Triggers ([Issue #37](https://github.com/SteveRodrigue/MCD/issues/37)):**
    * Verify "Action: Ask another player to..." and cross-player resource/defense triggers (*Make the Call*, *Get Behind Me!*, *Helicarrier*, *Maria Hill*).
    * **`Alliance` Keyword Engine (RR v1.8 p. 4 / [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md)):** Support collaborative multi-player resource pooling from hands and generators for Alliance cards.
    * **`Team-Up` Prerequisite Validator (RR v1.8 p. 28):** Validate dual-identity prerequisites across active identities and tableaus.
@@ -161,7 +161,7 @@ graph TD
 ## 📍 Phase 5: Expansion Waves, Advanced Mechanics & Native Ecosystem 🚀 (Planned)
 *Objective: Scale the engine to support advanced expansion mechanics, new card types, multi-form identities, and native platforms.*
 
-### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md))
+### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md) / [Issue #34](https://github.com/SteveRodrigue/MCD/issues/34))
 * [ ] **Player Side Scheme Execution Engine (`player_side_scheme` - RR v1.8 p. 26 / [ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)):**
   * Support voluntary player side schemes with printed threat and "When Defeated" player reward step sequences.
   * Enable heroes and allies to target player side schemes with basic thwart and thwart events.
@@ -170,20 +170,21 @@ graph TD
 * [ ] **Auxiliary Scenario Decks (`auxiliaryDecks` & `auxiliaryDiscards`):**
   * Support modular auxiliary decks for complex campaign scenarios (*Infinity Gauntlet*, *Holding Cell*, *Market*, *Evidence*).
 
-### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine ([ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md))
+### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine ([ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #33](https://github.com/SteveRodrigue/MCD/issues/33))
 * [ ] **Multi-Form Identity Scaling (3-Sided & Mass/Energy Forms - RR v1.8 p. 12 / [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md)):**
   * Support 3-sided identities (*Ant-Man*, *Wasp*), Energy Forms (*Spectrum*), Mass Forms (*Vision*, *Shadowcat*), and Progression levels (*Ironheart*).
   * Dispatch discrete `FORM_CHANGED` lifecycle events with form-entry ability step triggers.
 * [ ] **Universal Dynamic Counter Map (`counters: Record<string, number>`):**
   * Generic counter engine supporting all 51 catalog counter types (*Charge*, *Ammo*, *Arrow*, *Web*, *Chi*, *Labor*, *Pym*, *Time*) via atomic `ADD_COUNTERS`, `SPEND_COUNTERS`, and `REMOVE_COUNTERS_MATCHING_FILTER` primitives.
 
-### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers ([ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md))
-* [ ] **Count-Based Status Thresholds (RR v1.8 p. 28 / [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md)):**
-  * Support **`Stalwart`** (status immunity) and **`Steady`** (requires 2 status cards to cancel actions).
-* [ ] **Minion Combat & Threat Modifiers (RR v1.8 p. 14, 16, 18, 30):**
-  * **`Villainous` Keyword:** Minions draw and resolve facedown boost cards when activating.
-  * **`Quickstrike` Keyword:** Minions immediately trigger an attack activation upon engaging a Hero.
-  * **`Incite X` & `Hinder X`:** Threat modifiers executed upon encounter card entry.
+### 3. 🔴 `[Must-Have]` Milestone 5C: Advanced Status Scaling & Minion Entry Modifiers ([ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35))
+* [ ] **Advanced Status Dynamics (`Stalwart`, `Steady` - RR v1.8 p. 28 / [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md)):**
+  * Enforce `Stalwart` keyword immunity to Stun/Confuse.
+  * Implement count-based status card scaling for `Steady` (requires 2 copies to incapacitate character).
+* [ ] **Minion Combat Entry & Activation Modifiers ([Issue #36](https://github.com/SteveRodrigue/MCD/issues/36)):**
+  * Support `Villainous` minion activations resolving facedown boost cards.
+  * Support `Quickstrike` immediate minion attacks on engagement in Hero form.
+  * Resolve `Incite X` and `Hinder X` entry threat triggers.
 
 ### 4. 🟠 `[Should-Have]` Official Pack Rollout Pipeline
 * [ ] Incremental pack integration: Captain America, Ms. Marvel, Thor, Doctor Strange, Rise of Red Skull, Green Goblin, Galaxy's Most Wanted, Mad Titan's Shadow, Sinister Motives, Mutant Genesis, Next Evolution, Age of Apocalypse.

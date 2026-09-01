@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Restricted Card Keyword Limit & Voluntary Replacement Prompt ([#30](https://github.com/SteveRodrigue/MCD/issues/30), `action-dispatcher.ts`, `legality-checker.ts`, `prompt-queue.ts`, `restricted-keyword-limit.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 25 ("Restricted") keyword engine and interactive replacement prompt lifecycle (ADR-0018, ADR-0032):
+    - **Base Slot Capacity:** Restricts each player to a base limit of 2 restricted cards simultaneously in their tableau.
+    - **Slot Weights & Heavy Weapons:** Heavy weapon cards count as 2 restricted slots towards the player's capacity.
+    - **Dynamic Modifiers:** Supports cards that grant additional restricted slots (*Side Holster*, `RESTRICTED_LIMIT_BONUS`).
+    - **Interactive Replacement Prompt:** When a player attempts to play a restricted card that would exceed their limit while controlling restricted cards in play, [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) permits the play and enqueues an interactive `PendingDecisionPrompt` modal (`DISCARD_RESTRICTED_REPLACEMENT`) listing all in-play restricted cards plus a voluntary `cancel_play` option.
+    - **Prompt Resolution & Cancellation:** Choosing an in-play restricted card discards it from the tableau, spends payment resources, and puts the new card into play; choosing `cancel_play` aborts the play action cleanly, leaving the new card and payment resources in hand with the tableau untouched.
+  - Added comprehensive contract test suite in [`restricted-keyword-limit.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/restricted-keyword-limit.test.ts).
+
 - **Feature & Engine: Enforce "Max [X] Per Player" Board Invariants ([#3](https://github.com/SteveRodrigue/MCD/issues/3), `card-loader.ts`, `legality-checker.ts`, `card.ts`, `abilities.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
   - Added automatic text signal parsing via [`parseMaxPerPlayer()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/importer/card-loader.ts) extracting printed "Max [X] per player" limits across 100+ cards from the upstream Zzorba dataset while cleanly ignoring parenthesized Restricted reminder text.
   - Implemented the Max [X] per player board constraint (RR v1.8 p. 17 "Max") in [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts): prevents playing upgrades/supports (e.g. *Energy Channel* `01018`, *Armored Vest* `01081`, *Combat Training* `01057`, *Down Time* `01061`, *Avengers Mansion* `01091`, *Helicarrier* `01092`) if the player already controls the printed maximum number of copies in their tableau.

@@ -632,10 +632,15 @@ export function canPlayCard(
     const maxRestricted = getPlayerRestrictedLimit(state, playerId);
 
     if (currentRestricted + cardWeight > maxRestricted) {
-      return {
-        allowed: false,
-        reason: `Restricted card limit reached (${maxRestricted} restricted cards max).`,
-      };
+      // Per RR v1.8 p. 25: A player CAN play a restricted card when at limit IF they have enough
+      // in-play restricted cards in their tableau to discard to make room.
+      const neededSlots = currentRestricted + cardWeight - maxRestricted;
+      if (currentRestricted < neededSlots) {
+        return {
+          allowed: false,
+          reason: `Restricted card limit reached (${maxRestricted} restricted cards max).`,
+        };
+      }
     }
   }
 

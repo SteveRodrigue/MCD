@@ -217,7 +217,36 @@ export const DecisionPromptOptionSchema = z.object({
   disabled: z.boolean().optional(),
 });
 
+/**
+ * Search & Select Destination Routing Params Schema (RR v1.8 p. 19, 26, ADR-0030, ADR-0032)
+ */
+export const SearchAndSelectParamsSchema = z.object({
+  source: z
+    .enum(['PLAYER_DECK', 'ENCOUNTER_DECK', 'PLAYER_DISCARD', 'ENCOUNTER_DISCARD', 'PLAYER_HAND'])
+    .default('PLAYER_DECK'),
+  lookCount: z.number().optional(),
+  takeCount: z.number().default(1),
+  filter: FilterSchema.extend({
+    targetCardCode: z.string().optional(),
+    targetCardName: z.string().optional(),
+    traits: z.array(z.string()).optional(),
+    cardTypes: z.array(z.string()).optional(),
+    isIdentitySpecific: z.boolean().optional(),
+  }).optional(),
+  selectedDestination: z
+    .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])
+    .default('HAND'),
+  unselectedDestination: z
+    .enum(['DISCARD', 'DECK_BOTTOM', 'DECK_SHUFFLE', 'DECK_TOP', 'LEAVE_IN_PLACE'])
+    .nullable()
+    .optional(),
+  shuffleAfter: z.boolean().optional(),
+  isVoluntary: z.boolean().optional(),
+  promptTitle: z.string().optional(),
+});
+
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
+export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;
 
 /**
  * Ability Execution Step Interface (Operational Primitive)

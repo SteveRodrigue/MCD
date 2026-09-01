@@ -12,6 +12,7 @@ import {
   GamePhase,
   DecisionPromptOption,
   PendingDecisionPrompt,
+  PlayerState,
 } from '@engine/models';
 import {
   getPlayer,
@@ -33,6 +34,66 @@ import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
 import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
+
+/**
+ * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
+ */
+export function routeCardInstances(
+  state: GameState,
+  player: PlayerState,
+  cards: CardInstance[],
+  destination: string | null | undefined,
+  sourceZone: string,
+) {
+  if (cards.length === 0) return;
+
+  if (!destination || destination === 'LEAVE_IN_PLACE') {
+    if (sourceZone === 'PLAYER_DISCARD') {
+      player.discard.push(...cards);
+    } else if (sourceZone === 'PLAYER_HAND') {
+      player.hand.push(...cards);
+    } else if (sourceZone === 'ENCOUNTER_DECK') {
+      state.encounterDeck.unshift(...cards);
+    } else if (sourceZone === 'ENCOUNTER_DISCARD') {
+      state.encounterDiscard.push(...cards);
+    } else {
+      player.deck.unshift(...cards);
+    }
+    return;
+  }
+
+  if (destination === 'HAND') {
+    player.hand.push(...cards);
+  } else if (destination === 'TABLEAU') {
+    player.tableau.push(...cards);
+  } else if (destination === 'DISCARD') {
+    if (sourceZone.startsWith('ENCOUNTER')) {
+      state.encounterDiscard.push(...cards);
+    } else {
+      player.discard.push(...cards);
+    }
+  } else if (destination === 'DECK_TOP') {
+    if (sourceZone === 'ENCOUNTER_DECK') {
+      state.encounterDeck.unshift(...cards);
+    } else {
+      player.deck.unshift(...cards);
+    }
+  } else if (destination === 'DECK_BOTTOM') {
+    if (sourceZone === 'ENCOUNTER_DECK') {
+      state.encounterDeck.push(...cards);
+    } else {
+      player.deck.push(...cards);
+    }
+  } else if (destination === 'DECK_SHUFFLE') {
+    if (sourceZone === 'ENCOUNTER_DECK') {
+      state.encounterDeck.push(...cards);
+      state.encounterDeck.sort(() => Math.random() - 0.5);
+    } else {
+      player.deck.push(...cards);
+      player.deck.sort(() => Math.random() - 0.5);
+    }
+  }
+}
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
@@ -1259,6 +1320,130 @@ export function dispatchAction(
             targetInstanceId: params.targetInstanceId,
           });
         }
+      }
+
+      if (
+        activePrompt &&
+        activePrompt.options.some(
+          (o) => o.effect === 'SEARCH_AND_SELECT_RESOLUTION' || o.effect === 'SEARCH_AND_SELECT_PASS',
+        )
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const params = (selectedOption?.params || activePrompt.options[0]?.params) as any;
+
+        const lookedCards: CardInstance[] = params?.lookedCards || [];
+        const chosenInstanceId: string = action.selectedOptionId;
+        const sourceZone: string = params?.sourceZone || 'PLAYER_DECK';
+        const selectedDestination: string = params?.selectedDestination || 'HAND';
+        const unselectedDestination: string | null | undefined = params?.unselectedDestination;
+        const shuffleAfter: boolean = !!params?.shuffleAfter;
+        const isLookCountSpliced: boolean = !!params?.isLookCountSpliced;
+
+        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId)!;
+
+        if (
+          !selectedOption ||
+          selectedOption.id === 'pass_search' ||
+          selectedOption.effect === 'SEARCH_AND_SELECT_PASS'
+        ) {
+          if (isLookCountSpliced) {
+            routeCardInstances(
+              poppedState,
+              targetPlayer,
+              lookedCards,
+              unselectedDestination,
+              sourceZone,
+            );
+          }
+          if (shuffleAfter) {
+            if (sourceZone === 'ENCOUNTER_DECK') {
+              poppedState.encounterDeck.sort(() => Math.random() - 0.5);
+            } else if (sourceZone === 'PLAYER_DECK') {
+              targetPlayer.deck.sort(() => Math.random() - 0.5);
+            }
+          }
+
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'card.search.passed',
+            params: { player: targetPlayer.name, prompt: activePrompt.title },
+            onomatopoeia: 'PASSED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'PASSED' } };
+        }
+
+        // Selected Option
+        let chosenCard: CardInstance | undefined;
+        let unchosenCards: CardInstance[] = [];
+
+        if (isLookCountSpliced) {
+          chosenCard = lookedCards.find((c) => c.instanceId === chosenInstanceId);
+          unchosenCards = lookedCards.filter((c) => c.instanceId !== chosenInstanceId);
+        } else {
+          // Full search across pile: find and splice chosen card from source zone
+          let pile: CardInstance[] = targetPlayer.deck;
+          if (sourceZone === 'PLAYER_DISCARD') pile = targetPlayer.discard;
+          else if (sourceZone === 'PLAYER_HAND') pile = targetPlayer.hand;
+          else if (sourceZone === 'ENCOUNTER_DECK') pile = poppedState.encounterDeck;
+          else if (sourceZone === 'ENCOUNTER_DISCARD') pile = poppedState.encounterDiscard;
+
+          const matchIdx = pile.findIndex((c) => c.instanceId === chosenInstanceId);
+          if (matchIdx !== -1) {
+            chosenCard = pile.splice(matchIdx, 1)[0];
+          }
+        }
+
+        if (chosenCard) {
+          routeCardInstances(
+            poppedState,
+            targetPlayer,
+            [chosenCard],
+            selectedDestination,
+            sourceZone,
+          );
+        }
+
+        if (isLookCountSpliced && unchosenCards.length > 0) {
+          routeCardInstances(
+            poppedState,
+            targetPlayer,
+            unchosenCards,
+            unselectedDestination,
+            sourceZone,
+          );
+        }
+
+        if (shuffleAfter) {
+          if (sourceZone === 'ENCOUNTER_DECK') {
+            poppedState.encounterDeck.sort(() => Math.random() - 0.5);
+          } else if (sourceZone === 'PLAYER_DECK') {
+            targetPlayer.deck.sort(() => Math.random() - 0.5);
+          }
+        }
+
+        poppedState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: poppedState.roundNumber,
+          phase: poppedState.phase,
+          category: 'ability',
+          actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+          key: 'card.searched.selected',
+          params: {
+            player: targetPlayer.name,
+            card: chosenCard?.card.name || selectedOption.label,
+          },
+          onomatopoeia: 'SELECTED!',
+        });
+
+        return { state: poppedState, result: { success: true, onomatopoeia: 'SELECTED!' } };
       }
 
       const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);

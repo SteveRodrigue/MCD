@@ -106,6 +106,12 @@ graph TD
   * Provided a "Reset to Defaults" button and passed `selectedModularSetCodes` in `SetupSelection`.
 
 ### 5. 🔴 `[Must-Have]` Milestone 2D: Table Invariants, Deck Exhaustion & Core Set Promotion Pass (Inbox Zero) ✅ (Completed)
+* [x] **Universal SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking (RR v1.8 p. 19, 26 / [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md) / [Issue #10](https://github.com/SteveRodrigue/MCD/issues/10)) ✅ (Completed):**
+  - Implemented universal declarative `SEARCH_AND_SELECT` effect primitive and resolution dispatcher in `src/engine/effects/index.ts` and `src/engine/pipeline/action-dispatcher.ts`.
+  - Supports Top-$N$ Look & Split (`lookCount: N`, `selectedDestination: "HAND"`, `unselectedDestination: "DISCARD"` / `"DECK_BOTTOM"` / `"DECK_TOP"`).
+  - Enforced strict deck order preservation when returning looked cards to `DECK_TOP` / `DECK_BOTTOM` (RR v1.8 p. 19).
+  - Supports targeted search and specific card picking (`unselectedDestination: null`, `shuffleAfter: true`, RR v1.8 p. 26).
+  - Retrofitted Tony Stark (*Futurist* `01029b`) to declarative schema.
 * [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md) / [Issue #30](https://github.com/SteveRodrigue/MCD/issues/30)) ✅ (Completed):**
   - Implemented dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
   - Supported heavy item weights ("Counts as 2 restricted cards", e.g. *Bazooka*, *Nightcrawler's Blades*).

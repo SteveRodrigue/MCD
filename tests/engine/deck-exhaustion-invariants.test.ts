@@ -188,4 +188,109 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(player.dealtEncounterCards.length).toBe(1);
     });
   });
+
+  describe('Mid-Action Card Effect Invariants (RR v1.8 p. 11, 18)', () => {
+    it('mid-action Repulsor Blast exhausts deck, reshuffles discard, deals penalty encounter card, and continues discard', () => {
+      const player = state.players[0];
+      const energyCard1 = createCardInstance(cardCatalog.getCard('01088')!); // Energy (2 energy)
+      const energyCard2 = createCardInstance(cardCatalog.getCard('01088')!);
+      const energyCard3 = createCardInstance(cardCatalog.getCard('01088')!);
+
+      // Player has 2 cards in deck, 1 in discard
+      player.deck = [energyCard1, energyCard2];
+      player.discard = [energyCard3];
+      player.dealtEncounterCards = [];
+      state.villain.health = 20;
+
+      // Execute REPULSOR_BLAST (discards 3 cards, each with 2 energy = 6 energy total)
+      const res = executeEffect(
+        state,
+        {
+          effect: 'REPULSOR_BLAST',
+          params: { discardCount: 3 },
+        },
+        { playerId: 'p1' },
+      );
+
+      expect(res.success).toBe(true);
+      // Penalty encounter card was dealt due to deck exhaustion
+      expect(player.dealtEncounterCards.length).toBe(1);
+      // All 3 cards processed: 2 from initial deck + discard reshuffle, 1 from new deck
+      expect(player.deck.length + player.discard.length).toBe(3);
+      // Damage dealt: base 1 + 6 energy * 2 = 13 damage
+      expect(state.villain.health).toBe(7);
+    });
+
+    it('mid-action Black Cat DISCARD_TOP_DECK_FILTER reshuffles and deals penalty when deck runs dry', () => {
+      const player = state.players[0];
+      const mentalCard1 = createCardInstance(cardCatalog.getCard('01089')!); // Genius (Mental)
+      const mentalCard2 = createCardInstance(cardCatalog.getCard('01089')!);
+
+      player.deck = [mentalCard1];
+      player.discard = [mentalCard2];
+      player.hand = [];
+      player.dealtEncounterCards = [];
+
+      const res = executeEffect(
+        state,
+        {
+          effect: 'DISCARD_TOP_DECK_FILTER',
+          params: { count: 2, filterResource: 'mental' },
+        },
+        { playerId: 'p1' },
+      );
+
+      expect(res.success).toBe(true);
+      // Hand received 2 mental cards (1 from deck, 1 from reshuffled discard)
+      expect(player.hand.length).toBe(2);
+      expect(player.dealtEncounterCards.length).toBe(1);
+    });
+
+    it('mid-action Hulk HULK_DISCARD_RESOLUTION reshuffles and deals penalty when deck is empty', () => {
+      const player = state.players[0];
+      const physicalCard = createCardInstance(cardCatalog.getCard('01026')!);
+
+      player.deck = [];
+      player.discard = [physicalCard];
+      player.dealtEncounterCards = [];
+      state.villain.health = 14;
+
+      const res = executeEffect(
+        state,
+        {
+          effect: 'HULK_DISCARD_RESOLUTION',
+        },
+        { playerId: 'p1' },
+      );
+
+      expect(res.success).toBe(true);
+      expect(player.dealtEncounterCards.length).toBe(1);
+      expect(state.villain.health).toBe(12); // 2 physical damage dealt
+    });
+
+    it('mid-action DRAW_UP_TO_HAND_SIZE reshuffles and deals penalty when drawing across deck boundary', () => {
+      const player = state.players[0];
+      const card1 = createCardInstance(cardCatalog.getCard('01005')!);
+      const card2 = createCardInstance(cardCatalog.getCard('01006')!);
+      const card3 = createCardInstance(cardCatalog.getCard('01007')!);
+
+      player.deck = [card1];
+      player.discard = [card2, card3];
+      player.hand = [];
+      player.dealtEncounterCards = [];
+
+      const res = executeEffect(
+        state,
+        {
+          effect: 'DRAW_UP_TO_HAND_SIZE',
+          params: { targetHandSize: 3 },
+        },
+        { playerId: 'p1' },
+      );
+
+      expect(res.success).toBe(true);
+      expect(player.hand.length).toBe(3);
+      expect(player.dealtEncounterCards.length).toBe(1);
+    });
+  });
 });

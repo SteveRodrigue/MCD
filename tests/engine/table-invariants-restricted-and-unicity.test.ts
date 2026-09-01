@@ -113,13 +113,12 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const payInstance1 = createCardInstance(paymentCard);
       player.hand = [card3Instance, payInstance1];
 
-      // Attempting to play a 3rd restricted card is blocked
+      // Playing a 3rd restricted card is allowed per RR v1.8 p. 25 because player can choose an in-play card to discard
       const result = canPlayCard(state, 'p1', card3Instance.instanceId, [payInstance1.instanceId]);
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toContain('Restricted card limit reached (2 restricted cards max)');
+      expect(result.allowed).toBe(true);
     });
 
-    it('blocks heavy 2-slot restricted card when 1 restricted card is already in play', () => {
+    it('allows playing heavy 2-slot restricted card when 1 restricted card is in play (player can discard to make room)', () => {
       const state = setupGame({
         scenarioId: 'rhino',
         players: [
@@ -145,15 +144,14 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       player.tableau.push(createCardInstance(restrictedCard1));
       expect(getPlayerRestrictedCount(player)).toBe(1);
 
-      // Attempting to play 2-slot heavy card (1 + 2 = 3 > 2) is blocked
+      // Playing 2-slot heavy card (1 + 2 = 3 > 2) is allowed because player can discard the existing 1-slot card to make room
       const heavyInstance = createCardInstance(heavyRestrictedCard);
       const payInstance1 = createCardInstance(paymentCard);
       const payInstance2 = createCardInstance(paymentCard);
       player.hand = [heavyInstance, payInstance1, payInstance2];
 
       const result = canPlayCard(state, 'p1', heavyInstance.instanceId, [payInstance1.instanceId, payInstance2.instanceId]);
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toContain('Restricted card limit reached (2 restricted cards max)');
+      expect(result.allowed).toBe(true);
     });
 
     it('dynamically expands restricted limit with limit modifiers (e.g. Side Holster +1)', () => {

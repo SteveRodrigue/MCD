@@ -10,6 +10,8 @@ import {
   AllyCard,
   CardInstance,
   GamePhase,
+  DecisionPromptOption,
+  PendingDecisionPrompt,
 } from '@engine/models';
 import {
   getPlayer,
@@ -19,13 +21,17 @@ import {
   canAllyAttack,
   canBasicThwart,
   canPlayCard,
+  isCardRestricted,
+  getCardRestrictedWeight,
+  getPlayerRestrictedCount,
+  getPlayerRestrictedLimit,
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import { executeEffect } from '../effects';
 import { executeVillainPhase, continueVillainPhase } from './villain-phase';
 import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth } from './stat-calculator';
-import { resolveDecisionPrompt } from './prompt-queue';
+import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
 
 /**
@@ -696,6 +702,59 @@ export function dispatchAction(
 
       const player = getPlayer(nextState, action.playerId)!;
 
+      const targetCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      if (!targetCard) {
+        return { state, result: { success: false, error: 'Target card not found in hand' } };
+      }
+
+      // Check Restricted Keyword limit replacement trigger (RR v1.8 p. 25, ADR-0018, ADR-0032)
+      if (isCardRestricted(targetCard.card)) {
+        const cardWeight = getCardRestrictedWeight(targetCard.card);
+        const currentRestricted = getPlayerRestrictedCount(player);
+        const maxRestricted = getPlayerRestrictedLimit(nextState, action.playerId);
+
+        if (currentRestricted + cardWeight > maxRestricted) {
+          const options: DecisionPromptOption[] = player.tableau
+            .filter((c) => isCardRestricted(c.card))
+            .map((c) => ({
+              id: c.instanceId,
+              label: `Discard ${c.card.name}`,
+              description: `Discard ${c.card.name} from tableau to make room for ${targetCard.card.name}`,
+              effect: 'DISCARD_RESTRICTED_REPLACEMENT',
+              params: {
+                discardCardInstanceId: c.instanceId,
+                pendingCardInstanceId: action.cardInstanceId,
+                paymentCardInstanceIds: action.paymentCardInstanceIds,
+                generatorInstanceIds: action.generatorInstanceIds,
+                targetInstanceId: action.targetInstanceId,
+              },
+            }));
+
+          options.push({
+            id: 'cancel_play',
+            label: 'Cancel (Do not play)',
+            description: `Cancel playing ${targetCard.card.name}`,
+            effect: 'CANCEL_PLAY',
+            params: {
+              pendingCardInstanceId: action.cardInstanceId,
+            },
+          });
+
+          const prompt: PendingDecisionPrompt = {
+            promptId: `prompt_discard_restricted_${Date.now()}`,
+            playerId: player.id,
+            title: 'Restricted Limit Reached',
+            description: `You have reached your Restricted card limit (${maxRestricted} max). Choose an in-play Restricted card to discard to make room for ${targetCard.card.name}, or Cancel:`,
+            sourceCardName: targetCard.card.name,
+            options,
+            isVoluntary: true,
+          };
+
+          const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+          return { state: enqueuedState, result: { success: true, onomatopoeia: 'CHOOSE RESTRICTED!' } };
+        }
+      }
+
       // 1. Discard Payment Cards from Hand
       for (const pId of action.paymentCardInstanceIds) {
         const pIndex = player.hand.findIndex((c) => c.instanceId === pId);
@@ -1139,6 +1198,68 @@ export function dispatchAction(
     case 'RESOLVE_DECISION_PROMPT': {
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
+
+      const activePrompt = peekDecisionPrompt(nextState);
+      if (
+        activePrompt &&
+        activePrompt.options.some(
+          (o) => o.effect === 'DISCARD_RESTRICTED_REPLACEMENT' || o.effect === 'CANCEL_PLAY',
+        )
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+
+        if (!selectedOption || selectedOption.id === 'cancel_play' || selectedOption.effect === 'CANCEL_PLAY') {
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'card_play',
+            actor: { name: player.name, type: player.currentForm },
+            key: 'card.play.cancelled',
+            params: { player: player.name, card: activePrompt.sourceCardName },
+            onomatopoeia: 'CANCELLED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
+        }
+
+        if (selectedOption.effect === 'DISCARD_RESTRICTED_REPLACEMENT') {
+          const params = selectedOption.params as any;
+          const discardId = params?.discardCardInstanceId || selectedOption.id;
+          const discardIdx = player.tableau.findIndex((c) => c.instanceId === discardId);
+          if (discardIdx !== -1) {
+            const [discarded] = player.tableau.splice(discardIdx, 1);
+            player.discard.push(discarded);
+
+            poppedState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: poppedState.roundNumber,
+              phase: poppedState.phase,
+              category: 'card_play',
+              actor: { name: player.name, type: player.currentForm },
+              key: 'card.discarded.to_make_room',
+              params: {
+                player: player.name,
+                discardedCard: discarded.card.name,
+                incomingCard: activePrompt.sourceCardName,
+              },
+              onomatopoeia: 'REPLACED!',
+            });
+          }
+
+          return dispatchAction(poppedState, {
+            type: 'PLAY_CARD',
+            playerId: action.playerId,
+            cardInstanceId: params.pendingCardInstanceId,
+            paymentCardInstanceIds: params.paymentCardInstanceIds || [],
+            generatorInstanceIds: params.generatorInstanceIds || [],
+            targetInstanceId: params.targetInstanceId,
+          });
+        }
+      }
 
       const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
       let resultingState = promptRes.state;

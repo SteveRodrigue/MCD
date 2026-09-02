@@ -11,7 +11,7 @@ import { DailyBugleActionNewspaper } from './DailyBugleActionNewspaper';
 import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
 import { CardPaymentModal } from './CardPaymentModal';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 import {
   getLegalActionsForPlayer,
   LegalActionItem,

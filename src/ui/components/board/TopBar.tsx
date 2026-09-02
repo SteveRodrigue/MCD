@@ -10,7 +10,7 @@ import {
   Newspaper,
 } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 import { OptionsMenu } from './OptionsMenu';
 
 interface TopBarProps {

@@ -18,7 +18,7 @@ import { listScenarios, listModularEncounterSets } from '../../../engine/scenari
 import { listStarterDecks } from '../../../engine/decks';
 import { CardCatalog } from '../../../data/importer/card-loader';
 import { DifficultyMode, CardType, MainSchemeCard } from '../../../engine/models';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 import corePack from '../../../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../../../data/upstream/pack/core_encounter.json';
 import { CardView } from '../cards/CardView';

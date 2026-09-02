@@ -21,7 +21,8 @@ import {
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { IdentityActionModal } from './IdentityActionModal';
-import { AttackTargetModal, EnemyTarget, getValidAttackTargets } from './AttackTargetModal';
+import { AttackTargetModal } from './AttackTargetModal';
+import { EnemyTarget, getValidAttackTargets } from './attack-target-utils';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,

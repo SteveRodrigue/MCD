@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCardTextHtml } from '../../src/ui/components/cards/FormattedCardText';
+import { formatCardTextHtml } from '../../src/ui/components/cards/formatted-card-text-utils';
 
 describe('FormattedCardText & MarvelCDB HTML/Token Formatter', () => {
   it('preserves HTML tags (<b>, <i>, <br>) and converts MarvelCDB tokens', () => {

@@ -8,7 +8,7 @@ import { MulliganScreen } from './components/setup/MulliganScreen';
 import { GameBoard } from './components/board/GameBoard';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
-import { GameSettingsProvider } from './context/GameSettingsContext';
+import { GameSettingsProvider } from './context/GameSettingsProvider';
 
 export const AppContent: React.FC = () => {
   const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));

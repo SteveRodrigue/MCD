@@ -16,7 +16,7 @@
     "cache:cards": "tsx scripts/cache-card-images.ts",
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --report-unused-disable-directives --max-warnings 10",
+    "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js}\""
   },

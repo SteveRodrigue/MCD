@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, resetInstanceCounter, createCardInstance } from '@engine/index';
 import { CardCatalog } from '@data/importer/card-loader';
-import { getValidAttackTargets } from '../../src/ui/components/board/AttackTargetModal';
+import { getValidAttackTargets } from '../../src/ui/components/board/attack-target-utils';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 

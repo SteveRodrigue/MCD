@@ -7,8 +7,10 @@ description: >-
   stale schema/effect primitive lists, missing effects, timings, costs, and engine functions,
   broken relative links, and drifted status badges. Enforces an extensive review of
   docs/decisions/README.md (ADR log table completeness, ordering, status/superseded chains,
-  and the Mermaid ADR lineage graph). Logs progress in logs/skills/, applies documentation-only
-  blast-radius guardrails, and executes the mandatory post-task protocol. Trigger whenever
+  and the Mermaid ADR lineage graph). STRICTLY READ-ONLY WITH RESPECT TO CODE: writes *.md files
+  only and never touches src/, tests/, or any .ts/.tsx/.json file; suspected code defects are filed
+  as detailed GitHub issues for human peer review instead of being fixed. Logs progress in
+  logs/skills/ and executes the mandatory post-task protocol. Trigger whenever
   documentation is reviewed, refreshed, or prefixed with 'documentation-audit:' / 'docs-audit:'.
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
 ---
@@ -25,16 +27,32 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 
 ## 🛑 Non-Negotiable Guardrails
 
-1. **Documentation-only blast radius.** This skill modifies **only** `*.md` files (plus Mermaid
-   blocks inside them). It MUST NOT edit `src/`, `tests/`, or `src/data/supplemental/*.json`.
-2. **If you find a code defect**, do not fix it here. Record it in the findings and open a tracked
-   GitHub issue (`gh issue create`). Never silently "document around" a bug.
+1. **Read-only with respect to code — absolute.** This skill has a **write allow-list of exactly
+   one file type: `*.md`** (including the Mermaid blocks inside them). It MUST NOT create, edit,
+   delete, move, or reformat any file under `src/`, `tests/`, `tools/`, `scripts/`, `data/`,
+   `public/`, nor any `.ts`, `.tsx`, `.json`, `.js`, `.css`, or config file — not even a typo,
+   a comment, a rename, or a "trivial" one-line fix. Not even if the fix is obvious. Not even if
+   the user asked for a docs fix that would be easier to solve in code.
+   _Reading_ code is not just allowed, it is mandatory (Step 2) — but never writing.
+2. **Code defects become GitHub issues, never edits.** If the audit concludes the code is wrong
+   (docs correct, `src/` violates an Accepted ADR or RR v1.8), you MUST:
+   a. Stop analyzing that thread — do **not** attempt a fix, workaround, or "while I'm here" patch.
+   b. Open a tracked issue with `gh issue create` containing full reproduction detail, expected vs
+   actual, the exact source file/line, and the ADR / RR v1.8 citation (template in Step 5).
+   c. Record the issue number in the findings table and the audit log.
+   d. Leave it there. **A human peer reviewer asserts the defect and decides whether/how to act**,
+   typically by invoking the `bug-fix` skill against that issue number.
+   Never silently "document around" a bug — that hides the defect behind prose.
 3. **Never invent primitives.** Every effect, timing, cost, keyword, or function you document must
    be traceable to an exact symbol/string literal in `src/`. Cite the file in the finding.
 4. **Never delete an ADR.** Superseded ADRs stay; only their `Status` and inbound links change.
 5. **Preserve voice & style.** Keep the existing tone, emoji section headers, GitHub alert
    callouts, tables, and KaTeX/Mermaid conventions already used in the repo.
 6. **No new documentation files** unless a genuine gap is confirmed and the user approves.
+7. **Prove the blast radius before finishing.** `git status --short` must show `.md` paths only.
+   If any non-`.md` file is dirty, revert it (`git checkout -- <path>`) and report the incident.
+   The `AGENTS.md` pre-execution plan gate does not apply here precisely _because_ no source code
+   is ever touched; that exemption is void the moment a non-`.md` file changes.
 
 ---
 
@@ -183,21 +201,43 @@ Present a concise, severity-ranked table to the user:
   your recommendation, then **stop calling tools and wait for explicit approval**.
 - If only Minor/Major findings exist, no stop is required — report and fix in the same turn.
 
-**Code defects.** If the audit uncovers a defect where the _code_ is wrong (D7: code violates an
-Accepted ADR or RR v1.8), list it separately under "🐞 Code Defects" and open a tracked issue:
+**Code defects → issue, never an edit.** If the audit uncovers a defect where the _code_ is wrong
+(D7: `src/` violates an Accepted ADR or RR v1.8), list it under "🐞 Code Defects" and file a tracked
+issue. The issue must be self-contained enough for a **peer reviewer to assert the defect without
+re-running the audit**:
 
 ```bash
-gh issue create --title "<subsystem>: <symptom>" \
-  --body "Found during documentation-audit.
+gh issue create --title "<subsystem>: <one-line symptom>" \
+  --label bug --label needs-triage \
+  --body "Filed by the \`documentation-audit\` skill — **not verified by a human yet.**
 
-**Expected (per <ADR-XXXX | RR v1.8 p. N>):** ...
-**Actual (src/<path>):** ...
-**Doc evidence:** <file>" \
-  --label bug
+### Authority
+<ADR-XXXX §section | RR v1.8 p. N \"Rule Name\">
+
+### Expected behaviour
+<what the authority mandates>
+
+### Actual behaviour in code
+\`src/<path>\`:<line> — <exact symbol / snippet and what it does instead>
+
+### How this surfaced
+Documentation claim in \`<doc file>\` that the code contradicts.
+
+### Suggested reproduction
+<test file + scenario, or the state path that exercises it>
+
+### Reviewer decision needed
+Confirm whether this is a genuine defect, an intentional deviation (then the ADR/doc should record
+it), or a documentation error instead. No code was changed by this audit."
 ```
 
-Record the issue number in the audit log and findings table. Do **not** fix the code in this skill —
-hand the issue number to the `bug-fix` skill afterwards.
+Record the issue number in the audit log and findings table, then **move on**. Do not fix, patch, or
+prototype the code. A human reviewer triages the issue and, if confirmed, runs the `bug-fix` skill
+against that issue number.
+
+> [!WARNING]
+> If you are uncertain whether the code or the doc is wrong, file the issue and leave **both**
+> untouched. Guessing and editing the doc to match buggy code is the worst outcome.
 
 ---
 
@@ -226,13 +266,15 @@ Editing standards:
 
 ### Step 7 — Verify
 
-1. Re-grep every relative link and ADR reference you touched; confirm targets exist.
-2. Re-read each modified Mermaid block for parse validity (balanced brackets/quotes, unique nodes).
-3. Re-run the code-truth extraction for any section you rewrote and confirm a 1:1 match.
-4. If supplemental data or schema docs changed: `npm run report:declarations` and confirm zero
-   schema violations.
-5. Confirm the working tree contains **only** `.md` changes (`git status`); revert anything else.
-6. Sanity-run `npm test` only if a doc change was driven by a code observation you want confirmed.
+1. **Blast-radius gate (run first, non-negotiable).** `git status --short` must list `.md` paths
+   only. Any dirty `.ts`/`.tsx`/`.json`/config file is a protocol violation: revert it with
+   `git checkout -- <path>`, log the incident, and report it to the user.
+2. Re-grep every relative link and ADR reference you touched; confirm targets exist.
+3. Re-read each modified Mermaid block for parse validity (balanced brackets/quotes, unique nodes).
+4. Re-run the code-truth extraction for any section you rewrote and confirm a 1:1 match.
+5. If schema or supplemental docs changed: `npm run report:declarations` (read-only reporting) and
+   confirm zero schema violations. `npm test` / `npm run typecheck` may be run to _confirm an
+   observation_, never to green-light a code change — there are none.
 
 ---
 
@@ -257,6 +299,7 @@ The audit is complete only when **all** hold:
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
 - [ ] RR v1.8 citations verified against `references/rules_reference_v18.md`.
-- [ ] Only `.md` files changed; every code defect has a filed GitHub issue, not a workaround.
+- [ ] `git status` proves **zero non-`.md` files changed** — no code was written, reformatted, or deleted.
+- [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.
 - [ ] CHANGELOG updated and post-task protocol executed.

@@ -227,7 +227,7 @@
               "effect": "HEAL_DAMAGE",
               "params": {
                 "amount": 4,
-                "target": "SELF"
+                "target": "SELF_IDENTITY"
               }
             }
           ]

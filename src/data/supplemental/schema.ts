@@ -35,6 +35,8 @@ export const TimingTypeSchema = z.enum([
   'ALTER_EGO_ACTION',
   'ACTION',
   'RESOURCE',
+  'HERO_RESOURCE',
+  'ALTER_EGO_RESOURCE',
   'FORCED_RESPONSE',
   'RESPONSE',
   'HERO_RESPONSE',

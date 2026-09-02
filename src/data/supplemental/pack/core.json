@@ -292,7 +292,7 @@
       "abilities": [
         {
           "id": "web_shooter_resource",
-          "timing": "HERO_ACTION",
+          "timing": "HERO_RESOURCE",
           "cost": {
             "exhaustSelf": true,
             "spendCounters": {
@@ -318,12 +318,12 @@
       },
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T13:14:00Z",
-        "reviewedAt": "2026-09-01T13:14:00Z",
+        "updatedAt": "2026-09-01T20:50:00Z",
+        "reviewedAt": "2026-09-01T20:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF, Spend 1 web counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
+        "reconstructedText": "HERO_RESOURCE [Cost: Exhaust SELF, Spend 1 web counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
       },
       "mechanicSteps": [
         "Enters play with 3 web counters.",
@@ -1289,7 +1289,7 @@
       "abilities": [
         {
           "id": "pepper_potts_res",
-          "timing": "ACTION",
+          "timing": "RESOURCE",
           "cost": {
             "exhaustSelf": true
           },
@@ -1303,12 +1303,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-01T20:50:00Z",
+        "reviewedAt": "2026-09-01T20:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "ACTION [Cost: Exhaust] -> GENERATE_TOP_DISCARD_RESOURCES"
+        "confidence": 100,
+        "reconstructedText": "RESOURCE [Cost: Exhaust SELF] -> GENERATE_TOP_DISCARD_RESOURCES"
       },
       "mechanicSteps": [
         "Permanent/attached card: Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."

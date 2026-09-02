@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-02T00:30:50.140Z`  
+> **Generated:** `2026-09-02T01:01:05.607Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -21,7 +21,7 @@
 | **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
 | **Unique Effects In Use** | **66** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **22** | Distinct trigger window types actively declared |
-| **Unique Timings In Use** | **15** | Distinct timing categories actively declared |
+| **Unique Timings In Use** | **16** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **10** | Distinct ability cost types actively declared |
 
 ---
@@ -311,21 +311,23 @@ These primitives are declared in schema types or specifications but have **0 act
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01019a` She-Hulk (hero), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally) *(+24 more)* |
-| `HERO_ACTION` | **25** | `01005` Swinging Web Kick (event), `01008` Web-Shooter (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
+| `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01021` Gamma Slam (event) *(+19 more)* |
 | `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
-| `ACTION` | **14** | `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01033` Pepper Potts (support), `01056` Tac Team (support) *(+9 more)* |
+| `ACTION` | **13** | `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01056` Tac Team (support), `01064` Surveillance Team (support) *(+8 more)* |
 | `ALTER_EGO_ACTION` | **11** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01019b` Jennifer Walters (alter_ego) *(+6 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
 | `INTERRUPT` | **6** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01061` Great Responsibility (event), `01075` Black Widow (ally), `01078` Get Behind Me! (event) *(+1 more)* |
-| `RESOURCE` | **5** | `01001b` Peter Parker (alter_ego), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource), `01079` The Power of Protection (resource) |
+| `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
 | `CARD_PLAYED` | **4** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade), `01084` Nick Fury (ally) |
 | `SETUP` | **4** | `01040b` T'Challa (alter_ego), `01076` Luke Cage (ally), `01096` Rhino (villain), `01102` Sandman (minion) |
 | `SPECIAL` | **4** | `01046` Energy Daggers (upgrade), `01047` Panther Claws (upgrade), `01048` Tactical Genius (upgrade), `01049` Vibranium Suit (upgrade) |
 | `BOOST` | **4** | `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
 | `HERO_INTERRUPT` | **3** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01082` Indomitable (upgrade) |
 | `FORCED_INTERRUPT` | **3** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01098` Armored Rhino Suit (attachment) |
+| `HERO_RESOURCE` | **1** | `01008` Web-Shooter (upgrade) |
 | `ALTER_EGO_INTERRUPT` | 🟡 **0** | *Unused in supplemental declarations* |
+| `ALTER_EGO_RESOURCE` | 🟡 **0** | *Unused in supplemental declarations* |
 | `HERO_RESPONSE` | 🟡 **0** | *Unused in supplemental declarations* |
 | `ALTER_EGO_RESPONSE` | 🟡 **0** | *Unused in supplemental declarations* |
 | `WHEN_PLAYED` | 🟡 **0** | *Unused in supplemental declarations* |

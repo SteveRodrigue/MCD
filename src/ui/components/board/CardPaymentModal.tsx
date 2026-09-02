@@ -113,12 +113,15 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     const idAbilities = player.activeFormCard.enrichment?.abilities || [];
     for (const ab of idAbilities) {
       const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-      if (ab.timing === 'RESOURCE' || genStep) {
+      if (ab.timing === 'RESOURCE' || ab.timing === 'HERO_RESOURCE' || ab.timing === 'ALTER_EGO_RESOURCE' || genStep) {
         const isUsedThisRound =
           ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
         const isUsedThisPhase =
           ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
         if (isUsedThisRound || isUsedThisPhase) continue;
+
+        if (ab.timing === 'HERO_RESOURCE' && player.currentForm !== 'hero') continue;
+        if (ab.timing === 'ALTER_EGO_RESOURCE' && player.currentForm !== 'alter_ego') continue;
 
         const resType = (genStep?.params?.resource as string) || 'resource';
         const amount = Number(genStep?.params?.amount) || 1;
@@ -141,6 +144,8 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const tableAbility = abilities.find(
         (a) =>
           a.timing === 'RESOURCE' ||
+          a.timing === 'HERO_RESOURCE' ||
+          a.timing === 'ALTER_EGO_RESOURCE' ||
           a.timing === 'HERO_ACTION' ||
           a.timing === 'ALTER_EGO_ACTION' ||
           a.timing === 'ACTION' ||
@@ -148,11 +153,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       );
 
       const isHeroRestricted =
-        abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+        abilities.some((a) => a.timing === 'HERO_RESOURCE' || a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
         (c.card.text || '').toLowerCase().includes('hero resource:') ||
         (c.card.text || '').toLowerCase().includes('hero action:');
       const isAlterEgoRestricted =
-        abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+        abilities.some((a) => a.timing === 'ALTER_EGO_RESOURCE' || a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
         (c.card.text || '').toLowerCase().includes('alter-ego resource:') ||
         (c.card.text || '').toLowerCase().includes('alter-ego action:');
 

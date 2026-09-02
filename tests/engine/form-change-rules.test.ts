@@ -141,6 +141,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     // Flip to Hero
     const res1 = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' });
     expect(res1.state.players[0].basicChangeFormUsedThisRound).toBe(true);
+    res1.state.players[0].health = 50;
 
     // Run Villain Phase -> Upkeep -> New Round
     const nextState = executeVillainPhase(res1.state, { synchronousPolicy: 'TAKE_UNDEFENDED' });

@@ -817,7 +817,11 @@ export function dispatchAction(
       for (const gId of action.generatorInstanceIds || []) {
         if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
           const idAbility = player.activeFormCard.enrichment?.abilities?.find(
-            (a) => a.timing === 'RESOURCE' || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
+            (a) =>
+              a.timing === 'RESOURCE' ||
+              a.timing === 'HERO_RESOURCE' ||
+              a.timing === 'ALTER_EGO_RESOURCE' ||
+              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
           );
           if (idAbility) {
             if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
@@ -852,6 +856,8 @@ export function dispatchAction(
           const tableAbility = gCard.card.enrichment?.abilities?.find(
             (a) =>
               a.timing === 'RESOURCE' ||
+              a.timing === 'HERO_RESOURCE' ||
+              a.timing === 'ALTER_EGO_RESOURCE' ||
               a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
           );
           if (tableAbility) {
@@ -1031,10 +1037,10 @@ export function dispatchAction(
       }
 
       // Timing / Form validation
-      if (ability.timing === 'HERO_ACTION' && player.currentForm !== 'hero') {
+      if (ability.timing.startsWith('HERO_') && player.currentForm !== 'hero') {
         return { state, result: { success: false, error: 'Can only use this ability in Hero form' } };
       }
-      if (ability.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') {
+      if (ability.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') {
         return { state, result: { success: false, error: 'Can only use this ability in Alter-Ego form' } };
       }
 

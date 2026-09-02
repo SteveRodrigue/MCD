@@ -20,6 +20,7 @@ interface CardAudit {
   reviewedAt?: string;
   confidence?: number;
   reviewedBy?: string;
+  originalText?: string;
   reconstructedText?: string;
   ambiguityFile?: string;
 }

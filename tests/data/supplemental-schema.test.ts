@@ -194,6 +194,38 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(dups[0].line).toBe(4);
     });
 
+    it('Accepts valid CardAuditRecord with originalText and reconstructedText', () => {
+      const validAudit = {
+        createdAt: '2026-08-30T15:00',
+        updatedAt: '2026-08-30T15:00',
+        reviewedAt: '2026-08-30T15:00',
+        reviewedBy: 'antigravity',
+        rulesVersion: 'v1.8',
+        confidence: 98,
+        originalText: 'Spider-Sense — Interrupt: When the villain initiates an attack against you, draw 1 card.',
+        reconstructedText: 'INTERRUPT (ATTACK) -> DRAW_CARDS (count: 1)',
+      };
+      const res = CardAuditRecordSchema.safeParse(validAudit);
+      expect(res.success).toBe(true);
+    });
+
+    it('Verifies that all audited cards across supplemental pack files include originalText', () => {
+      for (const file of packFiles) {
+        const filePath = path.join(packDir, file);
+        const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const cards = json.cards || json;
+
+        for (const [code, card] of Object.entries(cards) as [string, any][]) {
+          if (card.audit && card.audit.confidence >= 95) {
+            expect(
+              card.audit.originalText !== undefined,
+              `Card ${code} in ${file} is missing originalText in audit metadata`,
+            ).toBe(true);
+          }
+        }
+      }
+    });
+
     it('Correctly passes on JSON with non-duplicate nested keys', () => {
       const sampleValid = `{\n  "card1": { "id": "1", "name": "A" },\n  "card2": { "id": "2", "name": "B" }\n}`;
       const dups = detectDuplicateJsonKeys(sampleValid);

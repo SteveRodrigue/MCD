@@ -36,5 +36,5 @@ After executing automated tests and code verification (`npm test && npm run type
 8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:
    * **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that use or benefit from this capability.
    * **Retrofit Card Definitions:** Apply the new/updated declarative schema to all affected card entries.
-   * **Update Audit Metadata:** If card data was changed, update `"updatedAt"`, `"reviewedAt"` (current ISO timestamp with `HH:MM`, e.g. `2026-09-01T09:48:00Z`), and `"reviewedBy": "antigravity"`.
+   * **Update Audit Metadata:** If card data was changed, update `"updatedAt"`, `"reviewedAt"` (current ISO timestamp with `HH:MM`, e.g. `2026-09-01T09:48:00Z`), `"reviewedBy": "antigravity"`, `"originalText"` (exact printed card text), and `"reconstructedText"`.
    * **Run Declarations Analyzer:** **ALWAYS run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`)** whenever cards, abilities, effects, or ambiguity reports are modified to ensure `docs/reports/supplemental_declarations_usage_report.md` reflects updated metrics and zero schema violations.

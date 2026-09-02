@@ -112,6 +112,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     "reviewedBy": "antigravity",
     "rulesVersion": "v1.8",
     "confidence": 98,
+    "originalText": "<Exact printed card text from upstream/printed card>",
     "reconstructedText": "<Proof-of-work: Decompiled text derived 100% from abilities array>"
   },
   "mechanicSteps": [

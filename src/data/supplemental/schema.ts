@@ -20,6 +20,7 @@ export const CardAuditRecordSchema = z.object({
   reviewedBy: z.string().optional(),
   rulesVersion: z.string().optional(),
   confidence: z.number().min(0).max(100).optional(),
+  originalText: z.string().optional(),
   reconstructedText: z.string().optional(),
 });
 

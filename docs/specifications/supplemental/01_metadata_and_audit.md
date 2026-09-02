@@ -49,6 +49,7 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
   "reviewedBy": "antigravity",
   "rulesVersion": "v1.8",
   "confidence": 98,
+  "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.",
   "reconstructedText": "INTERRUPT (ATTACK) -> DRAW_CARDS (count: 1)"
 }
 ```
@@ -61,4 +62,5 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `reviewedBy` | `string` | Non-empty string | Author / Agent identifier (e.g. `"antigravity"`, `"community"`). |
 | `rulesVersion` | `string` | `"v1.8"` | Official Marvel Champions Rules Reference version. |
 | `confidence` | `number` | `0` to `100` | Integer rating. Confidence $\ge 95\%$ enables ambiguity pruning (Inbox Zero). |
+| `originalText` | `string` | Raw text | Exact printed rules text from upstream/printed card for self-contained auditability. |
 | `reconstructedText`| `string` | Markdown string | Decompiled pseudo-code derived 100% from `abilities` to prove round-trip integrity. |

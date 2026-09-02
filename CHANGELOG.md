@@ -5,6 +5,11 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Build & CI: ESLint 9 Flat Config Migration (`eslint.config.js`, `package.json`, `effects/index.ts`, `comic-log-formatter.ts`, `CardPaymentModal.tsx`):**
+  - Added missing `eslint.config.js` flat config (ESLint 9 no longer supports `.eslintrc.*` by default), wiring `@typescript-eslint`, `react-hooks`, and `react-refresh` for `src/**/*.{ts,tsx}`; this fixes the failing `npm run lint` CI step.
+  - Updated the `lint` script (removed the flat-config-incompatible `--ext` flag) and added `@eslint/js` + `globals` dev dependencies.
+  - Fixed lint errors surfaced by the new config: removed unreachable code in `dealDamage` (`src/engine/effects/index.ts`), corrected a misleading emoji character class regex in `src/ui/utils/comic-log-formatter.ts`, and hoisted `CardPaymentModal` early return below all hooks to respect the Rules of Hooks.
+
 - **Feature & Data: Add `originalText` in Supplemental Audit Metadata ([#47](https://github.com/SteveRodrigue/MCD/issues/47), `schema.ts`, `01_metadata_and_audit.md`, `core.json`, `core_encounter.json`, `supplemental-schema.test.ts`):**
   - Added `originalText: z.string().optional()` to `CardAuditRecordSchema` in `src/data/supplemental/schema.ts` and `CardAudit` analyzer interface.
   - Aligned and populated exact printed rules text (`originalText`) directly above `reconstructedText` across all 156 cards in `src/data/supplemental/pack/core.json` and `src/data/supplemental/pack/core_encounter.json` for 100% self-contained auditability.
@@ -13,10 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Feature & Engine: Cost Arrow Mandatory Resolution, Trigger Pipeline & Self-Damage Cost Primitive ([#8](https://github.com/SteveRodrigue/MCD/issues/8), [#11](https://github.com/SteveRodrigue/MCD/issues/11), [ADR-0041](docs/decisions/0041-cost-arrow-mandatory-resolution-and-self-damage-costs.md), `trigger-dispatcher.ts`, `action-dispatcher.ts`, `cost-engine.ts`, `schema.ts`, `core.json`, `cost-arrow-forced-triggers.test.ts`):**
   - Delivered official Marvel Champions Rules Reference (RR v1.8 p. 8 "Cost", p. 15 "Forced", and p. 27 "Response") and ADR-0041:
-    - **Forced Trigger Automated Cost Resolution:** `dispatchTrigger()` now automatically pays mandatory costs (`discardSelf`, `exhaustSelf`, `spendCounters`, `damageSelf`) on `FORCED_RESPONSE` and `FORCED_INTERRUPT` in-play abilities without player prompt loops (e.g. *Superhuman Strength* `01028` automatically discards itself and stuns the attacked enemy after She-Hulk attacks).
+    - **Forced Trigger Automated Cost Resolution:** `dispatchTrigger()` now automatically pays mandatory costs (`discardSelf`, `exhaustSelf`, `spendCounters`, `damageSelf`) on `FORCED_RESPONSE` and `FORCED_INTERRUPT` in-play abilities without player prompt loops (e.g. _Superhuman Strength_ `01028` automatically discards itself and stuns the attacked enemy after She-Hulk attacks).
     - **Combat & Thwart Action Triggers:** Integrated `BASIC_ATTACK_PERFORMED`, `ATTACK_RESOLVED`, and `THWART_RESOLVED` lifecycle triggers in `action-dispatcher.ts` with contextual target metadata (`targetType`, `targetInstanceId`).
-    - **Direct Damage Self-Cost Primitive (`cost.damageSelf`):** Added `damageSelf` to `AbilityCostSchema` and `cost-engine.ts`, validating and executing direct character self-damage costs (e.g. *War Machine* `01030` ally action: exhaust & deal 2 damage to self $\rightarrow$ deal 1 damage to all enemies) and cleanly discarding defeated characters via atomic zone transfer `removeCardFromAllZones()`.
-    - **Declarative Supplemental Retrofit:** Updated *War Machine* (`01030`) with exact cost schema and effect parameters at 100% confidence.
+    - **Direct Damage Self-Cost Primitive (`cost.damageSelf`):** Added `damageSelf` to `AbilityCostSchema` and `cost-engine.ts`, validating and executing direct character self-damage costs (e.g. _War Machine_ `01030` ally action: exhaust & deal 2 damage to self $\rightarrow$ deal 1 damage to all enemies) and cleanly discarding defeated characters via atomic zone transfer `removeCardFromAllZones()`.
+    - **Declarative Supplemental Retrofit:** Updated _War Machine_ (`01030`) with exact cost schema and effect parameters at 100% confidence.
   - Added comprehensive contract test suite in [`cost-arrow-forced-triggers.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/cost-arrow-forced-triggers.test.ts).
 
 - **Bug Fix & Engine: Universal Card Conservation, Atomic Zone Transfers & Villain Attachment Layout ([#44](https://github.com/SteveRodrigue/MCD/issues/44), [ADR-0040](docs/decisions/0040-universal-card-conservation-and-atomic-zone-transfer.md), `state-validator.ts`, `effects/index.ts`, `action-dispatcher.ts`, `CardAttachmentFan.tsx`, `card-conservation-and-attachment.test.ts`):**
@@ -29,8 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bug Fix & Engine: Payment Generator Legality & Non-Resource Counter Cards Isolation ([#43](https://github.com/SteveRodrigue/MCD/issues/43), `legality-checker.ts`, `CardPaymentModal.tsx`, `tac-team-non-resource-generator.test.ts`):**
   - Resolved Bug #43 per Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability" & p. 8 "Cost"):
     - **Genuine Generator Verification:** Updated \`evaluateCardPlayability()\` in \`legality-checker.ts\` to enforce that any in-play generator in \`generatorInstanceIds\` possesses a genuine resource ability (\`isResourceAbility(a.timing)\`) or resource/cost-reducing effect step (\`GENERATE_RESOURCE\`, \`COST_REDUCER\`, \`GENERATE_TOP_DISCARD_RESOURCES\`, \`DOUBLE_RESOURCE_FOR_ASPECT\`).
-    - **Non-Resource Counter Exclusion:** Non-resource counter cards (e.g. *Tac Team* \`01056\` with attack counters, *Med Team* \`01080\` with medical counters, *Surveillance Team* \`01064\`, *Energy Channel* \`01018\`) are strictly excluded from payment modal discovery and rejected during \`PLAY_CARD\` validation.
-    - **Preserved Counter Resource Generators:** Genuine counter-based resource generators (e.g. *Web-Shooter* \`01008\`, *Enhanced Reflexes* \`05024\`, *Enhanced Physique* \`06034\`) continue to be discoverable in the payment modal, exhausting and decrementing 1 counter upon payment.
+    - **Non-Resource Counter Exclusion:** Non-resource counter cards (e.g. _Tac Team_ \`01056\` with attack counters, _Med Team_ \`01080\` with medical counters, _Surveillance Team_ \`01064\`, _Energy Channel_ \`01018\`) are strictly excluded from payment modal discovery and rejected during \`PLAY_CARD\` validation.
+    - **Preserved Counter Resource Generators:** Genuine counter-based resource generators (e.g. _Web-Shooter_ \`01008\`, _Enhanced Reflexes_ \`05024\`, _Enhanced Physique_ \`06034\`) continue to be discoverable in the payment modal, exhausting and decrementing 1 counter upon payment.
   - Added contract test suite in [\`tac-team-non-resource-generator.test.ts\`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/tac-team-non-resource-generator.test.ts).
 
 - **Bug Fix & Engine: Universal Resource Ability Timing Triad, Form Gating & Payment Window Isolation ([#42](https://github.com/SteveRodrigue/MCD/issues/42), [ADR-0039](docs/decisions/0039-universal-resource-ability-timing-triad-and-form-gating.md), `abilities.ts`, `schema.ts`, `cost-engine.ts`, `legal-actions-generator.ts`, `action-dispatcher.ts`, `CardPaymentModal.tsx`, `core.json`, `resource-abilities-timing.test.ts`):**
@@ -38,30 +43,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **First-Class Resource Timing Triad:** Standardized \`HERO_RESOURCE\` and \`ALTER_EGO_RESOURCE\` in \`AbilityTiming\` and Zod schema alongside \`RESOURCE\`, completing the symmetric 3-stance taxonomy across Actions, Interrupts, Responses, and Resources.
     - **Payment Window Isolation:** Updated \`getLegalActionsForPlayer()\` to strictly exclude all resource generation abilities from standalone board actions in the Daily Bugle action newspaper, preventing resource generation outside active cost payment windows.
     - **Form-Gated Payment Discovery:** Integrated \`isAbilityPlayableInForm()\` into \`CardPaymentModal.tsx\` and \`action-dispatcher.ts\`, properly gating \`HERO_RESOURCE\` (Hero-only) and \`ALTER_EGO_RESOURCE\` (Alter-Ego-only) during card and ability cost payments.
-    - **Declarative Supplemental Retrofit:** Corrected *Web-Shooter* (\`01008\`) timing from \`HERO_ACTION\` to \`HERO_RESOURCE\` and *Pepper Potts* (\`01033\`) timing from \`ACTION\` to \`RESOURCE\` in \`src/data/supplemental/pack/core.json\` with 100% confidence audit metadata.
-    - **2-Tier Architecture for Multi-Form & Fan-Made Content:** Tier 1 handles stance gating via timing enums, while Tier 2 handles sub-form traits (*Tiny*, *Giant*, *Dense*, *Intangible*, *Solid*, *Phased*, *Archangel*, *Photon*) via \`cost.requiredSubForm\` and \`cost.requiredTrait\`.
+    - **Declarative Supplemental Retrofit:** Corrected _Web-Shooter_ (\`01008\`) timing from \`HERO_ACTION\` to \`HERO_RESOURCE\` and _Pepper Potts_ (\`01033\`) timing from \`ACTION\` to \`RESOURCE\` in \`src/data/supplemental/pack/core.json\` with 100% confidence audit metadata.
+    - **2-Tier Architecture for Multi-Form & Fan-Made Content:** Tier 1 handles stance gating via timing enums, while Tier 2 handles sub-form traits (_Tiny_, _Giant_, _Dense_, _Intangible_, _Solid_, _Phased_, _Archangel_, _Photon_) via \`cost.requiredSubForm\` and \`cost.requiredTrait\`.
   - Added comprehensive contract test suite in [\`resource-abilities-timing.test.ts\`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/resource-abilities-timing.test.ts).
 
 - **Feature & Engine: Hero Setup Abilities Execution during Step 14 of Scenario Setup ([#16](https://github.com/SteveRodrigue/MCD/issues/16), `game-setup.ts`, `scenario-setup-step14-hero-setup.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 27 ("Step 14: Resolve Character Setup Abilities") state machine in `src/engine/state/game-setup.ts`:
     - **Universal Step 14 Pipeline:** Automatically scans each player's identity cards (`alterEgo` and `hero`) and tableau for `timing === "SETUP"` abilities after opening hands and mulligans are resolved (Step 13) and before Round 1 begins (Step 15).
-    - **T'Challa Setup Upgrade (*Foresight* `01040b`):** Executes declarative `SEARCH_AND_SELECT` to fetch 1 Black Panther upgrade from `player.deck` and put it directly into `player.tableau`, shuffling `player.deck` post-search.
+    - **T'Challa Setup Upgrade (_Foresight_ `01040b`):** Executes declarative `SEARCH_AND_SELECT` to fetch 1 Black Panther upgrade from `player.deck` and put it directly into `player.tableau`, shuffling `player.deck` post-search.
     - **Deterministic Setup Choices:** Supports `PlayerSetupConfig.chosenSetupCardCode` for deterministic test and UI setup selection while maintaining full backward compatibility.
     - **Multiplayer Turn-Order Invariant:** Resolves character setup abilities in player order across all active players.
   - Added comprehensive contract test suite in [`scenario-setup-step14-hero-setup.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/scenario-setup-step14-hero-setup.test.ts).
 
 - **Feature & Engine: Universal Special Ability Plugin Architecture & Wakanda Forever! Sequential Ordering ([#18](https://github.com/SteveRodrigue/MCD/issues/18), [#19](https://github.com/SteveRodrigue/MCD/issues/19), [#20](https://github.com/SteveRodrigue/MCD/issues/20), [ADR-0038](docs/decisions/0038-universal-special-ability-plugin-architecture-and-sequential-ordering.md), `specials/special-registry.ts`, `specials/wakanda-forever.ts`, `effects/index.ts`, `action-dispatcher.ts`, `legality-checker.ts`, `WakandaForeverModal.tsx`, `wakanda-forever-sequence.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 28 ("Special") and ADR-0038 universal Special ability plugin registry and interactive sequence ordering engine:
-    - **Modular Special Ability Plugins:** Established `src/engine/specials/special-registry.ts` with standardized `SpecialAbilityHandler` contracts, decoupling hero-specific Special mechanics (*Black Panther*, *Doctor Strange*, *Storm*, *Phoenix*, and Fan-Made custom content) from the core primitive dispatcher.
-    - **Wakanda Forever! Sequence Engine:** Implemented `src/engine/specials/wakanda-forever.ts` supporting multi-upgrade execution chains across *Energy Daggers* (`01046`), *Panther Claws* (`01047`), *Tactical Genius* (`01048`), and *Panther Suit* (`01049`).
+    - **Modular Special Ability Plugins:** Established `src/engine/specials/special-registry.ts` with standardized `SpecialAbilityHandler` contracts, decoupling hero-specific Special mechanics (_Black Panther_, _Doctor Strange_, _Storm_, _Phoenix_, and Fan-Made custom content) from the core primitive dispatcher.
+    - **Wakanda Forever! Sequence Engine:** Implemented `src/engine/specials/wakanda-forever.ts` supporting multi-upgrade execution chains across _Energy Daggers_ (`01046`), _Panther Claws_ (`01047`), _Tactical Genius_ (`01048`), and _Panther Suit_ (`01049`).
     - **Dynamic Finisher Scaling:** Automatically applies enhanced finisher bonuses to the final resolved upgrade ($N$-th step boost, e.g. 4 damage for Panther Claws, 2 threat for Tactical Genius, 2 AoE for Energy Daggers, 2 moved damage for Panther Suit).
-    - **Play Condition Legality Guard:** Enforces RR v1.8 p. 19 play condition that *Wakanda Forever!* (`01043a-d`) cannot be played without at least 1 in-play Black Panther upgrade.
-    - **Interactive Drag & Drop Sequence Ordering Modal:** Created `WakandaForeverModal.tsx` displaying the *Wakanda Forever!* card tooltip on the left alongside horizontal drag-and-drop slots on the right with real-time Finisher bonus highlighting.
+    - **Play Condition Legality Guard:** Enforces RR v1.8 p. 19 play condition that _Wakanda Forever!_ (`01043a-d`) cannot be played without at least 1 in-play Black Panther upgrade.
+    - **Interactive Drag & Drop Sequence Ordering Modal:** Created `WakandaForeverModal.tsx` displaying the _Wakanda Forever!_ card tooltip on the left alongside horizontal drag-and-drop slots on the right with real-time Finisher bonus highlighting.
   - Added comprehensive contract test suite in [`wakanda-forever-sequence.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/wakanda-forever-sequence.test.ts).
 
 - **Feature & Engine: Universal Card Attachment & Tucked Card Architecture ([#40](https://github.com/SteveRodrigue/MCD/issues/40), `effects/index.ts`, `action-dispatcher.ts`, `legal-actions-generator.ts`, `state.ts`, `CardAttachmentFan.tsx`, `universal-card-attachments.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 5 ("Attachment") and p. 6 ("Cards Under Cards") universal attachment and reserve card engine:
-    - **Multi-Target Attachment Scope:** Universal attachment resolution across Villains, Heroes/Identities (*Caught in a Web*), Allies (*Honorary Avenger*), Minions (*Webbed Up*), and Schemes via expanded `ATTACH_TO_HOST` primitive.
+    - **Multi-Target Attachment Scope:** Universal attachment resolution across Villains, Heroes/Identities (_Caught in a Web_), Allies (_Honorary Avenger_), Minions (_Webbed Up_), and Schemes via expanded `ATTACH_TO_HOST` primitive.
     - **Cascading Discard on Host Departure:** Guarantees that when any host entity (minion, ally, side scheme, tableau card) leaves play, all attached cards and cards placed underneath are cleanly discarded to their respective owner discard piles (`discardHostAttachmentsAndTuckedCards`).
     - **Cards Underneath / Tucked Reserves:** Added engine support for out-of-play cards placed under hosts (`cardsUnderneath: CardInstance[]`) via `PLACE_CARD_UNDER_HOST` and `DISCARD_CARDS_UNDER_HOST`.
     - **Attachment Actions Discovery:** Dynamically surfaces in-play attachment actions and resource-spend discard triggers in legal actions (`getLegalActionsForPlayer`).
@@ -71,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bug Fix & Engine: End of Player Phase Clean-Up & Voluntary Hand Discard ([#41](https://github.com/SteveRodrigue/MCD/issues/41), `player-phase-cleanup.ts`, `action-dispatcher.ts`, `round-upkeep.ts`, `end-of-player-phase-cleanup.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 23 End of Player Phase Clean-Up state machine in a dedicated module (`src/engine/pipeline/player-phase-cleanup.ts`):
     - **Voluntary Hand Discard Window:** When the player phase concludes, players in player order are presented with an interactive multi-select decision prompt to discard any number of cards from hand or keep all.
-    - **Hand Replenishment & Readying (RR v1.8 p. 23):** Draws cards until hand contains cards equal to effective hand size, readies identity, all allies, and tableau upgrades/supports *before* the Villain Phase begins.
+    - **Hand Replenishment & Readying (RR v1.8 p. 23):** Draws cards until hand contains cards equal to effective hand size, readies identity, all allies, and tableau upgrades/supports _before_ the Villain Phase begins.
     - **Prompt Queue Integration:** Seamlessly handles multi-card voluntary discards (`PLAYER_PHASE_DISCARD_CARD`) and completion (`FINISH_PLAYER_CLEANUP`) before advancing to next player or launching `executeVillainPhase`.
     - **Upkeep Decoupling:** Cleaned up redundant drawing and readying from round upkeep Step 6, which strictly handles round token rotations, round-end forced ally dismissals (Nick Fury), and round number increments per RR v1.8 p. 32.
   - Added comprehensive contract test suite in [`end-of-player-phase-cleanup.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/end-of-player-phase-cleanup.test.ts).
@@ -88,12 +93,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Feature & Engine: Universal Named Counter Map, Cross-Entity Targeting & Uses Zero-Counter Discard ([#33](https://github.com/SteveRodrigue/MCD/issues/33), `effects/index.ts`, `cost-engine.ts`, `schema.ts`, `core.json`, `universal-counter-engine.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 30 ("Uses") and ADR-0035 universal named counter dictionary across all in-play entities:
-    - **Named Counter Maps:** Replaced scalar counters with `counters: Record<string, number>` on `CardInstance` and `PlayerState`, seamlessly supporting all 51 catalog counter types (*Charge*, *Growth*, *Ammo*, *Arrow*, *Web*, *Invocation*, *Pym*, *Chi*, *Energy*, *Snoop*, *Medical*, *Attack*).
+    - **Named Counter Maps:** Replaced scalar counters with `counters: Record<string, number>` on `CardInstance` and `PlayerState`, seamlessly supporting all 51 catalog counter types (_Charge_, _Growth_, _Ammo_, _Arrow_, _Web_, _Invocation_, _Pym_, _Chi_, _Energy_, _Snoop_, _Medical_, _Attack_).
     - **Atomic Cross-Entity Primitives:**
       - `ADD_COUNTERS`: Adds $N$ named counters to `SELF`, `IDENTITY`, or target card.
       - `SPEND_COUNTERS`: Removes $N$ named counters from `SELF` or `IDENTITY` with legality pre-validation in the cost engine.
-      - `REMOVE_COUNTERS_MATCHING_FILTER`: Purges/decrements named counters matching trait and zone filters (*Ebony Maw*, *The Green Gobbler*).
-      - `COUNTERS_ON_TARGET`: Dynamic damage/threat formula scaling by active counter count $\times$ multiplier (*Energy Channel* `01018`).
+      - `REMOVE_COUNTERS_MATCHING_FILTER`: Purges/decrements named counters matching trait and zone filters (_Ebony Maw_, _The Green Gobbler_).
+      - `COUNTERS_ON_TARGET`: Dynamic damage/threat formula scaling by active counter count $\times$ multiplier (_Energy Channel_ `01018`).
     - **Uses Zero-Counter Card Discard Lifecycle (RR v1.8 p. 30):** Automatically removes cards from the tableau/allies to discard when their Uses counters reach 0, dispatching the `CARD_DISCARDED` trigger and emitting comic log event `card.discarded.uses_exhausted`.
     - **Complete Core Set Retrofit:** Retrofitted Web-Shooter (`01008`), Energy Channel (`01018`), Tac Team (`01056`), Surveillance Team (`01064`), Hawkeye (`01066`), and Med Team (`01080`).
   - Added comprehensive contract test suite in [`universal-counter-engine.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/universal-counter-engine.test.ts).
@@ -101,10 +106,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Feature & Engine: SEARCH_AND_SELECT Extensible Filtering Engine & Core Set Retrofit ([#38](https://github.com/SteveRodrigue/MCD/issues/38), [#10](https://github.com/SteveRodrigue/MCD/issues/10), `effects/index.ts`, `action-dispatcher.ts`, `schema.ts`, `core.json`, `search-and-select-routing.test.ts`):**
   - Enhanced the universal declarative `SEARCH_AND_SELECT` primitive with comprehensive, extensible card filtering capabilities (`matchCardFilter`) adhering strictly to RR v1.8 p. 19 & 26:
     - **Extensible Declarative Filters:** Evaluates traits (`trait`, `traits`), card types (`type`, `types`, `cardTypes`), card codes (`targetCardCode`, `targetCardCodes`), card names (`targetCardName`), identity specificity (`isIdentitySpecific`), aspects (`aspect`, `aspects`), and printed cost bounds (`costMin`, `costMax`).
-    - **Filtered Look-Splitting:** When looking at top $N$ cards with filter criteria (e.g. *Futurist* filtering for *Tech* cards), only matching candidate cards are presented in the decision prompt; non-matching looked cards and unchosen matching cards are cleanly routed to `unselectedDestination` (`DISCARD`). If no looked cards match, all $N$ cards are discarded automatically.
+    - **Filtered Look-Splitting:** When looking at top $N$ cards with filter criteria (e.g. _Futurist_ filtering for _Tech_ cards), only matching candidate cards are presented in the decision prompt; non-matching looked cards and unchosen matching cards are cleanly routed to `unselectedDestination` (`DISCARD`). If no looked cards match, all $N$ cards are discarded automatically.
     - **Complete Core Set Retrofit:**
-      - **Tony Stark (*Futurist* `01029b`):** Filters top 3 cards for trait *Tech*, routing chosen card to hand and remaining looked cards to discard.
-      - **T'Challa (*King of Wakanda* Setup `01040b`):** Searches deck for *Black Panther* upgrade and puts directly into tableau.
+      - **Tony Stark (_Futurist_ `01029b`):** Filters top 3 cards for trait _Tech_, routing chosen card to hand and remaining looked cards to discard.
+      - **T'Challa (_King of Wakanda_ Setup `01040b`):** Searches deck for _Black Panther_ upgrade and puts directly into tableau.
       - **Shuri (`01041`):** Searches deck for an upgrade and adds to hand.
   - Added comprehensive contract test suite in [`search-and-select-routing.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/search-and-select-routing.test.ts).
 
@@ -112,27 +117,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented the official Marvel Champions RR v1.8 p. 25 ("Restricted") keyword engine and interactive replacement prompt lifecycle (ADR-0018, ADR-0032):
     - **Base Slot Capacity:** Restricts each player to a base limit of 2 restricted cards simultaneously in their tableau.
     - **Slot Weights & Heavy Weapons:** Heavy weapon cards count as 2 restricted slots towards the player's capacity.
-    - **Dynamic Modifiers:** Supports cards that grant additional restricted slots (*Side Holster*, `RESTRICTED_LIMIT_BONUS`).
+    - **Dynamic Modifiers:** Supports cards that grant additional restricted slots (_Side Holster_, `RESTRICTED_LIMIT_BONUS`).
     - **Interactive Replacement Prompt:** When a player attempts to play a restricted card that would exceed their limit while controlling restricted cards in play, [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) permits the play and enqueues an interactive `PendingDecisionPrompt` modal (`DISCARD_RESTRICTED_REPLACEMENT`) listing all in-play restricted cards plus a voluntary `cancel_play` option.
     - **Prompt Resolution & Cancellation:** Choosing an in-play restricted card discards it from the tableau, spends payment resources, and puts the new card into play; choosing `cancel_play` aborts the play action cleanly, leaving the new card and payment resources in hand with the tableau untouched.
   - Added comprehensive contract test suite in [`restricted-keyword-limit.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/restricted-keyword-limit.test.ts).
 
 - **Feature & Engine: Enforce "Max [X] Per Player" Board Invariants ([#3](https://github.com/SteveRodrigue/MCD/issues/3), `card-loader.ts`, `legality-checker.ts`, `card.ts`, `abilities.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
   - Added automatic text signal parsing via [`parseMaxPerPlayer()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/importer/card-loader.ts) extracting printed "Max [X] per player" limits across 100+ cards from the upstream Zzorba dataset while cleanly ignoring parenthesized Restricted reminder text.
-  - Implemented the Max [X] per player board constraint (RR v1.8 p. 17 "Max") in [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts): prevents playing upgrades/supports (e.g. *Energy Channel* `01018`, *Armored Vest* `01081`, *Combat Training* `01057`, *Down Time* `01061`, *Avengers Mansion* `01091`, *Helicarrier* `01092`) if the player already controls the printed maximum number of copies in their tableau.
+  - Implemented the Max [X] per player board constraint (RR v1.8 p. 17 "Max") in [`canPlayCard()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts): prevents playing upgrades/supports (e.g. _Energy Channel_ `01018`, _Armored Vest_ `01081`, _Combat Training_ `01057`, _Down Time_ `01061`, _Avengers Mansion_ `01091`, _Helicarrier_ `01092`) if the player already controls the printed maximum number of copies in their tableau.
   - Added contract test suite in [`table-invariants-restricted-and-unicity.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/table-invariants-restricted-and-unicity.test.ts).
 
 - **Feature & Engine: Global Cross-Player Unicity & Hero Identity Collision Validation ([#31](https://github.com/SteveRodrigue/MCD/issues/31), `legality-checker.ts`, `table-invariants-restricted-and-unicity.test.ts`):**
   - Upgraded [`checkUniqueCardPlayable()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) and introduced [`isUniqueCollision()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts) adhering strictly to official Marvel Champions RR v1.8 p. 29 ("Unique"):
     - **Cross-Player Unicity:** Evaluates uniqueness across all active players' tableaus, allies, and unique minions.
-    - **Hero & Alter-Ego Persona Collision:** Automatically maps a player's alter-ego persona to their hero identity subtitle, preventing playing unique allies/supports that share the same character persona (*Spider-Man: Peter Parker* ally or *Peter Parker* support while *Spider-Man / Peter Parker* identity is in the game).
-    - **Subtitle Differentiation Rule (RR v1.8 p. 29):** If two cards share the same title but have different subtitles (such as *Spider-Man: Peter Parker* and *Spider-Man: Miles Morales*), they are recognized as distinct characters and permitted to enter play simultaneously.
+    - **Hero & Alter-Ego Persona Collision:** Automatically maps a player's alter-ego persona to their hero identity subtitle, preventing playing unique allies/supports that share the same character persona (_Spider-Man: Peter Parker_ ally or _Peter Parker_ support while _Spider-Man / Peter Parker_ identity is in the game).
+    - **Subtitle Differentiation Rule (RR v1.8 p. 29):** If two cards share the same title but have different subtitles (such as _Spider-Man: Peter Parker_ and _Spider-Man: Miles Morales_), they are recognized as distinct characters and permitted to enter play simultaneously.
   - Added comprehensive BDD test coverage in [`table-invariants-restricted-and-unicity.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/table-invariants-restricted-and-unicity.test.ts).
 
 - **Feature & Engine: Mid-Action Player and Encounter Deck Exhaustion & Penalty Invariants ([#32](https://github.com/SteveRodrigue/MCD/issues/32), `effects/index.ts`, `deck-exhaustion.ts`, `deck-exhaustion-invariants.test.ts`):**
   - Unified all card draw, search, milling, discard, and surge primitives across [`src/engine/effects/index.ts`](src/engine/effects/index.ts) to route through centralized [`drawPlayerCard()`](src/engine/pipeline/deck-exhaustion.ts) and [`drawEncounterCard()`](src/engine/pipeline/deck-exhaustion.ts).
   - Enforced official Marvel Champions RR v1.8 p. 11 & p. 18 deck exhaustion invariants:
-    - **Player Deck Exhaustion (RR v1.8 p. 18):** Immediately shuffles player discard pile to form a new draw deck, deals 1 facedown encounter card to that player as a penalty, and seamlessly continues mid-card effects (e.g. *Repulsor Blast*, *Black Cat*, *Hulk*, *Draw up to hand size*).
+    - **Player Deck Exhaustion (RR v1.8 p. 18):** Immediately shuffles player discard pile to form a new draw deck, deals 1 facedown encounter card to that player as a penalty, and seamlessly continues mid-card effects (e.g. _Repulsor Blast_, _Black Cat_, _Hulk_, _Draw up to hand size_).
     - **Encounter Deck Exhaustion (RR v1.8 p. 11):** Immediately places 1 permanent acceleration token on the Main Scheme, shuffles encounter discard pile to form a new encounter deck, and continues the current activation/reveal.
   - Added comprehensive contract test suite in [`deck-exhaustion-invariants.test.ts`](tests/engine/deck-exhaustion-invariants.test.ts).
 
@@ -150,12 +155,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Verified in [`advanced-mechanics.test.ts`](tests/engine/advanced-mechanics.test.ts) that Nick Fury is cleanly discarded to player discard at the end of the round during Step 6 round upkeep.
 
 - **Bug Fix & Engine: Interactive Player Choice for Target `CHOSEN_PLAYER` Card Draw Abilities ([#29](https://github.com/SteveRodrigue/MCD/issues/29), `effects/index.ts`, `decision-prompts.test.ts`):**
-  - Resolved issue where Carol Danvers' *Commander* alter-ego ability (`01010b`) and Avengers Mansion (`01091`) with `target: "CHOSEN_PLAYER"` drew cards for self without prompting player choice in 2+ player matches.
+  - Resolved issue where Carol Danvers' _Commander_ alter-ego ability (`01010b`) and Avengers Mansion (`01091`) with `target: "CHOSEN_PLAYER"` drew cards for self without prompting player choice in 2+ player matches.
   - Implemented smart targeting in `DRAW_CARDS` ([`src/engine/effects/index.ts`](src/engine/effects/index.ts)): seamlessly fast-paths to self in 1-player games without opening extra prompts, while enqueuing an interactive `Choose a Player` decision prompt modal in 2–4 player games.
-  - Added regression test suite in [`decision-prompts.test.ts`](tests/engine/decision-prompts.test.ts) verifying single-player direct draw and multiplayer target prompt resolution for Carol Danvers (*Commander*) and Avengers Mansion.
+  - Added regression test suite in [`decision-prompts.test.ts`](tests/engine/decision-prompts.test.ts) verifying single-player direct draw and multiplayer target prompt resolution for Carol Danvers (_Commander_) and Avengers Mansion.
 
 - **Bug Fix & Engine: Interactive Defender Declaration for Villain & Minion Attacks ([#28](https://github.com/SteveRodrigue/MCD/issues/28), `villain-phase.ts`, `action-dispatcher.ts`, `effects/index.ts`, `combat-pipeline.ts`, `combat-defender-prompt.test.ts`):**
-  - Resolved issue where villain and minion attacks in the Villain Phase or via encounter treacheries (e.g. *Assault*, *Gang-Up*) executed synchronously without presenting an interactive prompt modal to select a defender (Hero, Ally, or undefended) or trigger defense interrupts (e.g. *Spider-Sense*, *Backflip*).
+  - Resolved issue where villain and minion attacks in the Villain Phase or via encounter treacheries (e.g. _Assault_, _Gang-Up_) executed synchronously without presenting an interactive prompt modal to select a defender (Hero, Ally, or undefended) or trigger defense interrupts (e.g. _Spider-Sense_, _Backflip_).
   - Updated [`step2_villainAndMinionActivations`](src/engine/pipeline/villain-phase.ts) to manage an activation queue that pauses execution cleanly when interactive prompts are enqueued into `pendingDecisionPrompt`.
   - Added [`continueVillainPhase()`](src/engine/pipeline/villain-phase.ts) to resume remaining activations, encounter dealing, and card reveals once defender declaration prompts are resolved.
   - Wired `RESOLVE_DECISION_PROMPT` and `DECLARE_DEFENDER` in [`action-dispatcher.ts`](src/engine/pipeline/action-dispatcher.ts) and [`effects/index.ts`](src/engine/effects/index.ts) to trigger phase resumption in both single-player and multiplayer matches.
@@ -179,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added bottom-to-top vertical fill with a dynamic smooth color gradient shifting from **Blue (low threat) $\rightarrow$ Yellow/Amber (moderate threat) $\rightarrow$ Red (critical threshold)**.
   - Relocated the text threat counter (`X / Y THREAT`) to the **top-right of the Main Scheme header** with a color-coded status badge.
 - **UI Polish & QoL: High-Contrast Resource Badges & Aspect "The Power of..." Auto-Selection (`CardPaymentModal.tsx`, `tailwind.config.js`):**
-  - Resolved contrast issue where `"2 Res (2× Aspect)"` on *The Power of Justice* (and other aspect double resource cards) was pale due to missing `comic-green` palette definition.
+  - Resolved contrast issue where `"2 Res (2× Aspect)"` on _The Power of Justice_ (and other aspect double resource cards) was pale due to missing `comic-green` palette definition.
   - Added `green: '#16A34A'` to `tailwind.config.js` and upgraded Resource Yield Badges to high-contrast emerald/comic-black pop-art styling.
   - Implemented auto-selection QoL in [`CardPaymentModal.tsx`](src/ui/components/board/CardPaymentModal.tsx): Opening payment for an aspect card automatically pre-selects matching "The Power of [Aspect]" cards from hand up to the required cost.
 - **Bug Fix: Identity Actions Overlay Thwart Invalidation & Deactivated Badge Styling (`legality-checker.ts`, `IdentityActionModal.tsx`):**
@@ -247,14 +252,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Sub-Milestone 2D-1 (Restricted Keyword & Global Unicity Invariants - RR v1.8 p. 25, 29 / ADR-0018):**
     - Implemented `Keyword` parser and dynamic restricted limit validator (`isCardRestricted`, `getCardRestrictedWeight`, `getPlayerRestrictedLimit`, `getPlayerRestrictedCount`) in [`src/engine/pipeline/legality-checker.ts`](src/engine/pipeline/legality-checker.ts).
     - Supported heavy items ("counts as 2 restricted cards") and dynamic limit expansion modifiers (`RESTRICTED_LIMIT_BONUS`).
-    - Implemented global unicity engine (`checkUniqueCardPlayable`) validating unicity across all player tableaus, player allies, engaged minions, and active in-game Hero/Alter-Ego identities (e.g. preventing *Captain Marvel* ally when *Carol Danvers* is in play).
+    - Implemented global unicity engine (`checkUniqueCardPlayable`) validating unicity across all player tableaus, player allies, engaged minions, and active in-game Hero/Alter-Ego identities (e.g. preventing _Captain Marvel_ ally when _Carol Danvers_ is in play).
   - **Sub-Milestone 2D-2 (Deck Exhaustion & Discard Loop Invariants - RR v1.8 p. 11, 18, 26):**
     - Centralized deck exhaustion in [`src/engine/pipeline/deck-exhaustion.ts`](src/engine/pipeline/deck-exhaustion.ts) with `exhaustPlayerDeck`, `exhaustEncounterDeck`, `drawPlayerCard`, and `drawEncounterCard`.
     - Enforced unconditional penalty invariant: 1 permanent acceleration token placed on Main Scheme on Encounter deck depletion; 1 facedown encounter card dealt to player on Player deck depletion.
     - Enforced search & discard loop termination invariants: searches terminate cleanly if target is not in searched zone; discard loops (`discardFromEncounterDeckUntil`, `discardFromPlayerDeckUntil`) immediately STOP if deck empties and trigger sequential exhaustion without discarding into reshuffled deck.
   - **Sub-Milestone 2D-3 & 2D-4 (Core Set & Aspect Card Promotions — 100% Inbox Zero):**
     - Implemented effect primitives: `MODIFY_COUNTER`, `RETURN_TO_HAND`, `REPULSOR_BLAST`, `GENERATE_TOP_DISCARD_RESOURCES`, `RETRIEVE_TECH_UPGRADE_FROM_DISCARD`, `SEARCH_DECK_FOR_CARD`, `SHUFFLE_DISCARD_INTO_DECK`, `EXECUTE_WAKANDA_FOREVER`, `DEAL_DAMAGE_ALL_ENEMIES`, `TRANSFER_DAMAGE`, `BOOST_STAT_CHOICE`, `BUFF_ALL_FRIENDLY_CHARACTERS`, `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER`, `ATTACH_FACEDOWN_CARDS_FROM_HAND`, `RETURN_FACEDOWN_CARDS_TO_OWNERS`.
-    - Promoted all 23 remaining ambiguity cards across Core Set Heroes (*Captain Marvel's Helmet*, *Energy Channel*, *Hellcat*, *Superhuman Strength*, *Repulsor Blast*, *Pepper Potts*, *Stark Tower*, *T'Challa*, *Shuri*, *Ancestral Knowledge*, *Wakanda Forever!*, *Energy Daggers*, *Vibranium Suit*), Aspect cards (*Vision*, *Get Ready*, *Lead from the Front*, *Black Widow*, *Tenacity*), and Encounter pool (*Highway Robbery*).
+    - Promoted all 23 remaining ambiguity cards across Core Set Heroes (_Captain Marvel's Helmet_, _Energy Channel_, _Hellcat_, _Superhuman Strength_, _Repulsor Blast_, _Pepper Potts_, _Stark Tower_, _T'Challa_, _Shuri_, _Ancestral Knowledge_, _Wakanda Forever!_, _Energy Daggers_, _Vibranium Suit_), Aspect cards (_Vision_, _Get Ready_, _Lead from the Front_, _Black Widow_, _Tenacity_), and Encounter pool (_Highway Robbery_).
     - Resolved and deleted all 23 ambiguity reports in `docs/ambiguities/` achieving **100% Inbox Zero (0 open ambiguities)**.
     - Verified 247/247 tests passing across 46 test suites with 0 typecheck errors and clean production build.
   - **Quality Gate & Data Integrity Guardrails (Duplicate JSON Key Detector):**
@@ -273,26 +278,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supported Skirmish (Stage I only), Standard (Stages I & II), and Expert (Stages II & III) game modes with scaled villain hit points ($H \times N$).
   - Standardized scenario plugins for **Rhino** ([`src/engine/scenarios/built-in/rhino/`](src/engine/scenarios/built-in/rhino/)), **Klaw** ([`src/engine/scenarios/built-in/klaw/`](src/engine/scenarios/built-in/klaw/)), and **Ultron** ([`src/engine/scenarios/built-in/ultron/`](src/engine/scenarios/built-in/ultron/)).
   - Implemented declarative Stage 1A setup hooks (`resolveStage1ASetup`):
-    - Klaw Stage 1A: *Defense Network* (`01124`) side scheme search/reveal and starting minion engagement deal.
-    - Ultron Stage 1A: *Ultron Drones* (`01140`) environment card deployment and starting 1 HP/1 ATK/1 SCH drone minion spawning.
+    - Klaw Stage 1A: _Defense Network_ (`01124`) side scheme search/reveal and starting minion engagement deal.
+    - Ultron Stage 1A: _Ultron Drones_ (`01140`) environment card deployment and starting 1 HP/1 ATK/1 SCH drone minion spawning.
   - Updated [`src/ui/components/setup/ScenarioSelector.tsx`](src/ui/components/setup/ScenarioSelector.tsx) with modular encounter set customizer, mandatory set badges (`[🔒 MANDATORY]`), and default reset button.
   - Added test suites: [`tests/engine/scenario-setup-15-steps.test.ts`](tests/engine/scenario-setup-15-steps.test.ts), [`tests/engine/scenario-plugins-klaw-ultron.test.ts`](tests/engine/scenario-plugins-klaw-ultron.test.ts), and [`tests/engine/scenario-modular-customization.test.ts`](tests/engine/scenario-modular-customization.test.ts) (217 total tests passing).
 - **Catalog Expansion Architecture Records (ADR-0034, ADR-0035, ADR-0036):**
-  - Authored `ADR-0034: Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture` (Proposed) supporting voluntary player side schemes (35 cards), permanent `state.victoryDisplay` zone, and scenario auxiliary decks (*Infinity Gauntlet*, *Holding Cell*, *Evidence*).
-  - Authored `ADR-0035: Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine` (Proposed) supporting 3-sided identities (*Ant-Man*, *Wasp*), Mass/Energy states (*Spectrum*, *Vision*, *Shadowcat*), and universal `counters: Record<string, number>` map.
+  - Authored `ADR-0034: Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture` (Proposed) supporting voluntary player side schemes (35 cards), permanent `state.victoryDisplay` zone, and scenario auxiliary decks (_Infinity Gauntlet_, _Holding Cell_, _Evidence_).
+  - Authored `ADR-0035: Universal Multi-Form Identities, Mass/Energy States & Generic Counter Engine` (Proposed) supporting 3-sided identities (_Ant-Man_, _Wasp_), Mass/Energy states (_Spectrum_, _Vision_, _Shadowcat_), and universal `counters: Record<string, number>` map.
   - Authored `ADR-0036: Advanced Status Card Dynamics & Minion Activation Modifiers` (Proposed) supporting `Stalwart` immunity, `Steady` 2-card thresholds, `Villainous` minion boosts, `Quickstrike` entry combat, and `Incite`/`Hinder` entry modifiers.
   - Updated `docs/decisions/README.md` lineage graph and registered all three records.
   - Expanded `docs/roadmap_and_milestones.md` Phase 3 (Multi-Hero `Alliance`/`Team-Up`) and Phase 5 (Milestones 5A, 5B, 5C).
 - **Sub-Milestone 2B-3 Implementation: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant (ADR-0031):**
-  - Implemented universal damage prevention interrupt processing in Step 6 (`PREVENT_DAMAGE`) with *Backflip* (`01003`) and *Cosmic Flight* (`01017`).
+  - Implemented universal damage prevention interrupt processing in Step 6 (`PREVENT_DAMAGE`) with _Backflip_ (`01003`) and _Cosmic Flight_ (`01017`).
   - Enforced Tough status preservation invariant: `StatusCard.TOUGH` is preserved when incoming damage is mitigated down to 0, and consumed only when unmitigated damage $> 0$.
   - Implemented bidirectional **Overkill** keyword routing:
     - Enemy $\rightarrow$ Defending Ally $\rightarrow$ Hero Identity: Excess attack damage beyond defending ally's hit points deals direct damage to Hero identity upon ally defeat.
-    - Player $\rightarrow$ Minion $\rightarrow$ Villain: Excess player attack damage beyond target minion's hit points deals direct damage to Villain upon minion defeat (*Relentless Assault* `01053`).
-  - Implemented **Retaliate X** return damage in Step 7 for surviving heroes and minions (*Whiplash* `01172`).
+    - Player $\rightarrow$ Minion $\rightarrow$ Villain: Excess player attack damage beyond target minion's hit points deals direct damage to Villain upon minion defeat (_Relentless Assault_ `01053`).
+  - Implemented **Retaliate X** return damage in Step 7 for surviving heroes and minions (_Whiplash_ `01172`).
   - Added formal `dealDirectDamage` engine helper bypassing DEF mitigation and ally blocks while respecting Tough absorption and universal damage prevention.
-  - Added `SUFFERED_DAMAGE` formula (*Gamma Slam* `01021`), `HULK_DISCARD_RESOLUTION` (*Hulk* `01050`), and `ADD_TRAIT` (*Cosmic Flight* `01017`).
-  - Promoted 8 Core Set cards to 100% confidence: *Backflip* (`01003`), *Enhanced Spider-Sense* (`01004`), *Cosmic Flight* (`01017`), *Gamma Slam* (`01021`), *Hulk* (`01050`), *Tigra* (`01051`), *Relentless Assault* (`01053`), *Uppercut* (`01054`).
+  - Added `SUFFERED_DAMAGE` formula (_Gamma Slam_ `01021`), `HULK_DISCARD_RESOLUTION` (_Hulk_ `01050`), and `ADD_TRAIT` (_Cosmic Flight_ `01017`).
+  - Promoted 8 Core Set cards to 100% confidence: _Backflip_ (`01003`), _Enhanced Spider-Sense_ (`01004`), _Cosmic Flight_ (`01017`), _Gamma Slam_ (`01021`), _Hulk_ (`01050`), _Tigra_ (`01051`), _Relentless Assault_ (`01053`), _Uppercut_ (`01054`).
   - Pruned 4 ambiguity reports from `docs/ambiguities/` (Inbox Zero).
   - Added unit test suite [`tests/engine/combat-damage-prevention-and-overkill.test.ts`](tests/engine/combat-damage-prevention-and-overkill.test.ts) (10 tests, 207 total tests passing).
 - **Roadmap Expansion: Table Invariants, Restricted Keyword & Deck Depletion (Milestone 2D / RR v1.8):**
@@ -305,20 +310,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added support for `WHEN_BOOST_CARD_REVEALED` interrupt trigger window and declarative ★ Star Boost ability resolution (`timing === 'BOOST'` or `trigger === 'BOOST'`).
   - Added generic boost effect primitives in `src/engine/effects/index.ts`: `GIVE_ADDITIONAL_BOOST_CARD` / `DEAL_ADDITIONAL_BOOST_CARD`, `PUT_INTO_PLAY_ENGAGED`, `DISCARD_CARDS_FROM_HAND_AT_RANDOM`, and `DISCARD_UPGRADE_OR_SUPPORT`.
   - Supported dynamic boost card chaining (appending new boost cards into `activeAttackContext.boostQueue` mid-loop).
-  - Promoted Core Set Star Boost encounter cards (*Titania's Fury* `01164`, *Sweeping Swoop* `01168`, *Electric Whip Attack* `01173`, *Kree Manipulator* `01178`) to 100% confidence.
+  - Promoted Core Set Star Boost encounter cards (_Titania's Fury_ `01164`, _Sweeping Swoop_ `01168`, _Electric Whip Attack_ `01173`, _Kree Manipulator_ `01178`) to 100% confidence.
   - Added test suite [`tests/engine/combat-boost-and-star-abilities.test.ts`](tests/engine/combat-boost-and-star-abilities.test.ts) (7 new tests, 197 total tests passing).
 - **Sub-Milestone 2B-1 Implementation: Core Combat Lifecycle & Defender Declaration Engine (ADR-0031):**
   - Created dedicated combat module [`src/engine/pipeline/combat-pipeline.ts`](src/engine/pipeline/combat-pipeline.ts) implementing the 7-step combat lifecycle.
-  - Implemented Step 1 Stun & Webbed Up cancellation intercepts and Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / *Spider-Sense* card draw).
+  - Implemented Step 1 Stun & Webbed Up cancellation intercepts and Step 2 Initiation triggers (`VILLAIN_INITIATES_ATTACK` / _Spider-Sense_ card draw).
   - Implemented Step 3 `DECLARE_DEFENDER` modal prompt with Basic Hero Defend (exhausts hero, mitigates attack with `Hero.DEF`, sets `heroDefended = true`), Ally Block (exhausts ally, ally absorbs attack up to HP), and Take Undefended ($\text{DEF} = 0$).
   - Added headless synchronous execution helper with configurable defense policy (`TAKE_UNDEFENDED`, `HERO_IF_READY`, `ALLY_CHUMP_BLOCK`, `AUTO_OPTIMAL`).
   - Added `DeclareDefenderAction` action handler in `action-dispatcher.ts` and refactored `villain-phase.ts` to route attacks through `combat-pipeline.ts`.
-  - Promoted *Armored Vest* (`01081`) and *Indomitable* (`01082`) to 100% confidence.
+  - Promoted _Armored Vest_ (`01081`) and _Indomitable_ (`01082`) to 100% confidence.
   - Added test suite [`tests/engine/combat-pipeline-step1-3.test.ts`](tests/engine/combat-pipeline-step1-3.test.ts) (9 new tests, 190 total tests passing).
 
 ## [Unreleased]
 
 ### Added
+
 - **Supplemental Retrofit & Audit Metadata Protocol (`AGENTS.md`, `feature-delivery`, `bug-fix`):** Mandatory rule requiring agents to search `src/data/supplemental/pack/*.json` for all cards affected by any engine, primitive, keyword, or timing changes, retrofit the updated declarative definitions, and update `"updatedAt"`, `"reviewedAt"`, and `"reviewedBy"` metadata with current ISO timestamps.
 - **Declarative Data-First Invariant (`AGENTS.md`, `bug-fix`, `feature-delivery`):** Architectural rule mandating that card-specific defects must always be triaged and audited against `src/data/supplemental/` first, avoiding bespoke engine functions and ensuring fixes are classified as Tier 1 Data-Only fixes whenever existing primitives suffice.
 
@@ -330,7 +336,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented `ExecutionFrame` resolution stack (`executionStack`) and serializable FIFO prompt queue (`pendingDecisionQueue`) in `src/engine/pipeline/prompt-queue.ts`.
   - Added support for voluntary reaction windows with dedicated "Pass / Do Nothing" options in `DecisionPromptModal.tsx` and visual queue depth badges (`QUEUE: 1 OF 2`).
   - Added `READY_IDENTITY`, `CANCEL_WHEN_REVEALED_AND_ATTACK`, and `TAKE_THREAT_AS_DAMAGE` composable generic effect primitives in `src/engine/effects/index.ts`.
-  - Promoted 5 Core Set ambiguity cards to 100% confidence with full ability declarations: *Emergency* (`01085`), *Great Responsibility* (`01061`), *Get Behind Me!* (`01078`), *One-Two Punch* (`01024`), and *Counter-Punch* (`01077`).
+  - Promoted 5 Core Set ambiguity cards to 100% confidence with full ability declarations: _Emergency_ (`01085`), _Great Responsibility_ (`01061`), _Get Behind Me!_ (`01078`), _One-Two Punch_ (`01024`), and _Counter-Punch_ (`01077`).
   - Pruned 5 ambiguity reports in `docs/ambiguities/` (reduced open ambiguities from 32 down to 27).
   - Added comprehensive test suite `tests/engine/resolution-stack-and-prompt-queue.test.ts` (8 new tests, 181 total tests passing).
 - **ADR Lifecycle & Lineage Evolution Registry (`docs/decisions/README.md`):**
@@ -344,7 +350,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Authored `docs/decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md` (Accepted) supporting all 62 official scenario Stage 1A setups, modular encounter customization, and `ScenarioSelector.tsx` UI integration.
 - **Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline (ADR-0031 / RR v1.8 p. 4, 7, 11, 24):**
   - Formulated the 5-phase reactive enemy attack state machine: Phase 1 (Initiation/Spider-Sense), Phase 2 (Defender Declaration / Basic Hero DEF / Ally blocks / Co-op), Phase 3 (Boost resolution / Boost cancellations), Phase 4 (Damage calculation / DEF subtraction / Damage prevention / Tough / Overkill), and Phase 5 (Post-defense responses / Retaliate).
-  - Established the Direct Damage Invariant: non-attack damage bypasses DEF and ally blocks, prohibiting attack-specific defense cards while preserving universal prevention (*Cosmic Flight*, *Tough*).
+  - Established the Direct Damage Invariant: non-attack damage bypasses DEF and ally blocks, prohibiting attack-specific defense cards while preserving universal prevention (_Cosmic Flight_, _Tough_).
   - Authored `docs/decisions/0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md` and integrated into Milestone 2B of `docs/roadmap_and_milestones.md`.
 - **Strategic Roadmap & Milestone Architecture Realignment (`docs/roadmap_and_milestones.md`):**
   - Re-anchored the development roadmap on a **Capability-First, Headless-Simulation-Driven** milestone sequence to minimize tech debt and eliminate card-by-card refactor loops.
@@ -372,24 +378,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Implemented generic `PUT_INTO_PLAY` (`from`, `to`, `filter`) resolving Toughness/Guard keywords, side scheme base threat calculations, and entrance trigger responses.
   - Implemented generic `SHUFFLE_INTO_DECK` (`from`, `toDeck`, `filter`) supporting set-aside, discard, and hand card transfers to Encounter and Player decks.
   - Enhanced `shouldExecuteStep` with targeted step result lookup (`targetStepId`) via `stepResultsMap`.
-  - Decomposed *Shadow of the Past* (`01190`) from monolithic `SPAWN_NEMESIS` into a declarative 4-step sequence (`PUT_INTO_PLAY` Minion $\rightarrow$ `PUT_INTO_PLAY` Scheme $\rightarrow$ `SHUFFLE_INTO_DECK` $\rightarrow$ `TRIGGER_SURGE` `gate: IF_FAILED`).
+  - Decomposed _Shadow of the Past_ (`01190`) from monolithic `SPAWN_NEMESIS` into a declarative 4-step sequence (`PUT_INTO_PLAY` Minion $\rightarrow$ `PUT_INTO_PLAY` Scheme $\rightarrow$ `SHUFFLE_INTO_DECK` $\rightarrow$ `TRIGGER_SURGE` `gate: IF_FAILED`).
   - Added dedicated test suite `tests/engine/shadow-of-the-past-sequencing.test.ts` verifying both standard and fallback Surge cases.
   - Updated specification `docs/specifications/supplemental/05_effects_zones_cards.md` to `🟢 IMPLEMENTED (v1.0)`.
 - **Declarative Effect Sequencing & Conditional Gates Pipeline (ADR-0028 / RR v1.8 p. 2, 24):**
   - Extended `CardAbilitySchema` and engine pipeline with recursive `sequence: CardAbility[]` array.
   - Implemented `ConditionGate` supporting `'ALWAYS'`, `'THEN'`, `'IF_PREVIOUS_SUCCESS'`, `'IF_AMOUNT_ZERO'`, `'IF_ZERO_HEALED'`, `'IF_FAILED'`, `'IF_ALREADY_HAS_STATUS'`, and `'IF_RESOURCE_MATCH'`.
   - Added contextual entity and target passing (`target: "PREVIOUS_TARGET"`, `"PREVIOUS_SELECTED_CARD"`).
-  - Decomposed core set composite single-use primitives: *Split Personality* (`01025`), *Hard to Keep Down* (`01104`), *"I'm Tough"* (`01105`), and *Under Fire* (`01193`).
+  - Decomposed core set composite single-use primitives: _Split Personality_ (`01025`), _Hard to Keep Down_ (`01104`), _"I'm Tough"_ (`01105`), and _Under Fire_ (`01193`).
   - Added comprehensive test suite in `tests/engine/effect-sequences-and-gates.test.ts`.
   - Updated specification `docs/specifications/supplemental/09_sequences_and_prompts.md` to `🟢 IMPLEMENTED (v1.0)`.
 - **False-Vanilla Encounter Cards Remediation & Quality Gate Gate:**
   - Audited `core_encounter.json` to eliminate invalid `"noSupplementalNeeded": true` flags on cards with active printed rules text.
-  - Implemented and promoted active declarations for *Personal Challenge* (`01161`), *Imminent Overload* (`01171`), *The Psyche-Magnitron* (`01176`), and *Kree Manipulator* (`01178`).
-  - Isolated *Highway Robbery* (`01166`) with Circuit-Breaker into `docs/ambiguities/core_encounter_01166_highway_robbery.md` pending facedown scheme attachment engine mechanics.
+  - Implemented and promoted active declarations for _Personal Challenge_ (`01161`), _Imminent Overload_ (`01171`), _The Psyche-Magnitron_ (`01176`), and _Kree Manipulator_ (`01178`).
+  - Isolated _Highway Robbery_ (`01166`) with Circuit-Breaker into `docs/ambiguities/core_encounter_01166_highway_robbery.md` pending facedown scheme attachment engine mechanics.
   - Added automated CI unit test in `tests/data/supplemental-schema.test.ts` ensuring no card with printed rules text can ever be marked `noSupplementalNeeded: true`.
 - **Card Integration Protocol Ambiguity Alignment & Promotions:**
   - Ran Card Integration Protocol across all 39 cards in `docs/ambiguities/`.
-  - Promoted 8 fully implemented cards to $\ge 98\%$ confidence and pruned their ambiguity reports (Inbox Zero): *Armored Vest* (`01081`), *Indomitable* (`01082`), *Helicarrier* (`01092`), *Make the Call* (`01071`), *The Power of Aggression* (`01055`), *The Power of Justice* (`01062`), *The Power of Leadership* (`01072`), and *The Power of Protection* (`01079`).
+  - Promoted 8 fully implemented cards to $\ge 98\%$ confidence and pruned their ambiguity reports (Inbox Zero): _Armored Vest_ (`01081`), _Indomitable_ (`01082`), _Helicarrier_ (`01092`), _Make the Call_ (`01071`), _The Power of Aggression_ (`01055`), _The Power of Justice_ (`01062`), _The Power of Leadership_ (`01072`), and _The Power of Protection_ (`01079`).
   - Aligned all 31 remaining blocked cards with strict Circuit-Breaker isolation: active `abilities: [...]` stripped, `"ambiguityFile"` metadata stamped, and logs recorded in `logs/skills/card_integration_2026-08-30.log`.
 - **Supplemental Declarations Usage & Impact Analyzer Tool (`tools/audit/`):**
   - Built automated analytics tool `tools/audit/supplemental-declarations-analyzer.ts` and `npm run report:declarations` script.
@@ -403,15 +409,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Refactored monolithic phase logic into single-responsibility modules:
     - `src/engine/pipeline/player-phase.ts`: Implemented `startPlayerPhase`, `endPlayerPhase`, and `passActivePlayer`.
     - `src/engine/pipeline/villain-phase.ts`: Encapsulated strictly Steps 1 through 5 (Threat, Interleaved Activations, Dealing, Reveals).
-    - `src/engine/pipeline/round-upkeep.ts`: Encapsulated `step6_passFirstPlayerAndRoundUpkeep`, forced round-end discards (*Nick Fury* `01084`), hand refills, deck cycling, First Player token rotation, and round incrementation.
+    - `src/engine/pipeline/round-upkeep.ts`: Encapsulated `step6_passFirstPlayerAndRoundUpkeep`, forced round-end discards (_Nick Fury_ `01084`), hand refills, deck cycling, First Player token rotation, and round incrementation.
   - Implemented strict phase-level ability resets: `usedAbilitiesThisPhase = {}` resets upon entering Player Phase and entering Villain Phase (enforcing `ONCE_PER_PHASE` limits).
   - Implemented round-level ability resets: `usedAbilitiesThisRound = {}` and `basicChangeFormUsedThisRound = false` upon new round transition.
   - Re-exported all pipeline symbols through `src/engine/pipeline/index.ts` with 100% backwards compatibility.
   - Expanded test suite `tests/engine/lifecycle-triggers.test.ts` to verify phase rotation and ability limit resets.
 - **Turn-Gated Form Changes & Phase/Round Lifecycle Triggers (RR v1.8 p. 8, 22, 24):**
   - Enforced official 1/round basic form change limit (`basicChangeFormUsedThisRound: boolean`) across engine and UI (`canChangeForm`, `HeroZone.tsx`, `IdentityActionModal.tsx`).
-  - Separated card-effect form flips (e.g. *Split Personality* `01025`) from basic form flips, allowing card effects to flip identity without consuming the once-per-round basic action limit.
-  - Implemented `CHANGE_FORM_DRAW_TO_HAND_SIZE` effect primitive and promoted *Split Personality* (`01025`) to 98% confidence, resolving and deleting ambiguity report `core_01025_split_personality.md` (Inbox Zero).
+  - Separated card-effect form flips (e.g. _Split Personality_ `01025`) from basic form flips, allowing card effects to flip identity without consuming the once-per-round basic action limit.
+  - Implemented `CHANGE_FORM_DRAW_TO_HAND_SIZE` effect primitive and promoted _Split Personality_ (`01025`) to 98% confidence, resolving and deleting ambiguity report `core_01025_split_personality.md` (Inbox Zero).
   - Established formal phase and round lifecycle trigger pipeline (`ROUND_BEGAN`, `ROUND_ENDED`, `PLAYER_PHASE_BEGAN`, `PLAYER_PHASE_ENDED`, `VILLAIN_PHASE_BEGAN`, `VILLAIN_PHASE_ENDED`).
   - Automated round reset of `basicChangeFormUsedThisRound = false` upon new round transition in `step6_passFirstPlayerAndRoundUpkeep`.
   - Added unit test suites `tests/engine/form-change-rules.test.ts` and `tests/engine/lifecycle-triggers.test.ts`.
@@ -438,8 +444,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Top navigation bar hover/click button `📰 DAILY BUGLE [N]` displaying live actionable count badge.
 - **Identity Action Console & Modal:**
   - Interactive `IdentityActionModal.tsx` opened by clicking Identity card (Tony Stark / Iron Man).
-  - Lists form-aware actions: Recover (greyed out when at full health with HP explanation), Identity Abilities (e.g. *Futurist*), Basic Attacks/Thwarts, and Suit Up/Flip.
-- **Interactive Player Decision Prompt for Scrying (*Futurist*):**
+  - Lists form-aware actions: Recover (greyed out when at full health with HP explanation), Identity Abilities (e.g. _Futurist_), Basic Attacks/Thwarts, and Suit Up/Flip.
+- **Interactive Player Decision Prompt for Scrying (_Futurist_):**
   - Strict RR v1.8 p. 19 ("Player Choice") implementation for scrying abilities in `src/engine/effects/index.ts`.
   - Visual **DECISION REQUIRED** prompt (`DecisionPromptModal.tsx`) showing top 3 revealed cards side-by-side with non-matching cards cleanly grayed out and selectable Tech cards highlighted.
   - Explicit option to decline and discard all revealed cards.
@@ -450,12 +456,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Hardware-accelerated `transition-transform duration-150` eliminating sluggish accordion compression on card additions.
 
 ### Changed
+
 - **Physical Game Counter Token Styling:**
   - Standard game counters rendered as solid green rounded-squares in the bottom-right corner of cards (`CardView.tsx`) replicating physical tabletop tokens.
 
 ### Fixed
+
 - **Resource Card Play Legality (RR v1.8 p. 24):**
-  - Enforced in `legality-checker.ts` that standalone Resource cards (*Energy*, *Genius*, *Strength*) cannot be played as independent actions; they are discarded strictly during resource payment.
+  - Enforced in `legality-checker.ts` that standalone Resource cards (_Energy_, _Genius_, _Strength_) cannot be played as independent actions; they are discarded strictly during resource payment.
 - **Interactive Tableau & Ally Triggers:**
   - Added click handlers and action mini-bars (`[⚡ USE]`, `[⚔️ ATK]`, `[🛡️ THW]`) for tableau upgrades/supports and allies in `HeroZone.tsx`.
 - **Solid Matte Grayscale Rendering (No Transparency):**
@@ -468,10 +476,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-08-26
 
 ### Added
+
 - **Headless Rules Engine (ADR-0002):**
-  - Deterministic state machine covering Player Phase, Villain Phase, and status effects (*Tough*, *Stunned*, *Confused*).
+  - Deterministic state machine covering Player Phase, Villain Phase, and status effects (_Tough_, _Stunned_, _Confused_).
   - Action pipeline with nested trigger priority (Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses).
-  - Full automated scenario validation for *Spider-Man (Justice) vs. Rhino (Standard I + Bomb Scare)* with 56 unit tests.
+  - Full automated scenario validation for _Spider-Man (Justice) vs. Rhino (Standard I + Bomb Scare)_ with 56 unit tests.
 - **Data-Driven Card Catalog (ADR-0006):**
   - Ingestion of official `marvelsdb-json-data` core and encounter sets.
   - Orientation metadata and cache-first MarvelCDB card art loader (ADR-0011).

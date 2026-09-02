@@ -5,6 +5,21 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Docs: Full Documentation Audit & Code-Truth Synchronization (`documentation-audit` skill, `README.md`, `docs/**`, `AGENTS.md`):**
+  - Introduced the [`documentation-audit`](.agents/skills/documentation-audit/SKILL.md) skill: an 8-step Technical Writer protocol that synchronizes the docs set against `src/`, is strictly read-only toward code (writes `*.md` plus its own `logs/skills/` audit log only), files GitHub issues for suspected code defects instead of fixing them, and scores every finding on a pessimistic evidence-only confidence rubric (≥95% auto-apply, 80–94% confirm, <80% open question).
+  - **Corrected phantom effect primitives** across `docs/specifications/supplemental/`: `PLACE_THREAT` → `ADD_THREAT` (+ new `ADD_THREAT_PER_PLAYER` section), `SEARCH_AND_DRAW` → `SCRY_AND_SELECT_TRAIT`, `DISCARD_TOP_DECK` → `DISCARD_TOP_DECK_FILTER`, `APPLY_STATUS` → `ADD_STATUS`, `RESOURCE_GENERATION` → `GENERATE_RESOURCE`, `DOUBLE_RESOURCE` → `DOUBLE_RESOURCE_FOR_ASPECT` (re-badged 🟢, it is implemented and used by 4 cards), `TOUGHNESS` reclassified as a keyword, and `DEAL_DAMAGE_SPLIT` downgraded to 🟡. JSON examples and source line links corrected to the params the engine actually reads.
+  - **Retired the superseded `sequence: []` vocabulary** in favour of `steps: []` per ADR-0030, with errata footnotes in ADR-0023 and ADR-0029.
+  - **ADR-0006** now documents the zzorba/marvelsdb-json-data sync contract: the real `pwsh scripts/sync_data.ps1` entry point, mandatory post-sync verification, and an explicit warning that upstream pulls can break cards via structural/parameter/value changes (supplemental joins upstream **by card code**). Removed the never-built `src/data/overrides/` layer and reframed the normalized catalog as assembled in memory at load time.
+  - **ADR-0029** corrected: the never-existent `src/engine/pipeline/zone-helpers.ts` replaced with the four real locations of zone/shuffle mechanics.
+  - **`docs/decisions/README.md`**: log table re-sorted to ascending ID order, and the single Mermaid lineage graph split into **6 grouped charts** with headers and explainers; every edge is now backed by an explicit ADR-to-ADR reference or a recorded supersession.
+  - Fixed stale ADR ranges, the phantom `src/ui/overlays/` path, `src/engine/scenario/` → `scenarios/`, and missing directories in the `README.md` / `docs/README.md` project trees.
+  - Consolidated all skills under `.agents/skills/` (removed the stale duplicate `skills/` tree) and regenerated `docs/reports/supplemental_declarations_usage_report.md`.
+
+- **Docs: ADR Template Normalization & Enforcement (`docs/decisions/*.md`, `template.md`, `AGENTS.md`, skills):**
+  - Normalized **all 41 ADRs** to [`docs/decisions/template.md`](docs/decisions/template.md): `# [ADR-XXXX] Title` heading plus the `Status` / `Date` / `Authors` / `Deciders` metadata block, replacing the `## Status` heading style, bare `Date:` lines, emoji-decorated status headings, and the numbered `# 38.` form.
+  - Aligned `template.md` bullet markers with the repository formatter.
+  - Made the template **mandatory** for every new or edited ADR in `AGENTS.md` and in the `feature-delivery`, `bug-fix`, and `documentation-audit` skills, including bidirectional supersession updates and log-table registration.
+
 - **Build & CI: ESLint 9 Flat Config Migration (`eslint.config.js`, `package.json`, `effects/index.ts`, `comic-log-formatter.ts`, `CardPaymentModal.tsx`):**
   - Added missing `eslint.config.js` flat config (ESLint 9 no longer supports `.eslintrc.*` by default), wiring `@typescript-eslint`, `react-hooks`, and `react-refresh` for `src/**/*.{ts,tsx}`; this fixes the failing `npm run lint` CI step.
   - Updated the `lint` script (removed the flat-config-incompatible `--ext` flag) and added `@eslint/js` + `globals` dev dependencies.

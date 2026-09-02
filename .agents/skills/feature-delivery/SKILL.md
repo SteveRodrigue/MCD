@@ -45,6 +45,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
 2. **Approved Architecture Decision Record (ADR):**
    * Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR (e.g. ADR-0030 for Ability Sequences, ADR-0031 for Combat/Defense, ADR-0032 for Resolution Stack, ADR-0033 for Scenario Setup, ADR-0034 for Player Side Schemes, ADR-0035 for Multi-Form/Counters, ADR-0036 for Status Scaling).
    * If the feature introduces a new major paradigm not covered by an existing ADR, draft a **Proposed ADR** first before coding.
+   * **Mandatory template:** every new or edited ADR **MUST** be created by copying [`docs/decisions/template.md`](../../../docs/decisions/template.md) and filling it in. Keep the `# [ADR-XXXX] Title` heading, the `Status` / `Date` / `Authors` / `Deciders` metadata block, and the standard section order (Context and Problem Statement → Decision Drivers → Considered Options → Decision Outcome → Evaluation of Options → Consequences). Do not invent alternative headings or status formats. Register the ADR in the `docs/decisions/README.md` log table in ascending ID order, and if it supersedes an earlier ADR, update **both** directions (old ADR's `Status` → `Superseded by [ADR-XXXX](...)`, new ADR names what it supersedes).
 3. **Schema & Model Design Alignment:**
    * If the feature introduces new effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
    * If the feature extends game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts) and export all relevant interfaces.
@@ -214,7 +215,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 2. **Check Documentation:** Update relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or schemas when mechanics or primitives change.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new design patterns were introduced.
-5. **Check ADRs:** Ensure referenced ADRs are linked and updated to **Accepted** status.
+5. **Check ADRs:** Ensure referenced ADRs are linked and updated to **Accepted** status, and that every ADR you created or edited still conforms to [`docs/decisions/template.md`](../../../docs/decisions/template.md).
 6. **Check Ambiguities & Git Issues:** Verify resolved ambiguity cards are removed and issues linked.
 7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) synchronized.
 8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, search supplemental data, retrofit affected cards, update audit timestamps, and run `npm run report:declarations`.

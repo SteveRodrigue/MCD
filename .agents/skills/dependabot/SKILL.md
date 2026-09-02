@@ -30,7 +30,7 @@ Use paths relative to the MCD repository root for all local project files. Never
 1. Read the requested scope. Default to all open alerts if no scope is provided.
 2. Confirm the repository root and current branch with `git status --short` and `git branch --show-current`.
 3. Record whether the worktree is clean. Do not include unrelated changes in a future remediation commit.
-4. Read `package.json`, `package-lock.json`, `vite.config.ts`, CI workflow files, and relevant workspace scripts before drawing conclusions.
+4. If open alerts remain after retrieval, read `package.json`, `package-lock.json`, `vite.config.ts`, CI workflow files, and relevant workspace scripts before drawing conclusions.
 
 ### 2. Retrieve Live Dependabot Alerts
 
@@ -51,6 +51,17 @@ For MCD, use `repos/SteveRodrigue/MCD`. Capture only the fields needed for analy
 - Pull request or remediation metadata, when present
 
 If GitHub access is unavailable, report the limitation and ask the user to provide the alert export. Do not invent advisory details.
+
+### 2a. No Open Alerts Fast Path
+
+After retrieving the live alert list, filter by `state == open` before inspecting package files or preparing a remediation plan.
+
+If there are no open alerts:
+
+1. Report that no open Dependabot alerts were found and that nothing needs to be done.
+2. Optionally report the count and states of non-open alerts for context.
+3. Do not inspect dependency usage, assess upgrade risk, prepare an implementation plan, modify files, run remediation verification commands, or request approval.
+4. Stop the skill execution.
 
 ### 3. Normalize and Prioritize Findings
 

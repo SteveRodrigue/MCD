@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CardInstance } from '../../../engine/models';
+import { CardView } from './CardView';
 
 export interface CardAttachmentFanProps {
   attachments?: CardInstance[];
@@ -14,8 +15,6 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
   onSelectAttachment,
   className = '',
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const hasAttachments = attachments.length > 0;
   const hasCardsUnderneath = cardsUnderneath.length > 0;
 
@@ -24,11 +23,11 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
   }
 
   return (
-    <div className={`flex flex-col items-center w-full mt-1.5 space-y-1 ${className}`}>
+    <div className={`flex flex-col items-center w-full mt-2 relative ${className}`}>
       {/* 1. Tucked Face-Down Cards Underneath Badge (RR v1.8 p. 6) */}
       {hasCardsUnderneath && (
         <div
-          className="flex items-center gap-1 px-2 py-0.5 bg-slate-900/90 text-amber-300 border-2 border-amber-400/80 rounded-md text-[10px] font-black uppercase tracking-wider shadow-md shadow-black/60"
+          className="mb-1 flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-900 text-amber-300 border-2 border-amber-400 rounded-full text-[10px] font-comic uppercase tracking-wider shadow-comic-sm z-10"
           title="Face-down cards placed under this card (Out of play)"
         >
           <span>📦</span>
@@ -36,21 +35,10 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
         </div>
       )}
 
-      {/* 2. Face-Up Fan-Down Attachments (RR v1.8 p. 5) */}
+      {/* 2. Vertical Fan-Down Cascading Card Artwork Stack (RR v1.8 p. 5 / Issue #44) */}
       {hasAttachments && (
-        <div className="w-full flex flex-col items-center">
-          {/* Header pill / expand toggle */}
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center justify-between w-full px-2 py-0.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider rounded border-2 border-slate-950 shadow-sm transition-all"
-          >
-            <span>📎 {attachments.length} Attached</span>
-            <span>{isExpanded ? '▲ Less' : '▼ Details'}</span>
-          </button>
-
-          {/* Staggered Vertical Fan-Down Stack */}
-          <div className="w-full mt-1 flex flex-col space-y-1">
+        <div className="flex flex-col items-center w-full">
+          <div className="flex flex-col items-center w-full pt-1">
             {attachments.map((att, idx) => {
               const modifier = att.card.enrichment?.abilities?.find((a) =>
                 a.steps?.some((s) => s.effect === 'MODIFY_STAT'),
@@ -61,40 +49,51 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                   a.timing === 'HERO_ACTION' ||
                   a.timing === 'ALTER_EGO_ACTION' ||
                   a.timing === 'ACTION' ||
-                  a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT'),
+                  a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT' || s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'),
               );
 
               return (
                 <div
                   key={att.instanceId || `att_${idx}`}
-                  onClick={() => onSelectAttachment?.(att)}
-                  className="flex flex-col bg-slate-900/95 border-2 border-slate-950 rounded p-1.5 shadow-md shadow-black/50 text-left transition-all hover:border-amber-400 cursor-pointer"
+                  className={`relative flex flex-col items-center transition-all duration-200 ${
+                    idx > 0 ? '-mt-16 sm:-mt-20 hover:z-40' : 'hover:z-40'
+                  }`}
+                  style={{ zIndex: 10 + idx }}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-[11px] text-amber-200 truncate">
+                  {/* Top Badge: Name & Stat Modifier Pill */}
+                  <div className="flex items-center gap-1 mb-0.5 bg-slate-950/90 text-white border border-comic-black rounded px-1.5 py-0.5 shadow-comic-sm z-20">
+                    <span className="font-comic text-[9px] text-amber-300 font-bold truncate max-w-[90px]">
                       {att.card.name}
                     </span>
                     {statParam && (
-                      <span className="text-[10px] font-black px-1 py-0.2 bg-red-600 text-white rounded border border-slate-950">
+                      <span className="bg-comic-red text-white font-comic text-[8px] px-1 rounded font-bold">
                         +{String(statParam.amount)} {String(statParam.stat || '').substring(0, 3)}
                       </span>
                     )}
                   </div>
 
-                  {/* Attachment ability summary if expanded */}
-                  {isExpanded && (
-                    <div className="mt-1 text-[9px] text-slate-300 line-clamp-2 italic font-mono bg-slate-950/60 p-1 rounded">
-                      {att.card.text || 'Attached modifier card.'}
-                    </div>
-                  )}
+                  {/* Authentic CardView with Dynamic Hover Zoom */}
+                  <div
+                    onClick={() => onSelectAttachment?.(att)}
+                    className="cursor-pointer relative"
+                  >
+                    <CardView
+                      card={att.card}
+                      instance={att}
+                      size="sm"
+                      enableHoverZoom={true}
+                      zoomOrigin="bottom"
+                    />
 
-                  {hasAction && (
-                    <div className="mt-1 flex items-center justify-end">
-                      <span className="text-[9px] font-black text-amber-400 bg-amber-950/80 px-1 py-0.5 rounded border border-amber-500/40">
-                        ⚡ Action Available
-                      </span>
-                    </div>
-                  )}
+                    {/* Interactive Action Available Badge */}
+                    {hasAction && (
+                      <div className="absolute bottom-1 right-1 z-30 pointer-events-none">
+                        <span className="bg-amber-400 text-slate-950 font-comic text-[8px] font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm animate-bounce">
+                          ⚡ ACTION
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}

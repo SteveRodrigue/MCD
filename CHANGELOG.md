@@ -5,7 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
+- **Bug Fix & Engine: Universal Card Conservation, Atomic Zone Transfers & Villain Attachment Layout ([#44](https://github.com/SteveRodrigue/MCD/issues/44), [ADR-0040](docs/decisions/0040-universal-card-conservation-and-atomic-zone-transfer.md), `state-validator.ts`, `effects/index.ts`, `action-dispatcher.ts`, `CardAttachmentFan.tsx`, `card-conservation-and-attachment.test.ts`):**
+  - Resolved Bug #44 per Marvel Champions Rules Reference (RR v1.8 p. 5 "Attachment" & p. 6 "Cards Under Cards") and ADR-0040:
+    - **Card Conservation Invariant Engine:** Implemented \`assertCardConservation()\` in \`state-validator.ts\` to enforce the physical card conservation law (every card instance exists in $\\le 1$ active zone/slot across the entire game state tree, failing fast on any duplicate insertion).
+    - **Atomic Zone Transfers:** Implemented \`attachCardToHost()\` and \`removeCardFromAllZones()\` to guarantee that attaching cards to hosts automatically strips them from previous zones before placement, eliminating duplicate pre-placement in \`action-dispatcher.ts\`.
+    - **Comic Pop-Art Fan-Down Artwork Stack:** Redesigned \`CardAttachmentFan.tsx\` from plain text button blocks to genuine \`CardView\` components cascading in a vertical tabletop stack with dynamic mouseover zoom (\`enableHoverZoom={true}\`) and interactive action triggers.
+  - Added contract test suite in [\`card-conservation-and-attachment.test.ts\`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/card-conservation-and-attachment.test.ts).
 
 - **Bug Fix & Engine: Payment Generator Legality & Non-Resource Counter Cards Isolation ([#43](https://github.com/SteveRodrigue/MCD/issues/43), `legality-checker.ts`, `CardPaymentModal.tsx`, `tac-team-non-resource-generator.test.ts`):**
   - Resolved Bug #43 per Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability" & p. 8 "Cost"):

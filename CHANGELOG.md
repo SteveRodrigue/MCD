@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Data: Add `originalText` in Supplemental Audit Metadata ([#47](https://github.com/SteveRodrigue/MCD/issues/47), `schema.ts`, `01_metadata_and_audit.md`, `core.json`, `core_encounter.json`, `supplemental-schema.test.ts`):**
+  - Added `originalText: z.string().optional()` to `CardAuditRecordSchema` in `src/data/supplemental/schema.ts` and `CardAudit` analyzer interface.
+  - Aligned and populated exact printed rules text (`originalText`) directly above `reconstructedText` across all 156 cards in `src/data/supplemental/pack/core.json` and `src/data/supplemental/pack/core_encounter.json` for 100% self-contained auditability.
+  - Updated specifications (`docs/specifications/supplemental/01_metadata_and_audit.md`), agent instructions (`AGENTS.md`), and Card Integration Protocol (`.agents/skills/card-integration-protocol/SKILL.md`).
+  - Added schema and pack validation tests in `tests/data/supplemental-schema.test.ts`.
+
 - **Feature & Engine: Cost Arrow Mandatory Resolution, Trigger Pipeline & Self-Damage Cost Primitive ([#8](https://github.com/SteveRodrigue/MCD/issues/8), [#11](https://github.com/SteveRodrigue/MCD/issues/11), [ADR-0041](docs/decisions/0041-cost-arrow-mandatory-resolution-and-self-damage-costs.md), `trigger-dispatcher.ts`, `action-dispatcher.ts`, `cost-engine.ts`, `schema.ts`, `core.json`, `cost-arrow-forced-triggers.test.ts`):**
   - Delivered official Marvel Champions Rules Reference (RR v1.8 p. 8 "Cost", p. 15 "Forced", and p. 27 "Response") and ADR-0041:
     - **Forced Trigger Automated Cost Resolution:** `dispatchTrigger()` now automatically pays mandatory costs (`discardSelf`, `exhaustSelf`, `spendCounters`, `damageSelf`) on `FORCED_RESPONSE` and `FORCED_INTERRUPT` in-play abilities without player prompt loops (e.g. *Superhuman Strength* `01028` automatically discards itself and stuns the attacked enemy after She-Hulk attacks).

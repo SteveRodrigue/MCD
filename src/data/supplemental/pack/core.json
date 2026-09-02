@@ -10,6 +10,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.",
         "reconstructedText": "INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> Draw 1 card"
       },
       "mechanicSteps": [
@@ -43,6 +44,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)",
         "reconstructedText": "RESOURCE [Limit: once per round] -> Generate 1 [mental] resource"
       },
       "mechanicSteps": [
@@ -76,6 +78,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD_TOP_DECK_FILTER ({\"count\":2,\"filterResource\":\"mental\"})"
       },
       "attackCost": 0,
@@ -132,6 +135,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.",
         "reconstructedText": "INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":\"ALL\"})"
       },
       "mechanicSteps": [
@@ -166,6 +170,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects.",
         "reconstructedText": "HERO_INTERRUPT (Trigger: WHEN_REVEALED) [Cost: Discard this card] -> CANCEL_WHEN_REVEALED"
       },
       "mechanicSteps": [
@@ -199,6 +204,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 8 damage to an enemy.",
         "reconstructedText": "HERO_ACTION -> Deal 8 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -234,6 +240,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Aunt May → heal 4 damage from Peter Parker.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> Heal 4 damage from SELF"
       },
       "mechanicSteps": [
@@ -280,6 +287,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Attach to a minion.\n<b>Forced Interrupt</b>: When attached minion is defeated, remove 3 threat from a scheme.",
         "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: MINION_DEFEATED) -> WHEN_ATTACHED_HOST_DEFEATED (effect: REMOVE_THREAT, amount: 3)"
       },
       "mechanicSteps": [
@@ -323,6 +331,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Uses (3 web counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Hero Resource</b>: Exhaust Web-Shooter and remove 1 web counter from it → generate a [wild] resource.",
         "reconstructedText": "HERO_RESOURCE [Cost: Exhaust SELF, Spend 1 web counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
       },
       "mechanicSteps": [
@@ -367,6 +376,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
         "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
       },
       "mechanicSteps": [
@@ -403,6 +413,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Rechannel — <b>Action</b>: Spend a [energy] resource and heal 1 damage from Captain Marvel → draw 1 card. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Pre-check: Health < MaxHealth, Limit: 1/round] -> HEAL_DAMAGE (amount: 1, target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
@@ -438,6 +449,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Commander — <b>Action</b>: Choose a player to draw 1 card. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Draw 1 card"
       },
       "mechanicSteps": [
@@ -469,6 +481,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b>: After Spider-Woman enters play, confuse the villain.",
         "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> Give CONFUSED status to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -503,6 +516,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme.",
         "reconstructedText": "HERO_ACTION -> Remove 2 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -537,6 +551,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy. If you paid for this card using a [energy] resource, draw 1 card.",
         "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -553,6 +568,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "",
         "reconstructedText": "Vanilla card (no printed abilities)."
       },
       "mechanicSteps": [
@@ -587,6 +603,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers).",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> Draw 1 card"
       },
       "mechanicSteps": [
@@ -618,6 +635,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait).",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: DEFENSE, amount: 1, aerialBonus: 1)"
       },
       "mechanicSteps": [
@@ -663,6 +681,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Captain Marvel gains the [[Aerial]] trait.\n<b>Hero Interrupt</b> (<i>defense</i>): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage.",
         "reconstructedText": "CONSTANT -> ADD_TRAIT (trait: Aerial); HERO_INTERRUPT (Trigger: TAKE_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE (amount: 3)"
       },
       "mechanicSteps": [
@@ -728,6 +747,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here.",
         "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTERS (counterType: energy, amount: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_ON_TARGET, counterType: energy, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
@@ -759,6 +779,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "\"Do You Even Lift?\" — <b>Response</b>: After you change to this form, deal 2 damage to an enemy.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: FORM_CHANGED_TO_HERO) -> Deal 1 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -790,6 +811,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Remove 1 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -819,6 +841,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Return Hellcat to your hand.",
         "reconstructedText": "ACTION -> RETURN_TO_HAND (target: SELF)"
       },
       "mechanicSteps": [
@@ -850,6 +873,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained.",
         "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amountFormula: SUFFERED_DAMAGE, max: 15, target: ENEMY)"
       },
       "mechanicSteps": [
@@ -880,6 +904,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Deal 1 damage to each enemy.",
         "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
       },
       "mechanicSteps": [
@@ -917,6 +942,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b> <i>(thwart)</i>: Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Discard up to 5 cards from hand] -> REMOVE_THREAT (target: MAIN_SCHEME, scaling: PER_DISCARDED_CARD)"
       },
       "mechanicSteps": [
@@ -950,6 +976,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk.",
         "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) [Cost: Discard this card] -> Ready She-Hulk"
       },
       "mechanicSteps": [
@@ -984,6 +1011,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Change your form <i>(flip your identity card)</i>. Then, draw up to your printed hand size.",
         "reconstructedText": "ACTION -> SEQUENCE [FLIP_FORM, THEN -> DRAW_UP_TO_HAND_SIZE]"
       },
       "mechanicSteps": [
@@ -1020,6 +1048,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> Remove 2 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -1053,6 +1082,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Exhaust Focused Rage and take 1 damage → draw 1 card.",
         "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> Draw 1 card"
       },
       "mechanicSteps": [
@@ -1100,6 +1130,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 2); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> ADD_STATUS (status: STUNNED, target: ATTACK_TARGET)"
       },
       "mechanicSteps": [
@@ -1134,6 +1165,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum hand size of 7).",
         "reconstructedText": "CONSTANT -> MODIFY_HAND_SIZE (scaling: PER_MATCHING_CARD, filter: { trait: Tech, type_code: upgrade })"
       },
       "mechanicSteps": [
@@ -1175,6 +1207,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Futurist — <b>Action</b>: Look at the top 3 cards of your deck. Add 1 to your hand and discard the others. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> SEARCH_AND_SELECT (source: PLAYER_DECK, lookCount: 3, filter: { trait: Tech }, takeCount: 1, selectedDestination: HAND, unselectedDestination: DISCARD)"
       },
       "mechanicSteps": [
@@ -1209,6 +1242,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Action</b>: Exhaust War Machine and deal 2 damage to him → deal 1 damage to each enemy.",
         "reconstructedText": "ACTION [Cost: Exhaust War Machine and deal 2 damage to him] -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
       },
       "mechanicSteps": [
@@ -1242,6 +1276,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy.",
         "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST (discardCount: 5, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
@@ -1276,6 +1311,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait).",
         "reconstructedText": "HERO_ACTION -> Deal 4 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -1306,6 +1342,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Resource</b>: Exhaust Pepper Potts → generate the resources of the top card in your discard pile.",
         "reconstructedText": "RESOURCE [Cost: Exhaust SELF] -> GENERATE_TOP_DISCARD_RESOURCES"
       },
       "mechanicSteps": [
@@ -1339,6 +1376,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_TECH_UPGRADE_FROM_DISCARD (trait: Tech, type: upgrade)"
       },
       "mechanicSteps": [
@@ -1371,6 +1409,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Exhaust Arc Reactor → ready Iron Man.",
         "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_IDENTITY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
@@ -1402,6 +1441,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "You get +6 hit points.",
         "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 6)"
       },
       "mechanicSteps": [
@@ -1437,6 +1477,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Exhaust Mark V Helmet → remove 1 threat from a scheme (from each scheme instead if you have the [[Aerial]] trait).",
         "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> Remove 1 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -1474,6 +1515,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait).",
         "reconstructedText": "HERO_ACTION [Cost: Exhaust, Spend 1 [energy]] -> Deal 1 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -1522,6 +1564,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "You get +1 hit point.\n<b>Hero Action</b>: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase.",
         "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 1); HERO_ACTION [Cost: Exhaust + Energy] -> GRANT_KEYWORD (keyword: Aerial)"
       },
       "mechanicSteps": [
@@ -1553,6 +1596,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Retaliate 1. <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>",
         "reconstructedText": "CONSTANT -> GRANT_KEYWORD (keyword: Retaliate 1)"
       },
       "mechanicSteps": [
@@ -1591,6 +1635,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Foresight — <b>Setup</b>: Search your deck for a [[Black Panther]] upgrade and add it to your hand. Shuffle your deck.",
         "reconstructedText": "SETUP -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { trait: Black Panther, type: upgrade }, selectedDestination: TABLEAU, shuffleAfter: true)"
       },
       "mechanicSteps": [
@@ -1629,6 +1674,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Response</b>: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck.",
         "reconstructedText": "RESPONSE [Trigger: CARD_PLAYED] -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { type: upgrade }, selectedDestination: HAND, shuffleAfter: true)"
       },
       "mechanicSteps": [
@@ -1658,6 +1704,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b>: Choose up to 3 different cards in your discard pile and shuffle them into your deck.",
         "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK (count: 3)"
       },
       "mechanicSteps": [
@@ -1685,6 +1732,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
         "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
       },
       "mechanicSteps": [
@@ -1712,6 +1760,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
         "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
       },
       "mechanicSteps": [
@@ -1739,6 +1788,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
         "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
       },
       "mechanicSteps": [
@@ -1766,6 +1816,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
         "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
       },
       "mechanicSteps": [
@@ -1782,6 +1833,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "",
         "reconstructedText": "Vanilla card (no printed abilities)."
       },
       "mechanicSteps": [
@@ -1814,6 +1866,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust The Golden City → draw 2 cards.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> Draw 2 cards"
       },
       "mechanicSteps": [
@@ -1844,6 +1897,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Special</b>: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
         "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES (baseAmount: 1, finisherBonus: 1)"
       },
       "mechanicSteps": [
@@ -1878,6 +1932,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Special</b> <i>(attack)</i>: Deal 2 damage to an enemy (4 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
         "reconstructedText": "SPECIAL -> Deal 0 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -1912,6 +1967,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Special</b> <i>(thwart)</i>: Remove 1 threat from a scheme (2 threat instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
         "reconstructedText": "SPECIAL -> Remove 0 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -1944,6 +2000,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Special</b> <i>(attack)</i>: Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
         "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE (baseAmount: 1, finisherBonus: 1, from: SELF, to: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
@@ -1972,6 +2029,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Forced Response</b>: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:\n[physical] - Deal 2 damage to an enemy.\n[energy] - Deal 1 damage to each character.\n[mental] - Discard Hulk.\n[wild] - All of the above.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK) -> HULK_DISCARD_RESOLUTION"
       },
       "mechanicSteps": [
@@ -2004,6 +2062,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b>: After Tigra attacks and defeats a minion, heal 1 damage from her.",
         "reconstructedText": "RESPONSE (Trigger: MINION_DEFEATED_BY_ATTACK) -> Heal 1 damage from SELF"
       },
       "mechanicSteps": [
@@ -2035,6 +2094,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b> <i>(thwart)</i>: After your hero attacks and defeats an enemy, remove 2 threat from a scheme.",
         "reconstructedText": "RESPONSE (Trigger: ENEMY_DEFEATED_BY_HERO_ATTACK) -> Remove 2 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -2070,6 +2130,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. <i>(Excess damage from this attack is dealt to the villain.)</i>",
         "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_MINION"
       },
       "mechanicSteps": [
@@ -2103,6 +2164,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy.",
         "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -2118,6 +2180,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Aggression <i>(red)</i> card.",
         "reconstructedText": "RESOURCE -> Double resources when paying for an Aggression (red) card."
       },
       "mechanicSteps": [
@@ -2174,6 +2237,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Uses (3 attack counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy.",
         "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 attack counter] -> Deal 2 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -2205,6 +2269,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
       },
       "mechanicSteps": [
@@ -2236,6 +2301,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b>: After Daredevil thwarts, deal 1 damage to an enemy.",
         "reconstructedText": "RESPONSE (Trigger: THWART_RESOLVED) -> Deal 1 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -2268,6 +2334,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Jessica Jones gets +1 THW for each side scheme in play.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, scaling: PER_SIDE_SCHEME, maxBonus: 4)"
       },
       "mechanicSteps": [
@@ -2302,6 +2369,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 3 threat from a scheme (4 threat instead if you paid for this card using a [mental] resource).",
         "reconstructedText": "HERO_ACTION -> Remove 3 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -2333,6 +2401,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Hero Interrupt</b>: When any amount of threat would be placed on a scheme, you take it as damage instead.",
         "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Take threat as damage on hero"
       },
       "mechanicSteps": [
@@ -2350,6 +2419,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Justice <i>(yellow)</i> card.",
         "reconstructedText": "RESOURCE -> Double resources when paying for a Justice (yellow) card."
       },
       "mechanicSteps": [
@@ -2400,6 +2470,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 1 per player.\n<b>Response</b>: After you defeat a minion, exhaust Interrogation Room → remove 1 threat from a scheme.",
         "reconstructedText": "RESPONSE (Trigger: MINION_DEFEATED) [Cost: Exhaust] -> Remove 1 threat from MAIN_SCHEME"
       },
       "mechanicSteps": [
@@ -2444,6 +2515,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Uses (3 snoop counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Surveillance Team and remove 1 snoop counter from it → remove 1 threat from a scheme.",
         "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 snoop counter] -> Remove 1 threat from CHOSEN_SCHEME"
       },
       "mechanicSteps": [
@@ -2476,6 +2548,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 THW.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1)"
       },
       "mechanicSteps": [
@@ -2518,6 +2591,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Hawkeye enters play with 4 arrow counters on him.\n<b>Response</b>: After a minion enters play, remove 1 arrow counter from Hawkeye → deal 2 damage to that minion.",
         "reconstructedText": "RESPONSE (Trigger: MINION_ENTERS_PLAY) [Cost: Spend 1 arrow counter] -> Deal 2 damage to TRIGGERING_MINION"
       },
       "mechanicSteps": [
@@ -2549,6 +2623,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b>: After Maria Hill enters play, each player draws 1 card.",
         "reconstructedText": "RESPONSE (CARD_PLAYED) -> DRAW_CARDS (count: 1, target: ALL_PLAYERS)"
       },
       "mechanicSteps": [
@@ -2587,6 +2662,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)",
         "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE (amount: 2, options: [ATK, THW])"
       },
       "mechanicSteps": [
@@ -2616,6 +2692,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Ready an ally.",
         "reconstructedText": "ACTION -> READY_CHARACTER (target: CHOSEN_ALLY)"
       },
       "mechanicSteps": [
@@ -2647,6 +2724,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase.",
         "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS (atkBonus: 1, thwBonus: 1, duration: PHASE_END)"
       },
       "mechanicSteps": [
@@ -2662,6 +2740,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control.",
         "reconstructedText": "ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control."
       },
       "mechanicSteps": [
@@ -2691,6 +2770,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Leadership <i>(blue)</i> card.",
         "reconstructedText": "RESOURCE -> Double resources when paying for a Leadership (blue) card."
       },
       "mechanicSteps": [
@@ -2735,6 +2815,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Increase your ally limit by 1. <i>(This allows you to control more than 3 allies.)</i>",
         "reconstructedText": "CONSTANT -> MODIFY_ALLY_LIMIT (amount: 1)"
       },
       "mechanicSteps": [
@@ -2791,6 +2872,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK.",
         "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_ALLY, maxPerHost: 1); CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
       },
       "mechanicSteps": [
@@ -2826,6 +2908,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Interrupt</b>: When a card is revealed from the encounter deck, exhaust Black Widow and spend a [mental] resource → cancel the effects of that card and discard it. Then, reveal another card from the encounter deck.",
         "reconstructedText": "INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER"
       },
       "mechanicSteps": [
@@ -2856,6 +2939,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>",
         "reconstructedText": "SETUP -> Give TOUGH status to SELF"
       },
       "mechanicSteps": [
@@ -2891,6 +2975,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Response</b> <i>(attack)</i>: After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK.",
         "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> Deal damage equal to hero's ATK to that enemy"
       },
       "mechanicSteps": [
@@ -2924,6 +3009,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects. The villain attacks you instead.",
         "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card] -> Cancel When Revealed effects, Villain attacks you instead"
       },
       "mechanicSteps": [
@@ -2941,6 +3027,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Protection <i>(green)</i> card.",
         "reconstructedText": "RESOURCE -> Double resources when paying for a Protection (green) card."
       },
       "mechanicSteps": [
@@ -2997,6 +3084,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Uses (3 medical counters). <i>(Enters play with 3 counters. When those are gone, discard this card.)</i>\n<b>Action</b>: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character.",
         "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 medical counter] -> Heal 2 damage from CHOSEN_CHARACTER"
       },
       "mechanicSteps": [
@@ -3028,6 +3116,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (DEFENSE +1)"
       },
       "mechanicSteps": [
@@ -3061,6 +3150,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Response</b>: After your hero defends, discard indomitable → ready your hero.",
         "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)"
       },
       "mechanicSteps": [
@@ -3092,6 +3182,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Response</b>: After Mockingbird enters play, stun an enemy.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> Give STUNNED status to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -3165,6 +3256,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him.",
         "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]) + FORCED_RESPONSE (ROUND_END) -> DISCARD_SELF"
       },
       "mechanicSteps": [
@@ -3202,6 +3294,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "<b>Interrupt</b> <i>(thwart)</i>: When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
         "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from the scheme"
       },
       "mechanicSteps": [
@@ -3234,6 +3327,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Action</b>: Heal 2 damage from any character.",
         "reconstructedText": "ACTION -> Heal 2 damage from CHOSEN_CHARACTER"
       },
       "mechanicSteps": [
@@ -3267,6 +3361,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 3 damage to an enemy.",
         "reconstructedText": "HERO_ACTION -> Deal 3 damage to CHOSEN_ENEMY"
       },
       "mechanicSteps": [
@@ -3282,6 +3377,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Max 1 per deck.",
         "reconstructedText": "Passive/Vanilla: Max 1 per deck."
       },
       "mechanicSteps": [
@@ -3298,6 +3394,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Max 1 per deck.",
         "reconstructedText": "Passive/Vanilla: Max 1 per deck."
       },
       "mechanicSteps": [
@@ -3314,6 +3411,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "originalText": "Max 1 per deck.",
         "reconstructedText": "Passive/Vanilla: Max 1 per deck."
       },
       "mechanicSteps": [
@@ -3349,6 +3447,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Avengers Mansion → choose a player. That player draws 1 card.",
         "reconstructedText": "ACTION [Cost: Exhaust] -> Draw 1 card"
       },
       "mechanicSteps": [
@@ -3365,6 +3464,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1.",
         "reconstructedText": "ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1."
       },
       "mechanicSteps": [
@@ -3418,6 +3518,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "originalText": "<b>Hero Action</b>: Spend a [physical] resource and discard this card → ready your hero.",
         "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_IDENTITY (target: SELF)"
       },
       "mechanicSteps": [

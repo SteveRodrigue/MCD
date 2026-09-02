@@ -9,6 +9,8 @@ export type AbilityTiming =
   | 'ALTER_EGO_ACTION'
   | 'ACTION'
   | 'RESOURCE'
+  | 'HERO_RESOURCE'
+  | 'ALTER_EGO_RESOURCE'
   | 'FORCED_RESPONSE'
   | 'RESPONSE'
   | 'HERO_RESPONSE'

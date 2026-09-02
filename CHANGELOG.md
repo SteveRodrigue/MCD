@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix & Engine: Universal Resource Ability Timing Triad, Form Gating & Payment Window Isolation ([#42](https://github.com/SteveRodrigue/MCD/issues/42), [ADR-0039](docs/decisions/0039-universal-resource-ability-timing-triad-and-form-gating.md), `abilities.ts`, `schema.ts`, `cost-engine.ts`, `legal-actions-generator.ts`, `action-dispatcher.ts`, `CardPaymentModal.tsx`, `core.json`, `resource-abilities-timing.test.ts`):**
+  - Resolved Bug #42 per Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability" & p. 14 "Form") and ADR-0039:
+    - **First-Class Resource Timing Triad:** Standardized \`HERO_RESOURCE\` and \`ALTER_EGO_RESOURCE\` in \`AbilityTiming\` and Zod schema alongside \`RESOURCE\`, completing the symmetric 3-stance taxonomy across Actions, Interrupts, Responses, and Resources.
+    - **Payment Window Isolation:** Updated \`getLegalActionsForPlayer()\` to strictly exclude all resource generation abilities from standalone board actions in the Daily Bugle action newspaper, preventing resource generation outside active cost payment windows.
+    - **Form-Gated Payment Discovery:** Integrated \`isAbilityPlayableInForm()\` into \`CardPaymentModal.tsx\` and \`action-dispatcher.ts\`, properly gating \`HERO_RESOURCE\` (Hero-only) and \`ALTER_EGO_RESOURCE\` (Alter-Ego-only) during card and ability cost payments.
+    - **Declarative Supplemental Retrofit:** Corrected *Web-Shooter* (\`01008\`) timing from \`HERO_ACTION\` to \`HERO_RESOURCE\` and *Pepper Potts* (\`01033\`) timing from \`ACTION\` to \`RESOURCE\` in \`src/data/supplemental/pack/core.json\` with 100% confidence audit metadata.
+    - **2-Tier Architecture for Multi-Form & Fan-Made Content:** Tier 1 handles stance gating via timing enums, while Tier 2 handles sub-form traits (*Tiny*, *Giant*, *Dense*, *Intangible*, *Solid*, *Phased*, *Archangel*, *Photon*) via \`cost.requiredSubForm\` and \`cost.requiredTrait\`.
+  - Added comprehensive contract test suite in [\`resource-abilities-timing.test.ts\`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/resource-abilities-timing.test.ts).
+
 - **Feature & Engine: Hero Setup Abilities Execution during Step 14 of Scenario Setup ([#16](https://github.com/SteveRodrigue/MCD/issues/16), `game-setup.ts`, `scenario-setup-step14-hero-setup.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 27 ("Step 14: Resolve Character Setup Abilities") state machine in `src/engine/state/game-setup.ts`:
     - **Universal Step 14 Pipeline:** Automatically scans each player's identity cards (`alterEgo` and `hero`) and tableau for `timing === "SETUP"` abilities after opening hands and mulligans are resolved (Step 13) and before Round 1 begins (Step 15).

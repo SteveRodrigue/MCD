@@ -1,4 +1,4 @@
-import { GameState, PlayerState, CardInstance, CardAbility } from '../models';
+import { GameState, PlayerState, CardInstance, CardAbility, AbilityTiming } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 
 export interface AbilityPaymentOptions {
@@ -246,4 +246,20 @@ export function executeAbilityCost(
   }
 
   return { state, discardedCount };
+}
+
+/**
+ * Returns true if the specified timing is a resource generation timing (ADR-0039).
+ */
+export function isResourceAbility(timing: AbilityTiming): boolean {
+  return timing === 'RESOURCE' || timing === 'HERO_RESOURCE' || timing === 'ALTER_EGO_RESOURCE';
+}
+
+/**
+ * Returns true if the specified ability timing is legal in the current identity form (ADR-0039).
+ */
+export function isAbilityPlayableInForm(timing: AbilityTiming, currentForm: 'hero' | 'alter_ego'): boolean {
+  if (timing.startsWith('HERO_') && currentForm !== 'hero') return false;
+  if (timing.startsWith('ALTER_EGO_') && currentForm !== 'alter_ego') return false;
+  return true;
 }

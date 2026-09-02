@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Status:** 🟢 `IMPLEMENTED (v1.0)`  
-> Validated via [`TimingTypeSchema`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts#L25) and [`TriggerTypeSchema`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts#L48).
+> Validated via [`TimingTypeSchema`](../../../src/data/supplemental/schema.ts#L25) and [`TriggerTypeSchema`](../../../src/data/supplemental/schema.ts#L48).
 
 ---
 

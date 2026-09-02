@@ -6,7 +6,7 @@
 
 ### `DEAL_DAMAGE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L43))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43))
 - **Description:** Deals flat or dynamically calculated damage to target enemy or character. Handles Tough status removal, overkill, and character defeat.
 
 ```json
@@ -67,7 +67,7 @@
 
 ### `REMOVE_THREAT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L120`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L120))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L120`](../../../src/engine/effects/index.ts#L120))
 - **Description:** Removes threat from Main Scheme, Side Scheme, or chosen scheme. Enforces Crisis keyword restrictions.
 
 ```json
@@ -84,7 +84,7 @@
 
 ### `ADD_THREAT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L2569`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L2569))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L2569`](../../../src/engine/effects/index.ts#L2569))
 - **Description:** Adds threat to the main scheme.
 
 > [!NOTE]
@@ -105,7 +105,7 @@
 
 ### `ADD_THREAT_PER_PLAYER`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1498`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1498))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1498`](../../../src/engine/effects/index.ts#L1498))
 - **Description:** Adds `amount` × (number of players) threat. `target` defaults to `THIS_SIDE_SCHEME`, resolved from the source card instance.
 
 ```json

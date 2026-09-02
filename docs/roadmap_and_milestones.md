@@ -239,5 +239,5 @@ _Objective: Scale the engine to support advanced expansion mechanics, new card t
 - **Context:** In the upstream `zzorba/marvelsdb-json-data` Core Set encounter pack (`core_encounter.json` / pack code `01`), the asset file mapping for Main Scheme cards is inverted compared to all subsequent expansion sets:
   - **Core Set (`01xxx`):** Stage 1A (Setup face) maps to image `xxxxb.png`, while Stage 1B (Active threat face) maps to image `xxxx.png`.
   - **All Other Expansions (`02xxx`, `16xxx`, `24xxx`, etc.):** Stage A maps to `xxxx.png` (or `xxxxa.png`), while Stage B maps to `xxxxb.png`.
-- **MCD Handling:** Encapsulated in [`resolveMainSchemeArtFileName()`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/services/card-cache-service.ts) in `src/ui/services/card-cache-service.ts`.
+- **MCD Handling:** Encapsulated in [`resolveMainSchemeArtFileName()`](../src/ui/services/card-cache-service.ts) in `src/ui/services/card-cache-service.ts`.
 - **Action Item:** Consider submitting a PR / issue upstream to `zzorba/marvelsdb-json-data` to standardize Core Set image naming conventions (Low priority).

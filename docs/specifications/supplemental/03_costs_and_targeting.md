@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Status:** 🟢 `IMPLEMENTED (v1.0)`  
-> Validated via [`AbilityCostSchema`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts#L154), [`TargetSelectorSchema`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts#L80), and [`FilterSchema`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts#L101).
+> Validated via [`AbilityCostSchema`](../../../src/data/supplemental/schema.ts#L154), [`TargetSelectorSchema`](../../../src/data/supplemental/schema.ts#L80), and [`FilterSchema`](../../../src/data/supplemental/schema.ts#L101).
 
 ---
 

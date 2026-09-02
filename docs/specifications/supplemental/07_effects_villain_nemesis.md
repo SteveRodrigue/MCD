@@ -41,7 +41,7 @@
 ## 2. Nemesis Spawning Pipeline
 
 ### `SPAWN_NEMESIS`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L792`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L792) / *Shadow of the Past* `01190`)
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L792`](../../../src/engine/effects/index.ts#L792) / *Shadow of the Past* `01190`)
 * **Description:**
   1. Identifies the resolving hero's canonical nemesis set code (`heroSetCode_nemesis`).
   2. Extracts all matching cards from `player.setAsideCards`.

@@ -55,7 +55,7 @@ You can use the following prompt templates to invoke specialized skills and work
 
 > **Checking Official Rules Rulings (RR v1.8):**
 > ```text
-> Check references/rules_reference_v18.md and references/links.md for official rulings on "Forced Interrupt" vs "Interrupt".
+> Check references/mc_rulesreference_v18_compressed.pdf and references/links.md for official rulings on "Forced Interrupt" vs "Interrupt".
 > ```
 
 > **Checking Algorithmic Card Specifications:**
@@ -91,7 +91,7 @@ You can use the following prompt templates to invoke specialized skills and work
 1. **Ingest Text:** Read exact text from `data/upstream/`.
 2. **Literal Semantic Mapping:** Identify timing, triggers, costs, targets (no guessing).
 3. **Draft Schema:** Define `audit` block (`YYYY-MM-DDTHH:mm`), `mechanicSteps`, and `abilities`.
-4. **Consult Ground Truth:** Check `references/rules_reference_v18.md` and MarvelCDB FAQs.
+4. **Consult Ground Truth:** Check `references/mc_rulesreference_v18_compressed.pdf` and MarvelCDB FAQs.
 5. **Round-Trip Test:** Confidence must be $\ge 95\%$ (Max 3 attempts, else log to `docs/ambiguities/`).
 6. **Engine Reuse Check:** Check `src/engine/effects/` & `src/engine/triggers/`.
 7. **Composable Primitives:** Build generic, reusable operations (e.g. Deck Inspection, Filter).

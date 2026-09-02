@@ -6,7 +6,7 @@
 
 ### `ADD_STATUS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1180`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1180))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1180`](../../../src/engine/effects/index.ts#L1180))
 - **Description:** Attaches a `STUNNED`, `CONFUSED`, or `TOUGH` status card to the target character. `target` defaults to `VILLAIN`; Stalwart immunity and Steady thresholds are enforced during application.
 
 ```json
@@ -32,7 +32,7 @@
 
 ### `GENERATE_RESOURCE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1123`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1123) / _Web-Shooter_ `01008`, _Helicarrier_ `01092`)
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1123`](../../../src/engine/effects/index.ts#L1123) / _Web-Shooter_ `01008`, _Helicarrier_ `01092`)
 - **Description:** Contributes resources to the active payment window. `resource` defaults to `"wild"` and `amount` defaults to `1`.
 
 ```json
@@ -50,7 +50,7 @@
 ### `DOUBLE_RESOURCE_FOR_ASPECT`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#22](https://github.com/SteveRodrigue/MCD/issues/22) - _The Power of Aggression/Justice/Leadership/Protection_)
-- **Description:** Doubles the card's resource output when it is spent towards paying for a card matching `aspect`. Resolved in the payment window ([`legality-checker.ts:L711`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/pipeline/legality-checker.ts#L711) and `CardPaymentModal.tsx`), not through the `switch (step.effect)` executor.
+- **Description:** Doubles the card's resource output when it is spent towards paying for a card matching `aspect`. Resolved in the payment window ([`legality-checker.ts:L711`](../../../src/engine/pipeline/legality-checker.ts#L711) and `CardPaymentModal.tsx`), not through the `switch (step.effect)` executor.
 - **Declared by:** 4 cards in `core.json` under `"timing": "RESOURCE"`.
 
 ```json

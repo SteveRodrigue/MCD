@@ -6,7 +6,7 @@
 
 ### `DRAW_CARDS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L43))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43))
 - **Description:** Draws N cards from target player's draw deck into hand. Handles deck reshuffle and acceleration token penalties.
 
 ```json
@@ -58,7 +58,7 @@
 
 ### `SCRY_AND_SELECT_TRAIT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1343`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1343) / _Tony Stark_ `01029b` Futurist)
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1343`](../../../src/engine/effects/index.ts#L1343) / _Tony Stark_ `01029b` Futurist)
 - **Description:** Looks at the top `lookCount` cards of the player deck, opens an interactive `PendingDecisionPrompt` allowing the player to take one card matching `trait` into hand (or decline), and discards the rest via `RESOLVE_SCRY_SELECTION`.
 
 ```json
@@ -75,7 +75,7 @@
 
 ### `CHANGE_FORM_DRAW_TO_HAND_SIZE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1082`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/engine/effects/index.ts#L1082) / _Split Personality_ `01025`)
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1082`](../../../src/engine/effects/index.ts#L1082) / _Split Personality_ `01025`)
 - **Description:** Flips the player's active identity card to their alternate form independently without consuming or requiring their basic once-per-round form change action (`basicChangeFormUsedThisRound`), then draws cards from deck up to the printed hand size limit of the newly active form.
 
 ```json

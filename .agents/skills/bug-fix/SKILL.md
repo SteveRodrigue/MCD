@@ -13,6 +13,8 @@ description: >-
 
 # 🛠️ Bug-Fix Protocol (Standard TDD & GitHub Issue Lifecycle Workflow)
 
+**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+
 This skill guides the agent through an authoritative, test-first, and issue-tracked protocol to resolve defects safely, deterministically, and with zero regressions.
 
 ---

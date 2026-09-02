@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Bug Fix & Engine: Payment Generator Legality & Non-Resource Counter Cards Isolation ([#43](https://github.com/SteveRodrigue/MCD/issues/43), `legality-checker.ts`, `CardPaymentModal.tsx`, `tac-team-non-resource-generator.test.ts`):**
+  - Resolved Bug #43 per Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability" & p. 8 "Cost"):
+    - **Genuine Generator Verification:** Updated \`evaluateCardPlayability()\` in \`legality-checker.ts\` to enforce that any in-play generator in \`generatorInstanceIds\` possesses a genuine resource ability (\`isResourceAbility(a.timing)\`) or resource/cost-reducing effect step (\`GENERATE_RESOURCE\`, \`COST_REDUCER\`, \`GENERATE_TOP_DISCARD_RESOURCES\`, \`DOUBLE_RESOURCE_FOR_ASPECT\`).
+    - **Non-Resource Counter Exclusion:** Non-resource counter cards (e.g. *Tac Team* \`01056\` with attack counters, *Med Team* \`01080\` with medical counters, *Surveillance Team* \`01064\`, *Energy Channel* \`01018\`) are strictly excluded from payment modal discovery and rejected during \`PLAY_CARD\` validation.
+    - **Preserved Counter Resource Generators:** Genuine counter-based resource generators (e.g. *Web-Shooter* \`01008\`, *Enhanced Reflexes* \`05024\`, *Enhanced Physique* \`06034\`) continue to be discoverable in the payment modal, exhausting and decrementing 1 counter upon payment.
+  - Added contract test suite in [\`tac-team-non-resource-generator.test.ts\`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/tac-team-non-resource-generator.test.ts).
+
 - **Bug Fix & Engine: Universal Resource Ability Timing Triad, Form Gating & Payment Window Isolation ([#42](https://github.com/SteveRodrigue/MCD/issues/42), [ADR-0039](docs/decisions/0039-universal-resource-ability-timing-triad-and-form-gating.md), `abilities.ts`, `schema.ts`, `cost-engine.ts`, `legal-actions-generator.ts`, `action-dispatcher.ts`, `CardPaymentModal.tsx`, `core.json`, `resource-abilities-timing.test.ts`):**
   - Resolved Bug #42 per Marvel Champions Rules Reference (RR v1.8 p. 25 "Resource Ability" & p. 14 "Form") and ADR-0039:
     - **First-Class Resource Timing Triad:** Standardized \`HERO_RESOURCE\` and \`ALTER_EGO_RESOURCE\` in \`AbilityTiming\` and Zod schema alongside \`RESOURCE\`, completing the symmetric 3-stance taxonomy across Actions, Interrupts, Responses, and Resources.

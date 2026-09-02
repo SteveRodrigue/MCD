@@ -156,7 +156,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
 
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau[0].exhausted).toBe(true);
-      expect(res.state.villain.health).toBe(initialVillainHealth - 2);
+      expect(res.state.villain.health).toBe(initialVillainHealth - 1);
     });
   });
 });

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-02T01:30:36.785Z`  
+> **Generated:** `2026-09-02T01:46:04.875Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -312,9 +312,9 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01019a` She-Hulk (hero), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally) *(+24 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
-| `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01021` Gamma Slam (event) *(+19 more)* |
+| `HERO_ACTION` | **23** | `01005` Swinging Web Kick (event), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01021` Gamma Slam (event) *(+18 more)* |
 | `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
-| `ACTION` | **13** | `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01056` Tac Team (support), `01064` Surveillance Team (support) *(+8 more)* |
+| `ACTION` | **14** | `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally), `01056` Tac Team (support) *(+9 more)* |
 | `ALTER_EGO_ACTION` | **11** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01019b` Jennifer Walters (alter_ego) *(+6 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
 | `INTERRUPT` | **6** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01061` Great Responsibility (event), `01075` Black Widow (ally), `01078` Get Behind Me! (event) *(+1 more)* |
@@ -343,7 +343,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `discardFromHand` | **1** | `01015` Alpha Flight Station (support) |
 | `discardCard` | **1** | `01023` Legal Practice (event) |
 | `takeDamage` | **1** | `01027` Focused Rage (upgrade) |
-| `damageHero` | **1** | `01030` War Machine (ally) |
+| `damageSelf` | **1** | `01030` War Machine (ally) |
 | `resources` | **1** | `01039` Rocket Boots (upgrade) |
 
 ### Target Selectors:

@@ -125,6 +125,10 @@ graph TD
   - Implemented the official End of Player Phase clean-up sequence in a dedicated module (`src/engine/pipeline/player-phase-cleanup.ts`):
   - In player order starting from the First Player, prompts active players with voluntary multi-select discard decision prompts.
   - Draws up to effective hand size and readies identities, allies, and tableau upgrades/supports *before* the Villain Phase begins.
+* [x] **Cost Arrow Mandatory Resolution & Self-Damage Cost Primitives (RR v1.8 p. 8, 15 / [ADR-0041](decisions/0041-cost-arrow-mandatory-resolution-and-self-damage-costs.md) / [Issue #8](https://github.com/SteveRodrigue/MCD/issues/8) & [Issue #11](https://github.com/SteveRodrigue/MCD/issues/11)) ✅ (Completed):**
+  - Automated mandatory cost resolution on `FORCED_RESPONSE` and `FORCED_INTERRUPT` triggers (*Superhuman Strength* `01028` discard self + stun).
+  - Integrated `BASIC_ATTACK_PERFORMED`, `ATTACK_RESOLVED`, and `THWART_RESOLVED` lifecycle triggers in `action-dispatcher.ts`.
+  - Formalized direct character self-damage cost primitive (`cost.damageSelf`) in `cost-engine.ts` with automated ally defeat handling (*War Machine* `01030`).
 * [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
   - Executed Card Integration Protocol across all 23 ambiguity files.
   - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.

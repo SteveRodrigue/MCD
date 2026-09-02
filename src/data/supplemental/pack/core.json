@@ -1182,20 +1182,20 @@
       ]
     },
     "01030": {
-      "comment": "ALLY: War Machine. Action: Exhaust War Machine and deal 2 damage to him -> deal 2 damage to each enemy.",
+      "comment": "ALLY: War Machine. Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy.",
       "abilities": [
         {
           "id": "war_machine_action",
-          "timing": "HERO_ACTION",
+          "timing": "ACTION",
           "cost": {
             "exhaustSelf": true,
-            "damageHero": 2
+            "damageSelf": 2
           },
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amount": 2,
+                "amount": 1,
                 "target": "ALL_ENEMIES"
               }
             }
@@ -1204,17 +1204,15 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-30T17:09",
-        "reviewedAt": "2026-08-30T17:09",
+        "updatedAt": "2026-09-01T21:44:00Z",
+        "reviewedAt": "2026-09-01T21:44:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust + 2 Damage to Self] -> DEAL_DAMAGE (amount: 2, target: ALL_ENEMIES)"
+        "confidence": 100,
+        "reconstructedText": "ACTION [Cost: Exhaust War Machine and deal 2 damage to him] -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
       },
       "mechanicSteps": [
-        "Action: Hero Action",
-        "Cost: Exhaust War Machine and deal 2 damage to him",
-        "Effect: Deal 2 damage to each enemy (villain and each minion in play)"
+        "Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy."
       ]
     },
     "01031": {

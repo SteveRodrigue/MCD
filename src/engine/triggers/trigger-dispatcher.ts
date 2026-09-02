@@ -3,6 +3,7 @@ import {
   TriggerType,
 } from '@engine/models';
 import { executeEffect } from '../effects';
+import { executeAbilityCost } from '../pipeline/cost-engine';
 
 export interface TriggerContext {
   targetPlayerId: string;
@@ -10,6 +11,8 @@ export interface TriggerContext {
   damageAmount?: number;
   preventedDamage?: boolean;
   threatAmount?: number;
+  targetType?: string;
+  targetInstanceId?: string;
 }
 
 export interface TriggerDispatchResult {
@@ -39,7 +42,14 @@ export function dispatchTrigger(
   const identityAbilities = player.activeFormCard.enrichment?.abilities || [];
   for (const ability of identityAbilities) {
     if (ability.trigger === trigger) {
-      executeEffect(state, ability, { playerId: player.id });
+      if (ability.cost && (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')) {
+        executeAbilityCost(state, player, ability);
+      }
+      executeEffect(state, ability, {
+        playerId: player.id,
+        targetType: context.targetType as any,
+        targetInstanceId: context.targetInstanceId,
+      });
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -51,11 +61,19 @@ export function dispatchTrigger(
   }
 
   // 2. Scan tableau & in-play cards
-  for (const cardInst of player.tableau) {
+  for (const cardInst of [...player.tableau, ...(player.attachments || [])]) {
     const abilities = cardInst.card.enrichment?.abilities || [];
     for (const ability of abilities) {
       if (ability.trigger === trigger && !cardInst.exhausted) {
-        executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInst });
+        if (ability.cost && (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')) {
+          executeAbilityCost(state, player, ability, cardInst);
+        }
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInst,
+          targetType: context.targetType as any,
+          targetInstanceId: context.targetInstanceId,
+        });
       }
     }
   }

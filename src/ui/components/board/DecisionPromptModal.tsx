@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { Sparkles, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { WakandaForeverModal } from './WakandaForeverModal';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
-  onSelectOption: (optionId: string) => void;
+  onSelectOption: (optionId: string, payload?: any) => void;
 }
 
 export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
@@ -16,6 +17,18 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
 
   if (!prompt) return null;
+
+  // Delegate Wakanda Forever sequence resolution to specialized modal (ADR-0038)
+  if (prompt.sourceCardName === 'Wakanda Forever!' || prompt.title?.includes('Wakanda Forever')) {
+    return (
+      <WakandaForeverModal
+        prompt={prompt}
+        onExecuteSequence={(sequenceOrder) => {
+          onSelectOption(sequenceOrder[0] || 'wf_execute', { sequenceOrder });
+        }}
+      />
+    );
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">

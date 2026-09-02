@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Universal Special Ability Plugin Architecture & Wakanda Forever! Sequential Ordering ([#18](https://github.com/SteveRodrigue/MCD/issues/18), [#19](https://github.com/SteveRodrigue/MCD/issues/19), [#20](https://github.com/SteveRodrigue/MCD/issues/20), [ADR-0038](docs/decisions/0038-universal-special-ability-plugin-architecture-and-sequential-ordering.md), `specials/special-registry.ts`, `specials/wakanda-forever.ts`, `effects/index.ts`, `action-dispatcher.ts`, `legality-checker.ts`, `WakandaForeverModal.tsx`, `wakanda-forever-sequence.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 28 ("Special") and ADR-0038 universal Special ability plugin registry and interactive sequence ordering engine:
+    - **Modular Special Ability Plugins:** Established `src/engine/specials/special-registry.ts` with standardized `SpecialAbilityHandler` contracts, decoupling hero-specific Special mechanics (*Black Panther*, *Doctor Strange*, *Storm*, *Phoenix*, and Fan-Made custom content) from the core primitive dispatcher.
+    - **Wakanda Forever! Sequence Engine:** Implemented `src/engine/specials/wakanda-forever.ts` supporting multi-upgrade execution chains across *Energy Daggers* (`01046`), *Panther Claws* (`01047`), *Tactical Genius* (`01048`), and *Panther Suit* (`01049`).
+    - **Dynamic Finisher Scaling:** Automatically applies enhanced finisher bonuses to the final resolved upgrade ($N$-th step boost, e.g. 4 damage for Panther Claws, 2 threat for Tactical Genius, 2 AoE for Energy Daggers, 2 moved damage for Panther Suit).
+    - **Play Condition Legality Guard:** Enforces RR v1.8 p. 19 play condition that *Wakanda Forever!* (`01043a-d`) cannot be played without at least 1 in-play Black Panther upgrade.
+    - **Interactive Drag & Drop Sequence Ordering Modal:** Created `WakandaForeverModal.tsx` displaying the *Wakanda Forever!* card tooltip on the left alongside horizontal drag-and-drop slots on the right with real-time Finisher bonus highlighting.
+  - Added comprehensive contract test suite in [`wakanda-forever-sequence.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/wakanda-forever-sequence.test.ts).
+
 - **Feature & Engine: Universal Card Attachment & Tucked Card Architecture ([#40](https://github.com/SteveRodrigue/MCD/issues/40), `effects/index.ts`, `action-dispatcher.ts`, `legal-actions-generator.ts`, `state.ts`, `CardAttachmentFan.tsx`, `universal-card-attachments.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 5 ("Attachment") and p. 6 ("Cards Under Cards") universal attachment and reserve card engine:
     - **Multi-Target Attachment Scope:** Universal attachment resolution across Villains, Heroes/Identities (*Caught in a Web*), Allies (*Honorary Avenger*), Minions (*Webbed Up*), and Schemes via expanded `ATTACH_TO_HOST` primitive.

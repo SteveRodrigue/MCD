@@ -25,6 +25,8 @@ import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { getSpecialHandler } from '../specials/special-registry';
+import '../specials/wakanda-forever';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -2705,54 +2707,14 @@ export function executeStep(
     }
 
     case 'TRIGGER_WAKANDA_UPGRADES':
-    case 'EXECUTE_WAKANDA_FOREVER': {
-      // Find all in-play Black Panther upgrades in player tableau
-      const bpUpgrades = player.tableau.filter((t) =>
-        t.card.traits?.includes('Black Panther') ||
-        ['01046', '01047', '01048', '01049'].includes(t.card.code),
-      );
-
-      let executed = 0;
-      for (let i = 0; i < bpUpgrades.length; i++) {
-        const upgrade = bpUpgrades[i];
-        const isFinal = i === bpUpgrades.length - 1;
-        const code = upgrade.card.code;
-
-        if (code === '01046') {
-          // Energy Daggers: 1 damage to villain + minion (2 if final)
-          const dmg = isFinal ? 2 : 1;
-          dealDirectDamage(state, 'VILLAIN', dmg);
-          for (const m of player.engagedMinions) {
-            dealDirectDamage(state, { type: 'MINION', instanceId: m.instanceId }, dmg);
-          }
-        } else if (code === '01047') {
-          // Panther Claws: 2 damage to enemy (4 if final)
-          const dmg = isFinal ? 4 : 2;
-          dealDirectDamage(state, 'VILLAIN', dmg);
-        } else if (code === '01048') {
-          // Tactical Genius: 1 threat removed (2 if final)
-          const thw = isFinal ? 2 : 1;
-          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - thw);
-        } else if (code === '01049') {
-          // Vibranium Suit: Move 1 damage from BP to enemy (2 if final)
-          const moveAmt = isFinal ? 2 : 1;
-          player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + moveAmt);
-          dealDirectDamage(state, 'VILLAIN', moveAmt);
-        }
-        executed += 1;
+    case 'EXECUTE_WAKANDA_FOREVER':
+    case 'EXECUTE_SPECIAL': {
+      const specialId = (step.params?.specialId as string) || 'WAKANDA_FOREVER';
+      const handler = getSpecialHandler(specialId);
+      if (!handler) {
+        return { state, success: false, error: `Special handler not found for ${specialId}` };
       }
-
-      const onomatopoeia = `WAKANDA FOREVER! (${executed} UPGRADES RESOLVED)`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'black_panther.wakanda_forever',
-        params: { executed },
-        onomatopoeia,
-      });
-      return { state, success: true, mutatedState: executed > 0, value: executed, onomatopoeia };
+      return handler.execute(state, context, step.params);
     }
 
     case 'DEAL_DAMAGE_ALL_ENEMIES': {

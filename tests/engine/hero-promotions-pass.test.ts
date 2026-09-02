@@ -210,7 +210,14 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       // 2. Vibranium Suit: Heal 1, 1 damage to villain
       // 3. Panther Claws (Final Step): 4 damage to villain (2 base + 2 finisher)
       // Total villain damage = 1 + 1 + 4 = 6 damage. Hero healed +1 (5 -> 6).
-      const result = executeEffect(state, { effect: 'EXECUTE_WAKANDA_FOREVER' }, { playerId: 'p1' });
+      const result = executeEffect(
+        state,
+        {
+          effect: 'EXECUTE_WAKANDA_FOREVER',
+          params: { sequenceOrder: [daggers.instanceId, suit.instanceId, claws.instanceId] },
+        },
+        { playerId: 'p1' },
+      );
 
       expect(result.success).toBe(true);
       expect(result.value).toBe(3); // 3 upgrades executed

@@ -35,6 +35,7 @@ import { handleVillainDefeat } from './scenario-helpers';
 import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
 import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
+import { getSpecialHandler } from '../specials/special-registry';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -1322,6 +1323,21 @@ export function dispatchAction(
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       const activePrompt = peekDecisionPrompt(nextState);
+
+      // 0. Wakanda Forever! Sequence Order Prompt Resolution (ADR-0038)
+      if (
+        activePrompt &&
+        (activePrompt.title?.includes('Wakanda Forever') || activePrompt.sourceCardName === 'Wakanda Forever!')
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const sequenceOrder: string[] =
+          (action as any).sequenceOrder || (action.selectedOptionId ? [action.selectedOptionId] : []);
+        const wfHandler = getSpecialHandler('WAKANDA_FOREVER');
+        if (wfHandler) {
+          const res = wfHandler.execute(poppedState, { playerId: action.playerId }, { sequenceOrder });
+          return { state: res.state, result: { success: res.success, onomatopoeia: res.onomatopoeia } };
+        }
+      }
 
       // 1. End of Player Phase Voluntary Discard & Clean-Up Prompt (RR v1.8 p. 23)
       if (

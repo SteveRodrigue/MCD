@@ -177,7 +177,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 2. **Check Documentation:** Update any relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or `docs/algorithmic_rules_reference.md` if rules mechanics or timing changed.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new invariants or design patterns were introduced.
-5. **Check ADRs:** Update or reference Architecture Decision Records in `docs/decisions/`.
+5. **Check ADRs:** Update or reference Architecture Decision Records in `docs/decisions/`. Any new or edited ADR **MUST** follow [`docs/decisions/template.md`](../../../docs/decisions/template.md) verbatim (heading form, `Status`/`Date`/`Authors`/`Deciders` block, and standard section order).
 6. **Check Ambiguities & Issues:** Close or resolve any related files in `docs/ambiguities/`.
 7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
 8. **Check Declarations Usage Report:** Run `npm run report:declarations` whenever cards or supplemental data are modified.

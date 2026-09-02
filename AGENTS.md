@@ -30,7 +30,7 @@ After executing automated tests and code verification (`npm test && npm run type
 2. **Check Documentation:** Update relevant files in `docs/` or `README.md`.
 3. **Check Specifications:** Update specifications documentation (e.g. `docs/specifications/` or schemas) when mechanics, primitives, or schemas change.
 4. **Check Guidelines:** Update guidelines documentation (e.g. `docs/coding_guidelines.md`) when development standards, conventions, or design patterns change.
-5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed.
+5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed. **Every ADR — new or edited — MUST follow [`docs/decisions/template.md`](docs/decisions/template.md) exactly:** copy the template, keep the `# [ADR-XXXX] Title` heading and the `Status` / `Date` / `Authors` / `Deciders` metadata block, and keep the standard section order (Context and Problem Statement, Decision Drivers, Considered Options, Decision Outcome, Evaluation of Options, Consequences). Never invent an alternative header or status format, and always add the matching row to the `docs/decisions/README.md` log table in ascending ID order.
 6. **Check Git Issues & Ambiguities:** Check if an issue or `docs/ambiguities/` file can be closed/resolved.
 7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
 8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:

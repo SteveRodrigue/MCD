@@ -31,7 +31,8 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 ## 🛑 Non-Negotiable Guardrails
 
 1. **Read-only with respect to code — absolute.** This skill has a **write allow-list of exactly
-   one file type: `*.md`** (including the Mermaid blocks inside them). It MUST NOT create, edit,
+   two things: `*.md` files** (including the Mermaid blocks inside them) **and its own append-only
+   audit log at `logs/skills/documentation_audit_*.log`**. It MUST NOT create, edit,
    delete, move, or reformat any file under `src/`, `tests/`, `tools/`, `scripts/`, `data/`,
    `public/`, nor any `.ts`, `.tsx`, `.json`, `.js`, `.css`, or config file — not even a typo,
    a comment, a rename, or a "trivial" one-line fix. Not even if the fix is obvious. Not even if
@@ -52,10 +53,11 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 5. **Preserve voice & style.** Keep the existing tone, emoji section headers, GitHub alert
    callouts, tables, and KaTeX/Mermaid conventions already used in the repo.
 6. **No new documentation files** unless a genuine gap is confirmed and the user approves.
-7. **Prove the blast radius before finishing.** `git status --short` must show `.md` paths only.
-   If any non-`.md` file is dirty, revert it (`git checkout -- <path>`) and report the incident.
+7. **Prove the blast radius before finishing.** `git status --short` must show `.md` paths only
+   (the audit log under `logs/skills/` is the sole permitted non-`.md` write).
+   If any other file is dirty, revert it (`git checkout -- <path>`) and report the incident.
    The `AGENTS.md` pre-execution plan gate does not apply here precisely _because_ no source code
-   is ever touched; that exemption is void the moment a non-`.md` file changes.
+   is ever touched; that exemption is void the moment a disallowed file changes.
 8. **Pessimism by default.** Assume you are wrong until the evidence proves otherwise. Every
    finding carries a confidence score (below) and nothing below the threshold is ever written.
 
@@ -220,8 +222,15 @@ Severity: **Critical** (D1, D7 — actively misleading), **Major** (D3, D4, D5),
 
 **4a. Per-ADR file checks** — for every `docs/decisions/XXXX-*.md`:
 
-1. Front-matter/heading contains ID, date, and a `Status` of `Proposed | Accepted | Superseded by [ADR-XXXX](...) | Deprecated`.
-2. All template sections present (Context, Decision Drivers, Considered Options, Decision Outcome, Pros/Cons, Consequences) per `docs/decisions/template.md`.
+1. The heading is `# [ADR-XXXX] Title` and is immediately followed by the
+   [`template.md`](../../../docs/decisions/template.md) metadata block — `Status`, `Date`,
+   `Authors`, `Deciders` — as list items. `Status` must be one of
+   `Proposed | Accepted | Rejected | Superseded by [ADR-XXXX](...)`. A `## Status` heading,
+   a bare `Date:` line, or a missing block is a finding.
+2. All template sections present (Context and Problem Statement, Decision Drivers, Considered
+   Options, Decision Outcome, Evaluation of Options, Consequences) per `docs/decisions/template.md`.
+   Report missing sections; **never invent their content** — an ADR that never recorded its
+   trade-offs cannot have them reconstructed after the fact.
 3. The decision is **still true in code**. If `src/` no longer implements it, the ADR must be marked Superseded/Deprecated and point to its successor — never edited to pretend it never happened.
 4. Superseding is **bidirectional**: the old ADR links forward, the new ADR names what it supersedes.
 
@@ -354,7 +363,8 @@ Editing standards:
 ### Step 7 — Verify
 
 1. **Blast-radius gate (run first, non-negotiable).** `git status --short` must list `.md` paths
-   only. Any dirty `.ts`/`.tsx`/`.json`/config file is a protocol violation: revert it with
+   only, plus the skill's own `logs/skills/documentation_audit_*.log`. Any dirty
+   `.ts`/`.tsx`/`.json`/config file is a protocol violation: revert it with
    `git checkout -- <path>`, log the incident, and report it to the user.
 2. Re-grep every relative link and ADR reference you touched; confirm targets exist.
 3. Re-read each modified Mermaid block for parse validity (balanced brackets/quotes, unique nodes).
@@ -392,7 +402,7 @@ The audit is complete only when **all** hold:
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
 - [ ] RR v1.8 citations verified against `references/rules_reference_v18.md`.
-- [ ] `git status` proves **zero non-`.md` files changed** — no code was written, reformatted, or deleted.
+- [ ] `git status` proves **only `.md` files and the `logs/skills/` audit log changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.
 - [ ] CHANGELOG updated and post-task protocol executed.

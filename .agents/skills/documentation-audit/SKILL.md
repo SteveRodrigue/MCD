@@ -7,7 +7,10 @@ description: >-
   stale schema/effect primitive lists, missing effects, timings, costs, and engine functions,
   broken relative links, and drifted status badges. Enforces an extensive review of
   docs/decisions/README.md (ADR log table completeness, ordering, status/superseded chains,
-  and the Mermaid ADR lineage graph). STRICTLY READ-ONLY WITH RESPECT TO CODE: writes *.md files
+  and the Mermaid ADR lineage graph). Applies a pessimistic 0-100% confidence score to every finding:
+  only >=95% evidence-backed mechanical corrections are auto-applied, 80-94% require user confirmation,
+  and anything below 80% is raised as an explicit open question for a second opinion. Never interprets,
+  infers, or assumes. STRICTLY READ-ONLY WITH RESPECT TO CODE: writes *.md files
   only and never touches src/, tests/, or any .ts/.tsx/.json file; suspected code defects are filed
   as detailed GitHub issues for human peer review instead of being fixed. Logs progress in
   logs/skills/ and executes the mandatory post-task protocol. Trigger whenever
@@ -53,6 +56,65 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
    If any non-`.md` file is dirty, revert it (`git checkout -- <path>`) and report the incident.
    The `AGENTS.md` pre-execution plan gate does not apply here precisely _because_ no source code
    is ever touched; that exemption is void the moment a non-`.md` file changes.
+8. **Pessimism by default.** Assume you are wrong until the evidence proves otherwise. Every
+   finding carries a confidence score (below) and nothing below the threshold is ever written.
+
+---
+
+## 🎯 Confidence Scoring (Pessimistic, Evidence-Only)
+
+> [!IMPORTANT]
+> This skill **never interprets, infers, extrapolates, or assumes**. A claim is either backed by a
+> verbatim quote from an authoritative source, or it is an open question for the user. There is no
+> third category. "It probably means…", "this is clearly…", "by convention this would be…" are all
+> forbidden reasoning patterns — each one is an automatic ≤ 70% and therefore a question, not an edit.
+
+### Scoring rubric
+
+Score **every** finding from 0–100% before proposing any correction. Start at 0 and only add
+points for evidence you have actually read in this session.
+
+| Confidence | Evidence standard (ALL must hold)                                                                                                                                                                                |
+| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **100%**   | Pure mechanical fact: a broken relative link, a missing table row, a misspelled path, an ADR ID out of order. Verified by direct file existence / exact string match. Zero judgement involved.                   |
+| **95–99%** | The corrected statement is a verbatim restatement of an exact symbol, enum member, `case` label, script name, or ADR `Status` line that you read this session, with the file cited. No synthesis across sources. |
+| **80–94%** | Requires combining **two** directly-read sources (e.g. a schema enum + its `case` in the effects switch) with no inferential leap between them, and both agree.                                                  |
+| **≤ 79%**  | Anything else: intent, rationale, "why" prose, rules interpretation, superseded-vs-extended judgement, badge status where the code is partial, or any claim needing a chain of reasoning rather than a quote.    |
+
+### Action thresholds
+
+| Score      | Action                                                                                                                                                                                                            |
+| :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **≥ 95%**  | Auto-apply (subject to the Step 5 severity gate — Critical findings still stop regardless of confidence).                                                                                                         |
+| **80–94%** | Draft the correction, present it, and **ask the user to confirm** before writing. Do not apply on your own initiative.                                                                                            |
+| **< 80%**  | **Do not write anything.** Raise it as an explicit open question with your reasoning, the evidence you do have, the evidence you lack, and 2–3 concrete options with a recommendation. Wait for a second opinion. |
+
+### Mandatory downgrades
+
+Cap confidence at **≤ 79%** — i.e. ask, never assume — whenever any of these apply:
+
+- The claim concerns **why** a decision was made, not **what** the code does.
+- Deciding whether an ADR is **Superseded** vs merely **extended/refined** by a later ADR.
+- Deciding whether a partially implemented primitive is 🟢 IMPLEMENTED or 🟡 ROADMAP.
+- An RR v1.8 page/rule citation you could not locate verbatim in `references/rules_reference_v18.md`.
+- Two authoritative sources disagree (code vs ADR vs RR v1.8).
+- The correct fix would require adding a **new** doc file, section, or Mermaid lineage group.
+- You cannot name the exact file (and ideally line) that proves the claim.
+- The source you would rely on is another documentation file rather than code, ADR, or RR v1.8.
+  (Docs are derived artifacts — they are never evidence for themselves.)
+
+### Reporting format
+
+Carry the score into the Step 5 findings table and the audit log. State it explicitly:
+
+`[92%] docs/specifications/supplemental/04_effects_combat_threat.md — DEAL_DAMAGE params table omits `overkill` (src/engine/effects/index.ts:812; schema.ts:false). → confirm before applying.`
+
+Never round up. If you hesitate between two bands, take the lower one.
+
+### Circuit breaker
+
+If **three or more** findings in the same file land below 80%, stop auditing that file, report that
+its drift exceeds safe automated correction, and ask the user how to proceed. Do not grind.
 
 ---
 
@@ -65,7 +127,9 @@ YYYY-MM-DDTHH:mm:ss.sssZ [SCOPE] Audit started (Scope: <all|docs/decisions|speci
 YYYY-MM-DDTHH:mm:ss.sssZ [INVENTORY] Extracted <N> effects, <N> timings, <N> costs, <N> ADRs from src/ + docs/
 YYYY-MM-DDTHH:mm:ss.sssZ [DRIFT] Found <N> deprecated concepts, <N> missing primitives, <N> broken links, <N> stale badges
 YYYY-MM-DDTHH:mm:ss.sssZ [ADR] docs/decisions/README.md: <N> table gaps, <N> status mismatches, <N> missing Mermaid nodes
-YYYY-MM-DDTHH:mm:ss.sssZ [FIX] Updated <file> (<category>)
+YYYY-MM-DDTHH:mm:ss.sssZ [CONFIDENCE] <N> findings >=95% (auto), <N> at 80-94% (confirm), <N> <80% (deferred to user)
+YYYY-MM-DDTHH:mm:ss.sssZ [ASK] Open question raised: "<question>" (Confidence <NN>%, blocking <file>)
+YYYY-MM-DDTHH:mm:ss.sssZ [FIX] Updated <file> (<category>, Confidence <NN>%)
 YYYY-MM-DDTHH:mm:ss.sssZ [VERIFY] Links resolved, Mermaid parses, npm run report:declarations clean
 YYYY-MM-DDTHH:mm:ss.sssZ [HANDOFF] Code defects filed as GitHub issues: #<NUM>, #<NUM> (or none)
 YYYY-MM-DDTHH:mm:ss.sssZ [DONE] Post-task protocol executed; CHANGELOG updated
@@ -186,20 +250,38 @@ ADR whose current Status still supports the claim being made.
 
 ### Step 5 — Report Findings & Triage the Approval Gate
 
-Present a concise, severity-ranked table to the user:
+Present a concise table to the user, sorted by severity then descending confidence:
 
-| #   | Severity | Code | File | Finding | Proposed correction |
-| :-- | :------- | :--- | :--- | :------ | :------------------ |
+| #   | Severity | Code | Conf. | File | Evidence (file:line) | Finding | Proposed correction |
+| :-- | :------- | :--- | :---- | :--- | :------------------- | :------ | :------------------ |
 
-**Gating rule (partial autonomy):**
+Every row **must** carry a confidence score and a concrete evidence citation. A row with an empty
+evidence cell is not a finding — it is a question, and belongs in the "❓ Open Questions" section.
 
-- **Minor & Major findings (D2, D3, D4, D5, D6, D8) → auto-apply.** Proceed straight to Step 6
-  without waiting; these are mechanical synchronizations with an unambiguous correct answer.
-- **Critical findings (D1, D7) and any architectural judgement call → HARD STOP.** Examples:
-  "is this ADR superseded or merely extended?", removing an ADR lineage edge, changing an Accepted
-  status, or rewriting a rules interpretation. Flag each with `> [!WARNING]`, state the options and
-  your recommendation, then **stop calling tools and wait for explicit approval**.
-- If only Minor/Major findings exist, no stop is required — report and fix in the same turn.
+**Gating rule — severity AND confidence must both clear:**
+
+|                               | ≥ 95% confidence       | 80–94% confidence      | < 80% confidence   |
+| :---------------------------- | :--------------------- | :--------------------- | :----------------- |
+| **Minor / Major** (D2–D6, D8) | Auto-apply             | Ask, then apply        | Open question only |
+| **Critical** (D1, D7)         | HARD STOP for approval | HARD STOP for approval | Open question only |
+
+- Auto-apply is permitted **only** in the single top-left cell. Anything else waits for the user.
+- **Critical findings always stop**, even at 100% confidence: "is this ADR superseded or merely
+  extended?", removing an ADR lineage edge, changing an Accepted status, or rewriting a rules
+  interpretation. Flag each with `> [!WARNING]`, present options plus your recommendation, then
+  **stop calling tools and wait**.
+- If every finding is Minor/Major at ≥ 95%, no stop is required — report and fix in the same turn.
+
+**❓ Open Questions section (< 80% confidence).** For each, state:
+
+1. The exact ambiguity, phrased as a question.
+2. Evidence you **do** have (with file:line).
+3. Evidence you **lack** and could not obtain by reading.
+4. 2–3 concrete options with the trade-off of each, and your recommendation marked as a
+   recommendation — not a decision.
+5. What you will write once the user answers.
+
+Then stop. Never resolve an open question by picking the most plausible reading.
 
 **Code defects → issue, never an edit.** If the audit uncovers a defect where the _code_ is wrong
 (D7: `src/` violates an Accepted ADR or RR v1.8), list it under "🐞 Code Defects" and file a tracked
@@ -256,9 +338,14 @@ Apply fixes in this order so later edits build on corrected facts:
 
 Editing standards:
 
+- **Only write findings that cleared the gate.** Re-check the confidence band immediately before
+  each edit; if new context lowered it below the threshold, abandon the edit and raise a question.
 - Prefer surgical `replace_string_in_file` edits over rewriting files.
 - When adding a primitive, include: name, purpose, parameter table, a minimal JSON example, the
   implementing source file, and the status badge.
+- **Write only what the evidence states.** Do not embellish with rationale, motivation, or expected
+  behaviour you did not read verbatim. If a section needs "why" prose you cannot source, leave a
+  `> [!NOTE]` placeholder and ask the user for it rather than authoring plausible-sounding intent.
 - Keep tables aligned, links relative, and headings stable (external docs link to anchors).
 - Never hand-edit generated files in `docs/reports/` — regenerate them instead.
 
@@ -286,6 +373,9 @@ Editing standards:
    documented, ADR/Mermaid graph repairs, and any code-defect issues filed (`#XX`).
 3. Commit with a docs-scoped message, closing any tracked documentation issue:
    `docs(audit): synchronize <scope> with code truth & repair ADR lineage graph (Closes #XX)`.
+4. Close the turn with an explicit **residual uncertainty report**: the list of deferred
+   (< 80%) findings and open questions still awaiting the user's second opinion. An audit that
+   silently resolved every ambiguity on its own is a failed audit, not a thorough one.
 
 ---
 
@@ -293,6 +383,9 @@ Editing standards:
 
 The audit is complete only when **all** hold:
 
+- [ ] Every applied correction scored ≥ 95%, or ≥ 80% with explicit user confirmation — and cites the file:line that proves it.
+- [ ] Every sub-80% finding was surfaced as an open question, not silently resolved, guessed, or dropped.
+- [ ] No documented statement rests on inference, convention, or plausibility rather than a read source.
 - [ ] Every documented effect/timing/cost/function exists in `src/`; every `src/` primitive is documented or explicitly badged 🟡 ROADMAP.
 - [ ] No documentation describes a superseded architecture as current.
 - [ ] `docs/decisions/README.md` table is complete, ID-ordered, and status-accurate.

@@ -521,23 +521,41 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
 /**
  * Validates whether hand cards specified for payment cover the cost of the card being played.
  */
+import { getPlayerBlackPantherUpgrades } from '../specials/wakanda-forever';
+
 export function canPlayCard(
   state: GameState,
   playerId: string,
-  cardInstanceId: string,
-  paymentCardInstanceIds: string[],
+  cardInstanceOrId: string | CardInstance,
+  paymentCardInstanceIds: string[] = [],
   generatorInstanceIds: string[] = [],
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  const targetCardInstance = player.hand.find((c) => c.instanceId === cardInstanceId);
+  const targetCardInstance =
+    typeof cardInstanceOrId === 'string'
+      ? player.hand.find((c) => c.instanceId === cardInstanceOrId)
+      : cardInstanceOrId;
+
   if (!targetCardInstance) {
     return { allowed: false, reason: 'Card to play is not in player hand.' };
   }
 
   const card = targetCardInstance.card;
+  const cardInstanceId = targetCardInstance.instanceId;
   let cost = card.cost ?? 0;
+
+  // Black Panther Wakanda Forever! Play Condition Check (RR v1.8 p. 19 / ADR-0038)
+  if (['01043', '01043a', '01043b', '01043c', '01043d'].includes(card.code)) {
+    const bpUpgrades = getPlayerBlackPantherUpgrades(player);
+    if (bpUpgrades.length === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot play Wakanda Forever! without at least 1 Black Panther upgrade in play.',
+      };
+    }
+  }
 
   const abilities = card.enrichment?.abilities || [];
 
@@ -673,7 +691,7 @@ export function canPlayCard(
   // Cost payment validation
   if (cost > 0) {
     // Payment cards cannot include the card being played
-    if (paymentCardInstanceIds.includes(cardInstanceId)) {
+    if (cardInstanceId && paymentCardInstanceIds.includes(cardInstanceId)) {
       return { allowed: false, reason: 'The card being played cannot be used to pay for itself.' };
     }
 

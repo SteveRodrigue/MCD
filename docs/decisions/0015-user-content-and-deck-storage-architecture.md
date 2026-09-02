@@ -1,4 +1,4 @@
-# ADR-0015: User Content & Deck Storage Architecture (Prebuilt, Custom, MarvelCDB, Fan-Made)
+﻿# [ADR-0015] User Content & Deck Storage Architecture (Prebuilt, Custom, MarvelCDB, Fan-Made)
 
 * **Status:** Accepted
 * **Date:** 2026-08-27

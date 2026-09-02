@@ -1,4 +1,4 @@
-# ADR-0026: 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture
+﻿# [ADR-0026] 1960s Daily Bugle Action Dispatcher & Dynamic Fan-Out Hand Architecture
 
 * **Status:** **Accepted**
 * **Date:** 2026-08-30

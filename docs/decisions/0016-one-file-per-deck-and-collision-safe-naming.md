@@ -1,4 +1,4 @@
-# ADR-0016: 1-File-Per-Deck Storage Strategy & Collision-Resistant Naming
+﻿# [ADR-0016] 1-File-Per-Deck Storage Strategy & Collision-Resistant Naming
 
 * **Status:** Accepted (Option 3 Approved by Project Maintainer)
 * **Date:** 2026-08-27

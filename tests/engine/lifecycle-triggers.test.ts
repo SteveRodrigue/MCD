@@ -34,8 +34,8 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     state.players[0].activeFormCard = peterParkerAlterEgo;
 
     // Simulate an ability used in Player Phase (e.g. once per phase)
-    state.players[0].usedAbilitiesThisPhase = { 'spider_sense': 1 };
-    state.players[0].usedAbilitiesThisRound = { 'spider_sense': 1 };
+    state.players[0].usedAbilitiesThisPhase = { 'dummy_ability': 1 };
+    state.players[0].usedAbilitiesThisRound = { 'dummy_ability': 1 };
 
     // Conclude Player Phase -> Run Villain Phase
     endPlayerPhase(state);

@@ -37,6 +37,7 @@ import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDe
 import { resolveDefenderDeclaration } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost } from '../state/state-validator';
+import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -387,6 +388,9 @@ export function dispatchAction(
           onomatopoeia: 'EXHAUST',
         });
 
+        dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
+        dispatchTrigger(nextState, 'ATTACK_RESOLVED', { targetPlayerId: player.id, targetType: 'villain' });
+
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
@@ -442,10 +446,25 @@ export function dispatchAction(
           }
           discardHostAttachmentsAndTuckedCards(nextState, minion, player.id);
 
+          dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
+          dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
+            targetPlayerId: player.id,
+            targetType: 'minion',
+            targetInstanceId: action.targetInstanceId,
+          });
+
           const onomatopoeia = 'KAPOW! DEFEATED!';
           return { state: nextState, result: { success: true, onomatopoeia } };
         } else {
           minion.tokens = { ...minion.tokens, damage: newDamage };
+
+          dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
+          dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
+            targetPlayerId: player.id,
+            targetType: 'minion',
+            targetInstanceId: action.targetInstanceId,
+          });
+
           const onomatopoeia = 'BAM!';
           return { state: nextState, result: { success: true, onomatopoeia } };
         }
@@ -584,6 +603,12 @@ export function dispatchAction(
         player.discard.push(ally);
       }
 
+      dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
+        targetPlayerId: player.id,
+        targetType: action.targetType,
+        targetInstanceId: action.targetInstanceId,
+      });
+
       const onomatopoeia = 'ALLY ATTACK!';
       return { state: nextState, result: { success: true, onomatopoeia } };
     }
@@ -709,6 +734,8 @@ export function dispatchAction(
           onomatopoeia: 'EXHAUST',
         });
 
+        dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
+
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
@@ -727,9 +754,14 @@ export function dispatchAction(
             instanceId: sideScheme.instanceId,
             card: sideScheme.card,
           });
+
+          dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
+
           const onomatopoeia = 'SCHEME DEFEATED!';
           return { state: nextState, result: { success: true, onomatopoeia } };
         }
+
+        dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
 
         const onomatopoeia = 'THWART!';
         return { state: nextState, result: { success: true, onomatopoeia } };
@@ -995,8 +1027,11 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      // Find card in tableau or identity
-      let targetCardInst = player.tableau.find((c) => c.instanceId === action.cardInstanceId);
+      // Find card in tableau, allies, attachments, or identity
+      let targetCardInst =
+        player.tableau.find((c) => c.instanceId === action.cardInstanceId) ||
+        player.allies.find((c) => c.instanceId === action.cardInstanceId) ||
+        player.attachments?.find((c) => c.instanceId === action.cardInstanceId);
       const isIdentity = player.activeFormCard.code === action.cardInstanceId;
 
       const enrichment = isIdentity

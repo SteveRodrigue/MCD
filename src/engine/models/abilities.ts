@@ -101,6 +101,7 @@ export interface AbilityCost {
   discardCard?: { count?: number; maxCount?: number; from: 'HAND' | 'DECK' | 'PLAY' };
   discardFromHand?: number;
   damageHero?: number;
+  damageSelf?: number;
   takeDamage?: number;
   selfDamage?: number;
   costCheck?: string;

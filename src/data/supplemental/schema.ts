@@ -195,9 +195,11 @@ export const FilterSchema = z.object({
 export const AbilityCostSchema = z.object({
   exhaustSelf: z.boolean().optional(),
   exhaustCard: TargetSelectorSchema.optional(),
+  discardSelf: z.boolean().optional(),
   resources: z.array(ResourceTypeSchema).optional(),
   resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
   damageHero: z.number().optional(),
+  damageSelf: z.number().optional(),
   removeCounter: z.number().optional(),
   spendCounter: z.number().optional(),
   spendCounters: z

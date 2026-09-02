@@ -1,5 +1,6 @@
 import { GameState, PlayerState, CardInstance, CardAbility, AbilityTiming } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
+import { removeCardFromAllZones } from '../state/state-validator';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -58,6 +59,19 @@ export function canPayAbilityCost(
         allowed: false,
         reason: `Cannot pay ${cost.damageHero} damage cost (Identity only has ${player.health} HP remaining).`,
       };
+    }
+  }
+
+  // 3b. Self-Damage Cost Validation (e.g. War Machine 01070 dealing 2 damage to self)
+  const selfDamage = cost.damageSelf || (cost as any).selfDamage;
+  if (selfDamage && selfDamage > 0) {
+    if (!sourceCardInst) {
+      if (player.health <= selfDamage) {
+        return {
+          allowed: false,
+          reason: `Cannot pay ${selfDamage} self-damage cost (Identity only has ${player.health} HP remaining).`,
+        };
+      }
     }
   }
 
@@ -171,6 +185,41 @@ export function executeAbilityCost(
       params: { player: player.name, damagePaid: cost.damageHero, remainingHealth: player.health },
       onomatopoeia: `OUCH! -${cost.damageHero} HP (COST)`,
     });
+  }
+
+  // 2b. Direct Damage Cost to Self / Ally (e.g. War Machine 01070)
+  const selfDamage = cost.damageSelf || (cost as any).selfDamage;
+  if (selfDamage && selfDamage > 0) {
+    if (sourceCardInst) {
+      sourceCardInst.tokens = {
+        ...sourceCardInst.tokens,
+        damage: (sourceCardInst.tokens?.damage || 0) + selfDamage,
+      };
+      const health = (sourceCardInst.card as any).health;
+      if (health && (sourceCardInst.tokens.damage || 0) >= health) {
+        // Defeated from self-damage cost -> remove and discard
+        removeCardFromAllZones(state, sourceCardInst.instanceId);
+        player.discard.push(sourceCardInst);
+        state.log.push({
+          id: `log_${Date.now()}_wm_defeat`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.ally.defeated',
+          params: { ally: sourceCardInst.card.name },
+          onomatopoeia: `${sourceCardInst.card.name.toUpperCase()} DEFEATED!`,
+        });
+      }
+    } else {
+      player.health = Math.max(1, player.health - selfDamage);
+    }
+  }
+
+  // 2c. Discard Self Cost (e.g. Superhuman Strength 01028)
+  if (cost.discardSelf && sourceCardInst) {
+    removeCardFromAllZones(state, sourceCardInst.instanceId);
+    player.discard.push(sourceCardInst);
+    discardedCount += 1;
   }
 
   // 3. Tokens / Counters

@@ -16,8 +16,12 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
       if (c.type === 'hero' || c.type === 'alter_ego') return [];
       return Array(c.quantity).fill(c);
     });
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
     const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
@@ -66,7 +70,9 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
     const targets = getValidAttackTargets(gameState, 'p1', 'hero');
     expect(targets).toHaveLength(2);
     expect(targets.some((t) => t.type === 'villain')).toBe(true);
-    expect(targets.some((t) => t.type === 'minion' && t.instanceId === hydraBomber.instanceId)).toBe(true);
+    expect(
+      targets.some((t) => t.type === 'minion' && t.instanceId === hydraBomber.instanceId),
+    ).toBe(true);
   });
 
   it('excludes Villain and returns only Minions when an engaged minion has Guard (RR v1.8 p. 15)', () => {
@@ -100,7 +106,10 @@ describe('Attack Target Selection & Guard Invariants (RR v1.8 p. 5-6, 15)', () =
   it('includes minions engaged with other players in multiplayer games', () => {
     // Add second player with engaged minion
     const p2Identity = catalog.getHeroIdentity('she_hulk')!;
-    const p2Deck = catalog.getCardsByFaction('aggression' as any).flatMap((c) => Array(c.quantity).fill(c)).slice(0, 40);
+    const p2Deck = catalog
+      .getCardsByFaction('aggression' as any)
+      .flatMap((c) => Array(c.quantity).fill(c))
+      .slice(0, 40);
     gameState.players.push({
       ...gameState.players[0],
       id: 'p2',

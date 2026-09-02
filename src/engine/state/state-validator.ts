@@ -67,7 +67,7 @@ export function assertCardConservation(state: GameState): void {
 
     if (seenInstanceIds.has(card.instanceId)) {
       throw new Error(
-        `[CRITICAL INVARIANT VIOLATION] Card '${card.card?.name || 'Unknown'}' (${card.instanceId}) exists in multiple zones simultaneously!`
+        `[CRITICAL INVARIANT VIOLATION] Card '${card.card?.name || 'Unknown'}' (${card.instanceId}) exists in multiple zones simultaneously!`,
       );
     }
     seenInstanceIds.add(card.instanceId);
@@ -77,7 +77,10 @@ export function assertCardConservation(state: GameState): void {
 /**
  * Atomically removes a card matching instanceId from all zones and containers across GameState.
  */
-export function removeCardFromAllZones(state: GameState, instanceId: string): CardInstance | undefined {
+export function removeCardFromAllZones(
+  state: GameState,
+  instanceId: string,
+): CardInstance | undefined {
   let found: CardInstance | undefined;
 
   const removeFromList = (list?: CardInstance[]): boolean => {
@@ -225,7 +228,8 @@ export function attachCardToHost(
     if (!state.mainScheme.attachments) state.mainScheme.attachments = [];
     state.mainScheme.attachments.push(cardInstance);
   } else if (uTarget === 'SIDE_SCHEME' || uTarget === 'CHOSEN_SIDE_SCHEME') {
-    const scheme = state.sideSchemes.find((s) => s.instanceId === targetHostId) || state.sideSchemes[0];
+    const scheme =
+      state.sideSchemes.find((s) => s.instanceId === targetHostId) || state.sideSchemes[0];
     if (scheme) {
       if (!scheme.attachments) scheme.attachments = [];
       scheme.attachments.push(cardInstance);

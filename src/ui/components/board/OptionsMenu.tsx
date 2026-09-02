@@ -53,9 +53,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <ZoomIn className="w-5 h-5 text-comic-blue" />
-                <span className="font-comic text-base text-comic-black">
-                  Card Zooming
-                </span>
+                <span className="font-comic text-base text-comic-black">Card Zooming</span>
               </div>
 
               {/* Segmented Zoom Controls */}
@@ -70,14 +68,19 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
                         : 'text-slate-500 hover:text-slate-800'
                     }`}
                   >
-                    {level === 'small' ? 'Small (90%)' : level === 'normal' ? 'Normal (Default)' : 'Larger (110%)'}
+                    {level === 'small'
+                      ? 'Small (90%)'
+                      : level === 'normal'
+                        ? 'Normal (Default)'
+                        : 'Larger (110%)'}
                   </button>
                 ))}
               </div>
             </div>
 
             <p className="text-xs text-slate-600">
-              Sets the constant hover zoom preview magnification (90%, 100%, 110%) across all cards on the board and in hand.
+              Sets the constant hover zoom preview magnification (90%, 100%, 110%) across all cards
+              on the board and in hand.
             </p>
           </div>
 
@@ -86,9 +89,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <Gauge className="w-5 h-5 text-comic-red" />
-                <span className="font-comic text-base text-comic-black">
-                  Edge-Scroll Velocity
-                </span>
+                <span className="font-comic text-base text-comic-black">Edge-Scroll Velocity</span>
               </div>
 
               {/* Segmented Speed Controls */}
@@ -110,7 +111,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             </div>
 
             <p className="text-xs text-slate-600">
-              Adjusts the camera panning speed when hovering your mouse near the left/right screen edges on multi-hero panoramic tabletops.
+              Adjusts the camera panning speed when hovering your mouse near the left/right screen
+              edges on multi-hero panoramic tabletops.
             </p>
           </div>
 
@@ -143,7 +145,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             </div>
 
             <p className="text-xs text-slate-600">
-              Sets default villain stages and encounter sets. Skirmish = Stage I only; Standard = Stage I $\rightarrow$ II; Expert = Stage II $\rightarrow$ III + Expert cards.
+              Sets default villain stages and encounter sets. Skirmish = Stage I only; Standard =
+              Stage I $\rightarrow$ II; Expert = Stage II $\rightarrow$ III + Expert cards.
             </p>
           </div>
 
@@ -152,9 +155,7 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-comic-yellow" />
-                <span className="font-comic text-base text-comic-black">
-                  Heroic Mode Variant
-                </span>
+                <span className="font-comic text-base text-comic-black">Heroic Mode Variant</span>
               </div>
 
               {/* Segmented Heroic Level Controls */}
@@ -176,7 +177,9 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             </div>
 
             <p className="text-xs text-slate-600">
-              Official FFG difficulty variant: Deals $+L$ additional encounter cards to each player during Step 4. Available across all modes (Official on Expert, Custom variant on Standard/Skirmish).
+              Official FFG difficulty variant: Deals $+L$ additional encounter cards to each player
+              during Step 4. Available across all modes (Official on Expert, Custom variant on
+              Standard/Skirmish).
             </p>
           </div>
 
@@ -208,7 +211,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             </div>
 
             <p className="text-xs text-slate-600">
-              Enables hidden information inspectors (face-down draw deck inspection, search & debug scrying) for development and rules testing.
+              Enables hidden information inspectors (face-down draw deck inspection, search & debug
+              scrying) for development and rules testing.
             </p>
           </div>
 
@@ -237,7 +241,11 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
               </div>
 
               <p className="text-xs text-slate-600">
-                Exports full table state to <code className="bg-white px-1 py-0.5 rounded border font-mono text-[10px]">logs/gamestates/latest_gamestate.json</code> for instant debugging and test generation.
+                Exports full table state to{' '}
+                <code className="bg-white px-1 py-0.5 rounded border font-mono text-[10px]">
+                  logs/gamestates/latest_gamestate.json
+                </code>{' '}
+                for instant debugging and test generation.
               </p>
 
               {snapshotSuccess && (

@@ -21,7 +21,7 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     cardCatalog.getCard('01049')!, // Panther Suit (Upgrade)
   ];
 
-  it('automatically resolves T\'Challa setup ability (01040b) putting 1 Black Panther upgrade into tableau', () => {
+  it("automatically resolves T'Challa setup ability (01040b) putting 1 Black Panther upgrade into tableau", () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [

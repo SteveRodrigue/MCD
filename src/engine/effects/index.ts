@@ -13,38 +13,31 @@ import {
   PendingDecisionPrompt,
   NormalizedCard,
   PlayerState,
-} from "@engine/models";
-import { handleVillainDefeat } from "../pipeline/scenario-helpers";
+} from '@engine/models';
+import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
-} from "../pipeline/villain-phase";
-import { drawEncounterCard, drawPlayerCard } from "../pipeline/deck-exhaustion";
-import { enqueueDecisionPrompt } from "../pipeline/prompt-queue";
-import { resolveDefenderDeclaration } from "../pipeline/combat-pipeline";
+} from '../pipeline/villain-phase';
+import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
+import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
   hasEntityKeyword,
-} from "../pipeline/stat-calculator";
-import { dispatchTrigger } from "../triggers/trigger-dispatcher";
-import { getSpecialHandler } from "../specials/special-registry";
-import "../specials/wakanda-forever";
-import { attachCardToHost } from "../state/state-validator";
+} from '../pipeline/stat-calculator';
+import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { getSpecialHandler } from '../specials/special-registry';
+import '../specials/wakanda-forever';
+import { attachCardToHost } from '../state/state-validator';
 
 export interface EffectExecutionContext {
   playerId: string;
   targetPlayerId?: string;
   sourceCardInstance?: CardInstance;
-  targetType?:
-    | "villain"
-    | "minion"
-    | "main_scheme"
-    | "side_scheme"
-    | "ally"
-    | "hero"
-    | "character";
+  targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'ally' | 'hero' | 'character';
   targetInstanceId?: string;
   resourcesSpent?: string[];
   previousResult?: StepResolutionResult;
@@ -69,16 +62,11 @@ export interface EffectResult {
 /**
  * Evaluates whether a card definition satisfies a declarative FilterSchema predicate (RR v1.8 p. 19, 26).
  */
-export function matchCardFilter(
-  card: NormalizedCard,
-  filter?: any,
-  player?: PlayerState,
-): boolean {
+export function matchCardFilter(card: NormalizedCard, filter?: any, player?: PlayerState): boolean {
   if (!filter) return true;
 
   // Exact card code matching
-  if (filter.targetCardCode && card.code !== filter.targetCardCode)
-    return false;
+  if (filter.targetCardCode && card.code !== filter.targetCardCode) return false;
   if (
     filter.targetCardCodes &&
     Array.isArray(filter.targetCardCodes) &&
@@ -90,8 +78,7 @@ export function matchCardFilter(
   // Exact card name matching (case-insensitive)
   if (
     filter.targetCardName &&
-    card.name.toLowerCase().trim() !==
-      filter.targetCardName.toLowerCase().trim()
+    card.name.toLowerCase().trim() !== filter.targetCardName.toLowerCase().trim()
   ) {
     return false;
   }
@@ -100,21 +87,16 @@ export function matchCardFilter(
   if (filter.trait) {
     const targetTrait = filter.trait.toLowerCase().trim();
     const hasTrait = (card.traits || []).some(
-      (t) =>
-        t.toLowerCase().trim() === targetTrait ||
-        t.toLowerCase().includes(targetTrait),
+      (t) => t.toLowerCase().trim() === targetTrait || t.toLowerCase().includes(targetTrait),
     );
     if (!hasTrait) return false;
   }
 
   if (filter.traits && Array.isArray(filter.traits)) {
-    const normalizedTargetTraits = filter.traits.map((t: string) =>
-      t.toLowerCase().trim(),
-    );
+    const normalizedTargetTraits = filter.traits.map((t: string) => t.toLowerCase().trim());
     const hasAnyTrait = (card.traits || []).some((t) =>
       normalizedTargetTraits.some(
-        (target: string) =>
-          t.toLowerCase().trim() === target || t.toLowerCase().includes(target),
+        (target: string) => t.toLowerCase().trim() === target || t.toLowerCase().includes(target),
       ),
     );
     if (!hasAnyTrait) return false;
@@ -123,29 +105,23 @@ export function matchCardFilter(
   // Card Type matching
   if (filter.type) {
     const targetType = filter.type.toLowerCase().trim();
-    const cardType = (card.type || "").toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || "").toLowerCase().trim();
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
     if (cardType !== targetType && rawType !== targetType) return false;
   }
 
   if (filter.type_code) {
     const targetTypeCode = filter.type_code.toLowerCase().trim();
-    const cardType = (card.type || "").toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || "").toLowerCase().trim();
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
     if (cardType !== targetTypeCode && rawType !== targetTypeCode) return false;
   }
 
   if (filter.types && Array.isArray(filter.types)) {
-    const normalizedTypes = filter.types.map((t: string) =>
-      t.toLowerCase().trim(),
-    );
-    const cardType = (card.type || "").toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || "").toLowerCase().trim();
-    if (
-      !normalizedTypes.includes(cardType) &&
-      !normalizedTypes.includes(rawType)
-    )
-      return false;
+    const normalizedTypes = filter.types.map((t: string) => t.toLowerCase().trim());
+    const cardType = (card.type || '').toLowerCase().trim();
+    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
+    if (!normalizedTypes.includes(cardType) && !normalizedTypes.includes(rawType)) return false;
   }
 
   if (filter.cardTypes && Array.isArray(filter.cardTypes)) {
@@ -154,19 +130,13 @@ export function matchCardFilter(
 
   // Aspect matching
   if (filter.aspect) {
-    const cardFaction = ((card.raw as any)?.faction_code || "")
-      .toLowerCase()
-      .trim();
+    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
     if (cardFaction !== filter.aspect.toLowerCase().trim()) return false;
   }
 
   if (filter.aspects && Array.isArray(filter.aspects)) {
-    const normalizedAspects = filter.aspects.map((a: string) =>
-      a.toLowerCase().trim(),
-    );
-    const cardFaction = ((card.raw as any)?.faction_code || "")
-      .toLowerCase()
-      .trim();
+    const normalizedAspects = filter.aspects.map((a: string) => a.toLowerCase().trim());
+    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
     if (!normalizedAspects.includes(cardFaction)) return false;
   }
 
@@ -178,26 +148,22 @@ export function matchCardFilter(
   // Identity specificity
   if (filter.isIdentitySpecific && player) {
     const heroCode = player.hero.code;
-    const heroSet =
-      (player.hero.raw as any)?.card_set_code || player.hero.name.toLowerCase();
-    const cardSet = (card.raw as any)?.card_set_code || "";
-    if (
-      cardSet !== heroSet &&
-      !(card.code || "").startsWith(heroCode.slice(0, 3))
-    ) {
+    const heroSet = (player.hero.raw as any)?.card_set_code || player.hero.name.toLowerCase();
+    const cardSet = (card.raw as any)?.card_set_code || '';
+    if (cardSet !== heroSet && !(card.code || '').startsWith(heroCode.slice(0, 3))) {
       return false;
     }
   }
 
   // Cost bounds
   if (
-    typeof filter.costMin === "number" &&
+    typeof filter.costMin === 'number' &&
     (card.cost === undefined || card.cost < filter.costMin)
   ) {
     return false;
   }
   if (
-    typeof filter.costMax === "number" &&
+    typeof filter.costMax === 'number' &&
     (card.cost === undefined || card.cost > filter.costMax)
   ) {
     return false;
@@ -220,7 +186,7 @@ export function checkAndDiscardZeroCounterCard(
   const hasUsesKeyword =
     Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
     Boolean((cardInstance.card as any).uses) ||
-    Boolean(cardInstance.card.raw?.text?.includes("Uses ("));
+    Boolean(cardInstance.card.raw?.text?.includes('Uses ('));
 
   if (!hasUsesKeyword) return false;
 
@@ -230,10 +196,7 @@ export function checkAndDiscardZeroCounterCard(
     if (counterType && cardInstance.counters[counterType] !== undefined) {
       remainingCounters = cardInstance.counters[counterType];
     } else {
-      remainingCounters = Object.values(cardInstance.counters).reduce(
-        (sum, v) => sum + v,
-        0,
-      );
+      remainingCounters = Object.values(cardInstance.counters).reduce((sum, v) => sum + v, 0);
     }
   } else {
     remainingCounters = cardInstance.tokens?.counters || 0;
@@ -241,16 +204,12 @@ export function checkAndDiscardZeroCounterCard(
 
   if (remainingCounters <= 0) {
     // 1. Remove from tableau or allies
-    const tabIdx = player.tableau.findIndex(
-      (c) => c.instanceId === cardInstance.instanceId,
-    );
+    const tabIdx = player.tableau.findIndex((c) => c.instanceId === cardInstance.instanceId);
     let discarded: CardInstance | undefined;
     if (tabIdx !== -1) {
       [discarded] = player.tableau.splice(tabIdx, 1);
     } else {
-      const allyIdx = player.allies.findIndex(
-        (c) => c.instanceId === cardInstance.instanceId,
-      );
+      const allyIdx = player.allies.findIndex((c) => c.instanceId === cardInstance.instanceId);
       if (allyIdx !== -1) {
         [discarded] = player.allies.splice(allyIdx, 1);
       }
@@ -260,7 +219,7 @@ export function checkAndDiscardZeroCounterCard(
       player.discard.push(discarded);
 
       // 2. Dispatch CARD_DISCARDED trigger
-      dispatchTrigger(state, "CARD_DISCARDED", {
+      dispatchTrigger(state, 'CARD_DISCARDED', {
         targetPlayerId: player.id,
         sourceInstanceId: discarded.instanceId,
       });
@@ -271,11 +230,11 @@ export function checkAndDiscardZeroCounterCard(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "card_play",
+        category: 'card_play',
         actor: { name: player.name, type: player.currentForm },
-        key: "card.discarded.uses_exhausted",
+        key: 'card.discarded.uses_exhausted',
         params: { player: player.name, card: discarded.card.name },
-        onomatopoeia: "USES EXHAUSTED!",
+        onomatopoeia: 'USES EXHAUSTED!',
       });
       return true;
     }
@@ -290,15 +249,15 @@ export function isEncounterCard(card: NormalizedCard): boolean {
   if (!card) return false;
   const t = card.type?.toLowerCase();
   return (
-    t === "attachment" ||
-    t === "minion" ||
-    t === "treachery" ||
-    t === "main_scheme" ||
-    t === "side_scheme" ||
-    t === "villain" ||
-    t === "obligation" ||
-    t === "environment" ||
-    (card as any).faction_code === "encounter" ||
+    t === 'attachment' ||
+    t === 'minion' ||
+    t === 'treachery' ||
+    t === 'main_scheme' ||
+    t === 'side_scheme' ||
+    t === 'villain' ||
+    t === 'obligation' ||
+    t === 'environment' ||
+    (card as any).faction_code === 'encounter' ||
     Boolean((card as any).card_set_code)
   );
 }
@@ -319,8 +278,7 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(attachment.card)) {
         state.encounterDiscard.push(attachment);
       } else {
-        const targetP =
-          state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
         targetP.discard.push(attachment);
       }
     }
@@ -333,8 +291,7 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(tucked.card)) {
         state.encounterDiscard.push(tucked);
       } else {
-        const targetP =
-          state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
         targetP.discard.push(tucked);
       }
     }
@@ -353,7 +310,7 @@ export function shouldExecuteStep(
   context: EffectExecutionContext,
   stepResultsMap?: Map<string, StepResolutionResult>,
 ): boolean {
-  if (!gate || gate === "ALWAYS") return true;
+  if (!gate || gate === 'ALWAYS') return true;
 
   const targetStepId = step.params?.targetStepId as string | undefined;
   const evaluatedResult =
@@ -361,48 +318,38 @@ export function shouldExecuteStep(
       ? stepResultsMap.get(targetStepId)
       : prevResult;
 
-  if (gate === "THEN" || gate === "IF_PREVIOUS_SUCCESS") {
+  if (gate === 'THEN' || gate === 'IF_PREVIOUS_SUCCESS') {
+    return !!evaluatedResult && evaluatedResult.success && evaluatedResult.mutatedState;
+  }
+
+  if (gate === 'IF_AMOUNT_ZERO' || gate === 'IF_ZERO_HEALED') {
     return (
-      !!evaluatedResult &&
-      evaluatedResult.success &&
-      evaluatedResult.mutatedState
+      !!evaluatedResult && (!evaluatedResult.mutatedState || (evaluatedResult.value ?? 0) === 0)
     );
   }
 
-  if (gate === "IF_AMOUNT_ZERO" || gate === "IF_ZERO_HEALED") {
-    return (
-      !!evaluatedResult &&
-      (!evaluatedResult.mutatedState || (evaluatedResult.value ?? 0) === 0)
-    );
-  }
-
-  if (gate === "IF_FAILED") {
+  if (gate === 'IF_FAILED') {
     if (targetStepId && stepResultsMap?.has(targetStepId)) {
       const targetRes = stepResultsMap.get(targetStepId);
       return !targetRes || !targetRes.success || !targetRes.mutatedState;
     }
-    return (
-      !evaluatedResult ||
-      !evaluatedResult.success ||
-      !evaluatedResult.mutatedState
-    );
+    return !evaluatedResult || !evaluatedResult.success || !evaluatedResult.mutatedState;
   }
 
-  if (gate === "IF_ALREADY_HAS_STATUS") {
+  if (gate === 'IF_ALREADY_HAS_STATUS') {
     if (evaluatedResult && evaluatedResult.conditionMet !== undefined) {
       return evaluatedResult.conditionMet;
     }
     const statusParam = (step.params?.status as StatusCard) || StatusCard.TOUGH;
-    const targetParam = (step.params?.target as string) || "VILLAIN";
-    if (targetParam === "VILLAIN") {
+    const targetParam = (step.params?.target as string) || 'VILLAIN';
+    if (targetParam === 'VILLAIN') {
       return state.villain.statusCards.includes(statusParam as StatusCard);
     }
     return false;
   }
 
-  if (gate === "IF_RESOURCE_MATCH") {
-    const reqAspect =
-      (step.params?.aspect as string) || (step.params?.resource as string);
+  if (gate === 'IF_RESOURCE_MATCH') {
+    const reqAspect = (step.params?.aspect as string) || (step.params?.resource as string);
     return !!context.resourcesSpent?.includes(reqAspect);
   }
 
@@ -439,9 +386,7 @@ export function executeSequence(
       ...context,
       previousResult: prevResult,
       targetInstanceId:
-        step.params?.target === "PREVIOUS_TARGET"
-          ? prevResult?.targetId
-          : context.targetInstanceId,
+        step.params?.target === 'PREVIOUS_TARGET' ? prevResult?.targetId : context.targetInstanceId,
     };
 
     const res = executeStep(currentState, step, stepContext);
@@ -467,13 +412,8 @@ export function executeSequence(
   return {
     state: currentState,
     success: true,
-    mutatedState: Array.from(stepResultsMap.values()).some(
-      (r) => r.mutatedState,
-    ),
-    onomatopoeia:
-      onomatopoeias.length > 0
-        ? onomatopoeias.join(" ➔ ")
-        : "SEQUENCE RESOLVED!",
+    mutatedState: Array.from(stepResultsMap.values()).some((r) => r.mutatedState),
+    onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
 
@@ -487,7 +427,7 @@ export function executeEffect(
 ): EffectResult {
   // Handle ability cost (e.g. discardSelf on in-play upgrades/attachments)
   if (
-    "cost" in abilityOrStep &&
+    'cost' in abilityOrStep &&
     (abilityOrStep as CardAbility).cost?.discardSelf &&
     context.sourceCardInstance
   ) {
@@ -504,7 +444,7 @@ export function executeEffect(
   }
 
   if (
-    "steps" in abilityOrStep &&
+    'steps' in abilityOrStep &&
     Array.isArray(abilityOrStep.steps) &&
     abilityOrStep.steps.length > 0
   ) {
@@ -512,18 +452,18 @@ export function executeEffect(
   }
 
   if (
-    "sequence" in abilityOrStep &&
+    'sequence' in abilityOrStep &&
     Array.isArray((abilityOrStep as any).sequence) &&
     (abilityOrStep as any).sequence.length > 0
   ) {
     return executeSequence(state, (abilityOrStep as any).sequence, context);
   }
 
-  if ("effect" in abilityOrStep && abilityOrStep.effect) {
+  if ('effect' in abilityOrStep && abilityOrStep.effect) {
     return executeStep(state, abilityOrStep as AbilityStep, context);
   }
 
-  return { state, success: true, onomatopoeia: "RESOLVED!" };
+  return { state, success: true, onomatopoeia: 'RESOLVED!' };
 }
 
 /**
@@ -535,17 +475,16 @@ export function executeStep(
   context: EffectExecutionContext,
 ): EffectResult {
   const player = state.players.find((p) => p.id === context.playerId);
-  if (!player) return { state, success: false, error: "Player not found" };
+  if (!player) return { state, success: false, error: 'Player not found' };
 
   switch (step.effect) {
-    case "DRAW_CARDS": {
+    case 'DRAW_CARDS': {
       const count = (step.params?.count as number) || 1;
       const targetParam = step.params?.target as string | undefined;
       const targetPlayerId =
         (step.params?.targetPlayerId as string) ||
         (step.params?.playerId as string) ||
-        (context.targetInstanceId &&
-        state.players.some((p) => p.id === context.targetInstanceId)
+        (context.targetInstanceId && state.players.some((p) => p.id === context.targetInstanceId)
           ? context.targetInstanceId
           : undefined);
 
@@ -566,7 +505,7 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            key: "card.effect.drawCards",
+            key: 'card.effect.drawCards',
             params: {
               player: targetP.name,
               count: drawnForP,
@@ -583,23 +522,21 @@ export function executeStep(
       }
 
       // If targeting CHOSEN_PLAYER in multiplayer mode, prompt the player to select the recipient
-      if (targetParam === "CHOSEN_PLAYER" && state.players.length > 1) {
+      if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1) {
         const sourceCardName =
-          context.sourceCardInstance?.card.name ||
-          player.activeFormCard?.name ||
-          "Ability";
+          context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
         const promptId = `prompt_${Date.now()}_choose_player`;
         state = enqueueDecisionPrompt(state, {
           promptId,
           playerId: player.id,
-          title: "Choose a Player",
-          description: `Choose a player to draw ${count} card${count > 1 ? "s" : ""}:`,
+          title: 'Choose a Player',
+          description: `Choose a player to draw ${count} card${count > 1 ? 's' : ''}:`,
           sourceCardName,
           options: state.players.map((p) => ({
             id: `draw_${p.id}`,
-            label: `${p.name} (${p.hero?.name || "Hero"})`,
+            label: `${p.name} (${p.hero?.name || 'Hero'})`,
             description: `Give ${count} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
-            effect: "DRAW_CARDS",
+            effect: 'DRAW_CARDS',
             params: {
               count,
               targetPlayerId: p.id,
@@ -612,21 +549,20 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          category: "ability",
-          key: "decision.prompt.opened",
+          category: 'ability',
+          key: 'decision.prompt.opened',
           params: { player: player.name, promptId, source: sourceCardName },
-          onomatopoeia: "CHOOSE PLAYER!",
+          onomatopoeia: 'CHOOSE PLAYER!',
         });
 
         return {
           state,
           success: true,
-          onomatopoeia: "CHOOSE PLAYER!",
+          onomatopoeia: 'CHOOSE PLAYER!',
         };
       }
 
-      const targetPlayers =
-        targetParam === "ALL_PLAYERS" ? state.players : [player];
+      const targetPlayers = targetParam === 'ALL_PLAYERS' ? state.players : [player];
       let totalDrawn = 0;
 
       for (const p of targetPlayers) {
@@ -644,7 +580,7 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.drawCards",
+          key: 'card.effect.drawCards',
           params: {
             player: p.name,
             count: drawnForP,
@@ -662,30 +598,27 @@ export function executeStep(
       };
     }
 
-    case "DEAL_DAMAGE": {
+    case 'DEAL_DAMAGE': {
       let amount = (step.params?.amount as number) || 0;
       if (
-        step.params?.amountFormula === "HERO_ATK" ||
-        (step.params?.amount as any) === "HERO_ATK"
+        step.params?.amountFormula === 'HERO_ATK' ||
+        (step.params?.amount as any) === 'HERO_ATK'
       ) {
         amount = getEffectiveHeroStats(state, player).attack;
-      } else if (step.params?.amountFormula === "SUFFERED_DAMAGE") {
+      } else if (step.params?.amountFormula === 'SUFFERED_DAMAGE') {
         const max = (step.params?.max as number) || 15;
-        const damageSustained = Math.max(
-          0,
-          getEffectiveMaxHealth(player, state) - player.health,
-        );
+        const damageSustained = Math.max(0, getEffectiveMaxHealth(player, state) - player.health);
         amount = Math.min(max, damageSustained);
       } else if (
-        step.params?.amountFormula === "COUNTERS_ON_TARGET" ||
-        step.params?.amountFormula === "COUNTERS_MULTIPLIER"
+        step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
+        step.params?.amountFormula === 'COUNTERS_MULTIPLIER'
       ) {
-        const target = step.params?.target || "SELF";
-        const counterType = (step.params?.counterType as string) || "energy";
+        const target = step.params?.target || 'SELF';
+        const counterType = (step.params?.counterType as string) || 'energy';
         const multiplier = (step.params?.multiplier as number) || 1;
         const max = (step.params?.max as number) || 999;
         let counterCount = 0;
-        if (target === "IDENTITY") {
+        if (target === 'IDENTITY') {
           counterCount = player.counters?.[counterType] || 0;
         } else if (context.sourceCardInstance) {
           counterCount =
@@ -697,11 +630,9 @@ export function executeStep(
       }
       const targetParam = step.params?.target as string | undefined;
 
-      if (targetParam === "ALL_ENEMIES") {
+      if (targetParam === 'ALL_ENEMIES') {
         // Deal damage to villain
-        const villainToughIdx = state.villain.statusCards.indexOf(
-          StatusCard.TOUGH,
-        );
+        const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
         if (villainToughIdx !== -1) {
           state.villain.statusCards.splice(villainToughIdx, 1);
         } else {
@@ -715,9 +646,7 @@ export function executeStep(
         for (const p of state.players) {
           for (let i = p.engagedMinions.length - 1; i >= 0; i--) {
             const minion = p.engagedMinions[i];
-            const minionToughIdx = (minion.statusCards || []).indexOf(
-              StatusCard.TOUGH,
-            );
+            const minionToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
             if (minionToughIdx !== -1) {
               minion.statusCards!.splice(minionToughIdx, 1);
             } else {
@@ -740,8 +669,8 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.dealDamage",
-          params: { player: player.name, target: "all_enemies", amount },
+          key: 'card.effect.dealDamage',
+          params: { player: player.name, target: 'all_enemies', amount },
           onomatopoeia,
         });
 
@@ -749,14 +678,11 @@ export function executeStep(
       }
 
       const targetType =
-        targetParam === "ALL_HEROES" || targetParam === "HERO"
-          ? "hero"
-          : context.targetType || "villain";
+        targetParam === 'ALL_HEROES' || targetParam === 'HERO'
+          ? 'hero'
+          : context.targetType || 'villain';
 
-      if (
-        targetParam === "ALL_HEROES" ||
-        (targetType === "hero" && !context.targetInstanceId)
-      ) {
+      if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {
         for (const p of state.players) {
           const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
           if (toughIdx !== -1) {
@@ -766,27 +692,27 @@ export function executeStep(
               timestamp: Date.now(),
               round: state.roundNumber,
               phase: state.phase,
-              key: "card.effect.dealDamage",
+              key: 'card.effect.dealDamage',
               params: {
                 player: p.name,
-                target: "hero",
+                target: 'hero',
                 amount: 0,
                 toughAbsorbed: true,
               },
-              onomatopoeia: "CLANG! (TOUGH)",
+              onomatopoeia: 'CLANG! (TOUGH)',
             });
           } else {
             p.health = Math.max(0, p.health - amount);
-            if (p.health <= 0) state.winner = "VILLAIN";
+            if (p.health <= 0) state.winner = 'VILLAIN';
             state.log.push({
               id: `log_${Date.now()}`,
               timestamp: Date.now(),
               round: state.roundNumber,
               phase: state.phase,
-              key: "card.effect.dealDamage",
+              key: 'card.effect.dealDamage',
               params: {
                 player: p.name,
-                target: "hero",
+                target: 'hero',
                 amount,
                 remainingHealth: p.health,
               },
@@ -809,18 +735,16 @@ export function executeStep(
           );
           if (minionIdx !== -1) {
             const minion = p.engagedMinions[minionIdx];
-            const toughIdx = (minion.statusCards || []).indexOf(
-              StatusCard.TOUGH,
-            );
+            const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
             if (toughIdx !== -1) {
               minion.statusCards!.splice(toughIdx, 1);
-              const onomatopoeia = "CLANG!";
+              const onomatopoeia = 'CLANG!';
               state.log.push({
                 id: `log_${Date.now()}`,
                 timestamp: Date.now(),
                 round: state.roundNumber,
                 phase: state.phase,
-                key: "card.effect.dealDamage",
+                key: 'card.effect.dealDamage',
                 params: {
                   player: player.name,
                   target: minion.card.name,
@@ -844,27 +768,20 @@ export function executeStep(
               // Overkill routing to villain if attack has Overkill
               const isOverkill = Boolean(
                 step.params?.overkill ||
-                step.params?.keyword === "Overkill" ||
-                (context.sourceCardInstance?.card as any)?.keywords?.includes(
-                  "Overkill",
-                ) ||
-                (
-                  context.sourceCardInstance?.card.raw as any
-                )?.keywords?.includes("Overkill"),
+                step.params?.keyword === 'Overkill' ||
+                (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
+                (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
               );
 
               if (isOverkill && excessDmg > 0) {
-                state.villain.health = Math.max(
-                  0,
-                  state.villain.health - excessDmg,
-                );
+                state.villain.health = Math.max(0, state.villain.health - excessDmg);
                 state.log.push({
                   id: `log_${Date.now()}`,
                   timestamp: Date.now(),
                   round: state.roundNumber,
                   phase: state.phase,
-                  category: "combat",
-                  key: "overkill.villain.hit",
+                  category: 'combat',
+                  key: 'overkill.villain.hit',
                   params: {
                     damage: excessDmg,
                     villain: state.villain.card.name,
@@ -878,39 +795,35 @@ export function executeStep(
                 const attAbs = att.card.enrichment?.abilities || [];
                 for (const ab of attAbs) {
                   const hostDefStep = ab.steps?.find(
-                    (s) => s.effect === "WHEN_ATTACHED_HOST_DEFEATED",
+                    (s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED',
                   );
                   if (hostDefStep) {
-                    const removeAmount =
-                      (hostDefStep.params?.amount as number) || 3;
-                    state.mainScheme.threat = Math.max(
-                      0,
-                      state.mainScheme.threat - removeAmount,
-                    );
+                    const removeAmount = (hostDefStep.params?.amount as number) || 3;
+                    state.mainScheme.threat = Math.max(0, state.mainScheme.threat - removeAmount);
                     state.log.push({
                       id: `log_${Date.now()}`,
                       timestamp: Date.now(),
-                      category: "scheme",
-                      key: "card.effect.removeThreat",
+                      category: 'scheme',
+                      key: 'card.effect.removeThreat',
                       params: {
                         scheme: state.mainScheme.card.name,
                         amount: removeAmount,
                         source: att.card.name,
                       },
-                      onomatopoeia: "SPIDER-TRACER REMOVES 3 THREAT!",
+                      onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
                     });
                   }
                 }
                 p.discard.push(att);
               }
 
-              const onomatopoeia = "SMASH! MINION DEFEATED!";
+              const onomatopoeia = 'SMASH! MINION DEFEATED!';
               state.log.push({
                 id: `log_${Date.now()}`,
                 timestamp: Date.now(),
                 round: state.roundNumber,
                 phase: state.phase,
-                key: "card.effect.dealDamage",
+                key: 'card.effect.dealDamage',
                 params: {
                   player: player.name,
                   target: minion.card.name,
@@ -924,12 +837,12 @@ export function executeStep(
               minion.tokens = { ...minion.tokens, damage: newDmg };
 
               // Retaliate check if minion survives
-              const minionText = (minion.card.text || "").toLowerCase();
+              const minionText = (minion.card.text || '').toLowerCase();
               let retaliateX = 0;
               if (
-                minionText.includes("retaliate 1") ||
-                (minion.card as any).keywords?.includes("Retaliate 1") ||
-                (minion.card as any).keywords?.includes("Retaliate")
+                minionText.includes('retaliate 1') ||
+                (minion.card as any).keywords?.includes('Retaliate 1') ||
+                (minion.card as any).keywords?.includes('Retaliate')
               ) {
                 retaliateX = 1;
               }
@@ -940,24 +853,24 @@ export function executeStep(
                   timestamp: Date.now(),
                   round: state.roundNumber,
                   phase: state.phase,
-                  category: "combat",
-                  key: "retaliate.hit",
+                  category: 'combat',
+                  key: 'retaliate.hit',
                   params: {
                     damage: retaliateX,
                     source: minion.card.name,
                     player: player.name,
                   },
-                  onomatopoeia: "RETALIATE!",
+                  onomatopoeia: 'RETALIATE!',
                 });
               }
 
-              const onomatopoeia = "WHAM!";
+              const onomatopoeia = 'WHAM!';
               state.log.push({
                 id: `log_${Date.now()}`,
                 timestamp: Date.now(),
                 round: state.roundNumber,
                 phase: state.phase,
-                key: "card.effect.dealDamage",
+                key: 'card.effect.dealDamage',
                 params: {
                   player: player.name,
                   target: minion.card.name,
@@ -976,16 +889,16 @@ export function executeStep(
       const toughIndex = state.villain.statusCards.indexOf(StatusCard.TOUGH);
       if (toughIndex !== -1) {
         state.villain.statusCards.splice(toughIndex, 1);
-        const onomatopoeia = "CLANG! (TOUGH)";
+        const onomatopoeia = 'CLANG! (TOUGH)';
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.dealDamage",
+          key: 'card.effect.dealDamage',
           params: {
             player: player.name,
-            target: "villain",
+            target: 'villain',
             amount: 0,
             toughAbsorbed: true,
           },
@@ -997,21 +910,19 @@ export function executeStep(
       // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
       const armorIdx = (state.villain.attachments || []).findIndex((att) => {
         const abs = att.card.enrichment?.abilities || [];
-        return abs.some((a) =>
-          a.steps?.some((s) => s.effect === "ATTACHMENT_DAMAGE_SHIELD"),
-        );
+        return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
       });
       if (armorIdx !== -1) {
         const armor = state.villain.attachments.splice(armorIdx, 1)[0];
         state.encounterDiscard.push(armor);
-        const onomatopoeia = "ARMORED SUIT ABSORBS DAMAGE!";
+        const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          category: "combat",
-          key: "attachment.damageShield.absorbed",
+          category: 'combat',
+          key: 'attachment.damageShield.absorbed',
           params: {
             villain: state.villain.card.name,
             attachment: armor.card.name,
@@ -1024,10 +935,7 @@ export function executeStep(
 
       state.villain.health = Math.max(0, state.villain.health - amount);
       if (state.villain.health <= 0) {
-        const defeatedState = handleVillainDefeat(
-          state,
-          state.villain.instanceId,
-        );
+        const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
         return {
           state: defeatedState,
           success: true,
@@ -1041,10 +949,10 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.dealDamage",
+        key: 'card.effect.dealDamage',
         params: {
           player: player.name,
-          target: "villain",
+          target: 'villain',
           amount,
           remainingHealth: state.villain.health,
         },
@@ -1058,12 +966,12 @@ export function executeStep(
       };
     }
 
-    case "HEAL_DAMAGE": {
+    case 'HEAL_DAMAGE': {
       const amount = (step.params?.amount as number) || 0;
-      const target = (step.params?.target as string) || "SELF";
+      const target = (step.params?.target as string) || 'SELF';
       let healed = 0;
 
-      if (target === "VILLAIN") {
+      if (target === 'VILLAIN') {
         const currentHp = state.villain.health;
         const maxHp = state.villain.maxHealth || 100;
         healed = Math.min(maxHp - currentHp, amount);
@@ -1079,12 +987,12 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.heal",
+        key: 'card.effect.heal',
         params: {
           player: player.name,
           target,
           amount: healed,
-          health: target === "VILLAIN" ? state.villain.health : player.health,
+          health: target === 'VILLAIN' ? state.villain.health : player.health,
         },
         onomatopoeia,
       });
@@ -1098,16 +1006,15 @@ export function executeStep(
       };
     }
 
-    case "PREVENT_DAMAGE": {
-      const amount =
-        (step.params?.amount as number) || (step.params?.preventAll ? 999 : 3);
+    case 'PREVENT_DAMAGE': {
+      const amount = (step.params?.amount as number) || (step.params?.preventAll ? 999 : 3);
       const onomatopoeia = `PREVENTED ${amount} DAMAGE!`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "combat.damage.prevented",
+        key: 'combat.damage.prevented',
         params: { player: player.name, amount },
         onomatopoeia,
       });
@@ -1120,8 +1027,8 @@ export function executeStep(
       };
     }
 
-    case "GENERATE_RESOURCE": {
-      const resourceType = (step.params?.resource as string) || "wild";
+    case 'GENERATE_RESOURCE': {
+      const resourceType = (step.params?.resource as string) || 'wild';
       const amount = (step.params?.amount as number) || 1;
 
       return {
@@ -1131,12 +1038,12 @@ export function executeStep(
       };
     }
 
-    case "REMOVE_THREAT": {
+    case 'REMOVE_THREAT': {
       const amount = (step.params?.amount as number) || 1;
-      const targetParam = (step.params?.target as string) || "MAIN_SCHEME";
+      const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
 
-      if (targetParam === "MAIN_SCHEME") {
+      if (targetParam === 'MAIN_SCHEME') {
         removed = Math.min(state.mainScheme.threat, amount);
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
       } else if (context.targetInstanceId) {
@@ -1159,7 +1066,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.removeThreat",
+        key: 'card.effect.removeThreat',
         params: {
           player: player.name,
           amount: removed,
@@ -1177,17 +1084,16 @@ export function executeStep(
       };
     }
 
-    case "ADD_STATUS": {
+    case 'ADD_STATUS': {
       let status: StatusCard = StatusCard.STUNNED;
       const statusParam = step.params?.status;
-      if (statusParam === "TOUGH" || statusParam === StatusCard.TOUGH)
-        status = StatusCard.TOUGH;
-      if (statusParam === "CONFUSED" || statusParam === StatusCard.CONFUSED)
+      if (statusParam === 'TOUGH' || statusParam === StatusCard.TOUGH) status = StatusCard.TOUGH;
+      if (statusParam === 'CONFUSED' || statusParam === StatusCard.CONFUSED)
         status = StatusCard.CONFUSED;
-      if (statusParam === "STUNNED" || statusParam === StatusCard.STUNNED)
+      if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED)
         status = StatusCard.STUNNED;
 
-      const target = (step.params?.target as string) || "VILLAIN";
+      const target = (step.params?.target as string) || 'VILLAIN';
       let mutatedState = false;
       let alreadyHadStatus = false;
       let isImmune = false;
@@ -1200,22 +1106,17 @@ export function executeStep(
         // Stalwart check (RR v1.8 p. 28)
         if (
           (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) &&
-          hasEntityKeyword(entity, "Stalwart")
+          hasEntityKeyword(entity, 'Stalwart')
         ) {
           isImmune = true;
           return;
         }
 
         // Steady check (RR v1.8 p. 28)
-        const isSteady = hasEntityKeyword(entity, "Steady");
+        const isSteady = hasEntityKeyword(entity, 'Steady');
         const maxLimit =
-          isSteady &&
-          (status === StatusCard.STUNNED || status === StatusCard.CONFUSED)
-            ? 2
-            : 1;
-        const currentCount = entity.statusCards.filter(
-          (s: StatusCard) => s === status,
-        ).length;
+          isSteady && (status === StatusCard.STUNNED || status === StatusCard.CONFUSED) ? 2 : 1;
+        const currentCount = entity.statusCards.filter((s: StatusCard) => s === status).length;
 
         if (currentCount < maxLimit) {
           entity.statusCards.push(status);
@@ -1226,21 +1127,16 @@ export function executeStep(
       };
 
       if (
-        target === "VILLAIN" ||
-        target === "CHOSEN_ENEMY" ||
-        target === "ATTACK_TARGET" ||
-        target === "ATTACKED_ENEMY" ||
-        target === "TARGET_ENEMY" ||
-        target === "MINION"
+        target === 'VILLAIN' ||
+        target === 'CHOSEN_ENEMY' ||
+        target === 'ATTACK_TARGET' ||
+        target === 'ATTACKED_ENEMY' ||
+        target === 'TARGET_ENEMY' ||
+        target === 'MINION'
       ) {
-        if (
-          (target === "MINION" || context.targetType === "minion") &&
-          context.targetInstanceId
-        ) {
+        if ((target === 'MINION' || context.targetType === 'minion') && context.targetInstanceId) {
           for (const p of state.players) {
-            const minion = p.engagedMinions.find(
-              (m) => m.instanceId === context.targetInstanceId,
-            );
+            const minion = p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId);
             if (minion) {
               applyStatusToEntity(minion);
               break;
@@ -1250,19 +1146,18 @@ export function executeStep(
           applyStatusToEntity(state.villain);
         }
       } else if (
-        target === "HERO" ||
-        target === "ALL_HEROES" ||
-        target === "DEFENDING_CHARACTER" ||
-        target === "DEFENDING_PLAYER" ||
-        target === "PLAYER"
+        target === 'HERO' ||
+        target === 'ALL_HEROES' ||
+        target === 'DEFENDING_CHARACTER' ||
+        target === 'DEFENDING_PLAYER' ||
+        target === 'PLAYER'
       ) {
-        const targetPlayer =
-          state.players.find((p) => p.id === context.playerId) || player;
+        const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
         applyStatusToEntity(targetPlayer);
       }
 
       const onomatopoeia = isImmune
-        ? "IMMUNE! (STALWART)"
+        ? 'IMMUNE! (STALWART)'
         : mutatedState
           ? `${status} APPLIED!`
           : `${status} ALREADY APPLIED!`;
@@ -1272,7 +1167,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.addStatus",
+        key: 'card.effect.addStatus',
         params: {
           status,
           target,
@@ -1293,12 +1188,10 @@ export function executeStep(
       };
     }
 
-    case "DISCARD_TOP_DECK_FILTER": {
+    case 'DISCARD_TOP_DECK_FILTER': {
       // Black Cat: Discard top 2 cards, add each Mental resource to hand
       const count = (step.params?.count as number) || 2;
-      const filterRes = (
-        (step.params?.filterResource as string) || "mental"
-      ).toLowerCase();
+      const filterRes = ((step.params?.filterResource as string) || 'mental').toLowerCase();
       let matchedCount = 0;
 
       for (let i = 0; i < count; i++) {
@@ -1327,10 +1220,10 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.drawCards",
+        key: 'card.effect.drawCards',
         params: {
           player: player.name,
-          card: "Black Cat",
+          card: 'Black Cat',
           count: matchedCount,
           handSize: player.hand.length,
         },
@@ -1340,10 +1233,10 @@ export function executeStep(
       return { state, success: true, onomatopoeia };
     }
 
-    case "SCRY_AND_SELECT_TRAIT": {
+    case 'SCRY_AND_SELECT_TRAIT': {
       // Tony Stark Futurist: Look at top lookCount (3) cards of deck, allow player to select 1 matching trait ('Tech') card to add to hand, discard rest.
       const lookCount = (step.params?.lookCount as number) || 3;
-      const trait = (step.params?.trait as string) || "Tech";
+      const trait = (step.params?.trait as string) || 'Tech';
 
       const scryedCards: CardInstance[] = [];
       for (let i = 0; i < lookCount; i++) {
@@ -1354,15 +1247,13 @@ export function executeStep(
       if (!player.setAsideCards) player.setAsideCards = [];
       player.setAsideCards.push(...scryedCards);
 
-      const matchingCards = scryedCards.filter((c) =>
-        (c.card.traits || []).includes(trait),
-      );
+      const matchingCards = scryedCards.filter((c) => (c.card.traits || []).includes(trait));
 
       const options = matchingCards.map((c) => ({
         id: `take_${c.instanceId}`,
         label: `Take ${c.card.name} to Hand`,
         description: `${c.card.type.toUpperCase()} • Cost: ${c.card.cost ?? 0} (Discard remaining ${scryedCards.length - 1} cards)`,
-        effect: "RESOLVE_SCRY_SELECTION",
+        effect: 'RESOLVE_SCRY_SELECTION',
         params: {
           takeInstanceId: c.instanceId,
           scryedInstanceIds: scryedCards.map((sc) => sc.instanceId),
@@ -1371,12 +1262,12 @@ export function executeStep(
 
       // Player always has the choice to take nothing / decline (RR v1.8 p. 19 "Player Choice")
       options.push({
-        id: "take_none",
-        label: "Do not take any card",
+        id: 'take_none',
+        label: 'Do not take any card',
         description: `Discard all ${scryedCards.length} revealed cards to discard pile`,
-        effect: "RESOLVE_SCRY_SELECTION",
+        effect: 'RESOLVE_SCRY_SELECTION',
         params: {
-          takeInstanceId: "",
+          takeInstanceId: '',
           scryedInstanceIds: scryedCards.map((sc) => sc.instanceId),
         },
       });
@@ -1395,9 +1286,9 @@ export function executeStep(
       state = enqueueDecisionPrompt(state, {
         promptId: `futurist_${Date.now()}`,
         playerId: player.id,
-        title: "FUTURIST (Tony Stark)",
+        title: 'FUTURIST (Tony Stark)',
         description: `Revealed top ${scryedCards.length} cards from your deck. Select a ${trait} card to add to your hand, or choose to discard all:`,
-        sourceCardName: "Tony Stark",
+        sourceCardName: 'Tony Stark',
         options,
         revealedCards,
       });
@@ -1407,24 +1298,24 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
+        category: 'ability',
         actor: { name: player.name, type: player.currentForm },
-        key: "card.effect.futurist.prompt",
+        key: 'card.effect.futurist.prompt',
         params: {
           player: player.name,
-          scryedCards: scryedCards.map((c) => c.card.name).join(", "),
+          scryedCards: scryedCards.map((c) => c.card.name).join(', '),
         },
-        onomatopoeia: "FUTURIST SCAN!",
+        onomatopoeia: 'FUTURIST SCAN!',
       });
 
-      return { state, success: true, onomatopoeia: "FUTURIST SCAN!" };
+      return { state, success: true, onomatopoeia: 'FUTURIST SCAN!' };
     }
 
-    case "RESOLVE_SCRY_SELECTION": {
+    case 'RESOLVE_SCRY_SELECTION': {
       const takeId = step.params?.takeInstanceId as string | null | undefined;
       const scryedIds = (step.params?.scryedInstanceIds as string[]) || [];
 
-      let takenCardName = "";
+      let takenCardName = '';
       if (!player.setAsideCards) player.setAsideCards = [];
 
       for (const id of scryedIds) {
@@ -1442,18 +1333,18 @@ export function executeStep(
 
       const onomatopoeia = takenCardName
         ? `FUTURIST! +${takenCardName.toUpperCase()}`
-        : "FUTURIST (DISCARDED ALL)";
+        : 'FUTURIST (DISCARDED ALL)';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
+        category: 'ability',
         actor: { name: player.name, type: player.currentForm },
-        key: "card.effect.futurist.resolved",
+        key: 'card.effect.futurist.resolved',
         params: {
           player: player.name,
-          taken: takenCardName || "None",
+          taken: takenCardName || 'None',
         },
         onomatopoeia,
       });
@@ -1461,13 +1352,10 @@ export function executeStep(
       return { state, success: true, onomatopoeia };
     }
 
-    case "HEAL_DAMAGE_WITH_SURGE": {
+    case 'HEAL_DAMAGE_WITH_SURGE': {
       // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
       const amount = (step.params?.amount as number) || 4;
-      const healed = Math.min(
-        state.villain.maxHealth - state.villain.health,
-        amount,
-      );
+      const healed = Math.min(state.villain.maxHealth - state.villain.health, amount);
       if (healed > 0) {
         state.villain.health += healed;
         return {
@@ -1479,28 +1367,28 @@ export function executeStep(
         // Surge -> deal 1 extra encounter card
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       }
     }
 
-    case "ADD_STATUS_WITH_SURGE": {
+    case 'ADD_STATUS_WITH_SURGE': {
       // "I'm Tough" (01105): Give Rhino Tough. If already Tough -> surge
       if (!state.villain.statusCards.includes(StatusCard.TOUGH)) {
         state.villain.statusCards.push(StatusCard.TOUGH);
-        return { state, success: true, onomatopoeia: "RHINO GAINS TOUGH!" };
+        return { state, success: true, onomatopoeia: 'RHINO GAINS TOUGH!' };
       } else {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       }
     }
 
-    case "ADD_THREAT_PER_PLAYER": {
+    case 'ADD_THREAT_PER_PLAYER': {
       const amountPerPlayer = (step.params?.amount as number) || 1;
       const totalToAdd = amountPerPlayer * state.players.length;
-      const target = (step.params?.target as string) || "THIS_SIDE_SCHEME";
+      const target = (step.params?.target as string) || 'THIS_SIDE_SCHEME';
 
-      if (target === "THIS_SIDE_SCHEME" && context.sourceCardInstance) {
+      if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
         const scheme = state.sideSchemes.find(
           (s) =>
             s.instanceId === context.sourceCardInstance!.instanceId ||
@@ -1514,7 +1402,7 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            key: "card.effect.addThreat",
+            key: 'card.effect.addThreat',
             params: {
               target: scheme.card.name,
               amount: totalToAdd,
@@ -1533,7 +1421,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.addThreat",
+        key: 'card.effect.addThreat',
         params: {
           target: state.mainScheme.card.name,
           amount: totalToAdd,
@@ -1544,20 +1432,20 @@ export function executeStep(
       return { state, success: true, onomatopoeia };
     }
 
-    case "NICK_FURY_CHOICE": {
+    case 'NICK_FURY_CHOICE': {
       // Dynamic AI evaluation: Threat -> Hand -> Damage
       if (state.mainScheme.threat >= 3) {
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - 2);
-        const onomatopoeia = "NICK FURY REMOVES 2 THREAT!";
+        const onomatopoeia = 'NICK FURY REMOVES 2 THREAT!';
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.removeThreat",
+          key: 'card.effect.removeThreat',
           params: {
             player: player.name,
-            card: "Nick Fury",
+            card: 'Nick Fury',
             amount: 2,
             remainingThreat: state.mainScheme.threat,
           },
@@ -1580,10 +1468,10 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.drawCards",
+          key: 'card.effect.drawCards',
           params: {
             player: player.name,
-            card: "Nick Fury",
+            card: 'Nick Fury',
             count: drawnCount,
             handSize: player.hand.length,
           },
@@ -1594,16 +1482,16 @@ export function executeStep(
       const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
       if (toughIdx !== -1) {
         state.villain.statusCards.splice(toughIdx, 1);
-        const onomatopoeia = "NICK FURY BREAKS TOUGH!";
+        const onomatopoeia = 'NICK FURY BREAKS TOUGH!';
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: "card.effect.dealDamage",
+          key: 'card.effect.dealDamage',
           params: {
             player: player.name,
-            card: "Nick Fury",
+            card: 'Nick Fury',
             amount: 0,
             toughAbsorbed: true,
           },
@@ -1612,17 +1500,17 @@ export function executeStep(
         return { state, success: true, onomatopoeia };
       }
       state.villain.health = Math.max(0, state.villain.health - 4);
-      if (state.villain.health <= 0) state.winner = "HEROES";
-      const onomatopoeia = "NICK FURY DEALS 4 DAMAGE!";
+      if (state.villain.health <= 0) state.winner = 'HEROES';
+      const onomatopoeia = 'NICK FURY DEALS 4 DAMAGE!';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.dealDamage",
+        key: 'card.effect.dealDamage',
         params: {
           player: player.name,
-          card: "Nick Fury",
+          card: 'Nick Fury',
           damage: 4,
           remainingHealth: state.villain.health,
         },
@@ -1631,11 +1519,11 @@ export function executeStep(
       return { state, success: true, onomatopoeia };
     }
 
-    case "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE": {
-      if (player.currentForm === "alter_ego") {
+    case 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE': {
+      if (player.currentForm === 'alter_ego') {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       } else {
         // Villain attacks hero immediately (ATK damage)
         const atkDmg = (state.villain.card as any).attack || 2;
@@ -1645,11 +1533,11 @@ export function executeStep(
           return {
             state,
             success: true,
-            onomatopoeia: "CLANG! (TOUGH ABSORBS ATTACK)",
+            onomatopoeia: 'CLANG! (TOUGH ABSORBS ATTACK)',
           };
         }
         player.health = Math.max(0, player.health - atkDmg);
-        if (player.health <= 0) state.winner = "VILLAIN";
+        if (player.health <= 0) state.winner = 'VILLAIN';
         return {
           state,
           success: true,
@@ -1658,7 +1546,7 @@ export function executeStep(
       }
     }
 
-    case "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE": {
+    case 'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE': {
       if (player.tableau.length > 0) {
         const [discarded] = player.tableau.splice(0, 1);
         player.discard.push(discarded);
@@ -1670,11 +1558,11 @@ export function executeStep(
       } else {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       }
     }
 
-    case "ATTACH_TO_HOST": {
+    case 'ATTACH_TO_HOST': {
       const targetHost = step.params?.target as string;
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
@@ -1689,63 +1577,57 @@ export function executeStep(
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "ATTACHED TO HOST!",
+        onomatopoeia: 'ATTACHED TO HOST!',
       };
     }
 
-    case "PLACE_CARD_UNDER_HOST": {
-      const targetHost = (step.params?.target as string) || "SELF";
+    case 'PLACE_CARD_UNDER_HOST': {
+      const targetHost = (step.params?.target as string) || 'SELF';
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
 
-      if (targetHost === "VILLAIN" || targetHost === "ENEMY") {
+      if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
         if (!state.villain.cardsUnderneath) state.villain.cardsUnderneath = [];
         state.villain.cardsUnderneath.push(sourceCard);
         return {
           state,
           success: true,
           mutatedState: true,
-          onomatopoeia: "PLACED UNDER VILLAIN!",
+          onomatopoeia: 'PLACED UNDER VILLAIN!',
         };
-      } else if (targetHost === "MAIN_SCHEME" || targetHost === "SCHEME") {
-        if (!state.mainScheme.cardsUnderneath)
-          state.mainScheme.cardsUnderneath = [];
+      } else if (targetHost === 'MAIN_SCHEME' || targetHost === 'SCHEME') {
+        if (!state.mainScheme.cardsUnderneath) state.mainScheme.cardsUnderneath = [];
         state.mainScheme.cardsUnderneath.push(sourceCard);
         return {
           state,
           success: true,
           mutatedState: true,
-          onomatopoeia: "PLACED UNDER SCHEME!",
+          onomatopoeia: 'PLACED UNDER SCHEME!',
         };
-      } else if (
-        targetHost === "HERO" ||
-        targetHost === "IDENTITY" ||
-        targetHost === "PLAYER"
-      ) {
+      } else if (targetHost === 'HERO' || targetHost === 'IDENTITY' || targetHost === 'PLAYER') {
         const targetP =
-          state.players.find(
-            (p) => p.id === (context.targetPlayerId || context.playerId),
-          ) || player;
+          state.players.find((p) => p.id === (context.targetPlayerId || context.playerId)) ||
+          player;
         if (!targetP.cardsUnderneath) targetP.cardsUnderneath = [];
         targetP.cardsUnderneath.push(sourceCard);
         return {
           state,
           success: true,
           mutatedState: true,
-          onomatopoeia: "PLACED UNDER IDENTITY!",
+          onomatopoeia: 'PLACED UNDER IDENTITY!',
         };
       }
-      return { state, success: true, onomatopoeia: "PLACED UNDER CARD!" };
+      return { state, success: true, onomatopoeia: 'PLACED UNDER CARD!' };
     }
 
-    case "DISCARD_CARDS_UNDER_HOST": {
-      const targetHost = (step.params?.target as string) || "SELF";
+    case 'DISCARD_CARDS_UNDER_HOST': {
+      const targetHost = (step.params?.target as string) || 'SELF';
       let cardsToDiscard: CardInstance[] = [];
 
-      if (targetHost === "VILLAIN") {
+      if (targetHost === 'VILLAIN') {
         cardsToDiscard = state.villain.cardsUnderneath || [];
         state.villain.cardsUnderneath = [];
-      } else if (targetHost === "MAIN_SCHEME") {
+      } else if (targetHost === 'MAIN_SCHEME') {
         cardsToDiscard = state.mainScheme.cardsUnderneath || [];
         state.mainScheme.cardsUnderneath = [];
       }
@@ -1754,7 +1636,7 @@ export function executeStep(
         if (
           card.card.type === CardType.MINION ||
           card.card.type === CardType.TREACHERY ||
-          (card.card as any).faction_code === "encounter"
+          (card.card as any).faction_code === 'encounter'
         ) {
           state.encounterDiscard.push(card);
         } else {
@@ -1765,33 +1647,31 @@ export function executeStep(
         state,
         success: true,
         mutatedState: cardsToDiscard.length > 0,
-        onomatopoeia: "CARDS DISCARDED FROM UNDER!",
+        onomatopoeia: 'CARDS DISCARDED FROM UNDER!',
       };
     }
 
-    case "MODIFY_STAT":
-    case "GRANT_KEYWORD":
-    case "ATTACHMENT_DAMAGE_SHIELD":
-    case "INTERCEPT_ATTACK":
-    case "WHEN_ATTACHED_HOST_DEFEATED": {
+    case 'MODIFY_STAT':
+    case 'GRANT_KEYWORD':
+    case 'ATTACHMENT_DAMAGE_SHIELD':
+    case 'INTERCEPT_ATTACK':
+    case 'WHEN_ATTACHED_HOST_DEFEATED': {
       // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
       return { state, success: true };
     }
 
-    case "READY_IDENTITY":
-    case "READY_CHARACTER":
-    case "READY_ALLY":
-    case "READY_CARD": {
+    case 'READY_IDENTITY':
+    case 'READY_CHARACTER':
+    case 'READY_ALLY':
+    case 'READY_CARD': {
       const targetParam = step.params?.target as string | undefined;
       if (
-        targetParam === "CHOSEN_ALLY" ||
-        targetParam === "ALLY" ||
-        context.targetType === "ally"
+        targetParam === 'CHOSEN_ALLY' ||
+        targetParam === 'ALLY' ||
+        context.targetType === 'ally'
       ) {
         const ally =
-          player.allies.find(
-            (a) => a.instanceId === context.targetInstanceId,
-          ) || player.allies[0];
+          player.allies.find((a) => a.instanceId === context.targetInstanceId) || player.allies[0];
         if (ally) {
           ally.exhausted = false;
         }
@@ -1803,92 +1683,89 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "card.effect.readyCharacter",
+        category: 'ability',
+        key: 'card.effect.readyCharacter',
         params: { player: player.name },
-        onomatopoeia: "READY!",
+        onomatopoeia: 'READY!',
       });
       return {
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "READY!",
+        onomatopoeia: 'READY!',
       };
     }
 
-    case "CANCEL_TREACHERY_AND_VILLAIN_ATTACKS":
-    case "CANCEL_WHEN_REVEALED_AND_ATTACK": {
+    case 'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS':
+    case 'CANCEL_WHEN_REVEALED_AND_ATTACK': {
       executeVillainAttackAgainstPlayer(state, player);
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "card.effect.getBehindMe",
+        category: 'ability',
+        key: 'card.effect.getBehindMe',
         params: { player: player.name },
-        onomatopoeia: "GET BEHIND ME! (VILLAIN ATTACKS)",
+        onomatopoeia: 'GET BEHIND ME! (VILLAIN ATTACKS)',
       });
       return {
         state,
         success: true,
-        onomatopoeia: "GET BEHIND ME! VILLAIN ATTACKS!",
+        onomatopoeia: 'GET BEHIND ME! VILLAIN ATTACKS!',
       };
     }
 
-    case "TAKE_THREAT_AS_DAMAGE": {
-      const amount =
-        (context.threatAmount ?? (step.params?.amount as number)) || 1;
+    case 'TAKE_THREAT_AS_DAMAGE': {
+      const amount = (context.threatAmount ?? (step.params?.amount as number)) || 1;
       player.health = Math.max(0, player.health - amount);
-      if (player.health <= 0) state.winner = "VILLAIN";
+      if (player.health <= 0) state.winner = 'VILLAIN';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "card.effect.greatResponsibility",
+        category: 'ability',
+        key: 'card.effect.greatResponsibility',
         params: { player: player.name, damage: amount },
-        onomatopoeia: "GREAT RESPONSIBILITY! (DAMAGE TAKEN)",
+        onomatopoeia: 'GREAT RESPONSIBILITY! (DAMAGE TAKEN)',
       });
-      return { state, success: true, onomatopoeia: "GREAT RESPONSIBILITY!" };
+      return { state, success: true, onomatopoeia: 'GREAT RESPONSIBILITY!' };
     }
 
-    case "DISCARD_ATTACHMENT": {
+    case 'DISCARD_ATTACHMENT': {
       if (context.sourceCardInstance) {
-        const vIdx = (state.villain.attachments || []).indexOf(
-          context.sourceCardInstance,
-        );
+        const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
         if (vIdx !== -1) {
           state.villain.attachments.splice(vIdx, 1);
           state.encounterDiscard.push(context.sourceCardInstance);
           return {
             state,
             success: true,
-            onomatopoeia: "ATTACHMENT DISCARDED!",
+            onomatopoeia: 'ATTACHMENT DISCARDED!',
           };
         }
       }
       return { state, success: true };
     }
 
-    case "EXHAUST_IDENTITY":
-    case "EXHAUST_HERO": {
+    case 'EXHAUST_IDENTITY':
+    case 'EXHAUST_HERO': {
       player.exhausted = true;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "status",
-        key: "card.state.exhausted",
+        category: 'status',
+        key: 'card.state.exhausted',
         params: { card: player.activeFormCard.name },
-        onomatopoeia: "EXHAUST",
+        onomatopoeia: 'EXHAUST',
       });
-      return { state, success: true, onomatopoeia: "EXHAUSTED!" };
+      return { state, success: true, onomatopoeia: 'EXHAUSTED!' };
     }
 
-    case "DISCARD_ENCOUNTER_DECK": {
+    case 'DISCARD_ENCOUNTER_DECK': {
       const count = (step.params?.count as number) || 1;
       for (let i = 0; i < count; i++) {
         const card = state.encounterDeck.shift();
@@ -1901,8 +1778,8 @@ export function executeStep(
       };
     }
 
-    case "GIVE_ADDITIONAL_BOOST_CARD":
-    case "DEAL_ADDITIONAL_BOOST_CARD": {
+    case 'GIVE_ADDITIONAL_BOOST_CARD':
+    case 'DEAL_ADDITIONAL_BOOST_CARD': {
       if (state.activeAttackContext) {
         const extraCard = drawEncounterCard(state);
         if (extraCard) {
@@ -1912,18 +1789,18 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            category: "combat",
-            key: "villain.boost.added",
+            category: 'combat',
+            key: 'villain.boost.added',
             params: { card: extraCard.card.name },
-            onomatopoeia: "CHAIN BOOST ADDED!",
+            onomatopoeia: 'CHAIN BOOST ADDED!',
           });
         }
       }
-      return { state, success: true, onomatopoeia: "CHAIN BOOST ADDED!" };
+      return { state, success: true, onomatopoeia: 'CHAIN BOOST ADDED!' };
     }
 
-    case "PUT_INTO_PLAY_ENGAGED":
-    case "SPAWN_MINION_ENGAGED": {
+    case 'PUT_INTO_PLAY_ENGAGED':
+    case 'SPAWN_MINION_ENGAGED': {
       const minionInst = context.sourceCardInstance;
       if (minionInst) {
         if (state.activeAttackContext) {
@@ -1935,17 +1812,17 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          category: "combat",
-          key: "minion.entered.play",
+          category: 'combat',
+          key: 'minion.entered.play',
           params: { minion: minionInst.card.name, player: player.name },
-          onomatopoeia: "MINION ENTERS THE FRAY!",
+          onomatopoeia: 'MINION ENTERS THE FRAY!',
         });
       }
-      return { state, success: true, onomatopoeia: "MINION ENGAGED!" };
+      return { state, success: true, onomatopoeia: 'MINION ENGAGED!' };
     }
 
-    case "DISCARD_CARDS_FROM_HAND_AT_RANDOM":
-    case "DISCARD_RANDOM_HAND": {
+    case 'DISCARD_CARDS_FROM_HAND_AT_RANDOM':
+    case 'DISCARD_RANDOM_HAND': {
       const count = (step.params?.count as number) || 1;
       for (let i = 0; i < count; i++) {
         if (player.hand.length > 0) {
@@ -1957,17 +1834,17 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            category: "combat",
-            key: "player.hand.randomDiscard",
+            category: 'combat',
+            key: 'player.hand.randomDiscard',
             params: { player: player.name, card: discarded.card.name },
-            onomatopoeia: "RANDOM DISCARD!",
+            onomatopoeia: 'RANDOM DISCARD!',
           });
         }
       }
-      return { state, success: true, onomatopoeia: "RANDOM DISCARD!" };
+      return { state, success: true, onomatopoeia: 'RANDOM DISCARD!' };
     }
 
-    case "DISCARD_UPGRADE_OR_SUPPORT": {
+    case 'DISCARD_UPGRADE_OR_SUPPORT': {
       if (player.tableau.length > 0) {
         const [discarded] = player.tableau.splice(0, 1);
         player.discard.push(discarded);
@@ -1976,25 +1853,24 @@ export function executeStep(
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          category: "combat",
-          key: "player.tableau.discarded",
+          category: 'combat',
+          key: 'player.tableau.discarded',
           params: { player: player.name, card: discarded.card.name },
-          onomatopoeia: "TABLEAU DISCARDED!",
+          onomatopoeia: 'TABLEAU DISCARDED!',
         });
       }
-      return { state, success: true, onomatopoeia: "TABLEAU DISCARDED!" };
+      return { state, success: true, onomatopoeia: 'TABLEAU DISCARDED!' };
     }
 
-    case "PLAYER_CHOICE": {
+    case 'PLAYER_CHOICE': {
       const options = (step.params?.options as any[]) || [];
       const title =
         (step.params?.title as string) ||
         (step.params?.promptTitle as string) ||
-        "Choose an Option";
-      const description = (step.params?.description as string) || "";
-      const sourceCardName =
-        context.sourceCardInstance?.card.name || step.id || "Card Ability";
-      const promptId = `prompt_${Date.now()}_${step.id || "choice"}`;
+        'Choose an Option';
+      const description = (step.params?.description as string) || '';
+      const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
+      const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
       state = enqueueDecisionPrompt(state, {
         promptId,
         playerId: context.playerId || player.id,
@@ -2010,22 +1886,20 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "decision.prompt.opened",
+        category: 'ability',
+        key: 'decision.prompt.opened',
         params: { player: player.name, promptId, source: sourceCardName },
-        onomatopoeia: "CHOICE REQUIRED!",
+        onomatopoeia: 'CHOICE REQUIRED!',
       });
 
-      return { state, success: true, onomatopoeia: "CHOOSE AN OPTION!" };
+      return { state, success: true, onomatopoeia: 'CHOOSE AN OPTION!' };
     }
 
-    case "DECLARE_DEFENDER": {
+    case 'DECLARE_DEFENDER': {
       const defenderType =
-        (step.params?.defenderType as "HERO" | "ALLY" | "UNDEFENDED") ||
-        "UNDEFENDED";
+        (step.params?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
       const allyInstanceId = step.params?.allyInstanceId as string | undefined;
-      const playerId =
-        context.playerId || (step.params?.playerId as string) || player.id;
+      const playerId = context.playerId || (step.params?.playerId as string) || player.id;
       const resState = resolveDefenderDeclaration(state, {
         type: defenderType,
         playerId,
@@ -2034,40 +1908,40 @@ export function executeStep(
       return {
         state: resState,
         success: true,
-        onomatopoeia: "DEFENSE RESOLVED!",
+        onomatopoeia: 'DEFENSE RESOLVED!',
       };
     }
 
-    case "VILLAIN_SCHEMES": {
+    case 'VILLAIN_SCHEMES': {
       executeVillainSchemeAgainstPlayer(state, player);
-      return { state, success: true, onomatopoeia: "VILLAIN SCHEMES!" };
+      return { state, success: true, onomatopoeia: 'VILLAIN SCHEMES!' };
     }
 
-    case "VILLAIN_ATTACKS": {
-      if (player.currentForm === "alter_ego") {
+    case 'VILLAIN_ATTACKS': {
+      if (player.currentForm === 'alter_ego') {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       } else {
         executeVillainAttackAgainstPlayer(state, player);
-        return { state, success: true, onomatopoeia: "VILLAIN ATTACKS!" };
+        return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
       }
     }
 
-    case "VILLAIN_AND_ENGAGED_MINIONS_ATTACK": {
-      if (player.currentForm === "alter_ego") {
+    case 'VILLAIN_AND_ENGAGED_MINIONS_ATTACK': {
+      if (player.currentForm === 'alter_ego') {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       } else {
         const activations: {
-          type: "VILLAIN" | "MINION";
+          type: 'VILLAIN' | 'MINION';
           playerId: string;
           minionInstanceId?: string;
         }[] = [
-          { type: "VILLAIN", playerId: player.id },
+          { type: 'VILLAIN', playerId: player.id },
           ...player.engagedMinions.map((m) => ({
-            type: "MINION" as const,
+            type: 'MINION' as const,
             playerId: player.id,
             minionInstanceId: m.instanceId,
           })),
@@ -2079,38 +1953,35 @@ export function executeStep(
 
         if ((state as any).pendingActivations.length > 0) {
           const act = (state as any).pendingActivations.shift()!;
-          if (act.type === "VILLAIN") {
+          if (act.type === 'VILLAIN') {
             executeVillainAttackAgainstPlayer(state, player);
           } else {
-            const minion = player.engagedMinions.find(
-              (m) => m.instanceId === act.minionInstanceId,
-            );
+            const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
             if (minion) executeMinionAttackAgainstPlayer(state, minion, player);
           }
         }
-        return { state, success: true, onomatopoeia: "GANG UP!" };
+        return { state, success: true, onomatopoeia: 'GANG UP!' };
       }
     }
 
-    case "EXPLOSION":
-    case "HERO_FORM_BRANCH": {
+    case 'EXPLOSION':
+    case 'HERO_FORM_BRANCH': {
       const bombScare = state.sideSchemes.find(
-        (s) =>
-          s.card.code === "01109" || (s.card.name || "").includes("Bomb Scare"),
+        (s) => s.card.code === '01109' || (s.card.name || '').includes('Bomb Scare'),
       );
       if (bombScare) {
         const damage = bombScare.threat || 1;
         player.health = Math.max(0, player.health - damage);
-        if (player.health <= 0) state.winner = "VILLAIN";
-        return { state, success: true, onomatopoeia: "EXPLOSION!" };
+        if (player.health <= 0) state.winner = 'VILLAIN';
+        return { state, success: true, onomatopoeia: 'EXPLOSION!' };
       } else {
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: "SURGE!" };
+        return { state, success: true, onomatopoeia: 'SURGE!' };
       }
     }
 
-    case "PLACE_THREAT_PER_SIDE_SCHEME": {
+    case 'PLACE_THREAT_PER_SIDE_SCHEME': {
       const amount = (step.params?.amount as number) || 4;
       if (state.sideSchemes.length > 0) {
         for (const s of state.sideSchemes) {
@@ -2135,8 +2006,7 @@ export function executeStep(
         if (foundSideScheme) {
           const sideCard = foundSideScheme.card as SideSchemeCard;
           const baseThreat =
-            sideCard.baseThreat *
-            (sideCard.baseThreatFixed ? 1 : state.players.length);
+            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
           state.sideSchemes.push({
             instanceId: foundSideScheme.instanceId,
             card: sideCard,
@@ -2145,14 +2015,14 @@ export function executeStep(
           return {
             state,
             success: true,
-            onomatopoeia: "SIDE SCHEME REVEALED!",
+            onomatopoeia: 'SIDE SCHEME REVEALED!',
           };
         }
-        return { state, success: true, onomatopoeia: "NO SIDE SCHEMES FOUND" };
+        return { state, success: true, onomatopoeia: 'NO SIDE SCHEMES FOUND' };
       }
     }
 
-    case "REVEAL_ENCOUNTER_CARD_WITH_SURGE": {
+    case 'REVEAL_ENCOUNTER_CARD_WITH_SURGE': {
       // 1. Surge: deal 1 card facedown to player
       const surgeCard = state.encounterDeck.shift();
       if (surgeCard) player.dealtEncounterCards.push(surgeCard);
@@ -2161,42 +2031,41 @@ export function executeStep(
       const extraCard = state.encounterDeck.shift();
       if (extraCard) player.dealtEncounterCards.unshift(extraCard);
 
-      return { state, success: true, onomatopoeia: "UNDER FIRE!" };
+      return { state, success: true, onomatopoeia: 'UNDER FIRE!' };
     }
 
-    case "PUT_INTO_PLAY": {
-      const fromZone = (step.params?.from as string) || "SET_ASIDE";
-      const toZone = (step.params?.to as string) || "ENGAGED_WITH_PLAYER";
+    case 'PUT_INTO_PLAY': {
+      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
+      const toZone = (step.params?.to as string) || 'ENGAGED_WITH_PLAYER';
       const filter = (step.params?.filter as Record<string, any>) || {};
 
-      const heroSetCode = player.hero?.setCode || "";
-      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : "";
+      const heroSetCode = player.hero?.setCode || '';
+      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
 
       let sourceList: CardInstance[] = [];
-      if (fromZone === "SET_ASIDE") {
+      if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
-      } else if (fromZone === "DISCARD") {
+      } else if (fromZone === 'DISCARD') {
         sourceList = player.discard || [];
-      } else if (fromZone === "DECK") {
+      } else if (fromZone === 'DECK') {
         sourceList = player.deck || [];
       }
 
       const matches = sourceList.filter((c) => {
-        if (filter.set === "PLAYER_NEMESIS") {
+        if (filter.set === 'PLAYER_NEMESIS') {
           const isNemesis =
             c.card.setCode === nemesisSetCode ||
-            (c.card.setCode && c.card.setCode.includes("nemesis"));
+            (c.card.setCode && c.card.setCode.includes('nemesis'));
           if (!isNemesis) return false;
         }
         if (filter.type) {
           const expectedType =
-            filter.type === "side_scheme"
+            filter.type === 'side_scheme'
               ? CardType.SIDE_SCHEME
-              : filter.type === "minion"
+              : filter.type === 'minion'
                 ? CardType.MINION
                 : filter.type;
-          if (c.card.type !== expectedType && c.card.type !== filter.type)
-            return false;
+          if (c.card.type !== expectedType && c.card.type !== filter.type) return false;
         }
         if (filter.code && c.card.code !== filter.code) return false;
         return true;
@@ -2209,31 +2078,24 @@ export function executeStep(
           mutatedState: false,
           value: 0,
           selectedCardInstanceIds: [],
-          onomatopoeia: "NO MATCHES FOUND",
+          onomatopoeia: 'NO MATCHES FOUND',
         };
       }
 
       const matchIds = new Set(matches.map((m) => m.instanceId));
-      if (fromZone === "SET_ASIDE") {
-        player.setAsideCards = player.setAsideCards.filter(
-          (c) => !matchIds.has(c.instanceId),
-        );
-      } else if (fromZone === "DISCARD") {
-        player.discard = player.discard.filter(
-          (c) => !matchIds.has(c.instanceId),
-        );
-      } else if (fromZone === "DECK") {
+      if (fromZone === 'SET_ASIDE') {
+        player.setAsideCards = player.setAsideCards.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DISCARD') {
+        player.discard = player.discard.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DECK') {
         player.deck = player.deck.filter((c) => !matchIds.has(c.instanceId));
       }
 
       for (const cardInst of matches) {
-        if (
-          toZone === "ENGAGED_WITH_PLAYER" ||
-          cardInst.card.type === CardType.MINION
-        ) {
+        if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
           const hasToughness =
-            (cardInst.card.traits || []).includes("Toughness") ||
-            (cardInst.card.text || "").toLowerCase().includes("toughness");
+            (cardInst.card.traits || []).includes('Toughness') ||
+            (cardInst.card.text || '').toLowerCase().includes('toughness');
           if (hasToughness) {
             if (!cardInst.statusCards) cardInst.statusCards = [];
             if (!cardInst.statusCards.includes(StatusCard.TOUGH)) {
@@ -2244,36 +2106,25 @@ export function executeStep(
           player.engagedMinions.push(cardInst as MinionCard & CardInstance);
 
           const hasQuickstrike =
-            (cardInst.card.traits || []).includes("Quickstrike") ||
-            (cardInst.card.text || "").includes("Quickstrike");
-          if (hasQuickstrike && player.currentForm === "hero") {
-            executeMinionAttackAgainstPlayer(
-              state,
-              cardInst as MinionCard & CardInstance,
-              player,
-            );
+            (cardInst.card.traits || []).includes('Quickstrike') ||
+            (cardInst.card.text || '').includes('Quickstrike');
+          if (hasQuickstrike && player.currentForm === 'hero') {
+            executeMinionAttackAgainstPlayer(state, cardInst as MinionCard & CardInstance, player);
           }
 
           const abilities = cardInst.card.enrichment?.abilities || [];
           for (const ab of abilities) {
-            if (
-              ab.trigger === "WHEN_REVEALED" ||
-              ab.timing === "FORCED_RESPONSE"
-            ) {
+            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
               executeEffect(state, ab, {
                 playerId: player.id,
                 sourceCardInstance: cardInst,
               });
             }
           }
-        } else if (
-          toZone === "SIDE_SCHEMES" ||
-          cardInst.card.type === CardType.SIDE_SCHEME
-        ) {
+        } else if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
           const sideCard = cardInst.card as SideSchemeCard;
           const baseThreat =
-            sideCard.baseThreat *
-            (sideCard.baseThreatFixed ? 1 : state.players.length);
+            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
           state.sideSchemes.push({
             instanceId: cardInst.instanceId,
             card: sideCard,
@@ -2282,30 +2133,27 @@ export function executeStep(
 
           const schemeAbilities = sideCard.enrichment?.abilities || [];
           for (const ab of schemeAbilities) {
-            if (
-              ab.trigger === "WHEN_REVEALED" ||
-              ab.timing === "FORCED_RESPONSE"
-            ) {
+            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
               executeEffect(state, ab, {
                 playerId: player.id,
                 sourceCardInstance: cardInst,
               });
             }
           }
-        } else if (toZone === "TABLEAU") {
+        } else if (toZone === 'TABLEAU') {
           player.tableau.push(cardInst);
         }
       }
 
-      const cardNames = matches.map((m) => m.card.name).join(", ");
+      const cardNames = matches.map((m) => m.card.name).join(', ');
       const onomatopoeia = `ENTERS PLAY! ${cardNames.toUpperCase()}`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "card.putIntoPlay",
+        category: 'ability',
+        key: 'card.putIntoPlay',
         params: {
           player: player.name,
           cards: cardNames,
@@ -2324,28 +2172,28 @@ export function executeStep(
       };
     }
 
-    case "SHUFFLE_INTO_DECK": {
-      const fromZone = (step.params?.from as string) || "SET_ASIDE";
-      const toDeck = (step.params?.toDeck as string) || "ENCOUNTER_DECK";
+    case 'SHUFFLE_INTO_DECK': {
+      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
+      const toDeck = (step.params?.toDeck as string) || 'ENCOUNTER_DECK';
       const filter = (step.params?.filter as Record<string, any>) || {};
 
-      const heroSetCode = player.hero?.setCode || "";
-      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : "";
+      const heroSetCode = player.hero?.setCode || '';
+      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
 
       let sourceList: CardInstance[] = [];
-      if (fromZone === "SET_ASIDE") {
+      if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
-      } else if (fromZone === "DISCARD") {
+      } else if (fromZone === 'DISCARD') {
         sourceList = player.discard || [];
-      } else if (fromZone === "HAND") {
+      } else if (fromZone === 'HAND') {
         sourceList = player.hand || [];
       }
 
       const matches = sourceList.filter((c) => {
-        if (filter.set === "PLAYER_NEMESIS") {
+        if (filter.set === 'PLAYER_NEMESIS') {
           const isNemesis =
             c.card.setCode === nemesisSetCode ||
-            (c.card.setCode && c.card.setCode.includes("nemesis"));
+            (c.card.setCode && c.card.setCode.includes('nemesis'));
           if (!isNemesis) return false;
         }
         if (filter.type && c.card.type !== filter.type) return false;
@@ -2359,27 +2207,23 @@ export function executeStep(
           mutatedState: false,
           value: 0,
           selectedCardInstanceIds: [],
-          onomatopoeia: "NO CARDS TO SHUFFLE",
+          onomatopoeia: 'NO CARDS TO SHUFFLE',
         };
       }
 
       const matchIds = new Set(matches.map((m) => m.instanceId));
-      if (fromZone === "SET_ASIDE") {
-        player.setAsideCards = player.setAsideCards.filter(
-          (c) => !matchIds.has(c.instanceId),
-        );
-      } else if (fromZone === "DISCARD") {
-        player.discard = player.discard.filter(
-          (c) => !matchIds.has(c.instanceId),
-        );
-      } else if (fromZone === "HAND") {
+      if (fromZone === 'SET_ASIDE') {
+        player.setAsideCards = player.setAsideCards.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'DISCARD') {
+        player.discard = player.discard.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'HAND') {
         player.hand = player.hand.filter((c) => !matchIds.has(c.instanceId));
       }
 
-      if (toDeck === "ENCOUNTER_DECK") {
+      if (toDeck === 'ENCOUNTER_DECK') {
         state.encounterDeck.push(...matches);
         state.encounterDeck.sort(() => Math.random() - 0.5);
-      } else if (toDeck === "PLAYER_DECK") {
+      } else if (toDeck === 'PLAYER_DECK') {
         player.deck.push(...matches);
         player.deck.sort(() => Math.random() - 0.5);
       }
@@ -2390,8 +2234,8 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        category: "ability",
-        key: "deck.shuffled",
+        category: 'ability',
+        key: 'deck.shuffled',
         params: {
           player: player.name,
           count: matches.length,
@@ -2410,64 +2254,61 @@ export function executeStep(
       };
     }
 
-    case "SPAWN_NEMESIS": {
+    case 'SPAWN_NEMESIS': {
       return executeSequence(
         state,
         [
           {
-            id: "step_1_spawn_nemesis_minion",
-            effect: "PUT_INTO_PLAY",
+            id: 'step_1_spawn_nemesis_minion',
+            effect: 'PUT_INTO_PLAY',
             params: {
-              from: "SET_ASIDE",
-              to: "ENGAGED_WITH_PLAYER",
-              filter: { type: "minion", set: "PLAYER_NEMESIS" },
+              from: 'SET_ASIDE',
+              to: 'ENGAGED_WITH_PLAYER',
+              filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
             },
           },
           {
-            id: "step_2_spawn_nemesis_scheme",
-            effect: "PUT_INTO_PLAY",
+            id: 'step_2_spawn_nemesis_scheme',
+            effect: 'PUT_INTO_PLAY',
             params: {
-              from: "SET_ASIDE",
-              to: "SIDE_SCHEMES",
-              filter: { type: "side_scheme", set: "PLAYER_NEMESIS" },
+              from: 'SET_ASIDE',
+              to: 'SIDE_SCHEMES',
+              filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
             },
           },
           {
-            id: "step_3_shuffle_remaining_cards",
-            effect: "SHUFFLE_INTO_DECK",
+            id: 'step_3_shuffle_remaining_cards',
+            effect: 'SHUFFLE_INTO_DECK',
             params: {
-              from: "SET_ASIDE",
-              toDeck: "ENCOUNTER_DECK",
-              filter: { set: "PLAYER_NEMESIS" },
+              from: 'SET_ASIDE',
+              toDeck: 'ENCOUNTER_DECK',
+              filter: { set: 'PLAYER_NEMESIS' },
             },
           },
           {
-            id: "step_4_fallback_surge",
-            effect: "TRIGGER_SURGE",
-            gate: "IF_FAILED",
+            id: 'step_4_fallback_surge',
+            effect: 'TRIGGER_SURGE',
+            gate: 'IF_FAILED',
           },
         ],
         context,
       );
     }
 
-    case "FLIP_FORM":
-    case "CHANGE_FORM": {
-      const nextFormCard = player.availableForms.find(
-        (f) => f.code !== player.activeFormCard.code,
-      );
+    case 'FLIP_FORM':
+    case 'CHANGE_FORM': {
+      const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
       if (nextFormCard) {
         player.activeFormCard = nextFormCard;
-        player.currentForm =
-          nextFormCard.type === CardType.HERO ? "hero" : "alter_ego";
+        player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
       }
-      const onomatopoeia = "FLIP FORM!";
+      const onomatopoeia = 'FLIP FORM!';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.flipForm",
+        key: 'card.effect.flipForm',
         params: { player: player.name, form: player.activeFormCard.name },
         onomatopoeia,
       });
@@ -2480,12 +2321,10 @@ export function executeStep(
       };
     }
 
-    case "DRAW_UP_TO_HAND_SIZE": {
+    case 'DRAW_UP_TO_HAND_SIZE': {
       const targetHandSize =
         (step.params?.targetHandSize as number) ||
-        (player.currentForm === "hero"
-          ? player.hero.handSize || 5
-          : player.alterEgo.handSize || 6);
+        (player.currentForm === 'hero' ? player.hero.handSize || 5 : player.alterEgo.handSize || 6);
 
       let drawnCount = 0;
       while (player.hand.length < targetHandSize) {
@@ -2501,7 +2340,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "card.effect.drawUpToHandSize",
+        key: 'card.effect.drawUpToHandSize',
         params: { player: player.name, drawnCount, targetHandSize },
         onomatopoeia,
       });
@@ -2514,21 +2353,21 @@ export function executeStep(
       };
     }
 
-    case "TRIGGER_SURGE":
-    case "SURGE": {
+    case 'TRIGGER_SURGE':
+    case 'SURGE': {
       const surgeCard = drawEncounterCard(state);
       if (surgeCard) {
         player.dealtEncounterCards.push(surgeCard);
       }
-      const onomatopoeia = "SURGE!";
+      const onomatopoeia = 'SURGE!';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "encounter.surge.triggered",
+        key: 'encounter.surge.triggered',
         params: {
-          card: context.sourceCardInstance?.card.name || "Encounter",
+          card: context.sourceCardInstance?.card.name || 'Encounter',
           player: player.name,
         },
         onomatopoeia,
@@ -2542,18 +2381,18 @@ export function executeStep(
       };
     }
 
-    case "REVEAL_ENCOUNTER_CARD": {
+    case 'REVEAL_ENCOUNTER_CARD': {
       const extraCard = drawEncounterCard(state);
       if (extraCard) {
         player.dealtEncounterCards.push(extraCard);
       }
-      const onomatopoeia = "REVEAL ENCOUNTER CARD!";
+      const onomatopoeia = 'REVEAL ENCOUNTER CARD!';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "encounter.card.revealed",
+        key: 'encounter.card.revealed',
         params: { player: player.name },
         onomatopoeia,
       });
@@ -2566,9 +2405,9 @@ export function executeStep(
       };
     }
 
-    case "ADD_THREAT": {
+    case 'ADD_THREAT': {
       const amount = (step.params?.amount as number) || 1;
-      const target = (step.params?.target as string) || "MAIN_SCHEME";
+      const target = (step.params?.target as string) || 'MAIN_SCHEME';
       state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
       const onomatopoeia = `SCHEME THREAT +${amount}!`;
       state.log.push({
@@ -2576,7 +2415,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "scheme.threat.added",
+        key: 'scheme.threat.added',
         params: { target, amount, total: state.mainScheme.threat },
         onomatopoeia,
       });
@@ -2589,14 +2428,14 @@ export function executeStep(
       };
     }
 
-    case "CANCEL_WHEN_REVEALED": {
-      const onomatopoeia = "CANCELLED!";
+    case 'CANCEL_WHEN_REVEALED': {
+      const onomatopoeia = 'CANCELLED!';
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "encounter.whenRevealed.cancelled",
+        key: 'encounter.whenRevealed.cancelled',
         params: { player: player.name },
         onomatopoeia,
       });
@@ -2609,36 +2448,33 @@ export function executeStep(
       };
     }
 
-    case "CHANGE_FORM_DRAW_TO_HAND_SIZE": {
+    case 'CHANGE_FORM_DRAW_TO_HAND_SIZE': {
       return executeSequence(
         state,
         [
-          { id: "step_1_flip", effect: "FLIP_FORM" },
-          { id: "step_2_draw", effect: "DRAW_UP_TO_HAND_SIZE" },
+          { id: 'step_1_flip', effect: 'FLIP_FORM' },
+          { id: 'step_2_draw', effect: 'DRAW_UP_TO_HAND_SIZE' },
         ],
         context,
       );
     }
 
-    case "HULK_DISCARD_RESOLUTION": {
+    case 'HULK_DISCARD_RESOLUTION': {
       const discarded = drawPlayerCard(state, player.id);
       if (discarded) {
         player.discard.push(discarded);
         const cardRaw = discarded.card.raw || ({} as any);
         const hasPhysical = Boolean(
-          cardRaw.resource_physical ||
-          (discarded.card as any).resource === "physical",
+          cardRaw.resource_physical || (discarded.card as any).resource === 'physical',
         );
         const hasEnergy = Boolean(
-          cardRaw.resource_energy ||
-          (discarded.card as any).resource === "energy",
+          cardRaw.resource_energy || (discarded.card as any).resource === 'energy',
         );
         const hasMental = Boolean(
-          cardRaw.resource_mental ||
-          (discarded.card as any).resource === "mental",
+          cardRaw.resource_mental || (discarded.card as any).resource === 'mental',
         );
         const hasWild = Boolean(
-          cardRaw.resource_wild || (discarded.card as any).resource === "wild",
+          cardRaw.resource_wild || (discarded.card as any).resource === 'wild',
         );
 
         // Physical or Wild: Deal 2 damage to an enemy
@@ -2649,9 +2485,9 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            key: "hulk.physical.damage",
+            key: 'hulk.physical.damage',
             params: { damage: 2, villain: state.villain.card.name },
-            onomatopoeia: "HULK SMASH! 2 DAMAGE!",
+            onomatopoeia: 'HULK SMASH! 2 DAMAGE!',
           });
         }
 
@@ -2674,17 +2510,15 @@ export function executeStep(
             timestamp: Date.now(),
             round: state.roundNumber,
             phase: state.phase,
-            key: "hulk.energy.aoe",
+            key: 'hulk.energy.aoe',
             params: { damage: 1 },
-            onomatopoeia: "ENERGY BURST! 1 DAMAGE TO ALL!",
+            onomatopoeia: 'ENERGY BURST! 1 DAMAGE TO ALL!',
           });
         }
 
         // Mental or Wild: Discard Hulk
         if (hasMental || hasWild) {
-          const hulkIdx = player.allies.findIndex(
-            (a) => a.card.code === "01050",
-          );
+          const hulkIdx = player.allies.findIndex((a) => a.card.code === '01050');
           if (hulkIdx !== -1) {
             const [hulkAlly] = player.allies.splice(hulkIdx, 1);
             player.discard.push(hulkAlly);
@@ -2693,9 +2527,9 @@ export function executeStep(
               timestamp: Date.now(),
               round: state.roundNumber,
               phase: state.phase,
-              key: "hulk.mental.discard",
-              params: { ally: "Hulk" },
-              onomatopoeia: "HULK CALMS DOWN AND DISCARDS!",
+              key: 'hulk.mental.discard',
+              params: { ally: 'Hulk' },
+              onomatopoeia: 'HULK CALMS DOWN AND DISCARDS!',
             });
           }
         }
@@ -2705,25 +2539,23 @@ export function executeStep(
         success: true,
         mutatedState: true,
         value: 1,
-        onomatopoeia: "HULK RESOLVED!",
+        onomatopoeia: 'HULK RESOLVED!',
       };
     }
 
-    case "ADD_COUNTERS":
-    case "ADD_COUNTER":
-    case "MODIFY_COUNTER": {
-      const targetParam = (step.params?.target as string) || "SELF";
-      const counterType = (step.params?.counterType as string) || "all_purpose";
+    case 'ADD_COUNTERS':
+    case 'ADD_COUNTER':
+    case 'MODIFY_COUNTER': {
+      const targetParam = (step.params?.target as string) || 'SELF';
+      const counterType = (step.params?.counterType as string) || 'all_purpose';
       let amount = (step.params?.amount as number) || 1;
-      if (typeof amount !== "number") amount = 1;
+      if (typeof amount !== 'number') amount = 1;
 
-      if (targetParam === "IDENTITY") {
+      if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};
-        player.counters[counterType] =
-          (player.counters[counterType] || 0) + amount;
+        player.counters[counterType] = (player.counters[counterType] || 0) + amount;
       } else if (context.sourceCardInstance) {
-        context.sourceCardInstance.counters =
-          context.sourceCardInstance.counters || {};
+        context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
         context.sourceCardInstance.counters[counterType] =
           (context.sourceCardInstance.counters[counterType] || 0) + amount;
         if (!context.sourceCardInstance.tokens) {
@@ -2745,29 +2577,25 @@ export function executeStep(
       };
     }
 
-    case "SPEND_COUNTERS":
-    case "REMOVE_COUNTERS":
-    case "REMOVE_COUNTER": {
-      const targetParam = (step.params?.target as string) || "SELF";
-      const counterType = (step.params?.counterType as string) || "all_purpose";
+    case 'SPEND_COUNTERS':
+    case 'REMOVE_COUNTERS':
+    case 'REMOVE_COUNTER': {
+      const targetParam = (step.params?.target as string) || 'SELF';
+      const counterType = (step.params?.counterType as string) || 'all_purpose';
       let amount = (step.params?.amount as number) || 1;
-      if (typeof amount !== "number") amount = 1;
+      if (typeof amount !== 'number') amount = 1;
 
-      if (targetParam === "IDENTITY") {
+      if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};
         const current = player.counters[counterType] || 0;
         player.counters[counterType] = Math.max(0, current - amount);
       } else if (context.sourceCardInstance) {
-        context.sourceCardInstance.counters =
-          context.sourceCardInstance.counters || {};
+        context.sourceCardInstance.counters = context.sourceCardInstance.counters || {};
         const current =
           context.sourceCardInstance.counters[counterType] ??
           context.sourceCardInstance.tokens?.counters ??
           0;
-        context.sourceCardInstance.counters[counterType] = Math.max(
-          0,
-          current - amount,
-        );
+        context.sourceCardInstance.counters[counterType] = Math.max(0, current - amount);
         if (context.sourceCardInstance.tokens) {
           context.sourceCardInstance.tokens.counters = Math.max(
             0,
@@ -2776,12 +2604,7 @@ export function executeStep(
         }
 
         // Check and discard if Uses counters reached 0 per RR v1.8 p. 30
-        checkAndDiscardZeroCounterCard(
-          state,
-          player,
-          context.sourceCardInstance,
-          counterType,
-        );
+        checkAndDiscardZeroCounterCard(state, player, context.sourceCardInstance, counterType);
       }
       return {
         state,
@@ -2792,14 +2615,14 @@ export function executeStep(
       };
     }
 
-    case "REMOVE_COUNTERS_MATCHING_FILTER": {
-      const targetZone = (step.params?.targetZone as string) || "TABLEAU";
+    case 'REMOVE_COUNTERS_MATCHING_FILTER': {
+      const targetZone = (step.params?.targetZone as string) || 'TABLEAU';
       const traitFilter = step.params?.traitFilter as string | undefined;
       const counterType = step.params?.counterType as string | undefined;
       const amountParam = step.params?.amount;
 
       let targetCards: CardInstance[] = [];
-      if (targetZone === "TABLEAU" || targetZone === "ALL_CONTROLLED") {
+      if (targetZone === 'TABLEAU' || targetZone === 'ALL_CONTROLLED') {
         targetCards = [...player.tableau, ...player.allies];
       }
 
@@ -2817,13 +2640,13 @@ export function executeStep(
           for (const [k, count] of Object.entries(cardInst.counters)) {
             if (
               !counterType ||
-              counterType === "ALL" ||
+              counterType === 'ALL' ||
               counterType.toLowerCase() === k.toLowerCase()
             ) {
-              if (amountParam === "ALL") {
+              if (amountParam === 'ALL') {
                 totalRemoved += count;
                 cardInst.counters[k] = 0;
-              } else if (typeof amountParam === "number") {
+              } else if (typeof amountParam === 'number') {
                 const toRemove = Math.min(count, amountParam);
                 totalRemoved += toRemove;
                 cardInst.counters[k] = count - toRemove;
@@ -2832,10 +2655,10 @@ export function executeStep(
           }
         }
         if (cardInst.tokens?.counters) {
-          if (amountParam === "ALL") {
+          if (amountParam === 'ALL') {
             totalRemoved += cardInst.tokens.counters;
             cardInst.tokens.counters = 0;
-          } else if (typeof amountParam === "number") {
+          } else if (typeof amountParam === 'number') {
             const toRemove = Math.min(cardInst.tokens.counters, amountParam);
             totalRemoved += toRemove;
             cardInst.tokens.counters -= toRemove;
@@ -2853,7 +2676,7 @@ export function executeStep(
       };
     }
 
-    case "RETURN_TO_HAND": {
+    case 'RETURN_TO_HAND': {
       if (context.sourceCardInstance) {
         const allyIdx = player.allies.indexOf(context.sourceCardInstance);
         if (allyIdx !== -1) {
@@ -2871,12 +2694,12 @@ export function executeStep(
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "RETURNED TO HAND!",
+        onomatopoeia: 'RETURNED TO HAND!',
       };
     }
 
-    case "REPULSOR_BLAST":
-    case "REPULSOR_BLAST_DAMAGE": {
+    case 'REPULSOR_BLAST':
+    case 'REPULSOR_BLAST_DAMAGE': {
       const discardCount = (step.params?.discardCount as number) || 5;
       let energyCount = 0;
 
@@ -2885,8 +2708,7 @@ export function executeStep(
         if (drawn) {
           player.discard.push(drawn);
           const raw = drawn.card.raw || ({} as any);
-          const cardEnergy =
-            raw.resource_energy || drawn.card.resources?.energy || 0;
+          const cardEnergy = raw.resource_energy || drawn.card.resources?.energy || 0;
           const cardWild = raw.resource_wild || drawn.card.resources?.wild || 0;
           energyCount += cardEnergy + cardWild;
         }
@@ -2894,11 +2716,9 @@ export function executeStep(
 
       const totalDmg = 1 + energyCount * 2;
       const targetEnemy =
-        context.targetType === "minion" && context.targetInstanceId
-          ? "minion"
-          : "villain";
+        context.targetType === 'minion' && context.targetInstanceId ? 'minion' : 'villain';
 
-      if (targetEnemy === "villain") {
+      if (targetEnemy === 'villain') {
         const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
         if (toughIdx !== -1) {
           state.villain.statusCards.splice(toughIdx, 1);
@@ -2913,7 +2733,7 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: "iron_man.repulsor_blast",
+        key: 'iron_man.repulsor_blast',
         params: { totalDmg, energyCount, villain: state.villain.card.name },
         onomatopoeia,
       });
@@ -2926,7 +2746,7 @@ export function executeStep(
       };
     }
 
-    case "GENERATE_TOP_DISCARD_RESOURCES": {
+    case 'GENERATE_TOP_DISCARD_RESOURCES': {
       const topCard = player.discard[player.discard.length - 1];
       let resCount = 1;
       if (topCard) {
@@ -2941,16 +2761,13 @@ export function executeStep(
       };
     }
 
-    case "RETRIEVE_CARD_FROM_DISCARD":
-    case "RETRIEVE_TECH_UPGRADE_FROM_DISCARD": {
-      const traitFilter = (step.params?.trait as string) || "Tech";
+    case 'RETRIEVE_CARD_FROM_DISCARD':
+    case 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD': {
+      const traitFilter = (step.params?.trait as string) || 'Tech';
       // Search from top of discard (last item) downwards
       for (let i = player.discard.length - 1; i >= 0; i--) {
         const item = player.discard[i];
-        if (
-          item.card.traits?.includes(traitFilter) &&
-          item.card.type === CardType.UPGRADE
-        ) {
+        if (item.card.traits?.includes(traitFilter) && item.card.type === CardType.UPGRADE) {
           const [retrieved] = player.discard.splice(i, 1);
           player.hand.push(retrieved);
           return {
@@ -2965,21 +2782,17 @@ export function executeStep(
         state,
         success: true,
         mutatedState: false,
-        onomatopoeia: "NO TECH UPGRADE IN DISCARD",
+        onomatopoeia: 'NO TECH UPGRADE IN DISCARD',
       };
     }
 
-    case "SEARCH_AND_SELECT": {
-      const sourceZone = (step.params?.source as string) || "PLAYER_DECK";
+    case 'SEARCH_AND_SELECT': {
+      const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
       const lookCount = step.params?.lookCount as number | undefined;
       const takeCount = (step.params?.takeCount as number) || 1;
       const filter = (step.params?.filter || step.filter) as any;
-      const selectedDestination =
-        (step.params?.selectedDestination as string) || "HAND";
-      const unselectedDestination = step.params?.unselectedDestination as
-        | string
-        | null
-        | undefined;
+      const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
+      const unselectedDestination = step.params?.unselectedDestination as string | null | undefined;
       const shuffleAfter =
         step.params?.shuffleAfter !== undefined
           ? (step.params.shuffleAfter as boolean)
@@ -2989,19 +2802,19 @@ export function executeStep(
         (step.params?.promptTitle as string) ||
         (context.sourceCardInstance
           ? `${context.sourceCardInstance.card.name}: Choose card(s)`
-          : "Search & Select: Choose card(s)");
+          : 'Search & Select: Choose card(s)');
 
       let pile: CardInstance[] = [];
       let isDeck = false;
 
-      if (sourceZone === "PLAYER_DISCARD") {
+      if (sourceZone === 'PLAYER_DISCARD') {
         pile = player.discard;
-      } else if (sourceZone === "PLAYER_HAND") {
+      } else if (sourceZone === 'PLAYER_HAND') {
         pile = player.hand;
-      } else if (sourceZone === "ENCOUNTER_DECK") {
+      } else if (sourceZone === 'ENCOUNTER_DECK') {
         pile = state.encounterDeck;
         isDeck = true;
-      } else if (sourceZone === "ENCOUNTER_DISCARD") {
+      } else if (sourceZone === 'ENCOUNTER_DISCARD') {
         pile = state.encounterDiscard;
       } else {
         // PLAYER_DECK
@@ -3011,7 +2824,7 @@ export function executeStep(
 
       // Determine candidate pool
       let lookedCards: CardInstance[] = [];
-      const isLookCountSpliced = typeof lookCount === "number" && lookCount > 0;
+      const isLookCountSpliced = typeof lookCount === 'number' && lookCount > 0;
       if (isLookCountSpliced) {
         lookedCards = pile.splice(0, Math.min(lookCount!, pile.length));
       } else {
@@ -3019,14 +2832,12 @@ export function executeStep(
       }
 
       // Filter matching candidate cards
-      const matchingCandidates = lookedCards.filter((c) =>
-        matchCardFilter(c.card, filter, player),
-      );
+      const matchingCandidates = lookedCards.filter((c) => matchCardFilter(c.card, filter, player));
 
       if (matchingCandidates.length === 0) {
         // Return looked cards to source if they were spliced
         if (isLookCountSpliced) {
-          if (unselectedDestination === "DISCARD") {
+          if (unselectedDestination === 'DISCARD') {
             player.discard.push(...lookedCards);
           } else {
             pile.unshift(...lookedCards);
@@ -3039,15 +2850,15 @@ export function executeStep(
           state,
           success: true,
           mutatedState: false,
-          onomatopoeia: "NO MATCHING TARGET FOUND",
+          onomatopoeia: 'NO MATCHING TARGET FOUND',
         };
       }
 
       const options: DecisionPromptOption[] = matchingCandidates.map((c) => ({
         id: c.instanceId,
-        label: `${c.card.name} (${c.card.type}${c.card.cost !== undefined ? `, Cost: ${c.card.cost}` : ""})`,
+        label: `${c.card.name} (${c.card.type}${c.card.cost !== undefined ? `, Cost: ${c.card.cost}` : ''})`,
         description: c.card.text || `Select ${c.card.name}`,
-        effect: "SEARCH_AND_SELECT_RESOLUTION",
+        effect: 'SEARCH_AND_SELECT_RESOLUTION',
         params: {
           chosenInstanceId: c.instanceId,
           lookedCards,
@@ -3062,10 +2873,10 @@ export function executeStep(
 
       if (isVoluntary) {
         options.push({
-          id: "pass_search",
-          label: "Pass / Do not select",
-          description: "Pass and do not choose any card",
-          effect: "SEARCH_AND_SELECT_PASS",
+          id: 'pass_search',
+          label: 'Pass / Do not select',
+          description: 'Pass and do not choose any card',
+          effect: 'SEARCH_AND_SELECT_PASS',
           params: {
             lookedCards,
             lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
@@ -3082,8 +2893,7 @@ export function executeStep(
         playerId: context.playerId,
         title: promptTitle,
         description: `Select up to ${takeCount} card(s):`,
-        sourceCardName:
-          context.sourceCardInstance?.card.name || "Search & Select",
+        sourceCardName: context.sourceCardInstance?.card.name || 'Search & Select',
         options,
         isVoluntary,
       };
@@ -3092,30 +2902,26 @@ export function executeStep(
       return {
         state: enqueuedState,
         success: true,
-        onomatopoeia: "CHOOSE CARD!",
+        onomatopoeia: 'CHOOSE CARD!',
       };
     }
 
-    case "SEARCH_DECK_FOR_CARD":
-    case "SEARCH_AND_PLAY_UPGRADE": {
+    case 'SEARCH_DECK_FOR_CARD':
+    case 'SEARCH_AND_PLAY_UPGRADE': {
       const traitFilter = step.params?.trait as string | undefined;
       const typeFilter =
-        (step.params?.type as string) ||
-        (step.params?.type_code as string) ||
-        "upgrade";
+        (step.params?.type as string) || (step.params?.type_code as string) || 'upgrade';
 
       const matchIdx = player.deck.findIndex((c) => {
         const typeMatch =
-          !typeFilter ||
-          c.card.type === typeFilter ||
-          c.card.raw.type_code === typeFilter;
+          !typeFilter || c.card.type === typeFilter || c.card.raw.type_code === typeFilter;
         const traitMatch = !traitFilter || c.card.traits?.includes(traitFilter);
         return typeMatch && traitMatch;
       });
 
       if (matchIdx !== -1) {
         const [foundCard] = player.deck.splice(matchIdx, 1);
-        if (step.effect === "SEARCH_AND_PLAY_UPGRADE") {
+        if (step.effect === 'SEARCH_AND_PLAY_UPGRADE') {
           player.tableau.push(foundCard);
         } else {
           player.hand.push(foundCard);
@@ -3136,11 +2942,11 @@ export function executeStep(
         state,
         success: true,
         mutatedState: false,
-        onomatopoeia: "TARGET NOT FOUND IN DECK",
+        onomatopoeia: 'TARGET NOT FOUND IN DECK',
       };
     }
 
-    case "SHUFFLE_DISCARD_INTO_DECK": {
+    case 'SHUFFLE_DISCARD_INTO_DECK': {
       const count = (step.params?.count as number) || 3;
       const toShuffle = player.discard.splice(0, count);
       player.deck.push(...toShuffle);
@@ -3154,10 +2960,10 @@ export function executeStep(
       };
     }
 
-    case "TRIGGER_WAKANDA_UPGRADES":
-    case "EXECUTE_WAKANDA_FOREVER":
-    case "EXECUTE_SPECIAL": {
-      const specialId = (step.params?.specialId as string) || "WAKANDA_FOREVER";
+    case 'TRIGGER_WAKANDA_UPGRADES':
+    case 'EXECUTE_WAKANDA_FOREVER':
+    case 'EXECUTE_SPECIAL': {
+      const specialId = (step.params?.specialId as string) || 'WAKANDA_FOREVER';
       const handler = getSpecialHandler(specialId);
       if (!handler) {
         return {
@@ -3169,18 +2975,11 @@ export function executeStep(
       return handler.execute(state, context, step.params);
     }
 
-    case "DEAL_DAMAGE_ALL_ENEMIES": {
-      const baseAmt =
-        (step.params?.baseAmount as number) ||
-        (step.params?.amount as number) ||
-        1;
-      dealDirectDamage(state, "VILLAIN", baseAmt);
+    case 'DEAL_DAMAGE_ALL_ENEMIES': {
+      const baseAmt = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
+      dealDirectDamage(state, 'VILLAIN', baseAmt);
       for (const m of player.engagedMinions) {
-        dealDirectDamage(
-          state,
-          { type: "MINION", instanceId: m.instanceId },
-          baseAmt,
-        );
+        dealDirectDamage(state, { type: 'MINION', instanceId: m.instanceId }, baseAmt);
       }
       return {
         state,
@@ -3191,16 +2990,10 @@ export function executeStep(
       };
     }
 
-    case "TRANSFER_DAMAGE": {
-      const amount =
-        (step.params?.baseAmount as number) ||
-        (step.params?.amount as number) ||
-        1;
-      player.health = Math.min(
-        getEffectiveMaxHealth(player, state),
-        player.health + amount,
-      );
-      dealDirectDamage(state, "VILLAIN", amount);
+    case 'TRANSFER_DAMAGE': {
+      const amount = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
+      player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
+      dealDirectDamage(state, 'VILLAIN', amount);
       return {
         state,
         success: true,
@@ -3210,10 +3003,9 @@ export function executeStep(
       };
     }
 
-    case "BOOST_STAT_CHOICE": {
+    case 'BOOST_STAT_CHOICE': {
       const amount = (step.params?.amount as number) || 2;
-      const chosenStat =
-        (context.choice as string) || (step.params?.stat as string) || "ATK";
+      const chosenStat = (context.choice as string) || (step.params?.stat as string) || 'ATK';
       if (context.sourceCardInstance) {
         if (!context.sourceCardInstance.tokens) {
           context.sourceCardInstance.tokens = {
@@ -3222,7 +3014,7 @@ export function executeStep(
             counters: 0,
           };
         }
-        if (chosenStat === "THW" || chosenStat === "THWART") {
+        if (chosenStat === 'THW' || chosenStat === 'THWART') {
           (context.sourceCardInstance.tokens as any).thwBonus =
             ((context.sourceCardInstance.tokens as any).thwBonus || 0) + amount;
         } else {
@@ -3239,15 +3031,13 @@ export function executeStep(
       };
     }
 
-    case "BUFF_ALL_FRIENDLY_CHARACTERS": {
+    case 'BUFF_ALL_FRIENDLY_CHARACTERS': {
       const atkBonus = (step.params?.atkBonus as number) || 1;
       const thwBonus = (step.params?.thwBonus as number) || 1;
       for (const a of player.allies) {
         if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
-        (a.tokens as any).atkBonus =
-          ((a.tokens as any).atkBonus || 0) + atkBonus;
-        (a.tokens as any).thwBonus =
-          ((a.tokens as any).thwBonus || 0) + thwBonus;
+        (a.tokens as any).atkBonus = ((a.tokens as any).atkBonus || 0) + atkBonus;
+        (a.tokens as any).thwBonus = ((a.tokens as any).thwBonus || 0) + thwBonus;
       }
       return {
         state,
@@ -3257,7 +3047,7 @@ export function executeStep(
       };
     }
 
-    case "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER": {
+    case 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER': {
       const replacement = drawEncounterCard(state);
       if (replacement) {
         player.dealtEncounterCards.push(replacement);
@@ -3266,11 +3056,11 @@ export function executeStep(
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "CANCELLED & REVEALED ANOTHER!",
+        onomatopoeia: 'CANCELLED & REVEALED ANOTHER!',
       };
     }
 
-    case "ATTACH_FACEDOWN_CARDS_FROM_HAND": {
+    case 'ATTACH_FACEDOWN_CARDS_FROM_HAND': {
       for (const p of state.players) {
         if (p.hand.length > 0) {
           const randIdx = Math.floor(Math.random() * p.hand.length);
@@ -3289,15 +3079,12 @@ export function executeStep(
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "CARDS ATTACHED FACEDOWN!",
+        onomatopoeia: 'CARDS ATTACHED FACEDOWN!',
       };
     }
 
-    case "RETURN_FACEDOWN_CARDS_TO_OWNERS": {
-      if (
-        context.sourceCardInstance &&
-        context.sourceCardInstance.attachments
-      ) {
+    case 'RETURN_FACEDOWN_CARDS_TO_OWNERS': {
+      if (context.sourceCardInstance && context.sourceCardInstance.attachments) {
         for (const card of context.sourceCardInstance.attachments) {
           const ownerId = (card as any).ownerId;
           const owner = state.players.find((p) => p.id === ownerId) || player;
@@ -3309,12 +3096,12 @@ export function executeStep(
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: "CARDS RETURNED TO HANDS!",
+        onomatopoeia: 'CARDS RETURNED TO HANDS!',
       };
     }
 
     default:
-      return { state, success: true, onomatopoeia: "RESOLVED!" };
+      return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }
 }
 
@@ -3325,24 +3112,23 @@ export function executeStep(
 export function dealDirectDamage(
   state: GameState,
   target:
-    | "HERO"
-    | "VILLAIN"
-    | { type: "MINION"; instanceId: string }
-    | { type: "ALLY"; instanceId: string },
+    | 'HERO'
+    | 'VILLAIN'
+    | { type: 'MINION'; instanceId: string }
+    | { type: 'ALLY'; instanceId: string },
   amount: number,
   playerId?: string,
 ): { damageDealt: number; absorbedByTough: boolean } {
   if (amount <= 0) return { damageDealt: 0, absorbedByTough: false };
 
-  if (target === "HERO") {
-    const player =
-      state.players.find((p) => p.id === playerId) || state.players[0];
+  if (target === 'HERO') {
+    const player = state.players.find((p) => p.id === playerId) || state.players[0];
     const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
     if (toughIdx !== -1) {
       player.statusCards.splice(toughIdx, 1);
       return { damageDealt: 0, absorbedByTough: true };
     }
-    const prevResult = dispatchTrigger(state, "TAKE_DAMAGE", {
+    const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
       targetPlayerId: player.id,
       damageAmount: amount,
     });
@@ -3351,7 +3137,7 @@ export function dealDirectDamage(
     return { damageDealt: finalDmg, absorbedByTough: false };
   }
 
-  if (target === "VILLAIN") {
+  if (target === 'VILLAIN') {
     const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
     if (toughIdx !== -1) {
       state.villain.statusCards.splice(toughIdx, 1);

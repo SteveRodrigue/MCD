@@ -1,8 +1,4 @@
-import {
-  GameState,
-  CardInstance,
-  GameAction,
-} from '../models';
+import { GameState, CardInstance, GameAction } from '../models';
 import {
   getPlayer,
   canChangeForm,
@@ -169,7 +165,12 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
       for (const sideScheme of state.sideSchemes || []) {
         if (sideScheme.threat > 0) {
-          const sideThwCheck = canBasicThwart(state, playerId, 'side_scheme', sideScheme.instanceId);
+          const sideThwCheck = canBasicThwart(
+            state,
+            playerId,
+            'side_scheme',
+            sideScheme.instanceId,
+          );
           if (sideThwCheck.allowed) {
             identityActions.push({
               id: `action_basic_thwart_side_${sideScheme.instanceId}`,
@@ -194,14 +195,20 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     const idAbilities = player.activeFormCard.enrichment?.abilities || [];
     for (const ab of idAbilities) {
       if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
-      if (ab.timing === 'ACTION' || (isHero && ab.timing === 'HERO_ACTION') || (!isHero && ab.timing === 'ALTER_EGO_ACTION')) {
+      if (
+        ab.timing === 'ACTION' ||
+        (isHero && ab.timing === 'HERO_ACTION') ||
+        (!isHero && ab.timing === 'ALTER_EGO_ACTION')
+      ) {
         const costCheck = canPayAbilityCost(state, player, ab, undefined, {});
         if (costCheck.allowed) {
           identityActions.push({
             id: `action_id_ability_${ab.id}`,
             category: 'identity',
             headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
-            subtext: ab.steps?.[0]?.params?.description ? String(ab.steps[0].params.description) : `Trigger ${player.activeFormCard.name}'s special ability`,
+            subtext: ab.steps?.[0]?.params?.description
+              ? String(ab.steps[0].params.description)
+              : `Trigger ${player.activeFormCard.name}'s special ability`,
             action: {
               type: 'USE_CARD_ABILITY',
               playerId: player.id,
@@ -245,14 +252,20 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       const abilities = tableauItem.card.enrichment?.abilities || [];
       for (const ab of abilities) {
         if (isResourceAbility(ab.timing)) continue; // Never present resource abilities as standalone turn actions (RR v1.8 p. 25 / ADR-0039)
-        if (ab.timing === 'ACTION' || (isHero && ab.timing === 'HERO_ACTION') || (!isHero && ab.timing === 'ALTER_EGO_ACTION')) {
+        if (
+          ab.timing === 'ACTION' ||
+          (isHero && ab.timing === 'HERO_ACTION') ||
+          (!isHero && ab.timing === 'ALTER_EGO_ACTION')
+        ) {
           const costCheck = canPayAbilityCost(state, player, ab, tableauItem, {});
           if (costCheck.allowed) {
             boardActions.push({
               id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,
               category: 'board',
               headline: `Activate ${tableauItem.card.name}`,
-              subtext: ab.steps?.[0]?.params?.description ? String(ab.steps[0].params.description) : `Trigger ${tableauItem.card.name} (${ab.id})`,
+              subtext: ab.steps?.[0]?.params?.description
+                ? String(ab.steps[0].params.description)
+                : `Trigger ${tableauItem.card.name} (${ab.id})`,
               action: {
                 type: 'USE_CARD_ABILITY',
                 playerId: player.id,
@@ -295,7 +308,13 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
         // Ally Attack on engaged minions
         for (const minion of player.engagedMinions || []) {
-          const minionAtkCheck = canAllyAttack(state, player.id, ally.instanceId, 'minion', minion.instanceId);
+          const minionAtkCheck = canAllyAttack(
+            state,
+            player.id,
+            ally.instanceId,
+            'minion',
+            minion.instanceId,
+          );
           if (minionAtkCheck.allowed) {
             boardActions.push({
               id: `action_ally_attack_minion_${ally.instanceId}_${minion.instanceId}`,
@@ -427,7 +446,9 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     turnAction = {
       id: `action_end_turn_${player.id}`,
       category: 'turn',
-      headline: isPassingToVillain ? 'End Turn (Begin Villain Phase)' : `Pass Turn to ${nextPlayer.name}`,
+      headline: isPassingToVillain
+        ? 'End Turn (Begin Villain Phase)'
+        : `Pass Turn to ${nextPlayer.name}`,
       subtext: isPassingToVillain
         ? 'Conclude the Player Phase and advance to the Villain Phase.'
         : `Pass active turn to Seat ${nextIdx + 1} (${nextPlayer.name}).`,

@@ -34,7 +34,10 @@ export function canChangeForm(
   }
 
   if (player.basicChangeFormUsedThisRound || player.formChangedThisRound) {
-    return { allowed: false, reason: 'Form has already been changed this round (Limit once per round as a basic action).' };
+    return {
+      allowed: false,
+      reason: 'Form has already been changed this round (Limit once per round as a basic action).',
+    };
   }
 
   if (targetFormCode) {
@@ -412,15 +415,22 @@ export function checkUniqueCardPlayable(
     const heroSubname = p.hero.subname
       ? p.hero.subname.toLowerCase().trim()
       : p.alterEgo.name
-      ? p.alterEgo.name.toLowerCase().trim()
-      : undefined;
+        ? p.alterEgo.name.toLowerCase().trim()
+        : undefined;
     const alterEgoName = p.alterEgo.name.toLowerCase().trim();
-    const alterEgoSubname = p.alterEgo.subname ? p.alterEgo.subname.toLowerCase().trim() : undefined;
+    const alterEgoSubname = p.alterEgo.subname
+      ? p.alterEgo.subname.toLowerCase().trim()
+      : undefined;
 
     // Check collision against Hero identity (e.g. Spider-Man / Peter Parker)
     const heroCollision = isUniqueCollision(targetName, targetSubname, heroName, heroSubname);
     // Check collision against Alter-Ego identity (e.g. Peter Parker)
-    const alterEgoCollision = isUniqueCollision(targetName, targetSubname, alterEgoName, alterEgoSubname);
+    const alterEgoCollision = isUniqueCollision(
+      targetName,
+      targetSubname,
+      alterEgoName,
+      alterEgoSubname,
+    );
 
     if (heroCollision || alterEgoCollision) {
       return {
@@ -466,7 +476,9 @@ export function checkUniqueCardPlayable(
     for (const minion of p.engagedMinions) {
       if (minion.card.isUnique) {
         const minionName = minion.card.name.toLowerCase().trim();
-        const minionSubname = minion.card.subname ? minion.card.subname.toLowerCase().trim() : undefined;
+        const minionSubname = minion.card.subname
+          ? minion.card.subname.toLowerCase().trim()
+          : undefined;
         if (isUniqueCollision(targetName, targetSubname, minionName, minionSubname)) {
           return {
             allowed: false,
@@ -480,7 +492,9 @@ export function checkUniqueCardPlayable(
   // 3. Check against active Villain
   if (state.villain?.card.isUnique) {
     const villainName = state.villain.card.name.toLowerCase().trim();
-    const villainSubname = state.villain.card.subname ? state.villain.card.subname.toLowerCase().trim() : undefined;
+    const villainSubname = state.villain.card.subname
+      ? state.villain.card.subname.toLowerCase().trim()
+      : undefined;
     if (isUniqueCollision(targetName, targetSubname, villainName, villainSubname)) {
       return {
         allowed: false,
@@ -585,11 +599,11 @@ export function canPlayCard(
   const isReactiveEvent =
     card.type === CardType.EVENT &&
     abilities.length > 0 &&
-    !abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION') &&
+    !abilities.some(
+      (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
+    ) &&
     abilities.some(
-      (a) =>
-        a.timing &&
-        (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+      (a) => a.timing && (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
     );
 
   if (isReactiveEvent) {
@@ -602,7 +616,9 @@ export function canPlayCard(
   // Resource Card Restriction (RR v1.8 p. 24)
   // Resource cards cannot be played as standalone actions; they are discarded to generate resources for payment.
   const isResourceCard = card.type === CardType.RESOURCE;
-  const hasResourceAction = abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION');
+  const hasResourceAction = abilities.some(
+    (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
+  );
   if (isResourceCard && !hasResourceAction) {
     return {
       allowed: false,
@@ -619,9 +635,7 @@ export function canPlayCard(
   const playRestriction = (card.enrichment as any)?.playRestriction;
 
   const isHeroFormRequired =
-    card.type === CardType.HERO ||
-    (isEvent && hasHeroTiming) ||
-    playRestriction === 'HERO_FORM';
+    card.type === CardType.HERO || (isEvent && hasHeroTiming) || playRestriction === 'HERO_FORM';
 
   const isAlterEgoFormRequired =
     card.type === CardType.ALTER_EGO ||
@@ -667,11 +681,15 @@ export function canPlayCard(
   if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
     const controlledCount =
       player.tableau.filter(
-        (c) => c.card.code === card.code || c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+        (c) =>
+          c.card.code === card.code ||
+          c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
       ).length +
       (card.type === CardType.ALLY
         ? player.allies.filter(
-            (a) => a.card.code === card.code || a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+            (a) =>
+              a.card.code === card.code ||
+              a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
           ).length
         : 0);
 
@@ -724,13 +742,19 @@ export function canPlayCard(
           (a) => a.timing === 'RESOURCE' || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
         );
         if (idAbility) {
-          if (idAbility.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1) {
+          if (
+            idAbility.limit === 'ONCE_PER_ROUND' &&
+            (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1
+          ) {
             return {
               allowed: false,
               reason: `Identity ability '${idAbility.id}' has already been used this round (Limit: once per round).`,
             };
           }
-          if (idAbility.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1) {
+          if (
+            idAbility.limit === 'ONCE_PER_PHASE' &&
+            (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1
+          ) {
             return {
               allowed: false,
               reason: `Identity ability '${idAbility.id}' has already been used this phase (Limit: once per phase).`,
@@ -744,10 +768,16 @@ export function canPlayCard(
 
       const gCard = player.tableau.find((c) => c.instanceId === gId);
       if (!gCard) {
-        return { allowed: false, reason: `Resource generator instance ${gId} not found in tableau.` };
+        return {
+          allowed: false,
+          reason: `Resource generator instance ${gId} not found in tableau.`,
+        };
       }
       if (gCard.exhausted) {
-        return { allowed: false, reason: `Resource generator ${gCard.card.name} is already exhausted.` };
+        return {
+          allowed: false,
+          reason: `Resource generator ${gCard.card.name} is already exhausted.`,
+        };
       }
 
       // Check generator abilities and form restrictions (RR v1.8 p. 16, 24, 25)
@@ -774,11 +804,21 @@ export function canPlayCard(
       }
 
       const isHeroRestricted =
-        abilities.some((a) => a.timing === 'HERO_RESOURCE' || a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+        abilities.some(
+          (a) =>
+            a.timing === 'HERO_RESOURCE' ||
+            a.timing === 'HERO_ACTION' ||
+            a.timing?.startsWith('HERO_'),
+        ) ||
         (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
         (gCard.card.text || '').toLowerCase().includes('hero action:');
       const isAlterEgoRestricted =
-        abilities.some((a) => a.timing === 'ALTER_EGO_RESOURCE' || a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+        abilities.some(
+          (a) =>
+            a.timing === 'ALTER_EGO_RESOURCE' ||
+            a.timing === 'ALTER_EGO_ACTION' ||
+            a.timing?.startsWith('ALTER_EGO_'),
+        ) ||
         (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
         (gCard.card.text || '').toLowerCase().includes('alter-ego action:');
 
@@ -848,7 +888,9 @@ export function evaluateCardPlayability(
 
   // Ambiguity / Blocked Card Check (ADR-0021)
   if (card.enrichment?.audit?.ambiguityFile) {
-    reasons.push(`Card is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile})`);
+    reasons.push(
+      `Card is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile})`,
+    );
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)
@@ -856,11 +898,11 @@ export function evaluateCardPlayability(
   const isReactiveEvent =
     card.type === CardType.EVENT &&
     abilities.length > 0 &&
-    !abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION') &&
+    !abilities.some(
+      (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
+    ) &&
     abilities.some(
-      (a) =>
-        a.timing &&
-        (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
+      (a) => a.timing && (a.timing.includes('INTERRUPT') || a.timing.includes('RESPONSE')),
     );
 
   if (isReactiveEvent) {
@@ -869,7 +911,9 @@ export function evaluateCardPlayability(
 
   // Resource Card Restriction (RR v1.8 p. 24)
   const isResourceCard = card.type === CardType.RESOURCE;
-  const hasResourceAction = abilities.some((a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION');
+  const hasResourceAction = abilities.some(
+    (a) => a.timing === 'ACTION' || a.timing === 'HERO_ACTION' || a.timing === 'ALTER_EGO_ACTION',
+  );
   if (isResourceCard && !hasResourceAction) {
     reasons.push('Resource card: Used to generate resources when paying costs');
   }
@@ -883,9 +927,7 @@ export function evaluateCardPlayability(
   const playRestriction = (card.enrichment as any)?.playRestriction;
 
   const isHeroFormRequired =
-    card.type === CardType.HERO ||
-    (isEvent && hasHeroTiming) ||
-    playRestriction === 'HERO_FORM';
+    card.type === CardType.HERO || (isEvent && hasHeroTiming) || playRestriction === 'HERO_FORM';
 
   const isAlterEgoFormRequired =
     card.type === CardType.ALTER_EGO ||
@@ -935,8 +977,10 @@ export function evaluateCardPlayability(
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
   for (const ab of idAbilities) {
     if (ab.timing === 'RESOURCE' || ab.steps?.some((s) => s.effect === 'GENERATE_RESOURCE')) {
-      const isUsedRound = ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-      const isUsedPhase = ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+      const isUsedRound =
+        ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+      const isUsedPhase =
+        ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
       if (!isUsedRound && !isUsedPhase) {
         const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
         maxPotentialResources += Number(genStep?.params?.amount) || 1;
@@ -964,7 +1008,9 @@ export function evaluateCardPlayability(
       (t.card.text || '').toLowerCase().includes('hero resource:') ||
       (t.card.text || '').toLowerCase().includes('hero action:');
     const isAlterEgoRestricted =
-      abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+      abilities.some(
+        (a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_'),
+      ) ||
       (t.card.text || '').toLowerCase().includes('alter-ego resource:') ||
       (t.card.text || '').toLowerCase().includes('alter-ego action:');
 

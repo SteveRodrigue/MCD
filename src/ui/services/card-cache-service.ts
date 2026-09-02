@@ -37,9 +37,7 @@ export function resolveMainSchemeArtFileName(code: string, stage?: string): stri
   const isCoreSet = baseCode.startsWith('01');
 
   const normalizedStage = (stage || '').toUpperCase();
-  const isSideA =
-    normalizedStage.endsWith('A') ||
-    (!normalizedStage && trimmedCode.endsWith('a'));
+  const isSideA = normalizedStage.endsWith('A') || (!normalizedStage && trimmedCode.endsWith('a'));
 
   if (isCoreSet) {
     // Core set inverted image asset quirk

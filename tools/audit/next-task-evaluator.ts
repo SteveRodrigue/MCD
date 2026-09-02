@@ -21,7 +21,10 @@ export function evaluateNextTasks(): TaskCandidate[] {
   // 1. Fetch Open GitHub Issues
   let rawIssues: any[] = [];
   try {
-    const out = execSync('gh issue list --state open --limit 50 --json number,title,labels,body,url', { encoding: 'utf8' });
+    const out = execSync(
+      'gh issue list --state open --limit 50 --json number,title,labels,body,url',
+      { encoding: 'utf8' },
+    );
     rawIssues = JSON.parse(out);
   } catch (e) {
     console.error('Failed to fetch live GitHub issues.');
@@ -74,10 +77,20 @@ export function evaluateNextTasks(): TaskCandidate[] {
     } else if (lowerTitle.includes('player side scheme') || num === 34) {
       cardCount = 35;
       cardDesc = `35 Player Side Scheme cards across expansion waves`;
-    } else if (lowerTitle.includes('search_and_select') || lowerTitle.includes('look') || num === 10) {
+    } else if (
+      lowerTitle.includes('search_and_select') ||
+      lowerTitle.includes('look') ||
+      num === 10
+    ) {
       cardCount = 28;
       cardDesc = `28 hero & support cards using search/look & choose mechanics`;
-    } else if (lowerTitle.includes('wakanda forever') || lowerTitle.includes('special') || num === 18 || num === 19 || num === 20) {
+    } else if (
+      lowerTitle.includes('wakanda forever') ||
+      lowerTitle.includes('special') ||
+      num === 18 ||
+      num === 19 ||
+      num === 20
+    ) {
       cardCount = 6;
       cardDesc = `All Black Panther upgrade cards (Energy Daggers, Suit, Claws, Tactical)`;
     } else if (lowerTitle.includes('status') || lowerTitle.includes('stalwart') || num === 35) {
@@ -134,7 +147,8 @@ export function evaluateNextTasks(): TaskCandidate[] {
     const triggerPrompt = `${recommendedSkill}: ${title} (Issue #${num})`;
 
     let rationale = `Blocks active ${milestoneAlignment}. Delivers high architectural value unlocking ${cardDesc}.`;
-    if (priority === 'P0') rationale = `CRITICAL BLOCKER. Must be resolved immediately to restore core engine pipelines.`;
+    if (priority === 'P0')
+      rationale = `CRITICAL BLOCKER. Must be resolved immediately to restore core engine pipelines.`;
 
     candidates.push({
       issueNumber: num,
@@ -150,7 +164,7 @@ export function evaluateNextTasks(): TaskCandidate[] {
       score: totalScore,
       recommendedSkill,
       triggerPrompt,
-      rationale
+      rationale,
     });
   }
 
@@ -163,10 +177,19 @@ const tasks = evaluateNextTasks();
 console.log(`\n🎯 EVALUATED ${tasks.length} OPEN TASKS — TOP RECOMMENDATIONS:\n`);
 
 tasks.slice(0, 5).forEach((t, index) => {
-  const medal = index === 0 ? '🥇 [TOP PICK]' : index === 1 ? '🥈 [RUNNER-UP]' : index === 2 ? '🥉 [HIGH VALUE]' : `[#${index + 1}]`;
+  const medal =
+    index === 0
+      ? '🥇 [TOP PICK]'
+      : index === 1
+        ? '🥈 [RUNNER-UP]'
+        : index === 2
+          ? '🥉 [HIGH VALUE]'
+          : `[#${index + 1}]`;
   console.log(`================================================================================`);
   console.log(`${medal} Score: ${t.score} pts | Issue #${t.issueNumber}: "${t.title}"`);
-  console.log(`   🏷️ [${t.priority}] [impact:${t.impact}] [${t.subsystem}] | Milestone: ${t.milestoneAlignment}`);
+  console.log(
+    `   🏷️ [${t.priority}] [impact:${t.impact}] [${t.subsystem}] | Milestone: ${t.milestoneAlignment}`,
+  );
   console.log(`   🃏 Card Impact: ${t.cardImpactDescription}`);
   console.log(`   💡 Rationale: ${t.rationale}`);
   console.log(`   🚀 Action Trigger: "${t.triggerPrompt}"`);

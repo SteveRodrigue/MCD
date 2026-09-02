@@ -145,7 +145,9 @@ export function setupGame(options: GameSetupOptions): GameState {
       ? cardCatalog.getNemesisCardsForHero(pConfig.hero.setCode)
       : [];
     const setAsideCards = (
-      pConfig.nemesisCards && pConfig.nemesisCards.length > 0 ? pConfig.nemesisCards : defaultNemesisCards
+      pConfig.nemesisCards && pConfig.nemesisCards.length > 0
+        ? pConfig.nemesisCards
+        : defaultNemesisCards
     ).map(createCardInstance);
 
     return {
@@ -175,7 +177,10 @@ export function setupGame(options: GameSetupOptions): GameState {
   });
 
   // 2. Setup Default / Fallback Villain
-  const rawVillain = options.villain || (cardCatalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) || (cardCatalog.getCard('01094') as VillainCard);
+  const rawVillain =
+    options.villain ||
+    (cardCatalog.getVillainByStage(options.scenarioId || 'rhino', 'I') as VillainCard) ||
+    (cardCatalog.getCard('01094') as VillainCard);
   const villainHealth = rawVillain.healthPerHero
     ? rawVillain.health * playerCount
     : rawVillain.health;
@@ -214,7 +219,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     }
   }
 
-  const rawEncounterCards = options.encounterCards || cardCatalog.getCardsBySet(options.scenarioId || 'rhino');
+  const rawEncounterCards =
+    options.encounterCards || cardCatalog.getCardsBySet(options.scenarioId || 'rhino');
   const allEncounterCards = [...rawEncounterCards, ...playerObligations];
   const encounterInstances = allEncounterCards.map(createCardInstance);
   const shuffledEncounterDeck = shuffle(encounterInstances);
@@ -272,7 +278,11 @@ export function setupGame(options: GameSetupOptions): GameState {
   };
 
   // 7. Invoke Scenario Plugin Lifecycle Setup if registered (Enforces official 15-step scenario setup)
-  if (!options.skipScenarioPlugin && options.scenarioId && ScenarioRegistry.has(options.scenarioId)) {
+  if (
+    !options.skipScenarioPlugin &&
+    options.scenarioId &&
+    ScenarioRegistry.has(options.scenarioId)
+  ) {
     const plugin = ScenarioRegistry.get(options.scenarioId);
     state = plugin.onGameSetup(state, {
       scenarioId: options.scenarioId,
@@ -302,7 +312,10 @@ export function setupGame(options: GameSetupOptions): GameState {
  * Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27).
  * In player order, each player resolves any "Setup" instructions on their identity card and obligations.
  */
-export function step14_resolveCharacterSetupAbilities(state: GameState, options: GameSetupOptions): GameState {
+export function step14_resolveCharacterSetupAbilities(
+  state: GameState,
+  options: GameSetupOptions,
+): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
 
   for (let i = 0; i < state.players.length; i++) {
@@ -310,7 +323,11 @@ export function step14_resolveCharacterSetupAbilities(state: GameState, options:
     const pConfig = options.players[i];
 
     // Check alterEgo and hero cards for printed SETUP abilities
-    const cardsToCheck = [player.alterEgo, player.hero, ...(player.tableau || []).map((t) => t.card)];
+    const cardsToCheck = [
+      player.alterEgo,
+      player.hero,
+      ...(player.tableau || []).map((t) => t.card),
+    ];
     for (const card of cardsToCheck) {
       const abilities = card.enrichment?.abilities || [];
       const setupAbilities = abilities.filter((a) => a.timing === 'SETUP');
@@ -328,7 +345,8 @@ export function step14_resolveCharacterSetupAbilities(state: GameState, options:
               const deckCard = player.deck[cIdx];
               const traitMatch = !filter.trait || deckCard.card.traits?.includes(filter.trait);
               const typeMatch = !filter.type || deckCard.card.type === filter.type;
-              const codeMatch = !pConfig?.chosenSetupCardCode || deckCard.card.code === pConfig.chosenSetupCardCode;
+              const codeMatch =
+                !pConfig?.chosenSetupCardCode || deckCard.card.code === pConfig.chosenSetupCardCode;
 
               if (traitMatch && typeMatch && codeMatch) {
                 candidateIndices.push(cIdx);

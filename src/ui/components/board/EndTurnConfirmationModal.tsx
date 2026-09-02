@@ -43,7 +43,8 @@ export const EndTurnConfirmationModal: React.FC<EndTurnConfirmationModalProps> =
         <div className="p-5 text-center space-y-3">
           <div className="p-3 bg-white/90 border border-slate-700 rounded shadow-xs">
             <p className="text-xs text-slate-800 font-serif leading-relaxed">
-              You have exhausted your character and played all available cards from hand. No further legal moves remain.
+              You have exhausted your character and played all available cards from hand. No further
+              legal moves remain.
             </p>
             <p className="text-[11px] font-comic font-bold text-comic-blue mt-1">
               Ready to conclude your turn?

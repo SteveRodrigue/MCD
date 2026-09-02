@@ -89,7 +89,9 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     expect(basicThw).toBeDefined();
 
     // Arc Reactor Activate in Board Actions
-    const arcActivate = report.boardActions.find((a) => (a.action as any).cardInstanceId === 'arc_inst');
+    const arcActivate = report.boardActions.find(
+      (a) => (a.action as any).cardInstanceId === 'arc_inst',
+    );
     expect(arcActivate).toBeDefined();
   });
 

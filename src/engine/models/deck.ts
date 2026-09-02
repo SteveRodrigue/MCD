@@ -29,7 +29,9 @@ export interface MarvelCDBDeckMeta {
 /**
  * Helper to safely extract parsed metadata from MarvelCDB deck object.
  */
-export function parseMarvelCDBDeckMeta(meta?: string | MarvelCDBDeckMeta | null): MarvelCDBDeckMeta {
+export function parseMarvelCDBDeckMeta(
+  meta?: string | MarvelCDBDeckMeta | null,
+): MarvelCDBDeckMeta {
   if (!meta) return {};
   if (typeof meta === 'object') return meta;
   try {

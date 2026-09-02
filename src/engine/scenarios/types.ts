@@ -1,7 +1,4 @@
-import {
-  GameState,
-  DifficultyMode,
-} from '@engine/models';
+import { GameState, DifficultyMode } from '@engine/models';
 
 export interface ScenarioGameSetupOptions {
   scenarioId: string;
@@ -26,7 +23,7 @@ export interface ScenarioDefinition {
   version?: string;
   description?: string;
   supportedDifficulties: DifficultyMode[];
-  
+
   villainSetup: {
     villainName: string;
     stages: Record<DifficultyMode, string[]>;

@@ -42,13 +42,17 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   onStartSetup,
 }) => {
   const { defaultDifficulty, defaultHeroicLevel } = useGameSettings();
-  const [catalog] = useState(() => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]));
+  const [catalog] = useState(
+    () => providedCatalog || new CardCatalog([...corePack, ...coreEncounterPack]),
+  );
   const scenarios = useMemo(() => listScenarios(), []);
   const starterDecks = useMemo(() => listStarterDecks(), []);
   const modularSets = useMemo(() => listModularEncounterSets(), []);
 
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>('rhino');
-  const [difficulty, setDifficulty] = useState<DifficultyMode>(() => defaultDifficulty || 'STANDARD');
+  const [difficulty, setDifficulty] = useState<DifficultyMode>(
+    () => defaultDifficulty || 'STANDARD',
+  );
   const [heroicLevel, setHeroicLevel] = useState<number>(() => defaultHeroicLevel || 0);
 
   const scenarioIndex = scenarios.findIndex((s) => s.id === selectedScenarioId);
@@ -59,7 +63,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     return selectedScenario.recommendedModularSets?.[0] || 'bomb_scare';
   }, [selectedScenario]);
 
-  const [selectedModularSetCode, setSelectedModularSetCode] = useState<string>(() => defaultModularForScenario);
+  const [selectedModularSetCode, setSelectedModularSetCode] = useState<string>(
+    () => defaultModularForScenario,
+  );
 
   const handleSelectScenarioByIndex = (newIndex: number) => {
     const validIndex = (newIndex + scenarios.length) % scenarios.length;
@@ -98,17 +104,19 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   };
 
   const villainCode =
-    difficulty === 'EXPERT' ? selectedScenario.stages.expert[0] : selectedScenario.stages.standard[0];
+    difficulty === 'EXPERT'
+      ? selectedScenario.stages.expert[0]
+      : selectedScenario.stages.standard[0];
   const villainPreviewCard = catalog.getCard(villainCode);
 
   // Directly query Main Scheme Stage 1A from the catalog using type and stage metadata
   const mainSchemePreviewCard =
-    (catalog
+    catalog
       .getCardsBySet(selectedScenario.id)
       .find(
         (c): c is MainSchemeCard =>
-          c.type === CardType.MAIN_SCHEME && (c as MainSchemeCard).stage?.toUpperCase() === '1A'
-      )) || catalog.getCard(selectedScenario.mainSchemeCode);
+          c.type === CardType.MAIN_SCHEME && (c as MainSchemeCard).stage?.toUpperCase() === '1A',
+      ) || catalog.getCard(selectedScenario.mainSchemeCode);
 
   const handleStart = () => {
     if (playerCount === 0) return;
@@ -302,7 +310,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-2.5">
               <div className="flex items-center gap-2">
                 <Info className="w-5 h-5 text-comic-blue" />
-                <h2 className="font-comic text-2xl text-comic-black">1. Encounter Sets & Modular</h2>
+                <h2 className="font-comic text-2xl text-comic-black">
+                  1. Encounter Sets & Modular
+                </h2>
               </div>
               {selectedModularSetCode !== defaultModularForScenario && (
                 <button
@@ -345,7 +355,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                   Modular Encounter Slot (1 Required):
                 </div>
                 <span className="text-[10px] bg-amber-100 border border-comic-black px-1.5 py-0.2 rounded font-bold text-slate-800">
-                  {selectedModularSetCode === defaultModularForScenario ? 'Default Recommendation' : 'Custom Modular Set'}
+                  {selectedModularSetCode === defaultModularForScenario
+                    ? 'Default Recommendation'
+                    : 'Custom Modular Set'}
                 </span>
               </div>
 
@@ -356,7 +368,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               >
                 {modularSets.map((mod) => (
                   <option key={mod.code} value={mod.code}>
-                    {mod.name} ({mod.cardCount} cards) {mod.code === defaultModularForScenario ? '— [Recommended]' : ''}
+                    {mod.name} ({mod.cardCount} cards){' '}
+                    {mod.code === defaultModularForScenario ? '— [Recommended]' : ''}
                   </option>
                 ))}
               </select>
@@ -372,7 +385,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             <div className="flex items-center justify-between border-b-2 border-comic-black pb-2.5">
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-comic-yellow" />
-                <h2 className="font-comic text-2xl text-comic-black">2. Select Difficulty & Modifiers</h2>
+                <h2 className="font-comic text-2xl text-comic-black">
+                  2. Select Difficulty & Modifiers
+                </h2>
               </div>
               <span className="bg-amber-100 border border-comic-black px-2.5 py-0.5 text-xs font-black uppercase rounded font-comic">
                 MODE: {difficulty}
@@ -491,7 +506,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             </div>
 
             <p className="text-xs text-slate-600">
-              Assign heroes to the seat slots below. <span className="font-bold text-comic-black">Hero Seat 1 is designated as the Starting Player</span> (holds the First Player Token in Round 1 per RR v1.8 Step 12).
+              Assign heroes to the seat slots below.{' '}
+              <span className="font-bold text-comic-black">
+                Hero Seat 1 is designated as the Starting Player
+              </span>{' '}
+              (holds the First Player Token in Round 1 per RR v1.8 Step 12).
             </p>
 
             {/* The 4 Hero Seat Slots */}
@@ -510,7 +529,11 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                     if (otherIdx === index || !otherDeckId) return null;
                     const otherDeck = starterDecks.find((d) => d.id === otherDeckId);
                     return otherDeck
-                      ? { heroId: otherDeck.heroId, heroName: otherDeck.heroName, seatNum: otherIdx + 1 }
+                      ? {
+                          heroId: otherDeck.heroId,
+                          heroName: otherDeck.heroName,
+                          seatNum: otherIdx + 1,
+                        }
                       : null;
                   })
                   .filter(Boolean) as { heroId: string; heroName: string; seatNum: number }[];
@@ -587,16 +610,16 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                                 const isTakenElsewhere = takenInOtherSeats.some(
                                   (t) => t.heroId === d.heroId,
                                 );
-                                const takenBy = takenInOtherSeats.find((t) => t.heroId === d.heroId);
+                                const takenBy = takenInOtherSeats.find(
+                                  (t) => t.heroId === d.heroId,
+                                );
 
                                 return (
-                                  <option
-                                    key={d.id}
-                                    value={d.id}
-                                    disabled={isTakenElsewhere}
-                                  >
+                                  <option key={d.id} value={d.id} disabled={isTakenElsewhere}>
                                     {d.heroName} ({d.aspect})
-                                    {isTakenElsewhere ? ` — [🔒 Taken by Hero ${takenBy?.seatNum}]` : ''}
+                                    {isTakenElsewhere
+                                      ? ` — [🔒 Taken by Hero ${takenBy?.seatNum}]`
+                                      : ''}
                                   </option>
                                 );
                               })}
@@ -637,11 +660,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                               const takenBy = takenInOtherSeats.find((t) => t.heroId === d.heroId);
 
                               return (
-                                <option
-                                  key={d.id}
-                                  value={d.id}
-                                  disabled={isTakenElsewhere}
-                                >
+                                <option key={d.id} value={d.id} disabled={isTakenElsewhere}>
                                   {d.heroName} ({d.aspect})
                                   {isTakenElsewhere ? ` — [🔒 Hero ${takenBy?.seatNum}]` : ''}
                                 </option>
@@ -664,7 +683,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 READY FOR BATTLE?
               </div>
               <div className="text-xs text-comic-black font-semibold">
-                {playerCount} {playerCount === 1 ? 'Hero' : 'Heroes'} • {difficulty} Mode • {selectedScenario.name}
+                {playerCount} {playerCount === 1 ? 'Hero' : 'Heroes'} • {difficulty} Mode •{' '}
+                {selectedScenario.name}
               </div>
             </div>
 
@@ -673,7 +693,9 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               onClick={handleStart}
               disabled={playerCount === 0}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl border-3 border-comic-black font-comic text-xl text-white font-black uppercase tracking-wider transition-all cursor-pointer shadow-comic hover:scale-105 active:scale-95 ${
-                playerCount > 0 ? 'bg-comic-red hover:bg-red-600' : 'bg-slate-400 cursor-not-allowed'
+                playerCount > 0
+                  ? 'bg-comic-red hover:bg-red-600'
+                  : 'bg-slate-400 cursor-not-allowed'
               }`}
             >
               <Play className="w-6 h-6 fill-current" />

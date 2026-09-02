@@ -1,7 +1,4 @@
-import {
-  GameState,
-  GamePhase,
-} from '@engine/models';
+import { GameState, GamePhase } from '@engine/models';
 import { dispatchAction, executeVillainPhase } from '../pipeline';
 import { chooseBotAction } from './player-bot';
 
@@ -101,6 +98,8 @@ export function runMatch(
     roundsPlayed: state.roundNumber,
     totalActionsExecuted: totalActions,
     finalState: state,
-    logSummary: state.log.map((l) => `[Round ${state.roundNumber}] ${l.onomatopoeia ? l.onomatopoeia + ' ' : ''}${l.key}`),
+    logSummary: state.log.map(
+      (l) => `[Round ${state.roundNumber}] ${l.onomatopoeia ? l.onomatopoeia + ' ' : ''}${l.key}`,
+    ),
   };
 }

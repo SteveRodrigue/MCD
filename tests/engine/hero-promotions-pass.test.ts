@@ -70,13 +70,20 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       player.tableau.push(channel);
 
       // Add 3 energy counters
-      executeEffect(state, { effect: 'ADD_COUNTER', params: { amount: 3 } }, { playerId: 'p1', sourceCardInstance: channel });
+      executeEffect(
+        state,
+        { effect: 'ADD_COUNTER', params: { amount: 3 } },
+        { playerId: 'p1', sourceCardInstance: channel },
+      );
       expect(channel.tokens?.counters).toBe(3);
 
       const initialHp = state.villain.health;
 
       // Discard channel and blast villain: 3 counters * 2 damage = 6 damage
-      state.villain.health = Math.max(0, state.villain.health - (channel.tokens?.counters || 0) * 2);
+      state.villain.health = Math.max(
+        0,
+        state.villain.health - (channel.tokens?.counters || 0) * 2,
+      );
       expect(state.villain.health).toBe(initialHp - 6);
     });
 
@@ -86,7 +93,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       player.allies.push(hellcat);
       player.hand = [];
 
-      const result = executeEffect(state, { effect: 'RETURN_TO_HAND' }, { playerId: 'p1', sourceCardInstance: hellcat });
+      const result = executeEffect(
+        state,
+        { effect: 'RETURN_TO_HAND' },
+        { playerId: 'p1', sourceCardInstance: hellcat },
+      );
       expect(result.success).toBe(true);
       expect(player.allies.length).toBe(0);
       expect(player.hand.length).toBe(1);
@@ -106,7 +117,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
 
       // Stun trigger
       state.villain.statusCards = [];
-      executeEffect(state, { effect: 'ADD_STATUS', params: { status: 'STUNNED', target: 'ATTACK_TARGET' } }, { playerId: 'p1', targetType: 'villain' });
+      executeEffect(
+        state,
+        { effect: 'ADD_STATUS', params: { status: 'STUNNED', target: 'ATTACK_TARGET' } },
+        { playerId: 'p1', targetType: 'villain' },
+      );
       expect(state.villain.statusCards).toContain(StatusCard.STUNNED);
     });
   });
@@ -137,7 +152,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       const energyCard = createCardInstance(cardCatalog.getCard('01014')!); // Energy Absorption (3 resources)
       player.discard = [energyCard];
 
-      const result = executeEffect(state, { effect: 'GENERATE_TOP_DISCARD_RESOURCES' }, { playerId: 'p1' });
+      const result = executeEffect(
+        state,
+        { effect: 'GENERATE_TOP_DISCARD_RESOURCES' },
+        { playerId: 'p1' },
+      );
       expect(result.success).toBe(true);
       expect(result.value).toBe(3);
     });
@@ -150,7 +169,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       player.discard = [techUpgrade, eventCard];
       player.hand = [];
 
-      const result = executeEffect(state, { effect: 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD', params: { trait: 'Tech' } }, { playerId: 'p1' });
+      const result = executeEffect(
+        state,
+        { effect: 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD', params: { trait: 'Tech' } },
+        { playerId: 'p1' },
+      );
       expect(result.success).toBe(true);
       expect(player.hand.length).toBe(1);
       expect(player.hand[0].card.code).toBe('01036');
@@ -158,8 +181,8 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
     });
   });
 
-  describe('Black Panther: T\'Challa (01040b), Shuri (01041), Ancestral Knowledge (01042), Wakanda Forever! (01043a-d)', () => {
-    it('T\'Challa and Shuri search deck for an upgrade and add to hand', () => {
+  describe("Black Panther: T'Challa (01040b), Shuri (01041), Ancestral Knowledge (01042), Wakanda Forever! (01043a-d)", () => {
+    it("T'Challa and Shuri search deck for an upgrade and add to hand", () => {
       const player = state.players[0];
       const bpUpgrade = createCardInstance(cardCatalog.getCard('01046')!); // Energy Daggers
       const fillerCard = createCardInstance(cardCatalog.getCard('01005')!);
@@ -188,7 +211,11 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       player.discard = [card1, card2, card3];
       player.deck = [];
 
-      const result = executeEffect(state, { effect: 'SHUFFLE_DISCARD_INTO_DECK', params: { count: 3 } }, { playerId: 'p1' });
+      const result = executeEffect(
+        state,
+        { effect: 'SHUFFLE_DISCARD_INTO_DECK', params: { count: 3 } },
+        { playerId: 'p1' },
+      );
       expect(result.success).toBe(true);
       expect(player.discard.length).toBe(0);
       expect(player.deck.length).toBe(3);

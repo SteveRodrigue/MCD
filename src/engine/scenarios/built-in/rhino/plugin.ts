@@ -36,7 +36,9 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
     const villainCard = cardCatalog.getCard(startingStageCode) as VillainCard;
     if (!villainCard) {
-      throw new Error(`Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`);
+      throw new Error(
+        `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
+      );
     }
 
     const hpPerPlayer = this.definition.villainSetup.healthPerPlayer[startingStageCode] || 14;
@@ -62,7 +64,9 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'rhino'.`);
     }
 
-    const targetThreat = (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * numPlayers;
+    const targetThreat =
+      (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
+      numPlayers;
     const initialMainScheme: MainSchemeState = {
       instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
@@ -76,7 +80,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     state.mainScheme = initialMainScheme;
 
     // 3. Build Encounter Deck based on Difficulty
-    const modularSetCodes = options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
+    const modularSetCodes =
+      options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
     const allEncounterCards: NormalizedCard[] = [];
 
     // Add scenario cards (Rhino set)
@@ -146,7 +151,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     victory?: boolean;
   } {
-    const villain = state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
+    const villain =
+      state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
     const numPlayers = state.players.length || 1;
@@ -241,7 +247,10 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     // Main Scheme threat check
     for (const ms of state.mainSchemes) {
       if (ms.threat >= ms.targetThreat) {
-        return { winner: 'VILLAIN', reason: `Main Scheme '${ms.card.name}' reached target threat (${ms.targetThreat}).` };
+        return {
+          winner: 'VILLAIN',
+          reason: `Main Scheme '${ms.card.name}' reached target threat (${ms.targetThreat}).`,
+        };
       }
     }
     // Hero survival check
@@ -298,7 +307,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
   private resolveStageIIWhenRevealed(state: GameState): void {
     // Search encounter deck and discard pile for Breakin' & Takin' (01107) and reveal it. Shuffle encounter deck.
     let foundIndex = state.encounterDeck.findIndex((c) => c.card.code === '01107');
-    let foundInstance = foundIndex !== -1 ? state.encounterDeck.splice(foundIndex, 1)[0] : undefined;
+    let foundInstance =
+      foundIndex !== -1 ? state.encounterDeck.splice(foundIndex, 1)[0] : undefined;
 
     if (!foundInstance) {
       foundIndex = state.encounterDiscard.findIndex((c) => c.card.code === '01107');
@@ -309,7 +319,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
 
     if (foundInstance) {
       const sideSchemeCard = foundInstance.card as SideSchemeCard;
-      const baseThreat = sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+      const baseThreat =
+        sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
       state.sideSchemes.push({
         instanceId: foundInstance.instanceId,
         card: sideSchemeCard,
@@ -320,7 +331,10 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       const abilities = sideSchemeCard.enrichment?.abilities || [];
       for (const ab of abilities) {
         if (ab.trigger === 'WHEN_REVEALED') {
-          executeEffect(state, ab, { playerId: state.players[0]?.id || 'p1', sourceCardInstance: foundInstance });
+          executeEffect(state, ab, {
+            playerId: state.players[0]?.id || 'p1',
+            sourceCardInstance: foundInstance,
+          });
         }
       }
 

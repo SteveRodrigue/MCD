@@ -12,7 +12,10 @@ import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
 import { CardPaymentModal } from './CardPaymentModal';
 import { useEdgeScroll } from '../../hooks/useEdgeScroll';
 import { useGameSettings } from '../../context/GameSettingsContext';
-import { getLegalActionsForPlayer, LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
+import {
+  getLegalActionsForPlayer,
+  LegalActionItem,
+} from '../../../engine/pipeline/legal-actions-generator';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -60,17 +63,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
   }, [legalReport.activeActionCount, legalReport.isPlayerTurn, gameState.winner]);
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)
-  const {
-    containerRef,
-    canScrollLeft,
-    canScrollRight,
-    scrollToChild,
-    scrollByAmount,
-  } = useEdgeScroll<HTMLDivElement>({
-    edgeThreshold: 95,
-    maxSpeed: SPEED_MAP[edgeScrollSpeed] || 45,
-    enabled: isMultiHero,
-  });
+  const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollByAmount } =
+    useEdgeScroll<HTMLDivElement>({
+      edgeThreshold: 95,
+      maxSpeed: SPEED_MAP[edgeScrollSpeed] || 45,
+      enabled: isMultiHero,
+    });
 
   const heroStationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -264,7 +262,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           player={activePlayer}
           gameState={gameState}
           onClose={() => setPaymentModalCard(null)}
-          onConfirmPlay={(paymentHandCardIds: string[], generatorCardIds: string[], targetInstanceId?: string) => {
+          onConfirmPlay={(
+            paymentHandCardIds: string[],
+            generatorCardIds: string[],
+            targetInstanceId?: string,
+          ) => {
             if (onDispatchAction) {
               onDispatchAction({
                 type: 'PLAY_CARD',
@@ -291,7 +293,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
       <DecisionPromptModal
         prompt={gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt}
         onSelectOption={(optionId, payload) => {
-          const activePrompt = gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
+          const activePrompt =
+            gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
           if (activePrompt && onDispatchAction) {
             onDispatchAction({
               type: 'RESOLVE_DECISION_PROMPT',

@@ -135,7 +135,9 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
             <div>
               <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-comic-yellow">
                 <Swords className="w-3.5 h-3.5" />
-                <span>{attackerType === 'hero' ? 'Hero Strike' : 'Ally Strike'} • {attackDamage} DMG</span>
+                <span>
+                  {attackerType === 'hero' ? 'Hero Strike' : 'Ally Strike'} • {attackDamage} DMG
+                </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-white drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                 TARGET SELECTION
@@ -194,7 +196,11 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
                         isVillain ? 'bg-comic-red text-white' : 'bg-amber-400 text-slate-950'
                       }`}
                     >
-                      {isVillain ? <Skull className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
+                      {isVillain ? (
+                        <Skull className="w-5 h-5" />
+                      ) : (
+                        <ShieldAlert className="w-5 h-5" />
+                      )}
                     </div>
 
                     <div className="min-w-0">
@@ -204,9 +210,7 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
                         </span>
                         <span
                           className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-comic-black ${
-                            isVillain
-                              ? 'bg-comic-red text-white'
-                              : 'bg-comic-yellow text-slate-950'
+                            isVillain ? 'bg-comic-red text-white' : 'bg-comic-yellow text-slate-950'
                           }`}
                         >
                           {isVillain ? 'VILLAIN' : 'MINION'}
@@ -225,12 +229,11 @@ export const AttackTargetModal: React.FC<AttackTargetModalProps> = ({
 
                       <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-600">
                         <span>
-                          HP: <strong className="text-slate-900 font-black">{target.health}</strong> / {target.maxHealth}
+                          HP: <strong className="text-slate-900 font-black">{target.health}</strong>{' '}
+                          / {target.maxHealth}
                         </span>
                         {target.damage > 0 && (
-                          <span className="text-comic-red font-bold">
-                            ({target.damage} dmg)
-                          </span>
+                          <span className="text-comic-red font-bold">({target.damage} dmg)</span>
                         )}
                       </div>
                     </div>

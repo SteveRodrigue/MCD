@@ -11,13 +11,15 @@ import {
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { executeEffect } from '../effects';
-import { getEffectiveHeroStats, getEffectiveVillainStats, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
+import {
+  getEffectiveHeroStats,
+  getEffectiveVillainStats,
+  hasEntityKeyword,
+  consumeEntityStatusCards,
+} from './stat-calculator';
 
 export type DefensePolicy =
-  | 'TAKE_UNDEFENDED'
-  | 'HERO_IF_READY'
-  | 'ALLY_CHUMP_BLOCK'
-  | 'AUTO_OPTIMAL';
+  'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
 
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
@@ -72,7 +74,8 @@ export function step1_preAttackAndStunCheck(
 
     if (webbedUpIdx !== -1) {
       const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);
-      const owner = state.players.find((p) => p.hero.code === '01001a') || targetPlayer || state.players[0];
+      const owner =
+        state.players.find((p) => p.hero.code === '01001a') || targetPlayer || state.players[0];
       owner.discard.push(webbedUp);
 
       if (!state.villain.statusCards.includes(StatusCard.STUNNED)) {
@@ -173,7 +176,8 @@ export function initiateEnemyAttack(
   } else if (attacker.card) {
     baseAttack = (attacker.card.card as any).attack || 1;
     const traits = attacker.card.card.traits || [];
-    hasOverkill = traits.includes('Overkill') || (attacker.card.card.text || '').includes('Overkill');
+    hasOverkill =
+      traits.includes('Overkill') || (attacker.card.card.text || '').includes('Overkill');
   }
 
   const attackContext: AttackExecutionContext = {
@@ -191,7 +195,12 @@ export function initiateEnemyAttack(
 
   // Check if synchronous policy specified (Headless tests / simulator)
   if (options?.synchronousPolicy) {
-    const declaration = evaluateDefensePolicy(state, player, options.synchronousPolicy, attackContext);
+    const declaration = evaluateDefensePolicy(
+      state,
+      player,
+      options.synchronousPolicy,
+      attackContext,
+    );
     return resolveDefenderDeclaration(state, declaration, attackContext);
   }
 
@@ -383,14 +392,21 @@ export function resolveDefenderDeclaration(
   }
 
   // Trigger next pending activation if outside of Villain Phase (e.g. Gang-Up treachery)
-  if (state.phase !== GamePhase.VILLAIN_PHASE && !state.pendingDecisionPrompt && (state as any).pendingActivations && (state as any).pendingActivations.length > 0) {
+  if (
+    state.phase !== GamePhase.VILLAIN_PHASE &&
+    !state.pendingDecisionPrompt &&
+    (state as any).pendingActivations &&
+    (state as any).pendingActivations.length > 0
+  ) {
     const act = (state as any).pendingActivations.shift()!;
     const targetPlayer = state.players.find((p) => p.id === act.playerId);
     if (targetPlayer) {
       if (act.type === 'VILLAIN') {
         initiateEnemyAttack(state, { type: 'VILLAIN' }, targetPlayer.id);
       } else if (act.type === 'MINION') {
-        const minion = targetPlayer.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+        const minion = targetPlayer.engagedMinions.find(
+          (m) => m.instanceId === act.minionInstanceId,
+        );
         if (minion) {
           initiateEnemyAttack(state, { type: 'MINION', card: minion }, targetPlayer.id);
         }
@@ -424,7 +440,10 @@ export function step4_and_5_dealAndResolveBoostCards(
 
     // Check villain innate abilities or text for extra boost cards (e.g. Klaw 01113/01114/01115)
     const villainText = (state.villain.card.text || '').toLowerCase();
-    if (villainText.includes('give him 1 additional boost card') || villainText.includes('additional boost card')) {
+    if (
+      villainText.includes('give him 1 additional boost card') ||
+      villainText.includes('additional boost card')
+    ) {
       const extraBoost = drawEncounterCardForCombat(state);
       if (extraBoost) {
         attackContext.boostQueue.push(extraBoost);
@@ -535,7 +554,9 @@ export function step6_calculateAndApplyAttackDamage(
 
   if (attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId) {
     // Ally Takes Attack Damage
-    const allyIdx = player.allies.findIndex((a) => a.instanceId === attackContext.defender!.allyInstanceId);
+    const allyIdx = player.allies.findIndex(
+      (a) => a.instanceId === attackContext.defender!.allyInstanceId,
+    );
     if (allyIdx !== -1) {
       const ally = player.allies[allyIdx];
       const allyCard = ally.card as any;
@@ -681,12 +702,20 @@ export function step7_resolvePostAttackAndRetaliate(
     // Check Hero or Tableau cards for Retaliate
     let retaliateX = 0;
     const heroCard = player.hero as any;
-    if (heroCard.keywords?.includes('Retaliate 1') || heroCard.keywords?.includes('Retaliate') || (heroCard.text || '').toLowerCase().includes('retaliate 1')) {
+    if (
+      heroCard.keywords?.includes('Retaliate 1') ||
+      heroCard.keywords?.includes('Retaliate') ||
+      (heroCard.text || '').toLowerCase().includes('retaliate 1')
+    ) {
       retaliateX = 1;
     }
     for (const item of player.tableau || []) {
       const itemText = (item.card.text || '').toLowerCase();
-      if (itemText.includes('retaliate 1') || (item.card as any).keywords?.includes('Retaliate') || (item.card as any).keywords?.includes('Retaliate 1')) {
+      if (
+        itemText.includes('retaliate 1') ||
+        (item.card as any).keywords?.includes('Retaliate') ||
+        (item.card as any).keywords?.includes('Retaliate 1')
+      ) {
         retaliateX += 1;
       }
     }
@@ -724,7 +753,9 @@ export function step7_resolvePostAttackAndRetaliate(
 
   // Discard single-use attack attachments on villain (e.g. Charge 01099)
   if (attackContext.attackerType === 'VILLAIN') {
-    const chargeIdx = (state.villain.attachments || []).findIndex((att) => att.card.code === '01099');
+    const chargeIdx = (state.villain.attachments || []).findIndex(
+      (att) => att.card.code === '01099',
+    );
     if (chargeIdx !== -1) {
       const [chargeAtt] = state.villain.attachments.splice(chargeIdx, 1);
       state.encounterDiscard.push(chargeAtt);

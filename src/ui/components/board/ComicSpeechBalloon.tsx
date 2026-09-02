@@ -7,8 +7,21 @@ interface ComicSpeechBalloonProps {
   fontClass?: string;
 }
 
-export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue, index, fontClass = 'font-dialogue' }) => {
-  const { type, speakerName, speakerAvatar, dialogueQuote, narrativeAction, onomatopoeia, stats, round } = dialogue;
+export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
+  dialogue,
+  index,
+  fontClass = 'font-dialogue',
+}) => {
+  const {
+    type,
+    speakerName,
+    speakerAvatar,
+    dialogueQuote,
+    narrativeAction,
+    onomatopoeia,
+    stats,
+    round,
+  } = dialogue;
 
   // =========================================================================
   // 1. 📜 NARRATOR CAPTION (Classic Stan Lee Golden-Yellow Box)
@@ -35,7 +48,9 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
           </div>
         )}
 
-        <p className={`${fontClass} text-sm sm:text-base font-bold text-comic-black leading-relaxed tracking-wide`}>
+        <p
+          className={`${fontClass} text-sm sm:text-base font-bold text-comic-black leading-relaxed tracking-wide`}
+        >
           {narrativeAction}
         </p>
       </div>
@@ -69,13 +84,17 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
 
           {/* Menacing Shouting Quote */}
           {dialogueQuote && (
-            <div className={`bg-rose-900/90 border-l-4 border-comic-red p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-black text-rose-100 tracking-wide uppercase italic`}>
+            <div
+              className={`bg-rose-900/90 border-l-4 border-comic-red p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-black text-rose-100 tracking-wide uppercase italic`}
+            >
               "{dialogueQuote}"
             </div>
           )}
 
           {/* Action Narrative */}
-          <p className={`${fontClass} text-xs sm:text-sm font-bold text-rose-100 leading-normal mt-1`}>
+          <p
+            className={`${fontClass} text-xs sm:text-sm font-bold text-rose-100 leading-normal mt-1`}
+          >
             {narrativeAction}
           </p>
 
@@ -111,7 +130,8 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
             <div className="flex items-center gap-2">
               <span className="text-lg">{speakerAvatar || '🧑'}</span>
               <span className="font-comic font-bold text-sm text-sky-900 uppercase">
-                {speakerName || 'ALTER-EGO'} <span className="text-xs text-sky-600 font-normal">(THOUGHT)</span>
+                {speakerName || 'ALTER-EGO'}{' '}
+                <span className="text-xs text-sky-600 font-normal">(THOUGHT)</span>
               </span>
             </div>
             <span className="text-sky-500 font-mono text-xs">#{index + 1}</span>
@@ -119,13 +139,17 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
 
           {/* Thought Quote */}
           {dialogueQuote && (
-            <div className={`bg-white p-2.5 rounded-xl border border-sky-200 text-xs sm:text-sm ${fontClass} italic font-bold text-slate-800 my-1.5`}>
+            <div
+              className={`bg-white p-2.5 rounded-xl border border-sky-200 text-xs sm:text-sm ${fontClass} italic font-bold text-slate-800 my-1.5`}
+            >
               💭 "{dialogueQuote}"
             </div>
           )}
 
           {/* Narrative Action */}
-          <p className={`${fontClass} text-xs sm:text-sm text-slate-900 leading-normal font-bold mt-1`}>
+          <p
+            className={`${fontClass} text-xs sm:text-sm text-slate-900 leading-normal font-bold mt-1`}
+          >
             {narrativeAction}
           </p>
 
@@ -168,13 +192,17 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({ dialogue
 
         {/* Hero Speech Quote */}
         {dialogueQuote && (
-          <div className={`bg-sky-50 border-l-4 border-sky-500 p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-bold text-slate-900 tracking-wide`}>
+          <div
+            className={`bg-sky-50 border-l-4 border-sky-500 p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-bold text-slate-900 tracking-wide`}
+          >
             💬 "{dialogueQuote}"
           </div>
         )}
 
         {/* Action Narrative */}
-        <p className={`${fontClass} text-xs sm:text-sm font-bold text-slate-900 leading-normal mt-1`}>
+        <p
+          className={`${fontClass} text-xs sm:text-sm font-bold text-slate-900 leading-normal mt-1`}
+        >
           {narrativeAction}
         </p>
 

@@ -96,13 +96,17 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
     expect(res.result.success).toBe(true);
 
     // War Machine should have taken 2 damage and be exhausted
-    const wmInstance = res.state.players[0].allies.find((a) => a.instanceId === warMachine.instanceId)!;
+    const wmInstance = res.state.players[0].allies.find(
+      (a) => a.instanceId === warMachine.instanceId,
+    )!;
     expect(wmInstance.exhausted).toBe(true);
     expect(wmInstance.tokens?.damage).toBe(2);
 
     // 1 damage dealt to Rhino and 1 damage dealt to minion
     expect(res.state.villain.health).toBe(initialVillainHp - 1);
-    const minionInstance = res.state.players[0].engagedMinions.find((m) => m.instanceId === minion.instanceId)!;
+    const minionInstance = res.state.players[0].engagedMinions.find(
+      (m) => m.instanceId === minion.instanceId,
+    )!;
     expect(minionInstance.tokens?.damage).toBe(1);
 
     // Ready War Machine and trigger again -> takes 2 more damage (4 total = 4 HP max) -> defeated & discarded
@@ -116,8 +120,12 @@ describe('Cost Arrow Mandatory Resolution & Trigger Pipeline (RR v1.8 p. 8, 15, 
 
     expect(res2.result.success).toBe(true);
     // War Machine defeated & discarded
-    expect(res2.state.players[0].allies.some((a) => a.instanceId === warMachine.instanceId)).toBe(false);
-    expect(res2.state.players[0].discard.some((c) => c.instanceId === warMachine.instanceId)).toBe(true);
+    expect(res2.state.players[0].allies.some((a) => a.instanceId === warMachine.instanceId)).toBe(
+      false,
+    );
+    expect(res2.state.players[0].discard.some((c) => c.instanceId === warMachine.instanceId)).toBe(
+      true,
+    );
 
     // Card conservation passes
     expect(() => assertCardConservation(res2.state)).not.toThrow();

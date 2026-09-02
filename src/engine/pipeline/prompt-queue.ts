@@ -10,10 +10,7 @@ import { executeEffect } from '../effects';
 /**
  * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032).
  */
-export function enqueueDecisionPrompt(
-  state: GameState,
-  prompt: PendingDecisionPrompt,
-): GameState {
+export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionPrompt): GameState {
   if (!state.pendingDecisionQueue) {
     state.pendingDecisionQueue = [];
   }
@@ -73,10 +70,7 @@ export function popDecisionPrompt(state: GameState): {
 /**
  * Push an execution frame onto the resolution stack (ADR-0032).
  */
-export function pushExecutionFrame(
-  state: GameState,
-  frame: ExecutionFrame,
-): GameState {
+export function pushExecutionFrame(state: GameState, frame: ExecutionFrame): GameState {
   const nextState = { ...state };
   const stack = nextState.executionStack ? [...nextState.executionStack] : [];
   stack.push(frame);
@@ -148,7 +142,10 @@ export function resolveDecisionPrompt(
   const player = nextState.players.find((p) => p.id === playerId);
   const playerName = player ? player.name : playerId;
 
-  if (isPassOption || (selectedOption && (selectedOption.effect === 'PASS' || selectedOption.id === 'pass'))) {
+  if (
+    isPassOption ||
+    (selectedOption && (selectedOption.effect === 'PASS' || selectedOption.id === 'pass'))
+  ) {
     nextState.log.push({
       id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       timestamp: Date.now(),
@@ -183,14 +180,15 @@ export function resolveDecisionPrompt(
   const syntheticAbility: CardAbility = {
     id: `${prompt.promptId}_${selectedOption!.id}`,
     timing: 'ACTION',
-    steps: (selectedOption as any)?.steps && Array.isArray((selectedOption as any).steps)
-      ? (selectedOption as any).steps
-      : [
-          {
-            effect: selectedOption!.effect || 'RESOLVED',
-            params: selectedOption!.params || {},
-          },
-        ],
+    steps:
+      (selectedOption as any)?.steps && Array.isArray((selectedOption as any).steps)
+        ? (selectedOption as any).steps
+        : [
+            {
+              effect: selectedOption!.effect || 'RESOLVED',
+              params: selectedOption!.params || {},
+            },
+          ],
   };
 
   const effectRes = executeEffect(nextState, syntheticAbility, {

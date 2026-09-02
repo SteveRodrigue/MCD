@@ -30,7 +30,8 @@ export function step1_placeThreat(state: GameState): GameState {
   const playerCount = state.players.length;
 
   // Escalation threat per player + acceleration tokens + side scheme acceleration icons
-  let totalThreatToAdd = state.mainScheme.card.escalationThreat * playerCount + state.accelerationTokens;
+  let totalThreatToAdd =
+    state.mainScheme.card.escalationThreat * playerCount + state.accelerationTokens;
 
   for (const sideScheme of state.sideSchemes) {
     const card = sideScheme.card as SideSchemeCard;
@@ -136,14 +137,22 @@ export function executeMinionAttackAgainstPlayer(
   player: PlayerState,
   options?: CombatOptions,
 ): GameState {
-  const nextState = initiateEnemyAttack(state, { type: 'MINION', card: minion }, player.id, options);
+  const nextState = initiateEnemyAttack(
+    state,
+    { type: 'MINION', card: minion },
+    player.id,
+    options,
+  );
 
   // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
   // When resolved synchronously or immediately without pending prompt
   if (!nextState.pendingDecisionPrompt) {
     const abilities = minion.card.enrichment?.abilities || [];
     for (const ability of abilities) {
-      if (ability.trigger === 'MINION_ATTACKED' || (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')) {
+      if (
+        ability.trigger === 'MINION_ATTACKED' ||
+        (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')
+      ) {
         executeEffect(nextState, ability, { playerId: player.id, sourceCardInstance: minion });
       }
     }
@@ -155,7 +164,11 @@ export function executeMinionAttackAgainstPlayer(
 /**
  * Executes a single minion scheme against an alter-ego.
  */
-export function executeMinionSchemeAgainstPlayer(state: GameState, minion: CardInstance, player: PlayerState): void {
+export function executeMinionSchemeAgainstPlayer(
+  state: GameState,
+  minion: CardInstance,
+  player: PlayerState,
+): void {
   // Check Confused status on Minion (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(minion, StatusCard.CONFUSED)) {
     state.log.push({
@@ -228,20 +241,31 @@ export function executeMinionActivationAgainstPlayer(
  * 1. The villain activates against the player (Attack if hero, Scheme if alter-ego).
  * 2. Each minion engaged with that player activates against the player (Attack if hero, Scheme if alter-ego).
  */
-export function step2_villainAndMinionActivations(state: GameState, options?: CombatOptions): GameState {
+export function step2_villainAndMinionActivations(
+  state: GameState,
+  options?: CombatOptions,
+): GameState {
   if (state.winner) return state;
   state.phase = GamePhase.VILLAIN_PHASE;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 
   if (!(state as any).pendingActivations) {
-    const activations: { type: 'VILLAIN' | 'MINION'; playerId: string; minionInstanceId?: string }[] = [];
+    const activations: {
+      type: 'VILLAIN' | 'MINION';
+      playerId: string;
+      minionInstanceId?: string;
+    }[] = [];
     for (let i = 0; i < state.players.length; i++) {
       const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
       const player = state.players[playerIdx];
 
       activations.push({ type: 'VILLAIN', playerId: player.id });
       for (const minion of player.engagedMinions) {
-        activations.push({ type: 'MINION', playerId: player.id, minionInstanceId: minion.instanceId });
+        activations.push({
+          type: 'MINION',
+          playerId: player.id,
+          minionInstanceId: minion.instanceId,
+        });
       }
     }
     (state as any).pendingActivations = activations;
@@ -369,7 +393,9 @@ export function step5_revealEncounterCards(state: GameState): GameState {
 
       if (card.type === CardType.MINION) {
         // Check Toughness keyword
-        const hasToughness = (card.traits || []).includes('Toughness') || (card.text || '').toLowerCase().includes('toughness');
+        const hasToughness =
+          (card.traits || []).includes('Toughness') ||
+          (card.text || '').toLowerCase().includes('toughness');
         if (hasToughness) {
           if (!cardInstance.statusCards) cardInstance.statusCards = [];
           if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {
@@ -389,12 +415,16 @@ export function step5_revealEncounterCards(state: GameState): GameState {
         const abilities = card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+            executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: cardInstance,
+            });
           }
         }
       } else if (card.type === CardType.SIDE_SCHEME) {
         const sideSchemeCard = card as SideSchemeCard;
-        const baseThreat = sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+        const baseThreat =
+          sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
         state.sideSchemes.push({
           instanceId: cardInstance.instanceId,
           card: sideSchemeCard,
@@ -410,7 +440,10 @@ export function step5_revealEncounterCards(state: GameState): GameState {
         const abilities = card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+            executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: cardInstance,
+            });
           }
         }
       } else if (card.type === CardType.ATTACHMENT) {
@@ -425,7 +458,10 @@ export function step5_revealEncounterCards(state: GameState): GameState {
         const abilities = card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+            executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: cardInstance,
+            });
           }
         }
       } else {
@@ -433,7 +469,10 @@ export function step5_revealEncounterCards(state: GameState): GameState {
         const abilities = card.enrichment?.abilities || [];
         for (const ability of abilities) {
           if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, { playerId: player.id, sourceCardInstance: cardInstance });
+            executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: cardInstance,
+            });
           }
         }
         state.encounterDiscard.push(cardInstance);

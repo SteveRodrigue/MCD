@@ -106,13 +106,20 @@ describe('Universal Card Conservation & Attachment Deduplication (RR v1.8 p. 5, 
       playerId: 'p1',
       cardInstanceId: webbedUp.instanceId,
       targetInstanceId: minion.instanceId,
-      paymentCardInstanceIds: [payment.instanceId, payment2.instanceId, payment3.instanceId, payment4.instanceId],
+      paymentCardInstanceIds: [
+        payment.instanceId,
+        payment2.instanceId,
+        payment3.instanceId,
+        payment4.instanceId,
+      ],
     });
 
     expect(res.result.success).toBe(true);
 
     // Verify minion has exactly 1 attached card
-    const targetMinion = res.state.players[0].engagedMinions.find((m) => m.instanceId === minion.instanceId)!;
+    const targetMinion = res.state.players[0].engagedMinions.find(
+      (m) => m.instanceId === minion.instanceId,
+    )!;
     expect(targetMinion.attachments).toHaveLength(1);
     expect(targetMinion.attachments?.[0]?.card.code).toBe('01009');
 

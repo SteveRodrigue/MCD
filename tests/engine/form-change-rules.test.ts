@@ -19,7 +19,13 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'She-Hulk', hero: sheHulkHero, alterEgo: jenniferWaltersAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'She-Hulk',
+          hero: sheHulkHero,
+          alterEgo: jenniferWaltersAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -54,7 +60,11 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
           name: 'She-Hulk',
           hero: sheHulkHero,
           alterEgo: jenniferWaltersAlterEgo,
-          deckCards: [cardCatalog.getCard('01021')!, cardCatalog.getCard('01024')!, cardCatalog.getCard('01026')!],
+          deckCards: [
+            cardCatalog.getCard('01021')!,
+            cardCatalog.getCard('01024')!,
+            cardCatalog.getCard('01026')!,
+          ],
         },
       ],
       villain: cardCatalog.getCard('01094') as any,

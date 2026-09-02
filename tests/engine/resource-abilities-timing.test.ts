@@ -33,7 +33,9 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
     // In Alter-Ego form: Web-Shooter must NOT appear in board actions
     let legal = getLegalActionsForPlayer(state, player.id);
-    let webShooterAction = legal.boardActions.find((a) => a.id.includes('01008') || a.headline.includes('Web-Shooter'));
+    let webShooterAction = legal.boardActions.find(
+      (a) => a.id.includes('01008') || a.headline.includes('Web-Shooter'),
+    );
     expect(webShooterAction).toBeUndefined();
 
     // Flip to Hero form
@@ -42,7 +44,9 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
     // In Hero form: Web-Shooter must STILL NOT appear in standalone board actions (only during payment)
     legal = getLegalActionsForPlayer(heroRes.state, player.id);
-    webShooterAction = legal.boardActions.find((a) => a.id.includes('01008') || a.headline.includes('Web-Shooter'));
+    webShooterAction = legal.boardActions.find(
+      (a) => a.id.includes('01008') || a.headline.includes('Web-Shooter'),
+    );
     expect(webShooterAction).toBeUndefined();
   });
 
@@ -82,8 +86,13 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
       generatorInstanceIds: [webShooter.instanceId],
     });
 
-    expect(res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.exhausted).toBe(true);
-    expect(res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.tokens?.counters).toBe(2);
+    expect(
+      res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.exhausted,
+    ).toBe(true);
+    expect(
+      res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.tokens
+        ?.counters,
+    ).toBe(2);
   });
 
   it('3. Excludes Pepper Potts (01033) from board turn actions', () => {
@@ -107,13 +116,17 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
 
     // In Alter-Ego
     let legal = getLegalActionsForPlayer(state, player.id);
-    let pepperAction = legal.boardActions.find((a) => a.id.includes('01033') || a.headline.includes('Pepper Potts'));
+    let pepperAction = legal.boardActions.find(
+      (a) => a.id.includes('01033') || a.headline.includes('Pepper Potts'),
+    );
     expect(pepperAction).toBeUndefined();
 
     // In Hero
     const heroRes = dispatchAction(state, { type: 'CHANGE_FORM', playerId: player.id });
     legal = getLegalActionsForPlayer(heroRes.state, player.id);
-    pepperAction = legal.boardActions.find((a) => a.id.includes('01033') || a.headline.includes('Pepper Potts'));
+    pepperAction = legal.boardActions.find(
+      (a) => a.id.includes('01033') || a.headline.includes('Pepper Potts'),
+    );
     expect(pepperAction).toBeUndefined();
   });
 
@@ -150,6 +163,8 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
     });
 
     // In Alter-Ego, Web-Shooter is HERO_RESOURCE and cannot be used
-    expect(res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.exhausted).toBeFalsy();
+    expect(
+      res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)?.exhausted,
+    ).toBeFalsy();
   });
 });

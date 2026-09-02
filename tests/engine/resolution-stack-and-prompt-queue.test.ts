@@ -132,7 +132,12 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
         sourceCardName: 'Emergency',
         isVoluntary: true,
         options: [
-          { id: 'use_emergency', label: 'Use Emergency', effect: 'REMOVE_THREAT', params: { amount: 1 } },
+          {
+            id: 'use_emergency',
+            label: 'Use Emergency',
+            effect: 'REMOVE_THREAT',
+            params: { amount: 1 },
+          },
         ],
       });
 
@@ -237,7 +242,10 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       expect(effectRes.success).toBe(true);
       expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
 
-      const resolved = resolveDefenderDeclaration(effectRes.state, { type: 'UNDEFENDED', playerId: 'p1' });
+      const resolved = resolveDefenderDeclaration(effectRes.state, {
+        type: 'UNDEFENDED',
+        playerId: 'p1',
+      });
       // Villain attacks player (Rhino base ATK = 2)
       expect(resolved.players[0].health).toBeLessThan(initialHp);
     });

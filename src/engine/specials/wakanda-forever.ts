@@ -9,11 +9,14 @@ export const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
 /**
  * Returns all in-play Black Panther upgrades controlled by the specified player in their tableau (ADR-0038).
  */
-export function getPlayerBlackPantherUpgrades(playerState: { tableau: CardInstance[] }): CardInstance[] {
-  return (playerState.tableau || []).filter((t) =>
-    t.card.traits?.includes('Black Panther') ||
-    BLACK_PANTHER_UPGRADE_CODES.includes(t.card.code) ||
-    t.card.enrichment?.abilities?.some((a) => a.timing === 'SPECIAL'),
+export function getPlayerBlackPantherUpgrades(playerState: {
+  tableau: CardInstance[];
+}): CardInstance[] {
+  return (playerState.tableau || []).filter(
+    (t) =>
+      t.card.traits?.includes('Black Panther') ||
+      BLACK_PANTHER_UPGRADE_CODES.includes(t.card.code) ||
+      t.card.enrichment?.abilities?.some((a) => a.timing === 'SPECIAL'),
   );
 }
 
@@ -49,7 +52,9 @@ export function resolveSingleWakandaUpgrade(
       category: 'ability',
       key: 'special.energy_daggers',
       params: { player: player.name, amount: dmg, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep ? 'ENERGY DAGGERS FINISHER! (2 DMG AOE)' : 'ENERGY DAGGERS! (1 DMG AOE)',
+      onomatopoeia: isFinalStep
+        ? 'ENERGY DAGGERS FINISHER! (2 DMG AOE)'
+        : 'ENERGY DAGGERS! (1 DMG AOE)',
     });
   } else if (code === '01047') {
     // 2. Panther Claws: 2 damage to enemy (4 if final)
@@ -100,7 +105,9 @@ export function resolveSingleWakandaUpgrade(
       category: 'scheme',
       key: 'special.tactical_genius',
       params: { player: player.name, amount: thw, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep ? 'TACTICAL GENIUS FINISHER! (2 THREAT)' : 'TACTICAL GENIUS! (1 THREAT)',
+      onomatopoeia: isFinalStep
+        ? 'TACTICAL GENIUS FINISHER! (2 THREAT)'
+        : 'TACTICAL GENIUS! (1 THREAT)',
     });
   } else if (code === '01049') {
     // 4. Panther Suit: Move 1 damage from identity to enemy (2 if final)
@@ -116,7 +123,9 @@ export function resolveSingleWakandaUpgrade(
       category: 'ability',
       key: 'special.panther_suit',
       params: { player: player.name, amount: moveAmt, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep ? 'PANTHER SUIT FINISHER! (MOVE 2 DMG)' : 'PANTHER SUIT! (MOVE 1 DMG)',
+      onomatopoeia: isFinalStep
+        ? 'PANTHER SUIT FINISHER! (MOVE 2 DMG)'
+        : 'PANTHER SUIT! (MOVE 1 DMG)',
     });
   }
 }
@@ -133,12 +142,23 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     const availableUpgrades = getPlayerBlackPantherUpgrades(player);
 
     if (availableUpgrades.length === 0) {
-      return { state, success: false, error: 'No Black Panther upgrades in play to resolve Wakanda Forever!' };
+      return {
+        state,
+        success: false,
+        error: 'No Black Panther upgrades in play to resolve Wakanda Forever!',
+      };
     }
 
     // 1. Single upgrade in play: Immediately resolves with Finisher bonus
     if (availableUpgrades.length === 1) {
-      resolveSingleWakandaUpgrade(state, availableUpgrades[0], player.id, true, payload?.targetEnemyId, payload?.targetSchemeId);
+      resolveSingleWakandaUpgrade(
+        state,
+        availableUpgrades[0],
+        player.id,
+        true,
+        payload?.targetEnemyId,
+        payload?.targetSchemeId,
+      );
       return {
         state,
         success: true,
@@ -168,7 +188,14 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       for (let i = 0; i < orderedUpgrades.length; i++) {
         const upgrade = orderedUpgrades[i];
         const isFinal = i === orderedUpgrades.length - 1;
-        resolveSingleWakandaUpgrade(state, upgrade, player.id, isFinal, payload.targetEnemyId, payload.targetSchemeId);
+        resolveSingleWakandaUpgrade(
+          state,
+          upgrade,
+          player.id,
+          isFinal,
+          payload.targetEnemyId,
+          payload.targetSchemeId,
+        );
       }
 
       const onomatopoeia = `⚡ WAKANDA FOREVER! (${orderedUpgrades.length} UPGRADES RESOLVED) ⚡`;
@@ -186,7 +213,8 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       promptId: `prompt_wf_${Date.now()}`,
       playerId: player.id,
       title: 'Wakanda Forever! Sequence Order',
-      description: 'Select the resolution order for your Black Panther upgrades. The last upgrade gets its boosted Finisher bonus!',
+      description:
+        'Select the resolution order for your Black Panther upgrades. The last upgrade gets its boosted Finisher bonus!',
       sourceCardName: 'Wakanda Forever!',
       options: availableUpgrades.map((u) => ({
         id: u.instanceId,

@@ -1,9 +1,5 @@
 import { CardCatalog } from '../../data/importer/card-loader';
-import {
-  VillainCard,
-  MainSchemeCard,
-  NormalizedCard,
-} from '../models';
+import { VillainCard, MainSchemeCard, NormalizedCard } from '../models';
 
 export type LegacyScenarioDefinition = {
   id: string;
@@ -13,13 +9,13 @@ export type LegacyScenarioDefinition = {
   recommendedModularSets: string[];
   stages: {
     standard: string[]; // e.g. ['01094', '01095'] -> Rhino I, Rhino II
-    expert: string[];   // e.g. ['01095', '01096'] -> Rhino II, Rhino III
+    expert: string[]; // e.g. ['01095', '01096'] -> Rhino II, Rhino III
   };
   mainSchemeCode: string; // e.g. '01097b' -> The Break-In!
   setupInstructions: string;
   createEncounterDeck: (
     catalog: CardCatalog,
-    modularSets?: string[]
+    modularSets?: string[],
   ) => {
     villain: VillainCard;
     mainScheme: MainSchemeCard;
@@ -45,7 +41,8 @@ export const MODULAR_ENCOUNTER_SETS: ModularEncounterSetInfo[] = [
     code: 'masters_of_evil',
     name: 'Masters of Evil',
     cardCount: 7,
-    description: 'A villainous alliance featuring Baron Zemo, Radioactive Man, Whirlwind, Tiger Shark, and Melter.',
+    description:
+      'A villainous alliance featuring Baron Zemo, Radioactive Man, Whirlwind, Tiger Shark, and Melter.',
   },
   {
     code: 'under_attack',
@@ -87,7 +84,7 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
     recommendedModularSets: ['bomb_scare'],
     stages: {
       standard: ['01094', '01095'], // Rhino I & II
-      expert: ['01095', '01096'],   // Rhino II & III
+      expert: ['01095', '01096'], // Rhino II & III
     },
     mainSchemeCode: '01097b',
     setupInstructions:
@@ -104,7 +101,7 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
       const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
 
       const encounterCards = [...rhinoCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c)
+        Array(c.quantity).fill(c),
       );
 
       return { villain, mainScheme, encounterCards };
@@ -119,7 +116,7 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
     recommendedModularSets: ['masters_of_evil'],
     stages: {
       standard: ['01113', '01114'], // Klaw I & II
-      expert: ['01114', '01115'],   // Klaw II & III
+      expert: ['01114', '01115'], // Klaw II & III
     },
     mainSchemeCode: '01116b',
     setupInstructions:
@@ -136,7 +133,7 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
       const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
 
       const encounterCards = [...klawCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c)
+        Array(c.quantity).fill(c),
       );
 
       return { villain, mainScheme, encounterCards };
@@ -151,7 +148,7 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
     recommendedModularSets: ['under_attack'],
     stages: {
       standard: ['01134', '01135'], // Ultron I & II
-      expert: ['01135', '01136'],   // Ultron II & III
+      expert: ['01135', '01136'], // Ultron II & III
     },
     mainSchemeCode: '01137b',
     setupInstructions:
@@ -162,13 +159,15 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
 
       const ultronCards = catalog
         .getCardsBySet('ultron')
-        .filter((c) => c.type !== 'villain' && c.type !== 'main_scheme' && c.type !== 'environment');
+        .filter(
+          (c) => c.type !== 'villain' && c.type !== 'main_scheme' && c.type !== 'environment',
+        );
       const standardCards = catalog.getCardsBySet('standard');
 
       const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
 
       const encounterCards = [...ultronCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c)
+        Array(c.quantity).fill(c),
       );
 
       return { villain, mainScheme, encounterCards };

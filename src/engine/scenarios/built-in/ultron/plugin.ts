@@ -82,7 +82,9 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     const startingStageCode = this.definition.villainSetup.stages[difficulty][0];
     const villainCard = cardCatalog.getCard(startingStageCode) as VillainCard;
     if (!villainCard) {
-      throw new Error(`Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`);
+      throw new Error(
+        `Villain card '${startingStageCode}' not found in catalog for scenario '${this.definition.id}'.`,
+      );
     }
 
     const hpPerPlayer = this.definition.villainSetup.healthPerPlayer[startingStageCode] || 17;
@@ -108,7 +110,9 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       throw new Error(`Main scheme stage '1B' not found in catalog for scenario 'ultron'.`);
     }
 
-    const targetThreat = (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) * numPlayers;
+    const targetThreat =
+      (mainSchemeCard.targetThreat || this.definition.mainSchemeSetup.targetThreatPerPlayer) *
+      numPlayers;
     const initialMainScheme: MainSchemeState = {
       instanceId: `main_scheme_${Date.now()}_${mainSchemeCard.code}`,
       card: mainSchemeCard,
@@ -122,7 +126,8 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     state.mainScheme = initialMainScheme;
 
     // 3. Build Encounter Deck based on Difficulty
-    const modularSetCodes = options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
+    const modularSetCodes =
+      options.modularSetCodes || this.definition.modularEncounterSets.defaults[difficulty];
     const allEncounterCards: NormalizedCard[] = [];
 
     // Add scenario cards (Ultron set)
@@ -234,7 +239,8 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     victory?: boolean;
   } {
-    const villain = state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
+    const villain =
+      state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
     const numPlayers = state.players.length || 1;

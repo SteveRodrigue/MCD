@@ -30,8 +30,12 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       if (c.type === 'hero' || c.type === 'alter_ego') return [];
       return Array(c.quantity).fill(c);
     });
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
     const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
@@ -80,7 +84,9 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       // Deals 1 damage to villain
       expect(res.state.villain.health).toBe(initialVillainHealth - 1);
       // Black Cat took 0 consequential damage
-      const inPlayAlly = res.state.players[0].allies.find((a) => a.instanceId === blackCatInst.instanceId);
+      const inPlayAlly = res.state.players[0].allies.find(
+        (a) => a.instanceId === blackCatInst.instanceId,
+      );
       expect(inPlayAlly).toBeDefined();
       expect(inPlayAlly?.tokens?.damage).toBe(0);
       expect(inPlayAlly?.exhausted).toBe(true);
@@ -112,7 +118,9 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       // Base THW 1 + 1 (side scheme) = 2 threat removed -> 5 - 2 = 3
       expect(res.state.mainScheme.threat).toBe(3);
       // Jessica took 1 consequential damage
-      const inPlayJessica = res.state.players[0].allies.find((a) => a.instanceId === jessicaInst.instanceId);
+      const inPlayJessica = res.state.players[0].allies.find(
+        (a) => a.instanceId === jessicaInst.instanceId,
+      );
       expect(inPlayJessica?.tokens?.damage).toBe(1);
     });
   });
@@ -205,7 +213,12 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
         type: 'PLAY_CARD',
         playerId: 'p1',
         cardInstanceId: furyInst.instanceId,
-        paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId, pay4.instanceId],
+        paymentCardInstanceIds: [
+          pay1.instanceId,
+          pay2.instanceId,
+          pay3.instanceId,
+          pay4.instanceId,
+        ],
       });
 
       expect(playRes.result.success).toBe(true);

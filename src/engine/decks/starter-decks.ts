@@ -44,11 +44,11 @@ export function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog)
   const heroSetCode = hero.setCode || '';
 
   // Find matching Alter-Ego card from hero set
-  const alterEgo = (hero.backLink
-    ? catalog.getCard(hero.backLink)
-    : catalog.getCardsBySet(heroSetCode).find((c) => c.type === CardType.ALTER_EGO)) as
-    | AlterEgoCard
-    | undefined;
+  const alterEgo = (
+    hero.backLink
+      ? catalog.getCard(hero.backLink)
+      : catalog.getCardsBySet(heroSetCode).find((c) => c.type === CardType.ALTER_EGO)
+  ) as AlterEgoCard | undefined;
 
   if (!alterEgo) {
     throw new Error(`Alter-Ego identity card not found in catalog for hero set ${heroSetCode}`);

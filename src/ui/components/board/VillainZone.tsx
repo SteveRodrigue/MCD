@@ -1,6 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Skull, AlertTriangle, Layers, Flame, X, Eye, ArrowDownUp, Filter } from 'lucide-react';
-import { VillainState, MainSchemeState, SideSchemeState, CardInstance, StatusCard, NormalizedCard } from '../../../engine/models';
+import {
+  VillainState,
+  MainSchemeState,
+  SideSchemeState,
+  CardInstance,
+  StatusCard,
+  NormalizedCard,
+} from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { useGameSettings } from '../../context/GameSettingsContext';
@@ -31,10 +38,12 @@ export function getEncounterSetName(card: NormalizedCard): string {
   if (setCode === 'doomsday_chair') return 'The Doomsday Chair';
   if (setCode.includes('spider') || setCode.includes('obligation')) return 'Player Obligations';
 
-  return setCode
-    .split('_')
-    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ') || 'Encounter Set';
+  return (
+    setCode
+      .split('_')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ') || 'Encounter Set'
+  );
 }
 
 function getCardTypeName(card: NormalizedCard): string {
@@ -145,7 +154,9 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 }`}
               >
                 <Layers className="w-5 h-5 text-comic-yellow mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-comic text-lg text-white leading-none">{encounterDeck.length}</span>
+                <span className="font-comic text-lg text-white leading-none">
+                  {encounterDeck.length}
+                </span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase">DECK</span>
               </div>
             </div>
@@ -158,7 +169,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   className="relative cursor-pointer group"
                   title="Inspect Encounter Discard Pile"
                 >
-                  <CardView card={topDiscard.card} size="sm" showTokens={false} enableHoverZoom={true} />
+                  <CardView
+                    card={topDiscard.card}
+                    size="sm"
+                    showTokens={false}
+                    enableHoverZoom={true}
+                  />
                   <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white font-comic text-xs px-1.5 py-0.5 rounded-full border border-comic-black shadow-comic-sm">
                     {encounterDiscard.length}
                   </span>
@@ -267,7 +283,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
             {/* Main Scheme Card with Vertical Threat Meter on the Right */}
             <div className="flex items-stretch gap-2.5 pt-0.5">
-              <CardView card={mainScheme.card} size="md" showTokens={false} enableHoverZoom={true} />
+              <CardView
+                card={mainScheme.card}
+                size="md"
+                showTokens={false}
+                enableHoverZoom={true}
+              />
 
               {/* Vertical Threat Meter Gauge on the Right */}
               <div className="flex flex-col items-center justify-between h-[176px] py-0.5 shrink-0">
@@ -336,7 +357,8 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-slate-600">
-                    Sort view by Deck Order, Card Type, or Encounter Set. Each card displays its Encounter Set label below.
+                    Sort view by Deck Order, Card Type, or Encounter Set. Each card displays its
+                    Encounter Set label below.
                   </p>
                 </div>
               </div>
@@ -393,12 +415,14 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                   <button
                     onClick={() =>
                       setDeckDirection((prev) =>
-                        prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom'
+                        prev === 'top_to_bottom' ? 'bottom_to_top' : 'top_to_bottom',
                       )
                     }
                     className="font-comic text-xs px-3 py-1 rounded border border-comic-black bg-white hover:bg-slate-200 shadow-comic-sm font-bold transition-all cursor-pointer"
                   >
-                    {deckDirection === 'top_to_bottom' ? '⬆️ Top to Bottom (#1 ⟶ #N)' : '⬇️ Bottom to Top (#N ⟶ #1)'}
+                    {deckDirection === 'top_to_bottom'
+                      ? '⬆️ Top to Bottom (#1 ⟶ #N)'
+                      : '⬇️ Bottom to Top (#N ⟶ #1)'}
                   </button>
                 </div>
               )}
@@ -408,7 +432,10 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             {groupedDeckItems ? (
               <div className="space-y-6 py-2">
                 {Object.entries(groupedDeckItems).map(([groupName, groupItems]) => (
-                  <div key={groupName} className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-300">
+                  <div
+                    key={groupName}
+                    className="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-300"
+                  >
                     <div className="flex items-center justify-between border-b border-slate-300 pb-1.5">
                       <span className="font-comic text-sm text-comic-black uppercase">
                         {groupName} ({groupItems.length} Cards)
@@ -418,7 +445,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                       {groupItems.map(({ instance, originalIndex, encounterSet }) => (
                         <div key={instance.instanceId} className="flex flex-col items-center gap-1">
                           <div className="relative">
-                            <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                            <CardView
+                              card={instance.card}
+                              instance={instance}
+                              size="sm"
+                              enableHoverZoom={true}
+                            />
                             <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                               #{originalIndex + 1}
                             </span>
@@ -440,7 +472,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
                 {processedDeckItems.map(({ instance, originalIndex, encounterSet }) => (
                   <div key={instance.instanceId} className="flex flex-col items-center gap-1">
                     <div className="relative">
-                      <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                      <CardView
+                        card={instance.card}
+                        instance={instance}
+                        size="sm"
+                        enableHoverZoom={true}
+                      />
                       <span className="absolute -top-2 -left-2 bg-slate-900 text-comic-yellow font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                         #{originalIndex + 1}
                       </span>
@@ -494,7 +531,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               {encounterDiscard.map((cardInst, idx) => (
                 <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
                   <div className="relative">
-                    <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
+                    <CardView
+                      card={cardInst.card}
+                      instance={cardInst}
+                      size="sm"
+                      enableHoverZoom={true}
+                    />
                     <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
                       #{idx + 1}
                     </span>

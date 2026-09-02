@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import {
-  GameState,
-  HeroCard,
-  AlterEgoCard,
-  VillainCard,
-  MainSchemeCard,
-} from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import {
   drawEncounterCard,
@@ -134,10 +128,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       state.encounterDeck = [chargeCard, minionCard];
       state.encounterDiscard = [];
 
-      const result = discardFromEncounterDeckUntil(
-        state,
-        (c) => c.card.code === '01108',
-      );
+      const result = discardFromEncounterDeckUntil(state, (c) => c.card.code === '01108');
 
       expect(result.found).toBeDefined();
       expect(result.found?.card.code).toBe('01108');
@@ -154,10 +145,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       state.encounterDiscard = [];
       state.accelerationTokens = 0;
 
-      const result = discardFromEncounterDeckUntil(
-        state,
-        (c) => c.card.type === 'minion',
-      );
+      const result = discardFromEncounterDeckUntil(state, (c) => c.card.type === 'minion');
 
       // Loop terminated: target wasn't found
       expect(result.found).toBeNull();
@@ -175,11 +163,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.discard = [];
       player.dealtEncounterCards = [];
 
-      const result = discardFromPlayerDeckUntil(
-        state,
-        'p1',
-        (c) => c.card.type === 'ally',
-      );
+      const result = discardFromPlayerDeckUntil(state, 'p1', (c) => c.card.type === 'ally');
 
       // Loop terminated: target wasn't found
       expect(result.found).toBeNull();

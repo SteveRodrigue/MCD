@@ -66,12 +66,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       const twoBoostCard = cardCatalog.getCard('01103')!;
       state.encounterDeck = [createCardInstance(twoBoostCard), ...state.encounterDeck];
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Rhino Base ATK 2 + 2 Boost icons = 4 total damage
       const expectedDamage = 2 + (twoBoostCard.boostIcons || 0);
@@ -87,16 +82,15 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
 
       const boost1 = cardCatalog.getCard('01103')!; // 2 boost icons
       const boost2 = cardCatalog.getCard('01103')!; // 2 boost icons
-      state.encounterDeck = [createCardInstance(boost1), createCardInstance(boost2), ...state.encounterDeck];
+      state.encounterDeck = [
+        createCardInstance(boost1),
+        createCardInstance(boost2),
+        ...state.encounterDeck,
+      ];
 
       const initialHp = state.players[0].health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Klaw deals 2 boost cards: Klaw base ATK 0 + 2 + 2 = 4 total damage
       expect(state.players[0].health).toBe(initialHp - 4);
@@ -104,7 +98,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
   });
 
   describe('★ Star Boost Abilities Execution & Boost Chaining', () => {
-    it('executes Titania\'s Fury (01164) dynamic boost chaining: gives +1 additional boost card', () => {
+    it("executes Titania's Fury (01164) dynamic boost chaining: gives +1 additional boost card", () => {
       const titaniaFuryCard = cardCatalog.getCard('01164')!; // Star boost gives +1 boost card (1 boost icon)
       const followUpBoost = cardCatalog.getCard('01103')!; // 2 boost icons
 
@@ -116,12 +110,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
 
       const initialHp = state.players[0].health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Rhino base ATK 2 + Titania's Fury boost (1) + Follow-up boost (2) = 5 damage total!
       expect(state.players[0].health).toBe(initialHp - 5);
@@ -136,12 +125,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       const sweepingSwoopCard = cardCatalog.getCard('01168')!;
       state.encounterDeck = [createCardInstance(sweepingSwoopCard), ...state.encounterDeck];
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       expect(state.players[0].statusCards).toContain(StatusCard.STUNNED);
     });
@@ -154,16 +138,15 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       const electricWhipCard = cardCatalog.getCard('01173')!;
       state.encounterDeck = [createCardInstance(electricWhipCard), ...state.encounterDeck];
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Upgrade discarded from tableau to discard pile
-      expect(state.players[0].tableau.some((t) => t.instanceId === upgradeInst.instanceId)).toBe(false);
-      expect(state.players[0].discard.some((c) => c.instanceId === upgradeInst.instanceId)).toBe(true);
+      expect(state.players[0].tableau.some((t) => t.instanceId === upgradeInst.instanceId)).toBe(
+        false,
+      );
+      expect(state.players[0].discard.some((c) => c.instanceId === upgradeInst.instanceId)).toBe(
+        true,
+      );
     });
 
     it('executes Kree Manipulator (01178) boost ability to place 1 threat on main scheme', () => {
@@ -172,12 +155,7 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       const kreeManipulatorCard = cardCatalog.getCard('01178')!;
       state.encounterDeck = [createCardInstance(kreeManipulatorCard), ...state.encounterDeck];
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // 1 threat added to main scheme from Star Boost
       expect(state.mainScheme.threat).toBe(initialThreat + 1);

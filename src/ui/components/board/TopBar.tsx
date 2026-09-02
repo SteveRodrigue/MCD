@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { RefreshCw, BookOpen, Sparkles, Settings, Wrench, Crown, Compass, Newspaper } from 'lucide-react';
+import {
+  RefreshCw,
+  BookOpen,
+  Sparkles,
+  Settings,
+  Wrench,
+  Crown,
+  Compass,
+  Newspaper,
+} from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { OptionsMenu } from './OptionsMenu';
@@ -49,7 +58,9 @@ export const TopBar: React.FC<TopBarProps> = ({
                 : 'bg-rose-600 text-white'
             }`}
           >
-            {gameState.phase === GamePhase.PLAYER_PHASE ? 'HEROES ASSEMBLE! (PLAYER PHASE)' : 'VILLAIN PHASE'}
+            {gameState.phase === GamePhase.PLAYER_PHASE
+              ? 'HEROES ASSEMBLE! (PLAYER PHASE)'
+              : 'VILLAIN PHASE'}
           </div>
         </div>
 
@@ -82,8 +93,12 @@ export const TopBar: React.FC<TopBarProps> = ({
                         : `Jump to Seat ${idx + 1}`
                   }
                 >
-                  {isFirstPlayer && <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />}
-                  <span>Seat {idx + 1}: {p.activeFormCard.name}</span>
+                  {isFirstPlayer && (
+                    <Crown className="w-3.5 h-3.5 text-comic-yellow shrink-0 fill-comic-yellow" />
+                  )}
+                  <span>
+                    Seat {idx + 1}: {p.activeFormCard.name}
+                  </span>
                   {isActiveTurn && (
                     <span className="text-[9px] bg-comic-yellow text-comic-black px-1 rounded font-black">
                       TURN
@@ -106,12 +121,12 @@ export const TopBar: React.FC<TopBarProps> = ({
               title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Hover or Click)"
             >
               <Newspaper className="w-4 h-4 text-slate-900" />
-              <span className="hidden md:inline font-serif font-black uppercase tracking-tight">DAILY BUGLE</span>
+              <span className="hidden md:inline font-serif font-black uppercase tracking-tight">
+                DAILY BUGLE
+              </span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold border border-slate-900 ${
-                  legalActionCount > 0
-                    ? 'bg-comic-red text-white'
-                    : 'bg-slate-300 text-slate-700'
+                  legalActionCount > 0 ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-700'
                 }`}
               >
                 {legalActionCount}

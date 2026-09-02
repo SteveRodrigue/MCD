@@ -19,10 +19,31 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
   });
 
   it('looks at top 3 cards with Trait: Tech filter (1 Tech, 2 non-Tech): prompts only for Tech card and discards all non-selected looked cards', () => {
-    const techCard: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'tech_a', name: 'Arc Reactor', type: CardType.UPGRADE, traits: ['Tech'] };
-    const nonTech1: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'event_b', name: 'Repulsor Blast', type: CardType.EVENT, traits: ['Attack'] };
-    const nonTech2: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'event_c', name: 'First Aid', type: CardType.EVENT };
-    const deckD: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_d', name: 'Card Delta' };
+    const techCard: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'tech_a',
+      name: 'Arc Reactor',
+      type: CardType.UPGRADE,
+      traits: ['Tech'],
+    };
+    const nonTech1: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'event_b',
+      name: 'Repulsor Blast',
+      type: CardType.EVENT,
+      traits: ['Attack'],
+    };
+    const nonTech2: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'event_c',
+      name: 'First Aid',
+      type: CardType.EVENT,
+    };
+    const deckD: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_d',
+      name: 'Card Delta',
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -109,10 +130,26 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
   });
 
   it('looks at top 3 cards with Trait: Tech filter (0 Tech cards): automatically discards all 3 looked cards', () => {
-    const cardA: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_a', name: 'Card Alpha' };
-    const cardB: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_b', name: 'Card Beta' };
-    const cardC: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_c', name: 'Card Gamma' };
-    const cardD: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_d', name: 'Card Delta' };
+    const cardA: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_a',
+      name: 'Card Alpha',
+    };
+    const cardB: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_b',
+      name: 'Card Beta',
+    };
+    const cardC: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_c',
+      name: 'Card Gamma',
+    };
+    const cardD: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_d',
+      name: 'Card Delta',
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -186,9 +223,22 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
   });
 
   it('searches entire deck for a specific named card and leaves all other cards in deck untouched (unselectedDestination: null, shuffleAfter: true)', () => {
-    const shieldCard: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'cap_shield', name: "Captain America's Shield", type: CardType.UPGRADE };
-    const filler1: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'filler_1', name: 'Filler 1' };
-    const filler2: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'filler_2', name: 'Filler 2' };
+    const shieldCard: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'cap_shield',
+      name: "Captain America's Shield",
+      type: CardType.UPGRADE,
+    };
+    const filler1: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'filler_1',
+      name: 'Filler 1',
+    };
+    const filler2: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'filler_2',
+      name: 'Filler 2',
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -260,8 +310,18 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
   });
 
   it('searches deck for a Black Panther upgrade and puts it directly into tableau (T Challa King of Wakanda Setup)', () => {
-    const bpSuit: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: '01046', name: 'Panther Spacesuit', type: CardType.UPGRADE, traits: ['Black Panther', 'Armor'] };
-    const filler1: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'filler_1', name: 'Filler 1' };
+    const bpSuit: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: '01046',
+      name: 'Panther Spacesuit',
+      type: CardType.UPGRADE,
+      traits: ['Black Panther', 'Armor'],
+    };
+    const filler1: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'filler_1',
+      name: 'Filler 1',
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -329,8 +389,19 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
   });
 
   it('searches encounter deck for a Masters of Evil minion and puts it into play (Masters of Evil Encounter Side Scheme)', () => {
-    const minionTigerShark: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'tiger_shark', name: 'Tiger Shark', type: CardType.MINION, traits: ['Masters of Evil'] };
-    const encounterTreachery: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'enc_treachery', name: 'Stampede', type: CardType.TREACHERY };
+    const minionTigerShark: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'tiger_shark',
+      name: 'Tiger Shark',
+      type: CardType.MINION,
+      traits: ['Masters of Evil'],
+    };
+    const encounterTreachery: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'enc_treachery',
+      name: 'Stampede',
+      type: CardType.TREACHERY,
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',
@@ -389,16 +460,30 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
 
     expect(resolveRes.result.success).toBe(true);
     // Minion is put into play
-    expect(resolveRes.state.players[0].tableau.some((c) => c.instanceId === instMinion.instanceId)).toBe(true);
+    expect(
+      resolveRes.state.players[0].tableau.some((c) => c.instanceId === instMinion.instanceId),
+    ).toBe(true);
     // Treachery remains in encounter deck
     expect(resolveRes.state.encounterDeck.length).toBe(1);
     expect(resolveRes.state.encounterDeck[0].instanceId).toBe(instTreachery.instanceId);
   });
 
   it('preserves exact deck ordering when unselected cards return to DECK_TOP', () => {
-    const cardA: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_a', name: 'Card Alpha' };
-    const cardB: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_b', name: 'Card Beta' };
-    const cardC: NormalizedCard = { ...cardCatalog.getCard('01005')!, code: 'card_c', name: 'Card Gamma' };
+    const cardA: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_a',
+      name: 'Card Alpha',
+    };
+    const cardB: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_b',
+      name: 'Card Beta',
+    };
+    const cardC: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'card_c',
+      name: 'Card Gamma',
+    };
 
     const state = setupGame({
       scenarioId: 'rhino',

@@ -192,7 +192,9 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
 
     // existingR1 should be in discard pile
-    expect(resolveRes.state.players[0].discard.some((c) => c.instanceId === existingR1.instanceId)).toBe(true);
+    expect(
+      resolveRes.state.players[0].discard.some((c) => c.instanceId === existingR1.instanceId),
+    ).toBe(true);
 
     // Tableau should contain existingR2 and incomingR3
     const tableauIds = resolveRes.state.players[0].tableau.map((c) => c.instanceId);
@@ -251,8 +253,12 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     expect(cancelRes.state.pendingDecisionPrompt).toBeUndefined();
 
     // Both cards should remain in hand
-    expect(cancelRes.state.players[0].hand.some((c) => c.instanceId === incomingR3.instanceId)).toBe(true);
-    expect(cancelRes.state.players[0].hand.some((c) => c.instanceId === payCard.instanceId)).toBe(true);
+    expect(
+      cancelRes.state.players[0].hand.some((c) => c.instanceId === incomingR3.instanceId),
+    ).toBe(true);
+    expect(cancelRes.state.players[0].hand.some((c) => c.instanceId === payCard.instanceId)).toBe(
+      true,
+    );
 
     // Tableau should remain unchanged with 2 Restricted cards
     expect(cancelRes.state.players[0].tableau.length).toBe(2);

@@ -43,16 +43,14 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       state.players[0].hand = [createCardInstance(cardCatalog.getCard('01003')!)];
 
       // Put a 2-boost card on encounter deck
-      state.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!), ...state.encounterDeck];
+      state.encounterDeck = [
+        createCardInstance(cardCatalog.getCard('01103')!),
+        ...state.encounterDeck,
+      ];
 
       const initialHp = state.players[0].health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Backflip prevented all 4 damage
       expect(state.players[0].health).toBe(initialHp);
@@ -66,12 +64,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       const initialHp = state.players[0].health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Tough absorbed the attack damage
       expect(state.players[0].health).toBe(initialHp);
@@ -94,12 +87,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       // Rhino attacks with Overkill (Base ATK 2 + Charge 3 = 5 damage)
       // Ally Black Cat (01002) has health 2
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'ALLY_CHUMP_BLOCK',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'ALLY_CHUMP_BLOCK');
 
       // Ally defeated
       expect(state.players[0].allies.length).toBe(0);
@@ -137,12 +125,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       const initialVillainHp = state.villain.health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'HERO_IF_READY',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY');
 
       // Hero survived and dealt 1 Retaliate damage to Villain!
       expect(state.villain.health).toBe(initialVillainHp - 1);
@@ -154,12 +137,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       const initialVillainHp = state.villain.health;
 
-      executeEnemyAttackSynchronously(
-        state,
-        { type: 'VILLAIN' },
-        'p1',
-        'TAKE_UNDEFENDED',
-      );
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
       // Hero defeated
       expect(state.players[0].health).toBe(0);

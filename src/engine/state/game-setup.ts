@@ -53,6 +53,7 @@ export interface PlayerSetupConfig {
   obligation?: NormalizedCard;
   obligations?: NormalizedCard[];
   nemesisCards?: NormalizedCard[];
+  chosenSetupCardCode?: string;
 }
 
 export interface GameSetupOptions {
@@ -288,6 +289,97 @@ export function setupGame(options: GameSetupOptions): GameState {
         }
       }
       state.encounterDeck = shuffle(state.encounterDeck);
+    }
+  }
+
+  // 8. Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27)
+  state = step14_resolveCharacterSetupAbilities(state, options);
+
+  return state;
+}
+
+/**
+ * Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27).
+ * In player order, each player resolves any "Setup" instructions on their identity card and obligations.
+ */
+export function step14_resolveCharacterSetupAbilities(state: GameState, options: GameSetupOptions): GameState {
+  const shuffle = options.shuffleFn || defaultShuffle;
+
+  for (let i = 0; i < state.players.length; i++) {
+    const player = state.players[i];
+    const pConfig = options.players[i];
+
+    // Check alterEgo and hero cards for printed SETUP abilities
+    const cardsToCheck = [player.alterEgo, player.hero, ...(player.tableau || []).map((t) => t.card)];
+    for (const card of cardsToCheck) {
+      const abilities = card.enrichment?.abilities || [];
+      const setupAbilities = abilities.filter((a) => a.timing === 'SETUP');
+
+      for (const ability of setupAbilities) {
+        for (const step of ability.steps || []) {
+          if (step.effect === 'SEARCH_AND_SELECT') {
+            const filter = (step.params?.filter || {}) as Record<string, any>;
+            const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
+            const shuffleAfter = step.params?.shuffleAfter !== false;
+
+            // Find matching candidate cards in player.deck
+            let candidateIndices: number[] = [];
+            for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
+              const deckCard = player.deck[cIdx];
+              const traitMatch = !filter.trait || deckCard.card.traits?.includes(filter.trait);
+              const typeMatch = !filter.type || deckCard.card.type === filter.type;
+              const codeMatch = !pConfig?.chosenSetupCardCode || deckCard.card.code === pConfig.chosenSetupCardCode;
+
+              if (traitMatch && typeMatch && codeMatch) {
+                candidateIndices.push(cIdx);
+              }
+            }
+
+            // If no match with chosenSetupCardCode, fallback to any matching filter
+            if (candidateIndices.length === 0 && pConfig?.chosenSetupCardCode) {
+              for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
+                const deckCard = player.deck[cIdx];
+                const traitMatch = !filter.trait || deckCard.card.traits?.includes(filter.trait);
+                const typeMatch = !filter.type || deckCard.card.type === filter.type;
+                if (traitMatch && typeMatch) {
+                  candidateIndices.push(cIdx);
+                }
+              }
+            }
+
+            if (candidateIndices.length > 0) {
+              const chosenIdx = candidateIndices[0];
+              const [selectedCard] = player.deck.splice(chosenIdx, 1);
+
+              if (selectedDestination === 'TABLEAU') {
+                player.tableau.push(selectedCard);
+              } else {
+                player.hand.push(selectedCard);
+              }
+
+              if (shuffleAfter) {
+                player.deck = shuffle(player.deck);
+              }
+
+              state.log.push({
+                id: `log_${Date.now()}_setup_${selectedCard.instanceId}`,
+                timestamp: Date.now(),
+                round: 1,
+                phase: state.phase,
+                category: 'ability',
+                actor: { name: player.name, type: player.currentForm },
+                key: 'character.setup.resolved',
+                params: {
+                  player: player.name,
+                  card: selectedCard.card.name,
+                  destination: selectedDestination,
+                },
+                onomatopoeia: `SETUP: ${selectedCard.card.name.toUpperCase()} READY!`,
+              });
+            }
+          }
+        }
+      }
     }
   }
 

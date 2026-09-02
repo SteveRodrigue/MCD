@@ -27,6 +27,7 @@ import { getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword } from '
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
+import { attachCardToHost } from '../state/state-validator';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -1451,61 +1452,8 @@ export function executeStep(
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
 
-      if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
-        if (!state.villain.attachments) state.villain.attachments = [];
-        state.villain.attachments.push(sourceCard);
-        return { state, success: true, mutatedState: true, onomatopoeia: 'ATTACHED TO VILLAIN!' };
-      } else if (
-        targetHost === 'HERO' ||
-        targetHost === 'IDENTITY' ||
-        targetHost === 'PLAYER' ||
-        targetHost === 'DEFENDING_CHARACTER'
-      ) {
-        const targetPlayer =
-          state.players.find((p) => p.id === (context.targetPlayerId || context.playerId)) || player;
-        if (!targetPlayer.attachments) targetPlayer.attachments = [];
-        targetPlayer.attachments.push(sourceCard);
-        return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${targetPlayer.name}!` };
-      } else if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
-        let ally: CardInstance | undefined;
-        if (context.targetInstanceId) {
-          for (const p of state.players) {
-            ally = p.allies.find((a) => a.instanceId === context.targetInstanceId);
-            if (ally) break;
-          }
-        }
-        if (!ally) ally = player.allies[0];
-        if (ally) {
-          if (!ally.attachments) ally.attachments = [];
-          ally.attachments.push(sourceCard);
-          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${ally.card.name}!` };
-        }
-      } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
-        let foundMinion: CardInstance | undefined;
-        for (const p of state.players) {
-          foundMinion =
-            p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId) || p.engagedMinions[0];
-          if (foundMinion) break;
-        }
-        if (foundMinion) {
-          if (!foundMinion.attachments) foundMinion.attachments = [];
-          foundMinion.attachments.push(sourceCard);
-          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${foundMinion.card.name}!` };
-        }
-      } else if (targetHost === 'MAIN_SCHEME' || targetHost === 'SCHEME') {
-        if (!state.mainScheme.attachments) state.mainScheme.attachments = [];
-        state.mainScheme.attachments.push(sourceCard);
-        return { state, success: true, mutatedState: true, onomatopoeia: 'ATTACHED TO MAIN SCHEME!' };
-      } else if (targetHost === 'SIDE_SCHEME' || targetHost === 'CHOSEN_SIDE_SCHEME') {
-        const scheme =
-          state.sideSchemes.find((s) => s.instanceId === context.targetInstanceId) || state.sideSchemes[0];
-        if (scheme) {
-          if (!scheme.attachments) scheme.attachments = [];
-          scheme.attachments.push(sourceCard);
-          return { state, success: true, mutatedState: true, onomatopoeia: `ATTACHED TO ${scheme.card.name}!` };
-        }
-      }
-      return { state, success: true, onomatopoeia: 'ATTACHED!' };
+      attachCardToHost(state, sourceCard, targetHost, context.targetInstanceId || context.targetPlayerId || context.playerId);
+      return { state, success: true, mutatedState: true, onomatopoeia: 'ATTACHED TO HOST!' };
     }
 
     case 'PLACE_CARD_UNDER_HOST': {

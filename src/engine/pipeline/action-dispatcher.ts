@@ -36,6 +36,7 @@ import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth, ha
 import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
+import { attachCardToHost } from '../state/state-validator';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -940,33 +941,8 @@ export function dispatchAction(
         const attachAbility = abilities.find((a) => a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST'));
         if (attachAbility) {
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
-          const targetHost = attachStep?.params?.target as string;
-          if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
-            const ally = player.allies.find((a) => a.instanceId === action.targetInstanceId) || player.allies[0];
-            if (ally) {
-              if (!ally.attachments) ally.attachments = [];
-              ally.attachments.push(playedCardInstance);
-            } else {
-              player.tableau.push(playedCardInstance);
-            }
-          } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
-            let foundMinion: CardInstance | undefined;
-            for (const p of nextState.players) {
-              foundMinion = p.engagedMinions.find((m) => m.instanceId === action.targetInstanceId) || p.engagedMinions[0];
-              if (foundMinion) break;
-            }
-            if (foundMinion) {
-              if (!foundMinion.attachments) foundMinion.attachments = [];
-              foundMinion.attachments.push(playedCardInstance);
-            } else {
-              player.tableau.push(playedCardInstance);
-            }
-          } else if (targetHost === 'ENEMY' || targetHost === 'VILLAIN') {
-            if (!nextState.villain.attachments) nextState.villain.attachments = [];
-            nextState.villain.attachments.push(playedCardInstance);
-          } else {
-            player.tableau.push(playedCardInstance);
-          }
+          const targetHost = (attachStep?.params?.target as string) || 'VILLAIN';
+          attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
         } else {
           player.tableau.push(playedCardInstance);
         }

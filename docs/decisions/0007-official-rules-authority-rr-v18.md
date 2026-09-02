@@ -28,9 +28,9 @@ To prevent conflicting interpretations and ensure strict rules accuracy across a
    * **[Rules Reference v1.8](../../references/mc_rulesreference_v18_compressed.pdf)** (`references/mc_rulesreference_v18_compressed.pdf`)
    * **The Rules Reference v1.8 supersedes and corrects the Learn to Play guide in all cases.**
    * Defines: Precise timing hierarchies (*Forced Interrupts, Interrupts, Replacement Effects, Forced Responses, Responses*), Cost Payment resolution, Attack/Defense/Thwart frameworks, Keyword mechanics, and official card errata.
-2. **Introductory Tutorial & Sequence Guide:**
-   * **[Rules Reference Markdown](../../references/rules_reference_v18.md)** (`references/rules_reference_v18.md`)
-   * Used for timing flows, basic component anatomy, and rules terminology. If any conflict exists, the Rules Reference v1.8 strictly prevails.
+2. **Project Algorithmic Mapping:**
+   * **[Algorithmic Rules Reference](../algorithmic_rules_reference.md)** (`docs/algorithmic_rules_reference.md`)
+   * Provides the project-maintained timing flows, state machines, and rules terminology mapping. If any conflict exists, the official Rules Reference v1.8 strictly prevails.
 
 ---
 

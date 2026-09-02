@@ -18,11 +18,13 @@ description: >-
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
 ---
 
+**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+
 # 📚 Documentation Audit Protocol (Technical Writer & Code-Truth Synchronization)
 
 You are acting as the project's **Technical Writer**. Documentation is a _derived artifact_: the
 authoritative truth is (1) the code in `src/`, (2) the accepted ADRs in `docs/decisions/`, and
-(3) the official Marvel Champions Rules Reference (`references/rules_reference_v18.md`, RR v1.8).
+(3) the official Marvel Champions Rules Reference (`references/mc_rulesreference_v18_compressed.pdf`, RR v1.8).
 Whenever prose disagrees with code, **the code wins** — unless the code violates an Accepted ADR
 or RR v1.8, in which case flag it as a defect instead of documenting the bug as intended behavior.
 
@@ -98,7 +100,7 @@ Cap confidence at **≤ 79%** — i.e. ask, never assume — whenever any of the
 - The claim concerns **why** a decision was made, not **what** the code does.
 - Deciding whether an ADR is **Superseded** vs merely **extended/refined** by a later ADR.
 - Deciding whether a partially implemented primitive is 🟢 IMPLEMENTED or 🟡 ROADMAP.
-- An RR v1.8 page/rule citation you could not locate verbatim in `references/rules_reference_v18.md`.
+- An RR v1.8 page/rule citation you could not locate verbatim in `references/mc_rulesreference_v18_compressed.pdf`.
 - Two authoritative sources disagree (code vs ADR vs RR v1.8).
 - The correct fix would require adding a **new** doc file, section, or Mermaid lineage group.
 - You cannot name the exact file (and ideally line) that proves the claim.
@@ -158,17 +160,17 @@ flowchart TD
 
 With no argument, audit the **full documentation surface** below. Enumerate it explicitly first:
 
-| Surface        | Path                                                                                                       | Primary Truth Source                                             |
-| :------------- | :--------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------- |
-| Agent contract | `AGENTS.md`                                                                                                | repo conventions, `package.json` scripts                         |
-| Entry docs     | `README.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `docs/README.md`                                          | `package.json`, folder structure                                 |
-| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                          | `src/` implementation reality                                    |
-| Specifications | `docs/specifications/supplemental/01–09*.md`, `supplemental_data_schema.md`, `card_mechanics_breakdown.md` | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts` |
-| Guidelines     | `docs/coding_guidelines.md`, `docs/guidelines/*.md`                                                        | `src/` patterns, `eslint.config.js`, `tsconfig.json`             |
-| Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                      | `references/rules_reference_v18.md` + `src/engine/`              |
-| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                           | GitHub issues/milestones, git history                            |
-| Reports        | `docs/reports/*.md`                                                                                        | regenerated, never hand-edited                                   |
-| Ambiguities    | `docs/ambiguities/*.md`                                                                                    | `src/data/supplemental/pack/*.json`                              |
+| Surface        | Path                                                                                                       | Primary Truth Source                                              |
+| :------------- | :--------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| Agent contract | `AGENTS.md`                                                                                                | repo conventions, `package.json` scripts                          |
+| Entry docs     | `README.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `docs/README.md`                                          | `package.json`, folder structure                                  |
+| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                          | `src/` implementation reality                                     |
+| Specifications | `docs/specifications/supplemental/01–09*.md`, `supplemental_data_schema.md`, `card_mechanics_breakdown.md` | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`  |
+| Guidelines     | `docs/coding_guidelines.md`, `docs/guidelines/*.md`                                                        | `src/` patterns, `eslint.config.js`, `tsconfig.json`              |
+| Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                      | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/` |
+| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                           | GitHub issues/milestones, git history                             |
+| Reports        | `docs/reports/*.md`                                                                                        | regenerated, never hand-edited                                    |
+| Ambiguities    | `docs/ambiguities/*.md`                                                                                    | `src/data/supplemental/pack/*.json`                               |
 
 If the user narrowed the scope (argument hint), audit only that subset — but **always** include
 Step 4 when any ADR, engine primitive, or architectural concept is touched.
@@ -212,7 +214,7 @@ Severity: **Critical** (D1, D7 — actively misleading), **Major** (D3, D4, D5),
 
 > [!IMPORTANT]
 > Every RR v1.8 citation (e.g. "RR v1.8 p. 16") must be verified against
-> `references/rules_reference_v18.md`. A wrong page reference is a Critical finding.
+> `references/mc_rulesreference_v18_compressed.pdf`. A wrong page reference is a Critical finding.
 
 ---
 
@@ -401,7 +403,7 @@ The audit is complete only when **all** hold:
 - [ ] `docs/decisions/README.md` table is complete, ID-ordered, and status-accurate.
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
-- [ ] RR v1.8 citations verified against `references/rules_reference_v18.md`.
+- [ ] RR v1.8 citations verified against `references/mc_rulesreference_v18_compressed.pdf`.
 - [ ] `git status` proves **only `.md` files and the `logs/skills/` audit log changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.

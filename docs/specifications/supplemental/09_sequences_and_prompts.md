@@ -38,7 +38,7 @@
 
 ## 2. Interactive Decision Prompts (`PLAYER_CHOICE`)
 
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`DecisionPromptModal.tsx`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/ui/components/board/DecisionPromptModal.tsx) / *Nick Fury* `01084` / *Hydra Bomber* `01110` / *Exhaustion* `01191`)
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`DecisionPromptModal.tsx`](../../../src/ui/components/board/DecisionPromptModal.tsx) / *Nick Fury* `01084` / *Hydra Bomber* `01110` / *Exhaustion* `01191`)
 * **Description:** Renders a Pop-Art comic decision modal, blocking state execution until the player resolves their choice.
 
 ```json

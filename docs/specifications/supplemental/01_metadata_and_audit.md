@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Status:** 🟢 `IMPLEMENTED (v1.0)`  
-> Validated automatically via [`src/data/supplemental/schema.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/src/data/supplemental/schema.ts).
+> Validated automatically via [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts).
 
 ---
 

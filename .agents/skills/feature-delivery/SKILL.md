@@ -13,6 +13,8 @@ description: >-
 
 # 🚀 Feature Delivery Protocol (Specification-Driven Development & Milestone Lifecycle)
 
+**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+
 This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features, capabilities, and primitives cleanly, composably, and with zero regressions.
 
 ---
@@ -40,7 +42,7 @@ YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Pushed commit "feat(...): ... (Closes #<NUM>)" 
 Before writing any implementation code or tests for a new feature, verify the following four architectural prerequisites:
 
 1. **📖 Authoritative Rules Reference Audit (RR v1.8):**
-   - Consult [`references/rules_reference_v18.md`](../../references/rules_reference_v18.md) and official FFG Rulings for every rule, timing window, cost interaction, and state transition involved.
+   - Consult [`mc_rulesreference_v18_compressed.pdf`](../../references/mc_rulesreference_v18_compressed.pdf) and official FFG Rulings for every rule, timing window, cost interaction, and state transition involved.
    - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** (see below). Never implement speculative or guessed heuristics.
 2. **Approved Architecture Decision Record (ADR):**
    - Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR (e.g. ADR-0030 for Ability Sequences, ADR-0031 for Combat/Defense, ADR-0032 for Resolution Stack, ADR-0033 for Scenario Setup, ADR-0034 for Player Side Schemes, ADR-0035 for Multi-Form/Counters, ADR-0036 for Status Scaling).
@@ -153,7 +155,7 @@ flowchart TD
 
 ### Step 2: Rules Reference Audit (RR v1.8) & ADR Alignment
 
-1. **Audit Rules Reference:** Thoroughly inspect `references/rules_reference_v18.md` for all timing, cost, and trigger definitions.
+1. **Audit Rules Reference:** Thoroughly inspect `references/mc_rulesreference_v18_compressed.pdf` for all timing, cost, and trigger definitions.
 2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, trigger the **Ambiguity RFC Circuit Breaker** and stop.
 3. **Audit ADR & Schemas:**
    - Read the controlling ADR in `docs/decisions/`.

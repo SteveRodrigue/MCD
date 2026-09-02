@@ -7,6 +7,10 @@
 3. **1960s Comic Pop-Art Aesthetics:** Vibrant colors, Ben-Day halftone patterns, bold typography, and comic onomatopoeias.
 4. **Declarative Data-First Invariant:** All card-specific logic resides exclusively in `src/data/supplemental/`. The engine (`src/engine/`) only contains universal, card-agnostic state machines and effect primitives. When triaging any card issue, **always audit and correct the supplemental JSON first**. Altering engine code for a single card is an anti-pattern unless a truly universal primitive is missing.
 
+## Path Policy
+
+All agent and skill documentation MUST use paths relative to the MCD repository root. Never add personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links for local project files. Use repository-relative paths such as `src/engine/` or `docs/README.md`; reserve absolute URLs for external resources only.
+
 ---
 
 ## 🛑 Mandatory Pre-Execution Protocol (Enforce Before Writing Code)

@@ -701,7 +701,9 @@
         {
           "id": "energy_channel_blast",
           "timing": "HERO_ACTION",
-          "tags": ["ATTACK"],
+          "tags": [
+            "ATTACK"
+          ],
           "cost": {
             "discardSelf": true
           },
@@ -1221,7 +1223,9 @@
         {
           "id": "repulsor_blast_action",
           "timing": "HERO_ACTION",
-          "tags": ["ATTACK"],
+          "tags": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "REPULSOR_BLAST",
@@ -2569,7 +2573,10 @@
               "effect": "BOOST_STAT_CHOICE",
               "params": {
                 "amount": 2,
-                "options": ["ATK", "THW"]
+                "options": [
+                  "ATK",
+                  "THW"
+                ]
               }
             }
           ]

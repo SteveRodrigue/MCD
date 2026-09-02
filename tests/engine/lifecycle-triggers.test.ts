@@ -41,7 +41,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     endPlayerPhase(state);
     expect(state.phase).toBe('VILLAIN_PHASE');
 
-    const nextState = executeVillainPhase(state);
+    const nextState = executeVillainPhase(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
     // After full round cycle:
     // 1. usedAbilitiesThisPhase is reset

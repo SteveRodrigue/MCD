@@ -3,7 +3,7 @@ import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../eng
 import { useCardArt } from '../../hooks/useCardArt';
 import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
 import { FormattedCardText } from './FormattedCardText';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 
 export interface CardViewProps {
   card: NormalizedCard;

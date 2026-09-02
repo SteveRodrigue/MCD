@@ -3,6 +3,7 @@ import { X, BookOpen, ChevronDown, ChevronRight, Globe, Type } from 'lucide-reac
 import { GameLogEntry } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
+import { FONT_PRESETS } from './combat-log-presets';
 
 interface CombatLogDrawerProps {
   isOpen: boolean;
@@ -12,14 +13,6 @@ interface CombatLogDrawerProps {
 }
 
 type FilterCategory = 'all' | 'heroes' | 'villains' | 'narrator';
-
-export const FONT_PRESETS = [
-  { id: 'komika', label: 'Komika Text', className: 'font-komika' },
-  { id: 'comic_relief', label: 'Comic Relief', className: 'font-comic-relief' },
-  { id: 'comic_neue', label: 'Comic Neue', className: 'font-comic-neue' },
-  { id: 'clean', label: 'Clean (Inter)', className: 'font-clean' },
-  { id: 'bangers', label: 'Bangers', className: 'font-bangers' },
-];
 
 export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   isOpen,

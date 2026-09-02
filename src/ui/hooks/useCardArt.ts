@@ -27,7 +27,7 @@ export function useCardArt(cardOrCode: CardArtIdentifier | string | undefined): 
     setLoading(true);
     setError(null);
 
-    getCardArtUrl(typeof cardOrCode === 'object' && cardOrCode !== null ? cardOrCode : code)
+    getCardArtUrl({ code, type, stage })
       .then((url) => {
         if (isMounted) {
           setArtUrl(url);

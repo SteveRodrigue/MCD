@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Settings, Wrench, X, ShieldAlert, Check, Gauge, Zap, ZoomIn, Camera } from 'lucide-react';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 import { GameState } from '../../../engine/models';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
 

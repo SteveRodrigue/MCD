@@ -9,7 +9,7 @@ import {
   GameAction,
 } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
-import { useGameSettings } from '../../context/GameSettingsContext';
+import { useGameSettings } from '../../context/useGameSettings';
 import { CardPaymentModal } from './CardPaymentModal';
 import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';

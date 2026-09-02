@@ -8,6 +8,7 @@ import {
   GamePhase,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
+import { isResourceAbility } from './cost-engine';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -749,16 +750,35 @@ export function canPlayCard(
         return { allowed: false, reason: `Resource generator ${gCard.card.name} is already exhausted.` };
       }
 
-      // Check generator abilities and form restrictions (RR v1.8 p. 16, 24)
+      // Check generator abilities and form restrictions (RR v1.8 p. 16, 24, 25)
       const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
       const abilities = enrichment?.abilities || [];
 
+      const isGenuineGenerator =
+        abilities.some((a) => isResourceAbility(a.timing)) ||
+        abilities.some((a) =>
+          a.steps?.some(
+            (s) =>
+              s.effect === 'GENERATE_RESOURCE' ||
+              s.effect === 'COST_REDUCER' ||
+              s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
+              s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+          ),
+        ) ||
+        (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
+        (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
+        (gCard.card.text || '').toLowerCase().includes('resource:');
+
+      if (!isGenuineGenerator) {
+        return { allowed: false, reason: `${gCard.card.name} is not a resource generator.` };
+      }
+
       const isHeroRestricted =
-        abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
+        abilities.some((a) => a.timing === 'HERO_RESOURCE' || a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
         (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
         (gCard.card.text || '').toLowerCase().includes('hero action:');
       const isAlterEgoRestricted =
-        abilities.some((a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
+        abilities.some((a) => a.timing === 'ALTER_EGO_RESOURCE' || a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_')) ||
         (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
         (gCard.card.text || '').toLowerCase().includes('alter-ego action:');
 

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
+import { isResourceAbility } from '../../../engine/pipeline/cost-engine';
 import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface CardPaymentModalProps {
@@ -141,16 +142,24 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const enrichment = c.card.enrichment || getCardEnrichment(c.card.code);
       const uses = enrichment?.uses;
       const abilities = enrichment?.abilities || [];
-      const tableAbility = abilities.find(
-        (a) =>
-          a.timing === 'RESOURCE' ||
-          a.timing === 'HERO_RESOURCE' ||
-          a.timing === 'ALTER_EGO_RESOURCE' ||
-          a.timing === 'HERO_ACTION' ||
-          a.timing === 'ALTER_EGO_ACTION' ||
-          a.timing === 'ACTION' ||
-          a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
-      );
+
+      // Check if this card is a genuine resource generator or cost reducer (RR v1.8 p. 25 / Issue #43)
+      const isGenuineGenerator =
+        abilities.some((a) => isResourceAbility(a.timing)) ||
+        abilities.some((a) =>
+          a.steps?.some(
+            (s) =>
+              s.effect === 'GENERATE_RESOURCE' ||
+              s.effect === 'COST_REDUCER' ||
+              s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
+              s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+          ),
+        ) ||
+        (c.card.text || '').toLowerCase().includes('hero resource:') ||
+        (c.card.text || '').toLowerCase().includes('alter-ego resource:') ||
+        (c.card.text || '').toLowerCase().includes('resource:');
+
+      if (!isGenuineGenerator) continue;
 
       const isHeroRestricted =
         abilities.some((a) => a.timing === 'HERO_RESOURCE' || a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
@@ -175,7 +184,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             amount: 1,
           });
         }
-      } else if (tableAbility) {
+      } else {
         list.push({
           id: c.instanceId,
           name: c.card.name,

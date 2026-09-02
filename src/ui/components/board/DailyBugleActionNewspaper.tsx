@@ -1,6 +1,19 @@
 import React from 'react';
-import { Newspaper, X, Zap, Shield, Heart, Swords, Target, RefreshCw, ChevronRight } from 'lucide-react';
-import { LegalActionReport, LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
+import {
+  Newspaper,
+  X,
+  Zap,
+  Shield,
+  Heart,
+  Swords,
+  Target,
+  RefreshCw,
+  ChevronRight,
+} from 'lucide-react';
+import {
+  LegalActionReport,
+  LegalActionItem,
+} from '../../../engine/pipeline/legal-actions-generator';
 
 interface DailyBugleActionNewspaperProps {
   report: LegalActionReport;
@@ -17,7 +30,14 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
 }) => {
   if (!isOpen) return null;
 
-  const { identityActions, handCardActions, boardActions, turnAction, activeActionCount, playerName } = report;
+  const {
+    identityActions,
+    handCardActions,
+    boardActions,
+    turnAction,
+    activeActionCount,
+    playerName,
+  } = report;
 
   const renderIcon = (iconType?: string) => {
     switch (iconType) {
@@ -56,7 +76,9 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
           {/* Newspaper Sub-Header Line (Padded right to never overlap close button) */}
           <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
             <span>VOL. LXVIII NO. 142</span>
-            <span className="font-comic tracking-normal text-comic-red font-black">★ THE VOICE OF MARVELS ★</span>
+            <span className="font-comic tracking-normal text-comic-red font-black">
+              ★ THE VOICE OF MARVELS ★
+            </span>
             <span>PRICE: 10¢ IN COIN</span>
           </div>
 
@@ -91,7 +113,9 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
                   <span>📰 FRONT PAGE: IDENTITY DIRECTIVES</span>
                 </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">Form & Basic Moves</span>
+                <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  Form & Basic Moves
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -138,7 +162,9 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
                   <span>🃏 LATEST DISPATCHES: PLAYABLE HAND CARDS</span>
                 </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">Ready from Hand</span>
+                <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  Ready from Hand
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -185,7 +211,9 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-900 pb-0.5 flex items-center gap-1 font-comic">
                   <span>⚡ THE CLASSIFIEDS: IN-PLAY ASSETS & ALLIES</span>
                 </h2>
-                <span className="text-[10px] text-slate-600 font-bold uppercase">Tableau & Allies</span>
+                <span className="text-[10px] text-slate-600 font-bold uppercase">
+                  Tableau & Allies
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -232,7 +260,8 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
                 ★ PRESS RUN COMPLETE: NO ACTIONS REMAIN ★
               </h3>
               <p className="text-xs text-slate-600 font-serif">
-                You have exhausted your character and played all available cards. You may now conclude your turn below.
+                You have exhausted your character and played all available cards. You may now
+                conclude your turn below.
               </p>
             </div>
           )}
@@ -245,9 +274,7 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               <span className="text-[10px] font-bold text-slate-600 uppercase block font-comic">
                 TURN FLOW MANAGEMENT
               </span>
-              <span className="text-xs text-slate-900 font-serif italic">
-                {turnAction.subtext}
-              </span>
+              <span className="text-xs text-slate-900 font-serif italic">{turnAction.subtext}</span>
             </div>
 
             <button

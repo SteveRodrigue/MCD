@@ -1,10 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  GameState,
-  CardInstance,
-  CardType,
-  StatusCard,
-} from '../../src/engine/models';
+import { GameState, CardInstance, CardType, StatusCard } from '../../src/engine/models';
 import { executeEffect } from '../../src/engine/effects';
 
 describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2, 24)', () => {
@@ -23,12 +18,30 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           health: 10,
           maxHealth: 15,
           deck: [
-            { instanceId: 'c1', card: { code: 'c1', name: 'Card 1', type: CardType.EVENT } } as CardInstance,
-            { instanceId: 'c2', card: { code: 'c2', name: 'Card 2', type: CardType.EVENT } } as CardInstance,
-            { instanceId: 'c3', card: { code: 'c3', name: 'Card 3', type: CardType.EVENT } } as CardInstance,
-            { instanceId: 'c4', card: { code: 'c4', name: 'Card 4', type: CardType.EVENT } } as CardInstance,
-            { instanceId: 'c5', card: { code: 'c5', name: 'Card 5', type: CardType.EVENT } } as CardInstance,
-            { instanceId: 'c6', card: { code: 'c6', name: 'Card 6', type: CardType.EVENT } } as CardInstance,
+            {
+              instanceId: 'c1',
+              card: { code: 'c1', name: 'Card 1', type: CardType.EVENT },
+            } as CardInstance,
+            {
+              instanceId: 'c2',
+              card: { code: 'c2', name: 'Card 2', type: CardType.EVENT },
+            } as CardInstance,
+            {
+              instanceId: 'c3',
+              card: { code: 'c3', name: 'Card 3', type: CardType.EVENT },
+            } as CardInstance,
+            {
+              instanceId: 'c4',
+              card: { code: 'c4', name: 'Card 4', type: CardType.EVENT },
+            } as CardInstance,
+            {
+              instanceId: 'c5',
+              card: { code: 'c5', name: 'Card 5', type: CardType.EVENT },
+            } as CardInstance,
+            {
+              instanceId: 'c6',
+              card: { code: 'c6', name: 'Card 6', type: CardType.EVENT },
+            } as CardInstance,
           ],
           hand: [],
           discard: [],
@@ -38,12 +51,27 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           dealtEncounterCards: [],
           availableForms: [
             { code: '01019a', name: 'She-Hulk', type: CardType.HERO, handSize: 4 } as any,
-            { code: '01019b', name: 'Jennifer Walters', type: CardType.ALTER_EGO, handSize: 6 } as any,
+            {
+              code: '01019b',
+              name: 'Jennifer Walters',
+              type: CardType.ALTER_EGO,
+              handSize: 6,
+            } as any,
           ],
-          activeFormCard: { code: '01019b', name: 'Jennifer Walters', type: CardType.ALTER_EGO, handSize: 6 } as any,
+          activeFormCard: {
+            code: '01019b',
+            name: 'Jennifer Walters',
+            type: CardType.ALTER_EGO,
+            handSize: 6,
+          } as any,
           currentForm: 'alter_ego',
           hero: { code: '01019a', name: 'She-Hulk', type: CardType.HERO, handSize: 4 } as any,
-          alterEgo: { code: '01019b', name: 'Jennifer Walters', type: CardType.ALTER_EGO, handSize: 6 } as any,
+          alterEgo: {
+            code: '01019b',
+            name: 'Jennifer Walters',
+            type: CardType.ALTER_EGO,
+            handSize: 6,
+          } as any,
         } as any,
       ],
       villain: {

@@ -87,7 +87,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [restrictedCard1, restrictedCard2, restrictedCard3, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              restrictedCard1,
+              restrictedCard2,
+              restrictedCard3,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,
@@ -127,7 +135,14 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [restrictedCard1, heavyRestrictedCard, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              restrictedCard1,
+              heavyRestrictedCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,
@@ -150,7 +165,10 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       const payInstance2 = createCardInstance(paymentCard);
       player.hand = [heavyInstance, payInstance1, payInstance2];
 
-      const result = canPlayCard(state, 'p1', heavyInstance.instanceId, [payInstance1.instanceId, payInstance2.instanceId]);
+      const result = canPlayCard(state, 'p1', heavyInstance.instanceId, [
+        payInstance1.instanceId,
+        payInstance2.instanceId,
+      ]);
       expect(result.allowed).toBe(true);
     });
 
@@ -163,7 +181,15 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [restrictedCard1, restrictedCard2, restrictedCard3, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              restrictedCard1,
+              restrictedCard2,
+              restrictedCard3,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,
@@ -229,14 +255,28 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [nickFuryCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              nickFuryCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
           {
             id: 'p2',
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: [nickFuryCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              nickFuryCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,
@@ -268,7 +308,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       );
 
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("Global unicity violation (RR v1.8 p. 29)");
+      expect(result.reason).toContain('Global unicity violation (RR v1.8 p. 29)');
       expect(result.reason).toContain("under Spider-Man's control");
     });
 
@@ -295,7 +335,14 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [captainMarvelAlly, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              captainMarvelAlly,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
           {
             id: 'p2',
@@ -330,7 +377,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       );
 
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("Global unicity violation (RR v1.8 p. 29)");
+      expect(result.reason).toContain('Global unicity violation (RR v1.8 p. 29)');
       expect(result.reason).toContain("shares identity with player 'Captain Marvel'");
     });
 
@@ -354,7 +401,14 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Spider-Man',
             hero: spiderManHero,
             alterEgo: peterParkerAlterEgo,
-            deckCards: [nonUniqueCard, paymentCard, paymentCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              nonUniqueCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,
@@ -476,7 +530,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       );
 
       expect(result.allowed).toBe(false);
-      expect(result.reason).toContain("Global unicity violation (RR v1.8 p. 29)");
+      expect(result.reason).toContain('Global unicity violation (RR v1.8 p. 29)');
     });
   });
 
@@ -509,7 +563,13 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
             name: 'Captain Marvel',
             hero: captainMarvelHero,
             alterEgo: carolDanversAlterEgo,
-            deckCards: [energyChannelCard, energyChannelCard, paymentCard, paymentCard, paymentCard],
+            deckCards: [
+              energyChannelCard,
+              energyChannelCard,
+              paymentCard,
+              paymentCard,
+              paymentCard,
+            ],
           },
         ],
         villain: rhinoVillain,

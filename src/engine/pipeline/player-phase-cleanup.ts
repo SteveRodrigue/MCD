@@ -1,8 +1,4 @@
-import {
-  GameState,
-  DecisionPromptOption,
-  PendingDecisionPrompt,
-} from '@engine/models';
+import { GameState, DecisionPromptOption, PendingDecisionPrompt } from '@engine/models';
 import { getEffectiveHandSize } from './stat-calculator';
 import { drawPlayerCard } from './deck-exhaustion';
 import { enqueueDecisionPrompt } from './prompt-queue';

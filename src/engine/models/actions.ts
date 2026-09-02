@@ -72,8 +72,8 @@ export interface PlayCardAction {
   playerId: string;
   cardInstanceId: string;
   paymentCardInstanceIds: string[]; // Hand cards to discard for resources
-  generatorInstanceIds?: string[];  // In-play cards to exhaust or remove counters from (e.g. Web-Shooter, Helicarrier)
-  targetInstanceId?: string;        // For targeted events or attachments
+  generatorInstanceIds?: string[]; // In-play cards to exhaust or remove counters from (e.g. Web-Shooter, Helicarrier)
+  targetInstanceId?: string; // For targeted events or attachments
 }
 
 export interface UseCardAbilityAction {

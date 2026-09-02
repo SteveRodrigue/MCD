@@ -157,7 +157,9 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
         {!isCurrentHeroCompleted && (
           <div className="comic-bubble p-3 mb-5 bg-amber-50 text-center max-w-2xl mx-auto text-xs text-slate-800">
             <p>
-              Click any cards below to <span className="font-bold text-comic-red uppercase">discard and redraw</span>. Discarded cards will be shuffled back into your deck after drawing replacements.
+              Click any cards below to{' '}
+              <span className="font-bold text-comic-red uppercase">discard and redraw</span>.
+              Discarded cards will be shuffled back into your deck after drawing replacements.
             </p>
           </div>
         )}
@@ -208,9 +210,7 @@ export const MulliganScreen: React.FC<MulliganScreenProps> = ({
               className="py-2.5 px-6 bg-comic-blue text-white border-2 border-comic-black font-comic text-base tracking-wider shadow-comic-sm hover:bg-sky-600 active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer rounded"
             >
               <Check className="w-5 h-5 text-white" />
-              <span>
-                CONFIRM MULLIGAN FOR {activePlayer.alterEgo.name.toUpperCase()}
-              </span>
+              <span>CONFIRM MULLIGAN FOR {activePlayer.alterEgo.name.toUpperCase()}</span>
             </button>
           </div>
         )}

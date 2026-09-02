@@ -1,7 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Layers, Sparkles, Skull, X, Eye, Filter, ArrowDownUp, Plus } from 'lucide-react';
-import { CardInstance, NormalizedCard, PlayerState, GameState, GameAction } from '../../../engine/models';
+import {
+  CardInstance,
+  NormalizedCard,
+  PlayerState,
+  GameState,
+  GameAction,
+} from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { useGameSettings } from '../../context/GameSettingsContext';
 import { CardPaymentModal } from './CardPaymentModal';
@@ -36,7 +42,11 @@ function getPlayerCardAffinity(card: NormalizedCard): string {
   if (faction === 'leadership') return 'Leadership';
   if (faction === 'protection') return 'Protection';
   if (faction === 'basic') return 'Basic';
-  if (faction === 'hero' || card.setCode === 'spider_man' || (card as any).set_code === 'spider_man') {
+  if (
+    faction === 'hero' ||
+    card.setCode === 'spider_man' ||
+    (card as any).set_code === 'spider_man'
+  ) {
     return 'Hero Signature (Spider-Man)';
   }
   if (card.setCode) {
@@ -108,9 +118,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
 
   const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
   const isActivePlayerTurn =
-    gameState?.phase === 'PLAYER_PHASE'
-      ? activePlayer?.id === player?.id
-      : true;
+    gameState?.phase === 'PLAYER_PHASE' ? activePlayer?.id === player?.id : true;
 
   const handleCardClick = (cardInst: CardInstance) => {
     if (player && gameState) {
@@ -264,7 +272,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           <div className="flex items-center gap-2">
             <div
               className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
-                isActivePlayerTurn ? 'bg-comic-red font-bold' : isFocused ? 'bg-comic-blue' : 'bg-slate-700'
+                isActivePlayerTurn
+                  ? 'bg-comic-red font-bold'
+                  : isFocused
+                    ? 'bg-comic-blue'
+                    : 'bg-slate-700'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
@@ -307,7 +319,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
           {turnWarning && (
             <div className="p-2 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm flex items-center justify-between animate-pulse md:hidden">
               <span>⚠️ {turnWarning}</span>
-              <button onClick={() => setTurnWarning(null)} className="text-white hover:text-black font-bold ml-2">✕</button>
+              <button
+                onClick={() => setTurnWarning(null)}
+                className="text-white hover:text-black font-bold ml-2"
+              >
+                ✕
+              </button>
             </div>
           )}
 
@@ -318,7 +335,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <div
                 onClick={() => devMode && setShowDeckModal(true)}
                 className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm ${
-                  devMode ? 'cursor-pointer hover:bg-sky-600 transition-transform hover:scale-[1.02]' : 'cursor-default'
+                  devMode
+                    ? 'cursor-pointer hover:bg-sky-600 transition-transform hover:scale-[1.02]'
+                    : 'cursor-default'
                 }`}
                 title={
                   devMode
@@ -327,7 +346,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 }
               >
                 <Layers className="w-3.5 h-3.5 text-comic-yellow shrink-0" />
-                <span className="font-comic text-[11px] font-bold whitespace-nowrap">DECK: {deck.length}</span>
+                <span className="font-comic text-[11px] font-bold whitespace-nowrap">
+                  DECK: {deck.length}
+                </span>
               </div>
 
               {devMode && (
@@ -349,23 +370,31 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             <div
               onClick={() => discard.length > 0 && setShowDiscardModal(true)}
               className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-slate-100 text-slate-800 border border-comic-black shadow-comic-sm text-center ${
-                discard.length > 0 ? 'cursor-pointer hover:bg-amber-100 transition-transform hover:scale-[1.02]' : 'cursor-default opacity-60'
+                discard.length > 0
+                  ? 'cursor-pointer hover:bg-amber-100 transition-transform hover:scale-[1.02]'
+                  : 'cursor-default opacity-60'
               }`}
               title="Inspect Discard Pile"
             >
-              <span className="font-comic text-[11px] font-bold whitespace-nowrap">DISCARD: {discard.length}</span>
+              <span className="font-comic text-[11px] font-bold whitespace-nowrap">
+                DISCARD: {discard.length}
+              </span>
             </div>
 
             {/* Nemesis Set */}
             <div
               onClick={() => setAsideCards.length > 0 && setShowNemesisModal(true)}
               className={`w-full flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-rose-50 text-rose-900 border border-comic-black shadow-comic-sm text-center ${
-                setAsideCards.length > 0 ? 'cursor-pointer hover:bg-rose-100 transition-transform hover:scale-[1.02]' : 'cursor-default opacity-60'
+                setAsideCards.length > 0
+                  ? 'cursor-pointer hover:bg-rose-100 transition-transform hover:scale-[1.02]'
+                  : 'cursor-default opacity-60'
               }`}
               title="Inspect Nemesis Set (Out of Play)"
             >
               <Skull className="w-3.5 h-3.5 text-rose-700 shrink-0" />
-              <span className="font-comic text-[11px] font-bold whitespace-nowrap">NEMESIS: {setAsideCards.length}</span>
+              <span className="font-comic text-[11px] font-bold whitespace-nowrap">
+                NEMESIS: {setAsideCards.length}
+              </span>
             </div>
           </div>
 
@@ -374,7 +403,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {turnWarning && (
               <div className="hidden md:flex mb-1.5 p-1.5 bg-rose-500 text-white font-comic text-xs rounded-lg border-2 border-comic-black shadow-comic-sm items-center justify-between animate-pulse">
                 <span>⚠️ {turnWarning}</span>
-                <button onClick={() => setTurnWarning(null)} className="text-white hover:text-black font-bold ml-2">✕</button>
+                <button
+                  onClick={() => setTurnWarning(null)}
+                  className="text-white hover:text-black font-bold ml-2"
+                >
+                  ✕
+                </button>
               </div>
             )}
 
@@ -447,7 +481,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       </span>
                     </div>
                     <p className="text-xs text-slate-600">
-                      Sort view by Deck Order, Card Type, Affinity (Aspect), or Cost. Cards display their name below.
+                      Sort view by Deck Order, Card Type, Affinity (Aspect), or Cost. Cards display
+                      their name below.
                     </p>
                   </div>
                 </div>
@@ -501,7 +536,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       }
                       className="px-2.5 py-1 rounded border-2 border-comic-black bg-comic-yellow text-comic-black hover:bg-amber-300 font-bold transition-all shadow-comic-sm cursor-pointer"
                     >
-                      {deckDirection === 'top_to_bottom' ? '▼ Top to Bottom (Draw Order)' : '▲ Bottom to Top'}
+                      {deckDirection === 'top_to_bottom'
+                        ? '▼ Top to Bottom (Draw Order)'
+                        : '▲ Bottom to Top'}
                     </button>
                   )}
 
@@ -514,7 +551,9 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       }
                       className="px-2.5 py-1 rounded border-2 border-comic-black bg-comic-yellow text-comic-black hover:bg-amber-300 font-bold transition-all shadow-comic-sm cursor-pointer"
                     >
-                      {costDirection === 'low_to_high' ? 'Low to High (0 ➔ 4)' : 'High to Low (4 ➔ 0)'}
+                      {costDirection === 'low_to_high'
+                        ? 'Low to High (0 ➔ 4)'
+                        : 'High to Low (4 ➔ 0)'}
                     </button>
                   )}
 
@@ -530,7 +569,10 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               {groupedDeckItems ? (
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                   {Object.entries(groupedDeckItems).map(([groupTitle, groupItems]) => (
-                    <div key={groupTitle} className="bg-slate-50 p-3 rounded-xl border border-slate-300 space-y-2">
+                    <div
+                      key={groupTitle}
+                      className="bg-slate-50 p-3 rounded-xl border border-slate-300 space-y-2"
+                    >
                       <div className="flex items-center justify-between border-b border-slate-200 pb-1">
                         <span className="font-comic text-sm text-comic-blue font-bold uppercase tracking-wider">
                           {groupTitle} ({groupItems.length})
@@ -538,9 +580,17 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       </div>
                       <div className="flex flex-wrap items-center justify-start gap-4 pt-1">
                         {groupItems.map(({ instance, originalIndex }) => (
-                          <div key={instance.instanceId} className="flex flex-col items-center gap-1">
+                          <div
+                            key={instance.instanceId}
+                            className="flex flex-col items-center gap-1"
+                          >
                             <div className="relative">
-                              <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                              <CardView
+                                card={instance.card}
+                                instance={instance}
+                                size="sm"
+                                enableHoverZoom={true}
+                              />
                               <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                                 #{originalIndex + 1}
                               </span>
@@ -570,7 +620,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                   {processedDeckItems.map(({ instance, originalIndex }) => (
                     <div key={instance.instanceId} className="flex flex-col items-center gap-1">
                       <div className="relative">
-                        <CardView card={instance.card} instance={instance} size="sm" enableHoverZoom={true} />
+                        <CardView
+                          card={instance.card}
+                          instance={instance}
+                          size="sm"
+                          enableHoverZoom={true}
+                        />
                         <span className="absolute -top-2 -left-2 bg-slate-900 text-sky-300 font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm">
                           #{originalIndex + 1}
                         </span>
@@ -636,7 +691,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                 {discard.map((cardInst, idx) => (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
                     <div className="relative">
-                      <CardView card={cardInst.card} instance={cardInst} size="sm" enableHoverZoom={true} />
+                      <CardView
+                        card={cardInst.card}
+                        instance={cardInst}
+                        size="sm"
+                        enableHoverZoom={true}
+                      />
                       <span className="absolute -top-2 -left-2 bg-slate-900 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black">
                         #{idx + 1}
                       </span>
@@ -674,7 +734,8 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
                       Nemesis Set • Set Aside (Out of Play)
                     </h3>
                     <p className="text-xs text-slate-600">
-                      These 5 cards are set aside at game start and enter play if "Shadow of the Past" is revealed.
+                      These 5 cards are set aside at game start and enter play if "Shadow of the
+                      Past" is revealed.
                     </p>
                   </div>
                 </div>
@@ -689,7 +750,12 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <div className="flex flex-wrap items-center justify-center gap-5 py-4 max-h-[60vh] overflow-y-auto pr-1">
                 {setAsideCards.map((cardInst) => (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
-                    <CardView card={cardInst.card} instance={cardInst} size="md" enableHoverZoom={true} />
+                    <CardView
+                      card={cardInst.card}
+                      instance={cardInst}
+                      size="md"
+                      enableHoverZoom={true}
+                    />
                     <span className="font-comic text-xs text-slate-600 uppercase">
                       {cardInst.card.name}
                     </span>

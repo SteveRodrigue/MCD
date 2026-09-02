@@ -57,7 +57,9 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
   it('resolves Hero defense when player selects defend_hero via RESOLVE_DECISION_PROMPT', () => {
     const initialHp = state.players[0].health;
     const zeroBoostCard = cardCatalog.getCard('01097b')!;
-    state.encounterDeck = Array(10).fill(null).map(() => createCardInstance(zeroBoostCard));
+    state.encounterDeck = Array(10)
+      .fill(null)
+      .map(() => createCardInstance(zeroBoostCard));
 
     // Start Villain Phase via END_PLAYER_TURN
     const endTurnRes = dispatchAction(state, {
@@ -84,7 +86,8 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
 
   it('opens DEFENDER declaration modal when an engaged Minion attacks', () => {
     // Add an engaged minion (Hydra Mercenary or Armored Guard)
-    const minionCard = cardCatalog.getCard('01110') || cardCatalog.getCardsByType(CardType.MINION)[0];
+    const minionCard =
+      cardCatalog.getCard('01110') || cardCatalog.getCardsByType(CardType.MINION)[0];
     const minionInstance = createCardInstance(minionCard);
     state.players[0].engagedMinions.push(minionInstance);
 
@@ -100,7 +103,11 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
 
     // Prompt for villain attack opens first
     expect(endTurnRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(endTurnRes.state.pendingDecisionPrompt?.options.some((o) => o.id === `defend_ally_${allyInstance.instanceId}`)).toBe(true);
+    expect(
+      endTurnRes.state.pendingDecisionPrompt?.options.some(
+        (o) => o.id === `defend_ally_${allyInstance.instanceId}`,
+      ),
+    ).toBe(true);
 
     // Resolve villain attack with undefended
     const afterVillainAttack = dispatchAction(endTurnRes.state, {
@@ -112,7 +119,11 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     // Next, the engaged minion attack triggers and opens a defender prompt for minion!
     expect(afterVillainAttack.state.pendingDecisionPrompt).toBeDefined();
     expect(afterVillainAttack.state.pendingDecisionPrompt?.title).toContain(minionCard.name);
-    expect(afterVillainAttack.state.pendingDecisionPrompt?.options.some((o) => o.id === `defend_ally_${allyInstance.instanceId}`)).toBe(true);
+    expect(
+      afterVillainAttack.state.pendingDecisionPrompt?.options.some(
+        (o) => o.id === `defend_ally_${allyInstance.instanceId}`,
+      ),
+    ).toBe(true);
 
     // Block with Daredevil
     const afterMinionBlock = dispatchAction(afterVillainAttack.state, {

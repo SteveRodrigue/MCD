@@ -66,7 +66,11 @@ describe('Nemesis Spawning Pipeline (Rules Reference v1.8 p. 19)', () => {
     // 4. Only nemesis set was removed from setAsideCards; unrelated custom card remains!
     expect(res.state.players[0].setAsideCards.some((c) => c.card.code === '01167')).toBe(false);
     expect(res.state.players[0].setAsideCards.some((c) => c.card.code === '01166')).toBe(false);
-    expect(res.state.players[0].setAsideCards.some((c) => c.instanceId === unrelatedSetAsideCard.instanceId)).toBe(true);
+    expect(
+      res.state.players[0].setAsideCards.some(
+        (c) => c.instanceId === unrelatedSetAsideCard.instanceId,
+      ),
+    ).toBe(true);
   });
 
   it('01190 Shadow of the Past: Gains Surge if nemesis minion is not in set-aside pool', () => {

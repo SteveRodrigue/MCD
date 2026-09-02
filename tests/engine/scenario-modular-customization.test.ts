@@ -54,11 +54,21 @@ describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-
     expect(state.sideSchemes.some((s) => s.card.code === '01109')).toBe(false);
 
     // Masters of Evil cards (e.g. Baron Zemo 01128, Whirlwind 01130) SHOULD be in the deck
-    expect(state.encounterDeck.some((c) => c.card.code === '01128' || c.card.code === '01130')).toBe(true);
+    expect(
+      state.encounterDeck.some((c) => c.card.code === '01128' || c.card.code === '01130'),
+    ).toBe(true);
 
     // Scenario-Mandatory sets (Rhino + Standard) remain intact
-    expect(state.encounterDeck.some((c) => c.card.setCode === 'rhino' || c.card.raw.set_code === 'rhino')).toBe(true);
-    expect(state.encounterDeck.some((c) => c.card.setCode === 'standard' || c.card.raw.set_code === 'standard')).toBe(true);
+    expect(
+      state.encounterDeck.some(
+        (c) => c.card.setCode === 'rhino' || c.card.raw.set_code === 'rhino',
+      ),
+    ).toBe(true);
+    expect(
+      state.encounterDeck.some(
+        (c) => c.card.setCode === 'standard' || c.card.raw.set_code === 'standard',
+      ),
+    ).toBe(true);
   });
 
   it('hot-swaps Klaw modular set from Masters of Evil to The Doomsday Chair', () => {
@@ -96,7 +106,7 @@ describe('Milestone 2C: Modular Encounter Set Hot-Swapping & Customization (ADR-
     // The Doomsday Chair cards (e.g. M.O.D.O.K. 01184) SHOULD be in the deck or in play
     expect(
       state.encounterDeck.some((c) => c.card.code === '01184') ||
-      state.players[0].engagedMinions.some((m) => m.card.code === '01184')
+        state.players[0].engagedMinions.some((m) => m.card.code === '01184'),
     ).toBe(true);
   });
 });

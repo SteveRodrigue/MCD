@@ -56,12 +56,18 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
 
     // 1. In Hero Form -> Villain attacks
     const ability = assaultCard.enrichment!.abilities![0];
-    const resHero = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: assaultInst });
+    const resHero = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: assaultInst,
+    });
     expect(resHero.success).toBe(true);
     expect(resHero.state.pendingDecisionPrompt).toBeDefined();
 
     // Resolve defender declaration to complete attack
-    const resolvedHeroState = resolveDefenderDeclaration(resHero.state, { type: 'UNDEFENDED', playerId: 'p1' });
+    const resolvedHeroState = resolveDefenderDeclaration(resHero.state, {
+      type: 'UNDEFENDED',
+      playerId: 'p1',
+    });
     expect(resolvedHeroState.players[0].health).toBeLessThan(initialHp);
 
     // 2. In Alter-Ego Form -> Surges (deals encounter card)
@@ -69,7 +75,10 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     state.players[0].activeFormCard = peterParkerAlterEgo;
     const initialDealtCount = state.players[0].dealtEncounterCards.length;
 
-    const resAlterEgo = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: assaultInst });
+    const resAlterEgo = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: assaultInst,
+    });
     expect(resAlterEgo.success).toBe(true);
     expect(resAlterEgo.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1);
   });
@@ -91,9 +100,15 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(res.state.pendingDecisionPrompt).toBeDefined();
 
     // Resolve villain attack
-    const resAfterVillain = resolveDefenderDeclaration(res.state, { type: 'UNDEFENDED', playerId: 'p1' });
+    const resAfterVillain = resolveDefenderDeclaration(res.state, {
+      type: 'UNDEFENDED',
+      playerId: 'p1',
+    });
     // Resolve minion attack
-    const resAfterMinion = resolveDefenderDeclaration(resAfterVillain, { type: 'UNDEFENDED', playerId: 'p1' });
+    const resAfterMinion = resolveDefenderDeclaration(resAfterVillain, {
+      type: 'UNDEFENDED',
+      playerId: 'p1',
+    });
 
     // Both villain and minion attacked
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
@@ -110,14 +125,20 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     state.sideSchemes = [{ instanceId: bombScareInst.instanceId, card: bombScareCard, threat: 3 }];
 
     const initialHp = state.players[0].health;
-    const resWithScheme = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: explosionInst });
+    const resWithScheme = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: explosionInst,
+    });
     expect(resWithScheme.success).toBe(true);
     expect(resWithScheme.state.players[0].health).toBe(initialHp - 3);
 
     // 2. When Bomb Scare is not in play -> Surges
     state.sideSchemes = [];
     const initialDealt = state.players[0].dealtEncounterCards.length;
-    const resNoScheme = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: explosionInst });
+    const resNoScheme = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: explosionInst,
+    });
     expect(resNoScheme.success).toBe(true);
     expect(resNoScheme.state.players[0].dealtEncounterCards.length).toBe(initialDealt + 1);
   });
@@ -130,9 +151,14 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     // 1. With a side scheme in play
     const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
     const crowdControlInst = createCardInstance(crowdControlCard);
-    state.sideSchemes = [{ instanceId: crowdControlInst.instanceId, card: crowdControlCard, threat: 2 }];
+    state.sideSchemes = [
+      { instanceId: crowdControlInst.instanceId, card: crowdControlCard, threat: 2 },
+    ];
 
-    const resWithScheme = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: masterplanInst });
+    const resWithScheme = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: masterplanInst,
+    });
     expect(resWithScheme.success).toBe(true);
     expect(resWithScheme.state.sideSchemes[0].threat).toBe(6);
 
@@ -140,7 +166,10 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     state.sideSchemes = [];
     state.encounterDeck = [createCardInstance(crowdControlCard)];
 
-    const resNoScheme = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: masterplanInst });
+    const resNoScheme = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: masterplanInst,
+    });
     expect(resNoScheme.success).toBe(true);
     expect(resNoScheme.state.sideSchemes.length).toBe(1);
   });
@@ -151,7 +180,10 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     const ability = underFireCard.enrichment!.abilities![0];
 
     const initialDealt = state.players[0].dealtEncounterCards.length;
-    const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: underFireInst });
+    const res = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: underFireInst,
+    });
 
     expect(res.success).toBe(true);
     expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealt + 2);

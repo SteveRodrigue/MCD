@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, GamePhase, MainSchemeCard, getActiveVillain, getActiveMainScheme, getVillainById, getMainSchemeById } from '@engine/models';
+import {
+  GameState,
+  GamePhase,
+  MainSchemeCard,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainById,
+  getMainSchemeById,
+} from '@engine/models';
 import { ScenarioRegistry } from '@engine/scenarios';
 
 describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
@@ -117,18 +125,27 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
     });
 
     const rhinoPlugin = ScenarioRegistry.get('rhino');
-    const rhinoSetupState = rhinoPlugin.onGameSetup(createBaseState(), { scenarioId: 'rhino', difficulty: 'STANDARD' });
+    const rhinoSetupState = rhinoPlugin.onGameSetup(createBaseState(), {
+      scenarioId: 'rhino',
+      difficulty: 'STANDARD',
+    });
     expect(rhinoSetupState.mainScheme.stage).toBe('1B');
     expect(rhinoSetupState.mainScheme.card.code).toBe('01097b');
     expect((rhinoSetupState.mainScheme.card as MainSchemeCard).stage).toBe('1B');
 
     const klawPlugin = ScenarioRegistry.get('klaw');
-    const klawSetupState = klawPlugin.onGameSetup(createBaseState(), { scenarioId: 'klaw', difficulty: 'STANDARD' });
+    const klawSetupState = klawPlugin.onGameSetup(createBaseState(), {
+      scenarioId: 'klaw',
+      difficulty: 'STANDARD',
+    });
     expect(klawSetupState.mainScheme.stage).toBe('1B');
     expect(klawSetupState.mainScheme.card.code).toBe('01116b');
 
     const ultronPlugin = ScenarioRegistry.get('ultron');
-    const ultronSetupState = ultronPlugin.onGameSetup(createBaseState(), { scenarioId: 'ultron', difficulty: 'STANDARD' });
+    const ultronSetupState = ultronPlugin.onGameSetup(createBaseState(), {
+      scenarioId: 'ultron',
+      difficulty: 'STANDARD',
+    });
     expect(ultronSetupState.mainScheme.stage).toBe('1B');
     expect(ultronSetupState.mainScheme.card.code).toBe('01137b');
   });

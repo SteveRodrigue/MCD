@@ -164,20 +164,21 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               </button>
             );
           })}
-          {prompt.isVoluntary && !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
-            <button
-              onClick={() => onSelectOption('pass')}
-              className="group relative flex items-center justify-between p-3 border-3 border-black rounded-xl bg-slate-200 hover:bg-rose-900 text-slate-800 hover:text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer mt-1 font-black text-sm uppercase tracking-wide"
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
-                  ✕
-                </span>
-                <span>Pass / Do Nothing</span>
-              </div>
-              <XCircle className="w-5 h-5 opacity-0 group-hover:opacity-100 text-rose-400 transition-opacity" />
-            </button>
-          )}
+          {prompt.isVoluntary &&
+            !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
+              <button
+                onClick={() => onSelectOption('pass')}
+                className="group relative flex items-center justify-between p-3 border-3 border-black rounded-xl bg-slate-200 hover:bg-rose-900 text-slate-800 hover:text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer mt-1 font-black text-sm uppercase tracking-wide"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
+                    ✕
+                  </span>
+                  <span>Pass / Do Nothing</span>
+                </div>
+                <XCircle className="w-5 h-5 opacity-0 group-hover:opacity-100 text-rose-400 transition-opacity" />
+              </button>
+            )}
         </div>
       </div>
     </div>,

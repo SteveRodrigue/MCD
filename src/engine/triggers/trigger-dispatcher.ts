@@ -1,7 +1,4 @@
-import {
-  GameState,
-  TriggerType,
-} from '@engine/models';
+import { GameState, TriggerType } from '@engine/models';
 import { executeEffect } from '../effects';
 import { executeAbilityCost } from '../pipeline/cost-engine';
 
@@ -42,7 +39,10 @@ export function dispatchTrigger(
   const identityAbilities = player.activeFormCard.enrichment?.abilities || [];
   for (const ability of identityAbilities) {
     if (ability.trigger === trigger) {
-      if (ability.cost && (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')) {
+      if (
+        ability.cost &&
+        (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')
+      ) {
         executeAbilityCost(state, player, ability);
       }
       executeEffect(state, ability, {
@@ -65,7 +65,10 @@ export function dispatchTrigger(
     const abilities = cardInst.card.enrichment?.abilities || [];
     for (const ability of abilities) {
       if (ability.trigger === trigger && !cardInst.exhausted) {
-        if (ability.cost && (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')) {
+        if (
+          ability.cost &&
+          (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'FORCED_INTERRUPT')
+        ) {
           executeAbilityCost(state, player, ability, cardInst);
         }
         executeEffect(state, ability, {
@@ -131,7 +134,8 @@ export function dispatchTrigger(
           p.discard.push(interruptCard);
         }
 
-        const threatStep = ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
+        const threatStep =
+          ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
         if (threatStep?.effect === 'REMOVE_THREAT') {
           const reduction = Number(threatStep.params?.amount ?? 1);
           currentThreat = Math.max(0, currentThreat - reduction);

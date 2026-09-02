@@ -22,7 +22,13 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -34,8 +40,8 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     state.players[0].activeFormCard = peterParkerAlterEgo;
 
     // Simulate an ability used in Player Phase (e.g. once per phase)
-    state.players[0].usedAbilitiesThisPhase = { 'dummy_ability': 1 };
-    state.players[0].usedAbilitiesThisRound = { 'dummy_ability': 1 };
+    state.players[0].usedAbilitiesThisPhase = { dummy_ability: 1 };
+    state.players[0].usedAbilitiesThisRound = { dummy_ability: 1 };
 
     // Conclude Player Phase -> Run Villain Phase
     endPlayerPhase(state);
@@ -57,8 +63,20 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
-        { id: 'p2', name: 'Captain Marvel', hero: captainMarvelHero, alterEgo: carolDanversAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -82,7 +100,13 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,

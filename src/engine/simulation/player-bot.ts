@@ -1,8 +1,4 @@
-import {
-  GameState,
-  GameAction,
-  CardType,
-} from '@engine/models';
+import { GameState, GameAction, CardType } from '@engine/models';
 import {
   canChangeForm,
   canBasicRecover,

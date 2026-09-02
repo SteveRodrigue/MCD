@@ -25,9 +25,27 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
-        { id: 'p2', name: 'Captain Marvel', hero: captainMarvelHero, alterEgo: carolDanversAlterEgo, deckCards: [] },
-        { id: 'p3', name: 'Iron Man', hero: ironManHero, alterEgo: tonyStarkAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p3',
+          name: 'Iron Man',
+          hero: ironManHero,
+          alterEgo: tonyStarkAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -57,8 +75,20 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
-        { id: 'p2', name: 'Captain Marvel', hero: captainMarvelHero, alterEgo: carolDanversAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -90,8 +120,20 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
       difficulty: 'EXPERT',
       heroicLevel: 1, // Heroic 1 -> +1 base card per player (2 cards each)
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
-        { id: 'p2', name: 'Captain Marvel', hero: captainMarvelHero, alterEgo: carolDanversAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01095') as any, // Rhino II
       mainScheme: cardCatalog.getCard('01097b') as any,
@@ -114,8 +156,20 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
       difficulty: 'EXPERT',
       heroicLevel: 2, // Heroic 2 -> +2 base cards per player (3 cards each)
       players: [
-        { id: 'p1', name: 'Spider-Man', hero: spiderManHero, alterEgo: peterParkerAlterEgo, deckCards: [] },
-        { id: 'p2', name: 'Captain Marvel', hero: captainMarvelHero, alterEgo: carolDanversAlterEgo, deckCards: [] },
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: [],
+        },
       ],
       villain: cardCatalog.getCard('01095') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,

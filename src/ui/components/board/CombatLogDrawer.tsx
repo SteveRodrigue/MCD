@@ -91,7 +91,9 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-comic text-xl text-comic-yellow leading-tight tracking-wide">ACTION CHRONICLE</h2>
+              <h2 className="font-comic text-xl text-comic-yellow leading-tight tracking-wide">
+                ACTION CHRONICLE
+              </h2>
               <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
                 DAILY BUGLE SPECIAL EDITION • ISSUE LOG
               </div>
@@ -183,7 +185,11 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
         ) : (
           filteredLogs.map((dialogue, idx) => (
             <div key={dialogue.id || idx}>
-              <ComicSpeechBalloon dialogue={dialogue} index={idx} fontClass={currentFont.className} />
+              <ComicSpeechBalloon
+                dialogue={dialogue}
+                index={idx}
+                fontClass={currentFont.className}
+              />
 
               {/* Collapsed Raw Debug Inspector */}
               {showRawDebug && dialogue.rawEntry && (
@@ -203,7 +209,9 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
 
       {/* 4. Footer & Debug Accordion */}
       <div className="p-2.5 bg-slate-900 border-t-2 border-comic-black flex items-center justify-between text-xs font-bold text-slate-300 gap-2 flex-wrap">
-        <span>Showing {filteredLogs.length} of {logs.length} Events</span>
+        <span>
+          Showing {filteredLogs.length} of {logs.length} Events
+        </span>
 
         <div className="flex items-center gap-2">
           {/* Cycle Font Button */}
@@ -214,7 +222,9 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
             title={`Current Font: ${currentFont.label}. Click to cycle fonts.`}
           >
             <Type className="w-3.5 h-3.5 text-amber-400" />
-            <span>Font: <span className="text-amber-300 font-normal">{currentFont.label}</span></span>
+            <span>
+              Font: <span className="text-amber-300 font-normal">{currentFont.label}</span>
+            </span>
           </button>
 
           {/* Collapsible Debug Inspector Button */}
@@ -223,7 +233,11 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
             onClick={() => setShowRawDebug((prev) => !prev)}
             className="flex items-center gap-1 px-2 py-1 rounded border border-slate-700 bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-200 cursor-pointer"
           >
-            {showRawDebug ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            {showRawDebug ? (
+              <ChevronDown className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronRight className="w-3.5 h-3.5" />
+            )}
             <span>{showRawDebug ? 'Hide Debug' : 'Show Debug'}</span>
           </button>
         </div>

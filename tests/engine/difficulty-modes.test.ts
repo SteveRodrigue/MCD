@@ -45,7 +45,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
     // Deal lethal damage (14) to Rhino Stage I
     const plugin = ScenarioRegistry.get('rhino');
     state.villain.health = 0;
-    const { state: resState, victory } = plugin.onVillainDefeated(state, state.villain.instanceId || '');
+    const { state: resState, victory } = plugin.onVillainDefeated(
+      state,
+      state.villain.instanceId || '',
+    );
 
     expect(victory).toBe(true);
     expect(resState.winner).toBe('HEROES');
@@ -61,7 +64,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
 
     // Defeat Stage I
     state.villain.health = 0;
-    const { state: stage2State, advancedStage } = plugin.onVillainDefeated(state, state.villain.instanceId || '');
+    const { state: stage2State, advancedStage } = plugin.onVillainDefeated(
+      state,
+      state.villain.instanceId || '',
+    );
 
     expect(advancedStage).toBe(true);
     expect(stage2State.winner).toBeNull();
@@ -76,7 +82,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
 
     // Defeat Stage II
     stage2State.villain.health = 0;
-    const { state: winState, victory } = plugin.onVillainDefeated(stage2State, stage2State.villain.instanceId || '');
+    const { state: winState, victory } = plugin.onVillainDefeated(
+      stage2State,
+      stage2State.villain.instanceId || '',
+    );
 
     expect(victory).toBe(true);
     expect(winState.winner).toBe('HEROES');
@@ -92,7 +101,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
 
     // Defeat Stage II
     state.villain.health = 0;
-    const { state: stage3State, advancedStage } = plugin.onVillainDefeated(state, state.villain.instanceId || '');
+    const { state: stage3State, advancedStage } = plugin.onVillainDefeated(
+      state,
+      state.villain.instanceId || '',
+    );
 
     expect(advancedStage).toBe(true);
     expect(stage3State.winner).toBeNull();
@@ -107,7 +119,10 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
 
     // Defeat Stage III
     stage3State.villain.health = 0;
-    const { state: winState, victory } = plugin.onVillainDefeated(stage3State, stage3State.villain.instanceId || '');
+    const { state: winState, victory } = plugin.onVillainDefeated(
+      stage3State,
+      stage3State.villain.instanceId || '',
+    );
 
     expect(victory).toBe(true);
     expect(winState.winner).toBe('HEROES');

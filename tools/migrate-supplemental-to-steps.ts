@@ -72,7 +72,9 @@ export function migrateSupplementalFiles() {
     }
 
     fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n', 'utf-8');
-    console.log(`Migrated ${file}: ${migratedCardsCount} cards, ${migratedAbilitiesCount} abilities.`);
+    console.log(
+      `Migrated ${file}: ${migratedCardsCount} cards, ${migratedAbilitiesCount} abilities.`,
+    );
   }
 }
 

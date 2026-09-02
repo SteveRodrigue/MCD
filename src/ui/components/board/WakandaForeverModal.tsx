@@ -149,7 +149,9 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
           {/* Left Reference Card */}
           <div className="lg:col-span-4 flex flex-col items-center bg-slate-800/90 p-4 rounded-xl border-3 border-slate-950 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
             <div className="w-full flex items-center justify-between mb-2">
-              <span className="text-xs font-black text-purple-400 uppercase tracking-wider">Triggering Event</span>
+              <span className="text-xs font-black text-purple-400 uppercase tracking-wider">
+                Triggering Event
+              </span>
               <span className="bg-purple-950 text-purple-200 text-[10px] font-bold px-2 py-0.5 rounded border border-purple-400/40">
                 COST: 1
               </span>
@@ -164,7 +166,10 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                 ⚡🐾⚡
               </div>
               <div className="text-[10px] font-bold text-purple-200 leading-tight bg-purple-900/60 p-2 rounded border border-purple-400/30 text-left">
-                <span className="font-black text-amber-300 uppercase">Hero Action:</span> Trigger the "Special" ability of each <span className="text-amber-300 font-bold">Black Panther</span> upgrade you control, one at a time, in the order of your choice.
+                <span className="font-black text-amber-300 uppercase">Hero Action:</span> Trigger
+                the "Special" ability of each{' '}
+                <span className="text-amber-300 font-bold">Black Panther</span> upgrade you control,
+                one at a time, in the order of your choice.
               </div>
             </div>
 
@@ -175,7 +180,9 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                 <span>TACTICAL FINISHER RULE (RR v1.8 p. 28)</span>
               </div>
               <p className="text-[11px] text-slate-300 leading-normal">
-                The <strong className="text-amber-300 font-bold">final upgrade</strong> executed in your sequence receives its enhanced <strong className="text-amber-300">Finisher Bonus</strong> (marked with 💥)!
+                The <strong className="text-amber-300 font-bold">final upgrade</strong> executed in
+                your sequence receives its enhanced{' '}
+                <strong className="text-amber-300">Finisher Bonus</strong> (marked with 💥)!
               </p>
             </div>
           </div>
@@ -183,7 +190,9 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
           {/* Right Drag & Drop Sequence */}
           <div className="lg:col-span-8 flex flex-col space-y-4">
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 border-b border-slate-700 pb-2">
-              <span className="uppercase tracking-wider">Execution Pipeline (Step 1 ➔ Step {orderedUpgrades.length})</span>
+              <span className="uppercase tracking-wider">
+                Execution Pipeline (Step 1 ➔ Step {orderedUpgrades.length})
+              </span>
               <span className="text-amber-400 font-black">FINAL STEP = FINISHER BOOSTED!</span>
             </div>
 
@@ -242,7 +251,9 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
                       <span className="text-2xl">{card.icon}</span>
                       <div className="truncate">
                         <h4 className="font-black text-xs text-slate-100 truncate">{card.name}</h4>
-                        <span className="text-[9px] text-slate-400 font-mono uppercase">Upgrade Special</span>
+                        <span className="text-[9px] text-slate-400 font-mono uppercase">
+                          Upgrade Special
+                        </span>
                       </div>
                     </div>
 
@@ -274,13 +285,17 @@ export const WakandaForeverModal: React.FC<WakandaForeverModalProps> = ({
 
             {/* Summary Checklist */}
             <div className="bg-slate-950/80 p-3.5 rounded-xl border-2 border-slate-950 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
-              <h3 className="text-xs font-black text-slate-300 uppercase tracking-wider mb-2">Planned Resolution Sequence:</h3>
+              <h3 className="text-xs font-black text-slate-300 uppercase tracking-wider mb-2">
+                Planned Resolution Sequence:
+              </h3>
               <div className="text-xs space-y-1 text-slate-400 font-mono">
                 {orderedUpgrades.map((u, i) => {
                   const isFinal = i === orderedUpgrades.length - 1;
                   return (
                     <div key={u.id} className="flex items-center justify-between">
-                      <span>{i + 1}. {u.name}</span>
+                      <span>
+                        {i + 1}. {u.name}
+                      </span>
                       <span className={isFinal ? 'text-amber-400 font-bold' : 'text-slate-400'}>
                         ➔ {isFinal ? u.finisherEffect : u.baseEffect}
                       </span>

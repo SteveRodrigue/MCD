@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
-import { Shield, Heart, Users, Zap, AlertOctagon, Sparkles, RefreshCw, Swords, Target } from 'lucide-react';
-import { PlayerState, StatusCard, GameState, HeroCard, AlterEgoCard, GameAction } from '../../../engine/models';
+import {
+  Shield,
+  Heart,
+  Users,
+  Zap,
+  AlertOctagon,
+  Sparkles,
+  RefreshCw,
+  Swords,
+  Target,
+} from 'lucide-react';
+import {
+  PlayerState,
+  StatusCard,
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  GameAction,
+} from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { IdentityActionModal } from './IdentityActionModal';
@@ -36,7 +53,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState
-    ? gameState.phase === 'PLAYER_PHASE' && gameState.players[gameState.activePlayerIndex]?.id === player.id
+    ? gameState.phase === 'PLAYER_PHASE' &&
+      gameState.players[gameState.activePlayerIndex]?.id === player.id
     : true;
   const heroCard = player.hero as HeroCard;
   const alterEgoCard = player.alterEgo as AlterEgoCard;
@@ -49,7 +67,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const healthPercent = Math.max(0, Math.min(100, (player.health / effectiveMaxHealth) * 100));
   const engagedMinions = player.engagedMinions || [];
 
-  const effectiveStats = getEffectiveHeroStats(gameState || ({ sideSchemes: [], players: [] } as any), player);
+  const effectiveStats = getEffectiveHeroStats(
+    gameState || ({ sideSchemes: [], players: [] } as any),
+    player,
+  );
   const effectiveHandSize = getEffectiveHandSize(player, gameState);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
@@ -63,10 +84,17 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handBonus = effectiveHandSize - baseHandSize;
 
   // Action Permissions
-  const validHeroAttackTargets = gameState ? getValidAttackTargets(gameState, player.id, 'hero') : [];
+  const validHeroAttackTargets = gameState
+    ? getValidAttackTargets(gameState, player.id, 'hero')
+    : [];
   const canFlip = !player.basicChangeFormUsedThisRound && !player.formChangedThisRound;
-  const canRecover = !isHero && !player.exhausted && !player.recoveryUsedThisRound && player.health < effectiveMaxHealth;
-  const canAttack = isHero && !player.exhausted && isPlayerTurn && (validHeroAttackTargets.length > 0);
+  const canRecover =
+    !isHero &&
+    !player.exhausted &&
+    !player.recoveryUsedThisRound &&
+    player.health < effectiveMaxHealth;
+  const canAttack =
+    isHero && !player.exhausted && isPlayerTurn && validHeroAttackTargets.length > 0;
   const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;
 
   // Attack Target Selection State
@@ -137,7 +165,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   return (
     <section
       className={`comic-panel p-4 bg-white/95 relative shadow-comic space-y-4 transition-all ${
-        !isFocused ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300' : 'ring-2 ring-comic-blue shadow-comic-lg'
+        !isFocused
+          ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300'
+          : 'ring-2 ring-comic-blue shadow-comic-lg'
       }`}
     >
       {/* Zone Title Ribbon */}
@@ -182,7 +212,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         {engagedMinions.length > 0 ? (
           <div className="flex flex-wrap gap-4 items-center pt-1">
             {engagedMinions.map((minion) => {
-              const isGuard = minion.card.traits?.includes('Guard') || minion.card.text?.includes('Guard');
+              const isGuard =
+                minion.card.traits?.includes('Guard') || minion.card.text?.includes('Guard');
               const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
 
               return (
@@ -264,33 +295,49 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               <>
                 <div className="flex flex-col items-center">
                   <span className="text-slate-500 text-[8px] uppercase">THW</span>
-                  <span className={`flex items-center ${thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'}`}>
+                  <span
+                    className={`flex items-center ${thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'}`}
+                  >
                     {effectiveStats.thwart}
-                    {thwBonus > 0 && <span className="text-[8px] text-emerald-500 ml-0.5">+{thwBonus}</span>}
+                    {thwBonus > 0 && (
+                      <span className="text-[8px] text-emerald-500 ml-0.5">+{thwBonus}</span>
+                    )}
                   </span>
                 </div>
                 <div className="h-4 w-px bg-slate-300" />
                 <div className="flex flex-col items-center">
                   <span className="text-slate-500 text-[8px] uppercase">ATK</span>
-                  <span className={`flex items-center ${atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'}`}>
+                  <span
+                    className={`flex items-center ${atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'}`}
+                  >
                     {effectiveStats.attack}
-                    {atkBonus > 0 && <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>}
+                    {atkBonus > 0 && (
+                      <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
+                    )}
                   </span>
                 </div>
                 <div className="h-4 w-px bg-slate-300" />
                 <div className="flex flex-col items-center">
                   <span className="text-slate-500 text-[8px] uppercase">DEF</span>
-                  <span className={`flex items-center ${defBonus > 0 ? 'text-blue-600 font-black' : 'text-slate-900'}`}>
+                  <span
+                    className={`flex items-center ${defBonus > 0 ? 'text-blue-600 font-black' : 'text-slate-900'}`}
+                  >
                     {effectiveStats.defense}
-                    {defBonus > 0 && <span className="text-[8px] text-blue-500 ml-0.5">+{defBonus}</span>}
+                    {defBonus > 0 && (
+                      <span className="text-[8px] text-blue-500 ml-0.5">+{defBonus}</span>
+                    )}
                   </span>
                 </div>
                 <div className="h-4 w-px bg-slate-300" />
                 <div className="flex flex-col items-center">
                   <span className="text-slate-500 text-[8px] uppercase">HAND</span>
-                  <span className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}>
+                  <span
+                    className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}
+                  >
                     {effectiveHandSize}
-                    {handBonus > 0 && <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>}
+                    {handBonus > 0 && (
+                      <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>
+                    )}
                   </span>
                 </div>
               </>
@@ -303,9 +350,13 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 <div className="h-4 w-px bg-slate-300" />
                 <div className="flex flex-col items-center px-2">
                   <span className="text-slate-500 text-[8px] uppercase">HAND SIZE</span>
-                  <span className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}>
+                  <span
+                    className={`flex items-center ${handBonus > 0 ? 'text-amber-600 font-black' : 'text-slate-900'}`}
+                  >
                     {effectiveHandSize}
-                    {handBonus > 0 && <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>}
+                    {handBonus > 0 && (
+                      <span className="text-[8px] text-amber-500 ml-0.5">+{handBonus}</span>
+                    )}
                   </span>
                 </div>
               </>
@@ -362,7 +413,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       : 'bg-comic-red hover:bg-red-600 text-white font-bold active:translate-y-0.5'
                     : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
                 }`}
-                title={canFlip ? 'Change Form (Limit once per round)' : 'Already changed form this round'}
+                title={
+                  canFlip ? 'Change Form (Limit once per round)' : 'Already changed form this round'
+                }
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${canFlip ? 'animate-pulse' : ''}`} />
                 <span>{isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)'}</span>
@@ -402,7 +455,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         ? 'bg-comic-red hover:bg-red-600 text-white font-bold active:translate-y-0.5'
                         : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
                     }`}
-                    title={player.exhausted ? 'Hero is exhausted' : `Exhaust to attack for ${effectiveStats.attack} DMG`}
+                    title={
+                      player.exhausted
+                        ? 'Hero is exhausted'
+                        : `Exhaust to attack for ${effectiveStats.attack} DMG`
+                    }
                   >
                     <Swords className="w-3 h-3" />
                     <span>Attack ({effectiveStats.attack})</span>
@@ -451,9 +508,17 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           {player.allies.length > 0 ? (
             <div className="flex flex-wrap gap-3 items-center pt-1">
               {player.allies.map((ally) => {
-                const allyStats = gameState ? getEffectiveAllyStats(gameState, ally) : { attack: (ally.card as any).attack ?? 1, thwart: (ally.card as any).thwart ?? 1 };
+                const allyStats = gameState
+                  ? getEffectiveAllyStats(gameState, ally)
+                  : {
+                      attack: (ally.card as any).attack ?? 1,
+                      thwart: (ally.card as any).thwart ?? 1,
+                    };
                 const canAct = isPlayerTurn && !ally.exhausted;
-                const canThw = canAct && ((gameState?.mainScheme?.threat || 0) > 0 || (gameState?.sideSchemes || []).some(s => s.threat > 0));
+                const canThw =
+                  canAct &&
+                  ((gameState?.mainScheme?.threat || 0) > 0 ||
+                    (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
                 return (
                   <div key={ally.instanceId} className="flex flex-col items-center gap-1">
@@ -503,7 +568,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         }
                         disabled={!canThw}
                         className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={canThw ? `Thwart main scheme for ${allyStats.thwart} threat` : 'No threat on schemes or ally exhausted'}
+                        title={
+                          canThw
+                            ? `Thwart main scheme for ${allyStats.thwart} threat`
+                            : 'No threat on schemes or ally exhausted'
+                        }
                       >
                         🛡️ {allyStats.thwart}
                       </button>

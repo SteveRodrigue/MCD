@@ -27,8 +27,12 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     });
 
     // Justice + Basic cards to form a 40-card deck
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
 
     const fullDeck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
     return { identity: spiderManIdentity, deck: fullDeck };
@@ -182,7 +186,9 @@ describe('Game Setup Sequence (Learn to Play & RR v1.8)', () => {
     const { villain, mainScheme, encounterCards } = createRhinoEncounterDeck();
 
     const obligation = catalog.getCard('01165')!;
-    const nemesisCards = catalog.getCardsBySet('spider_man_nemesis').flatMap((c) => Array(c.quantity).fill(c));
+    const nemesisCards = catalog
+      .getCardsBySet('spider_man_nemesis')
+      .flatMap((c) => Array(c.quantity).fill(c));
 
     const gameState = setupGame({
       players: [

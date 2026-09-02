@@ -34,16 +34,22 @@ async function runAndLogSimulations() {
     if (c.type === 'hero' || c.type === 'alter_ego') return [];
     return Array(c.quantity).fill(c);
   });
-  const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-  const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+  const justiceCards = catalog
+    .getCardsByFaction('justice' as any)
+    .flatMap((c) => Array(c.quantity).fill(c));
+  const basicCards = catalog
+    .getCardsByFaction('basic' as any)
+    .flatMap((c) => Array(c.quantity).fill(c));
   const deckCards = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
   // Encounter Deck: Rhino + Standard + Bomb Scare
-  const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
+  const rhinoCards = catalog
+    .getCardsBySet('rhino')
+    .filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
   const standardCards = catalog.getCardsBySet('standard');
   const bombScareCards = catalog.getCardsBySet('bomb_scare');
   const encounterCards = [...rhinoCards, ...standardCards, ...bombScareCards].flatMap((c) =>
-    Array(c.quantity).fill(c)
+    Array(c.quantity).fill(c),
   );
 
   const rhino = catalog.getCard('01094') as VillainCard; // Rhino I
@@ -93,7 +99,7 @@ async function runAndLogSimulations() {
           : '💀 HERO DEFEAT (Knocked Out)';
 
     console.log(
-      `  ✓ Match [${matchId}]: ${outcomeText} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}/10, Rhino HP: ${result.finalState.villain.health}/14, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`
+      `  ✓ Match [${matchId}]: ${outcomeText} in ${result.roundsPlayed} Rounds (Hero HP: ${result.finalState.players[0].health}/10, Rhino HP: ${result.finalState.villain.health}/14, Threat: ${result.finalState.mainScheme.threat}/${result.finalState.mainScheme.targetThreat})`,
     );
   }
 
@@ -109,8 +115,10 @@ async function runAndLogSimulations() {
 }
 
 function generateSummaryMarkdown(logsDir: string, currentBatchResults: any[]): string {
-  const allFiles = fs.readdirSync(logsDir).filter((f) => f.startsWith('game_') && f.endsWith('.md'));
-  
+  const allFiles = fs
+    .readdirSync(logsDir)
+    .filter((f) => f.startsWith('game_') && f.endsWith('.md'));
+
   return `# Marvel Champions Match Simulator — History & Execution Index
 
 **Last Batch Run:** ${new Date().toISOString()}  
@@ -126,10 +134,7 @@ function generateSummaryMarkdown(logsDir: string, currentBatchResults: any[]): s
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 ${currentBatchResults
   .map((m) => {
-    const outcome =
-      m.result.winner === 'HEROES'
-        ? '🏆 **HERO VICTORY**'
-        : '💀 **HERO DEFEAT**';
+    const outcome = m.result.winner === 'HEROES' ? '🏆 **HERO VICTORY**' : '💀 **HERO DEFEAT**';
     const condition =
       m.result.winner === 'HEROES'
         ? 'Rhino HP reduced to 0'

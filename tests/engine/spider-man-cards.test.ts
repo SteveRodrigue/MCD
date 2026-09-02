@@ -26,8 +26,12 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       if (c.type === 'hero' || c.type === 'alter_ego') return [];
       return Array(c.quantity).fill(c);
     });
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
     const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
@@ -95,7 +99,9 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       expect(gameState.players[0].health).toBe(initialHealth);
       // Backflip was discarded
       expect(gameState.players[0].discard.some((c) => c.card.code === '01003')).toBe(true);
-      expect(gameState.players[0].hand.some((c) => c.instanceId === backflipInstance.instanceId)).toBe(false);
+      expect(
+        gameState.players[0].hand.some((c) => c.instanceId === backflipInstance.instanceId),
+      ).toBe(false);
     });
   });
 
@@ -150,7 +156,10 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       expect(res.result.success).toBe(true);
       // 5 + 4 = 9 HP
       expect(res.state.players[0].health).toBe(9);
-      expect(res.state.players[0].tableau.find((c) => c.instanceId === auntMayInst.instanceId)?.exhausted).toBe(true);
+      expect(
+        res.state.players[0].tableau.find((c) => c.instanceId === auntMayInst.instanceId)
+          ?.exhausted,
+      ).toBe(true);
     });
   });
 
@@ -189,7 +198,9 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       });
 
       expect(resourceRes.result.success).toBe(true);
-      const updatedShooter = resourceRes.state.players[0].tableau.find((c) => c.card.code === '01008')!;
+      const updatedShooter = resourceRes.state.players[0].tableau.find(
+        (c) => c.card.code === '01008',
+      )!;
       expect(updatedShooter.tokens?.counters).toBe(2);
       expect(updatedShooter.exhausted).toBe(true);
     });

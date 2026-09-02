@@ -41,10 +41,13 @@ describe('GameState Logger Service', () => {
     await logGameStateSnapshot(mockGameState, { type: 'END_TURN' } as any);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith('/api/logs/gamestate', expect.objectContaining({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/logs/gamestate',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.state.roundNumber).toBe(2);

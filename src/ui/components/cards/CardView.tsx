@@ -18,7 +18,16 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
-  zoomOrigin?: 'bottom' | 'top' | 'center' | 'left' | 'right' | 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+  zoomOrigin?:
+    | 'bottom'
+    | 'top'
+    | 'center'
+    | 'left'
+    | 'right'
+    | 'bottom-left'
+    | 'bottom-right'
+    | 'top-left'
+    | 'top-right';
   className?: string;
 }
 
@@ -94,7 +103,10 @@ export const CardView: React.FC<CardViewProps> = ({
       }[size];
 
   // Scale Factors to achieve a UNIFIED CONSTANT ZOOM SIZE across all UI locations (~308px portrait width, ~440px landscape width at 100%)
-  const zoomScaleFactors: Record<'portrait' | 'landscape', Record<'sm' | 'md' | 'lg' | 'xl' | 'hand', number>> = {
+  const zoomScaleFactors: Record<
+    'portrait' | 'landscape',
+    Record<'sm' | 'md' | 'lg' | 'xl' | 'hand', number>
+  > = {
     portrait: {
       sm: 2.75, // 112px * 2.75 = 308px
       hand: 2.37, // 130px * 2.37 = 308px
@@ -174,14 +186,18 @@ export const CardView: React.FC<CardViewProps> = ({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
-        exhaustedState ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100' : 'rotate-0'
+        exhaustedState
+          ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100'
+          : 'rotate-0'
       } ${className}`}
     >
       {/* Outer Comic Card Container with Dynamic Hover Zoom */}
       <div
-        style={{
-          '--card-zoom-scale': effectiveZoomScale,
-        } as React.CSSProperties}
+        style={
+          {
+            '--card-zoom-scale': effectiveZoomScale,
+          } as React.CSSProperties
+        }
         className={`relative rounded-xl overflow-hidden border-3 border-comic-black shadow-comic transition-all duration-200 ease-out transform ${originClass} ${
           enableHoverZoom
             ? 'group-hover:scale-[var(--card-zoom-scale)] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
@@ -202,9 +218,7 @@ export const CardView: React.FC<CardViewProps> = ({
       >
         {/* Exhausted Indicator Tag */}
         {exhaustedState && (
-          <div
-            className="absolute top-1.5 left-1.5 z-20 bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none"
-          >
+          <div className="absolute top-1.5 left-1.5 z-20 bg-slate-950/90 text-amber-300 font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none">
             EXHAUSTED
           </div>
         )}

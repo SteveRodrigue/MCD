@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 import { CardCatalog } from '../data/importer/card-loader';
-import {
-  setupGame,
-  dispatchAction,
-  getScenario,
-  getStarterDeck,
-  GameState,
-} from '../engine';
+import { setupGame, dispatchAction, getScenario, getStarterDeck, GameState } from '../engine';
 import { ScenarioSelector, SetupSelection } from './components/setup/ScenarioSelector';
 import { MulliganScreen } from './components/setup/MulliganScreen';
 import { GameBoard } from './components/board/GameBoard';

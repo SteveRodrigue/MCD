@@ -64,7 +64,9 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
 
     expect(res.result.success).toBe(true);
     expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt?.title).toContain('End of Player Phase: Voluntary Discard');
+    expect(res.state.pendingDecisionPrompt?.title).toContain(
+      'End of Player Phase: Voluntary Discard',
+    );
     expect(res.state.pendingDecisionPrompt?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
   });
 

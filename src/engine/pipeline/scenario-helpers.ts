@@ -9,7 +9,8 @@ export function handleVillainDefeat(state: GameState, villainInstanceId?: string
   const scenarioId = state.scenarioId || 'rhino';
   if (ScenarioRegistry.has(scenarioId)) {
     const plugin = ScenarioRegistry.get(scenarioId);
-    const targetId = villainInstanceId || state.villains?.[state.activeVillainIndex ?? 0]?.instanceId || '';
+    const targetId =
+      villainInstanceId || state.villains?.[state.activeVillainIndex ?? 0]?.instanceId || '';
     const res = plugin.onVillainDefeated(state, targetId);
     return res.state;
   }
@@ -22,11 +23,17 @@ export function handleVillainDefeat(state: GameState, villainInstanceId?: string
  * Handles a main scheme reaching its target threat threshold by delegating stage progression
  * or game defeat to the registered ScenarioPlugin.
  */
-export function handleMainSchemeCompletion(state: GameState, mainSchemeInstanceId?: string): GameState {
+export function handleMainSchemeCompletion(
+  state: GameState,
+  mainSchemeInstanceId?: string,
+): GameState {
   const scenarioId = state.scenarioId || 'rhino';
   if (ScenarioRegistry.has(scenarioId)) {
     const plugin = ScenarioRegistry.get(scenarioId);
-    const targetId = mainSchemeInstanceId || state.mainSchemes?.[state.activeMainSchemeIndex ?? 0]?.instanceId || '';
+    const targetId =
+      mainSchemeInstanceId ||
+      state.mainSchemes?.[state.activeMainSchemeIndex ?? 0]?.instanceId ||
+      '';
     const res = plugin.onMainSchemeCompleted(state, targetId);
     return res.state;
   }

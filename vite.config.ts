@@ -74,7 +74,8 @@ function gameStateSnapshotPlugin(): Plugin {
           fs.writeFileSync(snapshotPath, JSON.stringify(payload, null, 2), 'utf8');
 
           // 3. Keep latest 25 rolling snapshots, prune older
-          const files = fs.readdirSync(snapshotsDir)
+          const files = fs
+            .readdirSync(snapshotsDir)
             .filter((f) => f.startsWith('gamestate_') && f.endsWith('.json'))
             .map((f) => ({ name: f, time: fs.statSync(path.join(snapshotsDir, f)).mtimeMs }))
             .sort((a, b) => b.time - a.time);
@@ -136,6 +137,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    strictPort: true,
     open: false,
   },
 });

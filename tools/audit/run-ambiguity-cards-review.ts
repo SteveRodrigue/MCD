@@ -7,9 +7,15 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '../../');
 
 const SUPPLEMENTAL_CORE = path.join(ROOT_DIR, 'src/data/supplemental/pack/core.json');
-const SUPPLEMENTAL_ENCOUNTER = path.join(ROOT_DIR, 'src/data/supplemental/pack/core_encounter.json');
+const SUPPLEMENTAL_ENCOUNTER = path.join(
+  ROOT_DIR,
+  'src/data/supplemental/pack/core_encounter.json',
+);
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
-const LOG_FILE = path.join(ROOT_DIR, `logs/skills/card_integration_${new Date().toISOString().split('T')[0]}.log`);
+const LOG_FILE = path.join(
+  ROOT_DIR,
+  `logs/skills/card_integration_${new Date().toISOString().split('T')[0]}.log`,
+);
 
 function appendLog(level: 'INFO' | 'WARN', message: string) {
   const ts = new Date().toISOString();
@@ -21,9 +27,13 @@ function appendLog(level: 'INFO' | 'WARN', message: string) {
 }
 
 export function reviewAllAmbiguityCards() {
-  const ambiguityFiles = fs.readdirSync(AMBIGUITIES_DIR).filter((f) => f.endsWith('.md') && f !== 'README.md');
+  const ambiguityFiles = fs
+    .readdirSync(AMBIGUITIES_DIR)
+    .filter((f) => f.endsWith('.md') && f !== 'README.md');
 
-  console.log(`Starting Card Integration Protocol review across ${ambiguityFiles.length} ambiguity cards...`);
+  console.log(
+    `Starting Card Integration Protocol review across ${ambiguityFiles.length} ambiguity cards...`,
+  );
 
   const coreJson = JSON.parse(fs.readFileSync(SUPPLEMENTAL_CORE, 'utf-8'));
   const encounterJson = JSON.parse(fs.readFileSync(SUPPLEMENTAL_ENCOUNTER, 'utf-8'));
@@ -73,7 +83,8 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control.',
+      reconstructedText:
+        'ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control.',
     },
     '01072': {
       abilities: [
@@ -130,7 +141,8 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)',
+      reconstructedText:
+        'HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)',
     },
     '01092': {
       abilities: [
@@ -147,7 +159,8 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1.',
+      reconstructedText:
+        'ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1.',
     },
   };
 
@@ -172,7 +185,8 @@ export function reviewAllAmbiguityCards() {
     const filePath = path.join(AMBIGUITIES_DIR, file);
     const content = fs.readFileSync(filePath, 'utf-8');
 
-    const codeMatch = content.match(/card_code:\s*["']?([0-9a-z_]+)["']?/i) || file.match(/^[a-z]+_([0-9a-z]+)_/i);
+    const codeMatch =
+      content.match(/card_code:\s*["']?([0-9a-z_]+)["']?/i) || file.match(/^[a-z]+_([0-9a-z]+)_/i);
     const nameMatch = content.match(/card_name:\s*["']?([^"'\r\n]+)["']?/i);
     const packMatch = content.match(/pack:\s*["']?([^"'\r\n]+)["']?/i) || file.match(/^([a-z]+)_/i);
 
@@ -194,7 +208,10 @@ export function reviewAllAmbiguityCards() {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-      appendLog('INFO', `Card [${name}] (${code}) integrated without any code change required (Tier 1, confidence 98%).`);
+      appendLog(
+        'INFO',
+        `Card [${name}] (${code}) integrated without any code change required (Tier 1, confidence 98%).`,
+      );
       promotedCount += 1;
       continue;
     }
@@ -215,7 +232,10 @@ export function reviewAllAmbiguityCards() {
     cardEntry.audit.reviewedAt = new Date().toISOString().slice(0, 16);
     delete cardEntry.abilities; // Strip active abilities per ADR-0021 isolation rule
 
-    appendLog('WARN', `Card [${name}] (${code}) card ambiguity: Circuit-Breaker fired (confidence 80%) -> docs/ambiguities/${file}`);
+    appendLog(
+      'WARN',
+      `Card [${name}] (${code}) card ambiguity: Circuit-Breaker fired (confidence 80%) -> docs/ambiguities/${file}`,
+    );
     isolatedCount += 1;
   }
 

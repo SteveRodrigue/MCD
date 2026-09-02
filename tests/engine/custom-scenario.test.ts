@@ -128,7 +128,10 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
     expect(shiftedState.winner).toBeNull();
 
     // Defeat villain 2 -> Victory!
-    const { state: winState, victory } = customPlugin.onVillainDefeated(shiftedState, 'hydra_lieutenant_2');
+    const { state: winState, victory } = customPlugin.onVillainDefeated(
+      shiftedState,
+      'hydra_lieutenant_2',
+    );
     expect(victory).toBe(true);
     expect(winState.winner).toBe('HEROES');
   });

@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import {
-  GameState,
-  HeroCard,
-  AlterEgoCard,
-  VillainCard,
-  MainSchemeCard,
-} from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, VillainCard, MainSchemeCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';

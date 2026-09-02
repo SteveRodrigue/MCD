@@ -149,7 +149,8 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
 
     const currentScroll = el.scrollLeft;
     const targetOffset = targetRect.left - containerRect.left;
-    const desiredScroll = currentScroll + targetOffset - (containerRect.width - targetRect.width) / 2;
+    const desiredScroll =
+      currentScroll + targetOffset - (containerRect.width - targetRect.width) / 2;
 
     el.scrollTo({
       left: Math.max(0, desiredScroll),
@@ -157,14 +158,11 @@ export function useEdgeScroll<T extends HTMLElement>(options: UseEdgeScrollOptio
     });
   }, []);
 
-  const scrollByAmount = useCallback(
-    (amount: number) => {
-      const el = containerRef.current;
-      if (!el) return;
-      el.scrollBy({ left: amount, behavior: 'smooth' });
-    },
-    [],
-  );
+  const scrollByAmount = useCallback((amount: number) => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: amount, behavior: 'smooth' });
+  }, []);
 
   return {
     containerRef,

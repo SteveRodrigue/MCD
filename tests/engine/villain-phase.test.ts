@@ -34,8 +34,12 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       if (c.type === 'hero' || c.type === 'alter_ego') return [];
       return Array(c.quantity).fill(c);
     });
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
     const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
@@ -105,7 +109,9 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       // Rhino base scheme (1) + Boost (2) = +3 threat
       expect(gameState.mainScheme.threat).toBe(initialThreat + 3);
       // Boost card should be discarded
-      expect(gameState.encounterDiscard.some((c) => c.instanceId === boostCard.instanceId)).toBe(true);
+      expect(gameState.encounterDiscard.some((c) => c.instanceId === boostCard.instanceId)).toBe(
+        true,
+      );
     });
 
     it('Villain Attacks player in Hero form (drawing boost card)', () => {
@@ -192,7 +198,12 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       // Extract attack/scheme activation log keys
       const activationLogs = gameState.log.filter((l) =>
-        ['villain.attack.hit', 'villain.scheme.threat', 'minion.attack.hit', 'minion.scheme.threat'].includes(l.key),
+        [
+          'villain.attack.hit',
+          'villain.scheme.threat',
+          'minion.attack.hit',
+          'minion.scheme.threat',
+        ].includes(l.key),
       );
 
       // Verify sequence:

@@ -89,9 +89,7 @@ export function canPayAbilityCost(
       }
     } else {
       const current =
-        sourceCardInst?.counters?.[counterType] ??
-        sourceCardInst?.tokens?.counters ??
-        0;
+        sourceCardInst?.counters?.[counterType] ?? sourceCardInst?.tokens?.counters ?? 0;
       if (current < amount) {
         return {
           allowed: false,
@@ -232,13 +230,13 @@ export function executeAbilityCost(
       player.counters[counterType] = Math.max(0, current - amount);
     } else if (sourceCardInst) {
       sourceCardInst.counters = sourceCardInst.counters || {};
-      const current =
-        sourceCardInst.counters[counterType] ??
-        sourceCardInst.tokens?.counters ??
-        0;
+      const current = sourceCardInst.counters[counterType] ?? sourceCardInst.tokens?.counters ?? 0;
       sourceCardInst.counters[counterType] = Math.max(0, current - amount);
       if (sourceCardInst.tokens) {
-        sourceCardInst.tokens.counters = Math.max(0, (sourceCardInst.tokens.counters || 0) - amount);
+        sourceCardInst.tokens.counters = Math.max(
+          0,
+          (sourceCardInst.tokens.counters || 0) - amount,
+        );
       }
     }
   } else if (cost.spendTokens && sourceCardInst) {
@@ -307,7 +305,10 @@ export function isResourceAbility(timing: AbilityTiming): boolean {
 /**
  * Returns true if the specified ability timing is legal in the current identity form (ADR-0039).
  */
-export function isAbilityPlayableInForm(timing: AbilityTiming, currentForm: 'hero' | 'alter_ego'): boolean {
+export function isAbilityPlayableInForm(
+  timing: AbilityTiming,
+  currentForm: 'hero' | 'alter_ego',
+): boolean {
   if (timing.startsWith('HERO_') && currentForm !== 'hero') return false;
   if (timing.startsWith('ALTER_EGO_') && currentForm !== 'alter_ego') return false;
   return true;

@@ -55,7 +55,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         { playerId: 'p1', sourceCardInstance: rhinoSuit },
       );
       expect(resVillain.success).toBe(true);
-      expect(resVillain.state.villain.attachments.some((a) => a.instanceId === rhinoSuit.instanceId)).toBe(true);
+      expect(
+        resVillain.state.villain.attachments.some((a) => a.instanceId === rhinoSuit.instanceId),
+      ).toBe(true);
 
       // 2. Attach to Player Identity (e.g. Caught in a Web)
       const caughtInWeb = createCardInstance(cardCatalog.getCard('01180')!); // Caught in a Web
@@ -69,7 +71,11 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         { playerId: 'p1', sourceCardInstance: caughtInWeb },
       );
       expect(resIdentity.success).toBe(true);
-      expect(resIdentity.state.players[0].attachments?.some((a) => a.instanceId === caughtInWeb.instanceId)).toBe(true);
+      expect(
+        resIdentity.state.players[0].attachments?.some(
+          (a) => a.instanceId === caughtInWeb.instanceId,
+        ),
+      ).toBe(true);
 
       // 3. Attach to Ally (e.g. Honorary Avenger)
       const honoraryAvenger = createCardInstance(cardCatalog.getCard('01025')!); // Honorary Avenger
@@ -83,8 +89,12 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         { playerId: 'p1', sourceCardInstance: honoraryAvenger, targetInstanceId: ally.instanceId },
       );
       expect(resAlly.success).toBe(true);
-      const updatedAlly = resAlly.state.players[0].allies.find((a) => a.instanceId === ally.instanceId);
-      expect(updatedAlly?.attachments?.some((a) => a.instanceId === honoraryAvenger.instanceId)).toBe(true);
+      const updatedAlly = resAlly.state.players[0].allies.find(
+        (a) => a.instanceId === ally.instanceId,
+      );
+      expect(
+        updatedAlly?.attachments?.some((a) => a.instanceId === honoraryAvenger.instanceId),
+      ).toBe(true);
 
       // 4. Attach to Minion (e.g. Webbed Up)
       const webbedUp = createCardInstance(cardCatalog.getCard('01009')!); // Webbed Up
@@ -98,8 +108,12 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         { playerId: 'p1', sourceCardInstance: webbedUp, targetInstanceId: minion.instanceId },
       );
       expect(resMinion.success).toBe(true);
-      const updatedMinion = resMinion.state.players[0].engagedMinions.find((m) => m.instanceId === minion.instanceId);
-      expect(updatedMinion?.attachments?.some((a) => a.instanceId === webbedUp.instanceId)).toBe(true);
+      const updatedMinion = resMinion.state.players[0].engagedMinions.find(
+        (m) => m.instanceId === minion.instanceId,
+      );
+      expect(updatedMinion?.attachments?.some((a) => a.instanceId === webbedUp.instanceId)).toBe(
+        true,
+      );
 
       // 5. Attach to Scheme
       const schemeAttachment = createCardInstance(cardCatalog.getCard('01100')!);
@@ -113,7 +127,11 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         { playerId: 'p1', sourceCardInstance: schemeAttachment },
       );
       expect(resScheme.success).toBe(true);
-      expect(resScheme.state.mainScheme.attachments?.some((a) => a.instanceId === schemeAttachment.instanceId)).toBe(true);
+      expect(
+        resScheme.state.mainScheme.attachments?.some(
+          (a) => a.instanceId === schemeAttachment.instanceId,
+        ),
+      ).toBe(true);
     });
   });
 
@@ -150,7 +168,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       discardHostAttachmentsAndTuckedCards(state, minion, player.id);
 
       // Encounter attachment and tucked card routed to encounter discard
-      expect(state.encounterDiscard.some((c) => c.instanceId === encounterAttach.instanceId)).toBe(true);
+      expect(state.encounterDiscard.some((c) => c.instanceId === encounterAttach.instanceId)).toBe(
+        true,
+      );
       expect(state.encounterDiscard.some((c) => c.instanceId === tuckedCard.instanceId)).toBe(true);
       // Player attachment routed to player discard
       expect(player.discard.some((c) => c.instanceId === playerAttach.instanceId)).toBe(true);
@@ -190,7 +210,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       );
 
       expect(resPlace.success).toBe(true);
-      expect(resPlace.state.villain.cardsUnderneath?.some((c) => c.instanceId === droneCard.instanceId)).toBe(true);
+      expect(
+        resPlace.state.villain.cardsUnderneath?.some((c) => c.instanceId === droneCard.instanceId),
+      ).toBe(true);
     });
   });
 

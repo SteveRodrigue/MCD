@@ -32,7 +32,10 @@ export interface EffectiveHeroStats {
  * Computes dynamic effective stats for the active villain, aggregating base card stats,
  * constant abilities, and in-play attachments (e.g. Enhanced Ivory Horn, Charge, Webbed Up).
  */
-export function getEffectiveVillainStats(_state: GameState, villain: VillainState): EffectiveVillainStats {
+export function getEffectiveVillainStats(
+  _state: GameState,
+  villain: VillainState,
+): EffectiveVillainStats {
   let attack = villain.card.attack || 0;
   let scheme = villain.card.scheme || 0;
   const keywords: string[] = [];
@@ -81,7 +84,10 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
             if (step.params.scaling === 'PER_SIDE_SCHEME') {
               const sideSchemeCount = (state.sideSchemes || []).length;
               const maxBonus = (step.params.maxBonus as number) || 4;
-              thwart += Math.min(maxBonus, sideSchemeCount * ((step.params.multiplier as number) || 1));
+              thwart += Math.min(
+                maxBonus,
+                sideSchemeCount * ((step.params.multiplier as number) || 1),
+              );
             } else if (step.params.amount) {
               thwart += (step.params.amount as number) || 0;
             }
@@ -159,8 +165,10 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
             const aerialBonus = (step.params?.aerialBonus as number) || 0;
             const extra = hasAerial ? aerialBonus : 0;
 
-            if (step.params?.stat === 'THWART') thwart += ((step.params.amount as number) || 0) + extra;
-            if (step.params?.stat === 'ATTACK') attack += ((step.params.amount as number) || 0) + extra;
+            if (step.params?.stat === 'THWART')
+              thwart += ((step.params.amount as number) || 0) + extra;
+            if (step.params?.stat === 'ATTACK')
+              attack += ((step.params.amount as number) || 0) + extra;
             if (step.params?.stat === 'DEFENSE') {
               if (item.card.code === '01016') {
                 defense += hasAerial ? 2 : 1;
@@ -168,7 +176,8 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
                 defense += ((step.params.amount as number) || 0) + extra;
               }
             }
-            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY') recovery += ((step.params.amount as number) || 0) + extra;
+            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY')
+              recovery += ((step.params.amount as number) || 0) + extra;
           }
           if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
             keywords.push(step.params.keyword as string);
@@ -193,7 +202,7 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
  */
 export function getEffectiveHandSize(player: PlayerState, _state?: GameState): number {
   const isHero = player.currentForm === 'hero';
-  
+
   // Base printed hand size
   let baseHandSize = isHero
     ? (player.hero as HeroCard).handSize || 5
@@ -222,11 +231,18 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
                 let match = true;
                 if (filter.trait) {
                   const trait = filter.trait as string;
-                  if (!card.traits || !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())) {
+                  if (
+                    !card.traits ||
+                    !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())
+                  ) {
                     match = false;
                   }
                 }
-                if (filter.type_code && card.type !== (filter.type_code as string) && card.raw?.type_code !== filter.type_code) {
+                if (
+                  filter.type_code &&
+                  card.type !== (filter.type_code as string) &&
+                  card.raw?.type_code !== filter.type_code
+                ) {
                   match = false;
                 }
                 if (match) matches++;
@@ -261,7 +277,10 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
         for (const step of ab.steps || []) {
           if (step.effect === 'MODIFY_MAX_HEALTH') {
             bonus += (step.params?.amount as number) || (step.params?.healthBonus as number) || 0;
-          } else if (step.effect === 'MODIFY_STAT' && (step.params?.stat === 'HEALTH' || step.params?.stat === 'MAX_HEALTH')) {
+          } else if (
+            step.effect === 'MODIFY_STAT' &&
+            (step.params?.stat === 'HEALTH' || step.params?.stat === 'MAX_HEALTH')
+          ) {
             bonus += (step.params?.amount as number) || 0;
           }
         }
@@ -292,7 +311,8 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
   }
 
   // 3. Card raw text / traits fallback (e.g. "Stalwart.", "Steady.")
-  const text = entity.text || entity.card?.text || entity.hero?.text || entity.card?.raw?.text || '';
+  const text =
+    entity.text || entity.card?.text || entity.hero?.text || entity.card?.raw?.text || '';
   if (new RegExp(`\\b${kw}\\b`, 'i').test(text)) {
     return true;
   }
@@ -305,7 +325,9 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           if (step.effect === 'GRANT_KEYWORD') {
-            const granted = String(step.params?.keyword || '').toLowerCase().trim();
+            const granted = String(step.params?.keyword || '')
+              .toLowerCase()
+              .trim();
             if (granted === kw) return true;
           }
         }
@@ -321,7 +343,9 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
             if (step.effect === 'GRANT_KEYWORD') {
-              const granted = String(step.params?.keyword || '').toLowerCase().trim();
+              const granted = String(step.params?.keyword || '')
+                .toLowerCase()
+                .trim();
               if (granted === kw) return true;
             }
           }

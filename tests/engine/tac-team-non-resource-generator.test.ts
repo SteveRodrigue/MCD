@@ -50,7 +50,9 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     expect(res.result.error).toContain('not a resource generator');
 
     // Tac Team must remain unexhausted with 3 counters intact
-    const inPlayTac = res.state.players[0].tableau.find((c) => c.instanceId === tacTeam.instanceId)!;
+    const inPlayTac = res.state.players[0].tableau.find(
+      (c) => c.instanceId === tacTeam.instanceId,
+    )!;
     expect(inPlayTac.exhausted).toBeFalsy();
     expect(inPlayTac.tokens?.counters).toBe(3);
   });
@@ -92,7 +94,9 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     });
 
     expect(res.result.success).toBe(true);
-    const inPlayShooter = res.state.players[0].tableau.find((c) => c.instanceId === webShooter.instanceId)!;
+    const inPlayShooter = res.state.players[0].tableau.find(
+      (c) => c.instanceId === webShooter.instanceId,
+    )!;
     expect(inPlayShooter.exhausted).toBe(true);
     expect(inPlayShooter.tokens?.counters).toBe(2);
   });

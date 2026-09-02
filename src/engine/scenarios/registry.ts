@@ -24,7 +24,9 @@ export class ScenarioRegistry {
     const key = scenarioIdOrCode.toLowerCase();
     const plugin = this.plugins.get(key);
     if (!plugin) {
-      throw new Error(`ScenarioPlugin not found in ScenarioRegistry for identifier: '${scenarioIdOrCode}'`);
+      throw new Error(
+        `ScenarioPlugin not found in ScenarioRegistry for identifier: '${scenarioIdOrCode}'`,
+      );
     }
     return plugin;
   }

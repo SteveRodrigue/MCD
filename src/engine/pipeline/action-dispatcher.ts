@@ -28,12 +28,27 @@ import {
   getPlayerRestrictedLimit,
 } from './legality-checker';
 import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
-import { executeEffect, checkAndDiscardZeroCounterCard, discardHostAttachmentsAndTuckedCards } from '../effects';
+import {
+  executeEffect,
+  checkAndDiscardZeroCounterCard,
+  discardHostAttachmentsAndTuckedCards,
+} from '../effects';
 import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
-import { getEffectiveAllyStats, getEffectiveHeroStats, getEffectiveMaxHealth, hasEntityKeyword, consumeEntityStatusCards } from './stat-calculator';
-import { resolveDecisionPrompt, enqueueDecisionPrompt, peekDecisionPrompt, popDecisionPrompt } from './prompt-queue';
+import {
+  getEffectiveAllyStats,
+  getEffectiveHeroStats,
+  getEffectiveMaxHealth,
+  hasEntityKeyword,
+  consumeEntityStatusCards,
+} from './stat-calculator';
+import {
+  resolveDecisionPrompt,
+  enqueueDecisionPrompt,
+  peekDecisionPrompt,
+  popDecisionPrompt,
+} from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost } from '../state/state-validator';
@@ -115,11 +130,17 @@ export function dispatchAction(
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       if (!nextState.setupState || nextState.setupState.stage !== 'MULLIGAN_PHASE') {
-        return { state, result: { success: false, error: 'Game is not currently in the Mulligan Phase' } };
+        return {
+          state,
+          result: { success: false, error: 'Game is not currently in the Mulligan Phase' },
+        };
       }
 
       if (nextState.setupState.mulliganCompleted[action.playerId]) {
-        return { state, result: { success: false, error: 'Player has already completed their mulligan' } };
+        return {
+          state,
+          result: { success: false, error: 'Player has already completed their mulligan' },
+        };
       }
 
       // 1. Separate chosen discards from hand
@@ -340,7 +361,11 @@ export function dispatchAction(
             phase: nextState.phase,
             category: 'combat',
             key: 'attachment.damageShield.absorbed',
-            params: { villain: nextState.villain.card.name, attachment: armor.card.name, damage: attackDamage },
+            params: {
+              villain: nextState.villain.card.name,
+              attachment: armor.card.name,
+              damage: attackDamage,
+            },
             onomatopoeia,
           });
           nextState.log.push({
@@ -389,7 +414,10 @@ export function dispatchAction(
         });
 
         dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
-        dispatchTrigger(nextState, 'ATTACK_RESOLVED', { targetPlayerId: player.id, targetType: 'villain' });
+        dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
+          targetPlayerId: player.id,
+          targetType: 'villain',
+        });
 
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
@@ -432,13 +460,20 @@ export function dispatchAction(
               const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
               if (hostDefStep) {
                 const removeAmount = (hostDefStep.params?.amount as number) || 3;
-                nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removeAmount);
+                nextState.mainScheme.threat = Math.max(
+                  0,
+                  nextState.mainScheme.threat - removeAmount,
+                );
                 nextState.log.push({
                   id: `log_${Date.now()}`,
                   timestamp: Date.now(),
                   category: 'scheme',
                   key: 'card.effect.removeThreat',
-                  params: { scheme: nextState.mainScheme.card.name, amount: removeAmount, source: att.card.name },
+                  params: {
+                    scheme: nextState.mainScheme.card.name,
+                    amount: removeAmount,
+                    source: att.card.name,
+                  },
                   onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
                 });
               }
@@ -569,16 +604,25 @@ export function dispatchAction(
               for (const att of minion.attachments || []) {
                 const attAbs = att.card.enrichment?.abilities || [];
                 for (const ab of attAbs) {
-                  const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
+                  const hostDefStep = ab.steps?.find(
+                    (s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED',
+                  );
                   if (hostDefStep) {
                     const removeAmount = (hostDefStep.params?.amount as number) || 3;
-                    nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removeAmount);
+                    nextState.mainScheme.threat = Math.max(
+                      0,
+                      nextState.mainScheme.threat - removeAmount,
+                    );
                     nextState.log.push({
                       id: `log_${Date.now()}`,
                       timestamp: Date.now(),
                       category: 'scheme',
                       key: 'card.effect.removeThreat',
-                      params: { scheme: nextState.mainScheme.card.name, amount: removeAmount, source: att.card.name },
+                      params: {
+                        scheme: nextState.mainScheme.card.name,
+                        amount: removeAmount,
+                        source: att.card.name,
+                      },
                       onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
                     });
                   }
@@ -618,7 +662,8 @@ export function dispatchAction(
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
-      if (allyIdx === -1) return { state, result: { success: false, error: 'Ally not found in play' } };
+      if (allyIdx === -1)
+        return { state, result: { success: false, error: 'Ally not found in play' } };
 
       const ally = player.allies[allyIdx];
       if (ally.exhausted) return { state, result: { success: false, error: 'Ally is exhausted' } };
@@ -833,7 +878,10 @@ export function dispatchAction(
           };
 
           const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
-          return { state: enqueuedState, result: { success: true, onomatopoeia: 'CHOOSE RESTRICTED!' } };
+          return {
+            state: enqueuedState,
+            result: { success: true, onomatopoeia: 'CHOOSE RESTRICTED!' },
+          };
         }
       }
 
@@ -970,7 +1018,9 @@ export function dispatchAction(
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
-        const attachAbility = abilities.find((a) => a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST'));
+        const attachAbility = abilities.find((a) =>
+          a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST'),
+        );
         if (attachAbility) {
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
           const targetHost = (attachStep?.params?.target as string) || 'VILLAIN';
@@ -987,7 +1037,10 @@ export function dispatchAction(
               (s.effect === 'MODIFY_STAT' && s.params?.stat === 'HEALTH'),
           );
           if (ability.timing === 'CONSTANT' && matchingStep) {
-            const hpBonus = (matchingStep.params?.amount as number) || (matchingStep.params?.healthBonus as number) || 0;
+            const hpBonus =
+              (matchingStep.params?.amount as number) ||
+              (matchingStep.params?.healthBonus as number) ||
+              0;
             if (hpBonus > 0) {
               player.health += hpBonus;
               player.maxHealth = getEffectiveMaxHealth(player, nextState);
@@ -998,7 +1051,11 @@ export function dispatchAction(
         player.allies.push(playedCardInstance);
         // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter, Nick Fury)
         for (const ability of abilities) {
-          if (ability.trigger === 'CARD_PLAYED' || ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE') {
+          if (
+            ability.trigger === 'CARD_PLAYED' ||
+            ability.timing === 'FORCED_RESPONSE' ||
+            ability.timing === 'RESPONSE'
+          ) {
             executeEffect(nextState, ability, {
               playerId: action.playerId,
               targetType,
@@ -1049,24 +1106,42 @@ export function dispatchAction(
 
       // Timing / Form validation
       if (ability.timing.startsWith('HERO_') && player.currentForm !== 'hero') {
-        return { state, result: { success: false, error: 'Can only use this ability in Hero form' } };
+        return {
+          state,
+          result: { success: false, error: 'Can only use this ability in Hero form' },
+        };
       }
       if (ability.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') {
-        return { state, result: { success: false, error: 'Can only use this ability in Alter-Ego form' } };
+        return {
+          state,
+          result: { success: false, error: 'Can only use this ability in Alter-Ego form' },
+        };
       }
 
       // Limit validation (e.g. ONCE_PER_ROUND, ONCE_PER_PHASE)
       const abilityKey = targetCardInst ? `${targetCardInst.instanceId}_${ability.id}` : ability.id;
-      if (ability.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1) {
+      if (
+        ability.limit === 'ONCE_PER_ROUND' &&
+        (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
+      ) {
         return {
           state,
-          result: { success: false, error: `Ability '${ability.id}' has already been used this round (Limit: once per round)` },
+          result: {
+            success: false,
+            error: `Ability '${ability.id}' has already been used this round (Limit: once per round)`,
+          },
         };
       }
-      if (ability.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1) {
+      if (
+        ability.limit === 'ONCE_PER_PHASE' &&
+        (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
+      ) {
         return {
           state,
-          result: { success: false, error: `Ability '${ability.id}' has already been used this phase (Limit: once per phase)` },
+          result: {
+            success: false,
+            error: `Ability '${ability.id}' has already been used this phase (Limit: once per phase)`,
+          },
         };
       }
 
@@ -1121,9 +1196,11 @@ export function dispatchAction(
 
       if (effectRes.success) {
         if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-        player.usedAbilitiesThisRound[abilityKey] = (player.usedAbilitiesThisRound[abilityKey] || 0) + 1;
+        player.usedAbilitiesThisRound[abilityKey] =
+          (player.usedAbilitiesThisRound[abilityKey] || 0) + 1;
         if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-        player.usedAbilitiesThisPhase[abilityKey] = (player.usedAbilitiesThisPhase[abilityKey] || 0) + 1;
+        player.usedAbilitiesThisPhase[abilityKey] =
+          (player.usedAbilitiesThisPhase[abilityKey] || 0) + 1;
       }
 
       return {
@@ -1224,7 +1301,9 @@ export function dispatchAction(
 
       // 1. Check Villain
       const vIdx = (nextState.villain.attachments || []).findIndex(
-        (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+        (att) =>
+          att.instanceId === action.attachmentInstanceId ||
+          att.card.code === action.attachmentInstanceId,
       );
       if (vIdx !== -1) {
         containerArray = nextState.villain.attachments;
@@ -1235,7 +1314,9 @@ export function dispatchAction(
       if (!foundAttachment) {
         for (const p of nextState.players) {
           const pIdx = (p.attachments || []).findIndex(
-            (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+            (att) =>
+              att.instanceId === action.attachmentInstanceId ||
+              att.card.code === action.attachmentInstanceId,
           );
           if (pIdx !== -1 && p.attachments) {
             containerArray = p.attachments;
@@ -1250,7 +1331,9 @@ export function dispatchAction(
         for (const p of nextState.players) {
           for (const m of p.engagedMinions) {
             const mIdx = (m.attachments || []).findIndex(
-              (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+              (att) =>
+                att.instanceId === action.attachmentInstanceId ||
+                att.card.code === action.attachmentInstanceId,
             );
             if (mIdx !== -1 && m.attachments) {
               containerArray = m.attachments;
@@ -1267,7 +1350,9 @@ export function dispatchAction(
         for (const p of nextState.players) {
           for (const a of p.allies) {
             const aIdx = (a.attachments || []).findIndex(
-              (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+              (att) =>
+                att.instanceId === action.attachmentInstanceId ||
+                att.card.code === action.attachmentInstanceId,
             );
             if (aIdx !== -1 && a.attachments) {
               containerArray = a.attachments;
@@ -1282,7 +1367,9 @@ export function dispatchAction(
       // 5. Check Main Scheme & Side Schemes
       if (!foundAttachment) {
         const msIdx = (nextState.mainScheme.attachments || []).findIndex(
-          (att) => att.instanceId === action.attachmentInstanceId || att.card.code === action.attachmentInstanceId,
+          (att) =>
+            att.instanceId === action.attachmentInstanceId ||
+            att.card.code === action.attachmentInstanceId,
         );
         if (msIdx !== -1 && nextState.mainScheme.attachments) {
           containerArray = nextState.mainScheme.attachments;
@@ -1344,15 +1431,24 @@ export function dispatchAction(
       // 0. Wakanda Forever! Sequence Order Prompt Resolution (ADR-0038)
       if (
         activePrompt &&
-        (activePrompt.title?.includes('Wakanda Forever') || activePrompt.sourceCardName === 'Wakanda Forever!')
+        (activePrompt.title?.includes('Wakanda Forever') ||
+          activePrompt.sourceCardName === 'Wakanda Forever!')
       ) {
         const { state: poppedState } = popDecisionPrompt(nextState);
         const sequenceOrder: string[] =
-          (action as any).sequenceOrder || (action.selectedOptionId ? [action.selectedOptionId] : []);
+          (action as any).sequenceOrder ||
+          (action.selectedOptionId ? [action.selectedOptionId] : []);
         const wfHandler = getSpecialHandler('WAKANDA_FOREVER');
         if (wfHandler) {
-          const res = wfHandler.execute(poppedState, { playerId: action.playerId }, { sequenceOrder });
-          return { state: res.state, result: { success: res.success, onomatopoeia: res.onomatopoeia } };
+          const res = wfHandler.execute(
+            poppedState,
+            { playerId: action.playerId },
+            { sequenceOrder },
+          );
+          return {
+            state: res.state,
+            result: { success: res.success, onomatopoeia: res.onomatopoeia },
+          };
         }
       }
 
@@ -1366,12 +1462,20 @@ export function dispatchAction(
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
         const targetPlayer = poppedState.players.find((p) => p.id === action.playerId);
-        if (!targetPlayer) return { state: poppedState, result: { success: false, error: 'Player not found' } };
+        if (!targetPlayer)
+          return { state: poppedState, result: { success: false, error: 'Player not found' } };
 
-        if (!selectedOption || selectedOption.id === 'done_cleanup' || selectedOption.effect === 'FINISH_PLAYER_CLEANUP') {
+        if (
+          !selectedOption ||
+          selectedOption.id === 'done_cleanup' ||
+          selectedOption.effect === 'FINISH_PLAYER_CLEANUP'
+        ) {
           // Finish this player's cleanup without any more discards -> refills hand & readies cards
           const finishedState = executePlayerCleanup(poppedState, action.playerId, []);
-          return { state: finishedState, result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' } };
+          return {
+            state: finishedState,
+            result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' },
+          };
         }
 
         if (selectedOption.effect === 'PLAYER_PHASE_DISCARD_CARD') {
@@ -1426,7 +1530,10 @@ export function dispatchAction(
           } else {
             // No more cards in hand -> finish cleanup
             const finishedState = executePlayerCleanup(poppedState, action.playerId, []);
-            return { state: finishedState, result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' } };
+            return {
+              state: finishedState,
+              result: { success: true, onomatopoeia: 'CLEAN-UP COMPLETE!' },
+            };
           }
         }
       }
@@ -1440,7 +1547,11 @@ export function dispatchAction(
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
 
-        if (!selectedOption || selectedOption.id === 'cancel_play' || selectedOption.effect === 'CANCEL_PLAY') {
+        if (
+          !selectedOption ||
+          selectedOption.id === 'cancel_play' ||
+          selectedOption.effect === 'CANCEL_PLAY'
+        ) {
           poppedState.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
@@ -1495,7 +1606,8 @@ export function dispatchAction(
       if (
         activePrompt &&
         activePrompt.options.some(
-          (o) => o.effect === 'SEARCH_AND_SELECT_RESOLUTION' || o.effect === 'SEARCH_AND_SELECT_PASS',
+          (o) =>
+            o.effect === 'SEARCH_AND_SELECT_RESOLUTION' || o.effect === 'SEARCH_AND_SELECT_PASS',
         )
       ) {
         const { state: poppedState } = popDecisionPrompt(nextState);
@@ -1620,7 +1732,10 @@ export function dispatchAction(
       let resultingState = promptRes.state;
 
       // If in villain phase and no decision prompts are pending, continue villain phase sequence
-      if (resultingState.phase === GamePhase.VILLAIN_PHASE && !resultingState.pendingDecisionPrompt) {
+      if (
+        resultingState.phase === GamePhase.VILLAIN_PHASE &&
+        !resultingState.pendingDecisionPrompt
+      ) {
         resultingState = continueVillainPhase(resultingState);
       }
 
@@ -1660,7 +1775,9 @@ export function dispatchAction(
 
         // Quickstrike Keyword check (RR v1.8 p. 18)
         if (hasEntityKeyword(minionInst, 'Quickstrike') && player.currentForm === 'hero') {
-          const updated = executeMinionAttackAgainstPlayer(nextState, minionInst, player, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+          const updated = executeMinionAttackAgainstPlayer(nextState, minionInst, player, {
+            synchronousPolicy: 'TAKE_UNDEFENDED',
+          });
           return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
         }
       }
@@ -1669,14 +1786,19 @@ export function dispatchAction(
     }
 
     case 'REVEAL_ENCOUNTER_CARD': {
-      const targetPlayer = getPlayer(nextState, (action as any).targetPlayerId || (action as any).playerId) || nextState.players[0];
+      const targetPlayer =
+        getPlayer(nextState, (action as any).targetPlayerId || (action as any).playerId) ||
+        nextState.players[0];
       const encounterCard = (action as any).encounterCard as CardInstance;
-      if (!encounterCard) return { state, result: { success: false, error: 'Encounter card required' } };
+      if (!encounterCard)
+        return { state, result: { success: false, error: 'Encounter card required' } };
 
       // Incite X Keyword check (RR v1.8 p. 16)
       let inciteAmount = (encounterCard.card.enrichment as any)?.incite || 0;
       if (!inciteAmount) {
-        const match = (encounterCard.card.raw?.text || encounterCard.card.text || '').match(/Incite\s+(\d+)/i);
+        const match = (encounterCard.card.raw?.text || encounterCard.card.text || '').match(
+          /Incite\s+(\d+)/i,
+        );
         if (match) inciteAmount = parseInt(match[1], 10);
       }
       if (inciteAmount > 0) {
@@ -1686,7 +1808,11 @@ export function dispatchAction(
           timestamp: Date.now(),
           category: 'scheme',
           key: 'card.effect.incite',
-          params: { scheme: nextState.mainScheme.card.name, amount: inciteAmount, source: encounterCard.card.name },
+          params: {
+            scheme: nextState.mainScheme.card.name,
+            amount: inciteAmount,
+            source: encounterCard.card.name,
+          },
           onomatopoeia: `INCITE ${inciteAmount}!`,
         });
       }
@@ -1695,7 +1821,9 @@ export function dispatchAction(
       if (encounterCard.card.type === CardType.MINION) {
         targetPlayer.engagedMinions.push(encounterCard);
         if (hasEntityKeyword(encounterCard, 'Quickstrike') && targetPlayer.currentForm === 'hero') {
-          const updated = executeMinionAttackAgainstPlayer(nextState, encounterCard, targetPlayer, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+          const updated = executeMinionAttackAgainstPlayer(nextState, encounterCard, targetPlayer, {
+            synchronousPolicy: 'TAKE_UNDEFENDED',
+          });
           return { state: updated, result: { success: true, onomatopoeia: 'QUICKSTRIKE!' } };
         }
       }
@@ -1707,4 +1835,3 @@ export function dispatchAction(
       return { state, result: { success: false, error: 'Unknown action type' } };
   }
 }
-

@@ -28,8 +28,12 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       if (c.type === 'hero' || c.type === 'alter_ego') return [];
       return Array(c.quantity).fill(c);
     });
-    const justiceCards = catalog.getCardsByFaction('justice' as any).flatMap((c) => Array(c.quantity).fill(c));
-    const basicCards = catalog.getCardsByFaction('basic' as any).flatMap((c) => Array(c.quantity).fill(c));
+    const justiceCards = catalog
+      .getCardsByFaction('justice' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
+    const basicCards = catalog
+      .getCardsByFaction('basic' as any)
+      .flatMap((c) => Array(c.quantity).fill(c));
     const deck = [...signatureCards, ...justiceCards, ...basicCards].slice(0, 40);
 
     const rhinoCards = catalog.getCardsBySet('rhino').filter((c) => c.type !== 'villain');
@@ -229,10 +233,14 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
       expect(res.result.success).toBe(true);
       // Minion took 2 damage (HP 3 -> remaining damage token = 2)
-      const updatedMinion = res.state.players[0].engagedMinions.find((m) => m.instanceId === minionInstance.instanceId)!;
+      const updatedMinion = res.state.players[0].engagedMinions.find(
+        (m) => m.instanceId === minionInstance.instanceId,
+      )!;
       expect(updatedMinion.tokens?.damage).toBe(2);
       // Ally took 1 consequential damage
-      const updatedAlly = res.state.players[0].allies.find((a) => a.instanceId === allyInstance.instanceId)!;
+      const updatedAlly = res.state.players[0].allies.find(
+        (a) => a.instanceId === allyInstance.instanceId,
+      )!;
       expect(updatedAlly.tokens?.damage).toBe(1);
       expect(updatedAlly.exhausted).toBe(true);
     });
@@ -686,17 +694,16 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         const firstAidInst = createCardInstance(firstAidCard);
 
         const resCard = catalog.getCard('01088')!;
-        p1.hand = [
-          emergencyInst,
-          backflipInst,
-          firstAidInst,
-          createCardInstance(resCard),
-        ];
+        p1.hand = [emergencyInst, backflipInst, firstAidInst, createCardInstance(resCard)];
 
         // Emergency (Blocked Interrupt) must be unplayable
         const emergencyStatus = evaluateCardPlayability(gameState, 'p1', emergencyInst);
         expect(emergencyStatus.isPlayable).toBe(false);
-        expect(emergencyStatus.reasons.some((r) => r.includes('blocked') || r.includes('Interrupt/Response'))).toBe(true);
+        expect(
+          emergencyStatus.reasons.some(
+            (r) => r.includes('blocked') || r.includes('Interrupt/Response'),
+          ),
+        ).toBe(true);
 
         // Backflip (Hero Interrupt) must be unplayable
         const backflipStatus = evaluateCardPlayability(gameState, 'p1', backflipInst);
@@ -726,8 +733,12 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res.result.onomatopoeia).toBe('CARD ADDED!');
         expect(res.state.players[0].deck.length).toBe(initialDeckCount - 1);
         expect(res.state.players[0].hand.length).toBe(initialHandCount + 1);
-        expect(res.state.players[0].hand.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(true);
-        expect(res.state.players[0].deck.some((c) => c.instanceId === targetDeckCard.instanceId)).toBe(false);
+        expect(
+          res.state.players[0].hand.some((c) => c.instanceId === targetDeckCard.instanceId),
+        ).toBe(true);
+        expect(
+          res.state.players[0].deck.some((c) => c.instanceId === targetDeckCard.instanceId),
+        ).toBe(false);
       });
 
       it('executes Tony Stark Futurist ability: prompts player to choose Tech card or decline', () => {
@@ -815,11 +826,17 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res2.result.success).toBe(true);
         // Hand has 1 new card (Mark V Armor)
         expect(res2.state.players[0].hand.length).toBe(initialHandLength + 1);
-        expect(res2.state.players[0].hand.some((c) => c.instanceId === markVArmor.instanceId)).toBe(true);
+        expect(res2.state.players[0].hand.some((c) => c.instanceId === markVArmor.instanceId)).toBe(
+          true,
+        );
         // The other 2 looked cards (arcReactor and nonTech2) are discarded
         expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 2);
-        expect(res2.state.players[0].discard.some((c) => c.instanceId === arcReactor.instanceId)).toBe(true);
-        expect(res2.state.players[0].discard.some((c) => c.instanceId === nonTech2.instanceId)).toBe(true);
+        expect(
+          res2.state.players[0].discard.some((c) => c.instanceId === arcReactor.instanceId),
+        ).toBe(true);
+        expect(
+          res2.state.players[0].discard.some((c) => c.instanceId === nonTech2.instanceId),
+        ).toBe(true);
       });
     });
   });

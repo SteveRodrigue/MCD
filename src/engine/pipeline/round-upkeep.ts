@@ -1,7 +1,4 @@
-import {
-  GameState,
-  VillainPhaseStep,
-} from '@engine/models';
+import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase } from './player-phase';
 
@@ -35,7 +32,9 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       const abilities = a.card.enrichment?.abilities || [];
       return abilities.some(
         (ab) =>
-          (ab.trigger === 'ROUND_END' || ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
+          (ab.trigger === 'ROUND_END' ||
+            ab.trigger === 'ROUND_ENDED' ||
+            ab.timing === 'FORCED_RESPONSE') &&
           ab.steps?.some((s) => s.effect === 'DISCARD_SELF'),
       );
     });

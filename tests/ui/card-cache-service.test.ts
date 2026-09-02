@@ -10,8 +10,12 @@ import { CardType } from '../../src/engine/models';
 
 describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
   it('correctly normalizes card codes for legacy callers', () => {
-    expect(normalizeCardCodeForArt({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe('01097b');
-    expect(normalizeCardCodeForArt({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe('01097');
+    expect(
+      normalizeCardCodeForArt({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' }),
+    ).toBe('01097b');
+    expect(
+      normalizeCardCodeForArt({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' }),
+    ).toBe('01097');
     expect(normalizeCardCodeForArt({ code: '01001a', type: CardType.HERO })).toBe('01001a');
   });
 
@@ -23,7 +27,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '01097a',
         type: CardType.MAIN_SCHEME,
         stage: '1A',
-      })
+      }),
     ).toBe('01097b.png');
 
     // Rhino 1B (Active threat face -> 01097.png)
@@ -32,7 +36,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '01097b',
         type: CardType.MAIN_SCHEME,
         stage: '1B',
-      })
+      }),
     ).toBe('01097.png');
 
     // Klaw 2A (Setup face -> 01117b.png)
@@ -41,7 +45,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '01117a',
         type: 'main_scheme',
         stage: '2A',
-      })
+      }),
     ).toBe('01117b.png');
 
     // Klaw 2B (Active threat face -> 01117.png)
@@ -50,7 +54,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '01117b',
         type: 'main_scheme',
         stage: '2B',
-      })
+      }),
     ).toBe('01117.png');
 
     // --- Standard Expansions Convention (All other packs) ---
@@ -60,7 +64,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '02004a',
         type: CardType.MAIN_SCHEME,
         stage: '1A',
-      })
+      }),
     ).toBe('02004.png');
 
     // Green Goblin: Risky Business 1B -> 02004b.png
@@ -69,7 +73,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '02004b',
         type: CardType.MAIN_SCHEME,
         stage: '1B',
-      })
+      }),
     ).toBe('02004b.png');
 
     // The Hood 1A -> 24004.png
@@ -78,7 +82,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '24004a',
         type: CardType.MAIN_SCHEME,
         stage: '1A',
-      })
+      }),
     ).toBe('24004.png');
 
     // The Hood 1B -> 24004b.png
@@ -87,7 +91,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '24004b',
         type: CardType.MAIN_SCHEME,
         stage: '1B',
-      })
+      }),
     ).toBe('24004b.png');
 
     // Drang 1A -> 16061.png
@@ -96,7 +100,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '16061a',
         type: CardType.MAIN_SCHEME,
         stage: '1A',
-      })
+      }),
     ).toBe('16061.png');
 
     // Drang 1B -> 16061b.png
@@ -105,7 +109,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '16061b',
         type: CardType.MAIN_SCHEME,
         stage: '1B',
-      })
+      }),
     ).toBe('16061b.png');
 
     // Hero identity (01001a.png)
@@ -113,7 +117,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
       getCardArtFileName({
         code: '01001a',
         type: CardType.HERO,
-      })
+      }),
     ).toBe('01001a.png');
 
     // Alter-Ego identity (01001b.png)
@@ -121,7 +125,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
       getCardArtFileName({
         code: '01001b',
         type: CardType.ALTER_EGO,
-      })
+      }),
     ).toBe('01001b.png');
 
     // Villain (01094.png)
@@ -130,7 +134,7 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
         code: '01094',
         type: CardType.VILLAIN,
         stage: 'I',
-      })
+      }),
     ).toBe('01094.png');
 
     // Event card (01006.png)
@@ -138,42 +142,42 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
       getCardArtFileName({
         code: '01006',
         type: CardType.EVENT,
-      })
+      }),
     ).toBe('01006.png');
   });
 
   it('constructs correct MarvelCDB CDN endpoints for multi-sided identity and scheme cards', () => {
     // Spider-Man Hero side (A -> 01001a.png)
     expect(getRemoteMarvelCdbUrl({ code: '01001a', type: CardType.HERO })).toBe(
-      'https://marvelcdb.com/bundles/cards/01001a.png'
+      'https://marvelcdb.com/bundles/cards/01001a.png',
     );
 
     // Peter Parker Alter-Ego side (B -> 01001b.png)
     expect(getRemoteMarvelCdbUrl({ code: '01001b', type: CardType.ALTER_EGO })).toBe(
-      'https://marvelcdb.com/bundles/cards/01001b.png'
+      'https://marvelcdb.com/bundles/cards/01001b.png',
     );
 
     // Rhino Villain Stage I
     expect(getRemoteMarvelCdbUrl({ code: '01094', type: CardType.VILLAIN })).toBe(
-      'https://marvelcdb.com/bundles/cards/01094.png'
+      'https://marvelcdb.com/bundles/cards/01094.png',
     );
 
     // The Break-In! Main Scheme 1A (Core Set Setup face -> 01097b.png)
     expect(getRemoteMarvelCdbUrl({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe(
-      'https://marvelcdb.com/bundles/cards/01097b.png'
+      'https://marvelcdb.com/bundles/cards/01097b.png',
     );
 
     // The Break-In! Main Scheme 1B (Core Set Active threat face -> 01097.png)
     expect(getRemoteMarvelCdbUrl({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe(
-      'https://marvelcdb.com/bundles/cards/01097.png'
+      'https://marvelcdb.com/bundles/cards/01097.png',
     );
 
     // Standard expansion: Green Goblin Main Scheme 1A -> 02004.png, 1B -> 02004b.png
     expect(getRemoteMarvelCdbUrl({ code: '02004a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe(
-      'https://marvelcdb.com/bundles/cards/02004.png'
+      'https://marvelcdb.com/bundles/cards/02004.png',
     );
     expect(getRemoteMarvelCdbUrl({ code: '02004b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe(
-      'https://marvelcdb.com/bundles/cards/02004b.png'
+      'https://marvelcdb.com/bundles/cards/02004b.png',
     );
 
     // Swinging Web Kick Player Event
@@ -182,11 +186,21 @@ describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
 
   it('constructs correct local static paths for offline card assets', () => {
     expect(getLocalCardArtUrl({ code: '01001a', type: CardType.HERO })).toBe('/cards/01001a.png');
-    expect(getLocalCardArtUrl({ code: '01001b', type: CardType.ALTER_EGO })).toBe('/cards/01001b.png');
-    expect(getLocalCardArtUrl({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe('/cards/01097b.png');
-    expect(getLocalCardArtUrl({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe('/cards/01097.png');
-    expect(getLocalCardArtUrl({ code: '02004a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe('/cards/02004.png');
-    expect(getLocalCardArtUrl({ code: '02004b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe('/cards/02004b.png');
+    expect(getLocalCardArtUrl({ code: '01001b', type: CardType.ALTER_EGO })).toBe(
+      '/cards/01001b.png',
+    );
+    expect(getLocalCardArtUrl({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe(
+      '/cards/01097b.png',
+    );
+    expect(getLocalCardArtUrl({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe(
+      '/cards/01097.png',
+    );
+    expect(getLocalCardArtUrl({ code: '02004a', type: CardType.MAIN_SCHEME, stage: '1A' })).toBe(
+      '/cards/02004.png',
+    );
+    expect(getLocalCardArtUrl({ code: '02004b', type: CardType.MAIN_SCHEME, stage: '1B' })).toBe(
+      '/cards/02004b.png',
+    );
   });
 
   it('returns valid local-first URL string from getCardArtUrl', async () => {

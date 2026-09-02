@@ -27,10 +27,7 @@ export function formatCardTextHtml(rawText?: string): string {
         '<span class="inline-flex items-center px-1 py-0.5 rounded bg-purple-100 text-purple-950 border border-purple-400 font-black text-[10px] mx-0.5 leading-none">⭐ Wild</span>',
       )
       // Identity & Game terms
-      .replace(
-        /\[hero\]/gi,
-        '<span class="font-comic font-black text-comic-blue">HERO</span>',
-      )
+      .replace(/\[hero\]/gi, '<span class="font-comic font-black text-comic-blue">HERO</span>')
       .replace(
         /\[alter_ego\]/gi,
         '<span class="font-comic font-black text-comic-red">ALTER-EGO</span>',
@@ -52,10 +49,7 @@ interface FormattedCardTextProps {
   className?: string;
 }
 
-export const FormattedCardText: React.FC<FormattedCardTextProps> = ({
-  text,
-  className = '',
-}) => {
+export const FormattedCardText: React.FC<FormattedCardTextProps> = ({ text, className = '' }) => {
   if (!text) {
     return <span className={`italic text-slate-400 ${className}`}>No special text.</span>;
   }
@@ -63,9 +57,6 @@ export const FormattedCardText: React.FC<FormattedCardTextProps> = ({
   const html = formatCardTextHtml(text);
 
   return (
-    <span
-      className={`leading-relaxed ${className}`}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <span className={`leading-relaxed ${className}`} dangerouslySetInnerHTML={{ __html: html }} />
   );
 };

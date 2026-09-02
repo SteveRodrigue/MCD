@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { HeroCard, AlterEgoCard, Keyword, VillainCard, MainSchemeCard, CardType } from '@engine/models';
+import {
+  HeroCard,
+  AlterEgoCard,
+  Keyword,
+  VillainCard,
+  MainSchemeCard,
+  CardType,
+} from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioRegistry } from '@engine/scenarios';
 
@@ -28,7 +35,15 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
           name: 'Spider-Man',
           hero: spiderManHero,
           alterEgo: peterParkerAlterEgo,
-          deckCards: [permanentCard, standardCard, standardCard, standardCard, standardCard, standardCard, standardCard],
+          deckCards: [
+            permanentCard,
+            standardCard,
+            standardCard,
+            standardCard,
+            standardCard,
+            standardCard,
+            standardCard,
+          ],
         },
       ],
       villain: rhinoVillain,
@@ -105,7 +120,10 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
     expect(skirmishState.villain.health).toBe(14); // 14 x 1
 
     // Defeating Stage I in Skirmish triggers immediate Victory
-    const skirmishResult = rhinoPlugin.onVillainDefeated(skirmishState, skirmishState.villain.instanceId!);
+    const skirmishResult = rhinoPlugin.onVillainDefeated(
+      skirmishState,
+      skirmishState.villain.instanceId!,
+    );
     expect(skirmishResult.victory).toBe(true);
     expect(skirmishState.winner).toBe('HEROES');
 
@@ -131,7 +149,10 @@ describe('Milestone 2C: Official 15-Step Scenario Setup State Machine (RR v1.8 p
     expect(expertState.villain.health).toBe(15); // 15 x 1
 
     // Defeating Stage II in Expert advances to Stage III
-    const expertResult = rhinoPlugin.onVillainDefeated(expertState, expertState.villain.instanceId!);
+    const expertResult = rhinoPlugin.onVillainDefeated(
+      expertState,
+      expertState.villain.instanceId!,
+    );
     expect(expertResult.advancedStage).toBe(true);
     expect(expertState.villain.card.code).toBe('01096'); // Stage III
     expect(expertState.villain.health).toBe(16); // 16 x 1

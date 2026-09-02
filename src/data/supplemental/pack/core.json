@@ -3220,17 +3220,17 @@
                     "effect": "REMOVE_THREAT",
                     "params": {
                       "amount": 2,
-                      "target": "MAIN_SCHEME"
+                      "target": "CHOSEN_SCHEME"
                     }
                   },
                   {
                     "id": "deal_4_damage",
                     "label": "Deal 4 Damage",
-                    "description": "Deal 4 damage to the villain.",
+                    "description": "Deal 4 damage to an enemy.",
                     "effect": "DEAL_DAMAGE",
                     "params": {
                       "amount": 4,
-                      "target": "VILLAIN"
+                      "target": "CHOSEN_ENEMY"
                     }
                   }
                 ]

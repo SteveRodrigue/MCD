@@ -1,4 +1,4 @@
-# ADR-0012: Z-Axis Unconstrained Elevation & Hover-Zoom Architecture
+﻿# [ADR-0012] Z-Axis Unconstrained Elevation & Hover-Zoom Architecture
 
 * **Status:** Accepted
 * **Date:** 2026-08-27

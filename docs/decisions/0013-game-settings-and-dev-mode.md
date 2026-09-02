@@ -1,4 +1,4 @@
-# ADR-0013: Game Settings & Developer Mode State Architecture
+﻿# [ADR-0013] Game Settings & Developer Mode State Architecture
 
 * **Status:** Accepted
 * **Date:** 2026-08-27

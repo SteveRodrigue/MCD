@@ -1,4 +1,4 @@
-# ADR-0011: Card Orientation Metadata & Cache-First Art Resolution Architecture
+﻿# [ADR-0011] Card Orientation Metadata & Cache-First Art Resolution Architecture
 
 * **Status:** Accepted
 * **Date:** 2026-08-27

@@ -1,7 +1,11 @@
-# ADR-0009: In-Game Action History & Real-Time Combat Log
+# [ADR-0009] In-Game Action History & Real-Time Combat Log
 
-## Status
-Accepted
+* **Status:** Accepted
+* **Date:** 2026-08-26
+* **Authors:** MCD Core Team
+* **Deciders:** User & Antigravity
+
+---
 
 ## Context
 In digital card games like *Marvel Champions*, players frequently need to:

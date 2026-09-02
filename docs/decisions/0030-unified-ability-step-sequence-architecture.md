@@ -1,4 +1,4 @@
-# ADR-0030: Unified Ability Step Sequence Architecture and Supplemental Data Normalization
+﻿# [ADR-0030] Unified Ability Step Sequence Architecture and Supplemental Data Normalization
 
 * **Status:** Accepted
 * **Date:** 2026-08-31

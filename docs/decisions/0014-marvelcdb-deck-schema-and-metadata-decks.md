@@ -1,4 +1,4 @@
-# ADR-0014: MarvelCDB-Compliant Deck Data Schema & Metadata-Driven Decks
+﻿# [ADR-0014] MarvelCDB-Compliant Deck Data Schema & Metadata-Driven Decks
 
 * **Status:** Accepted
 * **Date:** 2026-08-27

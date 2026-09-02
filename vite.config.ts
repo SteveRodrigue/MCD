@@ -124,9 +124,57 @@ function gameStateSnapshotPlugin(): Plugin {
   };
 }
 
+function problemReportPlugin(): Plugin {
+  const reportsDir = path.resolve(__dirname, 'logs', 'reports');
+
+  const reportMiddleware = (req: any, res: any, next: any) => {
+    if (req.url === '/api/logs/report' && req.method === 'POST') {
+      let body = '';
+      req.on('data', (chunk: any) => {
+        body += chunk;
+      });
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body);
+          if (!fs.existsSync(reportsDir)) {
+            fs.mkdirSync(reportsDir, { recursive: true });
+          }
+
+          const timestamp = payload.timestamp || Date.now();
+          const type = payload.type || 'bug';
+
+          const reportFileName = `report_${timestamp}_${type}.json`;
+          const reportPath = path.join(reportsDir, reportFileName);
+          fs.writeFileSync(reportPath, JSON.stringify(payload, null, 2), 'utf8');
+
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: true, file: reportFileName }));
+        } catch (err: any) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+
+    next();
+  };
+
+  return {
+    name: 'mcd-problem-report-plugin',
+    configureServer(server) {
+      server.middlewares.use(reportMiddleware);
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(reportMiddleware);
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), cardCachePlugin(), gameStateSnapshotPlugin()],
+  plugins: [react(), cardCachePlugin(), gameStateSnapshotPlugin(), problemReportPlugin()],
   resolve: {
     alias: {
       '@engine': path.resolve(__dirname, './src/engine'),

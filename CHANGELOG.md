@@ -5,6 +5,14 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature: Dev Mode "Report a Problem" & Local-First Issue Capture ([ADR-0042](docs/decisions/0042-local-first-developer-problem-reporting.md), `TopBar.tsx`, `ReportProblemModal.tsx`, `problem-report-service.ts`, `vite.config.ts`, `problem-report-triage` skill):**
+  - Added a "REPORT" button in the top bar opening a new `ReportProblemModal` where testers pick a report type (Bug / Improvement / Feature Missing-Incomplete), a priority (P0-Critical…P3-Low), write free-text, and submit with the live `GameState` attached automatically.
+  - Added `problemReportPlugin()` dev-server middleware in `vite.config.ts` (mirrors the existing `gameStateSnapshotPlugin()` pattern) writing structured reports to `logs/reports/report_{timestamp}_{type}.json`; dev/preview-server only, no-op in production builds.
+  - Added `src/ui/services/problem-report-service.ts` with pure, unit-tested label mapping (`bug`→`bug,triage`, `improvement`→`enhancement`, `feature`→`enhancement,feature`, plus `priority:P?-*`) and a token-free prefilled GitHub "New Issue" URL builder as an immediate convenience path.
+  - Documented the local-first-capture decision (rejecting direct client-side GitHub API calls to avoid embedding a token in the browser bundle) in [ADR-0042](docs/decisions/0042-local-first-developer-problem-reporting.md).
+  - Added the [`problem-report-triage`](.agents/skills/problem-report-triage/SKILL.md) skill: an Inbox-Zero protocol that files each pending `logs/reports/*.json` report as a labeled GitHub Issue (attaching the embedded `GameState` snapshot) and deletes the local file once confirmed filed.
+  - Added `tests/ui/problem-report-service.test.ts` covering label mapping, GitHub URL construction, and submit/error handling.
+
 - **Security: Dependabot Dependency Remediation:** Upgraded Vite to `6.4.3` and Vitest to `3.2.7`, resolving the vulnerable Vite/esbuild dependency path and moving Vitest beyond the patched `3.2.6` release. Added the review-gated Dependabot audit skill at [`.agents/skills/dependabot/SKILL.md`](.agents/skills/dependabot/SKILL.md). Full formatting, lint, typecheck, test, and production build checks pass.
 
 - **Docs: Consolidated Rules Reference:** Removed the frozen duplicate `references/rules_reference_v18.md`; the maintained algorithmic rules mapping is now solely `docs/algorithmic_rules_reference.md`, while `references/` contains external read-only sources.

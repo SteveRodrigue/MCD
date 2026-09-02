@@ -8,10 +8,12 @@ import {
   Crown,
   Compass,
   Newspaper,
+  Bug,
 } from 'lucide-react';
 import { GameState, GamePhase } from '../../../engine';
 import { useGameSettings } from '../../context/useGameSettings';
 import { OptionsMenu } from './OptionsMenu';
+import { ReportProblemModal } from './ReportProblemModal';
 
 interface TopBarProps {
   gameState: GameState;
@@ -37,6 +39,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   onHoverNewspaper,
 }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const { devMode, toggleDevMode } = useGameSettings();
 
   return (
@@ -161,6 +164,16 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span>COMBAT LOG {isLogOpen ? '(OPEN)' : ''}</span>
           </button>
 
+          {/* Report a Problem Button */}
+          <button
+            onClick={() => setIsReportOpen(true)}
+            className="px-2.5 py-1.5 font-comic text-xs bg-white hover:bg-rose-50 text-comic-red rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1 cursor-pointer"
+            title="Report a bug, improvement, or missing feature"
+          >
+            <Bug className="w-4 h-4 text-comic-red" />
+            <span className="hidden sm:inline">REPORT</span>
+          </button>
+
           {/* Options Menu Button */}
           <button
             onClick={() => setIsOptionsOpen(true)}
@@ -186,6 +199,13 @@ export const TopBar: React.FC<TopBarProps> = ({
       <OptionsMenu
         isOpen={isOptionsOpen}
         onClose={() => setIsOptionsOpen(false)}
+        gameState={gameState}
+      />
+
+      {/* Report a Problem Modal */}
+      <ReportProblemModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
         gameState={gameState}
       />
     </>

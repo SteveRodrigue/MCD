@@ -186,6 +186,10 @@ _Objective: Connect the proven headless engine to our 1960s Pop-Art presentation
 - [ ] Retro comic action sound effects and card dealing chimes.
 - [ ] Standalone In-Game Visual Deckbuilder (secondary to MarvelCDB import).
 
+### 4. 🟡 `[Nice-to-Have]` Developer Tooling ([ADR-0042](decisions/0042-local-first-developer-problem-reporting.md))
+
+- [x] **Dev Mode "Report a Problem" Capture:** Top-bar button opening a modal to file a bug/improvement/missing-feature report (with priority and free text), attaching the live `GameState`, saved locally to `logs/reports/` via a dev-only Vite middleware, with a token-free prefilled GitHub issue link and a companion `problem-report-triage` skill for Inbox-Zero GitHub filing.
+
 ---
 
 ## 📍 Phase 5: Expansion Waves, Advanced Mechanics & Native Ecosystem 🚀 (Planned)

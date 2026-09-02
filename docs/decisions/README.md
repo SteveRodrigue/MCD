@@ -94,7 +94,7 @@ graph TD
 
 ### 6. Recent Decisions — Lineage Not Yet Declared
 
-_ADR-0038 through ADR-0041 are Accepted and in force, but their files contain **no ADR-to-ADR
+_ADR-0038 through ADR-0042 are Accepted and in force, but their files contain **no ADR-to-ADR
 references**, so no parent edges can be drawn without inventing them. They are grouped by subject
 below; edges will be added to the charts above once each ADR declares its ancestry._
 
@@ -107,6 +107,9 @@ graph TD
     subgraph Integrity["State Integrity & Cost Enforcement"]
         ADR40["ADR-0040: Card Conservation & Atomic Zone Transfer"]
         ADR41["ADR-0041: Cost Arrow Enforcement & Self-Damage Costs"]
+    end
+    subgraph DevTooling["Developer Tooling"]
+        ADR42["ADR-0042: Local-First Problem Reporting & Deferred GitHub Filing"]
     end
 ```
 
@@ -156,7 +159,7 @@ graph TD
 | [ADR-0038](0038-universal-special-ability-plugin-architecture-and-sequential-ordering.md)         | 2026-09-01 | Universal Special Ability Plugin Architecture & Sequential Ordering Engine           | **Accepted**                                                                                                 | Decouple hero-specific Special abilities (Black Panther _Wakanda Forever!_, Doctor Strange Invocation spells) into an extensible plugin registry with interactive Drag & Drop sequential reordering.                 |
 | [ADR-0039](0039-universal-resource-ability-timing-triad-and-form-gating.md)                       | 2026-09-01 | Universal Resource Ability Timing Triad, Stance Isolation & Multi-Form Extensibility | **Accepted**                                                                                                 | Standardize 3-way stance resource timings (RESOURCE, HERO_RESOURCE, ALTER_EGO_RESOURCE), payment window isolation, and 2-tier sub-form requirements.                                                                 |
 | [ADR-0040](0040-universal-card-conservation-and-atomic-zone-transfer.md)                          | 2026-09-01 | Universal Card Conservation, Atomic Zone Transfer & Invariant Engine                 | **Accepted**                                                                                                 | Enforce physical card conservation laws, atomic zone transfer helpers, and global uniqueness validation assertions.                                                                                                  |
-| [ADR-0041](0041-cost-arrow-mandatory-resolution-and-self-damage-costs.md)                         | 2026-09-01 | Cost Arrow Enforcement, Forced Trigger Resolution & Direct Character Damage Costs    | **Accepted**                                                                                                 | Automate cost execution on forced triggers, dispatch combat/thwart action triggers, and validate direct damage costs on character abilities per RR v1.8.                                                             |
+| [ADR-0041](0041-cost-arrow-mandatory-resolution-and-self-damage-costs.md)                         | 2026-09-01 | Cost Arrow Enforcement, Forced Trigger Resolution & Direct Character Damage Costs    | **Accepted**                                                                                                 | Automate cost execution on forced triggers, dispatch combat/thwart action triggers, and validate direct damage costs on character abilities per RR v1.8.                                                             |     | [ADR-0042](0042-local-first-developer-problem-reporting.md) | 2026-09-02 | Local-First Developer Problem Reporting & Deferred GitHub Filing | **Accepted** | Capture Dev Mode "Report a Problem" submissions (GameState attached) as local JSON via a dev-only Vite middleware instead of embedding a GitHub token client-side; a companion skill files them to GitHub later. |
 
 ---
 

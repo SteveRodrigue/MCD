@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- **Feature & Engine: Hero Setup Abilities Execution during Step 14 of Scenario Setup ([#16](https://github.com/SteveRodrigue/MCD/issues/16), `game-setup.ts`, `scenario-setup-step14-hero-setup.test.ts`):**
+  - Implemented the official Marvel Champions RR v1.8 p. 27 ("Step 14: Resolve Character Setup Abilities") state machine in `src/engine/state/game-setup.ts`:
+    - **Universal Step 14 Pipeline:** Automatically scans each player's identity cards (`alterEgo` and `hero`) and tableau for `timing === "SETUP"` abilities after opening hands and mulligans are resolved (Step 13) and before Round 1 begins (Step 15).
+    - **T'Challa Setup Upgrade (*Foresight* `01040b`):** Executes declarative `SEARCH_AND_SELECT` to fetch 1 Black Panther upgrade from `player.deck` and put it directly into `player.tableau`, shuffling `player.deck` post-search.
+    - **Deterministic Setup Choices:** Supports `PlayerSetupConfig.chosenSetupCardCode` for deterministic test and UI setup selection while maintaining full backward compatibility.
+    - **Multiplayer Turn-Order Invariant:** Resolves character setup abilities in player order across all active players.
+  - Added comprehensive contract test suite in [`scenario-setup-step14-hero-setup.test.ts`](file:///c:/Users/steve/OneDrive/Documents/Coding/MCD/tests/engine/scenario-setup-step14-hero-setup.test.ts).
+
 - **Feature & Engine: Universal Special Ability Plugin Architecture & Wakanda Forever! Sequential Ordering ([#18](https://github.com/SteveRodrigue/MCD/issues/18), [#19](https://github.com/SteveRodrigue/MCD/issues/19), [#20](https://github.com/SteveRodrigue/MCD/issues/20), [ADR-0038](docs/decisions/0038-universal-special-ability-plugin-architecture-and-sequential-ordering.md), `specials/special-registry.ts`, `specials/wakanda-forever.ts`, `effects/index.ts`, `action-dispatcher.ts`, `legality-checker.ts`, `WakandaForeverModal.tsx`, `wakanda-forever-sequence.test.ts`):**
   - Implemented the official Marvel Champions RR v1.8 p. 28 ("Special") and ADR-0038 universal Special ability plugin registry and interactive sequence ordering engine:
     - **Modular Special Ability Plugins:** Established `src/engine/specials/special-registry.ts` with standardized `SpecialAbilityHandler` contracts, decoupling hero-specific Special mechanics (*Black Panther*, *Doctor Strange*, *Storm*, *Phoenix*, and Fan-Made custom content) from the core primitive dispatcher.

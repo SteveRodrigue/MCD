@@ -8,6 +8,7 @@ import {
   VillainCard,
   MainSchemeCard,
   SideSchemeCard,
+  PlayerSideSchemeCard,
   MinionCard,
   AllyCard,
 } from '@engine/models';
@@ -236,6 +237,14 @@ export function normalizeRawCard(
         hasAcceleration: (raw.scheme_acceleration || 0) > 0,
         hasAmplify: (raw.scheme_amplify || 0) > 0,
       } as SideSchemeCard;
+    }
+    case CardType.PLAYER_SIDE_SCHEME: {
+      return {
+        ...base,
+        type: CardType.PLAYER_SIDE_SCHEME,
+        baseThreat: raw.base_threat ?? 0,
+        baseThreatFixed: !!raw.base_threat_fixed,
+      } as PlayerSideSchemeCard;
     }
     case CardType.ALLY: {
       const enrichmentAttackCost = enrichment?.attackCost;

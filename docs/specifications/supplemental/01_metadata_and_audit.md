@@ -35,6 +35,7 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `audit` | `CardAuditRecord` | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$. |
 | `mechanicSteps` | `string[]` | Optional | Granular step-by-step translation matching printed text. |
 | `noSupplementalNeeded` | `boolean` | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources). |
+| `victoryPoints` | `number` | Optional | Numeric value of the printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Must be paired with `keywords: ["Victory"]` on the normalized card. Routes the card to the permanent `state.victoryDisplay` zone instead of its normal discard pile when defeated. |
 | `errata` | `string \| null` | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge. |
 
 ---

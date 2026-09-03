@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-02T11:53:41.049Z`  
+> **Generated:** `2026-09-03T02:35:01.734Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -175,7 +175,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- | :--- |
 | **Effect** | `CHANGE_FORM_DRAW_TO_HAND_SIZE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `DEAL_DAMAGE_SPLIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
-| **Effect** | `DOUBLE_RESOURCE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `PLAY_FROM_ZONE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `SCRY_AND_SELECT_TRAIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |

@@ -259,6 +259,8 @@ export function setupGame(options: GameSetupOptions): GameState {
     encounterDeck: shuffledEncounterDeck,
     encounterDiscard: [],
     victoryDisplay: [],
+    auxiliaryDecks: {},
+    auxiliaryDiscards: {},
     removedFromGame: [],
     accelerationTokens: 0,
     winner: null,

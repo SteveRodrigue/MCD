@@ -26,6 +26,8 @@ describe('Problem Report Service', () => {
     encounterDeck: [],
     encounterDiscard: [],
     victoryDisplay: [],
+    auxiliaryDecks: {},
+    auxiliaryDiscards: {},
     removedFromGame: [],
     accelerationTokens: 0,
     winner: null,

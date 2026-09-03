@@ -59,4 +59,4 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'VILLAIN_PHASE_BEGAN'` | Villain phase begins (Step 1 place threat). | `villain-phase.ts` |
 | `'VILLAIN_PHASE_ENDED'` | Villain phase completes (after Step 5 reveals). | `villain-phase.ts` |
 | `'PHASE_START'` | A new game phase begins. | `pipeline.ts` |
-| `'DEFEATED'` | General character or scheme defeat event. | `pipeline.ts` |
+| `'DEFEATED'` | Side Scheme or Player Side Scheme reduced to 0 threat via thwart - resolves 'When Defeated' reward abilities declared on the scheme card itself (e.g. *Highway Robbery* `01166`, ADR-0034). | `action-dispatcher.ts` (`BASIC_THWART` / side_scheme branch) |

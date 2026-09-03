@@ -349,6 +349,7 @@ export const CardEnrichmentSchema = z.object({
   mechanicSteps: z.array(z.string()).optional(),
   noSupplementalNeeded: z.boolean().optional(),
   maxPerPlayer: z.number().optional(),
+  victoryPoints: z.number().optional(),
   errata: z.string().nullable().optional(),
 });
 

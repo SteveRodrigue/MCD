@@ -52,6 +52,14 @@ export function getAllCardInstances(state: GameState): CardInstance[] {
   cards.push(...(state.victoryDisplay || []));
   cards.push(...(state.removedFromGame || []));
 
+  // 5. Auxiliary Scenario Decks (ADR-0034, e.g. Infinity Gauntlet, Holding Cell, Evidence)
+  for (const deck of Object.values(state.auxiliaryDecks || {})) {
+    cards.push(...deck);
+  }
+  for (const discard of Object.values(state.auxiliaryDiscards || {})) {
+    cards.push(...discard);
+  }
+
   return cards;
 }
 
@@ -138,6 +146,14 @@ export function removeCardFromAllZones(
   if (removeFromList(state.encounterDiscard)) return found;
   if (removeFromList(state.victoryDisplay)) return found;
   if (removeFromList(state.removedFromGame)) return found;
+
+  // Auxiliary Scenario Decks (ADR-0034)
+  for (const deck of Object.values(state.auxiliaryDecks || {})) {
+    if (removeFromList(deck)) return found;
+  }
+  for (const discard of Object.values(state.auxiliaryDiscards || {})) {
+    if (removeFromList(discard)) return found;
+  }
 
   return found;
 }

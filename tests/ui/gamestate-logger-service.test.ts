@@ -21,6 +21,8 @@ describe('GameState Logger Service', () => {
     encounterDeck: [],
     encounterDiscard: [],
     victoryDisplay: [],
+    auxiliaryDecks: {},
+    auxiliaryDiscards: {},
     removedFromGame: [],
     accelerationTokens: 0,
     winner: null,

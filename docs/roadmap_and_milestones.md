@@ -196,15 +196,15 @@ _Objective: Connect the proven headless engine to our 1960s Pop-Art presentation
 
 _Objective: Scale the engine to support advanced expansion mechanics, new card types, multi-form identities, and native platforms._
 
-### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md) / [Issue #34](https://github.com/SteveRodrigue/MCD/issues/34))
+### 1. 🔴 `[Must-Have]` Milestone 5A: Player Side Schemes, Victory Display & Auxiliary Decks ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md) / [Issue #34](https://github.com/SteveRodrigue/MCD/issues/34)) ✅ (Completed)
 
-- [ ] **Player Side Scheme Execution Engine (`player_side_scheme` - RR v1.8 p. 26 / [ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)):**
-  - Support voluntary player side schemes with printed threat and "When Defeated" player reward step sequences.
-  - Enable heroes and allies to target player side schemes with basic thwart and thwart events.
-- [ ] **Persistent Victory Display (`state.victoryDisplay` - RR v1.8 p. 30):**
-  - Route defeated `Victory X` schemes and minions to the Victory Display zone to prevent deck recycling and track victory scores.
-- [ ] **Auxiliary Scenario Decks (`auxiliaryDecks` & `auxiliaryDiscards`):**
-  - Support modular auxiliary decks for complex campaign scenarios (_Infinity Gauntlet_, _Holding Cell_, _Market_, _Evidence_).
+- [x] **Player Side Scheme Execution Engine (`player_side_scheme` - RR v1.8 p. 26 / [ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)) ✅ (Completed):**
+  - Support voluntary player side schemes with printed threat and "When Defeated" player reward step sequences (unified into the shared `state.sideSchemes[]` zone with `ownerId` tracking).
+  - Enable heroes and allies to target player side schemes with basic thwart and thwart events (reuses the existing `side_scheme` targeting pipeline).
+- [x] **Persistent Victory Display (`state.victoryDisplay` - RR v1.8 p. 30) ✅ (Completed):**
+  - Route defeated `Victory X` schemes and minions to the Victory Display zone to prevent deck recycling and track victory scores, via the reusable `moveDefeatedCardToPile()` helper applied to every minion, encounter Side Scheme, and Player Side Scheme defeat path.
+- [x] **Auxiliary Scenario Decks (`auxiliaryDecks` & `auxiliaryDiscards`) ✅ (Completed — generic engine primitives):**
+  - Generic named-deck state fields and `initializeAuxiliaryDeck` / `drawFromAuxiliaryDeck` / `discardToAuxiliaryDeck` primitives (`src/engine/pipeline/auxiliary-decks.ts`), ready for a future _Infinity Gauntlet_ / _Holding Cell_ / _Market_ / _Evidence_ scenario plugin to wire up.
 
 ### 2. 🔴 `[Must-Have]` Milestone 5B: Multi-Form Identities & Universal Counter Engine ([ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #33](https://github.com/SteveRodrigue/MCD/issues/33))
 

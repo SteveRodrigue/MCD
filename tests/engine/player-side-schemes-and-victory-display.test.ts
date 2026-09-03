@@ -66,7 +66,11 @@ describe('Player Side Schemes, Victory Display & Auxiliary Scenario Decks (ADR-0
   it('enters the shared scheme area (state.sideSchemes) with printed threat when played from hand', () => {
     const player = state.players[0];
     const schemeCard = buildPlayerSideScheme({
-      raw: { ...(cardCatalog.getCard('01107')! as any).raw, base_threat: 2, base_threat_fixed: false },
+      raw: {
+        ...(cardCatalog.getCard('01107')! as any).raw,
+        base_threat: 2,
+        base_threat_fixed: false,
+      },
     } as any);
     const inst = createCardInstance(schemeCard);
     (inst.card as any).baseThreat = 2;
@@ -155,9 +159,7 @@ describe('Player Side Schemes, Victory Display & Auxiliary Scenario Decks (ADR-0
     expect(result.result.success).toBe(true);
     expect(result.state.sideSchemes).toHaveLength(0);
     expect(result.state.victoryDisplay.some((c) => c.instanceId === 'pss_victory')).toBe(true);
-    expect(result.state.players[0].discard.some((c) => c.instanceId === 'pss_victory')).toBe(
-      false,
-    );
+    expect(result.state.players[0].discard.some((c) => c.instanceId === 'pss_victory')).toBe(false);
   });
 
   it('routes a defeated encounter Side Scheme with the Victory keyword to state.victoryDisplay (retrofit)', () => {
@@ -209,9 +211,9 @@ describe('Player Side Schemes, Victory Display & Auxiliary Scenario Decks (ADR-0
     expect(result.state.victoryDisplay.some((c) => c.instanceId === minionInst.instanceId)).toBe(
       true,
     );
-    expect(
-      result.state.encounterDiscard.some((c) => c.instanceId === minionInst.instanceId),
-    ).toBe(false);
+    expect(result.state.encounterDiscard.some((c) => c.instanceId === minionInst.instanceId)).toBe(
+      false,
+    );
     expect(attackValue).toBeGreaterThan(0);
   });
 

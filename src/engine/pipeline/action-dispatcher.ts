@@ -1102,9 +1102,11 @@ export function dispatchAction(
       } else if (cardType === CardType.PLAYER_SIDE_SCHEME) {
         // Player Side Schemes enter the shared scheme area alongside encounter Side Schemes
         // (RR v1.8 p. 26, ADR-0034), scaled by player count like any other scheme.
-        const schemeCard = playedCardInstance.card as unknown as SideSchemeCard | PlayerSideSchemeCard;
+        const schemeCard = playedCardInstance.card as unknown as
+          SideSchemeCard | PlayerSideSchemeCard;
         const baseThreat =
-          (schemeCard.baseThreat ?? 0) * (schemeCard.baseThreatFixed ? 1 : nextState.players.length);
+          (schemeCard.baseThreat ?? 0) *
+          (schemeCard.baseThreatFixed ? 1 : nextState.players.length);
 
         nextState.sideSchemes.push({
           instanceId: playedCardInstance.instanceId,

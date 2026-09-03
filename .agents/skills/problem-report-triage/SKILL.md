@@ -98,25 +98,30 @@ Construct the title and body using the repo's **official issue templates** as th
 > 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the attached GameState; verify it against the original report before acting.
 
 ### 🐛 Describe the Bug
+
 <1–2 sentence neutral restatement of the problem, derived only from the original text below — if unclear, write "See original report below.">
 
 ### 📋 Steps to Reproduce
+
 1. Start Scenario: `<gameState.scenarioId>` (Difficulty: `<gameState.difficulty>`, Heroic: `<gameState.heroicLevel>`)
 2. Hero Selection: `<players[].hero.name / alterEgo.name>` (`<N>` player(s))
 3. State at time of report: Round `<gameState.roundNumber>`, Phase `<gameState.phase>`, Active Player Index `<gameState.activePlayerIndex>`
 4. See error: as described in the original report below
 
 ### 🎯 Expected Behavior vs Actual Behavior
-* **Expected:** Not stated by the reporter — pending triage.
-* **Actual:** See the original report below.
+
+- **Expected:** Not stated by the reporter — pending triage.
+- **Actual:** See the original report below.
 
 ### 📖 Official Rules Citation (If Applicable)
+
 N/A — filed via Dev Mode; no rules citation was captured. Add one during triage if relevant.
 
 ### 💻 Environment
-* **OS:** Not captured via Dev Mode
-* **Browser / Runtime:** Not captured via Dev Mode (dev/preview server only per [ADR-0042](../../../docs/decisions/0042-local-first-developer-problem-reporting.md))
-* **MCD Version / Commit:** Not captured via Dev Mode
+
+- **OS:** Not captured via Dev Mode
+- **Browser / Runtime:** Not captured via Dev Mode (dev/preview server only per [ADR-0042](../../../docs/decisions/0042-local-first-developer-problem-reporting.md))
+- **MCD Version / Commit:** Not captured via Dev Mode
 
 ---
 
@@ -134,6 +139,7 @@ N/A — filed via Dev Mode; no rules citation was captured. Add one during triag
 </details>
 
 ---
+
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
 ```
 
@@ -143,18 +149,23 @@ _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-tria
 > 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer.
 
 ### 💡 Is your feature request related to a problem?
+
 <1–2 sentence neutral restatement derived only from the original text below — if unclear, write "See original report below.">
 
 ### 🚀 Proposed Solution
+
 See the original report below for the reporter's own description of what they'd like to see.
 
 ### 🎨 Visual / UI Mockup (If Applicable)
+
 N/A — no mockup was captured via Dev Mode.
 
 ### 🔄 Alternatives Considered
+
 N/A — not captured via Dev Mode; explore during triage.
 
 ### 📚 Additional Context
+
 - Captured live in-game via Dev Mode at Round `<gameState.roundNumber>`, Phase `<gameState.phase>`, Scenario `<gameState.scenarioId>` (`<N>` player(s): `<players[].hero.name>`).
 
 ---
@@ -173,6 +184,7 @@ N/A — not captured via Dev Mode; explore during triage.
 </details>
 
 ---
+
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
 ```
 
@@ -225,20 +237,20 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 
 **Do not use `report.labels` verbatim.** Re-derive the label set from `report.type` and `report.priority` against the repository's real, existing taxonomy (verified with `gh label list` — all of these labels already exist, so `gh label create` is never needed for a standard report):
 
-| `report.type` | Title Prefix | Labels |
-|---|---|---|
-| `bug` | `[BUG]: ` | `bug`, `triage`, `priority:<mapped>` |
-| `improvement` | `[FEAT]: ` | `enhancement`, `priority:<mapped>` |
-| `feature` | `[FEAT]: ` | `enhancement`, `priority:<mapped>` |
+| `report.type` | Title Prefix | Labels                               |
+| ------------- | ------------ | ------------------------------------ |
+| `bug`         | `[BUG]: `    | `bug`, `triage`, `priority:<mapped>` |
+| `improvement` | `[FEAT]: `   | `enhancement`, `priority:<mapped>`   |
+| `feature`     | `[FEAT]: `   | `enhancement`, `priority:<mapped>`   |
 
 Priority mapping (`report.priority` → repo label — note `P0` renames from `critical` to `blocker`):
 
-| `report.priority` | Repo Label |
-|---|---|
-| `P0-critical` | `priority:P0-blocker` |
-| `P1-high` | `priority:P1-high` |
-| `P2-medium` | `priority:P2-medium` |
-| `P3-low` | `priority:P3-low` |
+| `report.priority` | Repo Label            |
+| ----------------- | --------------------- |
+| `P0-critical`     | `priority:P0-blocker` |
+| `P1-high`         | `priority:P1-high`    |
+| `P2-medium`       | `priority:P2-medium`  |
+| `P3-low`          | `priority:P3-low`     |
 
 ```bash
 gh issue create \
@@ -268,7 +280,7 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 ## 🛑 Safety Notes
 
 - This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `triage`, `enhancement`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
-- **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a *summary of the section below*, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
+- **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a _summary of the section below_, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
 - If a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
 - **Never guess at a duplicate match.** If duplicate-detection confidence is below the 80% threshold, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread.
 - Deleting a local report file is irreversible; always confirm the outcome first — either the new Issue exists (Step 4a) or the merge comment/label was applied (Step 3a) — before Step 5.

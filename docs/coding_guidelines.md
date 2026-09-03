@@ -31,7 +31,7 @@ To maintain high code quality, rules accuracy, and architectural integrity acros
 |                             src/data/                                   |
 |   (MarvelsDB card schemas, static JSON definitions, card loaders)       |
 |   ❌ NEVER mutates or writes to data/upstream/ (zzorba raw files).      |
-|   ✅ ONLY reads upstream data and applies overrides in src/data/overrides|
+|   ✅ ONLY reads upstream data and applies overrides in src/data/supplemental|
 +-------------------------------------------------------------------------+
 ```
 

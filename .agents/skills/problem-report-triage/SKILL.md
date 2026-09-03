@@ -2,16 +2,17 @@
 name: problem-report-triage
 description: >-
   Inbox-Zero triage protocol that converts local Dev Mode "Report a Problem"
-  captures in logs/reports/*.json into tracked GitHub Issues, attaching the
-  embedded GameState snapshot when it aids reproduction, then deletes the
-  local report file once filed. Before filing, searches open GitHub issues
-  for duplicates/near-matches and, when found, merges by commenting on the
-  existing issue and tagging it as multiply-reported instead of creating a
-  new one. Maps report type + priority to GitHub labels (bug/triage,
-  enhancement, enhancement+feature, priority:P0-P3), logs progress in
-  logs/skills/, and leaves logs/reports/ empty (Inbox Zero) at the end of
-  every run. Trigger whenever asked to "triage reports", "file pending
-  problem reports", "clear logs/reports", or prefixed with
+  captures in logs/reports/*.json into tracked GitHub Issues formatted per
+  the official .github/ISSUE_TEMPLATE forms ([BUG]: with bug/triage labels,
+  [FEAT]: with enhancement label), always preserving the reporter's verbatim
+  original text in a dedicated section for later human review. Before
+  filing, searches open GitHub issues for duplicates/near-matches and, when
+  found, merges by commenting on the existing issue and applying the repo's
+  existing 'duplicate' label instead of creating a new one. Maps report
+  priority to the repo's real priority:P0-blocker..P3-low labels, logs
+  progress in logs/skills/, and leaves logs/reports/ empty (Inbox Zero) at
+  the end of every run. Trigger whenever asked to "triage reports", "file
+  pending problem reports", "clear logs/reports", or prefixed with
   'problem-report-triage:'.
 ---
 
@@ -19,7 +20,9 @@ description: >-
 
 **Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
 
-This skill converts locally-captured Dev Mode problem reports (`logs/reports/*.json`, produced by the in-game "Report a Problem" feature) into tracked GitHub Issues — merging into an existing issue instead of filing a duplicate when one is detected — then prunes the local file, mirroring the Inbox Zero pattern already used for `docs/ambiguities/`.
+This skill converts locally-captured Dev Mode problem reports (`logs/reports/*.json`, produced by the in-game "Report a Problem" feature) into tracked GitHub Issues formatted exactly like the repo's **official issue templates** ([`.github/ISSUE_TEMPLATE/bug_report.md`](../../../.github/ISSUE_TEMPLATE/bug_report.md) and [`feature_request.md`](../../../.github/ISSUE_TEMPLATE/feature_request.md)) — merging into an existing issue instead of filing a duplicate when one is detected — then prunes the local file, mirroring the Inbox Zero pattern already used for `docs/ambiguities/`.
+
+**Every filed or merged issue must clearly identify itself as a player-submitted Dev Mode report and preserve the reporter's exact original text**, since the person triaging it later (a maintainer or another skill) was not present when it was written and must be able to read precisely what was reported, not a paraphrase.
 
 ---
 
@@ -30,9 +33,9 @@ Whenever this skill runs, append timestamped progress entries to `logs/skills/pr
 ```text
 YYYY-MM-DDTHH:mm:ss.sssZ [SCAN] Found <N> pending report(s) in logs/reports/
 YYYY-MM-DDTHH:mm:ss.sssZ [DUPLICATE] report_<timestamp>_<type>.json matches existing Issue #<NUM> (Confidence: <XX>%) — merging instead of filing
-YYYY-MM-DDTHH:mm:ss.sssZ [MERGE] Commented on Issue #<NUM> and applied 'duplicate-reported' label (Report Count: <N>)
-YYYY-MM-DDTHH:mm:ss.sssZ [FILE] Created GitHub Issue #<NUM>: "<title>" (<URL>) from report_<timestamp>_<type>.json
-YYYY-MM-DDTHH:mm:ss.sssZ [ATTACH] Attached GameState snapshot excerpt to Issue #<NUM> (Round <N>, Phase <PHASE>)
+YYYY-MM-DDTHH:mm:ss.sssZ [MERGE] Commented on Issue #<NUM> and applied 'duplicate' label (Report Count: <N>)
+YYYY-MM-DDTHH:mm:ss.sssZ [FILE] Created GitHub Issue #<NUM>: "[BUG]: <title>" or "[FEAT]: <title>" (<URL>) from report_<timestamp>_<type>.json
+YYYY-MM-DDTHH:mm:ss.sssZ [ATTACH] Attached GameState snapshot excerpt + verbatim original report to Issue #<NUM> (Round <N>, Phase <PHASE>)
 YYYY-MM-DDTHH:mm:ss.sssZ [PRUNE] Deleted local report_<timestamp>_<type>.json after successful filing/merging
 YYYY-MM-DDTHH:mm:ss.sssZ [DONE] logs/reports/ is Inbox Zero (<N> issues filed, <N> merged as duplicates, 0 pending)
 ```
@@ -48,12 +51,15 @@ Each `logs/reports/report_{timestamp}_{type}.json` file (written by [src/ui/serv
   "type": "bug" | "improvement" | "feature",
   "priority": "P0-critical" | "P1-high" | "P2-medium" | "P3-low",
   "title": "string (user-entered, truncated)",
-  "description": "string (user-entered free text)",
-  "labels": ["bug", "triage", "priority:P1-high"], // pre-computed, ready to use as-is
+  "description": "string (user-entered free text — this is the reporter's ORIGINAL TEXT and must be preserved verbatim in the issue body, never paraphrased)",
+  "labels": ["bug", "triage", "priority:P1-high"], // pre-computed by mapReportToLabels(); DO NOT use verbatim — see Step 4 for the repo's actual label taxonomy
   "gameState": { /* full GameState tree at time of report */ },
   "timestamp": 1234567890123
 }
 ```
+
+> [!IMPORTANT]
+> The `labels` array in the report file was pre-computed client-side by `mapReportToLabels()` in [problem-report-service.ts](../../../src/ui/services/problem-report-service.ts) using an older, invented taxonomy (`priority:P0-critical`, `enhancement`+`feature`). **Do not use it verbatim.** The repository's actual GitHub label taxonomy (verified via `gh label list`) uses `priority:P0-blocker` (not `P0-critical`), `bug`/`triage` (not `bug`+`triage` for enhancements), `enhancement` for feature requests, and a plain `duplicate` label (not `duplicate-reported`). Always re-derive labels per Step 4 below.
 
 ---
 
@@ -65,7 +71,7 @@ flowchart TD
     S2 -- "No" --> DONE["✅ Already Inbox Zero — end turn"]
     S2 -- "Yes" --> S3["2. Build Issue Body per Report<br/>(description + condensed GameState excerpt)"]
     S3 --> S3B{"3. Duplicate/Merge Detection<br/>(gh issue list --search)"}
-    S3B -- "Duplicate Found" --> M1["3a. Comment on Existing Issue<br/>+ Apply 'duplicate-reported' Label"]
+    S3B -- "Duplicate Found" --> M1["3a. Comment on Existing Issue<br/>+ Apply 'duplicate' Label"]
     M1 --> S6["5. Delete Local Report File, Log [PRUNE]"]
     S3B -- "No Match" --> S4["4. File New GitHub Issue (gh issue create --label <labels>)"]
     S4 --> S5["4a. Verify Issue Created, Log [FILE]/[ATTACH]"]
@@ -77,38 +83,100 @@ flowchart TD
 
 List all files matching `logs/reports/report_*.json` (ignore `logs/reports/processed/` if present from prior runs). If none exist, log `[DONE]` and end the turn immediately — do not create empty issues or fabricate reports.
 
-### Step 2: Build the GitHub Issue Body per Report
+### Step 2: Build the Issue Title & Body per Report (Official Template Format)
 
-For each report file, construct the issue body from the **actual file contents only** (never invent details):
+Construct the title and body using the repo's **official issue templates** as the exact model — never invent new section headings. Pick the template that matches `report.type`:
+
+- `report.type == "bug"` → mirror [`bug_report.md`](../../../.github/ISSUE_TEMPLATE/bug_report.md).
+- `report.type == "improvement"` or `"feature"` → mirror [`feature_request.md`](../../../.github/ISSUE_TEMPLATE/feature_request.md).
+
+**Title:** `[BUG]: <short summary>` or `[FEAT]: <short summary>` — reuse `report.title` (already truncated by the UI) with its internal `[BUG]`/`[IMPROVEMENT]`/`[FEATURE]` tag normalized to the official `[BUG]: `/`[FEAT]: ` prefix. Never rewrite the reporter's wording beyond this prefix normalization.
+
+**Bug body:**
 
 ```markdown
-### 📋 Report Details (Filed via Dev Mode "Report a Problem")
+> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the attached GameState; verify it against the original report before acting.
 
-<description>
+### 🐛 Describe the Bug
+<1–2 sentence neutral restatement of the problem, derived only from the original text below — if unclear, write "See original report below.">
 
-### 🎮 GameState Snapshot at Time of Report
+### 📋 Steps to Reproduce
+1. Start Scenario: `<gameState.scenarioId>` (Difficulty: `<gameState.difficulty>`, Heroic: `<gameState.heroicLevel>`)
+2. Hero Selection: `<players[].hero.name / alterEgo.name>` (`<N>` player(s))
+3. State at time of report: Round `<gameState.roundNumber>`, Phase `<gameState.phase>`, Active Player Index `<gameState.activePlayerIndex>`
+4. See error: as described in the original report below
 
-- **Round:** <gameState.roundNumber>
-- **Phase:** <gameState.phase>
-- **Active Player Index:** <gameState.activePlayerIndex>
-- **Villain:** <gameState.villain?.name ?? 'N/A'>
-- **Main Scheme:** <gameState.mainScheme?.name ?? 'N/A'>
+### 🎯 Expected Behavior vs Actual Behavior
+* **Expected:** Not stated by the reporter — pending triage.
+* **Actual:** See the original report below.
+
+### 📖 Official Rules Citation (If Applicable)
+N/A — filed via Dev Mode; no rules citation was captured. Add one during triage if relevant.
+
+### 💻 Environment
+* **OS:** Not captured via Dev Mode
+* **Browser / Runtime:** Not captured via Dev Mode (dev/preview server only per [ADR-0042](../../../docs/decisions/0042-local-first-developer-problem-reporting.md))
+* **MCD Version / Commit:** Not captured via Dev Mode
+
+---
+
+### 📝 Original User Report (Verbatim — Preserved for Review)
+
+> <report.description, character-for-character, unedited — this is the single source of truth for what the reporter actually said>
 
 <details>
-<summary>Full GameState JSON (click to expand)</summary>
+<summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>
 
 \`\`\`json
-<condensed or full gameState JSON — attach only if it materially aids reproduction; for large states, include the full JSON as it is the only diagnostic artifact available>
+<full gameState JSON — attach in full; it is the only diagnostic artifact available>
 \`\`\`
 
 </details>
 
 ---
-
-_Filed automatically by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
+_Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
 ```
 
-Only attach the GameState JSON when it plausibly aids reproduction (i.e. always for `bug` reports; optional for `improvement`/`feature` reports where the snapshot is not directly relevant — use judgment, but default to attaching it since it is cheap and lossless).
+**Feature/Improvement body:**
+
+```markdown
+> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer.
+
+### 💡 Is your feature request related to a problem?
+<1–2 sentence neutral restatement derived only from the original text below — if unclear, write "See original report below.">
+
+### 🚀 Proposed Solution
+See the original report below for the reporter's own description of what they'd like to see.
+
+### 🎨 Visual / UI Mockup (If Applicable)
+N/A — no mockup was captured via Dev Mode.
+
+### 🔄 Alternatives Considered
+N/A — not captured via Dev Mode; explore during triage.
+
+### 📚 Additional Context
+- Captured live in-game via Dev Mode at Round `<gameState.roundNumber>`, Phase `<gameState.phase>`, Scenario `<gameState.scenarioId>` (`<N>` player(s): `<players[].hero.name>`).
+
+---
+
+### 📝 Original User Report (Verbatim — Preserved for Review)
+
+> <report.description, character-for-character, unedited>
+
+<details>
+<summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>
+
+\`\`\`json
+<full gameState JSON>
+\`\`\`
+
+</details>
+
+---
+_Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
+```
+
+Never invent Expected Behavior, Rules Citations, Environment details, or Alternatives that the reporter did not state — always mark them "Not stated" / "N/A" and defer to the verbatim section. The GameState JSON is always attached in full (both templates) since it is cheap, lossless, and the only diagnostic artifact available for a Dev Mode report.
 
 ### Step 3: Duplicate / Merge Detection 🔍
 
@@ -129,27 +197,25 @@ Log the outcome either way: `[DUPLICATE]` with the matched issue number and conf
 
 When a duplicate is detected, do **not** create a new issue. Instead:
 
-1. **Comment on the existing issue** with the new report's details, so the issue thread reflects that multiple people/sessions hit the same problem:
+1. **Comment on the existing issue** with the new report's verbatim text, so the issue thread reflects that another player independently hit the same problem — the comment must preserve the reporter's original words, not a paraphrase:
 
    ```bash
-   gh issue comment <NUM> --body "### 🔁 Duplicate Report Received
+   gh issue comment <NUM> --body "> 🎮 **Another Dev Mode report was received for this issue** (Priority: <report.priority>, Type: <report.type>).
 
-   **Priority of this report:** <report.priority>
-   **Type:** <report.type>
+   ### 📝 Original User Report (Verbatim — Preserved for Review)
 
-   <report.description>
+   > <report.description, character-for-character, unedited>
 
-   <GameState excerpt from Step 2, if it adds new reproduction detail not already on the issue>
+   <GameState excerpt from Step 2 — Round/Phase/Scenario/Heroes — if it adds reproduction detail not already on the issue>
 
    ---
    _Merged automatically by the \`problem-report-triage\` skill from \`report_<timestamp>_<type>.json\`. This issue has now been reported more than once — consider raising its priority._"
    ```
 
-2. **Apply a `duplicate-reported` label** (creating it first if it doesn't exist yet) so downstream skills (`next-task`, `bug-fix`, `feature-delivery`) can see at a glance that an issue has multiple independent reports and should be weighted higher in prioritization:
+2. **Apply the repository's existing `duplicate` label** (already defined — `gh label list` confirms it exists, so no `gh label create` is needed) so downstream skills (`next-task`, `bug-fix`, `feature-delivery`) can see at a glance that an issue has multiple independent reports and should be weighted higher in prioritization:
 
    ```bash
-   gh label create "duplicate-reported" --color "B60205" --description "Reported more than once via Dev Mode" --force
-   gh issue edit <NUM> --add-label "duplicate-reported"
+   gh issue edit <NUM> --add-label "duplicate"
    ```
 
 3. **If the new report's priority is higher** than the existing issue's current `priority:P?-*` label, swap the priority label up (e.g. remove `priority:P2-medium`, add `priority:P1-high`) so the escalated severity is visible without manual triage.
@@ -157,19 +223,28 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 
 ### Step 4: File a New GitHub Issue (No Duplicate Found)
 
-Use the `labels` array already present in the report file verbatim — it was pre-computed by `mapReportToLabels()` and matches the repo's existing label conventions (`bug`/`triage`, `enhancement`, `enhancement`+`feature`, `priority:P0-critical`…`P3-low`).
+**Do not use `report.labels` verbatim.** Re-derive the label set from `report.type` and `report.priority` against the repository's real, existing taxonomy (verified with `gh label list` — all of these labels already exist, so `gh label create` is never needed for a standard report):
+
+| `report.type` | Title Prefix | Labels |
+|---|---|---|
+| `bug` | `[BUG]: ` | `bug`, `triage`, `priority:<mapped>` |
+| `improvement` | `[FEAT]: ` | `enhancement`, `priority:<mapped>` |
+| `feature` | `[FEAT]: ` | `enhancement`, `priority:<mapped>` |
+
+Priority mapping (`report.priority` → repo label — note `P0` renames from `critical` to `blocker`):
+
+| `report.priority` | Repo Label |
+|---|---|
+| `P0-critical` | `priority:P0-blocker` |
+| `P1-high` | `priority:P1-high` |
+| `P2-medium` | `priority:P2-medium` |
+| `P3-low` | `priority:P3-low` |
 
 ```bash
 gh issue create \
-  --title "<report.title>" \
-  --label "<report.labels joined by comma>" \
+  --title "[BUG]: <report.title, tag normalized>" \
+  --label "bug,triage,priority:P1-high" \
   --body-file <temp-body-file>.md
-```
-
-If any label does not yet exist in the repository (e.g. a `priority:P?-*` label has never been created), create it first so `gh issue create` does not fail:
-
-```bash
-gh label create "priority:P1-high" --color "D93F0B" --description "High priority" --force
 ```
 
 ### Step 4a: Verify & Log
@@ -192,8 +267,9 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 
 ## 🛑 Safety Notes
 
-- This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / `gh label create` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data.
-- Never fabricate report content — if a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
+- This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `triage`, `enhancement`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
+- **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a *summary of the section below*, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
+- If a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
 - **Never guess at a duplicate match.** If duplicate-detection confidence is below the 80% threshold, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread.
 - Deleting a local report file is irreversible; always confirm the outcome first — either the new Issue exists (Step 4a) or the merge comment/label was applied (Step 3a) — before Step 5.
 

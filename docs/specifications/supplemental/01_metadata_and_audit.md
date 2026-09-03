@@ -28,15 +28,15 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 
 ## 2. Field Specifications: `CardEnrichment`
 
-| Field                  | Type              | Required | Description                                                                                              |
-| :--------------------- | :---------------- | :------- | :--------------------------------------------------------------------------------------------------------- |
-| `comment`              | `string`          | Optional | Human-readable explanation of card type, title, and mechanics.                                              |
-| `abilities`            | `CardAbility[]`   | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                       |
-| `audit`                | `CardAuditRecord` | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                       |
-| `mechanicSteps`        | `string[]`        | Optional | Granular step-by-step translation matching printed text.                                                    |
-| `noSupplementalNeeded` | `boolean`         | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).      |
+| Field                  | Type              | Required | Description                                                                                                      |
+| :--------------------- | :---------------- | :------- | :--------------------------------------------------------------------------------------------------------------- |
+| `comment`              | `string`          | Optional | Human-readable explanation of card type, title, and mechanics.                                                   |
+| `abilities`            | `CardAbility[]`   | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                            |
+| `audit`                | `CardAuditRecord` | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                            |
+| `mechanicSteps`        | `string[]`        | Optional | Granular step-by-step translation matching printed text.                                                         |
+| `noSupplementalNeeded` | `boolean`         | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).           |
 | `victoryPoints`        | `number`          | Optional | Numeric value of the printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Paired with `keywords: ["Victory"]`. |
-| `errata`               | `string \| null`  | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                        |
+| `errata`               | `string \| null`  | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                             |
 
 > [!NOTE]
 > `victoryPoints` routes the defeated card to the permanent `state.victoryDisplay` zone instead of its normal discard pile (see [ADR-0034](../../decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)).

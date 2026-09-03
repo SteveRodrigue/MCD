@@ -1,6 +1,6 @@
 # [ADR-0034] Player Side Schemes, Victory Display & Auxiliary Scenario Decks Architecture
 
-* **Status:** Accepted
+- **Status:** Accepted (Implemented [#34](https://github.com/SteveRodrigue/MCD/issues/34))
 * **Date:** 2026-08-31
 * **Authors:** MCD Core Team
 * **Deciders:** User & Antigravity
@@ -35,29 +35,37 @@ flowchart TD
     subgraph Thwarting["Scheme Thwart Resolution"]
         ThwartTarget{"Target Scheme Type"}
         ThwartTarget -- Main Scheme --> T1["Remove threat from state.mainScheme"]
-        ThwartTarget -- Side Scheme --> T2["Remove threat from state.sideSchemes[]"]
-        ThwartTarget -- Player Side Scheme --> T3["Remove threat from state.playerSideSchemes[]"]
+        ThwartTarget -- "Side Scheme or Player Side Scheme" --> T2["Remove threat from state.sideSchemes[] (unified zone)"]
     end
 
     subgraph Defeat["Defeat & Victory Resolution"]
-        T3 --> CheckDefeat{"Threat reaches 0?"}
-        CheckDefeat -- Yes --> ResolveWhenDefeated["Execute 'When Defeated' Ability Steps"]
+        T2 --> CheckDefeat{"Threat reaches 0?"}
+        CheckDefeat -- Yes --> ResolveWhenDefeated["Execute 'When Defeated' Ability Steps (Trigger: DEFEATED)"]
         ResolveWhenDefeated --> CheckVictory{"Has Victory X keyword?"}
         CheckVictory -- Yes --> MoveVictory["Move card to state.victoryDisplay[]"]
-        CheckVictory -- No --> MoveDiscard["Move card to owner discard pile"]
+        CheckVictory -- No --> MoveDiscard["Move card to owner discard pile (ownerId) or encounterDiscard"]
     end
 ```
 
 ### 📋 State Model Extensions (`src/engine/models/state.ts`)
 
+> [!IMPORTANT]
+> **Implementation Refinement (2026-09-02):** Player Side Schemes and encounter Side Schemes were unified into the **same** `state.sideSchemes: SideSchemeState[]` array/zone rather than a separate `playerSideSchemes` field, since both already share one visual "Side Scheme area" and one thwart-targeting code path (`targetType: 'side_scheme'`). Each entry gained an optional `ownerId?: string` (set only for player-played schemes) so defeat-without-Victory routes to the owning player's discard pile instead of `encounterDiscard`. This is a pure implementation simplification of the same architectural intent below — no behavior described in this ADR changes.
+
 ```typescript
+export interface SideSchemeState {
+  instanceId: string;
+  card: SideSchemeCard | PlayerSideSchemeCard; // distinguished by card.type
+  threat: number;
+  ownerId?: string; // set when a player played this as a Player Side Scheme
+}
+
 export interface GameState {
-  // Active player side schemes in play
-  playerSideSchemes: CardInstance[];
-  
+  sideSchemes: SideSchemeState[]; // shared zone for encounter AND player side schemes
+
   // Permanent victory display zone for defeated Victory X schemes/minions
   victoryDisplay: CardInstance[];
-  
+
   // Auxiliary scenario decks (e.g., infinity_gauntlet, holding_cell, evidence)
   auxiliaryDecks: Record<string, CardInstance[]>;
   auxiliaryDiscards: Record<string, CardInstance[]>;
@@ -72,3 +80,9 @@ export interface GameState {
 * Unlocks all 35 Player Side Scheme cards across expansion packs (*Build Support*, *Superpower Training*, *Call for Backup*).
 * Enables full fidelity for campaign scenarios requiring Infinity Gauntlet and Evidence mechanics.
 * Prevents Victory cards from incorrectly reshuffling into encounter or player decks.
+* The `moveDefeatedCardToPile()` helper is applied to **every** existing defeat path (minion defeat via basic/ally attack, encounter Side Scheme defeat, Player Side Scheme defeat) instead of only the new Player Side Scheme path, so any future card printed with `Victory X` is routed correctly regardless of how it is defeated.
+* As a side effect, this pass also fixed a pre-existing dormant capability: *Highway Robbery* (`01166`) declared a `'DEFEATED'`-triggered "When Defeated" ability that was never dispatched by any pipeline; Side Scheme defeat resolution now executes it.
+
+### Implementation Status Note
+* **Zero cards in the currently-loaded Core Set catalog use `player_side_scheme` or the `Victory` keyword** (only Core Set packs are synced per ADR-0006); this delivery is a forward-looking engine capability verified with synthetic test fixtures (`tests/engine/player-side-schemes-and-victory-display.test.ts`), consistent with how ADR-0035/ADR-0036 built primitives ahead of card availability. No `src/data/supplemental/pack/*.json` retrofit was needed or performed.
+

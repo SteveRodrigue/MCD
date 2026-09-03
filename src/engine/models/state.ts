@@ -5,6 +5,7 @@ import {
   VillainCard,
   MainSchemeCard,
   SideSchemeCard,
+  PlayerSideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
 import { AbilityStep } from './abilities';
@@ -91,8 +92,11 @@ export interface MainSchemeState {
 
 export interface SideSchemeState {
   instanceId: string;
-  card: SideSchemeCard;
+  /** Player Side Schemes (ADR-0034) share this same zone/array, distinguished by card.type */
+  card: SideSchemeCard | PlayerSideSchemeCard;
   threat: number;
+  /** Set when a player-played PlayerSideSchemeCard entered play; undefined for encounter Side Schemes */
+  ownerId?: string;
   attachments?: CardInstance[];
   cardsUnderneath?: CardInstance[];
 }
@@ -250,6 +254,9 @@ export interface GameState {
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
   victoryDisplay: CardInstance[];
+  /** Named modular scenario draw piles (ADR-0034), e.g. 'infinity_gauntlet', 'holding_cell', 'evidence' */
+  auxiliaryDecks: Record<string, CardInstance[]>;
+  auxiliaryDiscards: Record<string, CardInstance[]>;
   removedFromGame: CardInstance[];
   accelerationTokens: number;
   activeBoostCard?: CardInstance;

@@ -116,6 +116,8 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
       encounterDiscard: [],
       environments: [],
       victoryDisplay: [],
+      auxiliaryDecks: {},
+      auxiliaryDiscards: {},
       removedFromGame: [],
       accelerationTokens: 0,
       winner: null,

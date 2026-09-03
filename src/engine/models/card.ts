@@ -191,6 +191,17 @@ export interface SideSchemeCard extends NormalizedCard {
 }
 
 /**
+ * Player Side Scheme Card (e.g. Build Support, Superpower Training - ADR-0034).
+ * Played from hand into the shared scheme area alongside encounter Side Schemes;
+ * defeated via the same thwart pipeline (RR v1.8 p. 26).
+ */
+export interface PlayerSideSchemeCard extends NormalizedCard {
+  type: CardType.PLAYER_SIDE_SCHEME;
+  baseThreat: number;
+  baseThreatFixed?: boolean;
+}
+
+/**
  * Minion Card (e.g. Hydra Soldier, Armored Rhino)
  */
 export interface MinionCard extends NormalizedCard {

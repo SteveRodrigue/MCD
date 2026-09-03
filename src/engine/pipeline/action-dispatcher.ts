@@ -8,6 +8,8 @@ import {
   AlterEgoCard,
   MinionCard,
   AllyCard,
+  SideSchemeCard,
+  PlayerSideSchemeCard,
   CardInstance,
   GamePhase,
   DecisionPromptOption,
@@ -32,6 +34,7 @@ import {
   executeEffect,
   checkAndDiscardZeroCounterCard,
   discardHostAttachmentsAndTuckedCards,
+  moveDefeatedCardToPile,
 } from '../effects';
 import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
@@ -449,9 +452,9 @@ export function dispatchAction(
         const minionHealth = (minion.card as MinionCard).health || 1;
 
         if (newDamage >= minionHealth) {
-          // Defeated minion -> discard
+          // Defeated minion -> discard (or Victory Display, RR v1.8 p. 30)
           targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
-          nextState.encounterDiscard.push(minion);
+          moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
 
           // Trigger minion attachments (e.g. Spider-Tracer 01007)
           for (const att of minion.attachments || []) {
@@ -596,9 +599,9 @@ export function dispatchAction(
             const minionHealth = (minion.card as MinionCard).health || 1;
 
             if (newDamage >= minionHealth) {
-              // Defeated minion -> discard
+              // Defeated minion -> discard (or Victory Display, RR v1.8 p. 30)
               targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
-              nextState.encounterDiscard.push(minion);
+              moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
 
               // Trigger minion attachments (e.g. Spider-Tracer 01007)
               for (const att of minion.attachments || []) {
@@ -795,10 +798,31 @@ export function dispatchAction(
 
         if (sideScheme.threat <= 0) {
           nextState.sideSchemes.splice(schemeIndex, 1);
-          nextState.encounterDiscard.push({
+
+          const defeatedInstance: CardInstance = {
             instanceId: sideScheme.instanceId,
             card: sideScheme.card,
-          });
+          };
+
+          // Resolve 'When Defeated' reward abilities declared on the scheme itself (e.g. Highway Robbery 01166)
+          const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
+          for (const ability of defeatedAbilities) {
+            if (
+              ability.trigger === 'DEFEATED' &&
+              (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE')
+            ) {
+              executeEffect(nextState, ability, {
+                playerId: sideScheme.ownerId || player.id,
+                sourceCardInstance: defeatedInstance,
+              });
+            }
+          }
+
+          // Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
+          const destinationPile = sideScheme.ownerId
+            ? getPlayer(nextState, sideScheme.ownerId)!.discard
+            : nextState.encounterDiscard;
+          moveDefeatedCardToPile(nextState, defeatedInstance, destinationPile);
 
           dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
 
@@ -1075,6 +1099,38 @@ export function dispatchAction(
           });
         }
         player.discard.push(playedCardInstance);
+      } else if (cardType === CardType.PLAYER_SIDE_SCHEME) {
+        // Player Side Schemes enter the shared scheme area alongside encounter Side Schemes
+        // (RR v1.8 p. 26, ADR-0034), scaled by player count like any other scheme.
+        const schemeCard = playedCardInstance.card as unknown as SideSchemeCard | PlayerSideSchemeCard;
+        const baseThreat =
+          (schemeCard.baseThreat ?? 0) * (schemeCard.baseThreatFixed ? 1 : nextState.players.length);
+
+        nextState.sideSchemes.push({
+          instanceId: playedCardInstance.instanceId,
+          card: schemeCard,
+          threat: baseThreat,
+          ownerId: player.id,
+        });
+
+        for (const ability of abilities) {
+          if (ability.trigger === 'CARD_PLAYED') {
+            executeEffect(nextState, ability, {
+              playerId: action.playerId,
+              sourceCardInstance: playedCardInstance,
+            });
+          }
+        }
+
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
+          key: 'encounter.reveal.sideScheme',
+          params: { sideScheme: playedCardInstance.card.name, threat: baseThreat },
+          onomatopoeia: 'SIDE SCHEME!',
+        });
       }
 
       return { state: nextState, result: { success: true, onomatopoeia } };

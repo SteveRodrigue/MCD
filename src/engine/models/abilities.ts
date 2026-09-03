@@ -54,6 +54,7 @@ export type TriggerType =
   | 'VILLAIN_PHASE_ENDED'
   | 'CARD_DISCARDED'
   | 'CARD_LEFT_PLAY'
+  | 'DEFEATED'
   | 'ROUND_END'; // backward-compatible alias
 
 export type EffectType =
@@ -183,5 +184,7 @@ export interface CardEnrichment {
   thwartCost?: number;
   maxPerPlayer?: number;
   uses?: CardUsesDefinition;
+  /** Numeric value for the printed 'Victory X' keyword (RR v1.8 p. 30) - paired with keywords: [Keyword.VICTORY] */
+  victoryPoints?: number;
   abilities?: CardAbility[];
 }

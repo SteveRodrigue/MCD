@@ -60,6 +60,23 @@ export interface EffectResult {
 }
 
 /**
+ * Routes a defeated card to the permanent Victory Display if it carries the printed
+ * 'Victory X' keyword, or to its normal discard pile otherwise (RR v1.8 p. 30, ADR-0034).
+ * Reusable across every defeat path (minions, side schemes, player side schemes).
+ */
+export function moveDefeatedCardToPile(
+  state: GameState,
+  cardInstance: CardInstance,
+  discardPile: CardInstance[],
+): void {
+  if (hasEntityKeyword(cardInstance, 'Victory')) {
+    state.victoryDisplay.push(cardInstance);
+  } else {
+    discardPile.push(cardInstance);
+  }
+}
+
+/**
  * Evaluates whether a card definition satisfies a declarative FilterSchema predicate (RR v1.8 p. 19, 26).
  */
 export function matchCardFilter(card: NormalizedCard, filter?: any, player?: PlayerState): boolean {
@@ -655,7 +672,7 @@ export function executeStep(
               const minionHp = (minion.card as MinionCard).health || 1;
               if (newDmg >= minionHp) {
                 p.engagedMinions.splice(i, 1);
-                state.encounterDiscard.push(minion);
+                moveDefeatedCardToPile(state, minion, state.encounterDiscard);
               } else {
                 minion.tokens = { ...minion.tokens, damage: newDmg };
               }
@@ -763,7 +780,7 @@ export function executeStep(
             if (newDmg >= minionHp) {
               const excessDmg = newDmg - minionHp;
               p.engagedMinions.splice(minionIdx, 1);
-              state.encounterDiscard.push(minion);
+              moveDefeatedCardToPile(state, minion, state.encounterDiscard);
 
               // Overkill routing to villain if attack has Overkill
               const isOverkill = Boolean(

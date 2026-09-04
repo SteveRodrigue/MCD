@@ -107,18 +107,22 @@ export function evaluateNextTasks(): TaskCandidate[] {
       cardDesc = `Cards with dynamic threat/damage scaling`;
     }
 
-    // 4. Milestone Alignment Score (0 - 30)
-    let milestoneAlignment = 'Phase 3+ (Future)';
-    let milestoneScore = 10;
-    if (num === 30 || num === 31 || num === 32 || num === 10 || num === 18 || num === 3) {
-      milestoneAlignment = 'Milestone 2D (Active / Inbox Zero)';
-      milestoneScore = 30;
-    } else if (num === 37 || num === 23 || num === 25 || num === 14) {
-      milestoneAlignment = 'Phase 3 (Multi-Hero / Collaboration)';
-      milestoneScore = 20;
-    } else if (num === 33 || num === 34 || num === 35) {
-      milestoneAlignment = 'Phase 5 (Expansions & Mechanics)';
-      milestoneScore = 15;
+    // 4. Milestone Alignment Score (Gate 1: Rhino Release vs Post-Rhino Deferred)
+    const postRhinoIssues = [33, 34, 35, 37];
+    const isPostRhino = postRhinoIssues.includes(num);
+
+    let milestoneAlignment = 'Gate 1: The Rhino Release (Active Focus)';
+    let milestoneScore = 40;
+
+    if (isPostRhino) {
+      milestoneAlignment = 'Post-Rhino Release (Deferred to Gate 2/3/4)';
+      milestoneScore = -30; // Deprioritize out-of-scope tasks
+    } else if (priority === 'P0' || num === 46 || num === 45 || num === 51 || num === 52 || num === 48 || num === 49) {
+      milestoneAlignment = 'Gate 1: Rhino Release (P0/P1 Active Core Blocker)';
+      milestoneScore = 40;
+    } else if (num === 25 || num === 24 || num === 23 || num === 26 || num === 17 || num === 14 || num === 13 || num === 12 || num === 36 || num === 50 || num === 4) {
+      milestoneAlignment = 'Gate 1: Rhino Release (Core Polish)';
+      milestoneScore = 35;
     }
 
     // 5. Priority Score (0 - 40)
@@ -138,7 +142,7 @@ export function evaluateNextTasks(): TaskCandidate[] {
     const cardScore = Math.min(20, Math.round(cardCount * 0.4));
 
     // Total Composite Score
-    const totalScore = priorityScore + milestoneScore + impactScore + cardScore;
+    const totalScore = isPostRhino ? 10 : (priorityScore + milestoneScore + impactScore + cardScore);
 
     // Determine Recommended Skill
     let recommendedSkill = 'feature-delivery';

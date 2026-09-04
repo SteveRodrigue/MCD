@@ -451,6 +451,21 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z.object({
 });
 
 /**
+ * Card Uses Definition Schema (RR v1.8 p. 30 'Uses')
+ */
+export const CardUsesSchema = z.object({
+  count: z.number().int().nonnegative(),
+  type: z.string().optional(),
+  counterType: z.string().optional(),
+  max: z.number().int().positive().optional(),
+  discardOnEmpty: z.boolean().optional(),
+});
+
+
+
+export type CardUses = z.infer<typeof CardUsesSchema>;
+
+/**
  * Card Enrichment Schema
  */
 export const CardEnrichmentSchema = z.object({
@@ -460,6 +475,7 @@ export const CardEnrichmentSchema = z.object({
   mechanicSteps: z.array(z.string()).optional(),
   noSupplementalNeeded: z.boolean().optional(),
   maxPerPlayer: z.number().optional(),
+  uses: CardUsesSchema.optional(),
   victoryPoints: z.number().optional(),
   errata: z.string().nullable().optional(),
 });

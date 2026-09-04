@@ -252,3 +252,24 @@ export function attachCardToHost(
     }
   }
 }
+
+/**
+ * Initializes counters on a card instance when it enters play if it has a 'uses' keyword definition (RR v1.8 p. 30).
+ * Populates both generic tokens.counters (for UI badges) and typed counters map (for spendCounters costs).
+ */
+export function initializeCardUses(cardInstance: CardInstance): void {
+  const usesDef = cardInstance.card.enrichment?.uses;
+  if (!usesDef || usesDef.count <= 0) return;
+
+  const counterType = usesDef.type || usesDef.counterType || 'all_purpose';
+
+  cardInstance.tokens = {
+    ...cardInstance.tokens,
+    counters: usesDef.count,
+  };
+
+  cardInstance.counters = {
+    ...(cardInstance.counters || {}),
+    [counterType]: usesDef.count,
+  };
+}

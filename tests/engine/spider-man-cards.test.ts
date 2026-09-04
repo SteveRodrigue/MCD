@@ -188,6 +188,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       const inPlayShooter = res.state.players[0].tableau.find((c) => c.card.code === '01008')!;
       expect(inPlayShooter).toBeDefined();
       expect(inPlayShooter.tokens?.counters).toBe(3); // 3 counters initialized!
+      expect(inPlayShooter.counters?.web).toBe(3); // Typed web counter initialized!
 
       // Activate Web-Shooter resource ability
       const resourceRes = dispatchAction(res.state, {
@@ -202,6 +203,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
         (c) => c.card.code === '01008',
       )!;
       expect(updatedShooter.tokens?.counters).toBe(2);
+      expect(updatedShooter.counters?.web).toBe(2);
       expect(updatedShooter.exhausted).toBe(true);
     });
 

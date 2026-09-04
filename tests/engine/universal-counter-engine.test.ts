@@ -441,4 +441,66 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     // Non-spell card remains untouched
     expect(res.state.players[0].tableau[2].counters?.energy).toBe(4);
   });
+
+  it('initializes both numeric tokens.counters and named counters map on enters-play via PUT_INTO_PLAY (RR v1.8 p. 30)', () => {
+    const tacTeam: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: '01056',
+      name: 'Tac Team',
+      type: CardType.SUPPORT,
+      enrichment: {
+        uses: {
+          count: 3,
+          type: 'attack',
+          discardOnEmpty: true,
+        },
+      },
+    };
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [tacTeam],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    const inst = createCardInstance(tacTeam);
+    player.hand = [inst];
+
+    // Put into play via PUT_INTO_PLAY effect
+    const res = executeEffect(
+      state,
+      {
+        id: 'put_tac_team_into_play',
+        timing: 'ACTION',
+        steps: [
+          {
+            effect: 'PUT_INTO_PLAY',
+            params: {
+              target: 'SELF',
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', sourceCardInstance: inst },
+    );
+
+    expect(res.success).toBe(true);
+    const inPlayCard = res.state.players[0].tableau.find((c) => c.instanceId === inst.instanceId);
+    expect(inPlayCard).toBeDefined();
+    expect(inPlayCard?.tokens?.counters).toBe(3);
+    expect(inPlayCard?.counters?.attack).toBe(3);
+  });
 });
+

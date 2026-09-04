@@ -5,6 +5,7 @@ import {
   SupplementalPackSchema,
   CardEnrichmentSchema,
   CardAbilitySchema,
+  AbilityCostSchema,
   CardUsesSchema,
   CardAuditRecordSchema,
   EffectTypeSchema,
@@ -357,6 +358,28 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(res.success).toBe(true);
     });
 
+    it('Rejects unknown/undeclared properties in AbilityCostSchema (.strict() enforcement)', () => {
+      const costWithUnknownKey = {
+        exhaustSelf: true,
+        takeDamage: 1,
+      };
+      const res = AbilityCostSchema.safeParse(costWithUnknownKey);
+      expect(res.success).toBe(false);
+    });
+
+    it('Accepts valid damageHero, discardCard, and spendCounters in AbilityCostSchema', () => {
+      const validCost = {
+        exhaustSelf: true,
+        damageHero: 1,
+        discardCard: {
+          from: 'HAND' as const,
+          count: 1,
+        },
+      };
+      const res = AbilityCostSchema.safeParse(validCost);
+      expect(res.success).toBe(true);
+    });
+
     it('Verifies that no unrecognized properties exist across any supplemental pack file', () => {
       const schemaJsonPath = path.resolve('src/data/supplemental/schema.json');
       const schemaJson = JSON.parse(fs.readFileSync(schemaJsonPath, 'utf8'));
@@ -368,6 +391,12 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         Object.keys(
           schemaJson.properties.cards.additionalProperties.properties.abilities.items.properties ||
             {},
+        ),
+      );
+      const costProps = new Set(
+        Object.keys(
+          schemaJson.properties.cards.additionalProperties.properties.abilities.items.properties.cost
+            .properties || {},
         ),
       );
       const auditProps = new Set(
@@ -421,6 +450,16 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               for (const key of Object.keys(ab)) {
                 if (!abilityProps.has(key)) {
                   undeclared.push(`${file}:${code} (CardAbility ${ab.id || abIdx}) -> '${key}'`);
+                }
+              }
+
+              if (ab.cost && typeof ab.cost === 'object') {
+                for (const key of Object.keys(ab.cost)) {
+                  if (!costProps.has(key)) {
+                    undeclared.push(
+                      `${file}:${code} (AbilityCost ${ab.id || abIdx}) -> '${key}'`,
+                    );
+                  }
                 }
               }
 

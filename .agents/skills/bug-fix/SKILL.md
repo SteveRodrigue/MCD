@@ -177,10 +177,10 @@ gh issue create \
 
 ### Step 6: Full-Suite Verification & Zero-Regression Proof
 
-Run the automated verification suite:
+Execute the full verification suite across engine, tests, schemas, build, lint, and formatting:
 
 ```bash
-npm test && npm run typecheck && npm run build && npm run report:declarations
+npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
 ```
 
 - Confirm all test files and suites pass cleanly.

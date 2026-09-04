@@ -1,4 +1,9 @@
-import { CardEnrichment, CardAbility, TimingTypeSchema, TriggerTypeSchema } from '../../data/supplemental/schema';
+import {
+  CardEnrichment,
+  CardAbility,
+  TimingTypeSchema,
+  TriggerTypeSchema,
+} from '../../data/supplemental/schema';
 import { z } from 'zod';
 
 export type TimingType = z.infer<typeof TimingTypeSchema>;
@@ -8,7 +13,8 @@ export interface TextMatchSpan {
   start: number;
   end: number;
   text: string;
-  category: 'name' | 'timing' | 'trait' | 'trigger' | 'cost' | 'limit' | 'effect' | 'uses' | 'passive';
+  category:
+    'name' | 'timing' | 'trait' | 'trigger' | 'cost' | 'limit' | 'effect' | 'uses' | 'passive';
   detail?: string;
 }
 

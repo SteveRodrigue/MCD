@@ -19,7 +19,8 @@ describe('Card Text Parser', () => {
 
   describe('Core Hero Cards Parsing', () => {
     it('parses Peter Parker (01001b) — Resource timing, [mental], ONCE_PER_ROUND limit', () => {
-      const text = 'Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)';
+      const text =
+        'Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)';
       const result = parseCardText(text, '01001b');
 
       expect(result.confidence).toBe(100);
@@ -45,7 +46,8 @@ describe('Card Text Parser', () => {
     });
 
     it('parses Spider-Man (01001a) — Interrupt timing, VILLAIN_INITIATES_ATTACK trigger, DRAW_CARDS', () => {
-      const text = 'Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.';
+      const text =
+        'Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.';
       const result = parseCardText(text, '01001a');
 
       expect(result.confidence).toBe(100);
@@ -85,7 +87,8 @@ describe('Card Text Parser', () => {
     });
 
     it('parses Backflip (01003) — Interrupt (defense), TAKE_ATTACK_DAMAGE trigger, PREVENT_DAMAGE', () => {
-      const text = '<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.';
+      const text =
+        '<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.';
       const result = parseCardText(text, '01003');
 
       expect(result.confidence).toBe(100);
@@ -126,7 +129,8 @@ describe('Card Text Parser', () => {
     });
 
     it('parses Web-Shooter (01008) — uses counters, HERO_RESOURCE, spendCounters cost', () => {
-      const text = 'Uses (3 web counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Hero Resource</b>: Exhaust Web-Shooter and remove 1 web counter from it → generate a [wild] resource.';
+      const text =
+        'Uses (3 web counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Hero Resource</b>: Exhaust Web-Shooter and remove 1 web counter from it → generate a [wild] resource.';
       const result = parseCardText(text, '01008');
 
       expect(result.confidence).toBe(100);
@@ -159,7 +163,8 @@ describe('Card Text Parser', () => {
 
   describe('Complex Costs & Edge Cases', () => {
     it('parses Alpha Flight Station (01015) — exhaustSelf + discardCard from HAND', () => {
-      const text = '<b>Action</b>: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers).';
+      const text =
+        '<b>Action</b>: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers).';
       const result = parseCardText(text, '01015');
 
       expect(result.confidence).toBe(100);
@@ -203,7 +208,8 @@ describe('Card Text Parser', () => {
     });
 
     it('parses Superhuman Law Division (01026) — exhaustSelf + resources: [mental]', () => {
-      const text = '<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.';
+      const text =
+        '<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.';
       const result = parseCardText(text, '01026');
 
       expect(result.confidence).toBe(100);
@@ -240,4 +246,3 @@ describe('Card Text Parser', () => {
     });
   });
 });
-

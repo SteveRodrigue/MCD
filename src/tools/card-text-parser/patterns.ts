@@ -32,13 +32,22 @@ export interface TriggerPattern {
 }
 
 export const TRIGGER_PATTERNS: TriggerPattern[] = [
-  { regex: /when (?:the )?villain initiates an attack against you/i, trigger: 'VILLAIN_INITIATES_ATTACK' },
-  { regex: /when you would take (?:any amount of )?damage from an attack/i, trigger: 'TAKE_ATTACK_DAMAGE' },
+  {
+    regex: /when (?:the )?villain initiates an attack against you/i,
+    trigger: 'VILLAIN_INITIATES_ATTACK',
+  },
+  {
+    regex: /when you would take (?:any amount of )?damage from an attack/i,
+    trigger: 'TAKE_ATTACK_DAMAGE',
+  },
   { regex: /when you would take (?:any amount of )?damage/i, trigger: 'TAKE_DAMAGE' },
-  { regex: /when a treachery card is revealed(?: from the encounter deck)?/i, trigger: 'WHEN_REVEALED' },
-  { regex: /after you play ([A-Za-z0-9 '\-]+)/i, trigger: 'CARD_PLAYED' },
-  { regex: /after ([A-Za-z0-9 '\-]+) attacks/i, trigger: 'ATTACK_RESOLVED' },
-  { regex: /after ([A-Za-z0-9 '\-]+) thwarts/i, trigger: 'THWART_RESOLVED' },
+  {
+    regex: /when a treachery card is revealed(?: from the encounter deck)?/i,
+    trigger: 'WHEN_REVEALED',
+  },
+  { regex: /after you play ([A-Za-z0-9 '-]+)/i, trigger: 'CARD_PLAYED' },
+  { regex: /after ([A-Za-z0-9 '-]+) attacks/i, trigger: 'ATTACK_RESOLVED' },
+  { regex: /after ([A-Za-z0-9 '-]+) thwarts/i, trigger: 'THWART_RESOLVED' },
   { regex: /when attached minion is defeated/i, trigger: 'MINION_DEFEATED' },
   { regex: /after a minion is defeated/i, trigger: 'MINION_DEFEATED' },
   { regex: /after you change to this form/i, trigger: 'FORM_CHANGED_TO_HERO' },
@@ -67,7 +76,7 @@ export function extractCostClause(costText: string): AbilityCost | undefined {
   let hasCost = false;
 
   // Exhaust Self
-  if (/exhaust ([A-Za-z0-9 '\-]+)/i.test(costText)) {
+  if (/exhaust ([A-Za-z0-9 '-]+)/i.test(costText)) {
     cost.exhaustSelf = true;
     hasCost = true;
   }
@@ -90,7 +99,9 @@ export function extractCostClause(costText: string): AbilityCost | undefined {
   }
 
   // Spend resources: spend a [mental] resource / spend 1 [energy] resource
-  const resMatch = costText.match(/spend (?:a |an |)(\d*\s*)?\[(physical|energy|mental|wild)\] resource/i);
+  const resMatch = costText.match(
+    /spend (?:a |an |)(\d*\s*)?\[(physical|energy|mental|wild)\] resource/i,
+  );
   if (resMatch) {
     const resType = resMatch[2].toLowerCase() as 'physical' | 'energy' | 'mental' | 'wild';
     cost.resources = [resType];
@@ -108,7 +119,7 @@ export function extractCostClause(costText: string): AbilityCost | undefined {
   }
 
   // Discard Self
-  if (/^discard ([A-Za-z0-9 '\-]+)$/i.test(costText.trim())) {
+  if (/^discard ([A-Za-z0-9 '-]+)$/i.test(costText.trim())) {
     cost.discardSelf = true;
     hasCost = true;
   }
@@ -161,7 +172,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
   },
   // Draw cards
   {
-    regex: /draw (\d+) cards?(?: \(draw (\d+) cards? instead if you are ([A-Za-z0-9 '\-]+)\))?/i,
+    regex: /draw (\d+) cards?(?: \(draw (\d+) cards? instead if you are ([A-Za-z0-9 '-]+)\))?/i,
     handler: (m) => {
       const count = parseInt(m[1], 10);
       const params: Record<string, any> = { count };
@@ -195,12 +206,16 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
   },
   // Heal damage
   {
-    regex: /heal (\d+) damage from ([A-Za-z0-9 '\-]+)/i,
+    regex: /heal (\d+) damage from ([A-Za-z0-9 '-]+)/i,
     handler: (m) => {
       const amount = parseInt(m[1], 10);
       const targetName = m[2].toLowerCase();
       let target = 'SELF_IDENTITY';
-      if (targetName.includes('identity') || targetName.includes('you') || targetName.includes('hero')) {
+      if (
+        targetName.includes('identity') ||
+        targetName.includes('you') ||
+        targetName.includes('hero')
+      ) {
         target = 'SELF_IDENTITY';
       }
       return [

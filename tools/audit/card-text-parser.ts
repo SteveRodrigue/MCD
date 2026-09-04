@@ -46,7 +46,10 @@ function parseArgs(args: string[]): CliArgs {
   return parsed;
 }
 
-function loadUpstreamCard(cardCode: string, packCode = 'core'): { text?: string; name: string } | null {
+function loadUpstreamCard(
+  cardCode: string,
+  packCode = 'core',
+): { text?: string; name: string } | null {
   const packFile = path.join(ROOT_DIR, `data/upstream/pack/${packCode}.json`);
   if (!fs.existsSync(packFile)) return null;
 
@@ -86,7 +89,7 @@ export function writeSupplementalCard(
   cardCode: string,
   enrichment: CardEnrichment,
   originalText: string,
-  confidence: number
+  confidence: number,
 ): { success: boolean; message: string } {
   const packFilePath = path.join(ROOT_DIR, `src/data/supplemental/pack/${packCode}.json`);
   let packData: any = loadSupplementalPack(packCode);
@@ -207,7 +210,9 @@ Options:
     console.log('  (No tokens matched)');
   } else {
     for (const span of result.matchedSpans) {
-      console.log(`  ✓ [${span.category.toUpperCase()}] "${span.text}" ${span.detail ? `-> ${span.detail}` : ''}`);
+      console.log(
+        `  ✓ [${span.category.toUpperCase()}] "${span.text}" ${span.detail ? `-> ${span.detail}` : ''}`,
+      );
     }
   }
 
@@ -240,9 +245,13 @@ Options:
       console.log('\n🔍 Comparison with Existing Supplemental Data:');
       const existingAbilities = existing.abilities?.length || 0;
       const parsedAbilities = result.enrichment.abilities?.length || 0;
-      console.log(`  Existing abilities: ${existingAbilities} | Parsed abilities: ${parsedAbilities}`);
+      console.log(
+        `  Existing abilities: ${existingAbilities} | Parsed abilities: ${parsedAbilities}`,
+      );
       if (existing.uses || result.enrichment.uses) {
-        console.log(`  Existing uses: ${JSON.stringify(existing.uses)} | Parsed uses: ${JSON.stringify(result.enrichment.uses)}`);
+        console.log(
+          `  Existing uses: ${JSON.stringify(existing.uses)} | Parsed uses: ${JSON.stringify(result.enrichment.uses)}`,
+        );
       }
     }
   }
@@ -256,7 +265,7 @@ Options:
 
     if ((result.confidence < 95 || result.warnings.length > 0) && !args.force) {
       console.error(
-        `\n🚫 Write blocked: Confidence is ${result.confidence}% (< 95%) or warnings exist. Pass --force to override.`
+        `\n🚫 Write blocked: Confidence is ${result.confidence}% (< 95%) or warnings exist. Pass --force to override.`,
       );
       process.exit(1);
     }
@@ -267,7 +276,7 @@ Options:
       args.code,
       result.enrichment,
       rawText,
-      result.confidence
+      result.confidence,
     );
 
     if (writeResult.success) {

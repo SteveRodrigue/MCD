@@ -222,7 +222,7 @@ flowchart TD
 Execute the full multi-tier verification suite:
 
 ```bash
-npm test && npm run typecheck && npm run build && npm run report:declarations
+npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
 ```
 
 - **Vitest Suite:** All test files and suites pass with 0 failures.

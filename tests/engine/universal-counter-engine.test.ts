@@ -503,4 +503,3 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     expect(inPlayCard?.counters?.attack).toBe(3);
   });
 });
-

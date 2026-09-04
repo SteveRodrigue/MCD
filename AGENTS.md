@@ -32,7 +32,7 @@ BEFORE writing or modifying any source code (`src/`), test files (`tests/`), or 
 
 ## 📋 Mandatory Post-Task Protocol (Enforce on Every Turn)
 
-After executing automated tests and code verification (`npm test && npm run typecheck && npm run build`), **ALWAYS** execute this 8-point checklist before concluding the turn:
+After executing automated tests and code verification (`npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`), **ALWAYS** execute this 8-point checklist before concluding the turn:
 
 1. **Check CHANGELOG.md:** Update `[Unreleased]` with all new features, fixes, and engine changes.
 2. **Check Documentation:** Update relevant files in `docs/` or `README.md`.

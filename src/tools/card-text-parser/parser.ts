@@ -6,12 +6,7 @@ import {
   EFFECT_PATTERNS,
   extractCostClause,
 } from './patterns';
-import {
-  ParseCardResult,
-  TextMatchSpan,
-  UnmatchedFragment,
-  ParsedAbilityResult,
-} from './types';
+import { ParseCardResult, TextMatchSpan, UnmatchedFragment, ParsedAbilityResult } from './types';
 import {
   CardEnrichment,
   CardAbility,
@@ -63,7 +58,9 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
       detail: `count: ${count}, type: ${type}`,
     });
 
-    const reminderMatch = normalizedText.match(/\(Enters play with \d+ counters?\. When those are gone, discard this card\.?\)/i);
+    const reminderMatch = normalizedText.match(
+      /\(Enters play with \d+ counters?\. When those are gone, discard this card\.?\)/i,
+    );
     if (reminderMatch) {
       matchedSpans.push({
         start: reminderMatch.index!,
@@ -107,8 +104,13 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
     if (parsedAbility) {
       // Build CardAbility object
       const abilityId = parsedAbility.name
-        ? parsedAbility.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
-        : (cardCode ? `ability_${cardCode}_${abilityIndex}` : `ability_${abilityIndex}`);
+        ? parsedAbility.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '')
+        : cardCode
+          ? `ability_${cardCode}_${abilityIndex}`
+          : `ability_${abilityIndex}`;
 
       const cardAbility: CardAbility = {
         id: abilityId,
@@ -148,7 +150,8 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
   // Confidence Calculation
   const totalChars = normalizedText.length;
   const matchedChars = matchedSpans.reduce((sum, s) => sum + s.text.length, 0);
-  let confidence = totalChars > 0 ? Math.round(Math.min(100, (matchedChars / totalChars) * 100)) : 100;
+  let confidence =
+    totalChars > 0 ? Math.round(Math.min(100, (matchedChars / totalChars) * 100)) : 100;
   if (unmatchedFragments.length === 0) {
     confidence = 100;
   }
@@ -173,15 +176,13 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
   };
 }
 
-function parseAbilityLine(
-  line: string
-): ParsedAbilityResult | null {
+function parseAbilityLine(line: string): ParsedAbilityResult | null {
   let remaining = line;
   const matchedSpans: TextMatchSpan[] = [];
   let abilityName: string | undefined;
 
   // 1. Ability Name extraction (e.g. "Scientist — ...")
-  const nameMatch = remaining.match(/^([A-Za-z0-9 '’\-]+?)\s*(?:[—–]|\s-\s)\s*/);
+  const nameMatch = remaining.match(/^([A-Za-z0-9 '’-]+?)\s*(?:[—–]|\s-\s)\s*/);
   if (nameMatch) {
     abilityName = nameMatch[1].trim();
     matchedSpans.push({
@@ -350,7 +351,7 @@ function parseAbilityLine(
 
 function calculateUnmatchedFragments(
   normalizedText: string,
-  spans: TextMatchSpan[]
+  spans: TextMatchSpan[],
 ): UnmatchedFragment[] {
   const fragments: UnmatchedFragment[] = [];
   const lines = normalizedText.split('\n');

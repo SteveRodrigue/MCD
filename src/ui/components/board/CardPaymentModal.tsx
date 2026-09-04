@@ -283,14 +283,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const abilities = card?.enrichment?.abilities || [];
   const isAttack = abilities.some((a) =>
     (a.steps || []).some((s) =>
-      ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
-        s.effect,
-      ),
+      ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
     ),
   );
-  const isThwart = abilities.some((a) =>
-    (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
-  );
+  const isThwart = abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
 
   const enemyTargets = useMemo(() => {
     const targets: {

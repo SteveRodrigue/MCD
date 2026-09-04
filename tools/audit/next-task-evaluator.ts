@@ -117,10 +117,30 @@ export function evaluateNextTasks(): TaskCandidate[] {
     if (isPostRhino) {
       milestoneAlignment = 'Post-Rhino Release (Deferred to Gate 2/3/4)';
       milestoneScore = -30; // Deprioritize out-of-scope tasks
-    } else if (priority === 'P0' || num === 46 || num === 45 || num === 51 || num === 52 || num === 48 || num === 49) {
+    } else if (
+      priority === 'P0' ||
+      num === 46 ||
+      num === 45 ||
+      num === 51 ||
+      num === 52 ||
+      num === 48 ||
+      num === 49
+    ) {
       milestoneAlignment = 'Gate 1: Rhino Release (P0/P1 Active Core Blocker)';
       milestoneScore = 40;
-    } else if (num === 25 || num === 24 || num === 23 || num === 26 || num === 17 || num === 14 || num === 13 || num === 12 || num === 36 || num === 50 || num === 4) {
+    } else if (
+      num === 25 ||
+      num === 24 ||
+      num === 23 ||
+      num === 26 ||
+      num === 17 ||
+      num === 14 ||
+      num === 13 ||
+      num === 12 ||
+      num === 36 ||
+      num === 50 ||
+      num === 4
+    ) {
       milestoneAlignment = 'Gate 1: Rhino Release (Core Polish)';
       milestoneScore = 35;
     }
@@ -142,7 +162,7 @@ export function evaluateNextTasks(): TaskCandidate[] {
     const cardScore = Math.min(20, Math.round(cardCount * 0.4));
 
     // Total Composite Score
-    const totalScore = isPostRhino ? 10 : (priorityScore + milestoneScore + impactScore + cardScore);
+    const totalScore = isPostRhino ? 10 : priorityScore + milestoneScore + impactScore + cardScore;
 
     // Determine Recommended Skill
     let recommendedSkill = 'feature-delivery';

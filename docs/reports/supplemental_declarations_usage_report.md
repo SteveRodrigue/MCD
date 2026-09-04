@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-04T02:00:18.329Z`  
+> **Generated:** `2026-09-04T02:10:33.582Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -22,7 +22,7 @@
 | **Unique Effects In Use** | **64** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **22** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **16** | Distinct timing categories actively declared |
-| **Unique Cost Keys In Use** | **10** | Distinct ability cost types actively declared |
+| **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
 
 ---
 
@@ -330,10 +330,9 @@ These primitives are declared in schema types or specifications but have **0 act
 | `discardSelf` | **12** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+7 more)* |
 | `resourceCost` | **7** | `01018` Energy Channel (upgrade), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade), `01068` Vision (ally), `01075` Black Widow (ally) *(+2 more)* |
 | `spendCounters` | **5** | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
+| `discardCard` | **2** | `01015` Alpha Flight Station (support), `01023` Legal Practice (event) |
 | `costCheck` | **1** | `01010a` Captain Marvel (hero) |
-| `discardFromHand` | **1** | `01015` Alpha Flight Station (support) |
-| `discardCard` | **1** | `01023` Legal Practice (event) |
-| `takeDamage` | **1** | `01027` Focused Rage (upgrade) |
+| `damageHero` | **1** | `01027` Focused Rage (upgrade) |
 | `damageSelf` | **1** | `01030` War Machine (ally) |
 | `resources` | **1** | `01039` Rocket Boots (upgrade) |
 

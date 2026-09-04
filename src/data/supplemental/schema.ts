@@ -307,38 +307,43 @@ export const FilterSchema = z.object({
 /**
  * Ability Cost Schema
  */
-export const AbilityCostSchema = z.object({
-  exhaustSelf: z.boolean().optional(),
-  exhaustCard: TargetSelectorSchema.optional(),
-  discardSelf: z.boolean().optional(),
-  resources: z.array(ResourceTypeSchema).optional(),
-  resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
-  damageHero: z.number().optional(),
-  damageSelf: z.number().optional(),
-  removeCounter: z.number().optional(),
-  spendCounter: z.number().optional(),
-  spendCounters: z
-    .object({
-      counterType: z.string().optional(),
-      amount: z.number(),
-      target: z.enum(['SELF', 'IDENTITY']).optional(),
-    })
-    .optional(),
-  discardCard: z
-    .object({
-      count: z.number().optional(),
-      maxCount: z.number().optional(),
-      from: z.enum(['HAND', 'DECK', 'PLAY']),
-    })
-    .optional(),
-  spendTokens: z
-    .object({
-      type: z.string(),
-      count: z.number(),
-    })
-    .optional(),
-  costCheck: z.string().optional(),
-});
+export const AbilityCostSchema = z
+  .object({
+    exhaustSelf: z.boolean().optional(),
+    exhaustCard: TargetSelectorSchema.optional(),
+    discardSelf: z.boolean().optional(),
+    resources: z.array(ResourceTypeSchema).optional(),
+    resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
+    damageHero: z.number().optional(),
+    damageSelf: z.number().optional(),
+    removeCounter: z.number().optional(),
+    spendCounter: z.number().optional(),
+    spendCounters: z
+      .object({
+        counterType: z.string().optional(),
+        amount: z.number(),
+        target: z.enum(['SELF', 'IDENTITY']).optional(),
+      })
+      .strict()
+      .optional(),
+    discardCard: z
+      .object({
+        count: z.number().optional(),
+        maxCount: z.number().optional(),
+        from: z.enum(['HAND', 'DECK', 'PLAY']),
+      })
+      .strict()
+      .optional(),
+    spendTokens: z
+      .object({
+        type: z.string(),
+        count: z.number(),
+      })
+      .strict()
+      .optional(),
+    costCheck: z.string().optional(),
+  })
+  .strict();
 
 export const AddCountersParamsSchema = z.object({
   target: z.string().optional(),

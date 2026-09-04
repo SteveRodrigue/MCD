@@ -6,6 +6,7 @@
 2. **Headless Engine / Presentation Decoupling:** Engine logic in `src/engine/` is pure TypeScript and decoupled from React UI in `src/ui/`.
 3. **1960s Comic Pop-Art Aesthetics:** Vibrant colors, Ben-Day halftone patterns, bold typography, and comic onomatopoeias.
 4. **Declarative Data-First Invariant:** All card-specific logic resides exclusively in `src/data/supplemental/`. The engine (`src/engine/`) only contains universal, card-agnostic state machines and effect primitives. When triaging any card issue, **always audit and correct the supplemental JSON first**. Altering engine code for a single card is an anti-pattern unless a truly universal primitive is missing.
+5. **🎯 Rhino Release First (Scope Boundary Invariant):** All current active development tasks, features, improvements, and bug fixes must strictly target the **Core Set Player Cards (101 cards across 5 Heroes + 4 Aspects + Basic)** and the **Rhino Scenario (Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets - 34 cards)**. Any expansion cards, multi-form mechanics, or non-Rhino villains (Klaw, Ultron) are strictly deferred to subsequent releases. We explicitly accept localized tech debt or refactors later to achieve immediate vertical slice completion and maximum velocity.
 
 ## Path Policy
 

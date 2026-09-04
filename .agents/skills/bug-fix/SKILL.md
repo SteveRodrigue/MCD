@@ -91,6 +91,12 @@ flowchart TD
 
 ---
 
+### Step 1C: Rhino Release Scope Check 🎯
+* Verify whether the reported bug affects **Gate 1: The Rhino Release** (Core Set Player cards or Rhino/Standard/Expert/Bomb Scare/Nemesis encounter cards).
+* If the defect affects an expansion card outside the Rhino Release boundary (e.g. *Klaw*, *Ultron*, *Thor*), tag the issue with `deferred:post-rhino` and prioritize active Rhino blockers.
+
+---
+
 ### Step 2: Open Tracked GitHub Issue (`gh issue create`)
 
 Create a standardized, well-structured GitHub issue using the GitHub CLI:

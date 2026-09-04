@@ -15,10 +15,10 @@ description: >-
 
 This skill acts as the **Automated Release Orchestrator & Technical Product Manager** for MCD. It computes real-time, data-driven recommendations for what the developer or agent should implement next by balancing:
 
-1. **GitHub Issue Priority:** P0 (Blocker) vs P1 (High) vs P2 (Medium) vs P3 (Low).
-2. **Active Roadmap Milestone:** Focuses on current sprint deliverables in [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md).
-3. **Card Catalog ROI:** Calculates exact card counts unblocked/enabled across all 170 expansion packs.
-4. **Architectural Blast Radius:** High-impact engine invariants vs localized data definitions.
+1. **Gate 1 Scope Boundary (Rhino Release):** Focuses strictly on Core Set Player cards (101 cards across 5 Heroes + 4 Aspects + Basic) and Rhino Scenario encounters (34 cards: Standard, Expert, Bomb Scare, 5 Nemesis Sets). Expansion tasks are flagged as post-Rhino deferred.
+2. **GitHub Issue Priority:** P0 (Rhino Blocker) vs P1 (High) vs P2 (Medium) vs P3 (Low).
+3. **Active Roadmap Milestone:** Focuses on current Gate 1 deliverables in [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md).
+4. **Architectural Blast Radius:** High-impact engine invariants vs localized supplemental data definitions.
 
 ---
 

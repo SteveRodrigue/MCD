@@ -360,6 +360,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gate 1: The "Rhino Release" Vertical Slice Governance (`AGENTS.md`, `roadmap_and_milestones.md`, `skills`):** Realigned all project roadmaps, prioritization engines (`next-task`), and development skills (`feature-delivery`, `bug-fix`, `card-integration-protocol`) around a strict scope boundary: delivering 100% of Core Set Player cards (101 cards across 5 Heroes + 4 Aspects + Basic) and the Rhino Scenario (34 cards: Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets). Non-Rhino villains (Klaw, Ultron) and expansion mechanics are strictly deferred to subsequent release gates.
 
 - **Supplemental Retrofit & Audit Metadata Protocol (`AGENTS.md`, `feature-delivery`, `bug-fix`):** Mandatory rule requiring agents to search `src/data/supplemental/pack/*.json` for all cards affected by any engine, primitive, keyword, or timing changes, retrofit the updated declarative definitions, and update `"updatedAt"`, `"reviewedAt"`, and `"reviewedBy"` metadata with current ISO timestamps.
 - **Declarative Data-First Invariant (`AGENTS.md`, `bug-fix`, `feature-delivery`):** Architectural rule mandating that card-specific defects must always be triaged and audited against `src/data/supplemental/` first, avoiding bespoke engine functions and ensuring fixes are classified as Tier 1 Data-Only fixes whenever existing primitives suffice.

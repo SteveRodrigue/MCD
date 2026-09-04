@@ -50,6 +50,18 @@ npm run parse:card -- --text "Hero Action (attack): Deal 8 damage to an enemy."
 npm run parse:card -- --code 01005 --json
 ```
 
+### 4. Safely Update or Add Card to Supplemental Data (`--write`)
+To write the parsed declarative JSON directly into `src/data/supplemental/pack/<pack>.json`:
+```bash
+npm run parse:card -- --pack core --code 01001b --write
+```
+- **Safety Gate:** Writing is automatically blocked if confidence is $< 95\%$ or if schema validation fails.
+- **Audit Metadata Stamping:** Automatically creates or updates Card Integration Protocol Step 8 audit metadata (`createdAt`, `updatedAt`, `reviewedAt`, `reviewedBy`, `rulesVersion: "v1.8"`, `originalText`).
+- **Override Force:** Use `--force` to write even if warnings exist (use with caution):
+```bash
+npm run parse:card -- --pack core --code 01001b --write --force
+```
+
 ---
 
 ## 🧪 Automated Testing

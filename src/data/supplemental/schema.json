@@ -4,6 +4,9 @@
   "description": "Codebase-grounded schema for Marvel Champions Digital card supplementals. Enforces strict effect primitives, triggers, timings, costs, targets, and card structures.",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": "string"
+    },
     "cards": {
       "type": "object",
       "propertyNames": {
@@ -91,6 +94,14 @@
                     "HERO_FLIPPED",
                     "PHASE_START",
                     "BOOST"
+                  ]
+                },
+                "zone": {
+                  "type": "string",
+                  "enum": [
+                    "HAND",
+                    "PLAY",
+                    "DISCARD"
                   ]
                 },
                 "cost": {
@@ -559,6 +570,19 @@
           },
           "noSupplementalNeeded": {
             "type": "boolean"
+          },
+          "isLandscape": {
+            "type": "boolean"
+          },
+          "attackCost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "thwartCost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           },
           "maxPerPlayer": {
             "type": "number"

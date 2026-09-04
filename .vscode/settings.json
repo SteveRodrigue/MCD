@@ -9,5 +9,11 @@
   "tailwindCSS.includeLanguages": {
     "typescript": "javascript",
     "typescriptreact": "javascript"
-  }
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["/src/data/supplemental/pack/*.json"],
+      "url": "./src/data/supplemental/schema.json"
+    }
+  ]
 }

@@ -63,6 +63,8 @@ export interface PlayerState {
   usedAbilitiesThisRound?: Record<string, number>;
   /** Tracks ability IDs used during the current phase (e.g. limit: ONCE_PER_PHASE) */
   usedAbilitiesThisPhase?: Record<string, number>;
+  /** Tracks active cost reductions applied to the next played card (e.g. Helicarrier) */
+  costReductions?: number;
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }

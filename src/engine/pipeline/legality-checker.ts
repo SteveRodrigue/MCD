@@ -519,7 +519,9 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
     for (const item of p.tableau) {
       const abilities = item.card.enrichment?.abilities || [];
       for (const ab of abilities) {
-        const limitStep = ab.steps?.find((s) => s.effect === 'ALLY_LIMIT_BONUS');
+        const limitStep = ab.steps?.find(
+          (s) => s.effect === 'ALLY_LIMIT_BONUS' || s.effect === 'MODIFY_ALLY_LIMIT',
+        );
         if (ab.timing === 'CONSTANT' && limitStep) {
           const target = limitStep.params?.target || 'CONTROLLER';
           if (target === 'ALL_PLAYERS' || p.id === playerId) {

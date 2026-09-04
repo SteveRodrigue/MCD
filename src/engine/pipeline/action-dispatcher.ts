@@ -994,15 +994,23 @@ export function dispatchAction(
       // Initialize counters declaratively for cards with 'uses' definition (RR v1.8 p. 30)
       initializeCardUses(playedCardInstance);
 
-      // Determine onomatopoeia based on card tags / card type
+      // Determine onomatopoeia based on ability effects / card type
       let onomatopoeia = 'PLAY!';
       const abilities = playedCardInstance.card.enrichment?.abilities || [];
-      const hasAttackTag = abilities.some((a) => a.tags?.includes('ATTACK'));
-      const hasThwartTag = abilities.some((a) => a.tags?.includes('THWART'));
+      const isAttackEffect = abilities.some((a) =>
+        (a.steps || []).some((s) =>
+          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
+            s.effect,
+          ),
+        ),
+      );
+      const isThwartEffect = abilities.some((a) =>
+        (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
+      );
 
-      if (hasAttackTag) {
+      if (isAttackEffect) {
         onomatopoeia = 'POW!';
-      } else if (hasThwartTag) {
+      } else if (isThwartEffect) {
         onomatopoeia = 'FOILED!';
       } else if (cardType === CardType.ALLY) {
         onomatopoeia = 'ALLY CALL!';

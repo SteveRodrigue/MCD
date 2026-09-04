@@ -13,16 +13,19 @@ export const IsoTimestampSchema = z
 /**
  * Audit Metadata Schema (RR v1.8 / Card Integration Protocol Step 8)
  */
-export const CardAuditRecordSchema = z.object({
-  createdAt: IsoTimestampSchema.optional(),
-  updatedAt: IsoTimestampSchema.optional(),
-  reviewedAt: IsoTimestampSchema.optional(),
-  reviewedBy: z.string().optional(),
-  rulesVersion: z.string().optional(),
-  confidence: z.number().min(0).max(100).optional(),
-  originalText: z.string().optional(),
-  reconstructedText: z.string().optional(),
-});
+export const CardAuditRecordSchema = z
+  .object({
+    createdAt: IsoTimestampSchema.optional(),
+    updatedAt: IsoTimestampSchema.optional(),
+    reviewedAt: IsoTimestampSchema.optional(),
+    reviewedBy: z.string().optional(),
+    rulesVersion: z.string().optional(),
+    confidence: z.number().min(0).max(100).optional(),
+    originalText: z.string().optional(),
+    reconstructedText: z.string().optional(),
+  })
+  .strict();
+
 
 /**
  * Ability Timing Types
@@ -414,13 +417,15 @@ export interface AbilityStep {
 /**
  * Ability Execution Step Schema
  */
-export const AbilityStepSchema = z.object({
-  id: z.string().optional(),
-  effect: EffectTypeSchema,
-  params: z.record(z.string(), z.any()).optional(),
-  gate: ConditionGateSchema.optional(),
-  filter: FilterSchema.optional(),
-});
+export const AbilityStepSchema = z
+  .object({
+    id: z.string().optional(),
+    effect: EffectTypeSchema,
+    params: z.record(z.string(), z.any()).optional(),
+    gate: ConditionGateSchema.optional(),
+    filter: FilterSchema.optional(),
+  })
+  .strict();
 
 /**
  * Card Ability Interface (Trigger / Cost / Timing Header)
@@ -429,6 +434,7 @@ export interface CardAbility {
   id: string;
   timing: z.infer<typeof TimingTypeSchema>;
   trigger?: z.infer<typeof TriggerTypeSchema>;
+  zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
   maxPerRound?: number;
@@ -439,53 +445,64 @@ export interface CardAbility {
 /**
  * Card Ability Schema
  */
-export const CardAbilitySchema: z.ZodType<CardAbility> = z.object({
-  id: z.string().min(1),
-  timing: TimingTypeSchema,
-  trigger: TriggerTypeSchema.optional(),
-  cost: AbilityCostSchema.optional(),
-  limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
-  maxPerRound: z.number().optional(),
-  errata: z.string().nullable().optional(),
-  steps: z.array(AbilityStepSchema).min(1),
-});
+export const CardAbilitySchema: z.ZodType<CardAbility> = z
+  .object({
+    id: z.string().min(1),
+    timing: TimingTypeSchema,
+    trigger: TriggerTypeSchema.optional(),
+    zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
+    cost: AbilityCostSchema.optional(),
+    limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
+    maxPerRound: z.number().optional(),
+    errata: z.string().nullable().optional(),
+    steps: z.array(AbilityStepSchema).min(1),
+  })
+  .strict();
 
 /**
  * Card Uses Definition Schema (RR v1.8 p. 30 'Uses')
  */
-export const CardUsesSchema = z.object({
-  count: z.number().int().nonnegative(),
-  type: z.string().optional(),
-  counterType: z.string().optional(),
-  max: z.number().int().positive().optional(),
-  discardOnEmpty: z.boolean().optional(),
-});
-
-
+export const CardUsesSchema = z
+  .object({
+    count: z.number().int().nonnegative(),
+    type: z.string().optional(),
+    counterType: z.string().optional(),
+    max: z.number().int().positive().optional(),
+    discardOnEmpty: z.boolean().optional(),
+  })
+  .strict();
 
 export type CardUses = z.infer<typeof CardUsesSchema>;
 
 /**
  * Card Enrichment Schema
  */
-export const CardEnrichmentSchema = z.object({
-  comment: z.string().optional(),
-  abilities: z.array(CardAbilitySchema).optional(),
-  audit: CardAuditRecordSchema.optional(),
-  mechanicSteps: z.array(z.string()).optional(),
-  noSupplementalNeeded: z.boolean().optional(),
-  maxPerPlayer: z.number().optional(),
-  uses: CardUsesSchema.optional(),
-  victoryPoints: z.number().optional(),
-  errata: z.string().nullable().optional(),
-});
+export const CardEnrichmentSchema = z
+  .object({
+    comment: z.string().optional(),
+    abilities: z.array(CardAbilitySchema).optional(),
+    audit: CardAuditRecordSchema.optional(),
+    mechanicSteps: z.array(z.string()).optional(),
+    noSupplementalNeeded: z.boolean().optional(),
+    isLandscape: z.boolean().optional(),
+    attackCost: z.number().int().nonnegative().optional(),
+    thwartCost: z.number().int().nonnegative().optional(),
+    maxPerPlayer: z.number().optional(),
+    uses: CardUsesSchema.optional(),
+    victoryPoints: z.number().optional(),
+    errata: z.string().nullable().optional(),
+  })
+  .strict();
 
 /**
  * Supplemental Pack JSON File Schema
  */
-export const SupplementalPackSchema = z.object({
-  cards: z.record(z.string(), CardEnrichmentSchema),
-});
+export const SupplementalPackSchema = z
+  .object({
+    $schema: z.string().optional(),
+    cards: z.record(z.string(), CardEnrichmentSchema),
+  })
+  .strict();
 
 export type SupplementalPack = z.infer<typeof SupplementalPackSchema>;
 export type CardEnrichment = z.infer<typeof CardEnrichmentSchema>;

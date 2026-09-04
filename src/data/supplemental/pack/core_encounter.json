@@ -104,7 +104,6 @@
       ]
     },
     "01097a": {
-      "isLandscape": true,
       "noSupplementalNeeded": true,
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
@@ -123,7 +122,6 @@
       ]
     },
     "01097b": {
-      "isLandscape": true,
       "noSupplementalNeeded": true,
       "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
@@ -564,7 +562,6 @@
     },
     "01108": {
       "comment": "SIDE_SCHEME: Crowd Control. Crisis icon. When Revealed: Place 1 acceleration token or threat per player.",
-      "isLandscape": true,
       "abilities": [
         {
           "id": "crowd_control_when_revealed",
@@ -770,7 +767,6 @@
       }
     },
     "01156": {
-      "isLandscape": true,
       "noSupplementalNeeded": true,
       "audit": {
         "updatedAt": "2026-08-28T09:34",
@@ -887,7 +883,6 @@
     },
     "01161": {
       "comment": "Side Scheme: Personal Challenge. When Revealed: Place an additional 1 [per_hero] threat here.",
-      "isLandscape": true,
       "abilities": [
         {
           "id": "personal_challenge_when_revealed",
@@ -1031,7 +1026,6 @@
     },
     "01166": {
       "comment": "Side Scheme: Highway Robbery. When Revealed: Each player places a random card from hand facedown here. When Defeated: Return each facedown card here to its owner's hand.",
-      "isLandscape": true,
       "abilities": [
         {
           "id": "highway_robbery_when_revealed",
@@ -1173,7 +1167,6 @@
     },
     "01171": {
       "comment": "Side Scheme: Imminent Overload. When Revealed: Place an additional 1 [per_hero] threat here.",
-      "isLandscape": true,
       "abilities": [
         {
           "id": "imminent_overload_when_revealed",
@@ -1321,7 +1314,6 @@
     },
     "01176": {
       "comment": "Side Scheme: The Psyche-Magnitron. When Revealed: Place an additional 1 [per_hero] threat here.",
-      "isLandscape": true,
       "abilities": [
         {
           "id": "psyche_magnitron_when_revealed",

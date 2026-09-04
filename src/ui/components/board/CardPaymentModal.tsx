@@ -66,8 +66,16 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
       // Default target: villain for attacks, main scheme for thwarts
       const abilities = cardToPlay.card.enrichment?.abilities || [];
-      const hasAttack = abilities.some((a) => a.tags?.includes('ATTACK'));
-      const hasThwart = abilities.some((a) => a.tags?.includes('THWART'));
+      const hasAttack = abilities.some((a) =>
+        (a.steps || []).some((s) =>
+          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
+            s.effect,
+          ),
+        ),
+      );
+      const hasThwart = abilities.some((a) =>
+        (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
+      );
 
       if (hasAttack) {
         setSelectedTargetId(gameState.villain.card.code);
@@ -273,8 +281,16 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
   // Potential Targets (Enemies or Schemes)
   const abilities = card?.enrichment?.abilities || [];
-  const isAttack = abilities.some((a) => a.tags?.includes('ATTACK'));
-  const isThwart = abilities.some((a) => a.tags?.includes('THWART'));
+  const isAttack = abilities.some((a) =>
+    (a.steps || []).some((s) =>
+      ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
+        s.effect,
+      ),
+    ),
+  );
+  const isThwart = abilities.some((a) =>
+    (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
+  );
 
   const enemyTargets = useMemo(() => {
     const targets: {

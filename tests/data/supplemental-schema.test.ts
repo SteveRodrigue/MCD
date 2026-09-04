@@ -4,6 +4,8 @@ import path from 'path';
 import {
   SupplementalPackSchema,
   CardEnrichmentSchema,
+  CardAbilitySchema,
+  CardUsesSchema,
   CardAuditRecordSchema,
   EffectTypeSchema,
   AbilityStepSchema,
@@ -305,14 +307,143 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Rejects invalid card uses with negative or non-integer count', () => {
       const invalidUses = {
-        comment: 'Invalid uses card',
-        uses: {
-          count: -1,
-          type: 'web',
-        },
+        count: -1,
+        type: 'web',
       };
-      const res = CardEnrichmentSchema.safeParse(invalidUses);
+      const res = CardUsesSchema.safeParse(invalidUses);
       expect(res.success).toBe(false);
+    });
+
+    it('Rejects unknown/undeclared properties in CardEnrichmentSchema (.strict() enforcement)', () => {
+      const cardWithUnknownKey = {
+        comment: 'Invalid key card',
+        unknownCustomKey: 'some_value',
+      };
+      const res = CardEnrichmentSchema.safeParse(cardWithUnknownKey);
+      expect(res.success).toBe(false);
+    });
+
+    it('Rejects unknown/undeclared properties in CardAbilitySchema (.strict() enforcement)', () => {
+      const abilityWithUnknownKey = {
+        id: 'test_ability',
+        timing: 'ACTION',
+        steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 1 } }],
+        unsupportedTag: true,
+      };
+      const res = CardAbilitySchema.safeParse(abilityWithUnknownKey);
+      expect(res.success).toBe(false);
+    });
+
+    it('Accepts valid zone in CardAbilitySchema', () => {
+      const validHandAbility = {
+        id: 'backflip',
+        timing: 'INTERRUPT',
+        trigger: 'TAKE_ATTACK_DAMAGE',
+        zone: 'HAND',
+        steps: [{ effect: 'PREVENT_DAMAGE', params: { amount: 'ALL' } }],
+      };
+      const res = CardAbilitySchema.safeParse(validHandAbility);
+      expect(res.success).toBe(true);
+    });
+
+    it('Accepts valid attackCost, thwartCost, and isLandscape in CardEnrichmentSchema', () => {
+      const allyEnrichment = {
+        comment: 'Black Cat takes 0 consequential damage',
+        attackCost: 0,
+        thwartCost: 1,
+        isLandscape: false,
+      };
+      const res = CardEnrichmentSchema.safeParse(allyEnrichment);
+      expect(res.success).toBe(true);
+    });
+
+    it('Verifies that no unrecognized properties exist across any supplemental pack file', () => {
+      const schemaJsonPath = path.resolve('src/data/supplemental/schema.json');
+      const schemaJson = JSON.parse(fs.readFileSync(schemaJsonPath, 'utf8'));
+
+      const cardProps = new Set(
+        Object.keys(schemaJson.properties.cards.additionalProperties.properties || {}),
+      );
+      const abilityProps = new Set(
+        Object.keys(
+          schemaJson.properties.cards.additionalProperties.properties.abilities.items.properties ||
+            {},
+        ),
+      );
+      const auditProps = new Set(
+        Object.keys(schemaJson.properties.cards.additionalProperties.properties.audit.properties || {}),
+      );
+      const usesProps = new Set(
+        Object.keys(schemaJson.properties.cards.additionalProperties.properties.uses.properties || {}),
+      );
+      const stepProps = new Set(
+        Object.keys(
+          schemaJson.properties.cards.additionalProperties.properties.abilities.items.properties
+            .steps.items.properties || {},
+        ),
+      );
+
+      const undeclared = [];
+
+      for (const file of packFiles) {
+        const filePath = path.join(packDir, file);
+        const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const cards = json.cards || json;
+
+        for (const [code, card] of Object.entries(cards) as [string, any][]) {
+          if (!card || typeof card !== 'object') continue;
+
+          for (const key of Object.keys(card)) {
+            if (key.startsWith('$')) continue;
+            if (!cardProps.has(key)) {
+              undeclared.push(`${file}:${code} (CardEnrichment) -> '${key}'`);
+            }
+          }
+
+          if (card.uses && typeof card.uses === 'object') {
+            for (const key of Object.keys(card.uses)) {
+              if (!usesProps.has(key)) {
+                undeclared.push(`${file}:${code} (CardUses) -> '${key}'`);
+              }
+            }
+          }
+
+          if (card.audit && typeof card.audit === 'object') {
+            for (const key of Object.keys(card.audit)) {
+              if (!auditProps.has(key)) {
+                undeclared.push(`${file}:${code} (CardAuditRecord) -> '${key}'`);
+              }
+            }
+          }
+
+          if (Array.isArray(card.abilities)) {
+            card.abilities.forEach((ab: any, abIdx: number) => {
+              for (const key of Object.keys(ab)) {
+                if (!abilityProps.has(key)) {
+                  undeclared.push(`${file}:${code} (CardAbility ${ab.id || abIdx}) -> '${key}'`);
+                }
+              }
+
+              if (Array.isArray(ab.steps)) {
+                ab.steps.forEach((st: any, stIdx: number) => {
+                  for (const key of Object.keys(st)) {
+                    if (!stepProps.has(key)) {
+                      undeclared.push(
+                        `${file}:${code} (AbilityStep ${ab.id || abIdx}:${stIdx}) -> '${key}'`,
+                      );
+                    }
+                  }
+                });
+              }
+            });
+          }
+        }
+      }
+
+      expect(
+        undeclared,
+        `Found undeclared properties in supplemental pack files:\n${undeclared.join('\n')}`,
+      ).toEqual([]);
     });
 
     it('Correctly passes on JSON with non-duplicate nested keys', () => {

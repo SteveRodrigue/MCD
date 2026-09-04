@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "../schema.json",
   "cards": {
     "01094": {
       "noSupplementalNeeded": true,
@@ -347,7 +347,7 @@
           "timing": "SETUP",
           "steps": [
             {
-              "effect": "GIVE_STATUS",
+              "effect": "ADD_STATUS",
               "params": {
                 "status": "TOUGH",
                 "target": "SELF"
@@ -572,9 +572,10 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "WHEN_REVEALED_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT_PER_PLAYER",
               "params": {
-                "amountPerPlayer": 1
+                "amount": 1,
+                "target": "THIS_SIDE_SCHEME"
               }
             }
           ]

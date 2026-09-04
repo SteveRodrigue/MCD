@@ -133,6 +133,117 @@ export const ConditionGateSchema = z.enum([
 ]);
 
 /**
+ * Ability Effect Primitives (Codebase-Grounded to active handlers in src/engine/)
+ */
+export const EffectTypeSchema = z.enum([
+  'ADD_COUNTER',
+  'ADD_COUNTERS',
+  'ADD_STATUS',
+  'ADD_STATUS_WITH_SURGE',
+  'ADD_THREAT',
+  'ADD_THREAT_PER_PLAYER',
+  'ADD_TRAIT',
+  'ALLY_LIMIT_BONUS',
+  'ATTACHMENT_DAMAGE_SHIELD',
+  'ATTACH_FACEDOWN_CARDS_FROM_HAND',
+  'ATTACH_TO_HOST',
+  'BOOST_STAT_CHOICE',
+  'BUFF_ALL_FRIENDLY_CHARACTERS',
+  'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS',
+  'CANCEL_WHEN_REVEALED',
+  'CANCEL_WHEN_REVEALED_AND_ATTACK',
+  'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
+  'CHANGE_FORM',
+  'CHANGE_FORM_DRAW_TO_HAND_SIZE',
+  'COST_REDUCER',
+  'DEAL_ADDITIONAL_BOOST_CARD',
+  'DEAL_DAMAGE',
+  'DEAL_DAMAGE_ALL_ENEMIES',
+  'DECLARE_DEFENDER',
+  'DISCARD_ATTACHMENT',
+  'DISCARD_CARDS_FROM_HAND_AT_RANDOM',
+  'DISCARD_CARDS_UNDER_HOST',
+  'DISCARD_ENCOUNTER_DECK',
+  'DISCARD_RANDOM_HAND',
+  'DISCARD_SELF',
+  'DISCARD_TOP_DECK_FILTER',
+  'DISCARD_UPGRADE_OR_SUPPORT',
+  'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE',
+  'DOUBLE_RESOURCE_FOR_ASPECT',
+  'DRAW_CARDS',
+  'DRAW_UP_TO_HAND_SIZE',
+  'EXECUTE_SPECIAL',
+  'EXECUTE_WAKANDA_FOREVER',
+  'EXHAUST_HERO',
+  'EXHAUST_IDENTITY',
+  'EXPLOSION',
+  'FLIP_FORM',
+  'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE',
+  'GENERATE_RESOURCE',
+  'GENERATE_TOP_DISCARD_RESOURCES',
+  'GIVE_ADDITIONAL_BOOST_CARD',
+  'GRANT_KEYWORD',
+  'HEAL_DAMAGE',
+  'HEAL_DAMAGE_WITH_SURGE',
+  'HERO_FORM_BRANCH',
+  'HULK_DISCARD_RESOLUTION',
+  'INTERCEPT_ATTACK',
+  'MODIFY_ALLY_LIMIT',
+  'MODIFY_COUNTER',
+  'MODIFY_HAND_SIZE',
+  'MODIFY_MAX_HEALTH',
+  'MODIFY_STAT',
+  'NICK_FURY_CHOICE',
+  'PLACE_CARD_UNDER_HOST',
+  'PLACE_THREAT_PER_SIDE_SCHEME',
+  'PLAYER_CHOICE',
+  'PLAY_ALLY_FROM_DISCARD',
+  'PREVENT_DAMAGE',
+  'PUT_INTO_PLAY',
+  'PUT_INTO_PLAY_ENGAGED',
+  'READY_ALLY',
+  'READY_CARD',
+  'READY_CHARACTER',
+  'READY_IDENTITY',
+  'REDUCE_NEXT_CARD_COST',
+  'REMOVE_COUNTER',
+  'REMOVE_COUNTERS',
+  'REMOVE_COUNTERS_MATCHING_FILTER',
+  'REMOVE_THREAT',
+  'REPULSOR_BLAST',
+  'REPULSOR_BLAST_DAMAGE',
+  'RESOLVE_SCRY_SELECTION',
+  'RESTRICTED_LIMIT_BONUS',
+  'RETRIEVE_CARD_FROM_DISCARD',
+  'RETRIEVE_TECH_UPGRADE_FROM_DISCARD',
+  'RETURN_FACEDOWN_CARDS_TO_OWNERS',
+  'RETURN_TO_HAND',
+  'REVEAL_ENCOUNTER_CARD',
+  'REVEAL_ENCOUNTER_CARD_WITH_SURGE',
+  'SCRY_AND_SELECT_TRAIT',
+  'SEARCH_AND_PLAY_UPGRADE',
+  'SEARCH_AND_REVEAL_SIDE_SCHEME',
+  'SEARCH_AND_SELECT',
+  'SEARCH_DECK_FOR_CARD',
+  'SHUFFLE_DISCARD_INTO_DECK',
+  'SHUFFLE_INTO_DECK',
+  'SPAWN_MINION_ENGAGED',
+  'SPAWN_NEMESIS',
+  'SPEND_COUNTERS',
+  'SURGE',
+  'TAKE_THREAT_AS_DAMAGE',
+  'TRANSFER_DAMAGE',
+  'TRIGGER_SURGE',
+  'TRIGGER_WAKANDA_UPGRADES',
+  'VILLAIN_AND_ENGAGED_MINIONS_ATTACK',
+  'VILLAIN_ATTACKS',
+  'VILLAIN_SCHEMES',
+  'WHEN_ATTACHED_HOST_DEFEATED',
+]);
+
+export type EffectType = z.infer<typeof EffectTypeSchema>;
+
+/**
  * Resource Types
  */
 export const ResourceTypeSchema = z.enum(['physical', 'energy', 'mental', 'wild']);
@@ -294,7 +405,7 @@ export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;
  */
 export interface AbilityStep {
   id?: string;
-  effect: string;
+  effect: EffectType;
   params?: Record<string, any>;
   gate?: z.infer<typeof ConditionGateSchema>;
   filter?: z.infer<typeof FilterSchema>;
@@ -305,7 +416,7 @@ export interface AbilityStep {
  */
 export const AbilityStepSchema = z.object({
   id: z.string().optional(),
-  effect: z.string().min(1),
+  effect: EffectTypeSchema,
   params: z.record(z.string(), z.any()).optional(),
   gate: ConditionGateSchema.optional(),
   filter: FilterSchema.optional(),

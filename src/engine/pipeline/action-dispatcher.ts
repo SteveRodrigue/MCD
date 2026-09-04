@@ -1077,8 +1077,8 @@ export function dispatchAction(
         for (const ability of abilities) {
           if (
             ability.trigger === 'CARD_PLAYED' ||
-            ability.timing === 'FORCED_RESPONSE' ||
-            ability.timing === 'RESPONSE'
+            ((ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE') &&
+              !ability.trigger)
           ) {
             executeEffect(nextState, ability, {
               playerId: action.playerId,

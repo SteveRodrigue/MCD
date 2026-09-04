@@ -31,7 +31,7 @@ import {
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
-import { attachCardToHost } from '../state/state-validator';
+import { attachCardToHost, removeCardFromAllZones } from '../state/state-validator';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -3114,6 +3114,84 @@ export function executeStep(
         success: true,
         mutatedState: true,
         onomatopoeia: 'CARDS RETURNED TO HANDS!',
+      };
+    }
+
+    case 'DISCARD_SELF': {
+      const cardInst = context.sourceCardInstance;
+      if (cardInst) {
+        removeCardFromAllZones(state, cardInst.instanceId);
+        player.discard.push(cardInst);
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: `${cardInst.card.name.toUpperCase()} DISCARDED!`,
+        };
+      }
+      return { state, success: true };
+    }
+
+    case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {
+      const targetCardCode = step.params?.targetCardCode as string | undefined;
+      let foundIndex = state.encounterDeck.findIndex(
+        (c) => !targetCardCode || c.card.code === targetCardCode,
+      );
+      let cardInst: CardInstance | undefined;
+      if (foundIndex !== -1) {
+        [cardInst] = state.encounterDeck.splice(foundIndex, 1);
+      } else {
+        foundIndex = state.encounterDiscard.findIndex(
+          (c) => !targetCardCode || c.card.code === targetCardCode,
+        );
+        if (foundIndex !== -1) {
+          [cardInst] = state.encounterDiscard.splice(foundIndex, 1);
+        }
+      }
+      if (cardInst) {
+        state.sideSchemes.push(cardInst as any);
+        dispatchTrigger(state, 'WHEN_REVEALED', {
+          targetPlayerId: player.id,
+          sourceInstanceId: cardInst.instanceId,
+        });
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: 'SIDE SCHEME REVEALED!',
+      };
+    }
+
+    case 'REDUCE_NEXT_CARD_COST': {
+      const amount = (step.params?.amount as number) || 1;
+      player.costReductions = (player.costReductions || 0) + amount;
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: `COST REDUCED BY ${amount}!`,
+      };
+    }
+
+    case 'PLAY_ALLY_FROM_DISCARD': {
+      // Recognized declarative primitive for Make the Call (01071)
+      return {
+        state,
+        success: true,
+        mutatedState: false,
+        onomatopoeia: 'PLAY ALLY FROM DISCARD INITIATED!',
+      };
+    }
+
+    case 'ALLY_LIMIT_BONUS':
+    case 'MODIFY_ALLY_LIMIT': {
+      // Evaluated as constant modifier in legality-checker getPlayerAllyLimit
+      return {
+        state,
+        success: true,
+        mutatedState: false,
+        onomatopoeia: 'ALLY LIMIT UPDATED!',
       };
     }
 

@@ -5,8 +5,11 @@ import {
   SupplementalPackSchema,
   CardEnrichmentSchema,
   CardAuditRecordSchema,
+  EffectTypeSchema,
+  AbilityStepSchema,
 } from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
+import { generateSupplementalSchema } from '../../tools/generate-supplemental-schema';
 
 describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
   const packDir = path.resolve('src/data/supplemental/pack');
@@ -221,6 +224,55 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               card.audit.originalText !== undefined,
               `Card ${code} in ${file} is missing originalText in audit metadata`,
             ).toBe(true);
+          }
+        }
+      }
+    });
+
+    it('Rejects speculative or unhandled effect names in AbilityStepSchema', () => {
+      const invalidStep = {
+        effect: 'UNIMPLEMENTED_SPECULATIVE_EFFECT',
+        params: {},
+      };
+      const result = AbilityStepSchema.safeParse(invalidStep);
+      expect(result.success).toBe(false);
+    });
+
+    it('Accepts valid codebase-grounded effect names in AbilityStepSchema', () => {
+      const validStep = {
+        effect: 'DEAL_DAMAGE',
+        params: { amount: 3, target: 'VILLAIN' },
+      };
+      const result = AbilityStepSchema.safeParse(validStep);
+      expect(result.success).toBe(true);
+    });
+
+    it('Verifies that schema.json exists and is synchronized with SupplementalPackSchema', () => {
+      const schemaJsonPath = path.resolve('src/data/supplemental/schema.json');
+      expect(fs.existsSync(schemaJsonPath), 'schema.json should exist').toBe(true);
+
+      const diskSchema = JSON.parse(fs.readFileSync(schemaJsonPath, 'utf8'));
+      const generatedSchema = generateSupplementalSchema();
+
+      expect(diskSchema).toEqual(generatedSchema);
+    });
+
+    it('Verifies that all declared effects in supplemental pack files belong to EffectTypeSchema', () => {
+      const allowedEffects = new Set(EffectTypeSchema.options);
+
+      for (const file of packFiles) {
+        const filePath = path.join(packDir, file);
+        const json = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const cards = json.cards || json;
+
+        for (const [code, card] of Object.entries(cards) as [string, any][]) {
+          for (const ability of card.abilities || []) {
+            for (const step of ability.steps || []) {
+              expect(
+                allowedEffects.has(step.effect),
+                `Card ${code} in ${file} uses ungrounded effect primitive '${step.effect}'`,
+              ).toBe(true);
+            }
           }
         }
       }

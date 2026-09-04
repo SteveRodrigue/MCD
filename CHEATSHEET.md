@@ -13,6 +13,9 @@ A quick reference guide for running the application, running tests, and invoking
 | **Run Targeted Test** | `npx vitest run tests/engine/villain-phase.test.ts` | Runs a single test file quickly. |
 | **TypeScript Check** | `npm run typecheck` | Validates TypeScript types without emitting files. |
 | **Production Build** | `npm run build` | Builds bundle for production (`dist/`). |
+| **Parse Card Text (CLI)** | `npm run parse:card -- --code 01001b` | Parses printed card text into declarative supplemental JSON ([Docs](docs/tools/card_text_parser.md)). |
+| **Declarations Report** | `npm run report:declarations` | Generates declarative schema usage and parity report. |
+| **Export Schema** | `npm run schema:generate` | Exports strict Zod types to `src/data/supplemental/schema.json`. |
 
 > [!NOTE]
 > On Windows PowerShell, ensure Git and Node paths are active in your environment if running commands manually:
@@ -51,7 +54,38 @@ You can use the following prompt templates to invoke specialized skills and work
 
 ---
 
-### 📖 B. Codebase Exploration & Rules Questions
+### 🔍 B. Card Text Parser & Declarative Mapping Analyzer Tool
+*Use when parsing raw printed card text into valid declarative JSON or auditing existing card mappings.*
+
+> **Parse an Upstream Card by Code:**
+> ```powershell
+> npm run parse:card -- --code 01001b
+> ```
+> *Parses Peter Parker (01001b), breaks down matched tokens, flags any unmatched text, validates schema, and compares against existing `core.json`.*
+
+> **Parse an Encounter Card from a Specific Pack:**
+> ```powershell
+> npm run parse:card -- --pack core_encounter --code 01108
+> ```
+
+> **Parse Arbitrary Printed Card Text Directly:**
+> ```powershell
+> npm run parse:card -- --text "Hero Action (attack): Deal 8 damage to an enemy."
+> ```
+
+> **Output Pure Declarative JSON for Scripting / Clipboard:**
+> ```powershell
+> npm run parse:card -- --code 01005 --json
+> ```
+
+> **Prompting Antigravity with the Parser:**
+> ```text
+> Run the card-text-parser on card 01027 (Focused Rage) and use the parsed declarative JSON to verify our supplemental definition in core.json.
+> ```
+
+---
+
+### 📖 C. Codebase Exploration & Rules Questions
 
 > **Checking Official Rules Rulings (RR v1.8):**
 > ```text

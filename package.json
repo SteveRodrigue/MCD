@@ -15,6 +15,7 @@
     "simulate": "tsx scripts/simulate-games.ts",
     "cache:cards": "tsx scripts/cache-card-images.ts",
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",
+    "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",

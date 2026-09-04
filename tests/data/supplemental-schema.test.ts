@@ -278,6 +278,43 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
+    it('Accepts valid card uses declaration in CardEnrichmentSchema', () => {
+      const cardWithUses = {
+        comment: 'Web-Shooter',
+        uses: {
+          count: 3,
+          type: 'web',
+          discardOnEmpty: true,
+        },
+        abilities: [
+          {
+            id: 'web_shooter_resource',
+            timing: 'RESOURCE',
+            steps: [{ effect: 'GENERATE_RESOURCE', params: { resource: 'wild', amount: 1 } }],
+          },
+        ],
+      };
+      const res = CardEnrichmentSchema.safeParse(cardWithUses);
+      expect(res.success).toBe(true);
+      if (res.success) {
+        expect(res.data.uses?.count).toBe(3);
+        expect(res.data.uses?.type).toBe('web');
+        expect(res.data.uses?.discardOnEmpty).toBe(true);
+      }
+    });
+
+    it('Rejects invalid card uses with negative or non-integer count', () => {
+      const invalidUses = {
+        comment: 'Invalid uses card',
+        uses: {
+          count: -1,
+          type: 'web',
+        },
+      };
+      const res = CardEnrichmentSchema.safeParse(invalidUses);
+      expect(res.success).toBe(false);
+    });
+
     it('Correctly passes on JSON with non-duplicate nested keys', () => {
       const sampleValid = `{\n  "card1": { "id": "1", "name": "A" },\n  "card2": { "id": "2", "name": "B" }\n}`;
       const dups = detectDuplicateJsonKeys(sampleValid);

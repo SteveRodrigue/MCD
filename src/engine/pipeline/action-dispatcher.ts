@@ -54,7 +54,7 @@ import {
 } from './prompt-queue';
 import { resolveDefenderDeclaration } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
-import { attachCardToHost } from '../state/state-validator';
+import { attachCardToHost, initializeCardUses } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 /**
@@ -991,14 +991,8 @@ export function dispatchAction(
 
       const cardType = playedCardInstance.card.type;
 
-      // Initialize counters declaratively for cards with 'uses' definition
-      const usesDef = playedCardInstance.card.enrichment?.uses;
-      if (usesDef) {
-        playedCardInstance.tokens = {
-          ...playedCardInstance.tokens,
-          counters: usesDef.count,
-        };
-      }
+      // Initialize counters declaratively for cards with 'uses' definition (RR v1.8 p. 30)
+      initializeCardUses(playedCardInstance);
 
       // Determine onomatopoeia based on card tags / card type
       let onomatopoeia = 'PLAY!';

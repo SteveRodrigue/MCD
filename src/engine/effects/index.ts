@@ -31,7 +31,11 @@ import {
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
-import { attachCardToHost, removeCardFromAllZones } from '../state/state-validator';
+import {
+  attachCardToHost,
+  removeCardFromAllZones,
+  initializeCardUses,
+} from '../state/state-validator';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -2066,27 +2070,32 @@ export function executeStep(
         sourceList = player.discard || [];
       } else if (fromZone === 'DECK') {
         sourceList = player.deck || [];
+      } else if (fromZone === 'HAND') {
+        sourceList = player.hand || [];
       }
 
-      const matches = sourceList.filter((c) => {
-        if (filter.set === 'PLAYER_NEMESIS') {
-          const isNemesis =
-            c.card.setCode === nemesisSetCode ||
-            (c.card.setCode && c.card.setCode.includes('nemesis'));
-          if (!isNemesis) return false;
-        }
-        if (filter.type) {
-          const expectedType =
-            filter.type === 'side_scheme'
-              ? CardType.SIDE_SCHEME
-              : filter.type === 'minion'
-                ? CardType.MINION
-                : filter.type;
-          if (c.card.type !== expectedType && c.card.type !== filter.type) return false;
-        }
-        if (filter.code && c.card.code !== filter.code) return false;
-        return true;
-      });
+      const matches =
+        step.params?.target === 'SELF' && context.sourceCardInstance
+          ? [context.sourceCardInstance]
+          : sourceList.filter((c) => {
+              if (filter.set === 'PLAYER_NEMESIS') {
+                const isNemesis =
+                  c.card.setCode === nemesisSetCode ||
+                  (c.card.setCode && c.card.setCode.includes('nemesis'));
+                if (!isNemesis) return false;
+              }
+              if (filter.type) {
+                const expectedType =
+                  filter.type === 'side_scheme'
+                    ? CardType.SIDE_SCHEME
+                    : filter.type === 'minion'
+                      ? CardType.MINION
+                      : filter.type;
+                if (c.card.type !== expectedType && c.card.type !== filter.type) return false;
+              }
+              if (filter.code && c.card.code !== filter.code) return false;
+              return true;
+            });
 
       if (matches.length === 0) {
         return {
@@ -2106,10 +2115,39 @@ export function executeStep(
         player.discard = player.discard.filter((c) => !matchIds.has(c.instanceId));
       } else if (fromZone === 'DECK') {
         player.deck = player.deck.filter((c) => !matchIds.has(c.instanceId));
+      } else if (fromZone === 'HAND') {
+        player.hand = player.hand.filter((c) => !matchIds.has(c.instanceId));
       }
 
       for (const cardInst of matches) {
-        if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
+        // Initialize counters for cards with 'uses' keyword (RR v1.8 p. 30)
+        initializeCardUses(cardInst);
+
+        if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
+          const sideCard = cardInst.card as SideSchemeCard;
+          const baseThreat =
+            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+          state.sideSchemes.push({
+            instanceId: cardInst.instanceId,
+            card: sideCard,
+            threat: baseThreat,
+          });
+
+          const schemeAbilities = sideCard.enrichment?.abilities || [];
+          for (const ab of schemeAbilities) {
+            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
+              executeEffect(state, ab, {
+                playerId: player.id,
+                sourceCardInstance: cardInst,
+              });
+            }
+          }
+        } else if (
+          toZone === 'TABLEAU' ||
+          [CardType.ALLY, CardType.SUPPORT, CardType.UPGRADE].includes(cardInst.card.type)
+        ) {
+          player.tableau.push(cardInst);
+        } else if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
           const hasToughness =
             (cardInst.card.traits || []).includes('Toughness') ||
             (cardInst.card.text || '').toLowerCase().includes('toughness');
@@ -2138,27 +2176,6 @@ export function executeStep(
               });
             }
           }
-        } else if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
-          const sideCard = cardInst.card as SideSchemeCard;
-          const baseThreat =
-            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
-          state.sideSchemes.push({
-            instanceId: cardInst.instanceId,
-            card: sideCard,
-            threat: baseThreat,
-          });
-
-          const schemeAbilities = sideCard.enrichment?.abilities || [];
-          for (const ab of schemeAbilities) {
-            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
-              executeEffect(state, ab, {
-                playerId: player.id,
-                sourceCardInstance: cardInst,
-              });
-            }
-          }
-        } else if (toZone === 'TABLEAU') {
-          player.tableau.push(cardInst);
         }
       }
 

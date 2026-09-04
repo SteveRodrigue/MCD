@@ -6,6 +6,93 @@
 
 ---
 
+## 🔍 Active Regex Patterns Reference Dictionary (`patterns.ts`)
+
+To help identify gaps, overlaps, and formulate new regex patterns, here is the complete dictionary of active regex rules currently powering the parser:
+
+### 1. Ability Timings (`TIMING_PATTERNS`)
+| Regex Pattern | Mapped Timing (`TimingType`) |
+| :--- | :--- |
+| `/^Hero Action/i` | `HERO_ACTION` |
+| `/^Alter-Ego Action/i` | `ALTER_EGO_ACTION` |
+| `/^Action/i` | `ACTION` |
+| `/^Forced Interrupt/i` | `FORCED_INTERRUPT` |
+| `/^Hero Interrupt/i` | `HERO_INTERRUPT` |
+| `/^Alter-Ego Interrupt/i` | `ALTER_EGO_INTERRUPT` |
+| `/^Interrupt/i` | `INTERRUPT` |
+| `/^Forced Response/i` | `FORCED_RESPONSE` |
+| `/^Hero Response/i` | `HERO_RESPONSE` |
+| `/^Alter-Ego Response/i` | `ALTER_EGO_RESPONSE` |
+| `/^Response/i` | `RESPONSE` |
+| `/^Hero Resource/i` | `HERO_RESOURCE` |
+| `/^Alter-Ego Resource/i` | `ALTER_EGO_RESOURCE` |
+| `/^Resource/i` | `RESOURCE` |
+| `/^When Revealed/i` | `WHEN_REVEALED` |
+| `/^Special/i` | `SPECIAL` |
+| `/^Setup/i` | `SETUP` |
+
+### 2. Action Traits & Subtypes (`parser.ts`)
+| Regex Pattern | Mapped Trait |
+| :--- | :--- |
+| `/^\((attack\|thwart\|defense)\):?/i` | `'attack'` \| `'thwart'` \| `'defense'` |
+
+### 3. Ability Names (`parser.ts`)
+| Regex Pattern | Extracted Value |
+| :--- | :--- |
+| `/^([A-Za-z0-9 '’-]+?)\s*(?:[—–]\|\s-\s)\s*/` | Matches leading ability title before em-dash (e.g. `Scientist — `) |
+
+### 4. Event Triggers (`TRIGGER_PATTERNS`)
+| Regex Pattern | Mapped Trigger (`TriggerType`) |
+| :--- | :--- |
+| `/when (?:the )?villain initiates an attack against you/i` | `VILLAIN_INITIATES_ATTACK` |
+| `/when you would take (?:any amount of )?damage from an attack/i` | `TAKE_ATTACK_DAMAGE` |
+| `/when you would take (?:any amount of )?damage/i` | `TAKE_DAMAGE` |
+| `/when a treachery card is revealed(?: from the encounter deck)?/i` | `WHEN_REVEALED` |
+| `/after you play ([A-Za-z0-9 '-]+)/i` | `CARD_PLAYED` |
+| `/after ([A-Za-z0-9 '-]+) attacks/i` | `ATTACK_RESOLVED` |
+| `/after ([A-Za-z0-9 '-]+) thwarts/i` | `THWART_RESOLVED` |
+| `/when attached minion is defeated/i` | `MINION_DEFEATED` |
+| `/after a minion is defeated/i` | `MINION_DEFEATED` |
+| `/after you change to this form/i` | `FORM_CHANGED_TO_HERO` |
+| `/when attached enemy would attack/i` | `VILLAIN_INITIATES_ATTACK` |
+
+### 5. Limits, Caps & Uses (`LIMIT_PATTERNS` & `parser.ts`)
+| Regex Pattern | Extracted Schema Property |
+| :--- | :--- |
+| `/\(Limit once per round\.?\)/i` | `limit: 'ONCE_PER_ROUND', maxPerRound: 1` |
+| `/\(Limit once per phase\.?\)/i` | `limit: 'ONCE_PER_PHASE', maxPerRound: 1` |
+| `/\(Limit (\d+) times? per round\.?\)/i` | `limit: 'ONCE_PER_ROUND'` |
+| `/Max (\d+) per player/i` | `maxPerPlayer: number` |
+| `/Uses \((\d+) ([a-z]+) counters?\)/i` | `uses: { count, type, discardOnEmpty }` |
+
+### 6. Mandatory Costs (`extractCostClause` — Pre-Arrow `→`)
+| Regex Pattern | Mapped Cost Property |
+| :--- | :--- |
+| `/exhaust ([A-Za-z0-9 '-]+)/i` | `exhaustSelf: true` |
+| `/take (\d+) damage/i` | `damageHero: number` |
+| `/(?:choose and )?discard (\d+) cards? from your hand/i` | `discardCard: { from: 'HAND', count }` |
+| `/spend (?:a \|an \|)(\d*\s*)?\[(physical\|energy\|mental\|wild)\] resource/i` | `resources: [type]` |
+| `/(?:remove\|spend) (\d+) ([a-z]+) counters?(?: from it)?/i` | `spendCounters: { amount, counterType }` |
+| `/^discard ([A-Za-z0-9 '-]+)$/i` | `discardSelf: true` |
+
+### 7. Effect Primitives & Parameters (`EFFECT_PATTERNS`)
+| Regex Pattern | Emitted Effect Primitive | Parameters |
+| :--- | :--- | :--- |
+| `/deal (\d+) damage to (an enemy\|the villain\|each enemy\|chosen enemy)/i` | `DEAL_DAMAGE` / `DEAL_DAMAGE_ALL_ENEMIES` | `{ amount, target }` |
+| `/remove (\d+) threat from (a scheme\|the main scheme\|chosen scheme)/i` | `REMOVE_THREAT` | `{ amount, target }` |
+| `/draw (\d+) cards?(?: \(draw (\d+) cards? instead if you are ([A-Za-z0-9 '-]+)\))?/i` | `DRAW_CARDS` | `{ count, carolBonus }` |
+| `/choose a player to draw (\d+) cards?/i` | `DRAW_CARDS` | `{ count, target: 'CHOSEN_PLAYER' }` |
+| `/heal (\d+) damage from ([A-Za-z0-9 '-]+)/i` | `HEAL_DAMAGE` | `{ amount, target: 'SELF_IDENTITY' }` |
+| `/generate (?:a \|an \|)(\d*\s*)?\[(physical\|energy\|mental\|wild)\] resource/i` | `GENERATE_RESOURCE` | `{ resource, amount }` |
+| `/prevent all of that damage/i` | `PREVENT_DAMAGE` | `{ amount: 'ALL' }` |
+| `/prevent (\d+) of that damage/i` | `PREVENT_DAMAGE` | `{ amount }` |
+| `/cancel its ["“]When Revealed["”] effects/i` | `CANCEL_WHEN_REVEALED` | `{}` |
+| `/(?:then, \|)stun (that enemy\|the attacked enemy\|an enemy\|the villain)/i` | `ADD_STATUS` | `{ status: 'STUNNED', target }` |
+| `/ready your hero/i` | `READY_IDENTITY` | `{ target: 'SELF_IDENTITY' }` |
+| `/attach to (a minion\|an enemy)/i` | `ATTACH_TO_HOST` | `{ target }` |
+
+---
+
 ## 📊 Summary Metrics
 - **Total Cards Analyzed:** 209 (101 Player Cards + 108 Encounter Cards)
 - **Cards with Printed Text:** 205

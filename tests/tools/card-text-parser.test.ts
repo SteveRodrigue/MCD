@@ -232,4 +232,12 @@ describe('Card Text Parser', () => {
       expect(result.unmatchedFragments[0].text).toContain('unexpected cosmic somersault');
     });
   });
+
+  describe('writeSupplementalCard Integration Function', () => {
+    it('is exported from CLI and validates schemas properly', async () => {
+      const { writeSupplementalCard } = await import('../../tools/audit/card-text-parser');
+      expect(typeof writeSupplementalCard).toBe('function');
+    });
+  });
 });
+

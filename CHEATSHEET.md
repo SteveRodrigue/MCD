@@ -78,6 +78,12 @@ You can use the following prompt templates to invoke specialized skills and work
 > npm run parse:card -- --code 01005 --json
 > ```
 
+> **Safely Write/Update Supplemental Pack JSON (`--write`):**
+> ```powershell
+> npm run parse:card -- --pack core --code 01001b --write
+> ```
+> *Parses Peter Parker and writes the validated declarative JSON and updated audit metadata into `src/data/supplemental/pack/core.json`.*
+
 > **Prompting Antigravity with the Parser:**
 > ```text
 > Run the card-text-parser on card 01027 (Focused Rage) and use the parsed declarative JSON to verify our supplemental definition in core.json.

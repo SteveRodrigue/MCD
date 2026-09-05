@@ -168,6 +168,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
   - Deep-linking URL synchronization (`/editor?code=01001a`).
 - [x] **Step 3: Visual Declarative Ability Builder & Live Schema Diagnostics ([Issue #63](https://github.com/SteveRodrigue/MCD/issues/63)) ✅ (Completed):**
   - Form builder mode for ability timing, event triggers, costs, limits, and steps with dynamic primitive parameter fields.
+  - 100% 1:1 parameter parity across all 104 effect primitives via `EFFECT_PARAMETER_REGISTRY` (`effect-parameter-registry.ts`), eliminating ad-hoc inputs and ensuring every engine primitive parameter (`count`, `lookCount`, `status`, `resource`, etc.) is visually editable and verified.
   - Raw JSON mode with syntax error markers and live client-side Zod validation against `CardEnrichmentSchema`.
   - Atomic Save action (`Ctrl+S` / Save button) updating disk JSON and triggering Vite HMR with session reset toast.
 - [x] **Step 4: In-Game Tabletop Context Menu Integration ([Issue #62](https://github.com/SteveRodrigue/MCD/issues/62)) ✅ (Completed):**

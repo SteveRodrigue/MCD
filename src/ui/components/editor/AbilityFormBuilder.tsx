@@ -4,9 +4,9 @@ import {
   TriggerTypeSchema,
   EffectTypeSchema,
   ConditionGateSchema,
-  TargetSelectorSchema,
 } from '../../../data/supplemental/schema';
 import { Plus, Trash2, Shield, Zap, Sliders, ChevronDown, ChevronRight } from 'lucide-react';
+import { getEffectDescriptor } from './effect-parameter-registry';
 
 interface AbilityFormBuilderProps {
   supplemental: any;
@@ -397,13 +397,35 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       {steps.map((step: any, sIdx: number) => {
                         const params = step.params || {};
 
+                        const descriptor = getEffectDescriptor(step.effect || 'DEAL_DAMAGE');
+
+                        const handleEffectChange = (newEffect: string) => {
+                          const newDesc = getEffectDescriptor(newEffect);
+                          const newParams: Record<string, any> = {};
+                          for (const p of newDesc.parameters) {
+                            if (params[p.key] !== undefined) {
+                              newParams[p.key] = params[p.key];
+                            } else if (p.key === 'count' && params.amount !== undefined) {
+                              newParams.count = params.amount;
+                            } else if (p.key === 'amount' && params.count !== undefined) {
+                              newParams.amount = params.count;
+                            } else if (p.defaultValue !== undefined) {
+                              newParams[p.key] = p.defaultValue;
+                            }
+                          }
+                          handleUpdateStep(aIdx, sIdx, {
+                            effect: newEffect,
+                            params: Object.keys(newParams).length > 0 ? newParams : undefined,
+                          });
+                        };
+
                         return (
                           <div
                             key={sIdx}
-                            className="bg-comic-paper border border-black p-2 rounded flex flex-col gap-2"
+                            className="bg-comic-paper border border-black p-2.5 rounded flex flex-col gap-2.5"
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-mono text-[10px] font-bold bg-gray-300 px-1 py-0.2 rounded">
+                              <span className="font-mono text-[10px] font-bold bg-gray-300 px-1 py-0.5 rounded border border-gray-400">
                                 Step #{sIdx + 1}
                               </span>
 
@@ -417,75 +439,151 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                               </button>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                              {/* Primitive Effect Selector */}
-                              <div>
-                                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                            {/* Effect Primitive Selector & Description */}
+                            <div>
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <label className="block text-[9px] uppercase font-bold text-gray-500">
                                   Effect Primitive
                                 </label>
-                                <select
-                                  value={step.effect || 'DEAL_DAMAGE'}
-                                  onChange={(e) =>
-                                    handleUpdateStep(aIdx, sIdx, { effect: e.target.value })
-                                  }
-                                  className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                                >
-                                  {EffectTypeSchema.options.map((eff) => (
-                                    <option key={eff} value={eff}>
-                                      {eff}
-                                    </option>
-                                  ))}
-                                </select>
+                                <span className="text-[10px] text-gray-500 italic truncate max-w-xs">
+                                  {descriptor.description}
+                                </span>
                               </div>
-
-                              {/* Amount Param */}
-                              <div>
-                                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                                  Amount (e.g. dmg, threat, cards)
-                                </label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={params.amount !== undefined ? params.amount : ''}
-                                  onChange={(e) => {
-                                    const val = e.target.value
-                                      ? parseInt(e.target.value, 10)
-                                      : undefined;
-                                    handleUpdateStep(aIdx, sIdx, {
-                                      params: {
-                                        ...params,
-                                        amount: isNaN(val as number) ? undefined : val,
-                                      },
-                                    });
-                                  }}
-                                  placeholder="Amount"
-                                  className="w-full bg-white border border-black p-1 text-xs rounded"
-                                />
-                              </div>
-
-                              {/* Target Selector */}
-                              <div>
-                                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                                  Target
-                                </label>
-                                <select
-                                  value={params.target || ''}
-                                  onChange={(e) =>
-                                    handleUpdateStep(aIdx, sIdx, {
-                                      params: { ...params, target: e.target.value || undefined },
-                                    })
-                                  }
-                                  className="w-full bg-white border border-black p-1 text-[11px] font-mono"
-                                >
-                                  <option value="">Default (Contextual)</option>
-                                  {TargetSelectorSchema.options.map((tgt) => (
-                                    <option key={tgt} value={tgt}>
-                                      {tgt}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
+                              <select
+                                value={step.effect || 'DEAL_DAMAGE'}
+                                onChange={(e) => handleEffectChange(e.target.value)}
+                                className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                              >
+                                {EffectTypeSchema.options.map((eff) => (
+                                  <option key={eff} value={eff}>
+                                    {eff}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
+
+                            {/* Dynamic Parameter Fields */}
+                            {descriptor.parameters.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-white/70 p-2 border border-black rounded">
+                                {descriptor.parameters.map((param) => {
+                                  const val = params[param.key];
+
+                                  if (param.type === 'boolean') {
+                                    return (
+                                      <label
+                                        key={param.key}
+                                        className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3"
+                                        title={param.description}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={Boolean(val)}
+                                          onChange={(e) =>
+                                            handleUpdateStep(aIdx, sIdx, {
+                                              params: { ...params, [param.key]: e.target.checked },
+                                            })
+                                          }
+                                          className="accent-black"
+                                        />
+                                        <span>{param.label}</span>
+                                      </label>
+                                    );
+                                  }
+
+                                  if (param.type === 'select') {
+                                    return (
+                                      <div key={param.key}>
+                                        <label
+                                          className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
+                                          title={param.description}
+                                        >
+                                          {param.label}
+                                        </label>
+                                        <select
+                                          value={val !== undefined ? val : ''}
+                                          onChange={(e) =>
+                                            handleUpdateStep(aIdx, sIdx, {
+                                              params: {
+                                                ...params,
+                                                [param.key]: e.target.value || undefined,
+                                              },
+                                            })
+                                          }
+                                          className="w-full bg-white border border-black p-1 text-[11px] font-mono"
+                                        >
+                                          <option value="">Default (Contextual)</option>
+                                          {param.options?.map((opt) => (
+                                            <option key={opt} value={opt}>
+                                              {opt}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                    );
+                                  }
+
+                                  if (param.type === 'number') {
+                                    return (
+                                      <div key={param.key}>
+                                        <label
+                                          className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
+                                          title={param.description}
+                                        >
+                                          {param.label}
+                                        </label>
+                                        <input
+                                          type="number"
+                                          value={val !== undefined ? val : ''}
+                                          onChange={(e) => {
+                                            const num = e.target.value
+                                              ? parseInt(e.target.value, 10)
+                                              : undefined;
+                                            handleUpdateStep(aIdx, sIdx, {
+                                              params: {
+                                                ...params,
+                                                [param.key]: isNaN(num as number) ? undefined : num,
+                                              },
+                                            });
+                                          }}
+                                          placeholder={param.placeholder || '0'}
+                                          className="w-full bg-white border border-black p-1 text-xs rounded"
+                                        />
+                                      </div>
+                                    );
+                                  }
+
+                                  // Text input
+                                  return (
+                                    <div key={param.key}>
+                                      <label
+                                        className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5"
+                                        title={param.description}
+                                      >
+                                        {param.label}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={val || ''}
+                                        onChange={(e) =>
+                                          handleUpdateStep(aIdx, sIdx, {
+                                            params: {
+                                              ...params,
+                                              [param.key]: e.target.value || undefined,
+                                            },
+                                          })
+                                        }
+                                        placeholder={param.placeholder || ''}
+                                        className="w-full bg-white border border-black p-1 text-xs rounded"
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-[11px] italic text-gray-500 bg-gray-100 p-1.5 rounded border border-gray-300">
+                                No additional parameters required for this operational primitive.
+                              </div>
+                            )}
 
                             {/* Conditional Gate */}
                             <div className="flex items-center gap-2">

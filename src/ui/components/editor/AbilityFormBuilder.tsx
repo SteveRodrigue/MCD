@@ -5,7 +5,16 @@ import {
   EffectTypeSchema,
   ConditionGateSchema,
 } from '../../../data/supplemental/schema';
-import { Plus, Trash2, Shield, Zap, Sliders, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Shield,
+  Zap,
+  Sliders,
+  ChevronDown,
+  ChevronRight,
+  ShieldCheck,
+} from 'lucide-react';
 import { getEffectDescriptor } from './effect-parameter-registry';
 
 interface AbilityFormBuilderProps {
@@ -59,8 +68,35 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
     });
   };
 
+  const handleNoSupplementalNeededChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    if (checked) {
+      if (abilities.length > 0) {
+        const confirmed = window.confirm(
+          'Marking this card as vanilla (noSupplementalNeeded) will remove its existing declarative abilities. Proceed?',
+        );
+        if (!confirmed) return;
+      }
+      const updated = {
+        ...supplemental,
+        noSupplementalNeeded: true,
+      };
+      delete updated.abilities;
+      onChange(updated);
+      setExpandedAbility(null);
+    } else {
+      const updated = { ...supplemental };
+      delete updated.noSupplementalNeeded;
+      if (!updated.abilities) {
+        updated.abilities = [];
+      }
+      onChange(updated);
+    }
+  };
+
   // Ability Management
   const handleAddAbility = () => {
+    if (supplemental.noSupplementalNeeded) return;
     const newAbility = {
       id: `ability_${abilities.length + 1}`,
       timing: 'ACTION',
@@ -206,6 +242,25 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
               className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
             />
           </div>
+
+          <div className="sm:col-span-2 pt-2 border-t border-gray-200">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                data-testid="no-supplemental-needed-checkbox"
+                checked={Boolean(supplemental.noSupplementalNeeded)}
+                onChange={handleNoSupplementalNeededChange}
+                className="w-4 h-4 rounded border-black text-comic-accent focus:ring-black cursor-pointer"
+              />
+              <span className="font-bold text-xs text-black">
+                🛡️ No Supplemental Rules Needed (Vanilla Card)
+              </span>
+            </label>
+            <p className="text-[11px] text-gray-500 ml-6 mt-0.5 font-comic">
+              Flag this card as having no printed abilities, actions, or triggers to declare (e.g.
+              Rhino I, vanilla cards). Disables ability creation.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -219,15 +274,45 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
 
           <button
             type="button"
+            data-testid="add-ability-btn"
             onClick={handleAddAbility}
-            className="flex items-center gap-1 bg-comic-accent hover:bg-blue-700 text-white font-bold px-2.5 py-1 border-2 border-black rounded shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+            disabled={Boolean(supplemental.noSupplementalNeeded)}
+            className={`flex items-center gap-1 font-bold px-2.5 py-1 border-2 border-black rounded shadow-comic-xs transition-transform ${
+              supplemental.noSupplementalNeeded
+                ? 'bg-gray-200 text-gray-400 border-gray-400 cursor-not-allowed'
+                : 'bg-comic-accent hover:bg-blue-700 text-white cursor-pointer active:scale-95'
+            }`}
+            title={
+              supplemental.noSupplementalNeeded
+                ? 'Cannot add abilities to a vanilla card (noSupplementalNeeded is checked)'
+                : 'Add a new declarative ability'
+            }
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Ability</span>
           </button>
         </div>
 
-        {abilities.length === 0 && (
+        {supplemental.noSupplementalNeeded && (
+          <div
+            data-testid="vanilla-card-notice"
+            className="p-3 bg-blue-50 border-2 border-blue-600 rounded flex items-start gap-2 shadow-comic-xs"
+          >
+            <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-xs text-blue-900 block">
+                Vanilla Card (No Supplemental Rules Needed)
+              </span>
+              <span className="text-[11px] text-blue-800 font-comic">
+                This card has no printed abilities to evaluate. Ability creation is locked. If you
+                need to define abilities, uncheck "No Supplemental Rules Needed" in the card
+                attributes above.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!supplemental.noSupplementalNeeded && abilities.length === 0 && (
           <div className="p-4 bg-white border-2 border-dashed border-gray-300 rounded text-center text-gray-500 italic">
             No abilities defined. Click "Add Ability" to attach rules logic.
           </div>

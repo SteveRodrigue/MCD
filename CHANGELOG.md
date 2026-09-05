@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Tooling: Vanilla Card Support (`noSupplementalNeeded`) & Ability Guardrails (`AbilityFormBuilder.tsx`, `CardGalleryList.tsx`, `CardFilterToolbar.tsx`, `DualCardInspector.tsx`, `api-middleware.ts`, `tests/ui/vanilla-card-editor.test.ts`):**
+  - **Form Builder Vanilla Guardrail:** Added a prominent `🛡️ No Supplemental Rules Needed (Vanilla Card)` checkbox in `AbilityFormBuilder.tsx`. When checked, locks ability creation, disables the `+ Add Ability` button, prompts before clearing existing abilities, and displays an informative banner indicating that vanilla cards cannot have abilities.
+  - **Visual Status Badges:** Displayed a distinct `🛡️ Vanilla` badge in `CardGalleryList.tsx` and the `DualCardInspector.tsx` card header strip when a card has `noSupplementalNeeded: true` (e.g. Rhino I `01094`).
+  - **Visual Review Banner:** In `DualCardInspector.tsx`, replaced empty abilities placeholder with an explicit `Vanilla Card: No supplemental rules needed (no printed abilities)` notification.
+  - **Catalog Filtering:** Added `🛡️ Vanilla (No Supplemental Needed)` status filter option to `CardFilterToolbar.tsx` and implemented `status === 'vanilla_supplemental'` filtering in `CardSupplementalService.getCards()`.
+  - **Automated Contract Tests:** Added `tests/ui/vanilla-card-editor.test.ts` (6 tests) validating `CardSummary.noSupplementalNeeded` detection on Rhino I (`01094`), exclusion of abilities-bearing cards (`01001a`, `01095`), status filtering, and state transitions.
+
 - **Feature & Tooling: 1:1 Engine Effect Parameter Registry & Dynamic Step Form Builder (`src/ui/components/editor/effect-parameter-registry.ts`, `AbilityFormBuilder.tsx`, `tests/ui/effect-parameter-registry.test.ts`):**
   - **Comprehensive Parameter Descriptor Registry:** Authored `EFFECT_PARAMETER_REGISTRY` covering 100% of all 104 effect primitives in `EffectTypeSchema`, eliminating ad-hoc form fields and guaranteeing exact 1:1 parity between Editor UI and headless rules engine parameter signatures.
   - **Engine-Grounded Parameter Bindings:** Registered first-class typed inputs for parameter keys including `count` (fixing card `01001a` DRAW_CARDS parameter editing), `lookCount`, `takeCount`, `max`, `overkill`, `aerialAllSchemes`, `status`, `resource`, `stat`, `trait`, and `counterType`.

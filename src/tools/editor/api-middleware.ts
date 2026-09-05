@@ -13,6 +13,7 @@ export interface CardSummary {
   stage?: string;
   traits?: string;
   hasSupplemental: boolean;
+  noSupplementalNeeded?: boolean;
   isValid: boolean;
   confidence?: number;
   errorCount?: number;
@@ -191,12 +192,19 @@ export class CardSupplementalService {
         }
       }
 
+      const noSupplementalNeeded = Boolean(supplemental?.noSupplementalNeeded);
+
       // 6. Filter by status
       if (filters.status) {
         if (filters.status === 'has_supplemental' && !hasSupplemental) continue;
         if (filters.status === 'missing_supplemental' && hasSupplemental) continue;
         if (filters.status === 'invalid_supplemental' && (!hasSupplemental || isValid)) continue;
         if (filters.status === 'valid_supplemental' && (!hasSupplemental || !isValid)) continue;
+        if (
+          filters.status === 'vanilla_supplemental' &&
+          (!hasSupplemental || !noSupplementalNeeded)
+        )
+          continue;
       }
 
       results.push({
@@ -210,6 +218,7 @@ export class CardSupplementalService {
         stage: card.stage,
         traits: card.traits,
         hasSupplemental,
+        noSupplementalNeeded,
         isValid,
         confidence,
         errorCount,

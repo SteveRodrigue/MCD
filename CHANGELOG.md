@@ -4,6 +4,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Bug Fix & UI: Enable Text Selection and 1-Click Copy in Raw Attributes Modal ([#71](https://github.com/SteveRodrigue/MCD/issues/71), `CardContextMenu.tsx`, `tests/ui/card-context-menu.test.ts`):**
+  - **Override Global `select-none`:** Added `select-text` and `cursor-text` to the raw card attributes modal and `<pre>` JSON viewer, overriding the global `select-none` on `<body>` to re-enable native text highlighting, drag selection, and I-beam cursor behavior.
+  - **1-Click Copy JSON Button:** Added a dedicated "Copy JSON" button in the modal header with visual copied feedback (`Copied JSON!`), allowing instant full-card JSON export to the clipboard.
+  - **Drag Pointer Isolation:** Added `onPointerDown={(e) => e.stopPropagation()}` on the modal dialog so text-selection drag gestures are not intercepted by window pointer listeners.
+  - **Automated Contract Tests:** Added contract tests in `tests/ui/card-context-menu.test.ts` validating `select-text`, `cursor-text`, and the Copy JSON button.
+
 - **Bug Fix & UI: Mount Card Context Menu into Document Body Portal ([#70](https://github.com/SteveRodrigue/MCD/issues/70), `CardContextMenu.tsx`, `tests/ui/card-context-menu.test.ts`):**
   - **Portal Decoupling from CSS Transforms:** Wrapped `CardContextMenu` and its raw attributes modal in `ReactDOM.createPortal(..., document.body)` so fixed positioning coordinates (`e.clientX`, `e.clientY`) are calculated directly against the browser viewport instead of being captured and displaced by transformed ancestor cards (`rotate-0`, `scale-[...]`, `-translate-y-4`).
   - **Auto-Zoom Immunity:** Prevented context menu shifting or disappearing when cards scale up or down during hover-zoom transitions.

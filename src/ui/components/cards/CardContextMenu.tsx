@@ -13,6 +13,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
   const menuRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
   const [showRawModal, setShowRawModal] = useState(false);
 
   // Close when clicking outside
@@ -58,6 +59,15 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
       setCopied(false);
       onClose();
     }, 800);
+  };
+
+  const handleCopyJson = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(JSON.stringify(card, null, 2));
+    setCopiedJson(true);
+    setTimeout(() => {
+      setCopiedJson(false);
+    }, 1500);
   };
 
   if (typeof document === 'undefined') return null;
@@ -142,25 +152,42 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
         >
           <div
             ref={modalRef}
-            className="bg-white border-4 border-black max-w-lg w-full p-4 rounded-lg shadow-comic-lg font-sans max-h-[80vh] flex flex-col"
+            className="bg-white border-4 border-black max-w-xl w-full p-4 rounded-lg shadow-comic-lg font-sans max-h-[85vh] flex flex-col select-text"
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b-2 border-black pb-2 mb-3">
-              <span className="font-bangers text-lg tracking-wide text-black">
+              <span className="font-bangers text-lg tracking-wide text-black truncate mr-2 select-text">
                 RAW ATTRIBUTES: {card.name} ({card.code})
               </span>
-              <button
-                onClick={() => {
-                  setShowRawModal(false);
-                  onClose();
-                }}
-                className="text-black font-bold p-1 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleCopyJson}
+                  className="flex items-center gap-1.5 text-xs font-comic font-bold px-2.5 py-1 bg-slate-100 hover:bg-comic-yellow border-2 border-black rounded transition-colors cursor-pointer shadow-comic-sm"
+                  title="Copy full card JSON to clipboard"
+                >
+                  {copiedJson ? (
+                    <Check className="w-3.5 h-3.5 text-green-700 shrink-0" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-black shrink-0" />
+                  )}
+                  <span>{copiedJson ? 'Copied JSON!' : 'Copy JSON'}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setShowRawModal(false);
+                    onClose();
+                  }}
+                  className="text-black font-bold p-1 hover:bg-slate-200 rounded cursor-pointer"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            <pre className="flex-1 bg-gray-950 text-green-400 font-mono text-xs p-3 rounded overflow-auto border border-black max-h-96">
+            <pre className="flex-1 bg-gray-950 text-green-400 font-mono text-xs p-3 rounded overflow-auto border border-black max-h-[60vh] select-text cursor-text">
               {JSON.stringify(card, null, 2)}
             </pre>
           </div>

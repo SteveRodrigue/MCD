@@ -102,5 +102,28 @@ describe('CardContextMenu Actions & Invariants', () => {
       // handlePointerDown must verify modalRef does not contain target
       expect(content).toMatch(/modalRef\.current(\?)?\.contains/);
     });
+
+    it('enforces select-text and cursor-text on raw attributes modal (Fixes #71)', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
+      const content = fs.readFileSync(filePath, 'utf8');
+
+      // Modal container or pre must contain select-text to override global body select-none
+      expect(content).toContain('select-text');
+      expect(content).toContain('cursor-text');
+    });
+
+    it('enforces 1-click Copy JSON button in raw attributes modal header (Fixes #71)', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
+      const content = fs.readFileSync(filePath, 'utf8');
+
+      // Must have Copy JSON button
+      expect(content).toContain('Copy JSON');
+      expect(content).toContain('handleCopyJson');
+      expect(content).toContain('copiedJson');
+    });
   });
 });

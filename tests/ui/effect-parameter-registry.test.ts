@@ -1,0 +1,96 @@
+import { describe, it, expect } from 'vitest';
+import { EffectTypeSchema } from '../../src/data/supplemental/schema';
+import {
+  EFFECT_PARAMETER_REGISTRY,
+  getEffectDescriptor,
+} from '../../src/ui/components/editor/effect-parameter-registry';
+
+describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
+  it('registers 100% of EffectTypeSchema primitives without any omissions', () => {
+    const allEffects = EffectTypeSchema.options;
+    expect(allEffects.length).toBeGreaterThan(50);
+
+    for (const effect of allEffects) {
+      const descriptor = EFFECT_PARAMETER_REGISTRY[effect];
+      expect(descriptor, `Missing registry entry for primitive: ${effect}`).toBeDefined();
+      expect(descriptor.effect).toBe(effect);
+      expect(typeof descriptor.description).toBe('string');
+      expect(Array.isArray(descriptor.parameters)).toBe(true);
+    }
+  });
+
+  it('DRAW_CARDS exposes count and target without legacy card-specific carolBonus', () => {
+    const desc = getEffectDescriptor('DRAW_CARDS');
+    expect(desc.effect).toBe('DRAW_CARDS');
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('count');
+    expect(paramKeys).toContain('target');
+    expect(paramKeys).not.toContain('carolBonus');
+
+    const countParam = desc.parameters.find((p) => p.key === 'count');
+    expect(countParam?.type).toBe('number');
+    expect(countParam?.defaultValue).toBe(1);
+  });
+
+  it('DEAL_DAMAGE exposes amount, target, amountFormula, max, and overkill', () => {
+    const desc = getEffectDescriptor('DEAL_DAMAGE');
+    const paramKeys = desc.parameters.map((p) => p.key);
+
+    expect(paramKeys).toContain('amount');
+    expect(paramKeys).toContain('target');
+    expect(paramKeys).toContain('amountFormula');
+    expect(paramKeys).toContain('max');
+    expect(paramKeys).toContain('overkill');
+  });
+
+  it('ADD_STATUS exposes status card options and target', () => {
+    const desc = getEffectDescriptor('ADD_STATUS');
+    const statusParam = desc.parameters.find((p) => p.key === 'status');
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+
+    expect(statusParam).toBeDefined();
+    expect(statusParam?.type).toBe('select');
+    expect(statusParam?.options).toEqual(['STUNNED', 'CONFUSED', 'TOUGH']);
+    expect(targetParam).toBeDefined();
+  });
+
+  it('GENERATE_RESOURCE exposes resource types and amount', () => {
+    const desc = getEffectDescriptor('GENERATE_RESOURCE');
+    const resParam = desc.parameters.find((p) => p.key === 'resource');
+    const amountParam = desc.parameters.find((p) => p.key === 'amount');
+
+    expect(resParam?.type).toBe('select');
+    expect(resParam?.options).toEqual(['physical', 'energy', 'mental', 'wild']);
+    expect(amountParam?.type).toBe('number');
+  });
+
+  it('SEARCH_AND_SELECT exposes destination routing and look/take parameters', () => {
+    const desc = getEffectDescriptor('SEARCH_AND_SELECT');
+    const paramKeys = desc.parameters.map((p) => p.key);
+
+    expect(paramKeys).toContain('source');
+    expect(paramKeys).toContain('lookCount');
+    expect(paramKeys).toContain('takeCount');
+    expect(paramKeys).toContain('selectedDestination');
+    expect(paramKeys).toContain('unselectedDestination');
+    expect(paramKeys).toContain('shuffleAfter');
+  });
+
+  it('GRANT_KEYWORD exposes keyword, amount, duration, and target', () => {
+    const desc = getEffectDescriptor('GRANT_KEYWORD');
+    const paramKeys = desc.parameters.map((p) => p.key);
+
+    expect(paramKeys).toContain('keyword');
+    expect(paramKeys).toContain('amount');
+    expect(paramKeys).toContain('duration');
+    expect(paramKeys).toContain('target');
+  });
+
+  it('falls back gracefully to an operational descriptor for unknown or custom primitives', () => {
+    const unknown = getEffectDescriptor('CUSTOM_PRIMITIVE_UNKNOWN' as any);
+    expect(unknown.effect).toBe('CUSTOM_PRIMITIVE_UNKNOWN');
+    expect(unknown.parameters).toEqual([]);
+    expect(unknown.description).toContain('CUSTOM_PRIMITIVE_UNKNOWN');
+  });
+});

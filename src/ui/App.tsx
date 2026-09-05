@@ -9,11 +9,36 @@ import { GameBoard } from './components/board/GameBoard';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
+import { SupplementalEditorScreen } from './components/editor/SupplementalEditorScreen';
 
 export const AppContent: React.FC = () => {
   const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));
-  const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME'>('SETUP');
+  const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR'>(() => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      const search = window.location.search;
+      if (pathname.startsWith('/editor') || search.includes('view=editor')) {
+        return 'EDITOR';
+      }
+    }
+    return 'SETUP';
+  });
   const [gameState, setGameState] = useState<GameState | null>(null);
+
+  // Handle browser popstate
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const pathname = window.location.pathname;
+      const search = window.location.search;
+      if (pathname.startsWith('/editor') || search.includes('view=editor')) {
+        setStage('EDITOR');
+      } else if (stage === 'EDITOR') {
+        setStage(gameState ? 'IN_GAME' : 'SETUP');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [stage, gameState]);
 
   // Automatically snapshot game state changes to logs/gamestates/
   React.useEffect(() => {
@@ -129,6 +154,17 @@ export const AppContent: React.FC = () => {
             gameState={gameState}
             onReset={handleReset}
             onDispatchAction={handleDispatchAction}
+          />
+        )}
+
+        {stage === 'EDITOR' && (
+          <SupplementalEditorScreen
+            onBackToGame={() => {
+              if (window.location.pathname.startsWith('/editor')) {
+                window.history.pushState({}, '', '/');
+              }
+              setStage(gameState ? 'IN_GAME' : 'SETUP');
+            }}
           />
         )}
       </div>

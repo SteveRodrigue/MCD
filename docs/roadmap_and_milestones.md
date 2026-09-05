@@ -36,7 +36,8 @@ All uncompleted and future roadmap items are categorized using the following pri
 graph TD
     P0["Phase 0: Foundation & Governance ✅<br/>(Scaffolding, ADRs, Tooling, CI/CD)"] --> P1["Phase 1: Headless Engine & Schema Verification ✅<br/>(Deterministic State Tree, Supplemental Zod Schema, CI Tests)"]
     P1 --> P2["Phase 2: Rules Engine Robustness & Core Set Promotion ✅<br/>(Resolution Stack, Combat Event Pipeline, Setup Plugin, Inbox Zero)"]
-    P2 --> G1["🏁 Gate 1: The 'Rhino Release' Vertical Slice 🚧<br/>(100% Core 5 Heroes + Rhino Standard/Expert/Bomb Scare + Pop-Art UI)"]
+    P2 --> P25["Phase 2.5: Developer Ergonomics & Supplemental Reviewer GUI ✅<br/>(Visual Dual Inspector, Vite REST Middleware, Right-Click Context Menu)"]
+    P25 --> G1["🏁 Gate 1: The 'Rhino Release' Vertical Slice 🚧<br/>(100% Core 5 Heroes + Rhino Standard/Expert/Bomb Scare + Pop-Art UI)"]
     G1 --> G2["📦 Gate 2: Core Boss Expansion (Klaw & Ultron) 📅"]
     G2 --> G3["📦 Gate 3: Multiplayer Co-op & Automated Match Simulator 📅"]
     G3 --> G4["📦 Gate 4: Expansion Waves & Advanced Mechanics 📅"]
@@ -148,6 +149,30 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.
   - Pruned `docs/ambiguities/` to **0 files (Inbox Zero)**.
   - 100% Core Set Player Cards (all 5 Heroes: Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) + 100% Encounter Pool executable in headless engine.
+
+---
+
+## 📍 Phase 2.5: Developer Ergonomics & Supplemental Reviewer GUI ✅ (Completed Pre-Rhino Tooling)
+
+_Objective: Equip developers and card authors with an integrated visual editor and live reviewer GUI to accelerate Core Set card audits, verify declarative rules, and hot-reload supplemental JSON directly from the running application ([ADR-0045](decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), [Specification](specifications/tooling/card_supplemental_editor.md))._
+
+### Milestones & Tasks:
+- [x] **Step 1: Local Vite Dev Server REST Middleware (`/api/supplemental/*`) ([Issue #60](https://github.com/SteveRodrigue/MCD/issues/60)) ✅ (Completed):**
+  - Implement `cardSupplementalEditorPlugin` in `vite.config.ts` handling `GET /api/supplemental/packs`, `GET /api/supplemental/cards`, `GET /api/supplemental/card/:code`, and `POST /api/supplemental/card/:code`.
+  - Validate payloads against authoritative `CardEnrichmentSchema` (`schema.ts`) prior to disk writes.
+  - Automatically stamp ISO timestamps (`updatedAt`, `reviewedAt`) and attribution (`reviewedBy: "developer"`).
+- [x] **Step 2: Dual-Inspector Reviewer & Editor Workspace (`/editor`) ([Issue #61](https://github.com/SteveRodrigue/MCD/issues/61)) ✅ (Completed):**
+  - Implement multi-criteria filter toolbar: Zzorba pack dropdown, encounter set dropdown, hero dropdown, aspect/affinity dropdown, and text search.
+  - Left pane: Card gallery with status badges (100% Verified, Partial/Draft, Schema Error, Missing).
+  - Center pane: Visual inspector rendering card art via `CardView` alongside raw upstream attributes and printed card text.
+  - Deep-linking URL synchronization (`/editor?code=01001a`).
+- [x] **Step 3: Visual Declarative Ability Builder & Live Schema Diagnostics ([Issue #63](https://github.com/SteveRodrigue/MCD/issues/63)) ✅ (Completed):**
+  - Form builder mode for ability timing, event triggers, costs, limits, and steps with dynamic primitive parameter fields.
+  - Raw JSON mode with syntax error markers and live client-side Zod validation against `CardEnrichmentSchema`.
+  - Atomic Save action (`Ctrl+S` / Save button) updating disk JSON and triggering Vite HMR with session reset toast.
+- [x] **Step 4: In-Game Tabletop Context Menu Integration ([Issue #62](https://github.com/SteveRodrigue/MCD/issues/62)) ✅ (Completed):**
+  - Attach custom `onContextMenu` handler to all in-game `<CardView />` instances on the tabletop (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachments).
+  - Provide *"Open in Supplemental Editor"* action that launches `/editor?code=<cardCode>` in a new browser tab/window without losing active game state.
 
 ---
 

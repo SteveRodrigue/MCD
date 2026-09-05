@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
 import https from 'https';
+import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware';
 
 function cardCachePlugin(): Plugin {
   const cacheDir = path.resolve(__dirname, 'cache', 'cards');
@@ -36,7 +37,9 @@ function cardCachePlugin(): Plugin {
                   if (fs.existsSync(tempPath)) {
                     try {
                       fs.unlinkSync(tempPath);
-                    } catch {}
+                    } catch {
+                      // ignore cleanup error
+                    }
                   }
                   resolve(false);
                 }
@@ -47,7 +50,9 @@ function cardCachePlugin(): Plugin {
               if (fs.existsSync(tempPath)) {
                 try {
                   fs.unlinkSync(tempPath);
-                } catch {}
+                } catch {
+                  // ignore cleanup error
+                }
               }
               resolve(false);
             });
@@ -58,7 +63,9 @@ function cardCachePlugin(): Plugin {
             if (fs.existsSync(tempPath)) {
               try {
                 fs.unlinkSync(tempPath);
-              } catch {}
+              } catch {
+                // ignore cleanup error
+              }
             }
             resolve(false);
           });
@@ -267,7 +274,13 @@ function problemReportPlugin(): Plugin {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), cardCachePlugin(), gameStateSnapshotPlugin(), problemReportPlugin()],
+  plugins: [
+    react(),
+    cardCachePlugin(),
+    gameStateSnapshotPlugin(),
+    problemReportPlugin(),
+    cardSupplementalEditorPlugin(),
+  ],
   resolve: {
     alias: {
       '@engine': path.resolve(__dirname, './src/engine'),

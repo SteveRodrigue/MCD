@@ -1,10 +1,20 @@
 #!/usr/bin/env sh
 
+# Ensure Node/npm are available in PATH (critical for VS Code GUI / Git clients on Windows & macOS)
+if ! command -v npm >/dev/null 2>&1; then
+  export PATH="/c/Program Files/nodejs:/c/Program Files (x86)/nodejs:$APPDATA/npm:$LOCALAPPDATA/Programs/nodejs:/usr/local/bin:/opt/homebrew/bin:$PATH"
+fi
+
+NPM="npm"
+if ! command -v "$NPM" >/dev/null 2>&1 && command -v npm.cmd >/dev/null 2>&1; then
+  NPM="npm.cmd"
+fi
+
 echo "🔍 Running pre-commit verification..."
 
 # 1. Format check
 echo "  ↳ Checking code formatting (Prettier)..."
-npm run format:check || {
+"$NPM" run format:check || {
   echo "❌ Prettier format check failed!"
   echo "💡 Run 'npm run format' and stage the changes with 'git add'."
   exit 1
@@ -12,7 +22,7 @@ npm run format:check || {
 
 # 2. Lint check
 echo "  ↳ Linting codebase (ESLint)..."
-npm run lint || {
+"$NPM" run lint || {
   echo "❌ ESLint check failed!"
   echo "💡 Fix lint errors before committing."
   exit 1
@@ -20,7 +30,7 @@ npm run lint || {
 
 # 3. Type check
 echo "  ↳ Type-checking TypeScript..."
-npm run typecheck || {
+"$NPM" run typecheck || {
   echo "❌ TypeScript compilation failed!"
   echo "💡 Fix type errors before committing."
   exit 1

@@ -32,7 +32,6 @@ describe('Card Text Parser', () => {
       expect(ability.id).toBe('scientist');
       expect(ability.timing).toBe('RESOURCE');
       expect(ability.limit).toBe('ONCE_PER_ROUND');
-      expect(ability.maxPerRound).toBe(1);
       expect(ability.steps[0]).toEqual({
         effect: 'GENERATE_RESOURCE',
         params: {

@@ -351,6 +351,16 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       {ability.trigger}
                     </span>
                   )}
+                  {ability.limit && (
+                    <span className="bg-amber-100 text-amber-900 border border-amber-400 px-1.5 py-0.2 rounded text-[10px] font-bold">
+                      ⏳ {ability.limit}
+                    </span>
+                  )}
+                  {ability.zone && (
+                    <span className="bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded text-[10px] font-mono">
+                      📍 {ability.zone}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -418,6 +428,56 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Usage Limit & Activation Zone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                        Usage Limit (RR v1.8 p. 21)
+                      </label>
+                      <select
+                        value={ability.limit || ''}
+                        onChange={(e) =>
+                          handleUpdateAbility(aIdx, {
+                            limit: e.target.value
+                              ? (e.target.value as 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE')
+                              : undefined,
+                          })
+                        }
+                        className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                      >
+                        <option value="">None (Unlimited)</option>
+                        <option value="ONCE_PER_ROUND">
+                          Limit once per round (ONCE_PER_ROUND)
+                        </option>
+                        <option value="ONCE_PER_PHASE">
+                          Limit once per phase (ONCE_PER_PHASE)
+                        </option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                        Activation Zone
+                      </label>
+                      <select
+                        value={ability.zone || ''}
+                        onChange={(e) =>
+                          handleUpdateAbility(aIdx, {
+                            zone: e.target.value
+                              ? (e.target.value as 'HAND' | 'PLAY' | 'DISCARD')
+                              : undefined,
+                          })
+                        }
+                        className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+                      >
+                        <option value="">Default (In Play)</option>
+                        <option value="HAND">From Hand (HAND)</option>
+                        <option value="PLAY">In Play (PLAY)</option>
+                        <option value="DISCARD">From Discard (DISCARD)</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Cost Specification */}

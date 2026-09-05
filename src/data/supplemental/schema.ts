@@ -448,7 +448,6 @@ export interface CardAbility {
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
-  maxPerRound?: number;
   errata?: string | null;
   steps: AbilityStep[];
 }
@@ -464,7 +463,6 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
-    maxPerRound: z.number().optional(),
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
   })

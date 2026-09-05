@@ -32,7 +32,6 @@ export interface ParsedAbilityResult {
   trigger?: TriggerType;
   cost?: CardAbility['cost'];
   limit?: CardAbility['limit'];
-  maxPerRound?: number;
   zone?: CardAbility['zone'];
   steps: CardAbility['steps'];
   matchedSpans: TextMatchSpan[];

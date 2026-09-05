@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Tooling: Ability Limits & Activation Zone Controls with `maxPerRound` Elimination (`AbilityFormBuilder.tsx`, `DualCardInspector.tsx`, `schema.ts`, `schema.json`, `parser.ts`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
+  - **First-Class Limit & Zone Controls:** Added dedicated form controls in `AbilityFormBuilder.tsx` to configure `ability.limit` (`None`, `ONCE_PER_ROUND`, `ONCE_PER_PHASE`) per RR v1.8 p. 21 and `ability.zone` (`Default`, `HAND`, `PLAY`, `DISCARD`). Resolves inability to view/edit limits on cards such as Peter Parker Scientist (`01001b`).
+  - **Visual Status Badges:** Displayed `⏳ Limit` and `📍 Zone` badges on ability accordion headers in `AbilityFormBuilder.tsx` and within the Declarative Abilities review cards in `DualCardInspector.tsx`.
+  - **Elimination of Dead-Weight `maxPerRound`:** Deprecated and removed the redundant `maxPerRound` field across `CardAbilitySchema`, `schema.json`, card-text-parser types, patterns, and parser extraction logic, keeping the schema strictly aligned with the engine's round and phase timing windows.
+  - **Automated Contract Tests:** Added `tests/ui/ability-limit-and-zone-editor.test.ts` (5 tests) verifying card `01001b` limit parsing, round/phase limit switching, zone validation, and strict rejection of legacy `maxPerRound`.
+
 - **Feature & UI: THW / SCH Stat Grounding & ADR-0012 Z-Axis Hover Zoom Elevation (`DualCardInspector.tsx`, `VillainZone.tsx`, `HeroZone.tsx`, `tests/ui/thw-sch-and-zoom-elevation.test.ts`):**
   - **THW / SCH Dynamic Stat Display:** Replaced static `"Thwart"` row in `DualCardInspector.tsx` with dynamic `"THW / SCH"`. For Villains and Minions (`upstream.scheme !== undefined`), displays `${upstream.scheme} (SCH)`; for Heroes and Allies (`upstream.thwart !== undefined`), displays `${upstream.thwart} (THW)`; otherwise displays `'—'`.
   - **ADR-0012 Unconstrained Z-Axis Elevation:** Fixed the preview `<CardView />` wrapper in `DualCardInspector.tsx` by replacing `overflow-hidden` with `overflow-visible relative z-30 hover:z-50`, ensuring the interactive card preview zooms cleanly above all adjacent UI containers without clipping.

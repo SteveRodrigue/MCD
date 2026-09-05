@@ -117,6 +117,9 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       shuffleFn: (arr) => arr,
     });
 
+    state.players[0].currentForm = 'hero';
+    state.players[0].activeFormCard = spiderManHero;
+
     endPlayerPhase(state);
     const nextState = executeVillainPhase(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 

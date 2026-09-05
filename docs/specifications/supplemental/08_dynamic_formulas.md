@@ -1,39 +1,36 @@
 # 08. Dynamic Formulas & Mathematical Expressions
 
 > [!NOTE]
-> **Status:** 🟡 `ROADMAP / IN PROGRESS` (Issue [#5](https://github.com/SteveRodrigue/MCD/issues/5) - *Gamma Slam* `01021`, *Jessica Jones* `01059`)
+> **Status:** 🟢 `ACTIVE / SPECIFIED` (Issue [#5](https://github.com/SteveRodrigue/MCD/issues/5) - *Gamma Slam* `01021`)
 
 ---
 
-## 1. Dynamic Formula Tokens (`amountCalculated`)
+## 1. Dynamic Formula Tokens (`amountFormula`)
 
-For cards whose numeric effects scale based on live game state, the `amountCalculated` string parameter declares the mathematical expression:
+For cards whose numeric effects scale based on live game state, the `amountFormula` parameter declares the mathematical expression:
 
 ```json
 {
   "effect": "DEAL_DAMAGE",
   "params": {
-    "amountCalculated": "SUFFERED_DAMAGE",
-    "clamp": {
-      "max": 15
-    },
-    "target": "CHOSEN_ENEMY"
+    "amountFormula": "SUFFERED_DAMAGE",
+    "max": 15,
+    "target": "ENEMY"
   }
 }
 ```
 
 ---
 
-## 2. Standard State Tokens
+## 2. Standard State Formulas
 
-| Token Name | Evaluated State Expression | Example Card |
+| Formula Name | Evaluated State Expression | Example Card |
 | :--- | :--- | :--- |
-| `PLAYER_MAX_HEALTH` | `player.maxHealth` | Base hero health reference |
-| `PLAYER_CURRENT_HEALTH`| `player.health` | Live player health |
-| `SUFFERED_DAMAGE` | `player.maxHealth - player.health` | *Gamma Slam* (`01021`) |
-| `SIDE_SCHEMES_IN_PLAY` | `state.sideSchemes.length` | *Jessica Jones* (`01059`) |
-| `THREAT_ON_SCHEME` | `scheme.threat` | *Explosion* (`01111`) |
-| `TABLEAU_COUNT(filter)`| `player.tableau.filter(filter).length` | *Iron Man* (`01029a`) |
+| `SUFFERED_DAMAGE` | `Math.max(0, getEffectiveMaxHealth(player, state) - player.health)` | *Gamma Slam* (`01021`) |
+| `HERO_ATK` | `getEffectiveHeroStats(state, player).attack` | Aggression events |
+
+### Optional Ceiling Parameter (`max`)
+The `max` parameter is optional and reusable across abilities. When specified, damage is clamped to `Math.min(max, damageSustained)`. When omitted, damage scales uncapped.
 
 ---
 

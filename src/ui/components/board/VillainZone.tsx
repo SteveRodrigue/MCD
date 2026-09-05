@@ -198,6 +198,19 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               </div>
             </div>
 
+            {/* Villain Stats Bar (SCH & ATK) */}
+            <div className="flex items-center justify-around bg-white px-2 py-0.5 rounded border border-comic-black text-xs font-bold shadow-comic-xs">
+              <div className="flex flex-col items-center">
+                <span className="text-slate-500 text-[8px] uppercase">SCH</span>
+                <span className="text-comic-blue font-black">{villain.card.scheme ?? 0}</span>
+              </div>
+              <div className="h-3 w-px bg-slate-300" />
+              <div className="flex flex-col items-center">
+                <span className="text-slate-500 text-[8px] uppercase">ATK</span>
+                <span className="text-comic-red font-black">{villain.card.attack ?? 0}</span>
+              </div>
+            </div>
+
             {/* Status Overlay Badges */}
             {villain.statusCards.length > 0 && (
               <div className="flex flex-wrap gap-1">

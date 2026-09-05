@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & UI: THW / SCH Stat Grounding & ADR-0012 Z-Axis Hover Zoom Elevation (`DualCardInspector.tsx`, `VillainZone.tsx`, `HeroZone.tsx`, `tests/ui/thw-sch-and-zoom-elevation.test.ts`):**
+  - **THW / SCH Dynamic Stat Display:** Replaced static `"Thwart"` row in `DualCardInspector.tsx` with dynamic `"THW / SCH"`. For Villains and Minions (`upstream.scheme !== undefined`), displays `${upstream.scheme} (SCH)`; for Heroes and Allies (`upstream.thwart !== undefined`), displays `${upstream.thwart} (THW)`; otherwise displays `'—'`.
+  - **ADR-0012 Unconstrained Z-Axis Elevation:** Fixed the preview `<CardView />` wrapper in `DualCardInspector.tsx` by replacing `overflow-hidden` with `overflow-visible relative z-30 hover:z-50`, ensuring the interactive card preview zooms cleanly above all adjacent UI containers without clipping.
+  - **Tabletop Stat Visibility:** Added compact SCH & ATK stat badges in `VillainZone.tsx` and engaged minion chips in `HeroZone.tsx` so Scheme and Attack values are immediately visible during gameplay.
+  - **Automated Contract Tests:** Added `tests/ui/thw-sch-and-zoom-elevation.test.ts` (6 tests) verifying stat formatting across card types and validating ADR-0012 unconstrained Z-axis elevation CSS invariants.
+
 - **Feature & Tooling: Vanilla Card Support (`noSupplementalNeeded`) & Ability Guardrails (`AbilityFormBuilder.tsx`, `CardGalleryList.tsx`, `CardFilterToolbar.tsx`, `DualCardInspector.tsx`, `api-middleware.ts`, `tests/ui/vanilla-card-editor.test.ts`):**
   - **Form Builder Vanilla Guardrail:** Added a prominent `🛡️ No Supplemental Rules Needed (Vanilla Card)` checkbox in `AbilityFormBuilder.tsx`. When checked, locks ability creation, disables the `+ Add Ability` button, prompts before clearing existing abilities, and displays an informative banner indicating that vanilla cards cannot have abilities.
   - **Visual Status Badges:** Displayed a distinct `🛡️ Vanilla` badge in `CardGalleryList.tsx` and the `DualCardInspector.tsx` card header strip when a card has `noSupplementalNeeded: true` (e.g. Rhino I `01094`).

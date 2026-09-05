@@ -223,9 +223,9 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
     <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-comic-paper">
       {/* LEFT / CENTER COLUMN: Card Visual Preview & Printed Text */}
       <div className="w-full md:w-1/2 p-4 md:p-6 overflow-y-auto border-r-4 border-black flex flex-col items-center gap-4 bg-[#fbf9f4]">
-        {/* Card View Visual Preview */}
-        <div className="flex flex-col items-center">
-          <div className="shadow-comic-lg border-2 border-black rounded-lg overflow-hidden bg-black p-1">
+        {/* Card View Visual Preview (ADR-0012 Unconstrained Z-Axis Elevation) */}
+        <div className="flex flex-col items-center relative z-30 overflow-visible">
+          <div className="shadow-comic-lg border-2 border-black rounded-lg bg-black p-1 overflow-visible">
             <CardView card={normalizedCard} size="lg" enableHoverZoom={true} zoomOrigin="center" />
           </div>
           <span className="text-[11px] font-comic font-bold text-gray-500 mt-2">
@@ -296,10 +296,23 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                 {upstream.attack !== undefined ? upstream.attack : '—'}
               </span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Thwart</span>
+            <div
+              className="bg-comic-paper p-1.5 border border-black rounded"
+              title={
+                upstream.scheme !== undefined
+                  ? `Scheme (SCH): ${upstream.scheme}`
+                  : upstream.thwart !== undefined
+                    ? `Thwart (THW): ${upstream.thwart}`
+                    : 'No THW or SCH stat'
+              }
+            >
+              <span className="text-[10px] uppercase font-bold text-gray-500 block">THW / SCH</span>
               <span className="font-bold">
-                {upstream.thwart !== undefined ? upstream.thwart : '—'}
+                {upstream.scheme !== undefined
+                  ? `${upstream.scheme} (SCH)`
+                  : upstream.thwart !== undefined
+                    ? `${upstream.thwart} (THW)`
+                    : '—'}
               </span>
             </div>
             <div className="bg-comic-paper p-1.5 border border-black rounded">

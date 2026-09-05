@@ -34,6 +34,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: Array(10).fill(cardCatalog.getCard('01108')!),
       skipMulligan: true,
+      shuffleFn: (arr) => arr,
     });
 
     state.players[0].currentForm = 'alter_ego';
@@ -112,6 +113,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: Array(10).fill(cardCatalog.getCard('01108')!),
       skipMulligan: true,
+      shuffleFn: (arr) => arr,
     });
 
     endPlayerPhase(state);

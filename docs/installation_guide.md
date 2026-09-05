@@ -13,7 +13,7 @@ Before installing the project, verify that your development environment meets th
 | **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                          |
 | **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)         |
 | **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                    |
-| **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task evaluation |
+| **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task evaluation (`gh.exe`) |
 | **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                    |
 
 ---
@@ -81,11 +81,18 @@ Both commands should output version numbers (e.g., `v20.18.0` and `10.8.2`).
 
 ### Troubleshooting Windows PATH & Execution Policy
 
-#### 1. "The term 'npm' is not recognized"
+#### 1. "The term 'npm' or 'gh' is not recognized" (`npm` / `gh.exe` PATH)
 
-If Node.js was newly installed while your terminal or IDE was already running, Windows applications retain their initial environment block. You can fix this permanently across all present and future PowerShell sessions:
+If Node.js or GitHub CLI (`gh.exe`) was newly installed while your terminal or IDE was already running, existing processes retain their initial environment block.
 
-**Automated One-Liner Fix (Permanently updates Registry & PowerShell Profiles):**
+**Immediate Active Terminal Fix (Run directly in your current PowerShell session):**
+
+```powershell
+# Append to current session immediately without restarting:
+$env:Path += ";C:\Program Files\GitHub CLI;C:\Program Files\nodejs"
+```
+
+**Automated Permanent Fix (Updates Windows Registry & PowerShell Profiles):**
 
 ```powershell
 # 1. Permanently add Node.js and GitHub CLI to your Windows User PATH in the Registry
@@ -204,7 +211,19 @@ gh auth status
    npm install
    ```
 
-3. _(Optional)_ **Cache Card Art Assets locally:**
+   _Note: `npm install` automatically triggers `npm run prepare`, which configures native Git hooks in `.githooks/` (`pre-commit` and `pre-push`)._
+
+3. **Automated Git Pre-Commit & Pre-Push Hooks:**
+   To guarantee that syntax errors, formatting deviations, and test regressions are caught locally before reaching GitHub CI:
+   - **`pre-commit`:** Automatically runs `npm run format:check`, `npm run lint`, and `npm run typecheck` before each commit.
+   - **`pre-push`:** Automatically runs `npm test` across all test suites before pushing to remote branches.
+
+   To manually activate or verify hooks at any time:
+   ```bash
+   npm run prepare
+   ```
+
+4. _(Optional)_ **Cache Card Art Assets locally:**
    The project can fetch card images directly from MarvelCDB or cache them locally for offline / high-speed play:
    ```bash
    npm run cache:cards

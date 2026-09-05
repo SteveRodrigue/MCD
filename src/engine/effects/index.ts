@@ -630,9 +630,11 @@ export function executeStep(
       ) {
         amount = getEffectiveHeroStats(state, player).attack;
       } else if (step.params?.amountFormula === 'SUFFERED_DAMAGE') {
-        const max = (step.params?.max as number) || 15;
         const damageSustained = Math.max(0, getEffectiveMaxHealth(player, state) - player.health);
-        amount = Math.min(max, damageSustained);
+        amount =
+          typeof step.params?.max === 'number'
+            ? Math.min(step.params.max, damageSustained)
+            : damageSustained;
       } else if (
         step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
         step.params?.amountFormula === 'COUNTERS_MULTIPLIER'

@@ -247,6 +247,12 @@ export const EffectTypeSchema = z.enum([
 export type EffectType = z.infer<typeof EffectTypeSchema>;
 
 /**
+ * Dynamic Amount Formula Types (RR v1.8 p. 11, 31)
+ */
+export const AmountFormulaSchema = z.enum(['SUFFERED_DAMAGE', 'HERO_ATK']);
+export type AmountFormula = z.infer<typeof AmountFormulaSchema>;
+
+/**
  * Resource Types
  */
 export const ResourceTypeSchema = z.enum(['physical', 'energy', 'mental', 'wild']);

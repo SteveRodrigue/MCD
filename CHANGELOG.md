@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Engine: SUFFERED_DAMAGE Formula for Variable Damage Scaling ([#5](https://github.com/SteveRodrigue/MCD/issues/5), RR v1.8 p. 11, 31, `effects/index.ts`, `schema.ts`, `schema.json`, `suffered-damage-formula.test.ts`):**
+  - **Dynamic Sustained Health Delta:** Evaluated `SUFFERED_DAMAGE` formula dynamically at effect resolution time as `Math.max(0, getEffectiveMaxHealth(player, state) - player.health)` with zero card-specific hardcoding or reliance on physical tabletop damage counters.
+  - **Declarative Optional Ceiling Parameter:** Removed hardcoded `15` fallback from the engine, establishing `step.params?.max` as a fully declarative, reusable optional ceiling parameter that clamps damage when defined (`Math.min(step.params.max, damageSustained)`) and allows uncapped scaling when omitted.
+  - **Supplemental Schema Alignment:** Formalized `AmountFormulaSchema = z.enum(['SUFFERED_DAMAGE', 'HERO_ATK'])` and regenerated `src/data/supplemental/schema.json`.
+  - **Dedicated Contract Test Suite:** Created `tests/engine/suffered-damage-formula.test.ts` (7 tests) verifying dynamic sustained damage calculation, optional max ceiling capping, uncapped scaling, 0 damage at full health, minion target routing, and hero-form action legality gating.
+
 - **Feature & Architecture: Canonical English Ingestion, Display-Only Translation Overlay & Supplemental Schema Extension (`src/data/importer/card-loader.ts`, `src/engine/models/card.ts`, `src/engine/models/abilities.ts`, `src/data/supplemental/schema.ts`, `schema.json`, `CardView.tsx`, `tests/engine/i18n-normalization.test.ts`):**
   - **3-Tier Ingestion Architecture:** Enforced that card normalization runs strictly against Canonical English Zzorba data (`data/upstream/pack/*.json`) at application boot, while translations (`data/upstream/translations/{lang}/`) serve as a display overlay for UI components (`name`, `subname`, `text`, `flavor`, `printedTraits`). Guarantees 100% immunity to rules engine breakage across non-English locales (e.g. French).
   - **Supplemental Schema Extension:** Added `keywords?: (Keyword | string)[]`, `traits?: string[]`, `restrictedSlots?: number`, and `additionalBoostCards?: number` to `CardEnrichment` and `schema.json`, ensuring full declarative override capability.

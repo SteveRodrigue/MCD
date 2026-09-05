@@ -221,7 +221,19 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               return (
                 <div key={minion.instanceId} className="flex flex-col items-center gap-1">
                   <CardView card={minion.card} instance={minion} size="sm" enableHoverZoom={true} />
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap justify-center">
+                    <span
+                      className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                      title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
+                    >
+                      SCH {(minion.card as any).scheme ?? 0}
+                    </span>
+                    <span
+                      className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                      title={`Attack: ${(minion.card as any).attack ?? 0}`}
+                    >
+                      ATK {(minion.card as any).attack ?? 0}
+                    </span>
                     {isGuard && (
                       <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
                         GUARD

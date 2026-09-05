@@ -1,4 +1,4 @@
-﻿# [ADR-0011] Card Orientation Metadata & Cache-First Art Resolution Architecture
+# [ADR-0011] Card Orientation Metadata & Cache-First Art Resolution Architecture
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
@@ -49,15 +49,28 @@ Additionally, card art assets fetched from remote CDNs (MarvelCDB) must not intr
 * **Landscape Dimensions:** $40 \times 28$ (sm), $64 \times 44$ (md), $80 \times 56$ (lg), $410 \times 72$ (xl).
 * **Exhaustion Invariant:** Exhausted cards rotate $90^\circ$ clockwise regardless of base orientation.
 
-### 3. Local-First Card Art Static Serving & Fallback Architecture
-* **Strategy:**
-  1. **Primary Local Static Endpoint (`/cards/:fileName`):** [`card-cache-service.ts`](../../src/ui/services/card-cache-service.ts) resolves local paths `/cards/${code}${side}.png` directly.
-  2. **Vite Local Static Middleware & Production Bundler (`vite.config.ts`):**
-     * **Dev Mode:** Intercepts `/cards/:fileName` requests and streams local card images directly from `cache/cards/` with immutable caching headers.
-     * **Production Build:** Copies `cache/cards/` into `dist/cards/` for self-contained, 100% offline distribution.
-  3. **Automatic CDN Fallback (`CardView.tsx`):** If a card image is not yet cached locally on disk (404), `CardView.tsx` catches `onError` on the `<img>` element and automatically falls back to remote MarvelCDB CDN (`https://marvelcdb.com/bundles/cards/${code}.png`).
-  4. **Vector Art Fallback:** If both local and remote assets fail, the system renders a stylized 60s Comic Pop-Art vector card.
-* **Local CLI Ingestion:** `npm run cache:cards` (`scripts/cache-card-images.ts`) fetches and caches card images locally into `cache/cards/`.
+### 3. Read-Through On-Demand Card Art Caching & Multi-Tier Resolution Architecture
+* **Core Philosophy (Zero Official Assets Bundled):**
+  * Official Fantasy Flight Games card art will **never** be packaged or committed to the MCD repository.
+  * All images are downloaded dynamically from the MarvelCDB CDN on-demand during runtime, or via an optional future precaching feature.
+  * The `cache/` directory is strictly gitignored.
+* **3-Step Read-Through Lifecycle:**
+  1. **Check Cache:**
+     * **Client Tier:** Checks in-memory object URL cache, then browser `CacheStorage` (`mcd-card-art-v1`) via `card-cache-service.ts`.
+     * **Server Tier:** Vite dev middleware checks `cache/cards/${fileName}` on local disk.
+  2. **Download & Cache (On Cache Miss):**
+     * If missing on disk, the server middleware dynamically downloads the card asset from `https://marvelcdb.com/bundles/cards/${fileName}`, writes it to `cache/cards/${fileName}`, and serves it with `image/png` and immutable caching headers.
+     * If the local server is unavailable (e.g. static deployment), `card-cache-service.ts` directly fetches from the MarvelCDB CDN.
+     * The downloaded response is placed into browser `CacheStorage` (`cache.put()`) and an Object URL is generated.
+     * Concurrent in-flight requests for the same card code are automatically deduplicated to prevent redundant network traffic.
+  3. **Display from Cache:**
+     * The tabletop UI (`CardView.tsx` / `useCardArt.ts`) renders the image directly from the cached asset.
+* **Fallbacks:**
+  * **CDN Direct Fallback:** If local endpoints encounter errors, falls back to direct MarvelCDB CDN.
+  * **Vector Art Fallback:** If both cache and remote CDN fail, renders a stylized 60s Comic Pop-Art vector card.
+* **CLI & Future Precaching:**
+  * `npm run cache:cards` (`scripts/cache-card-images.ts`) provides optional batch pre-caching into `cache/cards/`.
+  * Future in-app precaching actions will leverage this same declarative pipeline.
 
 ---
 

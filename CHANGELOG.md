@@ -5,6 +5,17 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Architecture: Read-Through On-Demand MarvelCDB Card Art Caching ([ADR-0011](docs/decisions/0011-card-orientation-and-art-caching.md), `vite.config.ts`, `card-cache-service.ts`, `card-cache-service.test.ts`, `card-cache-middleware.test.ts`):**
+  - **Dynamic 3-Step Lifecycle:** Implemented automated Check Cache $\rightarrow$ Download & Cache $\rightarrow$ Display from Cache architecture. Missing images are downloaded from MarvelCDB on-demand at runtime and stored directly into both server disk cache (`cache/cards/`) and browser `CacheStorage` (`mcd-card-art-v1`).
+  - **Zero Bundled Official Assets Guarantee:** Reaffirmed architectural invariant that official FFG card images will never be packaged or committed with the repository. All images are retrieved on-demand from MarvelCDB or via optional batch pre-caching.
+  - **Concurrent Request Deduplication:** Added in-flight request coalescing across both the Vite server middleware and `card-cache-service.ts` to prevent redundant network calls when multiple identical cards render concurrently.
+  - **Path Traversal Protection:** Enforced strict filename regex validation (`^[a-zA-Z0-9_-]+\.png$`) on the local card asset endpoint to guard against malicious path traversal.
+  - **Automated Contract Tests:** Authored 14 acceptance and contract tests across `tests/ui/card-cache-service.test.ts` and `tests/ui/card-cache-middleware.test.ts`.
+
+- **Docs: Installation & Environment Setup Guide (`docs/installation_guide.md`, `docs/README.md`, `README.md`):**
+  - Authored comprehensive environment setup and troubleshooting guide covering Node.js/npm prerequisites, Windows PATH configuration, PowerShell execution policy resolution, Vite dev server execution, production builds, and the full test and verification pipeline.
+  - Linked the guide directly in `docs/README.md` and the root `README.md` Getting Started section.
+
 - **Feature & Tooling: Card Text Parsing and Declarative Mapping Analyzer Tool ([#53](https://github.com/SteveRodrigue/MCD/issues/53), [ADR-0044](docs/decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md), `src/tools/card-text-parser/`, `tools/audit/card-text-parser.ts`, `docs/tools/card_text_parser.md`, `card-text-parser.test.ts`):**
   - **Deterministic Pattern-Matching Library:** Implemented `src/tools/card-text-parser/` with clean-text normalization (`normalizer.ts`), comprehensive regex pattern matching (`patterns.ts`), and parsing coordinator (`parser.ts`) that extracts abilities, names, timings, action traits (`attack`, `thwart`, `defense`), cost arrows (`→`), limits, usage counters, triggers, and effect primitives.
   - **Interactive CLI Analyzer with `--write` Support:** Created `tools/audit/card-text-parser.ts` (`npm run parse:card`) supporting `--code <id>`, `--pack <name>`, `--text "<raw>"`, and `--json` modes with colored terminal feedback for matched tokens, unmatched fragments, and existing supplemental comparison.

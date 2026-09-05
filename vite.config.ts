@@ -2,19 +2,112 @@ import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
+import https from 'https';
 
 function cardCachePlugin(): Plugin {
   const cacheDir = path.resolve(__dirname, 'cache', 'cards');
+  const inFlightDownloads = new Map<string, Promise<boolean>>();
 
-  const serveCardMiddleware = (req: any, res: any, next: any) => {
+  function downloadToCache(fileName: string, filePath: string): Promise<boolean> {
+    const existingPromise = inFlightDownloads.get(fileName);
+    if (existingPromise) {
+      return existingPromise;
+    }
+
+    const downloadPromise = new Promise<boolean>((resolve) => {
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      }
+
+      const cdnUrl = `https://marvelcdb.com/bundles/cards/${fileName}`;
+      const tempPath = `${filePath}.tmp.${Date.now()}`;
+      const fileStream = fs.createWriteStream(tempPath);
+
+      https
+        .get(cdnUrl, (response) => {
+          if (response.statusCode === 200) {
+            response.pipe(fileStream);
+            fileStream.on('finish', () => {
+              fileStream.close(() => {
+                try {
+                  fs.renameSync(tempPath, filePath);
+                  resolve(true);
+                } catch {
+                  if (fs.existsSync(tempPath)) {
+                    try {
+                      fs.unlinkSync(tempPath);
+                    } catch {}
+                  }
+                  resolve(false);
+                }
+              });
+            });
+          } else {
+            fileStream.close(() => {
+              if (fs.existsSync(tempPath)) {
+                try {
+                  fs.unlinkSync(tempPath);
+                } catch {}
+              }
+              resolve(false);
+            });
+          }
+        })
+        .on('error', () => {
+          fileStream.close(() => {
+            if (fs.existsSync(tempPath)) {
+              try {
+                fs.unlinkSync(tempPath);
+              } catch {}
+            }
+            resolve(false);
+          });
+        });
+    }).finally(() => {
+      inFlightDownloads.delete(fileName);
+    });
+
+    inFlightDownloads.set(fileName, downloadPromise);
+    return downloadPromise;
+  }
+
+  const serveCardMiddleware = async (req: any, res: any, next: any) => {
     if (req.url && (req.url.startsWith('/cards/') || req.url.startsWith('/cache/cards/'))) {
-      const fileName = req.url.replace(/^\/(?:cache\/)?cards\//, '').split('?')[0];
+      const rawFileName = req.url.replace(/^\/(?:cache\/)?cards\//, '').split('?')[0];
+
+      // Validate filename to prevent directory traversal
+      if (!/^[a-zA-Z0-9_-]+\.png$/i.test(rawFileName)) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Invalid card image filename');
+        return;
+      }
+
+      const fileName = rawFileName;
+
       const filePath = path.join(cacheDir, fileName);
+
+      // 1. Check if the image is in cache
       if (fs.existsSync(filePath)) {
         res.setHeader('Content-Type', 'image/png');
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         return fs.createReadStream(filePath).pipe(res);
       }
+
+      // 2. If not, download the image from MarvelCDB and put it in the cache
+      const downloaded = await downloadToCache(fileName, filePath);
+      if (downloaded && fs.existsSync(filePath)) {
+        // 3. Display / serve the image from the cache
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return fs.createReadStream(filePath).pipe(res);
+      }
+
+      // If remote download failed (e.g. 404 on CDN), return 404
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Card image not found');
+      return;
     }
     next();
   };

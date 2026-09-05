@@ -851,7 +851,7 @@
               "params": {
                 "amountFormula": "SUFFERED_DAMAGE",
                 "max": 15,
-                "target": "ENEMY"
+                "target": "CHOSEN_ENEMY"
               }
             }
           ]

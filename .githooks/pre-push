@@ -1,8 +1,18 @@
 #!/usr/bin/env sh
 
+# Ensure Node/npm are available in PATH (critical for VS Code GUI / Git clients on Windows & macOS)
+if ! command -v npm >/dev/null 2>&1; then
+  export PATH="/c/Program Files/nodejs:/c/Program Files (x86)/nodejs:$APPDATA/npm:$LOCALAPPDATA/Programs/nodejs:/usr/local/bin:/opt/homebrew/bin:$PATH"
+fi
+
+NPM="npm"
+if ! command -v "$NPM" >/dev/null 2>&1 && command -v npm.cmd >/dev/null 2>&1; then
+  NPM="npm.cmd"
+fi
+
 echo "🧪 Running pre-push test suite..."
 
-npm test || {
+"$NPM" test || {
   echo "❌ Automated test suite failed!"
   echo "💡 Fix failing tests before pushing to remote."
   exit 1

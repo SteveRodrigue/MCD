@@ -59,6 +59,64 @@ describe('THW / SCH Stat Alignment & ADR-0012 Z-Axis Hover-Zoom Contract Tests',
     });
   });
 
+  // Helper matching DualCardInspector's DEF/REC resolution logic
+  function resolveDefRecStat(cardRaw: any): string {
+    if (cardRaw.recover !== undefined && cardRaw.recover !== null) {
+      return `${cardRaw.recover} (REC)`;
+    }
+    if (cardRaw.defense !== undefined && cardRaw.defense !== null) {
+      return `${cardRaw.defense} (DEF)`;
+    }
+    return '—';
+  }
+
+  describe('DEF / REC Stat Resolution by Card Type', () => {
+    it('resolves recovery stat with (REC) for Alter-Egos (Peter Parker 01001b, She-Hulk 01019b, Tony Stark 01029b)', () => {
+      const peter = cardCatalog.getCard('01001b');
+      expect(peter).toBeDefined();
+      expect(resolveDefRecStat(peter!.raw)).toBe('3 (REC)');
+
+      const jennifer = cardCatalog.getCard('01019b');
+      expect(jennifer).toBeDefined();
+      expect(resolveDefRecStat(jennifer!.raw)).toBe('5 (REC)');
+
+      const tony = cardCatalog.getCard('01029b');
+      expect(tony).toBeDefined();
+      expect(resolveDefRecStat(tony!.raw)).toBe('3 (REC)');
+
+      const tchalla = cardCatalog.getCard('01040b');
+      expect(tchalla).toBeDefined();
+      expect(resolveDefRecStat(tchalla!.raw)).toBe('4 (REC)');
+    });
+
+    it('resolves defense stat with (DEF) for Heroes (Spider-Man 01001a, She-Hulk 01019a)', () => {
+      const spidey = cardCatalog.getCard('01001a');
+      expect(spidey).toBeDefined();
+      expect(resolveDefRecStat(spidey!.raw)).toBe('3 (DEF)');
+
+      const sheHulk = cardCatalog.getCard('01019a');
+      expect(sheHulk).toBeDefined();
+      expect(resolveDefRecStat(sheHulk!.raw)).toBe('2 (DEF)');
+    });
+
+    it('resolves defense stat with (DEF) for Allies with defense, or "—" if none', () => {
+      const tigra = cardCatalog.getCard('01051');
+      expect(tigra).toBeDefined();
+      // Tigra doesn't have printed defense
+      expect(resolveDefRecStat(tigra!.raw)).toBe('—');
+    });
+
+    it('resolves "—" for non-character cards (Web-Shooter 01008, Rhino I 01094)', () => {
+      const webShooter = cardCatalog.getCard('01008');
+      expect(webShooter).toBeDefined();
+      expect(resolveDefRecStat(webShooter!.raw)).toBe('—');
+
+      const rhinoI = cardCatalog.getCard('01094');
+      expect(rhinoI).toBeDefined();
+      expect(resolveDefRecStat(rhinoI!.raw)).toBe('—');
+    });
+  });
+
   describe('ADR-0012 Z-Axis Hover-Zoom Architecture Invariants in Editor', () => {
     it('DualCardInspector enforces unconstrained Z-axis elevation without overflow-hidden clipping', () => {
       const filePath = path.resolve(
@@ -83,8 +141,9 @@ describe('THW / SCH Stat Alignment & ADR-0012 Z-Axis Hover-Zoom Contract Tests',
       expect(containerClasses).not.toContain('overflow-hidden');
       expect(containerClasses).toContain('overflow-visible');
 
-      // Must contain THW / SCH label in properties table
+      // Must contain THW / SCH and DEF / REC labels in properties table
       expect(content).toContain('THW / SCH');
+      expect(content).toContain('DEF / REC');
     });
   });
 });

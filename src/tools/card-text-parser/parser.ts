@@ -127,9 +127,6 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
       if (parsedAbility.limit) {
         cardAbility.limit = parsedAbility.limit;
       }
-      if (parsedAbility.maxPerRound) {
-        cardAbility.maxPerRound = parsedAbility.maxPerRound;
-      }
       if (parsedAbility.zone) {
         cardAbility.zone = parsedAbility.zone;
       }
@@ -237,13 +234,11 @@ function parseAbilityLine(line: string): ParsedAbilityResult | null {
 
   // 4. Check Limits (e.g. "(Limit once per round.)")
   let limit: any;
-  let maxPerRound: number | undefined;
 
   for (const lp of LIMIT_PATTERNS) {
     const m = remaining.match(lp.regex);
     if (m) {
       limit = lp.limit;
-      maxPerRound = lp.maxPerRound;
       matchedSpans.push({
         start: 0,
         end: m[0].length,
@@ -342,7 +337,6 @@ function parseAbilityLine(line: string): ParsedAbilityResult | null {
     trigger,
     cost,
     limit,
-    maxPerRound,
     zone,
     steps,
     matchedSpans,

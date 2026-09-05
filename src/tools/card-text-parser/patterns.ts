@@ -57,12 +57,11 @@ export const TRIGGER_PATTERNS: TriggerPattern[] = [
 export interface LimitPattern {
   regex: RegExp;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
-  maxPerRound?: number;
 }
 
 export const LIMIT_PATTERNS: LimitPattern[] = [
-  { regex: /\(Limit once per round\.?\)/i, limit: 'ONCE_PER_ROUND', maxPerRound: 1 },
-  { regex: /\(Limit once per phase\.?\)/i, limit: 'ONCE_PER_PHASE', maxPerRound: 1 },
+  { regex: /\(Limit once per round\.?\)/i, limit: 'ONCE_PER_ROUND' },
+  { regex: /\(Limit once per phase\.?\)/i, limit: 'ONCE_PER_PHASE' },
   { regex: /\(Limit (\d+) times? per round\.?\)/i, limit: 'ONCE_PER_ROUND' },
 ];
 

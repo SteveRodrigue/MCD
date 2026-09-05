@@ -568,6 +568,16 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                                   {ab.trigger}
                                 </span>
                               )}
+                              {ab.limit && (
+                                <span className="font-bold text-[11px] bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-400">
+                                  ⏳ {ab.limit}
+                                </span>
+                              )}
+                              {ab.zone && (
+                                <span className="font-mono text-[11px] bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded border border-blue-400">
+                                  📍 {ab.zone}
+                                </span>
+                              )}
                             </div>
                             {ab.cost && (
                               <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red">

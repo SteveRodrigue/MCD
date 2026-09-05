@@ -5,6 +5,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { executeEffect } from '@engine/effects';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
+import { endPlayerPhase } from '@engine/pipeline/player-phase';
 
 describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
   let sheHulkHero: HeroCard;
@@ -155,6 +156,7 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     res1.state.players[0].health = 50;
 
     // Run Villain Phase -> Upkeep -> New Round
+    endPlayerPhase(res1.state);
     const nextState = executeVillainPhase(res1.state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
     expect(nextState.roundNumber).toBe(2);
     expect(nextState.players[0].basicChangeFormUsedThisRound).toBe(false);

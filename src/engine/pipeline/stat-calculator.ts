@@ -310,10 +310,9 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     return true;
   }
 
-  // 3. Card raw text / traits fallback (e.g. "Stalwart.", "Steady.")
-  const text =
-    entity.text || entity.card?.text || entity.hero?.text || entity.card?.raw?.text || '';
-  if (new RegExp(`\\b${kw}\\b`, 'i').test(text)) {
+  // 3. Entity traits check (e.g. traits array)
+  const traits = entity.traits || entity.card?.traits || entity.hero?.traits || [];
+  if (traits.some((t: any) => String(t).toLowerCase().trim() === kw)) {
     return true;
   }
 

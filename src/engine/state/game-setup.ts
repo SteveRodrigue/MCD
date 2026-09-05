@@ -12,6 +12,7 @@ import {
   NormalizedCard,
   DifficultyMode,
   Keyword,
+  hasKeyword,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
 import { ScenarioRegistry } from '../scenarios/registry';
@@ -125,10 +126,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     const drawDeckCards: NormalizedCard[] = [];
 
     for (const card of pConfig.deckCards) {
-      const isPermanent =
-        ((card as any).keywords || []).includes(Keyword.PERMANENT) ||
-        (card as any).permanent === true ||
-        (card.text || '').toLowerCase().includes('permanent.');
+      const isPermanent = hasKeyword(card, Keyword.PERMANENT) || (card as any).permanent === true;
 
       if (isPermanent) {
         permanentCards.push(createCardInstance(card));

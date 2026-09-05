@@ -13,6 +13,9 @@ import {
   PendingDecisionPrompt,
   NormalizedCard,
   PlayerState,
+  Keyword,
+  hasKeyword,
+  getKeywordValue,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import {
@@ -207,7 +210,7 @@ export function checkAndDiscardZeroCounterCard(
   const hasUsesKeyword =
     Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
     Boolean((cardInstance.card as any).uses) ||
-    Boolean(cardInstance.card.raw?.text?.includes('Uses ('));
+    hasKeyword(cardInstance.card, Keyword.USES);
 
   if (!hasUsesKeyword) return false;
 
@@ -858,15 +861,7 @@ export function executeStep(
               minion.tokens = { ...minion.tokens, damage: newDmg };
 
               // Retaliate check if minion survives
-              const minionText = (minion.card.text || '').toLowerCase();
-              let retaliateX = 0;
-              if (
-                minionText.includes('retaliate 1') ||
-                (minion.card as any).keywords?.includes('Retaliate 1') ||
-                (minion.card as any).keywords?.includes('Retaliate')
-              ) {
-                retaliateX = 1;
-              }
+              const retaliateX = getKeywordValue(minion.card, Keyword.RETALIATE) || 0;
               if (retaliateX > 0) {
                 player.health = Math.max(0, player.health - retaliateX);
                 state.log.push({
@@ -2148,9 +2143,7 @@ export function executeStep(
         ) {
           player.tableau.push(cardInst);
         } else if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
-          const hasToughness =
-            (cardInst.card.traits || []).includes('Toughness') ||
-            (cardInst.card.text || '').toLowerCase().includes('toughness');
+          const hasToughness = hasKeyword(cardInst.card, Keyword.TOUGH);
           if (hasToughness) {
             if (!cardInst.statusCards) cardInst.statusCards = [];
             if (!cardInst.statusCards.includes(StatusCard.TOUGH)) {
@@ -2160,9 +2153,7 @@ export function executeStep(
 
           player.engagedMinions.push(cardInst as MinionCard & CardInstance);
 
-          const hasQuickstrike =
-            (cardInst.card.traits || []).includes('Quickstrike') ||
-            (cardInst.card.text || '').includes('Quickstrike');
+          const hasQuickstrike = hasKeyword(cardInst.card, Keyword.QUICKSTRIKE);
           if (hasQuickstrike && player.currentForm === 'hero') {
             executeMinionAttackAgainstPlayer(state, cardInst as MinionCard & CardInstance, player);
           }

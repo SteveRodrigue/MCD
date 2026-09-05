@@ -344,6 +344,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
       name: 'Heavy Bazooka',
       type: CardType.UPGRADE,
       keywords: [Keyword.RESTRICTED],
+      restrictedSlots: 2,
       text: 'Restricted. Counts as 2 restricted cards.',
     };
 

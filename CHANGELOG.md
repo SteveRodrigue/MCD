@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & Architecture: Eliminate Illegal `card.text` References per ADR-0019 ([#49](https://github.com/SteveRodrigue/MCD/issues/49), [ADR-0019](docs/decisions/0019-strict-metadata-driven-rules-execution-and-zero-raw-text-parsing.md)):**
+  - **Zero Raw-Text Rules Execution Invariant:** Removed all `card.text` inspection, regex parsing, and substring matching across `legality-checker.ts`, `combat-pipeline.ts`, `villain-phase.ts`, `game-setup.ts`, `effects/index.ts`, `action-dispatcher.ts`, `stat-calculator.ts`, `starter-decks.ts`, `CardPaymentModal.tsx`, `attack-target-utils.ts`, and `HeroZone.tsx`.
+  - **Standardized Keyword Helpers (`keyword-helpers.ts`):** Implemented `hasKeyword(cardOrInstance, keyword)` and `getKeywordValue(cardOrInstance, keyword)` supporting case-insensitive and parameterized keywords (e.g. `Retaliate 1`, `Incite 2`, `Restricted`) with zero text parsing.
+  - **Declarative Resource Ability & Timing Resolution:** Replaced string matching (`"hero resource:"`, `"alter-ego resource:"`) with structured ability timing evaluation (`isResourceAbility`, `isAbilityPlayableInForm`).
+  - **Card Importer Invariant (`card-loader.ts`):** Confined all upstream raw text parsing to import-time data normalization (`parseKeywords`, `restrictedSlots`, `additionalBoostCards`), ensuring runtime engine pipelines execute 100% against structured card models.
+  - **Contract Test Suite:** Created `tests/engine/zero-card-text-parsing.test.ts` verifying all game mechanics (Guard, Patrol, Crisis, Restricted, Resource generation, and Starter Decks) operate correctly with empty `card.text`.
+
 - **Fix & Tooling: Automated Git Hooks, Line Ending Normalization & CI Formatting ([#57](https://github.com/SteveRodrigue/MCD/issues/57), `.gitattributes`, `.prettierrc.json`, `.githooks/`, `package.json`, `docs/installation_guide.md`):**
   - **Git Pre-Commit & Pre-Push Hooks:** Configured native cross-platform Git hooks in `.githooks/` activated via `package.json` `"prepare": "git config core.hooksPath .githooks"`. `pre-commit` runs `format:check`, `lint`, and `typecheck`, and `pre-push` runs `npm test` to prevent broken or unformatted code from reaching remote branches.
   - **Cross-Platform Line Ending Normalization:** Added `.gitattributes` to enforce `* text=auto eol=lf` across all text files and configured `.prettierrc.json` with `"endOfLine": "auto"` to eliminate false-positive formatting warnings across Windows, macOS, and Linux.

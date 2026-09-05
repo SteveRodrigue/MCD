@@ -114,6 +114,17 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   if (text.includes('toughness.') || text.includes('<b>toughness</b>') || text.includes('toughness <i>')) {
     keywords.add(Keyword.TOUGH);
   }
+  if (text.includes('stalwart.') || text.includes('<b>stalwart</b>') || text.includes('stalwart <i>')) {
+    keywords.add(Keyword.STALWART);
+  }
+  if (text.includes('steady.') || text.includes('<b>steady</b>') || text.includes('steady <i>')) {
+    keywords.add(Keyword.STEADY);
+  }
+  const inciteMatch = text.match(/\bincite\s+(\d+)\b/i);
+  if (inciteMatch) {
+    keywords.add(`Incite ${inciteMatch[1]}` as any);
+    keywords.add(Keyword.INCITE);
+  }
 
   if ((enrichment as any)?.keywords) {
     for (const kw of (enrichment as any).keywords) {
@@ -157,6 +168,11 @@ export function normalizeRawCard(
     maxPerPlayer: parseMaxPerPlayer(raw, enrichment),
     cost: raw.cost,
     costPerHero: !!raw.cost_per_hero,
+    restrictedSlots:
+      (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
+      (raw.text || '').toLowerCase().includes('counts as two restricted')
+        ? 2
+        : undefined,
     text: raw.text || '',
     flavor: raw.flavor,
     traits: parseTraits(raw.traits),
@@ -202,6 +218,12 @@ export function normalizeRawCard(
       } as AlterEgoCard;
     }
     case CardType.VILLAIN: {
+      const villainText = (raw.text || '').toLowerCase();
+      const additionalBoostCards =
+        villainText.includes('give him 1 additional boost card') ||
+        villainText.includes('additional boost card')
+          ? 1
+          : undefined;
       return {
         ...base,
         type: CardType.VILLAIN,
@@ -212,6 +234,7 @@ export function normalizeRawCard(
         schemeStar: !!raw.scheme_star,
         attack: raw.attack ?? 0,
         attackStar: !!raw.attack_star,
+        additionalBoostCards,
       } as VillainCard;
     }
     case CardType.MAIN_SCHEME: {

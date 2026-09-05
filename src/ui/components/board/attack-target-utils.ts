@@ -1,4 +1,11 @@
-import { CardInstance, GameState, Keyword, MinionCard, StatusCard } from '../../../engine/models';
+import {
+  CardInstance,
+  GameState,
+  Keyword,
+  MinionCard,
+  StatusCard,
+  hasKeyword,
+} from '../../../engine/models';
 import { canAllyAttack, canBasicAttack } from '../../../engine/pipeline/legality-checker';
 
 export interface EnemyTarget {
@@ -62,10 +69,7 @@ export function getValidAttackTargets(
         const mMax = (minion.card as MinionCard).health || 1;
         const mDamage = minion.tokens?.damage || 0;
         const mHealth = Math.max(0, mMax - mDamage);
-        const hasGuard =
-          minion.card.keywords?.includes(Keyword.GUARD) ||
-          (minion.card.text || '').includes('Guard') ||
-          (minion.card.traits || []).includes('Guard');
+        const hasGuard = hasKeyword(minion.card, Keyword.GUARD);
         const hasTough = (minion.statusCards || []).includes(StatusCard.TOUGH);
 
         targets.push({

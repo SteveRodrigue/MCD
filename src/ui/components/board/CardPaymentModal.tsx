@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
-import { isResourceAbility } from '../../../engine/pipeline/cost-engine';
+import { isResourceAbility, isAbilityPlayableInForm } from '../../../engine/pipeline/cost-engine';
 import { FormattedCardText } from '../cards/FormattedCardText';
 
 interface CardPaymentModalProps {
@@ -153,9 +153,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const abilities = enrichment?.abilities || [];
 
       // Check if this card is a genuine resource generator or cost reducer (RR v1.8 p. 25 / Issue #43)
-      const isGenuineGenerator =
-        abilities.some((a) => isResourceAbility(a.timing)) ||
-        abilities.some((a) =>
+      const generatorAbilities = abilities.filter(
+        (a) =>
+          isResourceAbility(a.timing) ||
           a.steps?.some(
             (s) =>
               s.effect === 'GENERATE_RESOURCE' ||
@@ -163,35 +163,15 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
               s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
-        ) ||
-        (c.card.text || '').toLowerCase().includes('hero resource:') ||
-        (c.card.text || '').toLowerCase().includes('alter-ego resource:') ||
-        (c.card.text || '').toLowerCase().includes('resource:');
+      );
 
-      if (!isGenuineGenerator) continue;
-
-      const isHeroRestricted =
-        abilities.some(
-          (a) =>
-            a.timing === 'HERO_RESOURCE' ||
-            a.timing === 'HERO_ACTION' ||
-            a.timing?.startsWith('HERO_'),
-        ) ||
-        (c.card.text || '').toLowerCase().includes('hero resource:') ||
-        (c.card.text || '').toLowerCase().includes('hero action:');
-      const isAlterEgoRestricted =
-        abilities.some(
-          (a) =>
-            a.timing === 'ALTER_EGO_RESOURCE' ||
-            a.timing === 'ALTER_EGO_ACTION' ||
-            a.timing?.startsWith('ALTER_EGO_'),
-        ) ||
-        (c.card.text || '').toLowerCase().includes('alter-ego resource:') ||
-        (c.card.text || '').toLowerCase().includes('alter-ego action:');
+      if (generatorAbilities.length === 0) continue;
 
       // Filter out generators that require a different form
-      if (isHeroRestricted && player.currentForm !== 'hero') continue;
-      if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') continue;
+      const canUseInForm = generatorAbilities.some((a) =>
+        isAbilityPlayableInForm(a.timing as any, player.currentForm),
+      );
+      if (!canUseInForm) continue;
 
       if (uses) {
         if ((c.tokens?.counters || 0) > 0) {

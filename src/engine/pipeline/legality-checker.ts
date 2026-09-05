@@ -6,9 +6,12 @@ import {
   NormalizedCard,
   SideSchemeCard,
   GamePhase,
+  Keyword,
+  hasKeyword,
+  getKeywordValue,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
-import { isResourceAbility } from './cost-engine';
+import { isResourceAbility, isAbilityPlayableInForm } from './cost-engine';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -124,14 +127,7 @@ export function canBasicAttack(
 
   if (targetType === 'villain') {
     // Guard keyword check: While an engaged minion with Guard is in play with this player, villain cannot be attacked.
-    const hasGuardMinion = player.engagedMinions.some((m) => {
-      const text = m.card.text || '';
-      return (
-        m.card.keywords?.includes(Keyword.GUARD) ||
-        text.includes('Guard') ||
-        (m.card.traits || []).includes('Guard')
-      );
-    });
+    const hasGuardMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
 
     if (hasGuardMinion) {
       return {
@@ -185,14 +181,7 @@ export function canAllyAttack(
 
   if (targetType === 'villain') {
     // Guard keyword check: While an engaged minion with Guard is engaged with this player, villain cannot be attacked.
-    const hasGuardMinion = player.engagedMinions.some((m) => {
-      const text = m.card.text || '';
-      return (
-        m.card.keywords?.includes(Keyword.GUARD) ||
-        text.includes('Guard') ||
-        (m.card.traits || []).includes('Guard')
-      );
-    });
+    const hasGuardMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
 
     if (hasGuardMinion) {
       return {
@@ -256,10 +245,7 @@ export function canBasicThwart(
     }
 
     // 1. Patrol Keyword Check: A minion with Patrol engaged with this player prevents thwarting main scheme
-    const hasPatrolMinion = player.engagedMinions.some((m) => {
-      const text = m.card.text || '';
-      return text.includes('Patrol') || (m.card.traits || []).includes('Patrol');
-    });
+    const hasPatrolMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL));
 
     if (hasPatrolMinion) {
       return {
@@ -271,7 +257,7 @@ export function canBasicThwart(
     // 2. Crisis Icon Check: Any side scheme with Crisis in play prevents removing threat from main scheme
     const hasCrisisScheme = state.sideSchemes.some((s) => {
       const sideCard = s.card as SideSchemeCard;
-      return sideCard.hasCrisis || (s.card.text || '').includes('Crisis');
+      return sideCard.hasCrisis || hasKeyword(s.card, Keyword.CRISIS);
     });
 
     if (hasCrisisScheme) {
@@ -286,19 +272,10 @@ export function canBasicThwart(
 }
 
 /**
- * Computes the active maximum ally limit for a player dynamically (ADR-0018).
- * Base: 3 allies (RR v1.8 p. 3).
- * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
- */
-import { Keyword } from '@engine/models';
-
-/**
  * Checks if a card possesses the Restricted keyword (RR v1.8 p. 25).
  */
 export function isCardRestricted(card: NormalizedCard): boolean {
-  if (card.keywords?.includes(Keyword.RESTRICTED)) return true;
-  const text = (card.text || '').toLowerCase();
-  return text.includes('restricted.') || text.includes('<b>restricted</b>');
+  return hasKeyword(card, Keyword.RESTRICTED);
 }
 
 /**
@@ -307,14 +284,12 @@ export function isCardRestricted(card: NormalizedCard): boolean {
  */
 export function getCardRestrictedWeight(card: NormalizedCard): number {
   if (!isCardRestricted(card)) return 0;
-  const text = (card.text || '').toLowerCase();
-  if (
-    text.includes('counts as 2 restricted cards') ||
-    text.includes('counts as two restricted cards') ||
-    text.includes('counts as 2 restricted')
-  ) {
-    return 2;
+  if (card.restrictedSlots !== undefined) return card.restrictedSlots;
+  if ((card.enrichment as any)?.restrictedSlots !== undefined) {
+    return (card.enrichment as any).restrictedSlots;
   }
+  const kwVal = getKeywordValue(card, Keyword.RESTRICTED);
+  if (kwVal !== undefined && kwVal > 1) return kwVal;
   return 1;
 }
 
@@ -786,9 +761,9 @@ export function canPlayCard(
       const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
       const abilities = enrichment?.abilities || [];
 
-      const isGenuineGenerator =
-        abilities.some((a) => isResourceAbility(a.timing)) ||
-        abilities.some((a) =>
+      const generatorAbilities = abilities.filter(
+        (a) =>
+          isResourceAbility(a.timing) ||
           a.steps?.some(
             (s) =>
               s.effect === 'GENERATE_RESOURCE' ||
@@ -796,39 +771,24 @@ export function canPlayCard(
               s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
               s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
-        ) ||
-        (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
-        (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
-        (gCard.card.text || '').toLowerCase().includes('resource:');
+      );
 
-      if (!isGenuineGenerator) {
+      if (generatorAbilities.length === 0) {
         return { allowed: false, reason: `${gCard.card.name} is not a resource generator.` };
       }
 
-      const isHeroRestricted =
-        abilities.some(
-          (a) =>
-            a.timing === 'HERO_RESOURCE' ||
-            a.timing === 'HERO_ACTION' ||
-            a.timing?.startsWith('HERO_'),
-        ) ||
-        (gCard.card.text || '').toLowerCase().includes('hero resource:') ||
-        (gCard.card.text || '').toLowerCase().includes('hero action:');
-      const isAlterEgoRestricted =
-        abilities.some(
-          (a) =>
-            a.timing === 'ALTER_EGO_RESOURCE' ||
-            a.timing === 'ALTER_EGO_ACTION' ||
-            a.timing?.startsWith('ALTER_EGO_'),
-        ) ||
-        (gCard.card.text || '').toLowerCase().includes('alter-ego resource:') ||
-        (gCard.card.text || '').toLowerCase().includes('alter-ego action:');
+      const canUseInForm = generatorAbilities.some((a) =>
+        isAbilityPlayableInForm(a.timing as any, player.currentForm),
+      );
 
-      if (isHeroRestricted && player.currentForm !== 'hero') {
-        return { allowed: false, reason: `${gCard.card.name} ability requires Hero form.` };
-      }
-      if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') {
-        return { allowed: false, reason: `${gCard.card.name} ability requires Alter-Ego form.` };
+      if (!canUseInForm) {
+        const requiredForm = generatorAbilities.some((a) => a.timing.startsWith('HERO_'))
+          ? 'Hero'
+          : 'Alter-Ego';
+        return {
+          allowed: false,
+          reason: `${gCard.card.name} ability requires ${requiredForm} form.`,
+        };
       }
 
       // Check if generator relies on counters (uses)
@@ -996,34 +956,26 @@ export function evaluateCardPlayability(
     const enrichment = t.card.enrichment || getCardEnrichment(t.card.code);
     const uses = enrichment?.uses;
     const abilities = enrichment?.abilities || [];
-    const tableAbility = abilities.find(
+    const generatorAbilities = abilities.filter(
       (a) =>
-        a.timing === 'RESOURCE' ||
+        isResourceAbility(a.timing) ||
         a.timing === 'HERO_ACTION' ||
         a.timing === 'ALTER_EGO_ACTION' ||
         a.timing === 'ACTION' ||
         a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
     );
+    if (generatorAbilities.length === 0) continue;
 
-    const isHeroRestricted =
-      abilities.some((a) => a.timing === 'HERO_ACTION' || a.timing?.startsWith('HERO_')) ||
-      (t.card.text || '').toLowerCase().includes('hero resource:') ||
-      (t.card.text || '').toLowerCase().includes('hero action:');
-    const isAlterEgoRestricted =
-      abilities.some(
-        (a) => a.timing === 'ALTER_EGO_ACTION' || a.timing?.startsWith('ALTER_EGO_'),
-      ) ||
-      (t.card.text || '').toLowerCase().includes('alter-ego resource:') ||
-      (t.card.text || '').toLowerCase().includes('alter-ego action:');
-
-    if (isHeroRestricted && player.currentForm !== 'hero') continue;
-    if (isAlterEgoRestricted && player.currentForm !== 'alter_ego') continue;
+    const canUseInForm = generatorAbilities.some((a) =>
+      isAbilityPlayableInForm(a.timing as any, player.currentForm),
+    );
+    if (!canUseInForm) continue;
 
     if (uses) {
       if ((t.tokens?.counters || 0) > 0) {
         maxPotentialResources += 1;
       }
-    } else if (tableAbility) {
+    } else {
       maxPotentialResources += 1;
     }
   }

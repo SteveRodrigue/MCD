@@ -63,6 +63,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
       name: 'Rocket Launcher',
       type: CardType.UPGRADE,
       keywords: [Keyword.RESTRICTED],
+      restrictedSlots: 2,
       text: 'Restricted. Counts as 2 restricted cards.',
       cost: 2,
     };

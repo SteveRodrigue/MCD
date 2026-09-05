@@ -8,6 +8,8 @@ import {
   SideSchemeCard,
   MinionCard,
   PlayerState,
+  Keyword,
+  hasKeyword,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -393,9 +395,7 @@ export function step5_revealEncounterCards(state: GameState): GameState {
 
       if (card.type === CardType.MINION) {
         // Check Toughness keyword
-        const hasToughness =
-          (card.traits || []).includes('Toughness') ||
-          (card.text || '').toLowerCase().includes('toughness');
+        const hasToughness = hasKeyword(card, Keyword.TOUGH);
         if (hasToughness) {
           if (!cardInstance.statusCards) cardInstance.statusCards = [];
           if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {

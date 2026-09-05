@@ -10,6 +10,7 @@ import {
   MainSchemeCard,
   createCardInstance,
   evaluateCardPlayability,
+  Keyword,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -189,6 +190,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       const guardMinionCard = catalog.getCard('01108')!; // Minion
       const guardMinionInstance = createCardInstance({
         ...guardMinionCard,
+        keywords: [Keyword.GUARD],
         text: 'Guard. (Cannot attack villain).',
       });
 
@@ -253,6 +255,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       const guardMinionCard = catalog.getCard('01108')!;
       const guardMinionInstance = createCardInstance({
         ...guardMinionCard,
+        keywords: [Keyword.GUARD],
         text: 'Guard.',
       });
       gameState.players[0].engagedMinions.push(guardMinionInstance);

@@ -4,6 +4,10 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **UI & UX: Daily Bugle Click-to-Open Activation (`TopBar.tsx`, `GameBoard.tsx`):**
+  - **Eliminated Unintended Hover Modal Popups:** Removed `onHoverNewspaper` and `onMouseEnter` handlers from the Daily Bugle navigation button in `TopBar.tsx`, preventing disruptive accidental modal opens when moving the cursor across the top menu bar.
+  - **Click-to-Toggle Interaction:** Updated `onOpenNewspaper` in `GameBoard.tsx` to toggle `isNewspaperOpen` on click and updated the button tooltip to indicate `(Click to open)`.
+
 - **Bug Fix & Engine Tests: Deterministic Encounter Decks in Test Setup ([#58](https://github.com/SteveRodrigue/MCD/issues/58), [#59](https://github.com/SteveRodrigue/MCD/issues/59), `tests/engine/form-change-rules.test.ts`, `tests/engine/lifecycle-triggers.test.ts`):**
   - **Deterministic Test Decks:** Added `skipScenarioPlugin: true` to `setupGame` options in `form-change-rules.test.ts` and `lifecycle-triggers.test.ts` across all tests providing custom mock encounter decks (e.g. Crowd Control dummy side schemes).
   - **Flakiness Elimination:** Prevents `RhinoScenarioPlugin.onGameSetup` from silently rebuilding the encounter deck from the 34-card Rhino set with random cards, which previously caused non-deterministic treachery card attacks (Assault, Stampede) during villain phase execution to stall step progression at defense prompts and break round upkeep / round number advancement assertions.

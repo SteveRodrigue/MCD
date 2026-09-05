@@ -5,6 +5,10 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & UI: DEF / REC Stat Grounding in Supplemental Editor (`DualCardInspector.tsx`, `tests/ui/thw-sch-and-zoom-elevation.test.ts`):**
+  - **Dynamic DEF / REC Display:** Converted static `"Defense"` row in `DualCardInspector.tsx` into `"DEF / REC"`. Dynamically displays `${upstream.recover} (REC)` for Alter-Ego cards (e.g. Peter Parker `01001b` &rarr; `3 (REC)`, Jennifer Walters `01019b` &rarr; `5 (REC)`), `${upstream.defense} (DEF)` for Hero and Ally cards (e.g. Spider-Man `01001a` &rarr; `3 (DEF)`), and `'—'` for non-character cards.
+  - **Automated Contract Tests:** Expanded `tests/ui/thw-sch-and-zoom-elevation.test.ts` (10 tests) covering Recovery stat resolution across Alter-Egos, Defense stat resolution for Heroes/Allies, and fallback handling.
+
 - **Feature & Tooling: Ability Limits & Activation Zone Controls with `maxPerRound` Elimination (`AbilityFormBuilder.tsx`, `DualCardInspector.tsx`, `schema.ts`, `schema.json`, `parser.ts`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
   - **First-Class Limit & Zone Controls:** Added dedicated form controls in `AbilityFormBuilder.tsx` to configure `ability.limit` (`None`, `ONCE_PER_ROUND`, `ONCE_PER_PHASE`) per RR v1.8 p. 21 and `ability.zone` (`Default`, `HAND`, `PLAY`, `DISCARD`). Resolves inability to view/edit limits on cards such as Peter Parker Scientist (`01001b`).
   - **Visual Status Badges:** Displayed `⏳ Limit` and `📍 Zone` badges on ability accordion headers in `AbilityFormBuilder.tsx` and within the Declarative Abilities review cards in `DualCardInspector.tsx`.

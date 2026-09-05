@@ -315,10 +315,23 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                     : '—'}
               </span>
             </div>
-            <div className="bg-comic-paper p-1.5 border border-black rounded">
-              <span className="text-[10px] uppercase font-bold text-gray-500 block">Defense</span>
+            <div
+              className="bg-comic-paper p-1.5 border border-black rounded"
+              title={
+                upstream.recover !== undefined
+                  ? `Recovery (REC): ${upstream.recover}`
+                  : upstream.defense !== undefined
+                    ? `Defense (DEF): ${upstream.defense}`
+                    : 'No DEF or REC stat'
+              }
+            >
+              <span className="text-[10px] uppercase font-bold text-gray-500 block">DEF / REC</span>
               <span className="font-bold">
-                {upstream.defense !== undefined ? upstream.defense : '—'}
+                {upstream.recover !== undefined
+                  ? `${upstream.recover} (REC)`
+                  : upstream.defense !== undefined
+                    ? `${upstream.defense} (DEF)`
+                    : '—'}
               </span>
             </div>
           </div>

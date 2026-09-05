@@ -96,6 +96,7 @@ export interface NormalizedCard {
   text: string;
   flavor?: string;
   traits: string[];
+  printedTraits?: string;
   keywords: import('./enums').Keyword[];
   resources: CardResources;
   setCode?: string;

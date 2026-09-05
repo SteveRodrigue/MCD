@@ -1,3 +1,5 @@
+import { Keyword } from './enums';
+
 export type AbilityTiming =
   | 'WHEN_REVEALED'
   | 'BOOST'
@@ -184,6 +186,14 @@ export interface CardEnrichment {
   thwartCost?: number;
   maxPerPlayer?: number;
   uses?: CardUsesDefinition;
+  /** Explicit keywords on the card (overrides text loader deductions) */
+  keywords?: (Keyword | string)[];
+  /** Canonical English traits (overrides text loader deductions) */
+  traits?: string[];
+  /** Restricted slots count (e.g. 2 for heavy weapons) */
+  restrictedSlots?: number;
+  /** Additional boost cards for villain attacks */
+  additionalBoostCards?: number;
   /** Numeric value for the printed 'Victory X' keyword (RR v1.8 p. 30) - paired with keywords: [Keyword.VICTORY] */
   victoryPoints?: number;
   abilities?: CardAbility[];

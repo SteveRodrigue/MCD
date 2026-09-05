@@ -20,6 +20,7 @@ docs/
 │   └── supplemental/             # 10-part supplemental schema specification suite
 ├── algorithmic_rules_reference.md # Mathematical & state-machine specification of RR v1.8
 ├── coding_guidelines.md          # Core coding guidelines & standards
+├── installation_guide.md         # Comprehensive environment setup & installation guide
 ├── roadmap_and_milestones.md     # Development phases & milestones
 └── technology_evaluation_and_architecture.md # Tech stack selection & architecture
 ```

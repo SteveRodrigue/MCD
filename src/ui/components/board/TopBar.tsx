@@ -24,7 +24,6 @@ interface TopBarProps {
   isLogOpen: boolean;
   onReset: () => void;
   onOpenNewspaper?: () => void;
-  onHoverNewspaper?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -36,7 +35,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   isLogOpen,
   onReset,
   onOpenNewspaper,
-  onHoverNewspaper,
 }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -119,9 +117,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           {onOpenNewspaper && (
             <button
               onClick={onOpenNewspaper}
-              onMouseEnter={onHoverNewspaper}
               className="px-2.5 py-1.5 font-comic text-xs bg-[#fbf7ee] hover:bg-amber-200 text-slate-900 rounded border-2 border-comic-black shadow-comic-sm flex items-center gap-1.5 cursor-pointer font-bold transition-all hover:scale-105 active:translate-y-0.5"
-              title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Hover or Click)"
+              title="THE DAILY BUGLE: Inspect all legal moves and battle dispatches (Click to open)"
             >
               <Newspaper className="w-4 h-4 text-slate-900" />
               <span className="hidden md:inline font-serif font-black uppercase tracking-tight">

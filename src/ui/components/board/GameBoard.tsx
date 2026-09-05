@@ -114,8 +114,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onToggleLog={() => setIsLogOpen((prev) => !prev)}
         isLogOpen={isLogOpen}
         onReset={onReset}
-        onOpenNewspaper={() => setIsNewspaperOpen(true)}
-        onHoverNewspaper={() => setIsNewspaperOpen(true)}
+        onOpenNewspaper={() => setIsNewspaperOpen((prev) => !prev)}
       />
 
       {/* 2. Panoramic Tabletop Main Stage */}

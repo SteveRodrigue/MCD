@@ -12,6 +12,13 @@
 
 All agent and skill documentation MUST use paths relative to the MCD repository root. Never add personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links for local project files. Use repository-relative paths such as `src/engine/` or `docs/README.md`; reserve absolute URLs for external resources only.
 
+## ⚡ Command Execution Policy (No Redundant Shell Wrappers)
+
+On Windows, the agent's tool execution environment already runs natively inside PowerShell (`Shell: powershell`).
+
+- **NEVER wrap commands in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`:** Run all executables, CLI tools, npm scripts, git commands, and PowerShell cmdlets directly (e.g., `npm test`, `git status`, `gh issue list`, `Get-ChildItem`).
+- **Rationale:** Spawning nested child PowerShell processes introduces 1–2 seconds of process startup latency per invocation, wastes memory, and causes nested quote stripping and parsing errors (e.g. unclosed parentheses or broken string interpolation).
+
 ---
 
 ## 🛑 Mandatory Pre-Execution Protocol (Enforce Before Writing Code)

@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+echo "🔍 Running pre-commit verification..."
+
+# 1. Format check
+echo "  ↳ Checking code formatting (Prettier)..."
+npm run format:check || {
+  echo "❌ Prettier format check failed!"
+  echo "💡 Run 'npm run format' and stage the changes with 'git add'."
+  exit 1
+}
+
+# 2. Lint check
+echo "  ↳ Linting codebase (ESLint)..."
+npm run lint || {
+  echo "❌ ESLint check failed!"
+  echo "💡 Fix lint errors before committing."
+  exit 1
+}
+
+# 3. Type check
+echo "  ↳ Type-checking TypeScript..."
+npm run typecheck || {
+  echo "❌ TypeScript compilation failed!"
+  echo "💡 Fix type errors before committing."
+  exit 1
+}
+
+echo "✅ Pre-commit verification passed cleanly."
+exit 0

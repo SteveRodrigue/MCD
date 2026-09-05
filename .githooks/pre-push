@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+echo "🧪 Running pre-push test suite..."
+
+npm test || {
+  echo "❌ Automated test suite failed!"
+  echo "💡 Fix failing tests before pushing to remote."
+  exit 1
+}
+
+echo "✅ Pre-push verification passed cleanly."
+exit 0

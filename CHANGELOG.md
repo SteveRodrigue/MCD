@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & Tooling: Automated Git Hooks, Line Ending Normalization & CI Formatting ([#57](https://github.com/SteveRodrigue/MCD/issues/57), `.gitattributes`, `.prettierrc.json`, `.githooks/`, `package.json`, `docs/installation_guide.md`):**
+  - **Git Pre-Commit & Pre-Push Hooks:** Configured native cross-platform Git hooks in `.githooks/` activated via `package.json` `"prepare": "git config core.hooksPath .githooks"`. `pre-commit` runs `format:check`, `lint`, and `typecheck`, and `pre-push` runs `npm test` to prevent broken or unformatted code from reaching remote branches.
+  - **Cross-Platform Line Ending Normalization:** Added `.gitattributes` to enforce `* text=auto eol=lf` across all text files and configured `.prettierrc.json` with `"endOfLine": "auto"` to eliminate false-positive formatting warnings across Windows, macOS, and Linux.
+  - **Full Codebase Formatting:** Executed `npm run format` across all files to ensure 100% Prettier compliance on CI.
+  - **Deterministic Lifecycle Test Fix:** Fixed intermittent flakiness in `tests/engine/lifecycle-triggers.test.ts` by supplying `shuffleFn: (arr) => arr` to prevent randomly drawn player obligations from triggering interactive decision prompts during automated villain phase tests.
+  - **Documentation & Setup:** Updated `docs/installation_guide.md` with Git hook instructions, explicit `gh.exe` references, and instant terminal PATH reload commands.
+
 - **Feature & Architecture: Read-Through On-Demand MarvelCDB Card Art Caching ([ADR-0011](docs/decisions/0011-card-orientation-and-art-caching.md), `vite.config.ts`, `card-cache-service.ts`, `card-cache-service.test.ts`, `card-cache-middleware.test.ts`):**
   - **Dynamic 3-Step Lifecycle:** Implemented automated Check Cache $\rightarrow$ Download & Cache $\rightarrow$ Display from Cache architecture. Missing images are downloaded from MarvelCDB on-demand at runtime and stored directly into both server disk cache (`cache/cards/`) and browser `CacheStorage` (`mcd-card-art-v1`).
   - **Zero Bundled Official Assets Guarantee:** Reaffirmed architectural invariant that official FFG card images will never be packaged or committed with the repository. All images are retrieved on-demand from MarvelCDB or via optional batch pre-caching.

@@ -105,7 +105,11 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   if (text.includes('ranged.') || text.includes('<b>ranged</b>') || text.includes('ranged <i>')) {
     keywords.add(Keyword.RANGED);
   }
-  if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
+  const retaliateMatch = text.match(/\bretaliate\s+(\d+)\b/i);
+  if (retaliateMatch) {
+    keywords.add(`Retaliate ${retaliateMatch[1]}` as any);
+    keywords.add(Keyword.RETALIATE);
+  } else if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
     keywords.add(Keyword.RETALIATE);
   }
   if (text.includes('surge.') || text.includes('<b>surge</b>') || text.includes('surge <i>')) {
@@ -169,13 +173,16 @@ export function normalizeRawCard(
     cost: raw.cost,
     costPerHero: !!raw.cost_per_hero,
     restrictedSlots:
-      (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
-      (raw.text || '').toLowerCase().includes('counts as two restricted')
-        ? 2
-        : undefined,
+      enrichment?.restrictedSlots !== undefined
+        ? enrichment.restrictedSlots
+        : (raw.text || '').toLowerCase().includes('counts as 2 restricted') ||
+            (raw.text || '').toLowerCase().includes('counts as two restricted')
+          ? 2
+          : undefined,
     text: raw.text || '',
     flavor: raw.flavor,
-    traits: parseTraits(raw.traits),
+    traits: enrichment?.traits !== undefined ? enrichment.traits : parseTraits(raw.traits),
+    printedTraits: raw.traits,
     keywords: parseKeywords(raw, enrichment),
     resources: parseResources(raw),
     setCode: raw.set_code,
@@ -220,10 +227,12 @@ export function normalizeRawCard(
     case CardType.VILLAIN: {
       const villainText = (raw.text || '').toLowerCase();
       const additionalBoostCards =
-        villainText.includes('give him 1 additional boost card') ||
-        villainText.includes('additional boost card')
-          ? 1
-          : undefined;
+        enrichment?.additionalBoostCards !== undefined
+          ? enrichment.additionalBoostCards
+          : villainText.includes('give him 1 additional boost card') ||
+              villainText.includes('additional boost card')
+            ? 1
+            : undefined;
       return {
         ...base,
         type: CardType.VILLAIN,
@@ -306,6 +315,26 @@ export function normalizeRawCard(
 }
 
 /**
+ * Overlays localized display fields (name, subname, text, flavor, printedTraits)
+ * onto a canonical NormalizedCard without mutating its core engine rules, stats, or traits.
+ */
+export function applyTranslationOverlay<T extends NormalizedCard = NormalizedCard>(
+  card: T,
+  translationRaw?: Partial<RawUpstreamCard>,
+): T {
+  if (!translationRaw) return card;
+
+  return {
+    ...card,
+    name: translationRaw.name || card.name,
+    subname: translationRaw.subname !== undefined ? translationRaw.subname : card.subname,
+    text: translationRaw.text !== undefined ? translationRaw.text : card.text,
+    flavor: translationRaw.flavor !== undefined ? translationRaw.flavor : card.flavor,
+    printedTraits: translationRaw.traits !== undefined ? translationRaw.traits : card.printedTraits,
+  };
+}
+
+/**
  * Card Catalog Repository
  */
 export class CardCatalog {
@@ -319,6 +348,16 @@ export class CardCatalog {
     for (const raw of rawCards) {
       const normalized = normalizeRawCard(raw);
       this.cards.set(normalized.code, normalized);
+    }
+  }
+
+  public applyTranslations(translationCards: Partial<RawUpstreamCard>[]): void {
+    for (const trans of translationCards) {
+      if (!trans.code) continue;
+      const existing = this.cards.get(trans.code);
+      if (existing) {
+        this.cards.set(trans.code, applyTranslationOverlay(existing, trans));
+      }
     }
   }
 

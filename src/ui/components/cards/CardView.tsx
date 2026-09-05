@@ -274,6 +274,11 @@ export const CardView: React.FC<CardViewProps> = ({
               {card.subname && (
                 <p className="text-[10px] font-bold text-comic-red italic">{card.subname}</p>
               )}
+              {(card.printedTraits || (card.traits && card.traits.length > 0)) && (
+                <p className="text-[9px] font-semibold text-slate-600 italic">
+                  {card.printedTraits || card.traits.join('. ')}
+                </p>
+              )}
             </div>
 
             {/* Card Body Text */}

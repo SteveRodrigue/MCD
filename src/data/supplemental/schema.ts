@@ -495,6 +495,10 @@ export const CardEnrichmentSchema = z
     maxPerPlayer: z.number().optional(),
     uses: CardUsesSchema.optional(),
     victoryPoints: z.number().optional(),
+    keywords: z.array(z.string()).optional(),
+    traits: z.array(z.string()).optional(),
+    restrictedSlots: z.number().int().positive().optional(),
+    additionalBoostCards: z.number().int().positive().optional(),
     errata: z.string().nullable().optional(),
   })
   .strict();

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CardSummary } from '../../../tools/editor/api-middleware';
-import { CheckCircle, AlertTriangle, HelpCircle, FileQuestion } from 'lucide-react';
+import { CheckCircle, AlertTriangle, HelpCircle, FileQuestion, ShieldCheck } from 'lucide-react';
 
 interface CardGalleryListProps {
   cards: CardSummary[];
@@ -61,6 +61,16 @@ export const CardGalleryList: React.FC<CardGalleryListProps> = ({
               >
                 <AlertTriangle className="w-3 h-3 text-white" />
                 <span>Error</span>
+              </span>
+            );
+          } else if (card.noSupplementalNeeded) {
+            statusBadge = (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-900 bg-blue-100 px-1.5 py-0.5 border border-black rounded shadow-comic-xs"
+                title="Vanilla Card: No supplemental rules needed"
+              >
+                <ShieldCheck className="w-3 h-3 text-blue-700" />
+                <span>Vanilla</span>
               </span>
             );
           } else if ((card.confidence ?? 0) >= 95) {

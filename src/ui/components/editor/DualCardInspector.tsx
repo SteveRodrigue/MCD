@@ -19,6 +19,7 @@ import {
   Save,
   Sliders,
   CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface DualCardInspectorProps {
@@ -323,13 +324,23 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         {/* Header Strip with Code, Save Button & Tab Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-comic-panel border-3 border-black p-3 shadow-comic-sm">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-sm font-bold bg-black text-white px-2 py-0.5 rounded">
                 {code}
               </span>
               <span className="font-bangers text-xl tracking-wide text-black truncate">
                 {upstream.name}
               </span>
+              {editedSupplemental?.noSupplementalNeeded && (
+                <span
+                  data-testid="inspector-vanilla-badge"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-blue-900 bg-blue-100 px-2 py-0.5 border border-black rounded shadow-comic-xs"
+                  title="Vanilla Card: No supplemental rules needed"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-700" />
+                  <span>Vanilla</span>
+                </span>
+              )}
             </div>
             <span className="text-[11px] font-mono text-gray-600 mt-0.5 block">
               Pack: {packFile}
@@ -595,6 +606,16 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                           )}
                         </div>
                       ))}
+                    </div>
+                  ) : editedSupplemental.noSupplementalNeeded ? (
+                    <div
+                      data-testid="summary-vanilla-notice"
+                      className="p-4 bg-blue-50 border-2 border-blue-600 rounded flex items-center justify-center gap-2 text-xs text-blue-900 font-bold"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0" />
+                      <span>
+                        Vanilla Card: No supplemental rules needed (no printed abilities).
+                      </span>
                     </div>
                   ) : (
                     <div className="p-4 text-center text-xs text-gray-500 italic">

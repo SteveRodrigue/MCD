@@ -4,6 +4,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Bug Fix & UI: Mount Card Context Menu into Document Body Portal ([#70](https://github.com/SteveRodrigue/MCD/issues/70), `CardContextMenu.tsx`, `tests/ui/card-context-menu.test.ts`):**
+  - **Portal Decoupling from CSS Transforms:** Wrapped `CardContextMenu` and its raw attributes modal in `ReactDOM.createPortal(..., document.body)` so fixed positioning coordinates (`e.clientX`, `e.clientY`) are calculated directly against the browser viewport instead of being captured and displaced by transformed ancestor cards (`rotate-0`, `scale-[...]`, `-translate-y-4`).
+  - **Auto-Zoom Immunity:** Prevented context menu shifting or disappearing when cards scale up or down during hover-zoom transitions.
+  - **Elevated Z-Index:** Set context menu to `z-[9999]` and modal backdrop to `z-[10000]` to guarantee menus always render above high z-index tabletop cards and hand fans.
+  - **Modal Dismiss Protection:** Added `modalRef` to prevent clicks inside the raw data modal from prematurely closing the menu.
+  - **Automated Contract Tests:** Expanded `tests/ui/card-context-menu.test.ts` with contract tests verifying portal mounting, z-index elevation, and modal dismissal protection.
+
 - **Bug Fix & Engine Rules: Exclude Exhausted Once-Per-Round / Phase Abilities from Legal Actions ([#69](https://github.com/SteveRodrigue/MCD/issues/69), `legal-actions-generator.ts`, `tests/engine/legal-actions-generator.test.ts`):**
   - **Limit Validation in Legal Action Generator:** Added RR v1.8 p. 21 limit checks to `getLegalActionsForPlayer` for Identity in-play abilities (Section 1E) and Tableau card abilities (Section 3A), checking `ab.limit === 'ONCE_PER_ROUND'` and `ab.limit === 'ONCE_PER_PHASE'` against `player.usedAbilitiesThisRound` and `player.usedAbilitiesThisPhase`.
   - **Daily Bugle Accuracy:** Excluded exhausted actions from being displayed as actionable bulletins (resolving the issue where Carol Danvers' *Commander* `01010b` continued to appear after being triggered).

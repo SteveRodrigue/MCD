@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NormalizedCard } from '../../../engine/models';
 import { ExternalLink, Copy, Check, Info, X } from 'lucide-react';
 
@@ -10,13 +11,18 @@ interface CardContextMenuProps {
 
 export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position, onClose }) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [showRawModal, setShowRawModal] = useState(false);
 
   // Close when clicking outside
   useEffect(() => {
     const handlePointerDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target as Node) &&
+        (!modalRef.current || !modalRef.current.contains(e.target as Node))
+      ) {
         onClose();
       }
     };
@@ -54,7 +60,9 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
     }, 800);
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <>
       <div
         ref={menuRef}
@@ -62,7 +70,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           left: `${Math.max(10, adjustedX)}px`,
           top: `${Math.max(10, adjustedY)}px`,
         }}
-        className="fixed z-50 w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+        className="fixed z-[9999] w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
         onClick={(e) => e.stopPropagation()}
         onContextMenu={(e) => e.preventDefault()}
       >
@@ -126,13 +134,14 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
       {/* Raw Attributes Quick Modal */}
       {showRawModal && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs"
+          className="fixed inset-0 bg-black/60 z-[10000] flex items-center justify-center p-4 backdrop-blur-xs"
           onClick={() => {
             setShowRawModal(false);
             onClose();
           }}
         >
           <div
+            ref={modalRef}
             className="bg-white border-4 border-black max-w-lg w-full p-4 rounded-lg shadow-comic-lg font-sans max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -157,6 +166,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
           </div>
         </div>
       )}
-    </>
+    </>,
+    document.body,
   );
 };

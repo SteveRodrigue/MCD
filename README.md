@@ -55,6 +55,7 @@ flowchart TD
 - **[Algorithmic Rules Reference](docs/algorithmic_rules_reference.md)** — Precise mathematical state machine and timing pipeline specifications derived from RR v1.8.
 - **[Project Roadmap & Milestones](docs/roadmap_and_milestones.md)** — Detailed 5-phase iterative development plan and status.
 - **[Coding Guidelines & Standards](docs/coding_guidelines.md)** — Strict architectural boundaries, typing rules, UI layering standards, and TDD requirements.
+- **[Installation & Setup Guide](docs/installation_guide.md)** — Comprehensive environment setup, PATH troubleshooting, installation, and run instructions.
 - **[Technology Evaluation & Design](docs/technology_evaluation_and_architecture.md)** — Deep architectural analysis, engine evaluation, and state models.
 - **[Changelog](CHANGELOG.md)** — Chronological release history and milestone log.
 
@@ -66,6 +67,9 @@ flowchart TD
 
 - **Node.js:** v18.0.0 or higher
 - **npm:** v9.0.0 or higher
+
+> [!TIP]
+> For detailed platform-specific installation steps, PATH troubleshooting, and execution policy setup, consult the **[Installation & Setup Guide](docs/installation_guide.md)**.
 
 ### Installation
 
@@ -83,6 +87,7 @@ npm install
 ```bash
 # Start local Vite development server with Hot Module Replacement (HMR)
 npm run dev
+# Open http://localhost:3000/ in your browser
 ```
 
 ### Running Tests

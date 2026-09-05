@@ -8,12 +8,13 @@ This guide provides comprehensive, step-by-step instructions for setting up, ins
 
 Before installing the project, verify that your development environment meets the following minimum requirements:
 
-| Tool        | Minimum Version             | Recommended Version     | Purpose                                        |
-| :---------- | :-------------------------- | :---------------------- | :--------------------------------------------- |
-| **Node.js** | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                  |
-| **npm**     | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js) |
-| **Git**     | `>= 2.30.0`                 | Latest                  | Source control & repository cloning            |
-| **OS**      | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target            |
+| Tool           | Minimum Version             | Recommended Version     | Purpose                                                |
+| :------------- | :-------------------------- | :---------------------- | :----------------------------------------------------- |
+| **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                          |
+| **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)         |
+| **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                    |
+| **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task evaluation |
+| **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                    |
 
 ---
 
@@ -34,16 +35,17 @@ you must install Node.js and ensure it is properly registered in your system `PA
 3. Run the installer, ensuring the option **"Add to PATH"** is checked.
 4. **Restart your terminal, PowerShell, or IDE** (e.g., VS Code / Antigravity) so new PATH environment variables take effect.
 
-### Option B: Windows Package Managers
+### Option B: Windows Package Managers (Winget / Chocolatey)
 
-You can install Node.js via Windows terminal using `winget` or `chocolatey`:
+You can install Node.js and the GitHub CLI via Windows terminal using `winget`:
 
 ```powershell
-# Using Windows Package Manager (Winget)
+# Install Node.js LTS and GitHub CLI (gh)
 winget install OpenJS.NodeJS.LTS
+winget install GitHub.cli
 
-# Using Chocolatey
-choco install nodejs-lts
+# Using Chocolatey alternative:
+# choco install nodejs-lts gh
 ```
 
 ### Option C: Node Version Managers (Advanced / Multi-Project)
@@ -86,17 +88,18 @@ If Node.js was newly installed while your terminal or IDE was already running, W
 **Automated One-Liner Fix (Permanently updates Registry & PowerShell Profiles):**
 
 ```powershell
-# 1. Permanently add Node.js to your Windows User PATH in the Registry
+# 1. Permanently add Node.js and GitHub CLI to your Windows User PATH in the Registry
 $userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
-if ($userPath -notlike '*C:\Program Files\nodejs*') {
-    [System.Environment]::SetEnvironmentVariable('Path', "$userPath;C:\Program Files\nodejs", 'User')
-}
+if ($userPath -notlike '*C:\Program Files\nodejs*') { $userPath += ';C:\Program Files\nodejs' }
+if ($userPath -notlike '*C:\Program Files\GitHub CLI*') { $userPath += ';C:\Program Files\GitHub CLI' }
+[System.Environment]::SetEnvironmentVariable('Path', $userPath, 'User')
 
-# 2. Configure PowerShell Profile so Node.js and npm are always available in all terminal sessions
+# 2. Configure PowerShell Profile so Node.js, npm, and gh are always available in all terminal sessions
 foreach ($dir in @("$HOME\Documents\WindowsPowerShell", "$HOME\Documents\PowerShell")) {
     if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
     @'
 if ($env:Path -notlike '*C:\Program Files\nodejs*') { $env:Path = "$env:Path;C:\Program Files\nodejs" }
+if ($env:Path -notlike '*C:\Program Files\GitHub CLI*') { $env:Path = "$env:Path;C:\Program Files\GitHub CLI" }
 if ($env:Path -notlike '*AppData\Roaming\npm*') { $env:Path = "$env:Path;$env:APPDATA\npm" }
 '@ | Set-Content (Join-Path $dir 'profile.ps1') -Encoding UTF8
 }
@@ -107,7 +110,7 @@ if ($env:Path -notlike '*AppData\Roaming\npm*') { $env:Path = "$env:Path;$env:AP
 1. Press `Win + R`, type `sysdm.cpl`, and press Enter.
 2. Navigate to **Advanced** tab -> **Environment Variables**.
 3. Under **User variables** (or **System variables**), select `Path` and click **Edit**.
-4. Ensure `C:\Program Files\nodejs\` and `%APPDATA%\npm` are listed.
+4. Ensure `C:\Program Files\nodejs\`, `C:\Program Files\GitHub CLI\`, and `%APPDATA%\npm` are listed.
 5. Click **OK** to save and apply.
 
 #### 2. "Running scripts is disabled on this system" (PSSecurityException)
@@ -126,7 +129,7 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
 #### 3. GitHub Authentication & Agent Headless Interaction Setup
 
-Automated AI coding assistants (such as Antigravity) execute terminal commands in non-interactive, headless subshells. If Git attempts to prompt for interactive input during operations like `git push`, `git fetch`, or `git pull`, the background process will hang indefinitely.
+Automated AI coding assistants (such as Antigravity) execute terminal commands in non-interactive, headless subshells. If Git or the GitHub CLI (`gh`) attempt to prompt for interactive input during operations like `git push`, `git fetch`, or `gh issue list`, the background process will hang indefinitely.
 
 ##### Why This Happens (The `helper-selector` Trap)
 
@@ -140,7 +143,7 @@ Because headless agent shells have no attached interactive TTY, the process bloc
 
 ##### Permanent Fix
 
-1. **Set Git Credential Manager (`manager`) as your default credential helper:**
+1. **Set Git Credential Manager (`manager`) as your default Git credential helper:**
 
    ```bash
    git config --global credential.helper manager
@@ -148,23 +151,41 @@ Because headless agent shells have no attached interactive TTY, the process bloc
 
    _Git Credential Manager handles GitHub browser OAuth login, Two-Factor Authentication (2FA), and stores your access token securely in the Windows Credential Store._
 
-2. **Complete One-Time Interactive Authentication:**
+2. **Complete One-Time Interactive Git Authentication:**
    Open an interactive terminal (PowerShell, Windows Terminal, or VS Code terminal) and execute:
+
    ```bash
    git fetch origin
    ```
+
    If a prompt or browser dialog appears, select **`manager`** and click **Authorize**. Your token is now securely saved in Windows Credential Manager.
+
+3. **Authenticate GitHub CLI (`gh`):**
+   The project's developer tooling (such as `tools/audit/next-task-evaluator.ts` and automated issue triage) relies on `gh`. Run:
+   ```bash
+   gh auth login
+   ```
+   Follow the interactive prompts:
+   - What account do you want to log into? **GitHub.com**
+   - What is your preferred protocol? **HTTPS**
+   - Authenticate Git with your GitHub credentials? **Yes**
+   - How would you like to authenticate? **Login with a web browser**
+     Complete the one-time authentication in your browser.
 
 ##### How to Verify the Agent Can Interact with GitHub
 
-To confirm that automated agents and CI scripts can interact with GitHub non-interactively without getting stuck, run:
+To confirm that automated agents, developer tools, and CI scripts can interact with GitHub non-interactively without getting stuck, run these two verification commands:
 
 ```bash
+# 1. Verify Git non-interactive remote access
 git ls-remote --exit-code origin
+
+# 2. Verify GitHub CLI authentication
+gh auth status
 ```
 
-- **Success:** Outputs remote branch hashes (e.g. `<hash> refs/heads/main`) and exits immediately with code `0` without any prompts.
-- **Blocked / Needs Attention:** If the command hangs or prompts for credentials, ensure `git config --global credential.helper` returns `manager` and complete the one-time interactive login.
+- **Success:** `git ls-remote` outputs remote branch hashes (e.g. `<hash> refs/heads/main`) and exits immediately with code `0`. `gh auth status` outputs `Logged in to github.com account <username>`.
+- **Blocked / Needs Attention:** If either command hangs, prompts for credentials, or returns an error, complete the one-time interactive login steps above.
 
 ---
 

@@ -186,4 +186,72 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     );
     expect(boardArc?.cardCode).toBe('01035');
   });
+
+  it('excludes once-per-round identity ability when already used this round (e.g. Carol Danvers Commander 01010b)', () => {
+    const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+    const p1 = state.players[0];
+    p1.currentForm = 'alter_ego';
+    p1.activeFormCard = carolDanversAlterEgo;
+    p1.usedAbilitiesThisRound = {};
+
+    // Initial state: Commander should be available
+    const initialReport = getLegalActionsForPlayer(state, p1.id);
+    const commanderAction = initialReport.identityActions.find(
+      (a) => a.id === 'action_id_ability_commander',
+    );
+    expect(commanderAction).toBeDefined();
+
+    // Mark commander as used this round
+    p1.usedAbilitiesThisRound = { commander: 1 };
+
+    const updatedReport = getLegalActionsForPlayer(state, p1.id);
+    const exhaustedCommanderAction = updatedReport.identityActions.find(
+      (a) => a.id === 'action_id_ability_commander',
+    );
+    expect(exhaustedCommanderAction).toBeUndefined();
+  });
+
+  it('excludes once-per-round and once-per-phase tableau abilities when limit is reached', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.usedAbilitiesThisRound = {};
+
+    // Add a tableau card with an action and limit ONCE_PER_ROUND
+    p1.tableau.push({
+      instanceId: 'custom_support_1',
+      card: {
+        ...cardCatalog.getCard('01035')!,
+        enrichment: {
+          abilities: [
+            {
+              id: 'test_action',
+              timing: 'ACTION',
+              limit: 'ONCE_PER_ROUND',
+              steps: [{ effect: 'DRAW_CARDS', params: { count: 1 } }],
+            },
+          ],
+        },
+      } as any,
+      exhausted: false,
+    });
+
+    const initialReport = getLegalActionsForPlayer(state, p1.id);
+    expect(
+      initialReport.boardActions.find(
+        (a) => a.id === 'action_tableau_custom_support_1_test_action',
+      ),
+    ).toBeDefined();
+
+    // Mark as used
+    p1.usedAbilitiesThisRound = { custom_support_1_test_action: 1 };
+
+    const updatedReport = getLegalActionsForPlayer(state, p1.id);
+    expect(
+      updatedReport.boardActions.find(
+        (a) => a.id === 'action_tableau_custom_support_1_test_action',
+      ),
+    ).toBeUndefined();
+  });
 });

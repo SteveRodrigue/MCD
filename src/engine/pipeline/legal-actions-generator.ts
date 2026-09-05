@@ -207,6 +207,13 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         (isHero && ab.timing === 'HERO_ACTION') ||
         (!isHero && ab.timing === 'ALTER_EGO_ACTION')
       ) {
+        // Limit validation (RR v1.8 p. 21)
+        const isUsedRound =
+          ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+        const isUsedPhase =
+          ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+        if (isUsedRound || isUsedPhase) continue;
+
         const costCheck = canPayAbilityCost(state, player, ab, undefined, {});
         if (costCheck.allowed) {
           identityActions.push({
@@ -266,6 +273,16 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           (isHero && ab.timing === 'HERO_ACTION') ||
           (!isHero && ab.timing === 'ALTER_EGO_ACTION')
         ) {
+          // Limit validation (RR v1.8 p. 21)
+          const abilityKey = `${tableauItem.instanceId}_${ab.id}`;
+          const isUsedRound =
+            ab.limit === 'ONCE_PER_ROUND' &&
+            (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
+          const isUsedPhase =
+            ab.limit === 'ONCE_PER_PHASE' &&
+            (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1;
+          if (isUsedRound || isUsedPhase) continue;
+
           const costCheck = canPayAbilityCost(state, player, ab, tableauItem, {});
           if (costCheck.allowed) {
             boardActions.push({

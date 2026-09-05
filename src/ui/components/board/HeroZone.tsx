@@ -17,6 +17,8 @@ import {
   HeroCard,
   AlterEgoCard,
   GameAction,
+  Keyword,
+  hasKeyword,
 } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
@@ -213,8 +215,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         {engagedMinions.length > 0 ? (
           <div className="flex flex-wrap gap-4 items-center pt-1">
             {engagedMinions.map((minion) => {
-              const isGuard =
-                minion.card.traits?.includes('Guard') || minion.card.text?.includes('Guard');
+              const isGuard = hasKeyword(minion.card, Keyword.GUARD);
               const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
 
               return (

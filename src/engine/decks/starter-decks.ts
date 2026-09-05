@@ -69,12 +69,7 @@ export function loadDeckFromMarvelCDB(deck: MarvelCDBDeck, catalog: CardCatalog)
   // Find Obligation card for this hero
   const obligation = catalog
     .getCardsByType(CardType.OBLIGATION)
-    .find(
-      (c) =>
-        (heroSetCode && c.setCode === heroSetCode) ||
-        (c.text && c.text.includes(alterEgo.name)) ||
-        (c.text && c.text.includes(hero.name)),
-    );
+    .find((c) => Boolean(heroSetCode && c.setCode === heroSetCode));
 
   if (!obligation) {
     throw new Error(`Obligation card not found in catalog for hero ${hero.name}`);

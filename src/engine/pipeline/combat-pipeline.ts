@@ -7,6 +7,9 @@ import {
   AttackExecutionContext,
   DecisionPromptOption,
   GamePhase,
+  Keyword,
+  hasKeyword,
+  getKeywordValue,
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
@@ -175,9 +178,8 @@ export function initiateEnemyAttack(
     hasPiercing = villainStats.keywords.includes('PIERCING');
   } else if (attacker.card) {
     baseAttack = (attacker.card.card as any).attack || 1;
-    const traits = attacker.card.card.traits || [];
-    hasOverkill =
-      traits.includes('Overkill') || (attacker.card.card.text || '').includes('Overkill');
+    hasOverkill = hasKeyword(attacker.card, Keyword.OVERKILL);
+    hasPiercing = hasKeyword(attacker.card, Keyword.PIERCING);
   }
 
   const attackContext: AttackExecutionContext = {
@@ -438,12 +440,17 @@ export function step4_and_5_dealAndResolveBoostCards(
       attackContext.boostQueue.push(boostCard);
     }
 
-    // Check villain innate abilities or text for extra boost cards (e.g. Klaw 01113/01114/01115)
-    const villainText = (state.villain.card.text || '').toLowerCase();
-    if (
-      villainText.includes('give him 1 additional boost card') ||
-      villainText.includes('additional boost card')
-    ) {
+    // Check villain innate abilities for extra boost cards (e.g. Klaw 01113/01114/01115 / ADR-0019)
+    const villainAbilities = state.villain.card.enrichment?.abilities || [];
+    const extraBoostAbility =
+      Boolean((state.villain.card as any).additionalBoostCards) ||
+      villainAbilities.some((a) =>
+        a.steps?.some(
+          (s) =>
+            s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' || s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
+        ),
+      );
+    if (extraBoostAbility) {
       const extraBoost = drawEncounterCardForCombat(state);
       if (extraBoost) {
         attackContext.boostQueue.push(extraBoost);
@@ -701,22 +708,14 @@ export function step7_resolvePostAttackAndRetaliate(
   if (player && player.health > 0 && attackContext.heroDefended) {
     // Check Hero or Tableau cards for Retaliate
     let retaliateX = 0;
-    const heroCard = player.hero as any;
-    if (
-      heroCard.keywords?.includes('Retaliate 1') ||
-      heroCard.keywords?.includes('Retaliate') ||
-      (heroCard.text || '').toLowerCase().includes('retaliate 1')
-    ) {
-      retaliateX = 1;
+    const heroRetaliate = getKeywordValue(player.hero, Keyword.RETALIATE);
+    if (heroRetaliate !== undefined) {
+      retaliateX = heroRetaliate;
     }
     for (const item of player.tableau || []) {
-      const itemText = (item.card.text || '').toLowerCase();
-      if (
-        itemText.includes('retaliate 1') ||
-        (item.card as any).keywords?.includes('Retaliate') ||
-        (item.card as any).keywords?.includes('Retaliate 1')
-      ) {
-        retaliateX += 1;
+      const itemRetaliate = getKeywordValue(item.card, Keyword.RETALIATE);
+      if (itemRetaliate !== undefined) {
+        retaliateX += itemRetaliate;
       }
     }
 

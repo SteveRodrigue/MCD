@@ -92,6 +92,7 @@ export interface NormalizedCard {
   maxPerPlayer?: number;
   cost?: number;
   costPerHero?: boolean;
+  restrictedSlots?: number;
   text: string;
   flavor?: string;
   traits: string[];
@@ -162,6 +163,7 @@ export interface VillainCard extends NormalizedCard {
   schemeStar?: boolean;
   attack: number;
   attackStar?: boolean;
+  additionalBoostCards?: number;
 }
 
 /**

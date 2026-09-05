@@ -15,6 +15,8 @@ import {
   DecisionPromptOption,
   PendingDecisionPrompt,
   PlayerState,
+  Keyword,
+  getKeywordValue,
 } from '@engine/models';
 import {
   getPlayer,
@@ -1853,14 +1855,11 @@ export function dispatchAction(
       if (!encounterCard)
         return { state, result: { success: false, error: 'Encounter card required' } };
 
-      // Incite X Keyword check (RR v1.8 p. 16)
-      let inciteAmount = (encounterCard.card.enrichment as any)?.incite || 0;
-      if (!inciteAmount) {
-        const match = (encounterCard.card.raw?.text || encounterCard.card.text || '').match(
-          /Incite\s+(\d+)/i,
-        );
-        if (match) inciteAmount = parseInt(match[1], 10);
-      }
+      // Incite X Keyword check (RR v1.8 p. 16, ADR-0019)
+      const inciteAmount =
+        (encounterCard.card.enrichment as any)?.incite ||
+        getKeywordValue(encounterCard.card, Keyword.INCITE) ||
+        0;
       if (inciteAmount > 0) {
         nextState.mainScheme.threat += inciteAmount;
         nextState.log.push({

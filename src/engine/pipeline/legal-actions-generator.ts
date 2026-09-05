@@ -26,6 +26,7 @@ export interface LegalActionItem {
   iconType?: 'flip' | 'recover' | 'attack' | 'thwart' | 'card' | 'ability' | 'pass';
   requiresModal?: 'payment' | 'target';
   targetCardInstance?: CardInstance;
+  cardCode?: string;
 }
 
 export interface LegalActionReport {
@@ -91,6 +92,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         action: { type: 'CHANGE_FORM', playerId: player.id },
         badge: 'ONCE / ROUND',
         iconType: 'flip',
+        cardCode: isHero ? player.alterEgo.code : player.hero.code,
       });
     }
 
@@ -107,6 +109,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           action: { type: 'BASIC_RECOVER', playerId: player.id },
           badge: `REC: ${effectiveStats.recovery}`,
           iconType: 'recover',
+          cardCode: player.alterEgo.code,
         });
       }
     }
@@ -123,6 +126,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           action: { type: 'BASIC_ATTACK', playerId: player.id, targetType: 'villain' },
           badge: `${effectiveStats.attack} ATK`,
           iconType: 'attack',
+          cardCode: player.hero.code,
         });
       }
 
@@ -143,6 +147,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             },
             badge: `${effectiveStats.attack} ATK`,
             iconType: 'attack',
+            cardCode: player.hero.code,
           });
         }
       }
@@ -159,6 +164,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             action: { type: 'BASIC_THWART', playerId: player.id, targetType: 'main_scheme' },
             badge: `${effectiveStats.thwart} THW`,
             iconType: 'thwart',
+            cardCode: player.hero.code,
           });
         }
       }
@@ -185,6 +191,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               },
               badge: `${effectiveStats.thwart} THW`,
               iconType: 'thwart',
+              cardCode: player.hero.code,
             });
           }
         }
@@ -217,6 +224,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             },
             badge: formatTimingBadge(ab.timing),
             iconType: 'ability',
+            cardCode: player.activeFormCard.code,
           });
         }
       }
@@ -242,6 +250,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           iconType: 'card',
           requiresModal: cost > 0 ? 'payment' : undefined,
           targetCardInstance: cardInst,
+          cardCode: cardInst.card.code,
         });
       }
     }
@@ -275,6 +284,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               badge: formatTimingBadge(ab.timing),
               iconType: 'ability',
               targetCardInstance: tableauItem,
+              cardCode: tableauItem.card.code,
             });
           }
         }
@@ -303,6 +313,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             badge: `${allyStats.attack} ATK`,
             iconType: 'attack',
             targetCardInstance: ally,
+            cardCode: ally.card.code,
           });
         }
 
@@ -331,6 +342,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               badge: `${allyStats.attack} ATK`,
               iconType: 'attack',
               targetCardInstance: ally,
+              cardCode: ally.card.code,
             });
           }
         }
@@ -351,6 +363,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             badge: `${allyStats.thwart} THW`,
             iconType: 'thwart',
             targetCardInstance: ally,
+            cardCode: ally.card.code,
           });
         }
 
@@ -372,6 +385,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               badge: `${allyStats.thwart} THW`,
               iconType: 'thwart',
               targetCardInstance: ally,
+              cardCode: ally.card.code,
             });
           }
         }

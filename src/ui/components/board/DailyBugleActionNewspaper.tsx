@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Newspaper,
   X,
@@ -14,6 +14,44 @@ import {
   LegalActionReport,
   LegalActionItem,
 } from '../../../engine/pipeline/legal-actions-generator';
+import { useCardArt } from '../../hooks/useCardArt';
+import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
+
+interface DailyBugleCardThumbnailProps {
+  cardCode?: string;
+  cardName?: string;
+  fallbackIcon?: React.ReactNode;
+}
+
+const DailyBugleCardThumbnail: React.FC<DailyBugleCardThumbnailProps> = ({
+  cardCode,
+  cardName,
+  fallbackIcon,
+}) => {
+  const { artUrl } = useCardArt(cardCode);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const src =
+    !imgFailed && artUrl ? artUrl : cardCode && !imgFailed ? getRemoteMarvelCdbUrl(cardCode) : null;
+
+  return (
+    <div className="w-14 h-14 sm:w-16 sm:h-16 aspect-square shrink-0 rounded border-2 border-slate-900 bg-amber-100 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] relative flex items-center justify-center select-none group-hover:scale-105 transition-transform">
+      {src ? (
+        <img
+          src={src}
+          alt={cardName || cardCode || 'Card Art'}
+          onError={() => setImgFailed(true)}
+          className="w-full h-full object-cover object-top"
+          loading="lazy"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-[#f4ebd9] text-slate-800">
+          {fallbackIcon || <Newspaper className="w-5 h-5 text-slate-700" />}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface DailyBugleActionNewspaperProps {
   report: LegalActionReport;
@@ -119,38 +157,48 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {identityActions.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onSelectAction(item);
-                      onClose();
-                    }}
-                    className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2.5 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1">
-                          {renderIcon(item.iconType)}
-                          {item.headline}
-                        </span>
-                        {item.badge && (
-                          <span className="bg-slate-900 text-amber-300 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                            {item.badge}
+                {identityActions.map((item) => {
+                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectAction(item);
+                        onClose();
+                      }}
+                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                    >
+                      <DailyBugleCardThumbnail
+                        cardCode={cardCode}
+                        cardName={item.headline}
+                        fallbackIcon={renderIcon(item.iconType)}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                        <div>
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-blue flex items-center gap-1 line-clamp-1">
+                              {renderIcon(item.iconType)}
+                              <span>{item.headline}</span>
+                            </span>
+                            {item.badge && (
+                              <span className="bg-slate-900 text-amber-300 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                            {item.subtext}
+                          </p>
+                        </div>
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] font-bold text-comic-blue uppercase group-hover:underline">
+                            Execute ➔
                           </span>
-                        )}
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-700 leading-tight font-serif">
-                        {item.subtext}
-                      </p>
-                    </div>
-                    <div className="mt-2 text-right">
-                      <span className="text-[10px] font-bold text-comic-blue uppercase group-hover:underline">
-                        Execute ➔
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -168,38 +216,48 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {handCardActions.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onSelectAction(item);
-                      onClose();
-                    }}
-                    className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2.5 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1">
-                          {renderIcon(item.iconType)}
-                          {item.headline}
-                        </span>
-                        {item.badge && (
-                          <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                            {item.badge}
+                {handCardActions.map((item) => {
+                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectAction(item);
+                        onClose();
+                      }}
+                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                    >
+                      <DailyBugleCardThumbnail
+                        cardCode={cardCode}
+                        cardName={item.headline}
+                        fallbackIcon={renderIcon(item.iconType)}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                        <div>
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-comic-red flex items-center gap-1 line-clamp-1">
+                              {renderIcon(item.iconType)}
+                              <span>{item.headline}</span>
+                            </span>
+                            {item.badge && (
+                              <span className="bg-amber-300 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                            {item.subtext}
+                          </p>
+                        </div>
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] font-bold text-comic-red uppercase group-hover:underline">
+                            Play Card ➔
                           </span>
-                        )}
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-700 leading-tight font-serif">
-                        {item.subtext}
-                      </p>
-                    </div>
-                    <div className="mt-2 text-right">
-                      <span className="text-[10px] font-bold text-comic-red uppercase group-hover:underline">
-                        Play Card ➔
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -217,38 +275,48 @@ export const DailyBugleActionNewspaper: React.FC<DailyBugleActionNewspaperProps>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {boardActions.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onSelectAction(item);
-                      onClose();
-                    }}
-                    className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2.5 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1">
-                          {renderIcon(item.iconType)}
-                          {item.headline}
-                        </span>
-                        {item.badge && (
-                          <span className="bg-emerald-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
-                            {item.badge}
+                {boardActions.map((item) => {
+                  const cardCode = item.cardCode || item.targetCardInstance?.card.code;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectAction(item);
+                        onClose();
+                      }}
+                      className="text-left bg-white/90 hover:bg-amber-100/90 border border-slate-800 p-2 rounded shadow-sm hover:shadow-md transition-all cursor-pointer flex items-start gap-2.5 group"
+                    >
+                      <DailyBugleCardThumbnail
+                        cardCode={cardCode}
+                        cardName={item.headline}
+                        fallbackIcon={renderIcon(item.iconType)}
+                      />
+                      <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                        <div>
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <span className="font-bold font-comic text-xs text-slate-950 group-hover:text-emerald-700 flex items-center gap-1 line-clamp-1">
+                              {renderIcon(item.iconType)}
+                              <span>{item.headline}</span>
+                            </span>
+                            {item.badge && (
+                              <span className="bg-emerald-200 text-slate-950 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border border-slate-800 shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-700 leading-tight font-serif line-clamp-2">
+                            {item.subtext}
+                          </p>
+                        </div>
+                        <div className="mt-1 text-right">
+                          <span className="text-[10px] font-bold text-emerald-700 uppercase group-hover:underline">
+                            Activate ➔
                           </span>
-                        )}
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-700 leading-tight font-serif">
-                        {item.subtext}
-                      </p>
-                    </div>
-                    <div className="mt-2 text-right">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase group-hover:underline">
-                        Activate ➔
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

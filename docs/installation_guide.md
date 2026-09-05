@@ -75,19 +75,32 @@ Both commands should output version numbers (e.g., `v20.18.0` and `10.8.2`).
 ### Troubleshooting Windows PATH & Execution Policy
 
 #### 1. "The term 'npm' is not recognized"
-If Node.js was newly installed while your terminal or IDE was already running:
-1. Reload environment variables in your current PowerShell session without restarting:
-   ```powershell
-   $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')
-   ```
-2. If still unrecognized, check standard install directories:
-   - `C:\Program Files\nodejs\`
-   - `C:\Users\<YourUsername>\AppData\Roaming\npm`
-3. Ensure `C:\Program Files\nodejs\` and `%APPDATA%\npm` are present in your `Path` environment variable:
-   - Press `Win + R`, type `sysdm.cpl`, press Enter.
-   - Go to **Advanced** tab -> **Environment Variables**.
-   - Under **System variables** (or **User variables**), select `Path` and click **Edit**.
-   - Add the paths, click OK, and **restart all open terminals and IDEs**.
+If Node.js was newly installed while your terminal or IDE was already running, Windows applications retain their initial environment block. You can fix this permanently across all present and future PowerShell sessions:
+
+**Automated One-Liner Fix (Permanently updates Registry & PowerShell Profiles):**
+```powershell
+# 1. Permanently add Node.js to your Windows User PATH in the Registry
+$userPath = [System.Environment]::GetEnvironmentVariable('Path', 'User')
+if ($userPath -notlike '*C:\Program Files\nodejs*') {
+    [System.Environment]::SetEnvironmentVariable('Path', "$userPath;C:\Program Files\nodejs", 'User')
+}
+
+# 2. Configure PowerShell Profile so Node.js and npm are always available in all terminal sessions
+foreach ($dir in @("$HOME\Documents\WindowsPowerShell", "$HOME\Documents\PowerShell")) {
+    if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+    @'
+if ($env:Path -notlike '*C:\Program Files\nodejs*') { $env:Path = "$env:Path;C:\Program Files\nodejs" }
+if ($env:Path -notlike '*AppData\Roaming\npm*') { $env:Path = "$env:Path;$env:APPDATA\npm" }
+'@ | Set-Content (Join-Path $dir 'profile.ps1') -Encoding UTF8
+}
+```
+
+**Manual GUI Alternative:**
+1. Press `Win + R`, type `sysdm.cpl`, and press Enter.
+2. Navigate to **Advanced** tab -> **Environment Variables**.
+3. Under **User variables** (or **System variables**), select `Path` and click **Edit**.
+4. Ensure `C:\Program Files\nodejs\` and `%APPDATA%\npm` are listed.
+5. Click **OK** to save and apply.
 
 #### 2. "Running scripts is disabled on this system" (PSSecurityException)
 When executing `npm` on Windows, PowerShell may attempt to run `C:\Program Files\nodejs\npm.ps1` and raise:

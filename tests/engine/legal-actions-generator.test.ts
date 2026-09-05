@@ -147,4 +147,43 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
     const thwartAction = report.identityActions.find((a) => a.action.type === 'BASIC_THWART');
     expect(thwartAction).toBeUndefined();
   });
+
+  it('populates cardCode across identity, hand, and board action items for UI thumbnail rendering', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false;
+
+    p1.hand = [
+      { instanceId: 'ev1', card: cardCatalog.getCard('01036')!, exhausted: false }, // Mark V Armor (Cost 3)
+      { instanceId: 'r1', card: cardCatalog.getCard('01005')!, exhausted: false },
+      { instanceId: 'r2', card: cardCatalog.getCard('01005')!, exhausted: false },
+      { instanceId: 'r3', card: cardCatalog.getCard('01005')!, exhausted: false },
+    ];
+    p1.tableau = [
+      { instanceId: 'arc_inst', card: cardCatalog.getCard('01035')!, exhausted: false },
+    ];
+
+    const report = getLegalActionsForPlayer(state, p1.id);
+
+    // Identity action (Flip to Alter-Ego) has cardCode for target form
+    const changeForm = report.identityActions.find((a) => a.action.type === 'CHANGE_FORM');
+    expect(changeForm?.cardCode).toBe('01029b');
+
+    // Basic attack has hero cardCode
+    const basicAtk = report.identityActions.find((a) => a.action.type === 'BASIC_ATTACK');
+    expect(basicAtk?.cardCode).toBe('01029a');
+
+    // Hand card action has cardCode
+    const playBlast = report.handCardActions.find(
+      (a) => (a.action as any).cardInstanceId === 'ev1',
+    );
+    expect(playBlast?.cardCode).toBe('01036');
+
+    // Board action has cardCode
+    const boardArc = report.boardActions.find(
+      (a) => (a.action as any).cardInstanceId === 'arc_inst',
+    );
+    expect(boardArc?.cardCode).toBe('01035');
+  });
 });

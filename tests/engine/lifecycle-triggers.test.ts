@@ -33,6 +33,7 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
       villain: cardCatalog.getCard('01094') as any,
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: Array(10).fill(cardCatalog.getCard('01108')!),
+      skipScenarioPlugin: true,
       skipMulligan: true,
       shuffleFn: (arr) => arr,
     });

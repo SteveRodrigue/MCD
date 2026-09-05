@@ -441,11 +441,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T21:11:46Z",
+        "reviewedAt": "2026-09-05T21:11:46Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Commander — <b>Action</b>: Choose a player to draw 1 card. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Draw 1 card"
       },

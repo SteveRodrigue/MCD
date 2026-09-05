@@ -4,6 +4,11 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Bug Fix & Engine Rules: Exclude Exhausted Once-Per-Round / Phase Abilities from Legal Actions ([#69](https://github.com/SteveRodrigue/MCD/issues/69), `legal-actions-generator.ts`, `tests/engine/legal-actions-generator.test.ts`):**
+  - **Limit Validation in Legal Action Generator:** Added RR v1.8 p. 21 limit checks to `getLegalActionsForPlayer` for Identity in-play abilities (Section 1E) and Tableau card abilities (Section 3A), checking `ab.limit === 'ONCE_PER_ROUND'` and `ab.limit === 'ONCE_PER_PHASE'` against `player.usedAbilitiesThisRound` and `player.usedAbilitiesThisPhase`.
+  - **Daily Bugle Accuracy:** Excluded exhausted actions from being displayed as actionable bulletins (resolving the issue where Carol Danvers' *Commander* `01010b` continued to appear after being triggered).
+  - **Automated Regression Tests:** Added automated regression tests in `tests/engine/legal-actions-generator.test.ts` covering both Identity once-per-round abilities and Tableau once-per-round/phase abilities.
+
 - **Feature & UI: Daily Bugle Action Article Card Thumbnails (`DailyBugleActionNewspaper.tsx`, `legal-actions-generator.ts`, `tests/engine/legal-actions-generator.test.ts`):**
   - **Square Card Thumbnails:** Added square card art thumbnails (`DailyBugleCardThumbnail`) to the left of each action article across Identity Directives, Playable Hand Cards, and In-Play Assets/Allies.
   - **Top-Anchored Bottom-Clipped Crop:** Applied `object-cover object-top` inside a square container bordered with a 2px ink line and solid drop shadow (`border-2 border-slate-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`), neatly clipping the bottom card text to showcase the character art and card title.

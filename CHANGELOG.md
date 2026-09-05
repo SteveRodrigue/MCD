@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Full Codebase Formatting:** Executed `npm run format` across all files to ensure 100% Prettier compliance on CI.
   - **Deterministic Lifecycle Test Fix:** Fixed intermittent flakiness in `tests/engine/lifecycle-triggers.test.ts` by supplying `shuffleFn: (arr) => arr` to prevent randomly drawn player obligations from triggering interactive decision prompts during automated villain phase tests.
   - **Documentation & Setup:** Updated `docs/installation_guide.md` with Git hook instructions, explicit `gh.exe` references, and instant terminal PATH reload commands.
+  - **Agent Command Execution Policy:** Added strict invariant in `AGENTS.md` and `.agents/rules/command-execution.md` prohibiting redundant `powershell -Command` wrappers, enforcing native direct command execution across all agents.
 
 - **Feature & Architecture: Read-Through On-Demand MarvelCDB Card Art Caching ([ADR-0011](docs/decisions/0011-card-orientation-and-art-caching.md), `vite.config.ts`, `card-cache-service.ts`, `card-cache-service.test.ts`, `card-cache-middleware.test.ts`):**
   - **Dynamic 3-Step Lifecycle:** Implemented automated Check Cache $\rightarrow$ Download & Cache $\rightarrow$ Display from Cache architecture. Missing images are downloaded from MarvelCDB on-demand at runtime and stored directly into both server disk cache (`cache/cards/`) and browser `CacheStorage` (`mcd-card-art-v1`).

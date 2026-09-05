@@ -4,6 +4,7 @@ import { useCardArt } from '../../hooks/useCardArt';
 import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
 import { FormattedCardText } from './FormattedCardText';
 import { useGameSettings } from '../../context/useGameSettings';
+import { CardContextMenu } from './CardContextMenu';
 
 export interface CardViewProps {
   card: NormalizedCard;
@@ -18,6 +19,7 @@ export interface CardViewProps {
   onClick?: () => void;
   showTokens?: boolean;
   enableHoverZoom?: boolean;
+  enableContextMenu?: boolean;
   zoomOrigin?:
     | 'bottom'
     | 'top'
@@ -44,11 +46,13 @@ export const CardView: React.FC<CardViewProps> = ({
   onClick,
   showTokens = true,
   enableHoverZoom = true,
+  enableContextMenu = true,
   zoomOrigin = 'center',
   className = '',
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
   const { artUrl, loading, error } = useCardArt(card);
   const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
@@ -163,6 +167,13 @@ export const CardView: React.FC<CardViewProps> = ({
     }
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (!enableContextMenu) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenuPos({ x: e.clientX, y: e.clientY });
+  };
+
   const activeOrigin = dynamicOrigin || zoomOrigin;
   const originClass =
     {
@@ -185,6 +196,7 @@ export const CardView: React.FC<CardViewProps> = ({
       ref={cardRef}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
+      onContextMenu={handleContextMenu}
       className={`relative inline-block transition-all duration-200 select-none group cursor-pointer z-0 hover:z-50 ${
         exhaustedState
           ? 'rotate-[30deg] filter brightness-95 hover:rotate-0 hover:brightness-100'
@@ -371,6 +383,15 @@ export const CardView: React.FC<CardViewProps> = ({
           </>
         )}
       </div>
+
+      {/* Tabletop Right-Click Context Menu */}
+      {contextMenuPos && (
+        <CardContextMenu
+          card={card}
+          position={contextMenuPos}
+          onClose={() => setContextMenuPos(null)}
+        />
+      )}
     </div>
   );
 };

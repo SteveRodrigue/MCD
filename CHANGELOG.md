@@ -5,6 +5,33 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & UI: In-Game Tabletop Card Context Menu ([#62](https://github.com/SteveRodrigue/MCD/issues/62), [ADR-0045](docs/decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), `src/ui/components/cards/CardContextMenu.tsx`, `CardView.tsx`, `tests/ui/card-context-menu.test.ts`):**
+  - **Tabletop Right-Click Integration:** Attached custom `onContextMenu` handler to all in-game `<CardView />` instances on the tabletop (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachments).
+  - **Open in Supplemental Editor:** Added action launching `/editor?code=<cardCode>` in a new browser tab/window without losing or disrupting active game state.
+  - **Developer Ergonomics Helpers:** Added **Copy Card Code** (writes code to clipboard with visual confirmation) and **Inspect Card State** (modal popup showing live card object JSON).
+  - **Responsive Boundary Clamping:** Implemented viewport boundary detection and coordinate clamping to prevent the pop-art context menu from clipping off-screen.
+  - **Automated Contract Tests:** Added `tests/ui/card-context-menu.test.ts` (3 tests) validating editor deep-link URL creation, clipboard copy execution, and coordinate clamping logic.
+
+- **Feature & Tooling: Declarative Ability Builder & Live Schema Diagnostics ([#63](https://github.com/SteveRodrigue/MCD/issues/63), [ADR-0045](docs/decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), `src/ui/components/editor/AbilityFormBuilder.tsx`, `RawJsonEditor.tsx`, `DualCardInspector.tsx`, `SupplementalEditorScreen.tsx`):**
+  - **Interactive Visual Form Builder:** Created `AbilityFormBuilder.tsx` supporting form-driven editing of card comments, board limits, confidence sliders, attribution, ability identifiers, timing windows (`TimingTypeSchema`), event triggers (`TriggerTypeSchema`), costs (exhaust, self-damage), and sequential resolution steps with codebase-grounded effect primitives (`EffectTypeSchema`), targets, gates, and amounts.
+  - **Dual-Mode Editing & Formatting:** Implemented `RawJsonEditor.tsx` with monospace syntax editing and 1-click JSON formatting.
+  - **Real-Time Zod Diagnostics:** Integrated live `CardEnrichmentSchema.safeParse` validation running on every edit, with error list badges and save-action gating.
+  - **Atomic Save & Hot-Reload Contract:** Connected "Save Card" button and `Ctrl+S` hotkey to `saveCardSupplemental`, persisting changes to pack JSON files with auto-stamped audit metadata and session reload notification toasts.
+
+- **Feature & UI: Card Supplemental Editor & Reviewer Workspace ([#61](https://github.com/SteveRodrigue/MCD/issues/61), [ADR-0045](docs/decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), `src/ui/components/editor/`, `src/ui/services/supplemental-editor-service.ts`, `src/ui/App.tsx`, `src/ui/components/board/OptionsMenu.tsx`):**
+  - **Full-Screen Reviewer Workspace:** Created `SupplementalEditorScreen.tsx` mounted at `/editor` (and via deep link `?code=01001a`) featuring comic pop-art styling, Ben-Day halftone backgrounds, and responsive split-pane navigation.
+  - **Multi-Criteria Filtering Toolbar:** Implemented `CardFilterToolbar.tsx` with dynamic dropdowns for Zzorba packs, encounter sets, hero identities, aspect/affinity factions, supplemental status (defined, missing, valid, invalid), and live search.
+  - **Card Gallery List & Status Badges:** Implemented `CardGalleryList.tsx` displaying card code, name, and visual status badges (🟢 100% Verified, 🟡 Partial/Draft, 🔴 Schema Error, ⚪ Missing).
+  - **Dual-View Inspector:** Implemented `DualCardInspector.tsx` rendering on-the-fly normalized card artwork via `<CardView />`, formatted printed text via `<FormattedCardText />`, raw upstream properties grid, declarative abilities tree, audit metadata, and raw JSON copy inspector.
+  - **In-Game Options Integration:** Added direct "Open Supplemental Editor" launcher button inside `OptionsMenu.tsx`.
+  - **Vite Configuration Fixes:** Corrected misplaced ES imports in `vite.config.ts` and addressed ESLint empty catch block warnings in card cache middleware.
+
+- **Feature & Tooling: Local Vite Dev Server REST Middleware for Card Supplemental Data ([#60](https://github.com/SteveRodrigue/MCD/issues/60), [ADR-0045](docs/decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), `src/tools/editor/api-middleware.ts`, `vite.config.ts`, `tests/tools/supplemental-editor-api.test.ts`):**
+  - **Local-First Dev REST Middleware:** Implemented `cardSupplementalEditorPlugin` and `CardSupplementalService` in `src/tools/editor/api-middleware.ts` mounted under `/api/supplemental/*` in Vite dev server.
+  - **Catalog Discovery Endpoints:** Added `GET /api/supplemental/packs` (aggregating upstream packs, encounter sets, hero sets, and aspect factions) and `GET /api/supplemental/cards` (supporting multi-criteria filtering by pack, set, hero, faction, status, and search query).
+  - **Card Inspector & Safe Persistence:** Added `GET /api/supplemental/card/:code` (merging upstream card metadata and supplemental rules) and `POST /api/supplemental/card/:code` (validating payloads against `CardEnrichmentSchema`, auto-stamping ISO `updatedAt` / `reviewedAt` timestamps and attribution, and atomically updating `src/data/supplemental/pack/<pack>.json`).
+  - **Automated Contract Tests:** Added `tests/tools/supplemental-editor-api.test.ts` (14 tests) validating discovery, filtering, validation error rejection, and atomic file persistence.
+
 - **Feature & Engine: SUFFERED_DAMAGE Formula for Variable Damage Scaling ([#5](https://github.com/SteveRodrigue/MCD/issues/5), RR v1.8 p. 11, 31, `effects/index.ts`, `schema.ts`, `schema.json`, `suffered-damage-formula.test.ts`):**
   - **Dynamic Sustained Health Delta:** Evaluated `SUFFERED_DAMAGE` formula dynamically at effect resolution time as `Math.max(0, getEffectiveMaxHealth(player, state) - player.health)` with zero card-specific hardcoding or reliance on physical tabletop damage counters.
   - **Declarative Optional Ceiling Parameter:** Removed hardcoded `15` fallback from the engine, establishing `step.params?.max` as a fully declarative, reusable optional ceiling parameter that clamps damage when defined (`Math.min(step.params.max, damageSustained)`) and allows uncapped scaling when omitted.

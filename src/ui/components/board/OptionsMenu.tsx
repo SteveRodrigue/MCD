@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { Settings, Wrench, X, ShieldAlert, Check, Gauge, Zap, ZoomIn, Camera } from 'lucide-react';
+import {
+  Settings,
+  Wrench,
+  X,
+  ShieldAlert,
+  Check,
+  Gauge,
+  Zap,
+  ZoomIn,
+  Camera,
+  BookOpen,
+  ExternalLink,
+} from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { GameState } from '../../../engine/models';
 import { logGameStateSnapshot } from '../../services/gamestate-logger-service';
@@ -256,6 +268,34 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
               )}
             </div>
           )}
+
+          {/* Supplemental Reviewer & Editor */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-comic-blue" />
+                <span className="font-comic text-base text-comic-black">
+                  Supplemental Reviewer & Editor
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.open('/editor', '_blank');
+                }}
+                className="px-3 py-1 font-comic text-xs rounded border-2 border-comic-black bg-comic-accent text-white font-bold shadow-comic-sm cursor-pointer transition-all hover:scale-105 flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Open Editor</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Opens the visual Card Supplemental Reviewer & Editor in a new window to inspect,
+              filter, and verify card rules.
+            </p>
+          </div>
         </div>
 
         {/* Footer */}

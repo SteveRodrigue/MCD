@@ -4,6 +4,9 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+- **Bug Fix & Engine Tests: Deterministic Encounter Decks in Test Setup ([#59](https://github.com/SteveRodrigue/MCD/issues/59), `tests/engine/form-change-rules.test.ts`, `tests/engine/lifecycle-triggers.test.ts`):**
+  - **Deterministic Test Decks:** Added `skipScenarioPlugin: true` to `setupGame` options in `form-change-rules.test.ts` and `lifecycle-triggers.test.ts` when providing a custom mock encounter deck (e.g. Crowd Control dummy side schemes).
+  - **Flakiness Elimination:** Prevents `RhinoScenarioPlugin.onGameSetup` from silently rebuilding the encounter deck from the 34-card Rhino set with random cards, which previously caused non-deterministic treachery card attacks (Assault, Stampede) during villain phase execution to stall step progression at defense prompts and break round advancement assertions.
 
 - **Feature & UI: DEF / REC Stat Grounding in Supplemental Editor (`DualCardInspector.tsx`, `tests/ui/thw-sch-and-zoom-elevation.test.ts`):**
   - **Dynamic DEF / REC Display:** Converted static `"Defense"` row in `DualCardInspector.tsx` into `"DEF / REC"`. Dynamically displays `${upstream.recover} (REC)` for Alter-Ego cards (e.g. Peter Parker `01001b` &rarr; `3 (REC)`, Jennifer Walters `01019b` &rarr; `5 (REC)`), `${upstream.defense} (DEF)` for Hero and Ally cards (e.g. Spider-Man `01001a` &rarr; `3 (DEF)`), and `'—'` for non-character cards.

@@ -37,21 +37,6 @@
     },
     "01001b": {
       "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
-      "audit": {
-        "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
-        "rulesVersion": "v1.8",
-        "confidence": 98,
-        "originalText": "Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)",
-        "reconstructedText": "RESOURCE [Limit: once per round] -> Generate 1 [mental] resource"
-      },
-      "mechanicSteps": [
-        "Action: Resource generation during card cost payment or resource window (RESOURCE)",
-        "Requirement: Limit 1 use per round",
-        "Effect: Generates 1 [mental] resource towards active cost payment or resource pool"
-      ],
       "abilities": [
         {
           "id": "scientist",
@@ -67,6 +52,21 @@
             }
           ]
         }
+      ],
+      "audit": {
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T20:05:16Z",
+        "reviewedAt": "2026-09-05T20:05:16Z",
+        "reviewedBy": "Steve",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)",
+        "reconstructedText": "RESOURCE [Limit: once per round] -> Generate 1 [mental] resource"
+      },
+      "mechanicSteps": [
+        "Action: Resource generation during card cost payment or resource window (RESOURCE)",
+        "Requirement: Limit 1 use per round",
+        "Effect: Generates 1 [mental] resource towards active cost payment or resource pool"
       ]
     },
     "01002": {

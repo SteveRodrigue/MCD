@@ -1,17 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { Keyword, CardType, FactionCode } from '../../src/engine/models/enums';
-import { CardInstance, NormalizedCard } from '../../src/engine/models';
+import {
+  Keyword,
+  CardType,
+  FactionCode,
+  CardInstance,
+  NormalizedCard,
+  GamePhase,
+  GameState,
+  PlayerState,
+  hasKeyword,
+  getKeywordValue,
+} from '@engine/models';
 import {
   canBasicAttack,
   canBasicThwart,
   canPlayCard,
   isCardRestricted,
   getCardRestrictedWeight,
-} from '../../src/engine/pipeline/legality-checker';
-import { GamePhase, GameState, PlayerState } from '../../src/engine/models/state';
-import { hasKeyword, getKeywordValue } from '../../src/engine/models/keyword-helpers';
-import { CardCatalog } from '../../src/data/importer/card-loader';
-import { getStarterDeck } from '../../src/engine/decks/starter-decks';
+} from '@engine/pipeline/legality-checker';
+import { CardCatalog } from '@data/importer/card-loader';
+import { getStarterDeck } from '@engine/decks/starter-decks';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 

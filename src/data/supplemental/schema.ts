@@ -326,8 +326,6 @@ export const AbilityCostSchema = z
     resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
     damageHero: z.number().optional(),
     damageSelf: z.number().optional(),
-    removeCounter: z.number().optional(),
-    spendCounter: z.number().optional(),
     spendCounters: z
       .object({
         counterType: z.string().optional(),
@@ -341,13 +339,6 @@ export const AbilityCostSchema = z
         count: z.number().optional(),
         maxCount: z.number().optional(),
         from: z.enum(['HAND', 'DECK', 'PLAY']),
-      })
-      .strict()
-      .optional(),
-    spendTokens: z
-      .object({
-        type: z.string(),
-        count: z.number(),
       })
       .strict()
       .optional(),

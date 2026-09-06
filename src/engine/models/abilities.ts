@@ -91,9 +91,6 @@ export interface AbilityCost {
   exhaustSelf?: boolean;
   exhaustCard?: string;
   discardSelf?: boolean;
-  removeCounter?: number;
-  spendCounter?: number;
-  spendTokens?: { type: string; count: number };
   spendCounters?: {
     counterType?: string;
     amount: number;

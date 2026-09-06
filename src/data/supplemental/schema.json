@@ -173,12 +173,6 @@
                     "damageSelf": {
                       "type": "number"
                     },
-                    "removeCounter": {
-                      "type": "number"
-                    },
-                    "spendCounter": {
-                      "type": "number"
-                    },
                     "spendCounters": {
                       "type": "object",
                       "properties": {
@@ -221,22 +215,6 @@
                       },
                       "required": [
                         "from"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "spendTokens": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string"
-                        },
-                        "count": {
-                          "type": "number"
-                        }
-                      },
-                      "required": [
-                        "type",
-                        "count"
                       ],
                       "additionalProperties": false
                     },

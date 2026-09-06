@@ -54,7 +54,51 @@
 
 ---
 
-## 2. Search, Split & Zone Manipulations
+## 2. Card Attrition & Discard Primitives
+
+### `DISCARD`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / Issue [#66](https://github.com/SteveRodrigue/MCD/issues/66))
+- **Description:** Moves cards from a specified source zone (`HAND`, `DECK`, `ENCOUNTER_DECK`, `TABLEAU`, `HOST`, `SELF`, `CARDS_UNDER_HOST`) directly to the discard pile (or encounter discard pile for encounter cards) per RR v1.8 p. 10. Supports random hand selection, filtering, iterative milling, and fallback actions (e.g. Surge when no valid target in tableau).
+
+```json
+{
+  "effect": "DISCARD",
+  "params": {
+    "source": "TABLEAU",
+    "filter": {
+      "cardTypes": ["upgrade", "support"]
+    },
+    "fallback": "SURGE",
+    "target": "ACTIVE_PLAYER"
+  }
+}
+```
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `source` | `"HAND" \| "DECK" \| "ENCOUNTER_DECK" \| "TABLEAU" \| "HOST" \| "SELF" \| "CARDS_UNDER_HOST"` | No | Source zone cards leave from (default: `"HAND"`). |
+| `count` | `number \| "ALL"` | No | Number of cards to discard (default: `1`). |
+| `mode` | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"` | No | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling). |
+| `target` | `TargetSelector` | No | Player identity or entity executing or affected by the discard. |
+| `filter` | `FilterSchema` | No | Card filtering criteria (e.g. `{ "cardTypes": ["upgrade", "support"] }`). |
+| `untilFilter` | `FilterSchema` | No | Predicate for iterative milling until a matching card is found. |
+| `fallback` | `"SURGE" \| "NONE"` | No | Fallback resolution if no matching cards can be discarded (e.g. *Caught Off Guard*). |
+
+#### 🧭 Decision Guide: `DISCARD` vs. `SEARCH_AND_SELECT`
+
+| Feature | `DISCARD` (Attrition & Removal) | `SEARCH_AND_SELECT` (Discovery & Retrieval) |
+| :--- | :--- | :--- |
+| **Rules Reference** | **"Discard" (p. 10)** | **"Search" (p. 26)** & **"Look at" (p. 19)** |
+| **Primary Intent** | Destruction, penalty, or milling into discard pile. | Inspection, drafting, or tutoring cards to keep/play. |
+| **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`). | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
+| **Example Cards** | *Caught Off Guard*, *Charge*, Obligations, Treachery hand discard. | *Tony Stark* (Futurist), *Black Cat* (01002), *Make the Call*, *Ancestral Knowledge*. |
+
+- **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH_AND_SELECT`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
+
+---
+
+## 3. Search, Split & Zone Manipulations
 
 ### `SCRY_AND_SELECT_TRAIT`
 

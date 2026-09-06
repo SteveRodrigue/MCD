@@ -211,6 +211,28 @@ export function matchCardFilter(card: NormalizedCard, filter?: any, player?: Pla
     return false;
   }
 
+  // Resource matching
+  if (filter.resource) {
+    const targetResource = filter.resource.toLowerCase().trim();
+    const resources = card.resources as any;
+    if (!resources) return false;
+    const count = resources[targetResource] || 0;
+    const wildCount = targetResource !== 'wild' ? resources.wild || 0 : 0;
+    if (count <= 0 && wildCount <= 0) return false;
+  }
+
+  if (filter.resources && Array.isArray(filter.resources)) {
+    const resources = card.resources as any;
+    if (!resources) return false;
+    const matchesAny = filter.resources.some((r: string) => {
+      const targetResource = r.toLowerCase().trim();
+      const count = resources[targetResource] || 0;
+      const wildCount = targetResource !== 'wild' ? resources.wild || 0 : 0;
+      return count > 0 || wildCount > 0;
+    });
+    if (!matchesAny) return false;
+  }
+
   return true;
 }
 
@@ -557,6 +579,289 @@ export function executeEffect(
 }
 
 /**
+ * Universal DISCARD Primitive Handler (RR v1.8 p. 10, Issue #66)
+ * Handles card attrition/removal across all valid game zones (hand, deck, encounter deck, tableau, host, self, cards under host).
+ */
+export function executeDiscard(
+  state: GameState,
+  step: AbilityStep,
+  context: EffectExecutionContext,
+): EffectResult {
+  const player = state.players.find((p) => p.id === context.playerId);
+  if (!player) return { state, success: false, error: 'Player not found' };
+
+  const source = (step.params?.source as string) || 'HAND';
+  const rawCount = step.params?.count;
+  const isCountAll = rawCount === 'ALL';
+  const count = typeof rawCount === 'number' ? rawCount : 1;
+  const mode =
+    (step.params?.mode as string) ||
+    (source === 'DECK' || source === 'ENCOUNTER_DECK' ? 'TOP' : 'CHOSEN');
+  const fallback = step.params?.fallback as string | undefined;
+  const filter = (step.params?.filter || step.filter) as any;
+
+  // 1. DISCARD FROM HAND
+  if (source === 'HAND') {
+    const targetPlayer =
+      (step.params?.target as string) === 'CHOSEN_PLAYER' && context.targetPlayerId
+        ? state.players.find((p) => p.id === context.targetPlayerId) || player
+        : player;
+
+    if (mode === 'RANDOM') {
+      let discardedCount = 0;
+      for (let i = 0; i < count; i++) {
+        if (targetPlayer.hand.length > 0) {
+          const randIdx = Math.floor(Math.random() * targetPlayer.hand.length);
+          const [discarded] = targetPlayer.hand.splice(randIdx, 1);
+          targetPlayer.discard.push(discarded);
+          discardedCount++;
+          dispatchTrigger(state, 'CARD_DISCARDED', {
+            targetPlayerId: targetPlayer.id,
+            sourceInstanceId: discarded.instanceId,
+          });
+          state.log.push({
+            id: `log_${Date.now()}_${discarded.instanceId}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'player.hand.randomDiscard',
+            params: { player: targetPlayer.name, card: discarded.card.name },
+            onomatopoeia: 'RANDOM DISCARD!',
+          });
+        }
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: discardedCount > 0,
+        value: discardedCount,
+        onomatopoeia: 'RANDOM DISCARD!',
+      };
+    }
+
+    let discardedCount = 0;
+    const toDiscardCount = isCountAll
+      ? targetPlayer.hand.length
+      : Math.min(count, targetPlayer.hand.length);
+    for (let i = 0; i < toDiscardCount; i++) {
+      if (targetPlayer.hand.length > 0) {
+        const [discarded] = targetPlayer.hand.splice(0, 1);
+        targetPlayer.discard.push(discarded);
+        discardedCount++;
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: targetPlayer.id,
+          sourceInstanceId: discarded.instanceId,
+        });
+      }
+    }
+    return {
+      state,
+      success: true,
+      mutatedState: discardedCount > 0,
+      value: discardedCount,
+      onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+    };
+  }
+
+  // 2. DISCARD FROM PLAYER DECK
+  if (source === 'DECK') {
+    let discardedCount = 0;
+    const matchingDestination = step.params?.matchingDestination as string | undefined;
+    for (let i = 0; i < count; i++) {
+      const card = drawPlayerCard(state, player.id);
+      if (card) {
+        if (matchingDestination && filter && matchCardFilter(card.card, filter, player)) {
+          if (matchingDestination === 'HAND') {
+            player.hand.push(card);
+          } else if (matchingDestination === 'PLAY') {
+            player.tableau.push(card);
+          } else {
+            player.discard.push(card);
+          }
+        } else {
+          player.discard.push(card);
+        }
+        discardedCount++;
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: player.id,
+          sourceInstanceId: card.instanceId,
+        });
+      }
+    }
+    return {
+      state,
+      success: true,
+      mutatedState: discardedCount > 0,
+      value: discardedCount,
+      onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+    };
+  }
+
+  // 3. DISCARD FROM ENCOUNTER DECK
+  if (source === 'ENCOUNTER_DECK') {
+    let discardedCount = 0;
+    for (let i = 0; i < count; i++) {
+      const card = drawEncounterCard(state);
+      if (card) {
+        state.encounterDiscard.push(card);
+        discardedCount++;
+      }
+    }
+    return {
+      state,
+      success: true,
+      mutatedState: discardedCount > 0,
+      value: discardedCount,
+      onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
+    };
+  }
+
+  // 4. DISCARD FROM TABLEAU
+  if (source === 'TABLEAU') {
+    const matchingIndices: number[] = [];
+    player.tableau.forEach((inst, idx) => {
+      if (!filter) {
+        matchingIndices.push(idx);
+      } else {
+        const cardType = inst.card.type?.toLowerCase();
+        const types = (filter.cardTypes || (filter.type ? [filter.type] : [])).map((t: string) =>
+          t.toLowerCase(),
+        );
+        if (types.length > 0) {
+          if (types.includes(cardType)) {
+            matchingIndices.push(idx);
+          }
+        } else {
+          matchingIndices.push(idx);
+        }
+      }
+    });
+
+    if (matchingIndices.length > 0) {
+      const targetIdx = matchingIndices[0];
+      const [discarded] = player.tableau.splice(targetIdx, 1);
+      player.discard.push(discarded);
+      dispatchTrigger(state, 'CARD_DISCARDED', {
+        targetPlayerId: player.id,
+        sourceInstanceId: discarded.instanceId,
+      });
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'player.tableau.discarded',
+        params: { player: player.name, card: discarded.card.name },
+        onomatopoeia: 'TABLEAU DISCARDED!',
+      });
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: `DISCARDED ${discarded.card.name.toUpperCase()}!`,
+      };
+    }
+
+    if (fallback === 'SURGE') {
+      const surgeCard = drawEncounterCard(state);
+      if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+      return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
+    }
+
+    return { state, success: true, mutatedState: false };
+  }
+
+  // 5. DISCARD SELF
+  if (source === 'SELF') {
+    const cardInst = context.sourceCardInstance;
+    if (cardInst) {
+      removeCardFromAllZones(state, cardInst.instanceId);
+      if (isEncounterCard(cardInst.card)) {
+        state.encounterDiscard.push(cardInst);
+      } else {
+        player.discard.push(cardInst);
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: `${cardInst.card.name.toUpperCase()} DISCARDED!`,
+      };
+    }
+    return { state, success: true };
+  }
+
+  // 6. DISCARD FROM HOST (ATTACHMENT)
+  if (source === 'HOST') {
+    if (context.sourceCardInstance) {
+      const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
+      if (vIdx !== -1) {
+        state.villain.attachments.splice(vIdx, 1);
+        state.encounterDiscard.push(context.sourceCardInstance);
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: 'ATTACHMENT DISCARDED!',
+        };
+      }
+      for (const p of state.players) {
+        const hIdx = (p.attachments || []).indexOf(context.sourceCardInstance);
+        if (hIdx !== -1) {
+          p.attachments?.splice(hIdx, 1);
+          if (isEncounterCard(context.sourceCardInstance.card)) {
+            state.encounterDiscard.push(context.sourceCardInstance);
+          } else {
+            p.discard.push(context.sourceCardInstance);
+          }
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: 'ATTACHMENT DISCARDED!',
+          };
+        }
+      }
+    }
+    return { state, success: true };
+  }
+
+  // 7. DISCARD CARDS UNDER HOST
+  if (source === 'CARDS_UNDER_HOST') {
+    const targetHost = (step.params?.target as string) || 'VILLAIN';
+    let cardsToDiscard: CardInstance[] = [];
+
+    if (targetHost === 'VILLAIN') {
+      cardsToDiscard = state.villain.cardsUnderneath || [];
+      state.villain.cardsUnderneath = [];
+    } else if (targetHost === 'MAIN_SCHEME') {
+      cardsToDiscard = state.mainScheme.cardsUnderneath || [];
+      state.mainScheme.cardsUnderneath = [];
+    }
+
+    for (const card of cardsToDiscard) {
+      if (isEncounterCard(card.card)) {
+        state.encounterDiscard.push(card);
+      } else {
+        const owner = state.players.find((p) => p.id === (card as any).ownerId) || player;
+        owner.discard.push(card);
+      }
+    }
+
+    return {
+      state,
+      success: true,
+      mutatedState: cardsToDiscard.length > 0,
+      onomatopoeia: 'CARDS DISCARDED FROM UNDER!',
+    };
+  }
+
+  return { state, success: true };
+}
+
+/**
  * Executes a single declarative ability step primitive on the GameState.
  */
 export function executeStep(
@@ -568,6 +873,9 @@ export function executeStep(
   if (!player) return { state, success: false, error: 'Player not found' };
 
   switch (step.effect) {
+    case 'DISCARD': {
+      return executeDiscard(state, step, context);
+    }
     case 'DRAW_CARDS': {
       const count = (step.params?.count as number) || 1;
       const targetParam = step.params?.target as string | undefined;
@@ -1331,51 +1639,6 @@ export function executeStep(
       };
     }
 
-    case 'DISCARD_TOP_DECK_FILTER': {
-      // Black Cat: Discard top 2 cards, add each Mental resource to hand
-      const count = (step.params?.count as number) || 2;
-      const filterRes = ((step.params?.filterResource as string) || 'mental').toLowerCase();
-      let matchedCount = 0;
-
-      for (let i = 0; i < count; i++) {
-        const discarded = drawPlayerCard(state, player.id);
-        if (discarded) {
-          const resMap = (discarded.card.resources || {}) as any;
-          const raw = (discarded.card.raw || {}) as any;
-          const hasResource =
-            (resMap[filterRes] || 0) > 0 ||
-            (raw[`resource_${filterRes}`] || 0) > 0 ||
-            (resMap.wild || 0) > 0 ||
-            (raw.resource_wild || 0) > 0;
-
-          if (hasResource) {
-            player.hand.push(discarded);
-            matchedCount += 1;
-          } else {
-            player.discard.push(discarded);
-          }
-        }
-      }
-
-      const onomatopoeia = `BLACK CAT FOUND +${matchedCount} CARDS!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.drawCards',
-        params: {
-          player: player.name,
-          card: 'Black Cat',
-          count: matchedCount,
-          handSize: player.hand.length,
-        },
-        onomatopoeia,
-      });
-
-      return { state, success: true, onomatopoeia };
-    }
-
     case 'SCRY_AND_SELECT_TRAIT': {
       // Tony Stark Futurist: Look at top lookCount (3) cards of deck, allow player to select 1 matching trait ('Tech') card to add to hand, discard rest.
       const lookCount = (step.params?.lookCount as number) || 3;
@@ -1689,22 +1952,6 @@ export function executeStep(
       }
     }
 
-    case 'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE': {
-      if (player.tableau.length > 0) {
-        const [discarded] = player.tableau.splice(0, 1);
-        player.discard.push(discarded);
-        return {
-          state,
-          success: true,
-          onomatopoeia: `DISCARDED ${discarded.card.name}!`,
-        };
-      } else {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      }
-    }
-
     case 'ATTACH_TO_HOST': {
       const targetHost = step.params?.target as string;
       const sourceCard = context.sourceCardInstance;
@@ -1763,37 +2010,6 @@ export function executeStep(
         };
       }
       return { state, success: true, onomatopoeia: 'PLACED UNDER CARD!' };
-    }
-
-    case 'DISCARD_CARDS_UNDER_HOST': {
-      const targetHost = (step.params?.target as string) || 'SELF';
-      let cardsToDiscard: CardInstance[] = [];
-
-      if (targetHost === 'VILLAIN') {
-        cardsToDiscard = state.villain.cardsUnderneath || [];
-        state.villain.cardsUnderneath = [];
-      } else if (targetHost === 'MAIN_SCHEME') {
-        cardsToDiscard = state.mainScheme.cardsUnderneath || [];
-        state.mainScheme.cardsUnderneath = [];
-      }
-
-      for (const card of cardsToDiscard) {
-        if (
-          card.card.type === CardType.MINION ||
-          card.card.type === CardType.TREACHERY ||
-          (card.card as any).faction_code === 'encounter'
-        ) {
-          state.encounterDiscard.push(card);
-        } else {
-          player.discard.push(card);
-        }
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: cardsToDiscard.length > 0,
-        onomatopoeia: 'CARDS DISCARDED FROM UNDER!',
-      };
     }
 
     case 'MODIFY_STAT':
@@ -1878,22 +2094,6 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'GREAT RESPONSIBILITY!' };
     }
 
-    case 'DISCARD_ATTACHMENT': {
-      if (context.sourceCardInstance) {
-        const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
-        if (vIdx !== -1) {
-          state.villain.attachments.splice(vIdx, 1);
-          state.encounterDiscard.push(context.sourceCardInstance);
-          return {
-            state,
-            success: true,
-            onomatopoeia: 'ATTACHMENT DISCARDED!',
-          };
-        }
-      }
-      return { state, success: true };
-    }
-
     case 'EXHAUST_IDENTITY':
     case 'EXHAUST_HERO': {
       player.exhausted = true;
@@ -1908,19 +2108,6 @@ export function executeStep(
         onomatopoeia: 'EXHAUST',
       });
       return { state, success: true, onomatopoeia: 'EXHAUSTED!' };
-    }
-
-    case 'DISCARD_ENCOUNTER_DECK': {
-      const count = (step.params?.count as number) || 1;
-      for (let i = 0; i < count; i++) {
-        const card = state.encounterDeck.shift();
-        if (card) state.encounterDiscard.push(card);
-      }
-      return {
-        state,
-        success: true,
-        onomatopoeia: `DISCARDED ${count} ENCOUNTER CARDS!`,
-      };
     }
 
     case 'GIVE_ADDITIONAL_BOOST_CARD':
@@ -1964,47 +2151,6 @@ export function executeStep(
         });
       }
       return { state, success: true, onomatopoeia: 'MINION ENGAGED!' };
-    }
-
-    case 'DISCARD_CARDS_FROM_HAND_AT_RANDOM':
-    case 'DISCARD_RANDOM_HAND': {
-      const count = (step.params?.count as number) || 1;
-      for (let i = 0; i < count; i++) {
-        if (player.hand.length > 0) {
-          const randIdx = Math.floor(Math.random() * player.hand.length);
-          const [discarded] = player.hand.splice(randIdx, 1);
-          player.discard.push(discarded);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'player.hand.randomDiscard',
-            params: { player: player.name, card: discarded.card.name },
-            onomatopoeia: 'RANDOM DISCARD!',
-          });
-        }
-      }
-      return { state, success: true, onomatopoeia: 'RANDOM DISCARD!' };
-    }
-
-    case 'DISCARD_UPGRADE_OR_SUPPORT': {
-      if (player.tableau.length > 0) {
-        const [discarded] = player.tableau.splice(0, 1);
-        player.discard.push(discarded);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'player.tableau.discarded',
-          params: { player: player.name, card: discarded.card.name },
-          onomatopoeia: 'TABLEAU DISCARDED!',
-        });
-      }
-      return { state, success: true, onomatopoeia: 'TABLEAU DISCARDED!' };
     }
 
     case 'PLAYER_CHOICE': {
@@ -3252,21 +3398,6 @@ export function executeStep(
         mutatedState: true,
         onomatopoeia: 'CARDS RETURNED TO HANDS!',
       };
-    }
-
-    case 'DISCARD_SELF': {
-      const cardInst = context.sourceCardInstance;
-      if (cardInst) {
-        removeCardFromAllZones(state, cardInst.instanceId);
-        player.discard.push(cardInst);
-        return {
-          state,
-          success: true,
-          mutatedState: true,
-          onomatopoeia: `${cardInst.card.name.toUpperCase()} DISCARDED!`,
-        };
-      }
-      return { state, success: true };
     }
 
     case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {

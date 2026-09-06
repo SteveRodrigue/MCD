@@ -282,9 +282,9 @@
           },
           "steps": [
             {
-              "effect": "DISCARD_ATTACHMENT",
+              "effect": "DISCARD",
               "params": {
-                "target": "SELF"
+                "source": "SELF"
               }
             }
           ]
@@ -292,13 +292,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "Attach to Rhino.\n<b>Hero Action</b>: Spend [physical] [physical] [physical] resources → discard this card",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); HERO_ACTION [Cost: Spend 3 [physical]] -> DISCARD_ATTACHMENT (target: SELF)"
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); HERO_ACTION [Cost: Spend 3 [physical]] -> DISCARD (source: SELF)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -359,8 +359,9 @@
           "trigger": "MINION_ATTACKED",
           "steps": [
             {
-              "effect": "DISCARD_ENCOUNTER_DECK",
+              "effect": "DISCARD",
               "params": {
+                "source": "ENCOUNTER_DECK",
                 "count": 2
               }
             }
@@ -369,13 +370,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>",
-        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD_ENCOUNTER_DECK (count: 2)"
+        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD (source: ENCOUNTER_DECK, count: 2)"
       },
       "mechanicSteps": [
         "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
@@ -752,18 +753,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "<b><i>Give to the T'Challa player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust T'Challa → remove Affairs of State from the game.\n• Choose and discard a [[Black Panther]] upgrade you control. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     },
     "01156": {
@@ -867,18 +873,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "<b><i>Give to the Jennifer Walters player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Jennifer Walters → remove Legal Work from the game.\n• Give the main scheme 1 acceleration token. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     },
     "01161": {
@@ -1010,18 +1021,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "<b><i>Give to the Peter Parker player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Peter Parker → remove Eviction Notice from the game.\n• Discard 1 card at random from your hand. This card gains surge. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     },
     "01166": {
@@ -1151,18 +1167,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "<b><i>Give to the Tony Stark player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Tony Stark → remove Business Problems from the game.\n• Exhaust each upgrade you control. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     },
     "01171": {
@@ -1243,8 +1264,12 @@
           "trigger": "BOOST",
           "steps": [
             {
-              "effect": "DISCARD_UPGRADE_OR_SUPPORT",
+              "effect": "DISCARD",
               "params": {
+                "source": "TABLEAU",
+                "filter": {
+                  "cardTypes": ["upgrade", "support"]
+                },
                 "target": "DEFENDING_PLAYER"
               }
             }
@@ -1253,13 +1278,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 50,
         "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); BOOST -> DISCARD_UPGRADE_OR_SUPPORT (target: DEFENDING_PLAYER)"
+        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); BOOST -> DISCARD (source: TABLEAU, target: DEFENDING_PLAYER)"
       }
     },
     "01174": {
@@ -1298,18 +1323,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "<b><i>Give to the Carol Danvers player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Carol Danvers → remove Family Emergency from the game.\n• You are stunned. This card gains surge. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     },
     "01176": {
@@ -1507,8 +1537,13 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE",
+              "effect": "DISCARD",
               "params": {
+                "source": "TABLEAU",
+                "filter": {
+                  "cardTypes": ["upgrade", "support"]
+                },
+                "fallback": "SURGE",
                 "target": "ACTIVE_PLAYER"
               }
             }
@@ -1517,13 +1552,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "<b>When Revealed</b>: Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE ({\"target\":\"ACTIVE_PLAYER\"})"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: TABLEAU, fallback: SURGE, target: ACTIVE_PLAYER)"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Discard an upgrade or support you control (if none, gain Surge)."
@@ -1782,18 +1817,23 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-27T23:00",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 50,
         "originalText": "",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD_SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
       }
     }
   }

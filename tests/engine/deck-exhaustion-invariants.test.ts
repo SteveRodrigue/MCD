@@ -205,7 +205,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(state.villain.health).toBe(7);
     });
 
-    it('mid-action Black Cat DISCARD_TOP_DECK_FILTER reshuffles and deals penalty when deck runs dry', () => {
+    it('mid-action Black Cat DISCARD reshuffles and deals penalty when deck runs dry', () => {
       const player = state.players[0];
       const mentalCard1 = createCardInstance(cardCatalog.getCard('01089')!); // Genius (Mental)
       const mentalCard2 = createCardInstance(cardCatalog.getCard('01089')!);
@@ -218,8 +218,13 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       const res = executeEffect(
         state,
         {
-          effect: 'DISCARD_TOP_DECK_FILTER',
-          params: { count: 2, filterResource: 'mental' },
+          effect: 'DISCARD',
+          params: {
+            source: 'DECK',
+            count: 2,
+            filter: { resource: 'mental' },
+            matchingDestination: 'HAND',
+          },
         },
         { playerId: 'p1' },
       );

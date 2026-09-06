@@ -250,6 +250,51 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(result.success).toBe(true);
     });
 
+    it('Rejects obsolete fragmented discard primitives in AbilityStepSchema', () => {
+      const obsoleteEffects = [
+        'DISCARD_ATTACHMENT',
+        'DISCARD_CARDS_FROM_HAND_AT_RANDOM',
+        'DISCARD_CARDS_UNDER_HOST',
+        'DISCARD_ENCOUNTER_DECK',
+        'DISCARD_RANDOM_HAND',
+        'DISCARD_SELF',
+        'DISCARD_TOP_DECK_FILTER',
+        'DISCARD_UPGRADE_OR_SUPPORT',
+        'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE',
+      ];
+
+      for (const effect of obsoleteEffects) {
+        expect(
+          AbilityStepSchema.safeParse({ effect, params: {} }).success,
+          `Expected ${effect} to be rejected by AbilityStepSchema`,
+        ).toBe(false);
+      }
+    });
+
+    it('Accepts canonical DISCARD primitive in AbilityStepSchema', () => {
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'DISCARD',
+          params: {
+            source: 'TABLEAU',
+            filter: { cardTypes: ['upgrade', 'support'] },
+            fallback: 'SURGE',
+          },
+        }).success,
+      ).toBe(true);
+
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'DISCARD',
+          params: {
+            source: 'HAND',
+            mode: 'RANDOM',
+            count: 2,
+          },
+        }).success,
+      ).toBe(true);
+    });
+
     it('Verifies that schema.json exists and is synchronized with SupplementalPackSchema', () => {
       const schemaJsonPath = path.resolve('src/data/supplemental/schema.json');
       expect(fs.existsSync(schemaJsonPath), 'schema.json should exist').toBe(true);

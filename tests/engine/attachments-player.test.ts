@@ -457,4 +457,77 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(TargetSelectorSchema.safeParse('ENGAGED_ENEMIES').success).toBe(true);
     expect(TargetSelectorSchema.safeParse('ENGAGED_MINIONS').success).toBe(true);
   });
+
+  it('01009 Webbed Up: Strictly prohibits playing while in Alter-Ego form and allows playing in Hero form (Issue #81)', async () => {
+    const { canPlayCard, evaluateCardPlayability } =
+      await import('@engine/pipeline/legality-checker');
+    const { getLegalActionsForPlayer } = await import('@engine/pipeline/legal-actions-generator');
+
+    const webbedUpCard = cardCatalog.getCard('01009')!;
+    const webbedUpInst = createCardInstance(webbedUpCard);
+    const payment1 = createCardInstance(cardCatalog.getCard('01005')!);
+    const payment2 = createCardInstance(cardCatalog.getCard('01005')!);
+    const payment3 = createCardInstance(cardCatalog.getCard('01005')!);
+    const payment4 = createCardInstance(cardCatalog.getCard('01005')!);
+
+    state.players[0].hand = [webbedUpInst, payment1, payment2, payment3, payment4];
+
+    // 1. In Alter-Ego form (Peter Parker)
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = peterParkerAlterEgo;
+
+    // Legality check must disallow playing Webbed Up in Alter-Ego form
+    const alterEgoCheck = canPlayCard(state, 'p1', webbedUpInst.instanceId, [
+      payment1.instanceId,
+      payment2.instanceId,
+      payment3.instanceId,
+      payment4.instanceId,
+    ]);
+    expect(alterEgoCheck.allowed).toBe(false);
+    expect(alterEgoCheck.reason?.toLowerCase()).toContain('hero form');
+
+    // Playability evaluator must mark unplayable with reason
+    const alterEgoPlayability = evaluateCardPlayability(state, 'p1', webbedUpInst);
+    expect(alterEgoPlayability.isPlayable).toBe(false);
+    expect(alterEgoPlayability.reasons.some((r) => r.toLowerCase().includes('hero form'))).toBe(
+      true,
+    );
+
+    // Legal action generator must NOT include Webbed Up in hand card actions
+    const alterEgoActions = getLegalActionsForPlayer(state, 'p1');
+    expect(alterEgoActions.handCardActions.some((a) => a.cardCode === '01009')).toBe(false);
+
+    // Dispatching PLAY_CARD action must fail
+    const alterEgoRes = dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: webbedUpInst.instanceId,
+      paymentCardInstanceIds: [
+        payment1.instanceId,
+        payment2.instanceId,
+        payment3.instanceId,
+        payment4.instanceId,
+      ],
+    });
+    expect(alterEgoRes.result.success).toBe(false);
+    expect(alterEgoRes.result.error?.toLowerCase()).toContain('hero form');
+
+    // 2. In Hero form (Spider-Man)
+    state.players[0].currentForm = 'hero';
+    state.players[0].activeFormCard = spiderManHero;
+
+    const heroCheck = canPlayCard(state, 'p1', webbedUpInst.instanceId, [
+      payment1.instanceId,
+      payment2.instanceId,
+      payment3.instanceId,
+      payment4.instanceId,
+    ]);
+    expect(heroCheck.allowed).toBe(true);
+
+    const heroPlayability = evaluateCardPlayability(state, 'p1', webbedUpInst);
+    expect(heroPlayability.isPlayable).toBe(true);
+
+    const heroActions = getLegalActionsForPlayer(state, 'p1');
+    expect(heroActions.handCardActions.some((a) => a.cardCode === '01009')).toBe(true);
+  });
 });

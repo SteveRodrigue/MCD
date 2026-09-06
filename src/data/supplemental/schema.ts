@@ -546,12 +546,31 @@ export const CardUsesSchema = z
 export type CardUses = z.infer<typeof CardUsesSchema>;
 
 /**
+ * Universal Card Play Requirements Schema (RR v1.8 p. 16 'Play Restrictions, Permissions')
+ * Declaratively standardizes play restrictions across identity form, form traits,
+ * identity traits, controlled card requirements, and identity names.
+ */
+export const PlayRequirementsSchema = z
+  .object({
+    identityForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
+    formTrait: z.string().optional(),
+    identityTraits: z.array(z.string()).optional(),
+    controlFilter: UniversalCardFilterSchema.optional(),
+    controlZones: z.array(z.enum(['tableau', 'allies', 'identity'])).optional(),
+    identityNames: z.array(z.string()).optional(),
+  })
+  .strict();
+
+export type PlayRequirements = z.infer<typeof PlayRequirementsSchema>;
+
+/**
  * Card Enrichment Schema
  */
 export const CardEnrichmentSchema = z
   .object({
     comment: z.string().optional(),
     abilities: z.array(CardAbilitySchema).optional(),
+    playRequirements: PlayRequirementsSchema.optional(),
     audit: CardAuditRecordSchema.optional(),
     mechanicSteps: z.array(z.string()).optional(),
     noSupplementalNeeded: z.boolean().optional(),

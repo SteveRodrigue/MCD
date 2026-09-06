@@ -343,6 +343,9 @@
     },
     "01009": {
       "comment": "UPGRADE: Webbed Up. Attach to an enemy. Max 1 per enemy. Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
+      "playRequirements": {
+        "identityForm": "HERO"
+      },
       "abilities": [
         {
           "id": "webbed_up_attach",
@@ -1705,6 +1708,12 @@
     },
     "01043a": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "playRequirements": {
+        "controlFilter": {
+          "traits": ["Black Panther"],
+          "types": ["upgrade"]
+        }
+      },
       "abilities": [
         {
           "id": "wakanda_forever_a",
@@ -1733,6 +1742,12 @@
     },
     "01043b": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "playRequirements": {
+        "controlFilter": {
+          "traits": ["Black Panther"],
+          "types": ["upgrade"]
+        }
+      },
       "abilities": [
         {
           "id": "wakanda_forever_b",
@@ -1761,6 +1776,12 @@
     },
     "01043c": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "playRequirements": {
+        "controlFilter": {
+          "traits": ["Black Panther"],
+          "types": ["upgrade"]
+        }
+      },
       "abilities": [
         {
           "id": "wakanda_forever_c",
@@ -1789,6 +1810,12 @@
     },
     "01043d": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
+      "playRequirements": {
+        "controlFilter": {
+          "traits": ["Black Panther"],
+          "types": ["upgrade"]
+        }
+      },
       "abilities": [
         {
           "id": "wakanda_forever_d",

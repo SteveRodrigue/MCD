@@ -1,4 +1,5 @@
 import { Keyword } from './enums';
+import type { PlayRequirements } from '../../data/supplemental/schema';
 
 export type AbilityTiming =
   | 'WHEN_REVEALED'
@@ -176,6 +177,7 @@ export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
   cardName?: string;
   comment?: string;
+  playRequirements?: PlayRequirements;
   audit?: CardAuditMetadata;
   mechanicSteps?: string[];
   isLandscape?: boolean;

@@ -262,6 +262,168 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Play Requirements Section (RR v1.8 p. 16) */}
+        <div className="mt-4 pt-3 border-t-2 border-dashed border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bangers tracking-wide text-gray-800 flex items-center gap-1.5">
+              <span>PLAY REQUIREMENTS (RR v1.8 p. 16)</span>
+            </span>
+            <span className="text-[10px] text-gray-500">Form, Trait & Control gates</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-2.5 rounded border border-gray-300">
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Required Identity Form
+              </label>
+              <select
+                data-testid="play-req-identity-form-select"
+                value={supplemental.playRequirements?.identityForm || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const current = supplemental.playRequirements || {};
+                  if (!val) {
+                    const { identityForm: _, ...rest } = current;
+                    onChange({
+                      ...supplemental,
+                      playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                    });
+                  } else {
+                    onChange({
+                      ...supplemental,
+                      playRequirements: {
+                        ...current,
+                        identityForm: val,
+                      },
+                    });
+                  }
+                }}
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              >
+                <option value="">Any / Unrestricted</option>
+                <option value="HERO">Hero Form Only (e.g. Webbed Up)</option>
+                <option value="ALTER_EGO">Alter-Ego Form Only</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Form Trait Requirement
+              </label>
+              <input
+                type="text"
+                data-testid="play-req-form-trait-input"
+                value={supplemental.playRequirements?.formTrait || ''}
+                onChange={(e) => {
+                  const val = e.target.value.trim();
+                  const current = supplemental.playRequirements || {};
+                  if (!val) {
+                    const { formTrait: _, ...rest } = current;
+                    onChange({
+                      ...supplemental,
+                      playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                    });
+                  } else {
+                    onChange({
+                      ...supplemental,
+                      playRequirements: {
+                        ...current,
+                        formTrait: val,
+                      },
+                    });
+                  }
+                }}
+                placeholder="e.g. Giant, Tiny"
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              ></input>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Required Identity Traits (comma separated)
+              </label>
+              <input
+                type="text"
+                data-testid="play-req-identity-traits-input"
+                value={(supplemental.playRequirements?.identityTraits || []).join(', ')}
+                onChange={(e) => {
+                  const traits = e.target.value
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter(Boolean);
+                  const current = supplemental.playRequirements || {};
+                  if (traits.length === 0) {
+                    const { identityTraits: _, ...rest } = current;
+                    onChange({
+                      ...supplemental,
+                      playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                    });
+                  } else {
+                    onChange({
+                      ...supplemental,
+                      playRequirements: {
+                        ...current,
+                        identityTraits: traits,
+                      },
+                    });
+                  }
+                }}
+                placeholder="e.g. Avenger, Mystic, X-Men"
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Required Controlled Card (Traits / Types)
+              </label>
+              <input
+                type="text"
+                data-testid="play-req-control-filter-input"
+                value={
+                  supplemental.playRequirements?.controlFilter
+                    ? [
+                        ...(supplemental.playRequirements.controlFilter.traits || []),
+                        ...(supplemental.playRequirements.controlFilter.types || []),
+                      ].join(', ')
+                    : ''
+                }
+                onChange={(e) => {
+                  const parts = e.target.value
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter(Boolean);
+                  const current = supplemental.playRequirements || {};
+                  if (parts.length === 0) {
+                    const { controlFilter: _, ...rest } = current;
+                    onChange({
+                      ...supplemental,
+                      playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                    });
+                  } else {
+                    onChange({
+                      ...supplemental,
+                      playRequirements: {
+                        ...current,
+                        controlFilter: {
+                          traits: parts.filter(
+                            (p) => !['upgrade', 'support', 'ally'].includes(p.toLowerCase()),
+                          ),
+                          types: parts
+                            .filter((p) => ['upgrade', 'support', 'ally'].includes(p.toLowerCase()))
+                            .map((p) => p.toLowerCase()),
+                        },
+                      },
+                    });
+                  }
+                }}
+                placeholder="e.g. Black Panther, upgrade"
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 2. ABILITIES LIST */}

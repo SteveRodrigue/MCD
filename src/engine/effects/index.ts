@@ -147,7 +147,10 @@ export function checkAndDiscardZeroCounterCard(
     }
 
     if (discarded) {
-      player.discard.push(discarded);
+      const owner =
+        (discarded.ownerId ? state.players.find((p) => p.id === discarded.ownerId) : undefined) ||
+        player;
+      owner.discard.push(discarded);
 
       // 2. Dispatch CARD_DISCARDED trigger
       dispatchTrigger(state, 'CARD_DISCARDED', {
@@ -3411,6 +3414,9 @@ export function executeStep(
           if (spliceIdx !== -1) {
             ownerPlayer.discard.splice(spliceIdx, 1);
           }
+
+          // Track owner for cross-player control per RR v1.8 p. 11
+          chosenCard.ownerId = ownerPlayer.id;
 
           // Move into controller's tableau / allies
           if (chosenCard.card.type === CardType.ALLY) {

@@ -26,6 +26,7 @@ export interface CardInstance {
   statusCards?: StatusCard[];
   attachments?: CardInstance[];
   cardsUnderneath?: CardInstance[]; // Out-of-play cards placed/tucked under this card (RR v1.8 p. 6)
+  ownerId?: string; // Player ID of card owner for cross-player control / attachments (RR v1.8 p. 11)
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';

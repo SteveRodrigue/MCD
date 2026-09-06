@@ -660,7 +660,9 @@ export function applyCalculatedAttackDamage(
         // If ally defeated
         if (ally.tokens.damage >= allyMaxHp) {
           player.allies.splice(allyIdx, 1);
-          player.discard.push(ally);
+          const owner =
+            (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
+          owner.discard.push(ally);
 
           state.log.push({
             id: `log_${Date.now()}`,

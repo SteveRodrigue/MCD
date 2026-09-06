@@ -4,6 +4,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+- **Bug Fix & Data: Preserve Acronym Traits (`S.H.I.E.L.D.`, `A.I.M.`) and Punctuation-Resilient Trait Matching ([#72](https://github.com/SteveRodrigue/MCD/issues/72), `card-loader.ts`, `effects/index.ts`, `stat-calculator.ts`, `game-setup.ts`, `tests/data/card-loader.test.ts`):**
+  - **Boundary-Aware Trait Delimiter Splitting:** Updated `parseTraits` in `card-loader.ts` to split on delimiter-whitespace boundaries (`/(?<=[.!?])\s+/`) rather than blind `.split('.')`, preserving acronyms containing internal periods (such as `S.H.I.E.L.D.` and `A.I.M.`) instead of decomposing them into single letters (`['S', 'H', 'I', 'E', 'L', 'D']`).
+  - **Audit Across All 120 Packs:** Completed an exhaustive audit across 511 unique raw trait strings and 222 distinct traits in the upstream dataset; verified that multi-word traits (`Masters of Evil`, `Batroc's Brigade`, `Crossfire's Crew`) and hyphenated traits (`Web-Warrior`, `X-Men`) do not contain internal periods and remain intact.
+  - **Punctuation-Resilient Trait Matching:** Enhanced `matchCardFilter` and effect/stat/setup pipelines to match traits case- and punctuation-insensitively, ensuring filters for `SHIELD`, `shield`, or `S.H.I.E.L.D.` all match seamlessly.
+  - **Automated Regression Tests:** Added regression tests in `tests/data/card-loader.test.ts` validating acronym parsing and `matchCardFilter` matching.
 - **Bug Fix & UI: Enable Text Selection and 1-Click Copy in Raw Attributes Modal ([#71](https://github.com/SteveRodrigue/MCD/issues/71), `CardContextMenu.tsx`, `tests/ui/card-context-menu.test.ts`):**
   - **Override Global `select-none`:** Added `select-text` and `cursor-text` to the raw card attributes modal and `<pre>` JSON viewer, overriding the global `select-none` on `<body>` to re-enable native text highlighting, drag selection, and I-beam cursor behavior.
   - **1-Click Copy JSON Button:** Added a dedicated "Copy JSON" button in the modal header with visual copied feedback (`Copied JSON!`), allowing instant full-card JSON export to the clipboard.

@@ -97,28 +97,6 @@ export function canPayAbilityCost(
         };
       }
     }
-  } else if (cost.spendTokens) {
-    const currentTokens = (sourceCardInst?.tokens as any)?.[cost.spendTokens.type] || 0;
-    if (currentTokens < cost.spendTokens.count) {
-      return {
-        allowed: false,
-        reason: `Insufficient '${cost.spendTokens.type}' tokens on card (Requires ${cost.spendTokens.count}, has ${currentTokens}).`,
-      };
-    }
-  } else if (cost.removeCounter || (cost as any).spendCounter) {
-    const required = cost.removeCounter || (cost as any).spendCounter;
-    const current =
-      sourceCardInst?.counters?.['all_purpose'] ??
-      sourceCardInst?.counters?.['counter'] ??
-      (sourceCardInst?.counters ? Object.values(sourceCardInst.counters)[0] : undefined) ??
-      sourceCardInst?.tokens?.counters ??
-      0;
-    if (current < required) {
-      return {
-        allowed: false,
-        reason: `Insufficient counters on card (Requires ${required}, has ${current}).`,
-      };
-    }
   }
 
   // 5. Hand Card Discard Cost Validation
@@ -258,26 +236,6 @@ export function executeAbilityCost(
         );
       }
     }
-  } else if (cost.spendTokens && sourceCardInst) {
-    const tokenType = cost.spendTokens.type;
-    const count = cost.spendTokens.count;
-    const current = (sourceCardInst.tokens as any)?.[tokenType] || 0;
-    sourceCardInst.tokens = {
-      ...sourceCardInst.tokens,
-      [tokenType]: Math.max(0, current - count),
-    };
-  } else if ((cost.removeCounter || (cost as any).spendCounter) && sourceCardInst) {
-    const count = cost.removeCounter || (cost as any).spendCounter;
-    if (sourceCardInst.counters) {
-      for (const k of Object.keys(sourceCardInst.counters)) {
-        sourceCardInst.counters[k] = Math.max(0, sourceCardInst.counters[k] - count);
-      }
-    }
-    const current = sourceCardInst.tokens?.counters || 0;
-    sourceCardInst.tokens = {
-      ...sourceCardInst.tokens,
-      counters: Math.max(0, current - count),
-    };
   }
 
   // 4. Discard Cards as Cost

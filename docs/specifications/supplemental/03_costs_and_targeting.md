@@ -32,7 +32,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `resourceCost` | `number \| Record<string, number>` | `2` or `{"physical": 1}` | Generic resource payment or typed resource mapping. |
 | `damageHero` | `number` | `1` | Direct damage the hero identity must suffer as a cost (e.g. *War Machine*). |
 | `discardCard` | `object` | `{"count": 1, "from": "HAND"}` | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`. |
-| `spendTokens` | `object` | `{"type": "counter", "count": 1}` | Decrements counters/tokens from the card. |
+| `spendCounters` | `object` | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity. |
 | `costCheck` | `string` | `"CURRENT_HEALTH < MAX_HEALTH"` | Validation rule ensuring the action produces a legal state mutation. |
 
 ---

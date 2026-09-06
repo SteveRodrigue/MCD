@@ -146,6 +146,10 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Automated mandatory cost resolution on `FORCED_RESPONSE` and `FORCED_INTERRUPT` triggers (_Superhuman Strength_ `01028` discard self + stun).
   - Integrated `BASIC_ATTACK_PERFORMED`, `ATTACK_RESOLVED`, and `THWART_RESOLVED` lifecycle triggers in `action-dispatcher.ts`.
   - Formalized direct character self-damage cost primitive (`cost.damageSelf`) in `cost-engine.ts` with automated ally defeat handling (_War Machine_ `01030`).
+- [x] **Unify Redundant Counter & Token Cost Primitives (`spendCounters`) (RR v1.8 p. 7, 30 / [ADR-0035](decisions/0035-universal-named-counter-map-cross-entity-targeting.md) / [Issue #74](https://github.com/SteveRodrigue/MCD/issues/74)) ✅ (Completed):**
+  - Removed dead/redundant cost primitives (`spendTokens`, `removeCounter`, `spendCounter`) from `AbilityCostSchema` and `AbilityCost`.
+  - Consolidated all counter depletion on the canonical `spendCounters: { counterType?: string, amount: number, target?: 'SELF' | 'IDENTITY' }` primitive.
+  - Pruned fallback branches from `cost-engine.ts`, regenerated `schema.json`, and updated `03_costs_and_targeting.md`.
 - [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
   - Executed Card Integration Protocol across all 23 ambiguity files.
   - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.

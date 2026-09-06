@@ -485,6 +485,35 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       ).toEqual([]);
     });
 
+    it('Rejects obsolete counter and token cost fields in AbilityCostSchema', () => {
+      // Rejects spendTokens
+      expect(AbilityCostSchema.safeParse({ spendTokens: { type: 'counter', count: 1 } }).success).toBe(false);
+      // Rejects removeCounter
+      expect(AbilityCostSchema.safeParse({ removeCounter: 1 }).success).toBe(false);
+      // Rejects spendCounter
+      expect(AbilityCostSchema.safeParse({ spendCounter: 1 }).success).toBe(false);
+    });
+
+    it('Accepts canonical spendCounters in AbilityCostSchema', () => {
+      expect(
+        AbilityCostSchema.safeParse({
+          spendCounters: {
+            counterType: 'web',
+            amount: 1,
+            target: 'SELF',
+          },
+        }).success,
+      ).toBe(true);
+
+      expect(
+        AbilityCostSchema.safeParse({
+          spendCounters: {
+            amount: 2,
+          },
+        }).success,
+      ).toBe(true);
+    });
+
     it('Correctly passes on JSON with non-duplicate nested keys', () => {
       const sampleValid = `{\n  "card1": { "id": "1", "name": "A" },\n  "card2": { "id": "2", "name": "B" }\n}`;
       const dups = detectDuplicateJsonKeys(sampleValid);

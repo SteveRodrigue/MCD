@@ -271,8 +271,12 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
-    it('Rejects obsolete SCRY_AND_SELECT_TRAIT and RESOLVE_SCRY_SELECTION in AbilityStepSchema (Issue #78)', () => {
-      const obsoleteEffects = ['SCRY_AND_SELECT_TRAIT', 'RESOLVE_SCRY_SELECTION'];
+    it('Rejects obsolete SCRY_AND_SELECT_TRAIT, RESOLVE_SCRY_SELECTION, and SEARCH_DECK_FOR_CARD in AbilityStepSchema (Issue #39, #78)', () => {
+      const obsoleteEffects = [
+        'SCRY_AND_SELECT_TRAIT',
+        'RESOLVE_SCRY_SELECTION',
+        'SEARCH_DECK_FOR_CARD',
+      ];
 
       for (const effect of obsoleteEffects) {
         expect(
@@ -282,7 +286,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
-    it('Accepts canonical SEARCH_AND_SELECT primitive in AbilityStepSchema', () => {
+    it('Accepts canonical SEARCH_AND_SELECT primitive in AbilityStepSchema with nested or flat filter params', () => {
       expect(
         AbilityStepSchema.safeParse({
           effect: 'SEARCH_AND_SELECT',
@@ -293,6 +297,21 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             filter: { trait: 'Tech' },
             selectedDestination: 'HAND',
             unselectedDestination: 'DISCARD',
+          },
+        }).success,
+      ).toBe(true);
+
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'SEARCH_AND_SELECT',
+          params: {
+            source: 'PLAYER_DECK',
+            targetCardCode: '01046',
+            trait: 'Black Panther',
+            type: 'upgrade',
+            takeCount: 1,
+            selectedDestination: 'HAND',
+            shuffleAfter: true,
           },
         }).success,
       ).toBe(true);

@@ -102,9 +102,28 @@
 
 ### `SEARCH_AND_SELECT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030 / _Tony Stark_ `01029b` Futurist)
-- **Description:** Searches or looks at cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`), filters candidates matching criteria (`trait`, `resource`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `PLAY`), routing remaining looked cards to `unselectedDestination` (`DISCARD`, `DECK`) with optional post-search shuffle (`shuffleAfter`).
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`)
+- **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`).
+- **Supersedes:** `SEARCH_DECK_FOR_CARD` (deprecated and removed in Issue #39). All deck and zone searching is unified under `SEARCH_AND_SELECT`.
 
+#### Parameters
+
+| Parameter | Type | Required | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `source` | `enum` | No | `"PLAYER_DECK"` | Source zone (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). |
+| `lookCount` | `number` | No | `undefined` | Number of top cards to look at. If omitted/undefined, searches the entire source zone. |
+| `takeCount` | `number` | No | `1` | Maximum number of matching cards the player may select. |
+| `filter` | `object` | No | `undefined` | Nested filter predicate (e.g. `{ "trait": "Tech", "type": "upgrade" }`, `{ "targetCardCode": "01046" }`). |
+| `targetCardCode` | `string` | No | `undefined` | Flat filter convenience: target a specific card code (e.g. `"01046"`). Supported directly in Card Editor. |
+| `trait` | `string` | No | `undefined` | Flat filter convenience: filter candidates matching this trait (e.g. `"Black Panther"`). |
+| `type` | `string` | No | `undefined` | Flat filter convenience: filter candidates matching this card type (e.g. `"upgrade"`). |
+| `selectedDestination` | `enum` | No | `"HAND"` | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`). |
+| `unselectedDestination` | `enum` | No | `null` | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`). |
+| `shuffleAfter` | `boolean` | No | `true` (if lookCount omitted) / `false` | Whether to shuffle the deck after search completion. |
+| `isVoluntary` | `boolean` | No | `false` | When `true`, player may choose fewer than `takeCount` cards or decline. |
+| `promptTitle` | `string` | No | Contextual | Custom user-facing dialog title displayed in the decision prompt modal. |
+
+#### Example 1: Look & Split (Tony Stark Futurist `01029b`)
 ```json
 {
   "effect": "SEARCH_AND_SELECT",
@@ -119,6 +138,24 @@
     "unselectedDestination": "DISCARD",
     "shuffleAfter": false,
     "promptTitle": "Futurist: Choose 1 Tech card to add to hand"
+  }
+}
+```
+
+#### Example 2: Full-Deck Tutor Search (T'Challa Foresight `01040b` / Shuri `01041`)
+```json
+{
+  "effect": "SEARCH_AND_SELECT",
+  "params": {
+    "source": "PLAYER_DECK",
+    "filter": {
+      "trait": "Black Panther",
+      "type": "upgrade"
+    },
+    "takeCount": 1,
+    "selectedDestination": "HAND",
+    "shuffleAfter": true,
+    "promptTitle": "Foresight: Search deck for a Black Panther upgrade"
   }
 }
 ```

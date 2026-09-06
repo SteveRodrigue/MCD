@@ -3168,7 +3168,21 @@ export function executeStep(
       const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
       const lookCount = step.params?.lookCount as number | undefined;
       const takeCount = (step.params?.takeCount as number) || 1;
-      const filter = (step.params?.filter || step.filter) as any;
+      const filter =
+        (step.params?.filter || step.filter) ??
+        (step.params?.targetCardCode ||
+        step.params?.targetCardName ||
+        step.params?.trait ||
+        step.params?.type ||
+        step.params?.type_code ||
+        step.params?.cardType
+          ? {
+              targetCardCode: step.params?.targetCardCode,
+              targetCardName: step.params?.targetCardName,
+              trait: step.params?.trait,
+              type: step.params?.type || step.params?.type_code || step.params?.cardType,
+            }
+          : undefined);
       const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
       const unselectedDestination = step.params?.unselectedDestination as string | null | undefined;
       const shuffleAfter =
@@ -3284,7 +3298,6 @@ export function executeStep(
       };
     }
 
-    case 'SEARCH_DECK_FOR_CARD':
     case 'SEARCH_AND_PLAY_UPGRADE': {
       const traitFilter = step.params?.trait as string | undefined;
       const typeFilter =
@@ -3299,11 +3312,7 @@ export function executeStep(
 
       if (matchIdx !== -1) {
         const [foundCard] = player.deck.splice(matchIdx, 1);
-        if (step.effect === 'SEARCH_AND_PLAY_UPGRADE') {
-          player.tableau.push(foundCard);
-        } else {
-          player.hand.push(foundCard);
-        }
+        player.tableau.push(foundCard);
         // Shuffle deck after search
         player.deck = [...player.deck].sort(() => Math.random() - 0.5);
         return {

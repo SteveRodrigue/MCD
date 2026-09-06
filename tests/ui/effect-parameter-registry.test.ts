@@ -65,16 +65,21 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(amountParam?.type).toBe('number');
   });
 
-  it('SEARCH_AND_SELECT exposes destination routing and look/take parameters', () => {
+  it('SEARCH_AND_SELECT exposes destination routing, card picking, filtering, and prompt controls', () => {
     const desc = getEffectDescriptor('SEARCH_AND_SELECT');
     const paramKeys = desc.parameters.map((p) => p.key);
 
     expect(paramKeys).toContain('source');
     expect(paramKeys).toContain('lookCount');
     expect(paramKeys).toContain('takeCount');
+    expect(paramKeys).toContain('targetCardCode');
+    expect(paramKeys).toContain('trait');
+    expect(paramKeys).toContain('type');
     expect(paramKeys).toContain('selectedDestination');
     expect(paramKeys).toContain('unselectedDestination');
     expect(paramKeys).toContain('shuffleAfter');
+    expect(paramKeys).toContain('isVoluntary');
+    expect(paramKeys).toContain('promptTitle');
   });
 
   it('GRANT_KEYWORD exposes keyword, amount, duration, and target', () => {

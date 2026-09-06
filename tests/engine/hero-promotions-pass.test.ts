@@ -10,6 +10,7 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
+import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 import { getEffectiveHeroStats } from '@engine/pipeline/stat-calculator';
 
 describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () => {
@@ -182,7 +183,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
   });
 
   describe("Black Panther: T'Challa (01040b), Shuri (01041), Ancestral Knowledge (01042), Wakanda Forever! (01043a-d)", () => {
-    it("T'Challa and Shuri search deck for an upgrade and add to hand", () => {
+    it("T'Challa and Shuri search deck for an upgrade and add to hand via canonical SEARCH_AND_SELECT", () => {
       const player = state.players[0];
       const bpUpgrade = createCardInstance(cardCatalog.getCard('01046')!); // Energy Daggers
       const fillerCard = createCardInstance(cardCatalog.getCard('01005')!);
@@ -192,14 +193,35 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
 
       const result = executeEffect(
         state,
-        { effect: 'SEARCH_DECK_FOR_CARD', params: { trait: 'Black Panther', type: 'upgrade' } },
+        {
+          effect: 'SEARCH_AND_SELECT',
+          params: {
+            source: 'PLAYER_DECK',
+            trait: 'Black Panther',
+            type: 'upgrade',
+            takeCount: 1,
+            selectedDestination: 'HAND',
+            shuffleAfter: true,
+          },
+        },
         { playerId: 'p1' },
       );
 
       expect(result.success).toBe(true);
-      expect(player.hand.length).toBe(1);
-      expect(player.hand[0].card.code).toBe('01046');
-      expect(player.deck.length).toBe(2);
+
+      let finalState = result.state;
+      if (finalState.pendingDecisionPrompt) {
+        const resolveRes = dispatchAction(finalState, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: 'p1',
+          selectedOptionId: bpUpgrade.instanceId,
+        });
+        finalState = resolveRes.state;
+      }
+
+      expect(finalState.players[0].hand.length).toBe(1);
+      expect(finalState.players[0].hand[0].card.code).toBe('01046');
+      expect(finalState.players[0].deck.length).toBe(2);
     });
 
     it('Ancestral Knowledge shuffles cards from discard into deck', () => {

@@ -102,7 +102,9 @@
                 "source": "DECK",
                 "count": 2,
                 "filter": {
-                  "resourceIcons": ["mental"]
+                  "resourceIcons": [
+                    "mental"
+                  ]
                 },
                 "matchingDestination": "HAND"
               }
@@ -344,12 +346,12 @@
       "abilities": [
         {
           "id": "webbed_up_attach",
-          "timing": "CARD_PLAYED",
+          "timing": "HERO_ACTION",
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
               "params": {
-                "target": "ENEMY",
+                "target": "CHOSEN_ENEMY",
                 "maxPerHost": 1
               }
             }
@@ -371,11 +373,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-06T19:04:34Z",
+        "reviewedAt": "2026-09-06T19:04:34Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 60,
         "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
         "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
       },
@@ -1148,8 +1150,12 @@
                 "multiplier": 1
               },
               "filter": {
-                "traits": ["Tech"],
-                "types": ["upgrade"]
+                "traits": [
+                  "Tech"
+                ],
+                "types": [
+                  "upgrade"
+                ]
               }
             }
           ]
@@ -1595,8 +1601,12 @@
               "params": {
                 "source": "PLAYER_DECK",
                 "filter": {
-                  "traits": ["Black Panther"],
-                  "types": ["upgrade"]
+                  "traits": [
+                    "Black Panther"
+                  ],
+                  "types": [
+                    "upgrade"
+                  ]
                 },
                 "takeCount": 1,
                 "selectedDestination": "TABLEAU",
@@ -1635,7 +1645,9 @@
               "params": {
                 "source": "PLAYER_DECK",
                 "filter": {
-                  "types": ["upgrade"]
+                  "types": [
+                    "upgrade"
+                  ]
                 },
                 "takeCount": 1,
                 "selectedDestination": "HAND",

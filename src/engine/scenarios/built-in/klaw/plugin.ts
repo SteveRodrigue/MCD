@@ -8,7 +8,7 @@ import {
   NormalizedCard,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
-import { createCardInstance } from '../../../state/game-setup';
+import { createCardInstance } from '../../../state/card-instance';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioGameSetupOptions } from '../../types';
 import definitionData from './definition.json';
 
@@ -85,20 +85,20 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     const allEncounterCards: NormalizedCard[] = [];
 
     // Add scenario cards (Klaw set)
-    allEncounterCards.push(...cardCatalog.getCardsBySet('klaw'));
+    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('klaw'));
 
     // Add Standard set
-    allEncounterCards.push(...cardCatalog.getCardsBySet('standard'));
+    allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('standard'));
 
     // Add Expert set if difficulty is EXPERT
     if (difficulty === 'EXPERT') {
-      allEncounterCards.push(...cardCatalog.getCardsBySet('expert'));
+      allEncounterCards.push(...cardCatalog.getExpandedCardsBySet('expert'));
     }
 
     // Add modular sets
     for (const setCode of modularSetCodes) {
       if (setCode !== 'standard' && setCode !== 'expert') {
-        allEncounterCards.push(...cardCatalog.getCardsBySet(setCode));
+        allEncounterCards.push(...cardCatalog.getExpandedCardsBySet(setCode));
       }
     }
 

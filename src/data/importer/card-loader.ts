@@ -415,16 +415,24 @@ export class CardCatalog {
     return undefined;
   }
 
-  public getNemesisCardsForHero(heroSetCode: string): NormalizedCard[] {
-    const nemesisSetCode = `${heroSetCode}_nemesis`;
-    const setCards = this.getCardsBySet(nemesisSetCode);
+  /**
+   * Retrieves all cards belonging to a set, expanded by their printed card quantity.
+   */
+  public getExpandedCardsBySet(setCode: string): NormalizedCard[] {
+    const setCards = this.getCardsBySet(setCode);
     const result: NormalizedCard[] = [];
     for (const card of setCards) {
-      for (let q = 0; q < (card.quantity || 1); q++) {
+      const qty = typeof card.quantity === 'number' && card.quantity > 0 ? card.quantity : 1;
+      for (let q = 0; q < qty; q++) {
         result.push(card);
       }
     }
     return result;
+  }
+
+  public getNemesisCardsForHero(heroSetCode: string): NormalizedCard[] {
+    const nemesisSetCode = `${heroSetCode}_nemesis`;
+    return this.getExpandedCardsBySet(nemesisSetCode);
   }
 
   /**

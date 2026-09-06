@@ -7,6 +7,7 @@ import {
 } from '../models';
 import { executeEffect } from '../effects';
 import { executeAbilityCost } from './cost-engine';
+import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
 
 /**
  * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032).
@@ -158,6 +159,20 @@ export function resolveDecisionPrompt(
       onomatopoeia: 'PASSED',
     });
 
+    // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
+    if (nextState.activeEncounterContext) {
+      const activeCtx = nextState.activeEncounterContext;
+      const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
+      if (targetPlayer && activeCtx.encounterCard) {
+        resolveActiveEncounterCardAfterInterrupt(
+          nextState,
+          activeCtx.encounterCard,
+          targetPlayer,
+          Boolean(activeCtx.cancelled),
+        );
+      }
+    }
+
     return {
       state: nextState,
       result: { success: true, onomatopoeia: 'PASSED' },
@@ -212,6 +227,19 @@ export function resolveDecisionPrompt(
       targetInstanceId: optContext?.targetInstanceId,
     });
 
+    if (
+      optAbility.steps?.some(
+        (s) =>
+          s.effect === 'CANCEL_WHEN_REVEALED' ||
+          s.effect === 'CANCEL_WHEN_REVEALED_AND_ATTACK' ||
+          s.effect === 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
+      )
+    ) {
+      if (nextState.activeEncounterContext) {
+        nextState.activeEncounterContext.cancelled = true;
+      }
+    }
+
     nextState.log.push({
       id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       timestamp: Date.now(),
@@ -223,8 +251,22 @@ export function resolveDecisionPrompt(
       onomatopoeia: 'ABILITY TRIGGERED!',
     });
 
+    // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
+    if (nextState.activeEncounterContext) {
+      const activeCtx = nextState.activeEncounterContext;
+      const targetPlayer = nextState.players.find((p) => p.id === activeCtx.targetPlayerId);
+      if (targetPlayer && activeCtx.encounterCard) {
+        resolveActiveEncounterCardAfterInterrupt(
+          nextState,
+          activeCtx.encounterCard,
+          targetPlayer,
+          Boolean(activeCtx.cancelled),
+        );
+      }
+    }
+
     return {
-      state: effectRes.state,
+      state: nextState,
       result: {
         success: true,
         onomatopoeia: effectRes.onomatopoeia || 'ABILITY TRIGGERED!',

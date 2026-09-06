@@ -12,6 +12,7 @@ export interface TriggerContext {
   targetType?: string;
   targetInstanceId?: string;
   acceptOptionalTriggers?: boolean;
+  encounterCardInstance?: any;
 }
 
 export interface TriggerDispatchResult {
@@ -19,6 +20,7 @@ export interface TriggerDispatchResult {
   preventedDamage?: boolean;
   damageAmount?: number;
   threatAmount?: number;
+  cancelled?: boolean;
   hasPendingPrompt?: boolean;
 }
 
@@ -57,6 +59,7 @@ export function dispatchTrigger(
   let currentDamage = context.damageAmount ?? 0;
   let isPrevented = context.preventedDamage ?? false;
   let currentThreat = context.threatAmount ?? 0;
+  let isCancelled = false;
   let hasPendingPrompt = false;
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
@@ -325,11 +328,81 @@ export function dispatchTrigger(
     }
   }
 
+  // 5. Scan in-hand cards for Encounter / Treachery triggers (e.g. Enhanced Spider-Sense 01004, Get Behind Me! 01078)
+  if (trigger === 'WHEN_REVEALED' || trigger === 'TREACHERY_REVEALED') {
+    const handInterruptIdx = player.hand.findIndex((c) => {
+      const abilities = c.card.enrichment?.abilities || [];
+      return abilities.some((a) => {
+        if (a.trigger !== trigger || a.zone !== 'HAND') return false;
+        if (a.timing.startsWith('HERO_') && player.currentForm !== 'hero') return false;
+        if (a.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') return false;
+        const costCheck = canPayAbilityCost(state, player, a, c);
+        return costCheck.allowed;
+      });
+    });
+
+    if (handInterruptIdx !== -1) {
+      const interruptCard = player.hand[handInterruptIdx];
+      const ability = interruptCard.card.enrichment!.abilities!.find(
+        (a) =>
+          a.trigger === trigger &&
+          a.zone === 'HAND' &&
+          (!a.timing.startsWith('HERO_') || player.currentForm === 'hero') &&
+          (!a.timing.startsWith('ALTER_EGO_') || player.currentForm === 'alter_ego'),
+      )!;
+
+      const isForced = ability.timing.startsWith('FORCED_');
+      if (isForced || context.acceptOptionalTriggers === true) {
+        player.hand.splice(handInterruptIdx, 1);
+        if (ability.cost?.discardSelf !== false) {
+          player.discard.push(interruptCard);
+        }
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: interruptCard,
+        });
+        isCancelled = true;
+        if (state.activeEncounterContext) {
+          state.activeEncounterContext.cancelled = true;
+        }
+      } else {
+        const cardName = interruptCard.card.name;
+        enqueueDecisionPrompt(state, {
+          promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          playerId: player.id,
+          title: `Do you want to use the following ability from ${cardName}?`,
+          description: formatAbilityStepsSummary(trigger, ability.steps || []),
+          sourceCardName: cardName,
+          isVoluntary: true,
+          options: [
+            {
+              id: `trigger_${ability.id}`,
+              label: 'Yes',
+              effect: 'EXECUTE_OPTIONAL_TRIGGER',
+              params: {
+                ability,
+                context,
+                sourceCardInstanceId: interruptCard.instanceId,
+              },
+            },
+            {
+              id: 'pass',
+              label: 'No',
+              effect: 'PASS',
+            },
+          ],
+        });
+        hasPendingPrompt = true;
+      }
+    }
+  }
+
   return {
     state,
     damageAmount: currentDamage,
     preventedDamage: isPrevented,
     threatAmount: currentThreat,
+    cancelled: isCancelled,
     hasPendingPrompt,
   };
 }

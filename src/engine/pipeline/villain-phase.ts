@@ -383,10 +383,17 @@ export function step4_dealEncounterCards(state: GameState): GameState {
   return state;
 }
 
+export interface RevealEncounterOptions {
+  acceptOptionalTriggers?: boolean;
+}
+
 /**
  * Step 5: Reveal and Resolve Encounter Cards (RR v1.8 p. 32)
  */
-export function step5_revealEncounterCards(state: GameState): GameState {
+export function step5_revealEncounterCards(
+  state: GameState,
+  options?: RevealEncounterOptions,
+): GameState {
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
 
@@ -398,97 +405,49 @@ export function step5_revealEncounterCards(state: GameState): GameState {
       const cardInstance = player.dealtEncounterCards.shift()!;
       const card = cardInstance.card;
 
-      if (card.type === CardType.MINION) {
-        // Check Toughness keyword
-        const hasToughness = hasKeyword(card, Keyword.TOUGH);
-        if (hasToughness) {
-          if (!cardInstance.statusCards) cardInstance.statusCards = [];
-          if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {
-            cardInstance.statusCards.push(StatusCard.TOUGH);
+      state.activeEncounterContext = {
+        encounterInstanceId: cardInstance.instanceId,
+        encounterCard: cardInstance,
+        targetPlayerId: player.id,
+      };
+
+      // 1. Dispatch interrupt trigger for card reveal (WHEN_REVEALED and TREACHERY_REVEALED)
+      const whenRevealedAbilities = (card.enrichment?.abilities || []).filter(
+        (a) => a.trigger === 'WHEN_REVEALED' || a.timing === 'WHEN_REVEALED',
+      );
+
+      let isCancelled = false;
+
+      if (whenRevealedAbilities.length > 0) {
+        // Dispatch WHEN_REVEALED trigger
+        const triggerRes = dispatchTrigger(state, 'WHEN_REVEALED', {
+          targetPlayerId: player.id,
+          encounterCardInstance: cardInstance,
+          acceptOptionalTriggers: options?.acceptOptionalTriggers,
+        });
+        if (triggerRes.cancelled || state.activeEncounterContext?.cancelled) {
+          isCancelled = true;
+        }
+
+        // If card is a Treachery, also dispatch TREACHERY_REVEALED trigger
+        if (!isCancelled && card.type === CardType.TREACHERY) {
+          const treacheryRes = dispatchTrigger(state, 'TREACHERY_REVEALED', {
+            targetPlayerId: player.id,
+            encounterCardInstance: cardInstance,
+            acceptOptionalTriggers: options?.acceptOptionalTriggers,
+          });
+          if (treacheryRes.cancelled || state.activeEncounterContext?.cancelled) {
+            isCancelled = true;
           }
         }
 
-        // Enters play engaged with this player
-        player.engagedMinions.push(cardInstance);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'encounter.reveal.minion',
-          params: { player: player.name, minion: card.name },
-          onomatopoeia: 'MINION SPAWNS!',
-        });
-        const abilities = card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, {
-              playerId: player.id,
-              sourceCardInstance: cardInstance,
-            });
-          }
+        // If a decision prompt was queued for the player to interrupt, halt and wait for choice
+        if (state.pendingDecisionPrompt) {
+          return state;
         }
-      } else if (card.type === CardType.SIDE_SCHEME) {
-        const sideSchemeCard = card as SideSchemeCard;
-        const baseThreat =
-          sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
-        state.sideSchemes.push({
-          instanceId: cardInstance.instanceId,
-          card: sideSchemeCard,
-          threat: baseThreat,
-        });
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'encounter.reveal.sideScheme',
-          params: { sideScheme: card.name, threat: baseThreat },
-          onomatopoeia: 'SIDE SCHEME!',
-        });
-        const abilities = card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, {
-              playerId: player.id,
-              sourceCardInstance: cardInstance,
-            });
-          }
-        }
-      } else if (card.type === CardType.ATTACHMENT) {
-        state.villain.attachments.push(cardInstance);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'encounter.reveal.attachment',
-          params: { attachment: card.name, host: state.villain.card.name },
-          onomatopoeia: 'ATTACHED!',
-        });
-        const abilities = card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, {
-              playerId: player.id,
-              sourceCardInstance: cardInstance,
-            });
-          }
-        }
-      } else {
-        // Treachery generic resolution: execute declarative WHEN_REVEALED
-        const abilities = card.enrichment?.abilities || [];
-        for (const ability of abilities) {
-          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
-            executeEffect(state, ability, {
-              playerId: player.id,
-              sourceCardInstance: cardInstance,
-            });
-          }
-        }
-        state.encounterDiscard.push(cardInstance);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          key: 'encounter.reveal.treachery',
-          params: { card: card.name },
-          onomatopoeia: 'TREACHERY!',
-        });
       }
+
+      resolveActiveEncounterCardAfterInterrupt(state, cardInstance, player, isCancelled);
 
       if (state.pendingDecisionPrompt || state.winner) {
         return state;
@@ -497,6 +456,139 @@ export function step5_revealEncounterCards(state: GameState): GameState {
   }
 
   return state;
+}
+
+/**
+ * Resolves the effects and final destination of an active encounter card
+ * after any When Revealed / Treachery reveal interrupts have resolved.
+ */
+export function resolveActiveEncounterCardAfterInterrupt(
+  state: GameState,
+  cardInstance: CardInstance,
+  player: PlayerState,
+  isCancelled: boolean,
+): void {
+  const card = cardInstance.card;
+
+  if (card.type === CardType.MINION) {
+    // Check Toughness keyword
+    const hasToughness = hasKeyword(card, Keyword.TOUGH);
+    if (hasToughness) {
+      if (!cardInstance.statusCards) cardInstance.statusCards = [];
+      if (!cardInstance.statusCards.includes(StatusCard.TOUGH)) {
+        cardInstance.statusCards.push(StatusCard.TOUGH);
+      }
+    }
+
+    // Enters play engaged with this player
+    player.engagedMinions.push(cardInstance);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.minion',
+      params: { player: player.name, minion: card.name },
+      onomatopoeia: 'MINION SPAWNS!',
+    });
+    const abilities = card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (
+        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
+        !isCancelled
+      ) {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      } else if (ability.timing === 'FORCED_RESPONSE') {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      }
+    }
+  } else if (card.type === CardType.SIDE_SCHEME) {
+    const sideSchemeCard = card as SideSchemeCard;
+    const baseThreat =
+      sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+    state.sideSchemes.push({
+      instanceId: cardInstance.instanceId,
+      card: sideSchemeCard,
+      threat: baseThreat,
+    });
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.sideScheme',
+      params: { sideScheme: card.name, threat: baseThreat },
+      onomatopoeia: 'SIDE SCHEME!',
+    });
+    const abilities = card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (
+        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
+        !isCancelled
+      ) {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      } else if (ability.timing === 'FORCED_RESPONSE') {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      }
+    }
+  } else if (card.type === CardType.ATTACHMENT) {
+    state.villain.attachments.push(cardInstance);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.attachment',
+      params: { attachment: card.name, host: state.villain.card.name },
+      onomatopoeia: 'ATTACHED!',
+    });
+    const abilities = card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (
+        (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') &&
+        !isCancelled
+      ) {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      } else if (ability.timing === 'FORCED_RESPONSE') {
+        executeEffect(state, ability, {
+          playerId: player.id,
+          sourceCardInstance: cardInstance,
+        });
+      }
+    }
+  } else {
+    // Treachery generic resolution: execute declarative WHEN_REVEALED unless cancelled
+    if (!isCancelled) {
+      const abilities = card.enrichment?.abilities || [];
+      for (const ability of abilities) {
+        if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+          executeEffect(state, ability, {
+            playerId: player.id,
+            sourceCardInstance: cardInstance,
+          });
+        }
+      }
+    }
+    state.encounterDiscard.push(cardInstance);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'encounter.reveal.treachery',
+      params: { card: card.name },
+      onomatopoeia: isCancelled ? 'CANCELLED!' : 'TREACHERY!',
+    });
+  }
+
+  state.activeEncounterContext = undefined;
 }
 
 import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';

@@ -220,6 +220,14 @@ export interface PendingDecisionPrompt {
   totalQueued?: number;
 }
 
+export interface EncounterExecutionContext {
+  encounterInstanceId: string;
+  encounterCard: CardInstance;
+  targetPlayerId: string;
+  cancelled?: boolean;
+  cancellationReason?: string;
+}
+
 export interface GameState {
   id: string;
   roundNumber: number;
@@ -267,6 +275,7 @@ export interface GameState {
   accelerationTokens: number;
   activeBoostCard?: CardInstance;
   activeAttackContext?: AttackExecutionContext;
+  activeEncounterContext?: EncounterExecutionContext;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
 }

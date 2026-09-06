@@ -75,3 +75,19 @@
   }
 }
 ```
+
+---
+
+## 4. Encounter Cancellation & Interrupts
+
+### `CANCEL_WHEN_REVEALED`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Enhanced Spider-Sense* `01004`)
+* **Description:** Interrupts and cancels the "When Revealed" effect of an encounter card revealed from the encounter deck (RR v1.8 p. 7, 16, 31). Treachery cards have their When Revealed effects cancelled and are discarded to the encounter discard pile with onomatopoeia `'CANCELLED!'`. Minions, attachments, and side schemes have their When Revealed effects suppressed, but still enter play normally.
+
+```json
+{
+  "effect": "CANCEL_WHEN_REVEALED",
+  "params": {}
+}
+```
+

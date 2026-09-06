@@ -797,12 +797,15 @@ export function dispatchAction(
     }
 
     case 'PLAY_CARD': {
+      const sourceZone = action.sourceZone || 'HAND';
       const check = canPlayCard(
         nextState,
         action.playerId,
         action.cardInstanceId,
         action.paymentCardInstanceIds,
         action.generatorInstanceIds,
+        sourceZone,
+        action.targetOwnerPlayerId,
       );
       if (!check.allowed) {
         return { state, result: { success: false, error: check.reason } };
@@ -810,9 +813,50 @@ export function dispatchAction(
 
       const player = getPlayer(nextState, action.playerId)!;
 
-      const targetCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      let targetCard: CardInstance | undefined;
+      let targetOwnerPlayer: PlayerState = player;
+
+      if (sourceZone === 'PLAYER_DISCARD') {
+        targetCard = player.discard.find((c) => c.instanceId === action.cardInstanceId);
+      } else if (sourceZone === 'ANY_PLAYER_DISCARD') {
+        if (action.targetOwnerPlayerId) {
+          const owner = getPlayer(nextState, action.targetOwnerPlayerId);
+          if (owner) {
+            targetCard = owner.discard.find((c) => c.instanceId === action.cardInstanceId);
+            targetOwnerPlayer = owner;
+          }
+        }
+        if (!targetCard) {
+          for (const p of nextState.players) {
+            targetCard = p.discard.find((c) => c.instanceId === action.cardInstanceId);
+            if (targetCard) {
+              targetOwnerPlayer = p;
+              break;
+            }
+          }
+        }
+      } else if (sourceZone === 'DECK_TOP') {
+        targetCard =
+          player.deck[0]?.instanceId === action.cardInstanceId ? player.deck[0] : undefined;
+      } else if (sourceZone === 'ATTACHED' || sourceZone === 'TUCKED') {
+        targetCard =
+          player.attachments?.find((c) => c.instanceId === action.cardInstanceId) ||
+          player.cardsUnderneath?.find((c) => c.instanceId === action.cardInstanceId);
+      } else {
+        targetCard = player.hand.find((c) => c.instanceId === action.cardInstanceId);
+      }
+
       if (!targetCard) {
-        return { state, result: { success: false, error: 'Target card not found in hand' } };
+        return {
+          state,
+          result: {
+            success: false,
+            error:
+              sourceZone === 'HAND'
+                ? 'Target card not found in hand'
+                : `Target card not found in ${sourceZone}`,
+          },
+        };
       }
 
       // Check Restricted Keyword limit replacement trigger (RR v1.8 p. 25, ADR-0018, ADR-0032)
@@ -942,9 +986,32 @@ export function dispatchAction(
         }
       }
 
-      // 3. Play Target Card from Hand
-      const targetIndex = player.hand.findIndex((c) => c.instanceId === action.cardInstanceId);
-      const [playedCardInstance] = player.hand.splice(targetIndex, 1);
+      // 3. Play Target Card from Source Zone
+      let playedCardInstance: CardInstance;
+      if (sourceZone === 'PLAYER_DISCARD') {
+        const idx = player.discard.findIndex((c) => c.instanceId === action.cardInstanceId);
+        [playedCardInstance] = player.discard.splice(idx, 1);
+      } else if (sourceZone === 'ANY_PLAYER_DISCARD') {
+        const idx = targetOwnerPlayer.discard.findIndex(
+          (c) => c.instanceId === action.cardInstanceId,
+        );
+        [playedCardInstance] = targetOwnerPlayer.discard.splice(idx, 1);
+      } else if (sourceZone === 'DECK_TOP') {
+        playedCardInstance = player.deck.shift()!;
+      } else if (sourceZone === 'ATTACHED' || sourceZone === 'TUCKED') {
+        const attIdx =
+          player.attachments?.findIndex((c) => c.instanceId === action.cardInstanceId) ?? -1;
+        if (attIdx !== -1) {
+          [playedCardInstance] = player.attachments!.splice(attIdx, 1);
+        } else {
+          const tuckIdx =
+            player.cardsUnderneath?.findIndex((c) => c.instanceId === action.cardInstanceId) ?? -1;
+          [playedCardInstance] = player.cardsUnderneath!.splice(tuckIdx, 1);
+        }
+      } else {
+        const targetIndex = player.hand.findIndex((c) => c.instanceId === action.cardInstanceId);
+        [playedCardInstance] = player.hand.splice(targetIndex, 1);
+      }
 
       const cardType = playedCardInstance.card.type;
 
@@ -1866,6 +1933,103 @@ export function dispatchAction(
         });
 
         return { state: poppedState, result: { success: true, onomatopoeia: 'SELECTED!' } };
+      }
+
+      if (
+        activePrompt &&
+        activePrompt.options.some(
+          (o) =>
+            o.effect === 'PLAY_CARD_FROM_ZONE_RESOLUTION' ||
+            o.effect === 'PLAY_CARD_FROM_ZONE_PASS',
+        )
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+
+        if (
+          !selectedOption ||
+          selectedOption.id === 'pass_play_from_zone' ||
+          selectedOption.effect === 'PLAY_CARD_FROM_ZONE_PASS'
+        ) {
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: player.name, type: player.currentForm },
+            key: 'card.playFromZone.passed',
+            params: { player: player.name, prompt: activePrompt.title },
+            onomatopoeia: 'PASSED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'PASSED' } };
+        }
+
+        const params = selectedOption.params as any;
+        const chosenInstanceId = params.chosenInstanceId;
+        const ownerId = params.ownerId;
+        const ownerPlayer = poppedState.players.find((p) => p.id === ownerId) || player;
+        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId) || player;
+
+        // Splice from owner discard
+        const matchIdx = ownerPlayer.discard.findIndex((c) => c.instanceId === chosenInstanceId);
+        if (matchIdx !== -1) {
+          const [chosenCard] = ownerPlayer.discard.splice(matchIdx, 1);
+
+          // Deduct cost if resources available in hand
+          const cost = chosenCard.card.cost ?? 0;
+          if (cost > 0) {
+            // Deduct up to cost cards from player hand if present
+            const countToDiscard = Math.min(cost, targetPlayer.hand.length);
+            const discarded = targetPlayer.hand.splice(0, countToDiscard);
+            targetPlayer.discard.push(...discarded);
+          }
+
+          if (chosenCard.card.type === CardType.ALLY) {
+            targetPlayer.allies.push(chosenCard);
+          } else {
+            targetPlayer.tableau.push(chosenCard);
+          }
+
+          initializeCardUses(chosenCard);
+
+          // Trigger CARD_PLAYED / CARD_ENTERED_PLAY
+          const abilities = chosenCard.card.enrichment?.abilities || [];
+          for (const ab of abilities) {
+            if (
+              ab.trigger === 'CARD_PLAYED' ||
+              ((ab.timing === 'FORCED_RESPONSE' || ab.timing === 'RESPONSE') && !ab.trigger)
+            ) {
+              const isForced = ab.timing.startsWith('FORCED_');
+              const hasPlayerChoice = ab.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
+              if (isForced || hasPlayerChoice) {
+                executeEffect(poppedState, ab, {
+                  playerId: targetPlayer.id,
+                  sourceCardInstance: chosenCard,
+                });
+              }
+            }
+          }
+
+          const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'card.playFromZone.resolved',
+            params: {
+              player: targetPlayer.name,
+              card: chosenCard.card.name,
+            },
+            onomatopoeia,
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia } };
+        }
       }
 
       const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);

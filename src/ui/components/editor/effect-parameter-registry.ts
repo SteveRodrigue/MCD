@@ -1109,15 +1109,51 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  PLAY_ALLY_FROM_DISCARD: {
-    effect: 'PLAY_ALLY_FROM_DISCARD',
-    description: 'Play an ally card from discard pile (Make the Call).',
+  PLAY_CARD_FROM_ZONE: {
+    effect: 'PLAY_CARD_FROM_ZONE',
+    description:
+      'Play a card from a designated zone (e.g. discard, deck) with optional cost modes.',
     parameters: [
       {
-        key: 'target',
-        label: 'Target',
+        key: 'source',
+        label: 'Source Zone',
         type: 'select',
-        options: TARGET_OPTIONS,
+        options: [
+          'PLAYER_DISCARD',
+          'ANY_PLAYER_DISCARD',
+          'PLAYER_DECK',
+          'SET_ASIDE',
+          'ATTACHED',
+          'TUCKED',
+        ],
+        defaultValue: 'PLAYER_DISCARD',
+      },
+      {
+        key: 'costMode',
+        label: 'Cost Mode',
+        type: 'select',
+        options: ['PRINTED_COST', 'FREE', 'REDUCED'],
+        defaultValue: 'PRINTED_COST',
+      },
+      {
+        key: 'costReduction',
+        label: 'Cost Reduction',
+        type: 'number',
+        defaultValue: 0,
+      },
+      {
+        key: 'destination',
+        label: 'Destination',
+        type: 'select',
+        options: ['TABLEAU', 'ENGAGED_WITH_PLAYER'],
+        defaultValue: 'TABLEAU',
+      },
+      {
+        key: 'control',
+        label: 'Control',
+        type: 'select',
+        options: ['SELF', 'OWNER'],
+        defaultValue: 'SELF',
       },
     ],
   },

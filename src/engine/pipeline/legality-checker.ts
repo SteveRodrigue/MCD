@@ -698,17 +698,47 @@ export function canPlayCard(
   cardInstanceOrId: string | CardInstance,
   paymentCardInstanceIds: string[] = [],
   generatorInstanceIds: string[] = [],
+  sourceZone:
+    'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED' = 'HAND',
+  targetOwnerPlayerId?: string,
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
-  const targetCardInstance =
-    typeof cardInstanceOrId === 'string'
-      ? player.hand.find((c) => c.instanceId === cardInstanceOrId)
-      : cardInstanceOrId;
+  let targetCardInstance: CardInstance | undefined;
+  if (typeof cardInstanceOrId !== 'string') {
+    targetCardInstance = cardInstanceOrId;
+  } else if (sourceZone === 'PLAYER_DISCARD') {
+    targetCardInstance = player.discard.find((c) => c.instanceId === cardInstanceOrId);
+  } else if (sourceZone === 'ANY_PLAYER_DISCARD') {
+    const targetOwner = targetOwnerPlayerId ? getPlayer(state, targetOwnerPlayerId) : undefined;
+    if (targetOwner) {
+      targetCardInstance = targetOwner.discard.find((c) => c.instanceId === cardInstanceOrId);
+    } else {
+      for (const p of state.players) {
+        targetCardInstance = p.discard.find((c) => c.instanceId === cardInstanceOrId);
+        if (targetCardInstance) break;
+      }
+    }
+  } else if (sourceZone === 'DECK_TOP') {
+    targetCardInstance =
+      player.deck[0]?.instanceId === cardInstanceOrId ? player.deck[0] : undefined;
+  } else if (sourceZone === 'ATTACHED' || sourceZone === 'TUCKED') {
+    targetCardInstance =
+      player.attachments?.find((c) => c.instanceId === cardInstanceOrId) ||
+      player.cardsUnderneath?.find((c) => c.instanceId === cardInstanceOrId);
+  } else {
+    targetCardInstance = player.hand.find((c) => c.instanceId === cardInstanceOrId);
+  }
 
   if (!targetCardInstance) {
-    return { allowed: false, reason: 'Card to play is not in player hand.' };
+    return {
+      allowed: false,
+      reason:
+        sourceZone === 'HAND'
+          ? 'Card to play is not in player hand.'
+          : `Card to play is not found in ${sourceZone}.`,
+    };
   }
 
   const card = targetCardInstance.card;

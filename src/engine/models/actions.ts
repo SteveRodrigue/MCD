@@ -74,6 +74,9 @@ export interface PlayCardAction {
   paymentCardInstanceIds: string[]; // Hand cards to discard for resources
   generatorInstanceIds?: string[]; // In-play cards to exhaust or remove counters from (e.g. Web-Shooter, Helicarrier)
   targetInstanceId?: string; // For targeted events or attachments
+  sourceZone?:
+    'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED';
+  targetOwnerPlayerId?: string; // When playing a card from another player's discard (e.g. Make the Call)
 }
 
 export interface UseCardAbilityAction {

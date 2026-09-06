@@ -363,120 +363,7 @@
                         ]
                       },
                       "filter": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "hero",
-                              "alter_ego",
-                              "ally",
-                              "upgrade",
-                              "support",
-                              "event",
-                              "resource",
-                              "minion",
-                              "villain",
-                              "main_scheme",
-                              "side_scheme",
-                              "treachery",
-                              "attachment",
-                              "obligation",
-                              "environment"
-                            ]
-                          },
-                          "type_code": {
-                            "type": "string"
-                          },
-                          "types": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "cardTypes": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "trait": {
-                            "type": "string"
-                          },
-                          "traits": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "aspect": {
-                            "type": "string",
-                            "enum": [
-                              "aggression",
-                              "justice",
-                              "leadership",
-                              "protection",
-                              "basic",
-                              "encounter"
-                            ]
-                          },
-                          "aspects": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "zone": {
-                            "type": "string",
-                            "enum": [
-                              "tableau",
-                              "hand",
-                              "deck",
-                              "discard",
-                              "setAside",
-                              "engaged"
-                            ]
-                          },
-                          "isUnique": {
-                            "type": "boolean"
-                          },
-                          "targetCardCode": {
-                            "type": "string"
-                          },
-                          "targetCardCodes": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "targetCardName": {
-                            "type": "string"
-                          },
-                          "isIdentitySpecific": {
-                            "type": "boolean"
-                          },
-                          "costMin": {
-                            "type": "number"
-                          },
-                          "costMax": {
-                            "type": "number"
-                          },
-                          "hasKeyword": {
-                            "type": "string",
-                            "enum": [
-                              "Guard",
-                              "Overkill",
-                              "Quickstrike",
-                              "Ranged",
-                              "Retaliate",
-                              "Toughness",
-                              "Crisis",
-                              "Hazard",
-                              "Acceleration"
-                            ]
-                          }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/$defs/__schema0"
                       }
                     },
                     "required": [
@@ -621,5 +508,159 @@
   "required": [
     "cards"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "object",
+      "properties": {
+        "codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "alter_ego",
+              "ally",
+              "upgrade",
+              "support",
+              "event",
+              "resource",
+              "minion",
+              "villain",
+              "main_scheme",
+              "side_scheme",
+              "treachery",
+              "attachment",
+              "obligation",
+              "environment"
+            ]
+          }
+        },
+        "traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "aspects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "aggression",
+              "justice",
+              "leadership",
+              "protection",
+              "basic",
+              "encounter"
+            ]
+          }
+        },
+        "sets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isUnique": {
+          "type": "boolean"
+        },
+        "isIdentitySpecific": {
+          "type": "boolean"
+        },
+        "cost": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "max": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "equals": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        },
+        "resourceIcons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "physical",
+              "energy",
+              "mental",
+              "wild"
+            ]
+          }
+        },
+        "hasKeyword": {
+          "type": "string",
+          "enum": [
+            "Guard",
+            "Overkill",
+            "Quickstrike",
+            "Ranged",
+            "Retaliate",
+            "Toughness",
+            "Crisis",
+            "Hazard",
+            "Acceleration"
+          ]
+        },
+        "isExhausted": {
+          "type": "boolean"
+        },
+        "hasStatus": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "STUNNED",
+              "CONFUSED",
+              "TOUGH"
+            ]
+          }
+        },
+        "all": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "any": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "none": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

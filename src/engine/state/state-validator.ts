@@ -176,7 +176,7 @@ export function attachCardToHost(
   if (uTarget === 'VILLAIN') {
     if (!state.villain.attachments) state.villain.attachments = [];
     state.villain.attachments.push(cardInstance);
-  } else if (uTarget === 'ENEMY') {
+  } else if (uTarget === 'ENEMY' || uTarget === 'CHOSEN_ENEMY') {
     let minion: CardInstance | undefined;
     if (targetHostId) {
       for (const p of state.players) {

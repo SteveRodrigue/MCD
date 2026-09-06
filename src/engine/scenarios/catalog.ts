@@ -94,15 +94,13 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
       const mainScheme = catalog.getCard('01097b') as MainSchemeCard; // The Break-In!
 
       const rhinoCards = catalog
-        .getCardsBySet('rhino')
+        .getExpandedCardsBySet('rhino')
         .filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
-      const standardCards = catalog.getCardsBySet('standard');
+      const standardCards = catalog.getExpandedCardsBySet('standard');
 
-      const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
+      const modularCards = modularSets.flatMap((setName) => catalog.getExpandedCardsBySet(setName));
 
-      const encounterCards = [...rhinoCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c),
-      );
+      const encounterCards = [...rhinoCards, ...standardCards, ...modularCards];
 
       return { villain, mainScheme, encounterCards };
     },
@@ -126,15 +124,13 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
       const mainScheme = catalog.getCard('01116b') as MainSchemeCard; // Underground Distribution
 
       const klawCards = catalog
-        .getCardsBySet('klaw')
+        .getExpandedCardsBySet('klaw')
         .filter((c) => c.type !== 'villain' && c.type !== 'main_scheme');
-      const standardCards = catalog.getCardsBySet('standard');
+      const standardCards = catalog.getExpandedCardsBySet('standard');
 
-      const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
+      const modularCards = modularSets.flatMap((setName) => catalog.getExpandedCardsBySet(setName));
 
-      const encounterCards = [...klawCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c),
-      );
+      const encounterCards = [...klawCards, ...standardCards, ...modularCards];
 
       return { villain, mainScheme, encounterCards };
     },
@@ -158,17 +154,15 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
       const mainScheme = catalog.getCard('01137b') as MainSchemeCard; // The Crimson Cowl
 
       const ultronCards = catalog
-        .getCardsBySet('ultron')
+        .getExpandedCardsBySet('ultron')
         .filter(
           (c) => c.type !== 'villain' && c.type !== 'main_scheme' && c.type !== 'environment',
         );
-      const standardCards = catalog.getCardsBySet('standard');
+      const standardCards = catalog.getExpandedCardsBySet('standard');
 
-      const modularCards = modularSets.flatMap((setName) => catalog.getCardsBySet(setName));
+      const modularCards = modularSets.flatMap((setName) => catalog.getExpandedCardsBySet(setName));
 
-      const encounterCards = [...ultronCards, ...standardCards, ...modularCards].flatMap((c) =>
-        Array(c.quantity).fill(c),
-      );
+      const encounterCards = [...ultronCards, ...standardCards, ...modularCards];
 
       return { villain, mainScheme, encounterCards };
     },

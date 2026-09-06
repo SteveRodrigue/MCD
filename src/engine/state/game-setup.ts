@@ -15,36 +15,11 @@ import {
   hasKeyword,
 } from '@engine/models';
 import { cardCatalog } from '../../data/importer/card-loader';
-import { ScenarioRegistry } from '../scenarios/registry';
+import { ScenarioRegistry } from '../scenarios';
 import { matchesCardFilter } from '../filters/card-filter';
+import { createCardInstance, resetInstanceCounter } from './card-instance';
 
-let instanceCounter = 0;
-
-export function resetInstanceCounter(): void {
-  instanceCounter = 0;
-}
-
-export function createCardInstance(card: NormalizedCard): CardInstance {
-  if (!card.enrichment && card.code.startsWith('unscanned_')) {
-    throw new Error(`Supplemental data is missing for card ${card.code} (${card.name})`);
-  }
-  instanceCounter += 1;
-  return {
-    instanceId: `inst_${instanceCounter}_${card.code}`,
-    card: {
-      ...card,
-      enrichment: card.enrichment || { abilities: [] },
-    },
-    exhausted: false,
-    tokens: {
-      damage: 0,
-      threat: 0,
-      counters: 0,
-    },
-    statusCards: [],
-    attachments: [],
-  };
-}
+export { createCardInstance, resetInstanceCounter };
 
 export interface PlayerSetupConfig {
   id: string;
@@ -219,7 +194,10 @@ export function setupGame(options: GameSetupOptions): GameState {
   }
 
   const rawEncounterCards =
-    options.encounterCards || cardCatalog.getCardsBySet(options.scenarioId || 'rhino');
+    options.encounterCards ||
+    cardCatalog
+      .getExpandedCardsBySet(options.scenarioId || 'rhino')
+      .filter((c: NormalizedCard) => c.type !== 'villain' && c.type !== 'main_scheme');
   const allEncounterCards = [...rawEncounterCards, ...playerObligations];
   const encounterInstances = allEncounterCards.map(createCardInstance);
   const shuffledEncounterDeck = shuffle(encounterInstances);

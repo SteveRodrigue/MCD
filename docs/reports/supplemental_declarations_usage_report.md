@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-06T17:38:53.123Z`  
+> **Generated:** `2026-09-06T20:11:34.363Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -61,7 +61,7 @@ These **18 cards** declare multiple distinct ability headers (e.g. dual Hero/Alt
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `01007` | **Spider-Tracer** | `upgrade` | `core` | **2** | • `spider_tracer_attach` (`CARD_PLAYED`, **1 step**)<br/>• `spider_tracer_defeat_trigger` (`FORCED_INTERRUPT` / `HOST_DEFEATED`, **1 step**) |
-| `01009` | **Webbed Up** | `upgrade` | `core` | **2** | • `webbed_up_attach` (`CARD_PLAYED`, **1 step**)<br/>• `webbed_up_intercept` (`FORCED_INTERRUPT` / `VILLAIN_INITIATES_ATTACK`, **1 step**) |
+| `01009` | **Webbed Up** | `upgrade` | `core` | **2** | • `webbed_up_attach` (`HERO_ACTION`, **1 step**)<br/>• `webbed_up_intercept` (`FORCED_INTERRUPT` / `VILLAIN_INITIATES_ATTACK`, **1 step**) |
 | `01017` | **Cosmic Flight** | `upgrade` | `core` | **2** | • `cosmic_flight_aerial` (`CONSTANT`, **1 step**)<br/>• `cosmic_flight_prevent` (`HERO_INTERRUPT` / `TAKE_DAMAGE`, **1 step**) |
 | `01018` | **Energy Channel** | `upgrade` | `core` | **2** | • `energy_channel_add` (`ACTION`, **1 step**)<br/>• `energy_channel_blast` (`HERO_ACTION`, **1 step**) |
 | `01028` | **Superhuman Strength** | `upgrade` | `core` | **2** | • `superhuman_strength_atk` (`CONSTANT`, **1 step**)<br/>• `superhuman_strength_stun` (`FORCED_RESPONSE` / `ATTACK_RESOLVED`, **1 step**) |
@@ -293,18 +293,18 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **28** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
-| `HERO_ACTION` | **23** | `01005` Swinging Web Kick (event), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01021` Gamma Slam (event) *(+18 more)* |
+| `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+19 more)* |
 | `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
 | `ACTION` | **14** | `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally), `01056` Tac Team (support) *(+9 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
 | `INTERRUPT` | **6** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01061` Great Responsibility (event), `01075` Black Widow (ally), `01078` Get Behind Me! (event) *(+1 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
-| `CARD_PLAYED` | **4** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade), `01084` Nick Fury (ally) |
 | `SETUP` | **4** | `01040b` T'Challa (alter_ego), `01076` Luke Cage (ally), `01096` Rhino (villain), `01102` Sandman (minion) |
 | `SPECIAL` | **4** | `01046` Energy Daggers (upgrade), `01047` Panther Claws (upgrade), `01048` Tactical Genius (upgrade), `01049` Vibranium Suit (upgrade) |
 | `BOOST` | **4** | `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
 | `HERO_INTERRUPT` | **3** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01082` Indomitable (upgrade) |
+| `CARD_PLAYED` | **3** | `01007` Spider-Tracer (upgrade), `01074` Inspired (upgrade), `01084` Nick Fury (ally) |
 | `FORCED_INTERRUPT` | **3** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01098` Armored Rhino Suit (attachment) |
 | `HERO_RESOURCE` | **1** | `01008` Web-Shooter (upgrade) |
 | `HERO_RESPONSE` | **1** | `01019a` She-Hulk (hero) |
@@ -329,8 +329,8 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Target Selectors:
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
+| `CHOSEN_ENEMY` | **15** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+10 more)* |
 | `SELF` | **14** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+9 more)* |
-| `CHOSEN_ENEMY` | **14** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero), `01021` Gamma Slam (event) *(+9 more)* |
 | `CHOSEN_SCHEME` | **9** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+4 more)* |
 | `VILLAIN` | **8** | `01011` Spider-Woman (ally), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery) *(+2 more)* |
 | `SELF_IDENTITY` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) *(+2 more)* |
@@ -339,7 +339,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `CHOSEN_PLAYER` | **3** | `01010b` Carol Danvers (alter_ego), `01091` Avengers Mansion (support), `01092` Helicarrier (support) |
 | `THIS_SIDE_SCHEME` | **3** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) |
 | `CHOSEN_MINION` | **2** | `01007` Spider-Tracer (upgrade), `01053` Relentless Assault (event) |
-| `ENEMY` | **2** | `01009` Webbed Up (upgrade), `01077` Counter-Punch (event) |
 | `ALL_ENEMIES` | **2** | `01022` Ground Stomp (event), `01030` War Machine (ally) |
 | `CHOSEN_ALLY` | **2** | `01069` Get Ready (event), `01074` Inspired (upgrade) |
 | `CHOSEN_CHARACTER` | **2** | `01080` Med Team (support), `01086` First Aid (event) |
@@ -349,6 +348,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `TRIGGERING_MINION` | **1** | `01066` Hawkeye (ally) |
 | `ALL_PLAYERS` | **1** | `01067` Maria Hill (ally) |
 | `ALLY_IN_DISCARD` | **1** | `01071` Make the Call (event) |
+| `ENEMY` | **1** | `01077` Counter-Punch (event) |
 | `ACTIVE_SCHEME` | **1** | `01085` Emergency (event) |
 | `ATTACHED_VILLAIN` | **1** | `01098` Armored Rhino Suit (attachment) |
 | `ACTIVE_IDENTITY` | **1** | `01112` False Alarm (treachery) |

@@ -381,6 +381,48 @@
               "additionalProperties": false
             }
           },
+          "playRequirements": {
+            "type": "object",
+            "properties": {
+              "identityForm": {
+                "type": "string",
+                "enum": [
+                  "HERO",
+                  "ALTER_EGO"
+                ]
+              },
+              "formTrait": {
+                "type": "string"
+              },
+              "identityTraits": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "controlFilter": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "controlZones": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "tableau",
+                    "allies",
+                    "identity"
+                  ]
+                }
+              },
+              "identityNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
           "audit": {
             "type": "object",
             "properties": {

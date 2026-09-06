@@ -31,6 +31,7 @@ To ensure complete clarity between what is **currently executable** in the engin
 | [**08. Villain & Nemesis**](./07_effects_villain_nemesis.md) | Activations & Encounter Sets | `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `SPAWN_NEMESIS`, `ATTACH_TO_HOST`.                                |
 | [**09. Dynamic Formulas**](./08_dynamic_formulas.md)         | Mathematical Expressions     | `amountCalculated`, dynamic state tokens, scaling multipliers, and min/max clamps.                      |
 | [**10. Sequences & Modals**](./09_sequences_and_prompts.md)  | Chaining & Player Choices    | `steps: []` multi-action arrays, `PLAYER_CHOICE` Pop-Art decision prompt modals.                        |
+| [**11. Play Requirements**](./10_play_requirements.md)      | Form, Trait & Control Gates  | `PlayRequirementsSchema`, `identityForm`, `formTrait`, `identityTraits`, `controlFilter`, `identityNames`. |
 
 ---
 

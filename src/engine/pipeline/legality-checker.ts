@@ -12,7 +12,7 @@ import {
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
 import { isResourceAbility, isAbilityPlayableInForm } from './cost-engine';
-import { getPlayerBlackPantherUpgrades } from '../specials/wakanda-forever';
+import { matchesCardFilter } from '../filters/card-filter';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -569,6 +569,129 @@ export function evaluateMinionTargetRequirement(
   return { allowed: true };
 }
 
+/**
+ * Evaluates universal play restrictions declared on card enrichment (RR v1.8 p. 16).
+ * Covers identity form, form traits, identity traits, controlled card requirements, and identity names.
+ */
+export function evaluatePlayRequirements(
+  state: GameState,
+  player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  const reqs = card.enrichment?.playRequirements;
+
+  // 1. Identity Form Check
+  // Explicit playRequirements.identityForm strictly enforces form.
+  // Fallback: Events with Hero/Alter-Ego timing or on-play attachments with Hero/Alter-Ego timing.
+  const isEvent = card.type === CardType.EVENT;
+  const abilities = card.enrichment?.abilities || [];
+  const hasHeroPlayAbility = abilities.some(
+    (a) =>
+      a.timing &&
+      a.timing.startsWith('HERO_') &&
+      (isEvent || a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST')),
+  );
+  const hasAlterEgoPlayAbility = abilities.some(
+    (a) =>
+      a.timing &&
+      a.timing.startsWith('ALTER_EGO_') &&
+      (isEvent || a.steps?.some((s) => s.effect === 'ATTACH_TO_HOST')),
+  );
+
+  const isHeroFormRequired =
+    card.type === CardType.HERO || reqs?.identityForm === 'HERO' || hasHeroPlayAbility;
+
+  const isAlterEgoFormRequired =
+    card.type === CardType.ALTER_EGO ||
+    reqs?.identityForm === 'ALTER_EGO' ||
+    hasAlterEgoPlayAbility;
+
+  if (isHeroFormRequired && player.currentForm !== 'hero') {
+    return { allowed: false, reason: 'Requires Hero form' };
+  }
+
+  if (isAlterEgoFormRequired && player.currentForm !== 'alter_ego') {
+    return { allowed: false, reason: 'Requires Alter-Ego form' };
+  }
+
+  if (!reqs) return { allowed: true };
+
+  // 2. Specific Form Trait Requirement (e.g. 'Giant', 'Tiny' for Ant-Man)
+  if (reqs.formTrait) {
+    const activeFormTraits = (player.activeFormCard.traits || []).map((t) => t.toLowerCase());
+    if (!activeFormTraits.includes(reqs.formTrait.toLowerCase())) {
+      return { allowed: false, reason: `Requires ${reqs.formTrait} form.` };
+    }
+  }
+
+  // 3. Identity Traits Requirement (e.g. ['Avenger'], ['X-Men'], ['Mystic'])
+  if (reqs.identityTraits && reqs.identityTraits.length > 0) {
+    const heroTraits = (player.hero.traits || []).map((t) => t.toLowerCase());
+    const alterEgoTraits = (player.alterEgo.traits || []).map((t) => t.toLowerCase());
+    const activeTraits = (player.activeFormCard.traits || []).map((t) => t.toLowerCase());
+
+    const hasMatchingTrait = reqs.identityTraits.some((reqTrait: string) => {
+      const lower = reqTrait.toLowerCase();
+      return (
+        activeTraits.includes(lower) || heroTraits.includes(lower) || alterEgoTraits.includes(lower)
+      );
+    });
+
+    if (!hasMatchingTrait) {
+      return {
+        allowed: false,
+        reason: `Requires identity with trait: ${reqs.identityTraits.join(' or ')}.`,
+      };
+    }
+  }
+
+  // 4. Controlled Cards Filter Requirement (e.g. Wakanda Forever: Black Panther upgrades in play)
+  // Evaluates cards currently in play under player control (RR v1.8 p. 11, 16)
+  if (reqs.controlFilter) {
+    const zones = reqs.controlZones || ['tableau', 'allies', 'identity'];
+    const controlledCards: NormalizedCard[] = [];
+    if (zones.includes('tableau')) {
+      controlledCards.push(...player.tableau.map((c) => c.card));
+    }
+    if (zones.includes('allies')) {
+      controlledCards.push(...player.allies.map((c) => c.card));
+    }
+    if (zones.includes('identity')) {
+      controlledCards.push(player.hero, player.alterEgo);
+    }
+
+    const hasMatch = controlledCards.some((c) =>
+      matchesCardFilter(c, reqs.controlFilter!, { state, player }),
+    );
+
+    if (!hasMatch) {
+      return {
+        allowed: false,
+        reason: 'Play condition not met: required cards not in play under your control.',
+      };
+    }
+  }
+
+  // 5. Identity Names Requirement (e.g. ['Bucky Barnes', 'Sam Wilson'])
+  if (reqs.identityNames && reqs.identityNames.length > 0) {
+    const heroName = player.hero.name.toLowerCase();
+    const alterEgoName = player.alterEgo.name.toLowerCase();
+    const matchesName = reqs.identityNames.some((name: string) => {
+      const lower = name.toLowerCase();
+      return heroName === lower || alterEgoName === lower;
+    });
+
+    if (!matchesName) {
+      return {
+        allowed: false,
+        reason: `Can only be played by: ${reqs.identityNames.join(' or ')}.`,
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
 export function canPlayCard(
   state: GameState,
   playerId: string,
@@ -592,15 +715,10 @@ export function canPlayCard(
   const cardInstanceId = targetCardInstance.instanceId;
   let cost = card.cost ?? 0;
 
-  // Black Panther Wakanda Forever! Play Condition Check (RR v1.8 p. 19 / ADR-0038)
-  if (['01043', '01043a', '01043b', '01043c', '01043d'].includes(card.code)) {
-    const bpUpgrades = getPlayerBlackPantherUpgrades(player);
-    if (bpUpgrades.length === 0) {
-      return {
-        allowed: false,
-        reason: 'Cannot play Wakanda Forever! without at least 1 Black Panther upgrade in play.',
-      };
-    }
+  // Universal Play Requirements (RR v1.8 p. 16)
+  const reqCheck = evaluatePlayRequirements(state, player, card);
+  if (!reqCheck.allowed) {
+    return reqCheck;
   }
 
   // Minion target and attachment requirement check (RR v1.8 p. 6, 19, 28)
@@ -661,30 +779,6 @@ export function canPlayCard(
       allowed: false,
       reason: 'Resource cards cannot be played directly; they are discarded to pay costs.',
     };
-  }
-
-  // Form restrictions check (RR v1.8 p. 16, 28)
-  // An event card with Hero/Alter-Ego timing requires the corresponding form to play.
-  // Upgrades, Supports, and Allies can be played in either form unless a printed restriction exists.
-  const isEvent = card.type === CardType.EVENT;
-  const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
-  const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
-  const playRestriction = (card.enrichment as any)?.playRestriction;
-
-  const isHeroFormRequired =
-    card.type === CardType.HERO || (isEvent && hasHeroTiming) || playRestriction === 'HERO_FORM';
-
-  const isAlterEgoFormRequired =
-    card.type === CardType.ALTER_EGO ||
-    (isEvent && hasAlterEgoTiming) ||
-    playRestriction === 'ALTER_EGO_FORM';
-
-  if (isHeroFormRequired && player.currentForm !== 'hero') {
-    return { allowed: false, reason: 'Can only play this card while in Hero form.' };
-  }
-
-  if (isAlterEgoFormRequired && player.currentForm !== 'alter_ego') {
-    return { allowed: false, reason: 'Can only play this card while in Alter-Ego form.' };
   }
 
   // Dynamic Ally Limit Check (RR v1.8 p. 3, ADR-0018)
@@ -946,28 +1040,10 @@ export function evaluateCardPlayability(
     reasons.push('Resource card: Used to generate resources when paying costs');
   }
 
-  // 3. Identity Form Validation (RR v1.8 p. 16, 28)
-  // Events with Hero/Alter-Ego actions require the corresponding form.
-  // Upgrades, Supports, and Allies are playable in either form unless explicit playRestriction is set.
-  const isEvent = card.type === CardType.EVENT;
-  const hasHeroTiming = abilities.some((a) => a.timing && a.timing.startsWith('HERO_'));
-  const hasAlterEgoTiming = abilities.some((a) => a.timing && a.timing.startsWith('ALTER_EGO_'));
-  const playRestriction = (card.enrichment as any)?.playRestriction;
-
-  const isHeroFormRequired =
-    card.type === CardType.HERO || (isEvent && hasHeroTiming) || playRestriction === 'HERO_FORM';
-
-  const isAlterEgoFormRequired =
-    card.type === CardType.ALTER_EGO ||
-    (isEvent && hasAlterEgoTiming) ||
-    playRestriction === 'ALTER_EGO_FORM';
-
-  if (isHeroFormRequired && player.currentForm !== 'hero') {
-    reasons.push('Requires Hero form');
-  }
-
-  if (isAlterEgoFormRequired && player.currentForm !== 'alter_ego') {
-    reasons.push('Requires Alter-Ego form');
+  // 3. Universal Play Requirements (RR v1.8 p. 16)
+  const reqCheck = evaluatePlayRequirements(state, player, card);
+  if (!reqCheck.allowed && reqCheck.reason) {
+    reasons.push(reqCheck.reason);
   }
 
   // 3. Dynamic Ally Limit Validation (RR v1.8 p. 3)

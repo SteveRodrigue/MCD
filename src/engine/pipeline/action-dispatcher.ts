@@ -597,7 +597,8 @@ export function dispatchAction(
       const allyHp = allyCard.health || 2;
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
-        player.discard.push(ally);
+        const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+        owner.discard.push(ally);
       }
 
       dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
@@ -664,7 +665,8 @@ export function dispatchAction(
       const allyHp = allyCard.health || 2;
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
-        player.discard.push(ally);
+        const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+        owner.discard.push(ally);
       }
 
       dispatchTrigger(nextState, 'THWART_RESOLVED', {
@@ -1014,6 +1016,13 @@ export function dispatchAction(
       }
 
       const cardType = playedCardInstance.card.type;
+
+      // Track owner for cross-player control and attachments per RR v1.8 p. 11
+      if (sourceZone === 'ANY_PLAYER_DISCARD') {
+        playedCardInstance.ownerId = targetOwnerPlayer.id;
+      } else if (!playedCardInstance.ownerId) {
+        playedCardInstance.ownerId = player.id;
+      }
 
       // Initialize counters declaratively for cards with 'uses' definition (RR v1.8 p. 30)
       initializeCardUses(playedCardInstance);
@@ -1985,6 +1994,9 @@ export function dispatchAction(
             const discarded = targetPlayer.hand.splice(0, countToDiscard);
             targetPlayer.discard.push(...discarded);
           }
+
+          // Track owner for cross-player control per RR v1.8 p. 11
+          chosenCard.ownerId = ownerPlayer.id;
 
           if (chosenCard.card.type === CardType.ALLY) {
             targetPlayer.allies.push(chosenCard);

@@ -367,4 +367,105 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
     expect(check.allowed).toBe(false);
     expect(check.reason).toContain('Ally limit reached');
   });
+
+  it('sends defeated ally to owner discard when controlled by another player', () => {
+    // Ally owned by player 2 but controlled by player 1 (in player 1's allies array)
+    const ally = createCardInstance('ally_inst', '01084', 'Nick Fury', CardType.ALLY, 4, []);
+    (ally as any).ownerId = 'player_2';
+    (ally.card as any).health = 2;
+    (ally.card as any).attackCost = 2; // consequential damage of 2 will defeat health 2 ally
+
+    player1.allies = [ally];
+
+    // Player 1 commands ally to attack Rhino
+    const { state: nextState, result } = dispatchAction(state, {
+      type: 'ALLY_ATTACK',
+      playerId: 'player_1',
+      allyInstanceId: 'ally_inst',
+      targetType: 'villain',
+      targetInstanceId: '01094',
+    });
+
+    expect(result.success).toBe(true);
+
+    const p1 = nextState.players[0];
+    const p2 = nextState.players[1];
+
+    // Ally removed from player 1's allies
+    expect(p1.allies.some((a) => a.instanceId === 'ally_inst')).toBe(false);
+    // Ally NOT in player 1's discard
+    expect(p1.discard.some((a) => a.instanceId === 'ally_inst')).toBe(false);
+    // Ally placed in player 2's (owner's) discard
+    expect(p2.discard.some((a) => a.instanceId === 'ally_inst')).toBe(true);
+  });
+
+  it('preserves ownerId when played via Make the Call and returns to owner discard upon defeat', () => {
+    const makeTheCall = createCardInstance(
+      'mtc_inst',
+      '01071',
+      'Make the Call',
+      CardType.EVENT,
+      0,
+      [
+        {
+          id: 'make_the_call',
+          timing: 'ACTION',
+          steps: [
+            {
+              effect: 'PLAY_CARD_FROM_ZONE',
+              params: {
+                source: 'ANY_PLAYER_DISCARD',
+                filter: { types: ['ally'] },
+                costMode: 'PRINTED_COST',
+                destination: 'TABLEAU',
+                control: 'SELF',
+              },
+            },
+          ],
+        },
+      ],
+    );
+
+    // Maria Hill (health 2, thwartCost 1) in Player 2's discard
+    const mariaHill = createCardInstance('maria_inst', '01019', 'Maria Hill', CardType.ALLY, 2, []);
+    (mariaHill.card as any).health = 2;
+    (mariaHill.card as any).thwartCost = 2; // consequential damage of 2 will defeat her
+    player2.discard = [mariaHill];
+
+    // Player 1 has resources to pay 2
+    const res1 = createCardInstance('res_1', '01088', 'Resource 1', CardType.RESOURCE, 0);
+    const res2 = createCardInstance('res_2', '01089', 'Resource 2', CardType.RESOURCE, 0);
+    player1.hand = [makeTheCall, res1, res2];
+
+    // Player 1 plays Make the Call targeting Maria Hill in Player 2 discard
+    const { state: stateAfterPlay, result: playResult } = dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: 'player_1',
+      cardInstanceId: 'mtc_inst',
+      paymentCardInstanceIds: ['res_1', 'res_2'],
+      targetInstanceId: 'maria_inst',
+    });
+
+    expect(playResult.success).toBe(true);
+    const playedAlly = stateAfterPlay.players[0].allies.find((a) => a.instanceId === 'maria_inst');
+    expect(playedAlly).toBeDefined();
+    expect(playedAlly?.ownerId).toBe('player_2');
+
+    // Player 1 commands Maria Hill to thwart, taking fatal consequential damage
+    const { state: stateAfterThwart, result: thwartResult } = dispatchAction(stateAfterPlay, {
+      type: 'ALLY_THWART',
+      playerId: 'player_1',
+      allyInstanceId: 'maria_inst',
+      targetType: 'main_scheme',
+      targetInstanceId: '01097',
+    });
+
+    expect(thwartResult.success).toBe(true);
+    const p1After = stateAfterThwart.players[0];
+    const p2After = stateAfterThwart.players[1];
+
+    expect(p1After.allies.some((a) => a.instanceId === 'maria_inst')).toBe(false);
+    expect(p1After.discard.some((a) => a.instanceId === 'maria_inst')).toBe(false);
+    expect(p2After.discard.some((a) => a.instanceId === 'maria_inst')).toBe(true);
+  });
 });

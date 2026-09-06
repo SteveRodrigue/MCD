@@ -42,7 +42,9 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       const idx = player.allies.indexOf(ally);
       if (idx !== -1) {
         player.allies.splice(idx, 1);
-        player.discard.push(ally);
+        const owner =
+          (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
+        owner.discard.push(ally);
         state.log.push({
           id: `log_${Date.now()}_${ally.instanceId}`,
           timestamp: Date.now(),

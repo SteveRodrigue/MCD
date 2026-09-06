@@ -289,7 +289,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     regex: /ready your hero/i,
     handler: () => [
       {
-        effect: 'READY_IDENTITY',
+        effect: 'READY',
         params: { target: 'SELF_IDENTITY' },
       },
     ],

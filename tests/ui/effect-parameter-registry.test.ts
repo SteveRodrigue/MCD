@@ -87,6 +87,51 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(paramKeys).toContain('target');
   });
 
+  it('EXHAUST exposes target selector and optional filter', () => {
+    const desc = getEffectDescriptor('EXHAUST');
+    expect(desc.effect).toBe('EXHAUST');
+
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+    const filterParam = desc.parameters.find((p) => p.key === 'filter');
+
+    expect(targetParam).toBeDefined();
+    expect(targetParam?.type).toBe('select');
+    expect(targetParam?.defaultValue).toBe('SELF_IDENTITY');
+
+    expect(filterParam).toBeDefined();
+    expect(filterParam?.type).toBe('text');
+  });
+
+  it('READY exposes target selector and optional filter', () => {
+    const desc = getEffectDescriptor('READY');
+    expect(desc.effect).toBe('READY');
+
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+    const filterParam = desc.parameters.find((p) => p.key === 'filter');
+
+    expect(targetParam).toBeDefined();
+    expect(targetParam?.type).toBe('select');
+    expect(targetParam?.defaultValue).toBe('SELF_IDENTITY');
+
+    expect(filterParam).toBeDefined();
+    expect(filterParam?.type).toBe('text');
+  });
+
+  it('purges legacy fragmented ready and exhaust primitives from registry', () => {
+    const legacyPrimitives = [
+      'EXHAUST_HERO',
+      'EXHAUST_IDENTITY',
+      'READY_ALLY',
+      'READY_CARD',
+      'READY_CHARACTER',
+      'READY_IDENTITY',
+    ];
+
+    for (const legacy of legacyPrimitives) {
+      expect((EFFECT_PARAMETER_REGISTRY as any)[legacy]).toBeUndefined();
+    }
+  });
+
   it('falls back gracefully to an operational descriptor for unknown or custom primitives', () => {
     const unknown = getEffectDescriptor('CUSTOM_PRIMITIVE_UNKNOWN' as any);
     expect(unknown.effect).toBe('CUSTOM_PRIMITIVE_UNKNOWN');

@@ -238,7 +238,7 @@ Add to `TRIGGER_PATTERNS` (before generic `attacks`):
 
 ---
 
-### Category 6: Character Readying (`READY_IDENTITY` / `READY_CHARACTER` / `READY_ALLY`)
+### Category 6: Character Readying (`READY` with Target Selectors)
 #### 1. What didn't match
 - **`01024` (One-Two Punch):** `ready She-Hulk.` ➔ Unmatched.
 - **`01035` (Arc Reactor):** `ready Iron Man.` ➔ Unmatched.
@@ -246,8 +246,8 @@ Add to `TRIGGER_PATTERNS` (before generic `attacks`):
 - **`01082` (Indomitable):** `ready your hero.` ➔ Currently matches, but missed cost `discard indomitable`.
 
 #### 2. What supplemental data expects
-- Identity readying: `effect: "READY_IDENTITY"`, `target: "SELF_IDENTITY"`.
-- Ally readying: `effect: "READY_ALLY"`, `target: "CHOSEN_ALLY"`.
+- Identity readying: `effect: "READY"`, `target: "SELF_IDENTITY"`.
+- Ally readying: `effect: "READY"`, `target: "CHOSEN_ALLY"`.
 
 #### 3. Proposed change/fix
 Update `READY` patterns in `EFFECT_PATTERNS`:
@@ -255,14 +255,14 @@ Update `READY` patterns in `EFFECT_PATTERNS`:
 {
   regex: /ready (your hero|[A-Za-z0-9 '’-]+)/i,
   handler: (m) => [{
-    effect: 'READY_IDENTITY',
+    effect: 'READY',
     params: { target: 'SELF_IDENTITY' }
   }]
 },
 {
   regex: /ready an ally/i,
   handler: () => [{
-    effect: 'READY_ALLY',
+    effect: 'READY',
     params: { target: 'CHOSEN_ALLY' }
   }]
 }

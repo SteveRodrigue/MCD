@@ -44,7 +44,16 @@ export interface EffectExecutionContext {
   playerId: string;
   targetPlayerId?: string;
   sourceCardInstance?: CardInstance;
-  targetType?: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'ally' | 'hero' | 'character';
+  sourceCardId?: string;
+  targetType?:
+    | 'villain'
+    | 'minion'
+    | 'main_scheme'
+    | 'side_scheme'
+    | 'ally'
+    | 'hero'
+    | 'character'
+    | 'identity';
   targetInstanceId?: string;
   resourcesSpent?: string[];
   previousResult?: StepResolutionResult;
@@ -1902,24 +1911,108 @@ export function executeStep(
       return { state, success: true };
     }
 
-    case 'READY_IDENTITY':
-    case 'READY_CHARACTER':
-    case 'READY_ALLY':
-    case 'READY_CARD': {
-      const targetParam = step.params?.target as string | undefined;
-      if (
+    case 'READY': {
+      const targetParam = (step.params?.target as string) || 'SELF_IDENTITY';
+      let readyTargetName = player.name;
+
+      if (targetParam === 'SELF') {
+        const sourceId = context.sourceCardId || context.sourceCardInstance?.instanceId;
+        const tableauCard = player.tableau.find(
+          (c) => c.instanceId === sourceId || c.card.code === sourceId,
+        );
+        const allyCard = player.allies.find(
+          (a) => a.instanceId === sourceId || a.card.code === sourceId,
+        );
+        if (tableauCard) {
+          tableauCard.exhausted = false;
+          readyTargetName = tableauCard.card?.name || 'Tableau Card';
+        } else if (allyCard) {
+          allyCard.exhausted = false;
+          readyTargetName = allyCard.card?.name || 'Ally';
+        } else {
+          player.exhausted = false;
+          readyTargetName = player.activeFormCard?.name || player.name;
+        }
+      } else if (
         targetParam === 'CHOSEN_ALLY' ||
         targetParam === 'ALLY' ||
         context.targetType === 'ally'
       ) {
         const ally =
-          player.allies.find((a) => a.instanceId === context.targetInstanceId) || player.allies[0];
+          (context.targetInstanceId
+            ? player.allies.find((a) => a.instanceId === context.targetInstanceId)
+            : undefined) ||
+          player.allies.find((a) => a.exhausted) ||
+          player.allies[0];
         if (ally) {
           ally.exhausted = false;
+          readyTargetName = ally.card?.name || 'Ally';
         }
-      } else {
+      } else if (targetParam === 'ALL_ALLIES') {
+        for (const ally of player.allies) {
+          ally.exhausted = false;
+        }
+        readyTargetName = 'All Allies';
+      } else if (targetParam === 'ALL_CHARACTERS') {
         player.exhausted = false;
+        for (const ally of player.allies) {
+          ally.exhausted = false;
+        }
+        readyTargetName = 'All Characters';
+      } else if (targetParam === 'CHOSEN_CHARACTER') {
+        if (context.targetInstanceId) {
+          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
+          if (ally) {
+            ally.exhausted = false;
+            readyTargetName = ally.card?.name || 'Ally';
+          } else {
+            player.exhausted = false;
+            readyTargetName = player.activeFormCard?.name || player.name;
+          }
+        } else if (context.targetType === 'identity') {
+          player.exhausted = false;
+          readyTargetName = player.activeFormCard?.name || player.name;
+        } else if (player.exhausted) {
+          player.exhausted = false;
+          readyTargetName = player.activeFormCard?.name || player.name;
+        } else {
+          const exhaustedAlly = player.allies.find((a) => a.exhausted);
+          if (exhaustedAlly) {
+            exhaustedAlly.exhausted = false;
+            readyTargetName = exhaustedAlly.card?.name || 'Ally';
+          } else {
+            player.exhausted = false;
+          }
+        }
+      } else if (targetParam === 'VILLAIN') {
+        if (state.villain) {
+          state.villain.exhausted = false;
+          readyTargetName = state.villain.card?.name || 'Villain';
+        }
+      } else if (targetParam === 'CHOSEN_MINION') {
+        const minion =
+          (context.targetInstanceId
+            ? player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId)
+            : undefined) ||
+          player.engagedMinions.find((m) => m.exhausted) ||
+          player.engagedMinions[0];
+        if (minion) {
+          minion.exhausted = false;
+          readyTargetName = minion.card?.name || 'Minion';
+        }
+      } else if (targetParam === 'ALL_MINIONS') {
+        for (const p of state.players) {
+          for (const m of p.engagedMinions) {
+            m.exhausted = false;
+          }
+        }
+        readyTargetName = 'All Minions';
+      } else {
+        // SELF_IDENTITY, ACTIVE_PLAYER, or default
+        player.exhausted = false;
+        readyTargetName = player.activeFormCard?.name || player.name;
       }
+
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -1927,7 +2020,7 @@ export function executeStep(
         phase: state.phase,
         category: 'ability',
         key: 'card.effect.readyCharacter',
-        params: { player: player.name },
+        params: { player: player.name, target: readyTargetName },
         onomatopoeia: 'READY!',
       });
       return {
@@ -1975,9 +2068,108 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'GREAT RESPONSIBILITY!' };
     }
 
-    case 'EXHAUST_IDENTITY':
-    case 'EXHAUST_HERO': {
-      player.exhausted = true;
+    case 'EXHAUST': {
+      const targetParam = (step.params?.target as string) || 'SELF_IDENTITY';
+      let exhaustTargetName = player.name;
+
+      if (targetParam === 'SELF') {
+        const sourceId = context.sourceCardId || context.sourceCardInstance?.instanceId;
+        const tableauCard = player.tableau.find(
+          (c) => c.instanceId === sourceId || c.card.code === sourceId,
+        );
+        const allyCard = player.allies.find(
+          (a) => a.instanceId === sourceId || a.card.code === sourceId,
+        );
+        if (tableauCard) {
+          tableauCard.exhausted = true;
+          exhaustTargetName = tableauCard.card?.name || 'Tableau Card';
+        } else if (allyCard) {
+          allyCard.exhausted = true;
+          exhaustTargetName = allyCard.card?.name || 'Ally';
+        } else {
+          player.exhausted = true;
+          exhaustTargetName = player.activeFormCard?.name || player.name;
+        }
+      } else if (
+        targetParam === 'CHOSEN_ALLY' ||
+        targetParam === 'ALLY' ||
+        context.targetType === 'ally'
+      ) {
+        const ally =
+          (context.targetInstanceId
+            ? player.allies.find((a) => a.instanceId === context.targetInstanceId)
+            : undefined) ||
+          player.allies.find((a) => !a.exhausted) ||
+          player.allies[0];
+        if (ally) {
+          ally.exhausted = true;
+          exhaustTargetName = ally.card?.name || 'Ally';
+        }
+      } else if (targetParam === 'ALL_ALLIES') {
+        for (const ally of player.allies) {
+          ally.exhausted = true;
+        }
+        exhaustTargetName = 'All Allies';
+      } else if (targetParam === 'ALL_CHARACTERS') {
+        player.exhausted = true;
+        for (const ally of player.allies) {
+          ally.exhausted = true;
+        }
+        exhaustTargetName = 'All Characters';
+      } else if (targetParam === 'CHOSEN_CHARACTER') {
+        if (context.targetInstanceId) {
+          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
+          if (ally) {
+            ally.exhausted = true;
+            exhaustTargetName = ally.card?.name || 'Ally';
+          } else {
+            player.exhausted = true;
+            exhaustTargetName = player.activeFormCard?.name || player.name;
+          }
+        } else if (context.targetType === 'identity') {
+          player.exhausted = true;
+          exhaustTargetName = player.activeFormCard?.name || player.name;
+        } else if (!player.exhausted) {
+          player.exhausted = true;
+          exhaustTargetName = player.activeFormCard?.name || player.name;
+        } else {
+          const readyAlly = player.allies.find((a) => !a.exhausted);
+          if (readyAlly) {
+            readyAlly.exhausted = true;
+            exhaustTargetName = readyAlly.card?.name || 'Ally';
+          } else {
+            player.exhausted = true;
+          }
+        }
+      } else if (targetParam === 'VILLAIN') {
+        if (state.villain) {
+          state.villain.exhausted = true;
+          exhaustTargetName = state.villain.card?.name || 'Villain';
+        }
+      } else if (targetParam === 'CHOSEN_MINION') {
+        const minion =
+          (context.targetInstanceId
+            ? player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId)
+            : undefined) ||
+          player.engagedMinions.find((m) => !m.exhausted) ||
+          player.engagedMinions[0];
+        if (minion) {
+          minion.exhausted = true;
+          exhaustTargetName = minion.card?.name || 'Minion';
+        }
+      } else if (targetParam === 'ALL_MINIONS') {
+        for (const p of state.players) {
+          for (const m of p.engagedMinions) {
+            m.exhausted = true;
+          }
+        }
+        exhaustTargetName = 'All Minions';
+      } else {
+        // SELF_IDENTITY, ACTIVE_PLAYER, or default
+        player.exhausted = true;
+        exhaustTargetName = player.activeFormCard?.name || player.name;
+      }
+
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -1985,10 +2177,15 @@ export function executeStep(
         phase: state.phase,
         category: 'status',
         key: 'card.state.exhausted',
-        params: { card: player.activeFormCard.name },
+        params: { card: exhaustTargetName, player: player.name },
         onomatopoeia: 'EXHAUST',
       });
-      return { state, success: true, onomatopoeia: 'EXHAUSTED!' };
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: 'EXHAUSTED!',
+      };
     }
 
     case 'GIVE_ADDITIONAL_BOOST_CARD':

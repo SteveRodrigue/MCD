@@ -26,7 +26,7 @@ To ensure complete clarity between what is **currently executable** in the engin
 | [**03. Costs & Targeting**](./03_costs_and_targeting.md)     | Prerequisites & Selection    | `AbilityCost` (resources, exhaust, damage, discard), `TargetSelector`, exhaustive `FilterSchema`.       |
 | [**04. Combat & Threat**](./04_effects_combat_threat.md)     | Damage & Scheme Control      | `DEAL_DAMAGE`, `REMOVE_THREAT`, `ADD_THREAT`, Overkill, Piercing, Guard, Crisis.                        |
 | [**05. Zones & Cards**](./05_effects_zones_cards.md)         | Hand, Deck & Discard Moves   | `DRAW_CARDS`, `MODIFY_HAND_SIZE`, `SEARCH_AND_SELECT`, `DISCARD`, `PUT_INTO_PLAY`. |
-| [**06. Status & Economy**](./06_effects_status_economy.md)   | Conditions & Resource Gen    | `ADD_STATUS`, `GENERATE_RESOURCE`, `DOUBLE_RESOURCE_FOR_ASPECT`, Toughness keyword.                     |
+| [**06. Status & Economy**](./06_effects_status_economy.md)   | Conditions & Orientation     | `ADD_STATUS`, `EXHAUST`, `READY`, `GENERATE_RESOURCE`, `DOUBLE_RESOURCE_FOR_ASPECT`, Toughness keyword. |
 | [**07. Villain & Nemesis**](./07_effects_villain_nemesis.md) | Activations & Encounter Sets | `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `SPAWN_NEMESIS`, `ATTACH_TO_HOST`.                                |
 | [**08. Dynamic Formulas**](./08_dynamic_formulas.md)         | Mathematical Expressions     | `amountCalculated`, dynamic state tokens, scaling multipliers, and min/max clamps.                      |
 | [**09. Sequences & Modals**](./09_sequences_and_prompts.md)  | Chaining & Player Choices    | `steps: []` multi-action arrays, `PLAYER_CHOICE` Pop-Art decision prompt modals.                        |

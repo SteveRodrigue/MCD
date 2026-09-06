@@ -861,81 +861,45 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
 
   // 8. Ready & Exhaust Primitives
-  READY_CHARACTER: {
-    effect: 'READY_CHARACTER',
-    description: 'Ready target character (Hero, Ally, or Enemy).',
+  EXHAUST: {
+    effect: 'EXHAUST',
+    description: 'Exhaust a card, identity, ally, minion, villain, or character.',
     parameters: [
       {
         key: 'target',
-        label: 'Target',
+        label: 'Target Selector',
         type: 'select',
         options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
+        defaultValue: 'SELF_IDENTITY',
+        description: 'The entity to exhaust (SELF_IDENTITY, SELF, CHOSEN_ALLY, VILLAIN, etc.).',
+      },
+      {
+        key: 'filter',
+        label: 'Target Filter (Optional)',
+        type: 'text',
+        placeholder: 'e.g. trait:Avenger',
+        description: 'Optional filter expression applied to eligible targets.',
       },
     ],
   },
-  READY_IDENTITY: {
-    effect: 'READY_IDENTITY',
-    description: 'Ready player identity (Hero or Alter-Ego).',
+  READY: {
+    effect: 'READY',
+    description: 'Ready an exhausted card, identity, ally, minion, or character.',
     parameters: [
       {
         key: 'target',
-        label: 'Target',
+        label: 'Target Selector',
         type: 'select',
         options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
+        defaultValue: 'SELF_IDENTITY',
+        description: 'The entity to ready (SELF_IDENTITY, SELF, CHOSEN_ALLY, etc.).',
       },
-    ],
-  },
-  READY_ALLY: {
-    effect: 'READY_ALLY',
-    description: 'Ready target ally in play.',
-    parameters: [
       {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'CHOSEN_ALLY',
-      },
-    ],
-  },
-  READY_CARD: {
-    effect: 'READY_CARD',
-    description: 'Ready target card in play.',
-    parameters: [
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
-  EXHAUST_HERO: {
-    effect: 'EXHAUST_HERO',
-    description: 'Exhaust player hero.',
-    parameters: [
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
-  EXHAUST_IDENTITY: {
-    effect: 'EXHAUST_IDENTITY',
-    description: 'Exhaust player identity.',
-    parameters: [
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
+        key: 'filter',
+        label: 'Target Filter (Optional)',
+        type: 'text',
+        placeholder: 'e.g. trait:Avenger',
+        description: 'Optional filter expression applied to eligible targets.',
       },
     ],
   },

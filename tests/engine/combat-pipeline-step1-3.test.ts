@@ -73,7 +73,9 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
     it('triggers Spider-Sense (01001a) to draw 1 card BEFORE defender declaration', () => {
       const initialHandSize = state.players[0].hand.length;
 
-      const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
+      const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {
+        acceptOptionalTriggers: true,
+      });
 
       // Spider-Sense draws 1 card
       expect(nextState.players[0].hand.length).toBe(initialHandSize + 1);
@@ -89,7 +91,9 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
       const daredevilInst = createCardInstance(daredevilCard);
       state.players[0].allies.push(daredevilInst);
 
-      const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1');
+      const nextState = initiateEnemyAttack(state, { type: 'VILLAIN' }, 'p1', {
+        acceptOptionalTriggers: true,
+      });
 
       expect(nextState.pendingDecisionPrompt).toBeDefined();
       const options = nextState.pendingDecisionPrompt!.options;

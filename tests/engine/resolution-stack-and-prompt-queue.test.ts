@@ -202,6 +202,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       const res = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
         targetPlayerId: 'p1',
         threatAmount: 3,
+        acceptOptionalTriggers: true,
       });
 
       expect(res.threatAmount).toBe(2);

@@ -71,7 +71,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       const initialDeckCount = gameState.players[0].deck.length;
 
       // Step 2 Villain activates against hero
-      step2_villainActivations(gameState);
+      step2_villainActivations(gameState, { acceptOptionalTriggers: true });
 
       // Spider-Sense triggered: hand should have drawn 1 card
       expect(gameState.players[0].hand.length).toBe(1);

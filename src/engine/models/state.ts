@@ -170,6 +170,7 @@ export interface ExecutionFrame {
 
 export type CombatPhase =
   | 'PRE_ATTACK'
+  | 'INITIATION'
   | 'DECLARE_DEFENDER'
   | 'DEAL_BOOST'
   | 'REVEAL_BOOST'
@@ -197,6 +198,9 @@ export interface AttackExecutionContext {
   hasOverkill?: boolean;
   hasPiercing?: boolean;
   damagePreventionAmount?: number;
+  pendingDamage?: number;
+  acceptOptionalTriggers?: boolean;
+  synchronousPolicy?: 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL' | 'TAKE_UNDEFENDED';
   finalDamage?: number;
   cancelled?: boolean;
   cancellationReason?: string;

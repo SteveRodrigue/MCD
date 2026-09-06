@@ -6,6 +6,7 @@ import {
   CardAbility,
 } from '../models';
 import { executeEffect } from '../effects';
+import { executeAbilityCost } from './cost-engine';
 
 /**
  * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032).
@@ -175,6 +176,62 @@ export function resolveDecisionPrompt(
     params: { player: playerName, option: optionLabel, promptId: prompt.promptId },
     onomatopoeia: 'CHOICE MADE!',
   });
+
+  // Handle optional trigger execution
+  if (selectedOption?.effect === 'EXECUTE_OPTIONAL_TRIGGER' && selectedOption.params?.ability) {
+    const optAbility = selectedOption.params.ability as CardAbility;
+    const optContext = selectedOption.params.context as any;
+    const sourceCardInstanceId = selectedOption.params.sourceCardInstanceId as string | undefined;
+
+    let sourceCardInst = sourceCardInstanceId
+      ? player?.tableau.find((c) => c.instanceId === sourceCardInstanceId) ||
+        player?.attachments?.find((c) => c.instanceId === sourceCardInstanceId) ||
+        player?.hand.find((c) => c.instanceId === sourceCardInstanceId)
+      : undefined;
+
+    if (optAbility.cost && player) {
+      executeAbilityCost(nextState, player, optAbility, sourceCardInst);
+    }
+
+    if (player) {
+      if (optAbility.limit === 'ONCE_PER_ROUND') {
+        if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+        player.usedAbilitiesThisRound[optAbility.id] =
+          (player.usedAbilitiesThisRound[optAbility.id] || 0) + 1;
+      } else if (optAbility.limit === 'ONCE_PER_PHASE') {
+        if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+        player.usedAbilitiesThisPhase[optAbility.id] =
+          (player.usedAbilitiesThisPhase[optAbility.id] || 0) + 1;
+      }
+    }
+
+    const effectRes = executeEffect(nextState, optAbility, {
+      playerId,
+      sourceCardInstance: sourceCardInst,
+      targetType: optContext?.targetType,
+      targetInstanceId: optContext?.targetInstanceId,
+    });
+
+    nextState.log.push({
+      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: Date.now(),
+      round: nextState.roundNumber,
+      phase: nextState.phase,
+      category: 'ability',
+      key: `ability.${optAbility.id}.triggered`,
+      params: { player: playerName },
+      onomatopoeia: 'ABILITY TRIGGERED!',
+    });
+
+    return {
+      state: effectRes.state,
+      result: {
+        success: true,
+        onomatopoeia: effectRes.onomatopoeia || 'ABILITY TRIGGERED!',
+      },
+      executedEffectRes: effectRes,
+    };
+  }
 
   // Synthesize and execute ability
   const syntheticAbility: CardAbility = {

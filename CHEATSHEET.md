@@ -115,7 +115,7 @@ You can use the following prompt templates to invoke specialized skills and work
 | Directory | Type | Purpose |
 | :--- | :--- | :--- |
 | **[`references/`](references/)** | **Read-Only** | External ground truth (FFG Rules Reference v1.8, MarvelCDB FAQ links, Hall of Heroes). |
-| **[`docs/decisions/`](docs/decisions/)** | **Read/Write** | Architecture Decision Records (ADR-0001 through ADR-0027). |
+| **[`docs/decisions/`](docs/decisions/)** | **Read/Write** | Architecture Decision Records (ADR-0001 through ADR-0046). |
 | **[`docs/specifications/`](docs/specifications/)** | **Read/Write** | Algorithmic card breakdowns (`card_mechanics_breakdown.md`) and supplemental schemas. |
 | **[`docs/ambiguities/`](docs/ambiguities/)** | **Read/Write** | Active blocked cards queue (Inbox Zero target: 0 files). |
 | **[`docs/reports/`](docs/reports/)** | **Read/Write** | Full audit reports (`card-supplemental-audit-core-and-rhino.md`). |

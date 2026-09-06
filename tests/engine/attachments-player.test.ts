@@ -265,4 +265,196 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     };
     expect(CardAbilitySchema.safeParse(deprecatedAbility).success).toBe(false);
   });
+
+  it('strictly rejects playing 01007 Spider-Tracer when 0 minions are in play', async () => {
+    const { canPlayCard, evaluateCardPlayability } =
+      await import('@engine/pipeline/legality-checker');
+    const { getLegalActionsForPlayer } = await import('@engine/pipeline/legal-actions-generator');
+
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+    state.players[0].hand = [tracerInstance];
+    state.players[0].engagedMinions = [];
+
+    // 0 minions in play tablewide
+    const check = canPlayCard(state, 'p1', tracerInstance.instanceId);
+    expect(check.allowed).toBe(false);
+    expect(check.reason).toContain('requires a minion in play');
+
+    const playability = evaluateCardPlayability(state, 'p1', tracerInstance);
+    expect(playability.isPlayable).toBe(false);
+    expect(playability.reasons.some((r) => r.toLowerCase().includes('minion'))).toBe(true);
+
+    const legalActions = getLegalActionsForPlayer(state, 'p1');
+    const hasTracerPlay = legalActions.handCardActions.some((a) => a.cardCode === '01007');
+    expect(hasTracerPlay).toBe(false);
+  });
+
+  it('allows playing 01007 Spider-Tracer when a minion is in play', async () => {
+    const { canPlayCard, evaluateCardPlayability } =
+      await import('@engine/pipeline/legality-checker');
+
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+    const minionCard = cardCatalog.getCard('01101')!;
+    const minionInstance = createCardInstance(minionCard);
+    const resInst = createCardInstance(cardCatalog.getCard('01005')!);
+
+    state.players[0].hand = [tracerInstance, resInst];
+    state.players[0].engagedMinions = [minionInstance];
+
+    const check = canPlayCard(state, 'p1', tracerInstance.instanceId, [resInst.instanceId]);
+    expect(check.allowed).toBe(true);
+
+    const playability = evaluateCardPlayability(state, 'p1', tracerInstance);
+    expect(playability.isPlayable).toBe(true);
+  });
+
+  it('cross-player targeting: Player 1 attaches Spider-Tracer to a minion engaged with Player 2', () => {
+    const minionCard = cardCatalog.getCard('01101')!;
+    const minionInstance = createCardInstance(minionCard);
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+
+    // Setup 2nd player
+    state.players.push({
+      ...state.players[0],
+      id: 'p2',
+      name: 'Player 2',
+      hand: [],
+      discard: [],
+      tableau: [],
+      allies: [],
+      engagedMinions: [minionInstance],
+    });
+
+    state.players[0].engagedMinions = [];
+    state.players[0].hand = [tracerInstance];
+
+    const resCard = cardCatalog.getCard('01005')!;
+    const resInst = createCardInstance(resCard);
+    state.players[0].hand.push(resInst);
+
+    const res = dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: tracerInstance.instanceId,
+      paymentCardInstanceIds: [resInst.instanceId],
+    });
+
+    expect(res.result.success).toBe(true);
+    // Attached to minion engaged with Player 2 in resulting state
+    const p2Minion = res.state.players[1].engagedMinions[0];
+    expect(p2Minion.attachments?.some((c) => c.card.code === '01007')).toBe(true);
+  });
+
+  it('multi-minion prompting: Enqueues decision prompt when 2+ minions are in play', () => {
+    const minion1 = createCardInstance(cardCatalog.getCard('01101')!);
+    const minion2 = createCardInstance(cardCatalog.getCard('01101')!);
+    const tracerInstance = createCardInstance(cardCatalog.getCard('01007')!);
+    const resInst = createCardInstance(cardCatalog.getCard('01005')!);
+
+    state.players[0].engagedMinions = [minion1, minion2];
+    state.players[0].hand = [tracerInstance, resInst];
+
+    const res = dispatchAction(state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: tracerInstance.instanceId,
+      paymentCardInstanceIds: [resInst.instanceId],
+    });
+
+    expect(res.result.success).toBe(true);
+    // Should have enqueued a decision prompt
+    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(res.state.pendingDecisionPrompt?.options.length).toBe(2);
+    expect(res.state.pendingDecisionPrompt?.options.some((o) => o.id === minion1.instanceId)).toBe(
+      true,
+    );
+    expect(res.state.pendingDecisionPrompt?.options.some((o) => o.id === minion2.instanceId)).toBe(
+      true,
+    );
+
+    // Resolve choice by choosing minion2
+    const resolveRes = dispatchAction(res.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: minion2.instanceId,
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    const m2InState = resolveRes.state.players[0].engagedMinions.find(
+      (m) => m.instanceId === minion2.instanceId,
+    )!;
+    const m1InState = resolveRes.state.players[0].engagedMinions.find(
+      (m) => m.instanceId === minion1.instanceId,
+    )!;
+    expect(m2InState.attachments?.some((c) => c.card.code === '01007')).toBe(true);
+    expect(m1InState.attachments?.length || 0).toBe(0);
+  });
+
+  it('distinguishes CHOSEN_MINION (tablewide) from CHOSEN_ENGAGED_MINION (local)', async () => {
+    const { evaluateMinionTargetRequirement } = await import('@engine/pipeline/legality-checker');
+
+    const player1 = state.players[0];
+    player1.engagedMinions = [];
+
+    // Add Player 2 with an engaged minion
+    state.players.push({
+      ...player1,
+      id: 'p2',
+      name: 'Player 2',
+      engagedMinions: [createCardInstance(cardCatalog.getCard('01101')!)],
+    });
+
+    // Mock card requiring tablewide minion (CHOSEN_MINION)
+    const tablewideCard = {
+      ...cardCatalog.getCard('01007')!,
+      enrichment: {
+        abilities: [
+          {
+            id: 'test_tablewide',
+            timing: 'ACTION' as const,
+            steps: [{ effect: 'DEAL_DAMAGE' as const, params: { target: 'CHOSEN_MINION' } }],
+          },
+        ],
+      },
+    };
+
+    // Mock card requiring local minion (CHOSEN_ENGAGED_MINION)
+    const localCard = {
+      ...cardCatalog.getCard('01007')!,
+      enrichment: {
+        abilities: [
+          {
+            id: 'test_local',
+            timing: 'ACTION' as const,
+            steps: [
+              { effect: 'DEAL_DAMAGE' as const, params: { target: 'CHOSEN_ENGAGED_MINION' } },
+            ],
+          },
+        ],
+      },
+    };
+
+    // Player 1 has 0 minions, but Player 2 has 1:
+    // CHOSEN_MINION allowed for Player 1
+    const resTablewide = evaluateMinionTargetRequirement(state, player1, tablewideCard as any);
+    expect(resTablewide.allowed).toBe(true);
+
+    // CHOSEN_ENGAGED_MINION disallowed for Player 1
+    const resLocal = evaluateMinionTargetRequirement(state, player1, localCard as any);
+    expect(resLocal.allowed).toBe(false);
+    expect(resLocal.reason).toContain('engaged with you');
+  });
+
+  it('validates CHOSEN_MINION, CHOSEN_ENGAGED_MINION, ALL_MINIONS, and ENGAGED_ENEMIES in TargetSelectorSchema', async () => {
+    const { TargetSelectorSchema } = await import('../../src/data/supplemental/schema');
+
+    expect(TargetSelectorSchema.safeParse('CHOSEN_MINION').success).toBe(true);
+    expect(TargetSelectorSchema.safeParse('CHOSEN_ENGAGED_MINION').success).toBe(true);
+    expect(TargetSelectorSchema.safeParse('ALL_MINIONS').success).toBe(true);
+    expect(TargetSelectorSchema.safeParse('ENGAGED_ENEMIES').success).toBe(true);
+    expect(TargetSelectorSchema.safeParse('ENGAGED_MINIONS').success).toBe(true);
+  });
 });

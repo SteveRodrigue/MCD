@@ -12,6 +12,7 @@ import {
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
 import { isResourceAbility, isAbilityPlayableInForm } from './cost-engine';
+import { getPlayerBlackPantherUpgrades } from '../specials/wakanda-forever';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -513,7 +514,60 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
 /**
  * Validates whether hand cards specified for payment cover the cost of the card being played.
  */
-import { getPlayerBlackPantherUpgrades } from '../specials/wakanda-forever';
+/**
+ * Evaluates whether a card requires minion targets (tablewide or locally engaged)
+ * and whether those minion targets currently exist in play (RR v1.8 p. 6, 19, 28).
+ */
+export function evaluateMinionTargetRequirement(
+  state: GameState,
+  player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  const abilities = card.enrichment?.abilities || [];
+
+  let requiresTablewideMinion = false;
+  let requiresLocalMinion = false;
+
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const target = step.params?.target;
+      if (
+        step.effect === 'ATTACH_TO_HOST' &&
+        (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS')
+      ) {
+        requiresTablewideMinion = true;
+      } else if (
+        step.effect === 'ATTACH_TO_HOST' &&
+        (target === 'CHOSEN_ENGAGED_MINION' || target === 'ENGAGED_MINIONS')
+      ) {
+        requiresLocalMinion = true;
+      } else if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
+        requiresTablewideMinion = true;
+      } else if (target === 'CHOSEN_ENGAGED_MINION') {
+        requiresLocalMinion = true;
+      }
+    }
+  }
+
+  if (requiresLocalMinion) {
+    const localCount = player.engagedMinions?.length || 0;
+    if (localCount === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot play this card: requires a minion engaged with you.',
+      };
+    }
+  }
+
+  if (requiresTablewideMinion) {
+    const totalMinions = state.players.reduce((acc, p) => acc + (p.engagedMinions?.length || 0), 0);
+    if (totalMinions === 0) {
+      return { allowed: false, reason: 'Cannot play this card: requires a minion in play.' };
+    }
+  }
+
+  return { allowed: true };
+}
 
 export function canPlayCard(
   state: GameState,
@@ -547,6 +601,12 @@ export function canPlayCard(
         reason: 'Cannot play Wakanda Forever! without at least 1 Black Panther upgrade in play.',
       };
     }
+  }
+
+  // Minion target and attachment requirement check (RR v1.8 p. 6, 19, 28)
+  const minionCheck = evaluateMinionTargetRequirement(state, player, card);
+  if (!minionCheck.allowed) {
+    return minionCheck;
   }
 
   const abilities = card.enrichment?.abilities || [];
@@ -853,6 +913,12 @@ export function evaluateCardPlayability(
     reasons.push(
       `Card is currently under architectural review / blocked (${card.enrichment.audit.ambiguityFile})`,
     );
+  }
+
+  // Minion target and attachment requirement check (RR v1.8 p. 6, 19, 28)
+  const minionPlayabilityCheck = evaluateMinionTargetRequirement(state, player, card);
+  if (!minionPlayabilityCheck.allowed && minionPlayabilityCheck.reason) {
+    reasons.push(minionPlayabilityCheck.reason);
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)

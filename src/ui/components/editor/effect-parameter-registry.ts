@@ -1332,16 +1332,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Prompt player to choose between multiple options.',
     parameters: [],
   },
-  RESOLVE_SCRY_SELECTION: {
-    effect: 'RESOLVE_SCRY_SELECTION',
-    description: 'Resolve player selection from scried cards.',
-    parameters: [],
-  },
-  SCRY_AND_SELECT_TRAIT: {
-    effect: 'SCRY_AND_SELECT_TRAIT',
-    description: 'Scry cards and filter by trait.',
-    parameters: [],
-  },
   TAKE_THREAT_AS_DAMAGE: {
     effect: 'TAKE_THREAT_AS_DAMAGE',
     description: 'Take threat on identity as direct damage.',

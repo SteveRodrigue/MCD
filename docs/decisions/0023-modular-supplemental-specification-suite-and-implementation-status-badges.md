@@ -37,13 +37,13 @@ This monolithic approach caused two major problems:
 - `02_timings_and_triggers.md`: 8+ timing types & event trigger windows.
 - `03_costs_and_targeting.md`: `AbilityCost`, `TargetSelector`, and exhaustive `FilterSchema`.
 - `04_effects_combat_threat.md`: `DEAL_DAMAGE`, `REMOVE_THREAT`, `ADD_THREAT`[^names], keywords.
-- `05_effects_zones_cards.md`: `DRAW_CARDS`, `MODIFY_HAND_SIZE`, `SCRY_AND_SELECT_TRAIT`[^names], `PLAY_FROM_ZONE`.
+- `05_effects_zones_cards.md`: `DRAW_CARDS`, `MODIFY_HAND_SIZE`, `SEARCH_AND_SELECT`[^names], `PLAY_FROM_ZONE`.
 - `06_effects_status_economy.md`: `ADD_STATUS`[^names], Toughness keyword, `GENERATE_RESOURCE`[^names], `DOUBLE_RESOURCE`.
 - `07_effects_villain_nemesis.md`: `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `SPAWN_NEMESIS`, `ATTACH_TO_HOST`.
 - `08_dynamic_formulas.md`: `amountCalculated`, state tokens (`PLAYER_MAX_HEALTH`, `SUFFERED_DAMAGE`), clamps.
 - `09_sequences_and_prompts.md`: `steps: []`[^names] multi-action chaining, `PLAYER_CHOICE` Pop-Art modals.
 
-[^names]: **Errata (2026-09-02, `documentation-audit`).** The primitive names in this list were renamed after this ADR was accepted; the list above has been updated to the current engine vocabulary so the suite index stays navigable. The original 2026-08-30 wording read `PLACE_THREAT`, `SEARCH_AND_DRAW`, `APPLY_STATUS`, `TOUGHNESS`, `RESOURCE_GENERATION`, and `sequence: []`. The `sequence` → `steps` rename is the vocabulary standardization mandated by [ADR-0030](0030-unified-ability-step-sequence-architecture.md); the remaining renames align the docs with the actual `switch (step.effect)` labels in `src/engine/effects/index.ts`. This decision's substance is unchanged.
+[^names]: **Errata (2026-09-02 / 2026-09-06, `documentation-audit`).** The primitive names in this list were renamed after this ADR was accepted; the list above has been updated to the current engine vocabulary so the suite index stays navigable. The original 2026-08-30 wording read `PLACE_THREAT`, `SEARCH_AND_DRAW`, `APPLY_STATUS`, `TOUGHNESS`, `RESOURCE_GENERATION`, `SCRY_AND_SELECT_TRAIT`, and `sequence: []`. The `sequence` → `steps` rename is the vocabulary standardization mandated by [ADR-0030](0030-unified-ability-step-sequence-architecture.md); the remaining renames align the docs with the actual `switch (step.effect)` labels in `src/engine/effects/index.ts`. This decision's substance is unchanged.
 
 ---
 

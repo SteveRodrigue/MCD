@@ -221,7 +221,7 @@ export function attachCardToHost(
         p.tableau.push(cardInstance);
       }
     }
-  } else if (uTarget === 'CHOSEN_MINION' || uTarget === 'MINION') {
+  } else if (uTarget === 'CHOSEN_MINION' || uTarget === 'MINION' || uTarget === 'ALL_MINIONS') {
     let minion: CardInstance | undefined;
     if (targetHostId) {
       for (const p of state.players) {
@@ -229,7 +229,14 @@ export function attachCardToHost(
         if (minion) break;
       }
     }
-    if (!minion) minion = state.players[0]?.engagedMinions?.[0];
+    if (!minion) {
+      for (const p of state.players) {
+        if (p.engagedMinions && p.engagedMinions.length > 0) {
+          minion = p.engagedMinions[0];
+          break;
+        }
+      }
+    }
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
@@ -239,6 +246,16 @@ export function attachCardToHost(
         if (!p.tableau) p.tableau = [];
         p.tableau.push(cardInstance);
       }
+    }
+  } else if (uTarget === 'CHOSEN_ENGAGED_MINION' || uTarget === 'ENGAGED_MINIONS') {
+    const targetPlayer = state.players.find((p) => p.id === targetHostId) || state.players[0];
+    const minion = targetPlayer?.engagedMinions?.[0];
+    if (minion) {
+      if (!minion.attachments) minion.attachments = [];
+      minion.attachments.push(cardInstance);
+    } else if (targetPlayer) {
+      if (!targetPlayer.tableau) targetPlayer.tableau = [];
+      targetPlayer.tableau.push(cardInstance);
     }
   } else if (uTarget === 'MAIN_SCHEME' || uTarget === 'SCHEME') {
     if (!state.mainScheme.attachments) state.mainScheme.attachments = [];

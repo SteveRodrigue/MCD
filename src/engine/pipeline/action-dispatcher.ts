@@ -997,7 +997,62 @@ export function dispatchAction(
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
           const targetHost = (attachStep?.params?.target as string) || 'VILLAIN';
           (playedCardInstance as any).ownerId = action.playerId;
-          attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+
+          // If target is CHOSEN_MINION / MINION and no targetInstanceId was supplied
+          if (
+            (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') &&
+            !action.targetInstanceId
+          ) {
+            const allMinions: { minion: CardInstance; player: PlayerState }[] = [];
+            for (const p of nextState.players) {
+              for (const m of p.engagedMinions || []) {
+                allMinions.push({ minion: m, player: p });
+              }
+            }
+
+            if (allMinions.length > 1) {
+              const options: DecisionPromptOption[] = allMinions.map(
+                ({ minion, player: engPlayer }) => ({
+                  id: minion.instanceId,
+                  label: `${minion.card.name} (${engPlayer.name})`,
+                  description: `Attach ${playedCardInstance.card.name} to ${minion.card.name}`,
+                  effect: 'ATTACH_TO_HOST',
+                  params: {
+                    isAttachmentMinionChoice: true,
+                    attachmentCard: playedCardInstance,
+                    ownerId: action.playerId,
+                  },
+                }),
+              );
+
+              const prompt: PendingDecisionPrompt = {
+                promptId: `prompt_attach_minion_${Date.now()}`,
+                playerId: action.playerId,
+                title: 'Choose Minion Host',
+                description: `Choose which minion to attach ${playedCardInstance.card.name} to:`,
+                sourceCardName: playedCardInstance.card.name,
+                options,
+                isVoluntary: false,
+              };
+
+              const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+              return {
+                state: enqueuedState,
+                result: { success: true, onomatopoeia: 'CHOOSE MINION!' },
+              };
+            } else if (allMinions.length === 1) {
+              attachCardToHost(
+                nextState,
+                playedCardInstance,
+                targetHost,
+                allMinions[0].minion.instanceId,
+              );
+            } else {
+              attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+            }
+          } else {
+            attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+          }
         } else {
           player.tableau.push(playedCardInstance);
         }
@@ -1543,6 +1598,39 @@ export function dispatchAction(
             };
           }
         }
+      }
+
+      if (activePrompt && activePrompt.options.some((o) => o.params?.isAttachmentMinionChoice)) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const chosenMinionId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
+        const attachmentCard = (selectedOption?.params?.attachmentCard ||
+          activePrompt.options[0]?.params?.attachmentCard) as CardInstance | undefined;
+        const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options[0]?.params?.ownerId) as string | undefined;
+
+        if (attachmentCard) {
+          (attachmentCard as any).ownerId = ownerId;
+          attachCardToHost(poppedState, attachmentCard, 'CHOSEN_MINION', chosenMinionId);
+        }
+
+        poppedState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: poppedState.roundNumber,
+          phase: poppedState.phase,
+          category: 'ability',
+          actor: { name: player.name, type: player.currentForm },
+          key: 'card.attached.to_host',
+          params: {
+            player: player.name,
+            card: activePrompt.sourceCardName,
+            host: selectedOption?.label || chosenMinionId,
+          },
+          onomatopoeia: 'ATTACHED!',
+        });
+
+        return { state: poppedState, result: { success: true, onomatopoeia: 'ATTACHED!' } };
       }
 
       if (

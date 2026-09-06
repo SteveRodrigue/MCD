@@ -140,6 +140,25 @@ export function canPayAbilityCost(
     }
   }
 
+  // 6. Target existence validation for abilities requiring minions (RR v1.8 p. 19, 28)
+  for (const step of ability.steps || []) {
+    const target = step.params?.target;
+    if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
+      const totalMinions = _state.players.reduce(
+        (acc, p) => acc + (p.engagedMinions?.length || 0),
+        0,
+      );
+      if (totalMinions === 0) {
+        return { allowed: false, reason: 'No minions in play to target.' };
+      }
+    } else if (target === 'CHOSEN_ENGAGED_MINION') {
+      const localCount = player.engagedMinions?.length || 0;
+      if (localCount === 0) {
+        return { allowed: false, reason: 'No minions engaged with you to target.' };
+      }
+    }
+  }
+
   return { allowed: true };
 }
 

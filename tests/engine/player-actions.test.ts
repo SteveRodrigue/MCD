@@ -440,6 +440,8 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       const webShooterInPlay = createCardInstance(catalog.getCard('01008')!);
       webShooterInPlay.tokens = { counters: 3 };
       player.tableau.push(webShooterInPlay);
+      const minionInstance = createCardInstance(catalog.getCard('01101')!);
+      player.engagedMinions = [minionInstance];
 
       const spiderTracerCard = catalog.getCard('01007')!; // Spider-Tracer (Cost 1)
       const spiderTracerInstance = createCardInstance(spiderTracerCard);
@@ -454,7 +456,9 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.players[0].tableau.some((c) => c.card.code === '01007')).toBe(true);
+      expect(
+        res.state.players[0].engagedMinions[0].attachments?.some((c) => c.card.code === '01007'),
+      ).toBe(true);
       // Web-Shooter should have 2 counters remaining
       const shooter = res.state.players[0].tableau.find((c) => c.card.code === '01008')!;
       expect(shooter.tokens?.counters).toBe(2);

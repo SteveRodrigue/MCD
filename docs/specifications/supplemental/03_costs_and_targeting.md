@@ -54,7 +54,11 @@ Defines which game entity is chosen or affected by the ability:
 | `'CHOSEN_SCHEME'` | Player chooses between Main Scheme and any Side Scheme. | Interactive selector. |
 | `'CHOSEN_ENEMY'` | Player chooses between the Villain and any Minion in play. | Interactive selector. |
 | `'ALL_ENEMIES'` | The active Villain and all minions across all player play areas. | Batch combat target. |
-| `'ENGAGED_MINIONS'` | All minions engaged specifically with the resolving player. | Player minion zone. |
+| `'ENGAGED_ENEMIES'` | The active Villain and each minion engaged specifically with the resolving player. | Batch local target. |
+| `'ENGAGED_MINIONS'` | All minions engaged specifically with the resolving player (excludes Villain). | Player minion zone. |
+| `'CHOSEN_MINION'` | Player chooses 1 minion card currently in play across any player. | Interactive selector. |
+| `'CHOSEN_ENGAGED_MINION'` | Player chooses 1 minion engaged specifically with the resolving player. | Interactive selector. |
+| `'ALL_MINIONS'` | All minions currently in play across all player play areas (excludes Villain). | Batch minion target. |
 | `'CHOSEN_ALLY'` | Player chooses 1 ally card currently in play. | Interactive selector. |
 | `'PREVIOUS_TARGET'` | Re-uses target from previous ability step or the triggering combat context. | Step result or event entity. |
 

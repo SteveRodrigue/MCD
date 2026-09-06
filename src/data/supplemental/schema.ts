@@ -220,7 +220,6 @@ export const EffectTypeSchema = z.enum([
   'SEARCH_AND_PLAY_UPGRADE',
   'SEARCH_AND_REVEAL_SIDE_SCHEME',
   'SEARCH_AND_SELECT',
-  'SEARCH_DECK_FOR_CARD',
   'SHUFFLE_DISCARD_INTO_DECK',
   'SHUFFLE_INTO_DECK',
   'SPAWN_MINION_ENGAGED',
@@ -418,6 +417,10 @@ export const SearchAndSelectParamsSchema = z.object({
     cardTypes: z.array(z.string()).optional(),
     isIdentitySpecific: z.boolean().optional(),
   }).optional(),
+  targetCardCode: z.string().optional(),
+  targetCardName: z.string().optional(),
+  trait: z.string().optional(),
+  type: z.string().optional(),
   selectedDestination: z
     .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])
     .default('HAND'),

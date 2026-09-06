@@ -56,6 +56,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'ALL_ENEMIES'` | The active Villain and all minions across all player play areas. | Batch combat target. |
 | `'ENGAGED_MINIONS'` | All minions engaged specifically with the resolving player. | Player minion zone. |
 | `'CHOSEN_ALLY'` | Player chooses 1 ally card currently in play. | Interactive selector. |
+| `'PREVIOUS_TARGET'` | Re-uses target from previous ability step or the triggering combat context. | Step result or event entity. |
 
 ---
 
@@ -81,7 +82,7 @@ export interface FilterSchema {
 | Field | Type | Allowed Values / Format | Description |
 | :--- | :--- | :--- | :--- |
 | `type` | `enum` | `'hero'`, `'alter_ego'`, `'ally'`, `'upgrade'`, `'support'`, `'event'`, `'resource'`, `'minion'`, `'villain'`, `'main_scheme'`, `'side_scheme'`, `'treachery'`, `'attachment'`, `'obligation'`, `'environment'` | Filters by card type code. |
-| `trait` | `string` | Case-sensitive string (e.g. `"Tech"`, `"Avenger"`, `"Aerial"`, `"Weapon"`, `"Gamma"`) | Matches traits defined on card. |
+| `trait` | `string` | Case- and punctuation-resilient string (e.g. `"Tech"`, `"Avenger"`, `"S.H.I.E.L.D."`, `"SHIELD"`) | Matches traits defined on card (case- and punctuation-agnostic). |
 | `aspect` | `enum` | `'aggression'`, `'justice'`, `'leadership'`, `'protection'`, `'basic'`, `'encounter'` | Filters by card faction / aspect. |
 | `zone` | `enum` | `'tableau'`, `'hand'`, `'deck'`, `'discard'`, `'setAside'`, `'engaged'` | Restricts evaluation to a specific zone. |
 | `isUnique` | `boolean` | `true` \| `false` | Filters cards with unique titles (diamond symbol). |

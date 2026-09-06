@@ -200,17 +200,16 @@ The Editor is organized into a 3-column split view:
 
 ## 5. In-Game Context Menu Integration
 
-Every card rendered on the active game board wraps or attaches an `onContextMenu` handler:
+Every card rendered on the active game board attaches a custom `onContextMenu` handler with portal-mounted rendering:
 1. **Trigger:** Right-clicking any `<CardView />` on the board (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachment, Discard pile preview).
-2. **Context Menu Options:**
-   - 🔍 **"Open in Supplemental Editor"**
-   - 📋 **"Copy Card Code"** (`01001a`)
-   - ℹ️ **"Inspect Upstream Data"**
-3. **Action:** Clicking "Open in Supplemental Editor" executes:
-   ```ts
-   window.open(`/editor?code=${card.code}`, '_blank');
-   ```
-4. **Game Continuity Invariant:** The current game state remains open in its original tab. Saving modified supplemental data in the new tab will trigger Vite HMR; users are notified that active games may reset or desynchronize.
+2. **Portal Rendering & Auto-Zoom Immunity:**
+   - Mounted directly into `document.body` via `ReactDOM.createPortal` with elevated layering (`z-[9999]`).
+   - Completely decoupled from tabletop card CSS transforms (`rotate-0`, `scale-[...]`, `-translate-y-4`) and hover-zoom transitions, ensuring exact fixed viewport coordinate positioning (`e.clientX`, `e.clientY`).
+3. **Context Menu Options:**
+   - 🔍 **"Open in Supplemental Editor"**: Opens the standalone editor focused on the card in a new browser tab (`window.open('/editor?code=...', '_blank')`).
+   - 📋 **"Copy Card Code"**: Copies the card's unique code (`01001a`) directly to the system clipboard.
+   - ℹ️ **"View Raw Card Attributes"**: Opens an interactive modal viewer (`z-[10000]`) displaying formatted JSON of upstream and enrichment data with native drag text selection (`select-text`, `cursor-text`) and a 1-click **"Copy JSON"** button.
+4. **Game Continuity Invariant:** The current game state remains active in its original tab. Saving modified supplemental data in the editor tab triggers Vite HMR and hot-reloads card definitions.
 
 ---
 

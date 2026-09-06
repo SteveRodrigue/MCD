@@ -92,7 +92,7 @@
 | **Rules Reference** | **"Discard" (p. 10)** | **"Search" (p. 26)** & **"Look at" (p. 19)** |
 | **Primary Intent** | Destruction, penalty, or milling into discard pile. | Inspection, drafting, or tutoring cards to keep/play. |
 | **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`). | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
-| **Example Cards** | *Caught Off Guard*, *Charge*, Obligations, Treachery hand discard. | *Tony Stark* (Futurist), *Black Cat* (01002), *Make the Call*, *Ancestral Knowledge*. |
+| **Example Cards** | *Caught Off Guard*, *Black Cat* (01002), *Charge*, Obligations, Treachery hand discard. | *Tony Stark* (Futurist `01029b`), *Make the Call*, *Ancestral Knowledge*. |
 
 - **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH_AND_SELECT`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
 
@@ -100,17 +100,25 @@
 
 ## 3. Search, Split & Zone Manipulations
 
-### `SCRY_AND_SELECT_TRAIT`
+### `SEARCH_AND_SELECT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1343`](../../../src/engine/effects/index.ts#L1343) / _Tony Stark_ `01029b` Futurist)
-- **Description:** Looks at the top `lookCount` cards of the player deck, opens an interactive `PendingDecisionPrompt` allowing the player to take one card matching `trait` into hand (or decline), and discards the rest via `RESOLVE_SCRY_SELECTION`.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030 / _Tony Stark_ `01029b` Futurist)
+- **Description:** Searches or looks at cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`), filters candidates matching criteria (`trait`, `resource`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `PLAY`), routing remaining looked cards to `unselectedDestination` (`DISCARD`, `DECK`) with optional post-search shuffle (`shuffleAfter`).
 
 ```json
 {
-  "effect": "SCRY_AND_SELECT_TRAIT",
+  "effect": "SEARCH_AND_SELECT",
   "params": {
+    "source": "PLAYER_DECK",
     "lookCount": 3,
-    "trait": "Tech"
+    "filter": {
+      "trait": "Tech"
+    },
+    "takeCount": 1,
+    "selectedDestination": "HAND",
+    "unselectedDestination": "DISCARD",
+    "shuffleAfter": false,
+    "promptTitle": "Futurist: Choose 1 Tech card to add to hand"
   }
 }
 ```

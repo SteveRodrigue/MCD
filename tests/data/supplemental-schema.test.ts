@@ -271,6 +271,33 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
+    it('Rejects obsolete SCRY_AND_SELECT_TRAIT and RESOLVE_SCRY_SELECTION in AbilityStepSchema (Issue #78)', () => {
+      const obsoleteEffects = ['SCRY_AND_SELECT_TRAIT', 'RESOLVE_SCRY_SELECTION'];
+
+      for (const effect of obsoleteEffects) {
+        expect(
+          AbilityStepSchema.safeParse({ effect, params: {} }).success,
+          `Expected ${effect} to be rejected by AbilityStepSchema`,
+        ).toBe(false);
+      }
+    });
+
+    it('Accepts canonical SEARCH_AND_SELECT primitive in AbilityStepSchema', () => {
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'SEARCH_AND_SELECT',
+          params: {
+            source: 'PLAYER_DECK',
+            lookCount: 3,
+            takeCount: 1,
+            filter: { trait: 'Tech' },
+            selectedDestination: 'HAND',
+            unselectedDestination: 'DISCARD',
+          },
+        }).success,
+      ).toBe(true);
+    });
+
     it('Accepts canonical DISCARD primitive in AbilityStepSchema', () => {
       expect(
         AbilityStepSchema.safeParse({

@@ -35,7 +35,7 @@
 
 ### `DEAL_DAMAGE_SPLIT`
 
-- **Status:** � `ROADMAP / SPECIFIED`
+- **Status:** 🟡 `ROADMAP / SPECIFIED`
 - **Description:** Divides a pool of damage among multiple eligible targets.
 
 > [!NOTE]

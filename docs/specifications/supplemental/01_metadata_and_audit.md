@@ -32,6 +32,7 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | :--------------------- | :---------------- | :------- | :--------------------------------------------------------------------------------------------------------------- |
 | `comment`              | `string`          | Optional | Human-readable explanation of card type, title, and mechanics.                                                   |
 | `abilities`            | `CardAbility[]`   | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                            |
+| `playRequirements`     | `PlayRequirements`| Optional | Card-level form, trait, and control constraints (RR v1.8 p. 16, see [Module 11](./11_play_requirements.md)).   |
 | `audit`                | `CardAuditRecord` | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                            |
 | `mechanicSteps`        | `string[]`        | Optional | Granular step-by-step translation matching printed text.                                                         |
 | `noSupplementalNeeded` | `boolean`         | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).           |

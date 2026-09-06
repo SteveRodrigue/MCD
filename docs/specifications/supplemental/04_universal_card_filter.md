@@ -127,8 +127,8 @@ Excludes candidates that match **any** sub-filter in the list.
 
 | Effect Primitive | Parameter | Documentation |
 | :--- | :--- | :--- |
-| **`SEARCH_AND_SELECT`** | `filter` | [05. Zones & Cards (Search)](./05_effects_zones_cards.md#search_and_select) |
-| **`DISCARD`** | `filter`, `untilFilter` | [05. Zones & Cards (Discard)](./05_effects_zones_cards.md#discard) |
-| **`MODIFY_HAND_SIZE`** | `filter` (or step `filter`) | [05. Zones & Cards (Hand Size)](./05_effects_zones_cards.md#modify_hand_size) |
-| **`PUT_INTO_PLAY`** | `filter` | [05. Zones & Cards (Put Into Play)](./05_effects_zones_cards.md#put_into_play) |
-| **`EXHAUST` / `READY`** | `filter` | [06. Status & Economy](./06_effects_status_economy.md#exhaust-and-ready) |
+| **`SEARCH_AND_SELECT`** | `filter` | [06. Zones & Cards (Search)](./06_effects_zones_cards.md#search_and_select) |
+| **`DISCARD`** | `filter`, `untilFilter` | [06. Zones & Cards (Discard)](./06_effects_zones_cards.md#discard) |
+| **`MODIFY_HAND_SIZE`** | `filter` (or step `filter`) | [06. Zones & Cards (Hand Size)](./06_effects_zones_cards.md#modify_hand_size) |
+| **`PUT_INTO_PLAY`** | `filter` | [06. Zones & Cards (Put Into Play)](./06_effects_zones_cards.md#put_into_play) |
+| **`EXHAUST` / `READY`** | `filter` | [07. Status & Economy](./07_effects_status_economy.md#exhaust-and-ready) |

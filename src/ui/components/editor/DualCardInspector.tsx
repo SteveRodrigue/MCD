@@ -620,28 +620,37 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
                                 Resolution Steps ({ab.steps.length})
                               </span>
-                              {ab.steps.map((st: any, sIdx: number) => (
-                                <div
-                                  key={sIdx}
-                                  className="text-xs font-mono bg-white p-1.5 border border-black rounded flex items-center justify-between gap-2"
-                                >
-                                  <div>
-                                    <span className="font-bold text-comic-accent mr-2">
-                                      [{st.effect}]
-                                    </span>
-                                    {st.params && (
-                                      <span className="text-gray-700 text-[11px]">
-                                        {JSON.stringify(st.params)}
-                                      </span>
+                              {ab.steps.map((st: any, sIdx: number) => {
+                                const hasParams = st.params && Object.keys(st.params).length > 0;
+                                return (
+                                  <div
+                                    key={sIdx}
+                                    data-testid={`visual-review-step-${sIdx}`}
+                                    className="text-xs font-mono bg-white p-2 border border-black rounded flex flex-col gap-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+                                  >
+                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-[10px] font-bold bg-gray-200 text-gray-700 px-1 py-0.5 rounded border border-gray-400">
+                                          #{sIdx + 1}
+                                        </span>
+                                        <span className="font-bold text-comic-accent">
+                                          [{st.effect}]
+                                        </span>
+                                      </div>
+                                      {st.gate && (
+                                        <span className="text-[10px] font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded border border-yellow-400">
+                                          Gate: {st.gate}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {hasParams && (
+                                      <pre className="p-1.5 bg-gray-50 border border-gray-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-48">
+                                        {JSON.stringify(st.params, null, 2)}
+                                      </pre>
                                     )}
                                   </div>
-                                  {st.gate && (
-                                    <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-1 py-0.5 rounded border">
-                                      Gate: {st.gate}
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>

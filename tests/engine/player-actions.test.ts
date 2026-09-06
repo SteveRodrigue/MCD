@@ -748,7 +748,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         ).toBe(false);
       });
 
-      it('executes Tony Stark Futurist ability: prompts player to choose Tech card or decline', () => {
+      it('executes Tony Stark Futurist ability: prompts player to choose 1 card among top 3, discards other 2', () => {
         const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
         gameState.players[0].alterEgo = ironManIdentity.alterEgo;
         gameState.players[0].hero = ironManIdentity.hero;
@@ -756,7 +756,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         gameState.players[0].currentForm = 'alter_ego';
 
         const player = gameState.players[0];
-        // Prepare deck with 1 Tech card (Arc Reactor 01035) and 2 non-Tech cards
+        // Prepare deck with Arc Reactor (01035) and 2 other cards
         const arcReactor = createCardInstance(catalog.getCard('01035')!);
         const nonTech1 = createCardInstance(catalog.getCard('01005')!);
         const nonTech2 = createCardInstance(catalog.getCard('01005')!);
@@ -776,10 +776,10 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(res1.result.success).toBe(true);
         expect(res1.state.pendingDecisionPrompt).toBeDefined();
         expect(res1.state.pendingDecisionPrompt?.title).toMatch(/futurist/i);
-        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(1); // Only 1 Tech card (Arc Reactor) among 3 looked cards
+        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(3); // All 3 looked cards offered per printed card text
 
-        // 2. Select the Arc Reactor card (only Tech option)
-        const techOptionId = res1.state.pendingDecisionPrompt!.options[0].id;
+        // 2. Select the Arc Reactor card
+        const techOptionId = arcReactor.instanceId;
         const res2 = dispatchAction(res1.state, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',
@@ -791,11 +791,11 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         // Arc Reactor should now be in hand
         expect(res2.state.players[0].hand.length).toBe(initialHandLength + 1);
         expect(res2.state.players[0].hand.some((c) => c.card.code === '01035')).toBe(true);
-        // The other 2 non-tech cards should be discarded
+        // The other 2 cards should be discarded
         expect(res2.state.players[0].discard.length).toBe(initialDiscardLength + 2);
       });
 
-      it('executes Tony Stark Futurist ability with 2 Tech cards in top 3: offers both Tech options, puts chosen in hand and discards remaining looked cards', () => {
+      it('executes Tony Stark Futurist ability and allows selecting any looked card, discarding remainder', () => {
         const ironManIdentity = catalog.getHeroIdentity('iron_man')!;
         gameState.players[0].alterEgo = ironManIdentity.alterEgo;
         gameState.players[0].hero = ironManIdentity.hero;
@@ -820,10 +820,10 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
         expect(res1.result.success).toBe(true);
         expect(res1.state.pendingDecisionPrompt).toBeDefined();
-        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(2); // Both Tech cards offered
+        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(3); // All 3 looked cards offered
 
-        // Select the second Tech card (markVArmor)
-        const secondOptionId = res1.state.pendingDecisionPrompt!.options[1].id;
+        // Select the second card (markVArmor)
+        const secondOptionId = markVArmor.instanceId;
         const res2 = dispatchAction(res1.state, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',

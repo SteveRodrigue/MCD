@@ -958,20 +958,23 @@
           },
           "steps": [
             {
-              "effect": "READY_IDENTITY"
+              "effect": "READY",
+              "params": {
+                "target": "SELF_IDENTITY"
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T22:45:48Z",
-        "reviewedAt": "2026-09-05T22:45:48Z",
-        "reviewedBy": "Steve",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
+        "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 50,
         "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk.",
-        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) [Cost: Discard this card] -> Ready She-Hulk"
+        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) [Cost: Discard this card] -> READY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Trigger: Hero Response after you make a basic attack (RESPONSE @ BASIC_ATTACK_PERFORMED)",
@@ -1382,7 +1385,7 @@
           },
           "steps": [
             {
-              "effect": "READY_IDENTITY",
+              "effect": "READY",
               "params": {
                 "target": "SELF_IDENTITY"
               }
@@ -1392,13 +1395,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-30T17:28",
-        "reviewedAt": "2026-08-30T17:28",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "<b>Hero Action</b>: Exhaust Arc Reactor → ready Iron Man.",
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> READY_IDENTITY (target: SELF_IDENTITY)"
+        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF] -> READY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Action: Hero Action",
@@ -2650,7 +2653,7 @@
           "timing": "ACTION",
           "steps": [
             {
-              "effect": "READY_CHARACTER",
+              "effect": "READY",
               "params": {
                 "target": "CHOSEN_ALLY"
               }
@@ -2660,13 +2663,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "<b>Action</b>: Ready an ally.",
-        "reconstructedText": "ACTION -> READY_CHARACTER (target: CHOSEN_ALLY)"
+        "reconstructedText": "ACTION -> READY (target: CHOSEN_ALLY)"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Ready an ally."
@@ -3108,9 +3111,9 @@
           },
           "steps": [
             {
-              "effect": "READY_CHARACTER",
+              "effect": "READY",
               "params": {
-                "target": "SELF"
+                "target": "SELF_IDENTITY"
               }
             }
           ]
@@ -3118,13 +3121,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T12:24",
-        "reviewedAt": "2026-08-31T12:24",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 50,
         "originalText": "<b>Response</b>: After your hero defends, discard indomitable → ready your hero.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Response: After your hero defends, discard indomitable → ready your hero."
@@ -3476,9 +3479,9 @@
           },
           "steps": [
             {
-              "effect": "READY_IDENTITY",
+              "effect": "READY",
               "params": {
-                "target": "SELF"
+                "target": "SELF_IDENTITY"
               }
             }
           ]
@@ -3486,13 +3489,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "<b>Hero Action</b>: Spend a [physical] resource and discard this card → ready your hero.",
-        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY_IDENTITY (target: SELF)"
+        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY (target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to your hero. Max 1 per hero.",

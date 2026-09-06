@@ -1683,8 +1683,10 @@
                     "id": "exhaust_identity",
                     "label": "Exhaust Identity",
                     "description": "Exhaust your hero or alter-ego.",
-                    "effect": "EXHAUST_IDENTITY",
-                    "params": {}
+                    "effect": "EXHAUST",
+                    "params": {
+                      "target": "SELF_IDENTITY"
+                    }
                   },
                   {
                     "id": "take_2_damage",
@@ -1704,11 +1706,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-06T10:05:00Z",
+        "reviewedAt": "2026-09-06T10:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "Surge.\n<b>When Revealed</b>: Exhaust your identity card.",
         "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [Exhaust identity, Take 2 damage])"
       },

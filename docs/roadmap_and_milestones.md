@@ -150,6 +150,11 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Removed dead/redundant cost primitives (`spendTokens`, `removeCounter`, `spendCounter`) from `AbilityCostSchema` and `AbilityCost`.
   - Consolidated all counter depletion on the canonical `spendCounters: { counterType?: string, amount: number, target?: 'SELF' | 'IDENTITY' }` primitive.
   - Pruned fallback branches from `cost-engine.ts`, regenerated `schema.json`, and updated `03_costs_and_targeting.md`.
+- [x] **Unify Fragmented EXHAUST_* and READY_* into Universal EXHAUST and READY Primitives with Target Selectors (RR v1.8 p. 13, 23 / [Issue #65](https://github.com/SteveRodrigue/MCD/issues/65)) ✅ (Completed):**
+  - Consolidated fragmented primitives into universal `EXHAUST` and `READY` consuming `target` selectors (`SELF_IDENTITY`, `SELF`, `CHOSEN_ALLY`, `ALL_ALLIES`, `CHOSEN_CHARACTER`, `ALL_CHARACTERS`, `VILLAIN`, `CHOSEN_MINION`, `ALL_MINIONS`).
+  - Completely purged all 6 legacy primitives (`EXHAUST_HERO`, `EXHAUST_IDENTITY`, `READY_ALLY`, `READY_CARD`, `READY_CHARACTER`, `READY_IDENTITY`) with zero legacy retention.
+  - Added visual Card Editor support in `AbilityFormBuilder.tsx` and `effect-parameter-registry.ts`.
+  - Retrofitted all 6 affected Core Set cards (`01024`, `01035`, `01069`, `01082`, `01093`, `01191`) with audit confidence set to 50%.
 - [x] **Promoted 100% of Ambiguity Cards in `docs/ambiguities/` ([ADR-0021](decisions/0021-card-integration-workflow-and-composable-primitives.md), [ADR-0025](decisions/0025-architectural-subsystem-completion-and-mandatory-supplemental-review-pipeline.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)) ✅ (Completed):**
   - Executed Card Integration Protocol across all 23 ambiguity files.
   - Promoted all cards to $\ge 98\%$ confidence with dedicated unit tests.

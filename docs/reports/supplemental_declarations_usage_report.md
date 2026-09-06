@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-06T13:47:46.946Z`  
+> **Generated:** `2026-09-06T14:47:39.890Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **5** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **5** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **58** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **57** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **23** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **18** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -96,6 +96,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `HEAL_DAMAGE` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01051` Tigra (ally) *(+4 more)* |
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
+| **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | **Trigger** | `WHEN_REVEALED` | **46** | `01004` Enhanced Spider-Sense (event), `01095` Rhino (villain), `01096` Rhino (villain) *(+43 more)* |
 | **Trigger** | `CARD_PLAYED` | **6** | `01002` Black Cat (ally), `01011` Spider-Woman (ally), `01041` Shuri (ally) *(+3 more)* |
 
@@ -169,6 +170,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- | :--- |
 | **Effect** | `CHANGE_FORM_DRAW_TO_HAND_SIZE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `DEAL_DAMAGE_SPLIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `EXHAUST` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `PLAY_FROM_ZONE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `SPAWN_NEMESIS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
@@ -203,17 +205,16 @@ These primitives are declared in schema types or specifications but have **0 act
 | `HEAL_DAMAGE` | **7** | `01006` (Aunt May (support)), `01010a` (Captain Marvel (hero)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `ADD_THREAT_PER_PLAYER` | **6** | `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)) |
+| `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
 | `GRANT_KEYWORD` | **4** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)) |
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `TRIGGER_SURGE` | **4** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
-| `READY_IDENTITY` | **3** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01093` (Tenacity (upgrade)) |
 | `SEARCH_AND_SELECT` | **3** | `01029b` (Tony Stark (alter_ego)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)) |
 | `PLAYER_CHOICE` | **3** | `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
-| `READY_CHARACTER` | **2** | `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)) |
 | `ADD_THREAT` | **2** | `01178` (Kree Manipulator (treachery)) |
 | `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
 | `CANCEL_WHEN_REVEALED` | **1** | `01004` (Enhanced Spider-Sense (event)) |
@@ -328,12 +329,12 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Target Selectors:
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `SELF` | **16** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+11 more)* |
+| `SELF` | **14** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+9 more)* |
 | `CHOSEN_ENEMY` | **14** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero), `01021` Gamma Slam (event) *(+9 more)* |
 | `CHOSEN_SCHEME` | **9** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+4 more)* |
 | `VILLAIN` | **8** | `01011` Spider-Woman (ally), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery) *(+2 more)* |
+| `SELF_IDENTITY` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) *(+2 more)* |
 | `HERO` | **6** | `01159` Ritual Combat (treachery), `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01169` The Vulture's Plans (treachery), `01174` Electromagnetic Backlash (treachery) *(+1 more)* |
-| `SELF_IDENTITY` | **4** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) |
 | `MAIN_SCHEME` | **4** | `01063` Interrogation Room (support), `01178` Kree Manipulator (treachery), `01194` Unknown Card #01194 |
 | `CHOSEN_PLAYER` | **3** | `01010b` Carol Danvers (alter_ego), `01091` Avengers Mansion (support), `01092` Helicarrier (support) |
 | `THIS_SIDE_SCHEME` | **3** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) |

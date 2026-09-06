@@ -220,4 +220,18 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       expect(gateIndex).toBeLessThan(effectIndex);
     });
   });
+
+  describe('Universal EXHAUST and READY Card Editor Support (#65)', () => {
+    it('verifies that AbilityFormBuilder.tsx imports EffectTypeSchema providing canonical EXHAUST and READY to the selector', () => {
+      const formBuilderPath = path.resolve(
+        __dirname,
+        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+      );
+      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
+
+      expect(formBuilderCode).toContain('EffectTypeSchema.options.map');
+      expect(formBuilderCode).toContain('getEffectDescriptor');
+      expect(formBuilderCode).toContain('Exhaust Host Card');
+    });
+  });
 });

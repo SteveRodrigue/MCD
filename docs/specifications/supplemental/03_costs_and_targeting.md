@@ -43,7 +43,7 @@ Defines which game entity is chosen or affected by the ability:
 
 | Target Literal | Target Entity | Multi-Hero Behavior |
 | :--- | :--- | :--- |
-| `'SELF'` | The card instance executing the ability. | Bound to card instance. |
+| `'SELF'` | The host card instance executing the ability (in tableau), or the player identity if executed from an identity event. | Bound to card instance or player. |
 | `'SELF_IDENTITY'` | The player identity controlling the card. | Resolves controlling player. |
 | `'ACTIVE_PLAYER'` | The player currently taking a turn in Player Phase. | `state.players[state.activePlayerIndex]` |
 | `'ALL_PLAYERS'` | Every player currently in the game session. | Iterates all players. |
@@ -60,6 +60,9 @@ Defines which game entity is chosen or affected by the ability:
 | `'CHOSEN_ENGAGED_MINION'` | Player chooses 1 minion engaged specifically with the resolving player. | Interactive selector. |
 | `'ALL_MINIONS'` | All minions currently in play across all player play areas (excludes Villain). | Batch minion target. |
 | `'CHOSEN_ALLY'` | Player chooses 1 ally card currently in play. | Interactive selector. |
+| `'ALL_ALLIES'` | All allies under the resolving player's control (or across play areas). | Batch ally target. |
+| `'CHOSEN_CHARACTER'` | Player chooses between identity and any ally currently in play. | Interactive selector. |
+| `'ALL_CHARACTERS'` | The player identity and all allies currently in play. | Batch character target. |
 | `'PREVIOUS_TARGET'` | Re-uses target from previous ability step or the triggering combat context. | Step result or event entity. |
 
 ---

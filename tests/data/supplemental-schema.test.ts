@@ -586,6 +586,27 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       ).toBe(true);
     });
 
+    it('Rejects purged fragmented exhaust and ready primitives in EffectTypeSchema', () => {
+      const purgedPrimitives = [
+        'EXHAUST_HERO',
+        'EXHAUST_IDENTITY',
+        'READY_ALLY',
+        'READY_CARD',
+        'READY_CHARACTER',
+        'READY_IDENTITY',
+      ];
+
+      for (const primitive of purgedPrimitives) {
+        const res = EffectTypeSchema.safeParse(primitive);
+        expect(res.success, `Expected ${primitive} to be rejected by EffectTypeSchema`).toBe(false);
+      }
+    });
+
+    it('Accepts canonical universal EXHAUST and READY in EffectTypeSchema', () => {
+      expect(EffectTypeSchema.safeParse('EXHAUST').success).toBe(true);
+      expect(EffectTypeSchema.safeParse('READY').success).toBe(true);
+    });
+
     it('Correctly passes on JSON with non-duplicate nested keys', () => {
       const sampleValid = `{\n  "card1": { "id": "1", "name": "A" },\n  "card2": { "id": "2", "name": "B" }\n}`;
       const dups = detectDuplicateJsonKeys(sampleValid);

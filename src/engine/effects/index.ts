@@ -3346,13 +3346,164 @@ export function executeStep(
       };
     }
 
-    case 'PLAY_ALLY_FROM_DISCARD': {
-      // Recognized declarative primitive for Make the Call (01071)
+    case 'PLAY_CARD_FROM_ZONE': {
+      const source = (step.params?.source as string) || 'PLAYER_DISCARD';
+      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
+      const costMode = (step.params?.costMode as string) || 'PRINTED_COST';
+      const costReduction = (step.params?.costReduction as number) || 0;
+      const destination = (step.params?.destination as string) || 'TABLEAU';
+      const control = (step.params?.control as string) || 'SELF';
+      const promptTitle =
+        (step.params?.promptTitle as string) ||
+        (context.sourceCardInstance
+          ? `${context.sourceCardInstance.card.name}: Choose a card to play`
+          : 'Choose a card to play:');
+
+      // 1. Gather candidate cards from designated source
+      interface CandidateCard {
+        instance: CardInstance;
+        owner: PlayerState;
+      }
+      const candidates: CandidateCard[] = [];
+
+      if (source === 'ANY_PLAYER_DISCARD') {
+        for (const p of state.players) {
+          for (const cardInst of p.discard) {
+            if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+              candidates.push({ instance: cardInst, owner: p });
+            }
+          }
+        }
+      } else if (source === 'PLAYER_DISCARD') {
+        for (const cardInst of player.discard) {
+          if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+            candidates.push({ instance: cardInst, owner: player });
+          }
+        }
+      } else if (source === 'PLAYER_DECK') {
+        for (const cardInst of player.deck) {
+          if (matchesCardFilter(cardInst.card, filter, { player, state })) {
+            candidates.push({ instance: cardInst, owner: player });
+          }
+        }
+      }
+
+      if (candidates.length === 0) {
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          onomatopoeia: 'NO TARGET FOUND',
+        };
+      }
+
+      // Check Option B: Direct targeted play when targetInstanceId is pre-supplied (e.g. from tests or bot)
+      if (context.targetInstanceId) {
+        const matched = candidates.find((c) => c.instance.instanceId === context.targetInstanceId);
+        if (matched) {
+          const chosenCard = matched.instance;
+          const ownerPlayer = matched.owner;
+
+          // Splice from owner's discard/source
+          const spliceIdx = ownerPlayer.discard.findIndex(
+            (c) => c.instanceId === chosenCard.instanceId,
+          );
+          if (spliceIdx !== -1) {
+            ownerPlayer.discard.splice(spliceIdx, 1);
+          }
+
+          // Move into controller's tableau / allies
+          if (chosenCard.card.type === CardType.ALLY) {
+            player.allies.push(chosenCard);
+          } else {
+            player.tableau.push(chosenCard);
+          }
+
+          initializeCardUses(chosenCard);
+
+          // Dispatch CARD_PLAYED and CARD_ENTERED_PLAY abilities
+          const cardAbilities = chosenCard.card.enrichment?.abilities || [];
+          for (const ab of cardAbilities) {
+            if (
+              ab.trigger === 'CARD_PLAYED' ||
+              ((ab.timing === 'FORCED_RESPONSE' || ab.timing === 'RESPONSE') && !ab.trigger)
+            ) {
+              const isForced = ab.timing.startsWith('FORCED_');
+              const hasPlayerChoice = ab.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
+              if (isForced || hasPlayerChoice) {
+                executeEffect(state, ab, {
+                  playerId: player.id,
+                  sourceCardInstance: chosenCard,
+                });
+              }
+            }
+          }
+
+          const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'ability',
+            key: 'card.playFromZone',
+            params: {
+              player: player.name,
+              card: chosenCard.card.name,
+              source,
+            },
+            onomatopoeia,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia,
+          };
+        }
+      }
+
+      // Option A: If only 1 candidate or no pre-supplied target, enqueue a Decision Prompt
+      const options: DecisionPromptOption[] = candidates.map(({ instance: c, owner }) => ({
+        id: c.instanceId,
+        label: `${c.card.name} (Cost: ${c.card.cost ?? 0}${owner.id !== player.id ? `, Owner: ${owner.name}` : ''})`,
+        description: c.card.text || `Play ${c.card.name} from ${owner.name}'s discard`,
+        effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
+        params: {
+          chosenInstanceId: c.instanceId,
+          ownerId: owner.id,
+          source,
+          destination,
+          control,
+          costMode,
+          costReduction,
+        },
+      }));
+
+      options.push({
+        id: 'pass_play_from_zone',
+        label: 'Pass / Cancel',
+        description: 'Do not play a card',
+        effect: 'PLAY_CARD_FROM_ZONE_PASS',
+        params: {},
+      });
+
+      const prompt: PendingDecisionPrompt = {
+        promptId: `prompt_play_from_zone_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        playerId: player.id,
+        title: promptTitle,
+        description: 'Choose a card to pay for and play into your tableau:',
+        sourceCardName: context.sourceCardInstance?.card.name || 'Make the Call',
+        options,
+        isVoluntary: true,
+      };
+
+      const enqueuedState = enqueueDecisionPrompt(state, prompt);
       return {
-        state,
+        state: enqueuedState,
         success: true,
-        mutatedState: false,
-        onomatopoeia: 'PLAY ALLY FROM DISCARD INITIATED!',
+        onomatopoeia: 'CHOOSE CARD TO PLAY!',
       };
     }
 

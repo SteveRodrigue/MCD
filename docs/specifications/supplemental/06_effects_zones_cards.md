@@ -213,19 +213,22 @@
 
 ---
 
-### `PLAY_FROM_ZONE`
+### `PLAY_CARD_FROM_ZONE`
 
-- **Status:** 🟡 `ROADMAP` (Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - _Make the Call_ `01071`)
-- **Description:** Enables playing a card from a non-hand zone (e.g. player discard pile) with filter constraints.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0047](../../decisions/0047-playing-cards-from-non-hand-zones.md) / Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - _Make the Call_ `01071`)
+- **Description:** Enables playing a card from a non-hand zone (e.g. `PLAYER_DISCARD`, `ANY_PLAYER_DISCARD`, `PLAYER_DECK`, `ATTACHED`, `TUCKED`) matching filter constraints, with optional cost mode (`PRINTED_COST`, `FREE`, `REDUCED`).
 
 ```json
 {
-  "effect": "PLAY_FROM_ZONE",
+  "effect": "PLAY_CARD_FROM_ZONE",
   "params": {
-    "sourceZone": "PLAYER_DISCARD",
+    "source": "ANY_PLAYER_DISCARD",
     "filter": {
-      "type": "ally"
-    }
+      "types": ["ally"]
+    },
+    "costMode": "PRINTED_COST",
+    "destination": "TABLEAU",
+    "control": "SELF"
   }
 }
 ```

@@ -2755,11 +2755,11 @@
       "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:45",
-        "reviewedAt": "2026-08-31T03:45",
+        "updatedAt": "2026-09-06T22:15:00Z",
+        "reviewedAt": "2026-09-06T22:15:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Action</b>: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control.",
         "reconstructedText": "ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control."
       },
@@ -2772,9 +2772,15 @@
           "timing": "ACTION",
           "steps": [
             {
-              "effect": "PLAY_ALLY_FROM_DISCARD",
+              "effect": "PLAY_CARD_FROM_ZONE",
               "params": {
-                "target": "ALLY_IN_DISCARD"
+                "source": "ANY_PLAYER_DISCARD",
+                "filter": {
+                  "types": ["ally"]
+                },
+                "costMode": "PRINTED_COST",
+                "destination": "TABLEAU",
+                "control": "SELF"
               }
             }
           ]

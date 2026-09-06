@@ -304,7 +304,7 @@
                           "PLACE_CARD_UNDER_HOST",
                           "PLACE_THREAT_PER_SIDE_SCHEME",
                           "PLAYER_CHOICE",
-                          "PLAY_ALLY_FROM_DISCARD",
+                          "PLAY_CARD_FROM_ZONE",
                           "PREVENT_DAMAGE",
                           "PUT_INTO_PLAY",
                           "PUT_INTO_PLAY_ENGAGED",

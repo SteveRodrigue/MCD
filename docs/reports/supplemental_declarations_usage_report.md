@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-06T21:37:27.149Z`  
+> **Generated:** `2026-09-06T22:15:58.666Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -129,7 +129,7 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `MODIFY_ALLY_LIMIT` | `01073` | The Triskelion (support) (core) | `triskelion_ally_limit` |
 | **Effect** | `MODIFY_HAND_SIZE` | `01029a` | Iron Man (hero) (core) | `iron_man_hand_size` |
 | **Effect** | `PLACE_THREAT_PER_SIDE_SCHEME` | `01192` | Masterplan (treachery) (core_encounter) | `masterplan_when_revealed` |
-| **Effect** | `PLAY_ALLY_FROM_DISCARD` | `01071` | Make the Call (event) (core) | `make_the_call` |
+| **Effect** | `PLAY_CARD_FROM_ZONE` | `01071` | Make the Call (event) (core) | `make_the_call` |
 | **Effect** | `REDUCE_NEXT_CARD_COST` | `01092` | Helicarrier (support) (core) | `helicarrier_action` |
 | **Effect** | `REPULSOR_BLAST` | `01031` | Repulsor Blast (event) (core) | `repulsor_blast_action` |
 | **Effect** | `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` | `01034` | Stark Tower (support) (core) | `stark_tower_retrieve` |
@@ -235,7 +235,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `TAKE_THREAT_AS_DAMAGE` | **1** | `01061` (Great Responsibility (event)) |
 | `BOOST_STAT_CHOICE` | **1** | `01068` (Vision (ally)) |
 | `BUFF_ALL_FRIENDLY_CHARACTERS` | **1** | `01070` (Lead from the Front (event)) |
-| `PLAY_ALLY_FROM_DISCARD` | **1** | `01071` (Make the Call (event)) |
+| `PLAY_CARD_FROM_ZONE` | **1** | `01071` (Make the Call (event)) |
 | `MODIFY_ALLY_LIMIT` | **1** | `01073` (The Triskelion (support)) |
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | **1** | `01075` (Black Widow (ally)) |
 | `CANCEL_WHEN_REVEALED_AND_ATTACK` | **1** | `01078` (Get Behind Me! (event)) |
@@ -347,7 +347,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `PREVIOUS_TARGET` | **1** | `01028` Superhuman Strength (upgrade) |
 | `TRIGGERING_MINION` | **1** | `01066` Hawkeye (ally) |
 | `ALL_PLAYERS` | **1** | `01067` Maria Hill (ally) |
-| `ALLY_IN_DISCARD` | **1** | `01071` Make the Call (event) |
 | `ENEMY` | **1** | `01077` Counter-Punch (event) |
 | `ACTIVE_SCHEME` | **1** | `01085` Emergency (event) |
 | `ATTACHED_VILLAIN` | **1** | `01098` Armored Rhino Suit (attachment) |

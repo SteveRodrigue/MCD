@@ -198,7 +198,7 @@ export const EffectTypeSchema = z.enum([
   'PLACE_CARD_UNDER_HOST',
   'PLACE_THREAT_PER_SIDE_SCHEME',
   'PLAYER_CHOICE',
-  'PLAY_ALLY_FROM_DISCARD',
+  'PLAY_CARD_FROM_ZONE',
   'PREVENT_DAMAGE',
   'PUT_INTO_PLAY',
   'PUT_INTO_PLAY_ENGAGED',
@@ -473,8 +473,33 @@ export const SearchAndSelectParamsSchema = z
   })
   .strict();
 
+/**
+ * Play Card From Zone Params Schema (RR v1.8 p. 19, ADR-0047)
+ */
+export const PlayCardFromZoneParamsSchema = z
+  .object({
+    source: z
+      .enum([
+        'PLAYER_DISCARD',
+        'ANY_PLAYER_DISCARD',
+        'PLAYER_DECK',
+        'SET_ASIDE',
+        'ATTACHED',
+        'TUCKED',
+      ])
+      .default('PLAYER_DISCARD'),
+    filter: UniversalCardFilterSchema.optional(),
+    costMode: z.enum(['PRINTED_COST', 'FREE', 'REDUCED']).default('PRINTED_COST'),
+    costReduction: z.number().int().nonnegative().optional(),
+    destination: z.enum(['TABLEAU', 'ENGAGED_WITH_PLAYER']).default('TABLEAU'),
+    control: z.enum(['SELF', 'OWNER']).default('SELF'),
+    promptTitle: z.string().optional(),
+  })
+  .strict();
+
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
 export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;
+export type PlayCardFromZoneParams = z.infer<typeof PlayCardFromZoneParamsSchema>;
 
 /**
  * Ability Execution Step Interface (Operational Primitive)

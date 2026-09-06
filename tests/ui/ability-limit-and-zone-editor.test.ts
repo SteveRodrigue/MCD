@@ -153,4 +153,54 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
     };
     expect(CardEnrichmentSchema.safeParse(cleared).success).toBe(true);
   });
+
+  describe('Ability Cost Schema & Editor exhaustSelf Contract (#73)', () => {
+    it('validates that AbilityCostSchema strictly enforces exhaustSelf and rejects deprecated exhaust', async () => {
+      const { AbilityCostSchema } = await import('../../src/data/supplemental/schema');
+
+      // Valid with exhaustSelf
+      const validExhaustSelf = AbilityCostSchema.safeParse({ exhaustSelf: true });
+      expect(validExhaustSelf.success).toBe(true);
+
+      // Valid with discardSelf
+      const validDiscardSelf = AbilityCostSchema.safeParse({ discardSelf: true });
+      expect(validDiscardSelf.success).toBe(true);
+
+      // Rejects deprecated "exhaust" key
+      const invalidExhaust = AbilityCostSchema.safeParse({ exhaust: true });
+      expect(invalidExhaust.success).toBe(false);
+
+      // Rejects combined {"exhaustSelf": true, "exhaust": true}
+      const invalidBoth = AbilityCostSchema.safeParse({ exhaustSelf: true, exhaust: true });
+      expect(invalidBoth.success).toBe(false);
+    });
+
+    it('ensures card 01006 (Aunt May) defines canonical exhaustSelf and no deprecated exhaust', () => {
+      const corePackPath = path.resolve(__dirname, '../../src/data/supplemental/pack/core.json');
+      const corePack = JSON.parse(fs.readFileSync(corePackPath, 'utf8'));
+      const card01006 = corePack.cards['01006'];
+
+      expect(card01006).toBeDefined();
+      expect(card01006.abilities[0].cost.exhaustSelf).toBe(true);
+      expect((card01006.abilities[0].cost as any).exhaust).toBeUndefined();
+    });
+
+    it('guards against regression in AbilityFormBuilder.tsx and DualCardInspector.tsx binding to cost.exhaust', () => {
+      const formBuilderPath = path.resolve(
+        __dirname,
+        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+      );
+      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
+      expect(formBuilderCode).not.toContain('cost.exhaust)');
+      expect(formBuilderCode).not.toContain('exhaust: e.target.checked');
+      expect(formBuilderCode).toContain('cost.exhaustSelf');
+
+      const dualInspectorPath = path.resolve(
+        __dirname,
+        '../../src/ui/components/editor/DualCardInspector.tsx',
+      );
+      const dualInspectorCode = fs.readFileSync(dualInspectorPath, 'utf8');
+      expect(dualInspectorCode).toContain('ab.cost.exhaustSelf');
+    });
+  });
 });

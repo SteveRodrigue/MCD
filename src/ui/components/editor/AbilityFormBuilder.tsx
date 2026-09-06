@@ -491,15 +491,32 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={Boolean(cost.exhaust)}
+                          checked={Boolean(cost.exhaustSelf || (cost as any).exhaust)}
+                          onChange={(e) => {
+                            const nextCost = {
+                              ...cost,
+                              exhaustSelf: e.target.checked || undefined,
+                            };
+                            delete (nextCost as any).exhaust;
+                            handleUpdateAbility(aIdx, { cost: nextCost });
+                          }}
+                          className="accent-black"
+                        />
+                        <span className="font-bold">Exhaust Host Card</span>
+                      </label>
+
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(cost.discardSelf)}
                           onChange={(e) =>
                             handleUpdateAbility(aIdx, {
-                              cost: { ...cost, exhaust: e.target.checked || undefined },
+                              cost: { ...cost, discardSelf: e.target.checked || undefined },
                             })
                           }
                           className="accent-black"
                         />
-                        <span className="font-bold">Exhaust Host Card</span>
+                        <span className="font-bold">Discard Host Card</span>
                       </label>
 
                       <div className="flex items-center gap-1">

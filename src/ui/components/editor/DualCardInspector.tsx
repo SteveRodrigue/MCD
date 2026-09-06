@@ -596,7 +596,11 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                               <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red">
                                 <Shield className="w-3.5 h-3.5" />
                                 <span>
-                                  Cost: {ab.cost.exhaust ? 'Exhaust ' : ''}
+                                  Cost:{' '}
+                                  {ab.cost.exhaustSelf || (ab.cost as any).exhaust
+                                    ? 'Exhaust '
+                                    : ''}
+                                  {ab.cost.discardSelf ? 'Discard ' : ''}
                                   {ab.cost.damageSelf ? `Take ${ab.cost.damageSelf} DMG ` : ''}
                                   {ab.cost.resources ? JSON.stringify(ab.cost.resources) : ''}
                                 </span>

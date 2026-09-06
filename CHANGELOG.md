@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Bug Fix & UI: Bind Ability Form Builder to `exhaustSelf` and Add `discardSelf` ([#73](https://github.com/SteveRodrigue/MCD/issues/73), `AbilityFormBuilder.tsx`, `DualCardInspector.tsx`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
+  - **Schema Alignment on `exhaustSelf`:** Corrected the ability cost checkbox in `AbilityFormBuilder.tsx` to bind to `cost.exhaustSelf` instead of the non-schema key `cost.exhaust`, fixing the issue where existing cards (e.g. *Aunt May* `01006`) appeared unchecked and saving introduced illegal `{"exhaustSelf": true, "exhaust": true}` properties that failed strict Zod validation.
+  - **Legacy Cost Key Auto-Cleanup:** Automatically strips any residual `exhaust` property (`delete nextCost.exhaust`) whenever cost values are updated or saved.
+  - **Discard Host Card UI Control:** Added a dedicated checkbox for `discardSelf` in `AbilityFormBuilder.tsx` and updated `DualCardInspector.tsx` to display both `exhaustSelf` and `discardSelf` costs.
+  - **Automated Regression Tests:** Added regression tests in `tests/ui/ability-limit-and-zone-editor.test.ts` asserting strict rejection of `exhaust`, acceptance of `exhaustSelf` and `discardSelf`, clean parsing of *Aunt May* `01006`, and forbidding `cost.exhaust` regressions in editor code.
+
 - **Bug Fix & Data: Preserve Acronym Traits (`S.H.I.E.L.D.`, `A.I.M.`) and Punctuation-Resilient Trait Matching ([#72](https://github.com/SteveRodrigue/MCD/issues/72), `card-loader.ts`, `effects/index.ts`, `stat-calculator.ts`, `game-setup.ts`, `tests/data/card-loader.test.ts`):**
   - **Boundary-Aware Trait Delimiter Splitting:** Updated `parseTraits` in `card-loader.ts` to split on delimiter-whitespace boundaries (`/(?<=[.!?])\s+/`) rather than blind `.split('.')`, preserving acronyms containing internal periods (such as `S.H.I.E.L.D.` and `A.I.M.`) instead of decomposing them into single letters (`['S', 'H', 'I', 'E', 'L', 'D']`).
   - **Audit Across All 120 Packs:** Completed an exhaustive audit across 511 unique raw trait strings and 222 distinct traits in the upstream dataset; verified that multi-word traits (`Masters of Evil`, `Batroc's Brigade`, `Crossfire's Crew`) and hyphenated traits (`Web-Warrior`, `X-Men`) do not contain internal periods and remain intact.

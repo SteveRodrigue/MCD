@@ -454,7 +454,7 @@
       ]
     },
     "01011": {
-      "comment": "Ally: After Spider-Woman enters play, confuse an enemy.",
+      "comment": "Ally: After Spider-Woman enters play, confuse the villain.",
       "abilities": [
         {
           "id": "spider_woman_enters_play",
@@ -465,7 +465,7 @@
               "effect": "ADD_STATUS",
               "params": {
                 "status": "CONFUSED",
-                "target": "CHOSEN_ENEMY"
+                "target": "VILLAIN"
               }
             }
           ]
@@ -473,8 +473,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-06T00:20:22Z",
+        "reviewedAt": "2026-09-06T00:20:22Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-06T00:11:15.790Z`  
+> **Generated:** `2026-09-06T00:39:56.301Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -339,9 +339,9 @@ These primitives are declared in schema types or specifications but have **0 act
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `SELF` | **17** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+12 more)* |
-| `CHOSEN_ENEMY` | **15** | `01005` Swinging Web Kick (event), `01011` Spider-Woman (ally), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+10 more)* |
+| `CHOSEN_ENEMY` | **14** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero), `01021` Gamma Slam (event) *(+9 more)* |
+| `VILLAIN` | **8** | `01011` Spider-Woman (ally), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery) *(+2 more)* |
 | `CHOSEN_SCHEME` | **8** | `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade), `01048` Tactical Genius (upgrade) *(+3 more)* |
-| `VILLAIN` | **7** | `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+1 more)* |
 | `HERO` | **6** | `01159` Ritual Combat (treachery), `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01169` The Vulture's Plans (treachery), `01174` Electromagnetic Backlash (treachery) *(+1 more)* |
 | `MAIN_SCHEME` | **5** | `01007` Spider-Tracer (upgrade), `01063` Interrogation Room (support), `01178` Kree Manipulator (treachery), `01194` Unknown Card #01194 |
 | `SELF_IDENTITY` | **4** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) |

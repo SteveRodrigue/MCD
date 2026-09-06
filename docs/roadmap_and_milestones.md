@@ -87,6 +87,8 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Supported voluntary reaction windows with explicit "Pass / Do Nothing" options in `DecisionPromptModal`.
 - [x] **Decision Prompt Queue Management:**
   - Transitioned from single prompt overwrite to structured FIFO prompt queue (`pendingDecisionQueue`), ensuring multiple triggered prompts resolve sequentially with visual queue depth badges.
+- [x] **Player Decision Prompts on Optional Interrupts and Responses ([#77](https://github.com/SteveRodrigue/MCD/issues/77)):**
+  - Generic interactive prompt modal (`Do you want to use the following ability from ${card.name}?` / `${trigger} -> ${step(s)}`) for optional interrupts/responses per RR v1.8 p. 8, 11, 15, with sequential pause and resume across combat and action execution pipelines.
 - [x] **Promoted 5 Ambiguity Cards to 100% Confidence:** _Emergency_ (`01085`), _Great Responsibility_ (`01061`), _Get Behind Me!_ (`01078`), _One-Two Punch_ (`01024`), _Counter-Punch_ (`01077`).
 
 ### 3. 🔴 `[Must-Have]` Milestone 2B: Comprehensive Combat, Enemy Attack & Multi-Window Defense Pipeline ([ADR-0031](decisions/0031-comprehensive-combat-enemy-attack-and-multi-window-defense-pipeline.md)) ✅ (Completed)

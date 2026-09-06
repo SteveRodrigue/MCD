@@ -54,10 +54,14 @@ import {
   peekDecisionPrompt,
   popDecisionPrompt,
 } from './prompt-queue';
-import { resolveDefenderDeclaration } from './combat-pipeline';
+import {
+  resolveDefenderDeclaration,
+  finishAttackDamageAndPostResolution,
+  continueAttackAfterInitiation,
+} from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost, initializeCardUses } from '../state/state-validator';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger, formatAbilityStepsSummary } from '../triggers/trigger-dispatcher';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -663,6 +667,13 @@ export function dispatchAction(
         player.discard.push(ally);
       }
 
+      dispatchTrigger(nextState, 'THWART_RESOLVED', {
+        targetPlayerId: player.id,
+        targetType: action.targetType,
+        targetInstanceId: action.targetInstanceId,
+        sourceInstanceId: ally.instanceId,
+      });
+
       const onomatopoeia = 'ALLY THWART!';
       return { state: nextState, result: { success: true, onomatopoeia } };
     }
@@ -1084,12 +1095,46 @@ export function dispatchAction(
             ((ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE') &&
               !ability.trigger)
           ) {
-            executeEffect(nextState, ability, {
-              playerId: action.playerId,
-              targetType,
-              targetInstanceId: action.targetInstanceId,
-              sourceCardInstance: playedCardInstance,
-            });
+            const isForced = ability.timing.startsWith('FORCED_');
+            const hasPlayerChoice = ability.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
+            if (isForced || hasPlayerChoice) {
+              executeEffect(nextState, ability, {
+                playerId: action.playerId,
+                targetType,
+                targetInstanceId: action.targetInstanceId,
+                sourceCardInstance: playedCardInstance,
+              });
+            } else {
+              const cardName = playedCardInstance.card.name;
+              enqueueDecisionPrompt(nextState, {
+                promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                playerId: player.id,
+                title: `Do you want to use the following ability from ${cardName}?`,
+                description: formatAbilityStepsSummary('CARD_PLAYED', ability.steps || []),
+                sourceCardName: cardName,
+                isVoluntary: true,
+                options: [
+                  {
+                    id: `trigger_${ability.id}`,
+                    label: 'Yes',
+                    effect: 'EXECUTE_OPTIONAL_TRIGGER',
+                    params: {
+                      ability,
+                      context: {
+                        targetType,
+                        targetInstanceId: action.targetInstanceId,
+                      },
+                      sourceCardInstanceId: playedCardInstance.instanceId,
+                    },
+                  },
+                  {
+                    id: 'pass',
+                    label: 'No',
+                    effect: 'PASS',
+                  },
+                ],
+              });
+            }
           }
         }
       } else if (cardType === CardType.EVENT) {
@@ -1825,6 +1870,42 @@ export function dispatchAction(
 
       const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
       let resultingState = promptRes.state;
+
+      // If resolving an initiation trigger prompt for an active attack, continue attack
+      if (resultingState.activeAttackContext?.phase === 'INITIATION') {
+        const attackCtx = resultingState.activeAttackContext;
+        resultingState = continueAttackAfterInitiation(resultingState, attackCtx);
+      }
+
+      // If resolving a damage prevention interrupt for an active attack, finish damage calculation and post-resolution
+      if (
+        activePrompt &&
+        resultingState.activeAttackContext?.pendingDamage !== undefined &&
+        (activePrompt.description?.includes('TAKE_ATTACK_DAMAGE') ||
+          activePrompt.options.some(
+            (o) => (o.params as any)?.ability?.trigger === 'TAKE_ATTACK_DAMAGE',
+          ))
+      ) {
+        const attackCtx = resultingState.activeAttackContext;
+        let preventedDamage = 0;
+        if (action.selectedOptionId !== 'pass' && action.selectedOptionId !== 'PASS') {
+          const optAbility = (
+            activePrompt?.options.find((o) => o.id === action.selectedOptionId)?.params as any
+          )?.ability;
+          const preventStep = optAbility?.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
+          if (preventStep) {
+            const isAll = preventStep.params?.amount === 'ALL' || preventStep.params?.preventAll;
+            preventedDamage = isAll
+              ? (attackCtx.pendingDamage ?? 0)
+              : Number(preventStep.params?.amount || 0);
+          }
+        }
+        resultingState = finishAttackDamageAndPostResolution(
+          resultingState,
+          attackCtx,
+          preventedDamage,
+        );
+      }
 
       // If in villain phase and no decision prompts are pending, continue villain phase sequence
       if (

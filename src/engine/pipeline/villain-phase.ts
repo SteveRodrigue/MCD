@@ -251,6 +251,11 @@ export function step2_villainAndMinionActivations(
   state.phase = GamePhase.VILLAIN_PHASE;
   state.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
 
+  const resolvedOptions: CombatOptions | undefined =
+    options?.synchronousPolicy !== undefined
+      ? { acceptOptionalTriggers: true, ...options }
+      : options;
+
   if (!(state as any).pendingActivations) {
     const activations: {
       type: 'VILLAIN' | 'MINION';
@@ -280,14 +285,14 @@ export function step2_villainAndMinionActivations(
 
     if (act.type === 'VILLAIN') {
       if (player.currentForm === 'hero') {
-        state = executeVillainAttackAgainstPlayer(state, player, options);
+        state = executeVillainAttackAgainstPlayer(state, player, resolvedOptions);
       } else {
         executeVillainSchemeAgainstPlayer(state, player);
       }
     } else if (act.type === 'MINION') {
       const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
       if (minion) {
-        state = executeMinionActivationAgainstPlayer(state, minion, player, options);
+        state = executeMinionActivationAgainstPlayer(state, minion, player, resolvedOptions);
       }
     }
 

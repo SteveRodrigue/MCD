@@ -12,7 +12,7 @@ import {
   getKeywordValue,
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
 import { executeEffect } from '../effects';
 import {
   getEffectiveHeroStats,
@@ -26,6 +26,7 @@ export type DefensePolicy =
 
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
+  acceptOptionalTriggers?: boolean;
 }
 
 /**
@@ -140,11 +141,15 @@ export function step2_dispatchInitiationTriggers(
   state: GameState,
   attackerType: 'VILLAIN' | 'MINION',
   targetPlayerId: string,
-): GameState {
+  acceptOptionalTriggers?: boolean,
+): TriggerDispatchResult {
   if (attackerType === 'VILLAIN') {
-    dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', { targetPlayerId });
+    return dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', {
+      targetPlayerId,
+      acceptOptionalTriggers,
+    });
   }
-  return state;
+  return { state, hasPendingPrompt: false };
 }
 
 /**
@@ -164,7 +169,12 @@ export function initiateEnemyAttack(
   if (isCancelled) return state;
 
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
-  step2_dispatchInitiationTriggers(state, attacker.type, targetPlayerId);
+  const initResult = step2_dispatchInitiationTriggers(
+    state,
+    attacker.type,
+    targetPlayerId,
+    options?.acceptOptionalTriggers,
+  );
 
   // Compute Base Stats & Keywords
   let baseAttack = 0;
@@ -187,20 +197,42 @@ export function initiateEnemyAttack(
     attackerType: attacker.type,
     attackerCard: attacker.card,
     targetPlayerId,
-    phase: 'DECLARE_DEFENDER',
+    phase: initResult.hasPendingPrompt ? 'INITIATION' : 'DECLARE_DEFENDER',
     baseAttack,
     boostQueue: [],
     totalBoostIcons: 0,
     hasOverkill,
     hasPiercing,
+    acceptOptionalTriggers: options?.acceptOptionalTriggers,
+    synchronousPolicy: options?.synchronousPolicy,
   };
 
+  if (initResult.hasPendingPrompt) {
+    state.activeAttackContext = attackContext;
+    return state;
+  }
+
+  return continueAttackAfterInitiation(state, attackContext);
+}
+
+/**
+ * Resumes an attack after initiation trigger prompt has been resolved.
+ */
+export function continueAttackAfterInitiation(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): GameState {
+  const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
+  if (!player) return state;
+
+  attackContext.phase = 'DECLARE_DEFENDER';
+
   // Check if synchronous policy specified (Headless tests / simulator)
-  if (options?.synchronousPolicy) {
+  if (attackContext.synchronousPolicy) {
     const declaration = evaluateDefensePolicy(
       state,
       player,
-      options.synchronousPolicy,
+      attackContext.synchronousPolicy,
       attackContext,
     );
     return resolveDefenderDeclaration(state, declaration, attackContext);
@@ -383,6 +415,11 @@ export function resolveDefenderDeclaration(
   // Step 6: Damage Calculation, Prevention & Overkill
   step6_calculateAndApplyAttackDamage(state, attackContext);
 
+  if (attackContext.pendingDamage !== undefined) {
+    state.activeAttackContext = attackContext;
+    return state;
+  }
+
   // Step 7: Post-Attack Reactions, Retaliate & Cleanup
   step7_resolvePostAttackAndRetaliate(state, attackContext);
 
@@ -555,10 +592,28 @@ export function step6_calculateAndApplyAttackDamage(
     const defenseResult = dispatchTrigger(state, 'TAKE_ATTACK_DAMAGE', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
+      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
     rawDamage = defenseResult.damageAmount ?? rawDamage;
+
+    if (defenseResult.hasPendingPrompt) {
+      attackContext.pendingDamage = rawDamage;
+      return;
+    }
   }
 
+  applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
+}
+
+/**
+ * Applies calculated attack damage to hero or ally (Step 6 continuation).
+ */
+export function applyCalculatedAttackDamage(
+  state: GameState,
+  player: PlayerState,
+  attackContext: AttackExecutionContext,
+  rawDamage: number,
+): void {
   if (attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId) {
     // Ally Takes Attack Damage
     const allyIdx = player.allies.findIndex(
@@ -682,6 +737,30 @@ export function step6_calculateAndApplyAttackDamage(
 }
 
 /**
+ * Resumes and finishes attack damage application and post-attack resolution after damage prevention prompt.
+ */
+export function finishAttackDamageAndPostResolution(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+  preventedDamageAmount?: number,
+): GameState {
+  const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
+  if (!player) return state;
+
+  let rawDamage = attackContext.pendingDamage ?? 0;
+  if (preventedDamageAmount !== undefined) {
+    rawDamage = Math.max(0, rawDamage - preventedDamageAmount);
+  }
+  delete attackContext.pendingDamage;
+
+  applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
+  step7_resolvePostAttackAndRetaliate(state, attackContext);
+
+  state.activeAttackContext = undefined;
+  return state;
+}
+
+/**
  * Step 7: Post-Attack Reactions, Retaliate & Cleanup.
  */
 export function step7_resolvePostAttackAndRetaliate(
@@ -697,11 +776,13 @@ export function step7_resolvePostAttackAndRetaliate(
     dispatchTrigger(state, 'HERO_DEFENDED_ATTACK', {
       targetPlayerId: player.id,
       sourceInstanceId: attackContext.attackerCard?.instanceId,
+      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
   }
 
   dispatchTrigger(state, 'ATTACK_RESOLVED', {
     targetPlayerId: attackContext.targetPlayerId,
+    acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
   });
 
   // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24)
@@ -771,6 +852,10 @@ export function executeEnemyAttackSynchronously(
   attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance },
   targetPlayerId: string,
   policy: DefensePolicy = 'TAKE_UNDEFENDED',
+  options?: { acceptOptionalTriggers?: boolean },
 ): GameState {
-  return initiateEnemyAttack(state, attacker, targetPlayerId, { synchronousPolicy: policy });
+  return initiateEnemyAttack(state, attacker, targetPlayerId, {
+    synchronousPolicy: policy,
+    acceptOptionalTriggers: options?.acceptOptionalTriggers ?? true,
+  });
 }

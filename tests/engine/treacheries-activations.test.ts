@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/model
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { resolveDefenderDeclaration } from '@engine/pipeline/combat-pipeline';
+import { dispatchAction } from '@engine/pipeline/action-dispatcher';
 
 describe('Standard Set & Modular Extra Activation Treacheries', () => {
   let state: GameState;
@@ -95,9 +96,20 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     const initialHp = state.players[0].health;
     const ability = gangUpCard.enrichment!.abilities![0];
 
-    const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: gangUpInst });
+    let res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: gangUpInst });
     expect(res.success).toBe(true);
     expect(res.state.pendingDecisionPrompt).toBeDefined();
+
+    if (res.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      res = {
+        ...res,
+        state: dispatchAction(res.state, {
+          type: 'RESOLVE_DECISION_PROMPT',
+          playerId: 'p1',
+          selectedOptionId: 'pass',
+        }).state,
+      };
+    }
 
     // Resolve villain attack
     const resAfterVillain = resolveDefenderDeclaration(res.state, {

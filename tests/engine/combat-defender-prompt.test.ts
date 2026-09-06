@@ -39,10 +39,19 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     expect(state.players[0].exhausted).toBe(false);
 
     // Player ends turn -> starts Villain Phase
-    const res = dispatchAction(state, {
+    let res = dispatchAction(state, {
       type: 'END_PLAYER_TURN',
       playerId: 'p1',
     });
+
+    // If Spider-Sense optional interrupt prompts first, pass it
+    if (res.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      res = dispatchAction(res.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'pass',
+      });
+    }
 
     // The game must pause and present a decision prompt to declare a defender!
     expect(res.state.pendingDecisionPrompt).toBeDefined();
@@ -62,12 +71,21 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
       .map(() => createCardInstance(zeroBoostCard));
 
     // Start Villain Phase via END_PLAYER_TURN
-    const endTurnRes = dispatchAction(state, {
+    let endTurnRes = dispatchAction(state, {
       type: 'END_PLAYER_TURN',
       playerId: 'p1',
     });
 
     expect(endTurnRes.state.pendingDecisionPrompt).toBeDefined();
+
+    // If Spider-Sense optional interrupt prompts first, pass it
+    if (endTurnRes.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      endTurnRes = dispatchAction(endTurnRes.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'pass',
+      });
+    }
 
     // Player chooses to defend with Hero
     const resolveRes = dispatchAction(endTurnRes.state, {
@@ -96,10 +114,19 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     const allyInstance = createCardInstance(allyCard);
     state.players[0].allies.push(allyInstance);
 
-    const endTurnRes = dispatchAction(state, {
+    let endTurnRes = dispatchAction(state, {
       type: 'END_PLAYER_TURN',
       playerId: 'p1',
     });
+
+    // If Spider-Sense optional interrupt prompts first, pass it
+    if (endTurnRes.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      endTurnRes = dispatchAction(endTurnRes.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'pass',
+      });
+    }
 
     // Prompt for villain attack opens first
     expect(endTurnRes.state.pendingDecisionPrompt).toBeDefined();

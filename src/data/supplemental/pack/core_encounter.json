@@ -1268,7 +1268,7 @@
               "params": {
                 "source": "TABLEAU",
                 "filter": {
-                  "cardTypes": ["upgrade", "support"]
+                  "types": ["upgrade", "support"]
                 },
                 "target": "DEFENDING_PLAYER"
               }
@@ -1278,11 +1278,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); BOOST -> DISCARD (source: TABLEAU, target: DEFENDING_PLAYER)"
       }
@@ -1541,7 +1541,7 @@
               "params": {
                 "source": "TABLEAU",
                 "filter": {
-                  "cardTypes": ["upgrade", "support"]
+                  "types": ["upgrade", "support"]
                 },
                 "fallback": "SURGE",
                 "target": "ACTIVE_PLAYER"
@@ -1552,13 +1552,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: TABLEAU, fallback: SURGE, target: ACTIVE_PLAYER)"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: TABLEAU, filter: { types: [\"upgrade\", \"support\"] }, fallback: SURGE, target: ACTIVE_PLAYER)"
       },
       "mechanicSteps": [
         "Treachery: When revealed: Discard an upgrade or support you control (if none, gain Surge)."
@@ -1609,8 +1609,8 @@
                 "from": "SET_ASIDE",
                 "to": "ENGAGED_WITH_PLAYER",
                 "filter": {
-                  "type": "minion",
-                  "set": "PLAYER_NEMESIS"
+                  "types": ["minion"],
+                  "sets": ["PLAYER_NEMESIS"]
                 }
               }
             },
@@ -1621,8 +1621,8 @@
                 "from": "SET_ASIDE",
                 "to": "SIDE_SCHEMES",
                 "filter": {
-                  "type": "side_scheme",
-                  "set": "PLAYER_NEMESIS"
+                  "types": ["side_scheme"],
+                  "sets": ["PLAYER_NEMESIS"]
                 }
               }
             },
@@ -1633,7 +1633,7 @@
                 "from": "SET_ASIDE",
                 "toDeck": "ENCOUNTER_DECK",
                 "filter": {
-                  "set": "PLAYER_NEMESIS"
+                  "sets": ["PLAYER_NEMESIS"]
                 }
               }
             },
@@ -1650,13 +1650,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T06:45",
-        "reviewedAt": "2026-08-31T06:45",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (Nemesis Minion), PUT_INTO_PLAY (Nemesis Scheme), SHUFFLE_INTO_DECK (Remaining Nemesis Cards), IF_FAILED -> TRIGGER_SURGE]"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (types: minion, sets: PLAYER_NEMESIS), PUT_INTO_PLAY (types: side_scheme, sets: PLAYER_NEMESIS), SHUFFLE_INTO_DECK (sets: PLAYER_NEMESIS), IF_FAILED -> TRIGGER_SURGE]"
       },
       "mechanicSteps": [
         "When Revealed: Reveal your set-aside nemesis minion and put it into play engaged with you.",

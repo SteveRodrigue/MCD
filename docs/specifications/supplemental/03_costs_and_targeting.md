@@ -67,32 +67,11 @@ Defines which game entity is chosen or affected by the ability:
 
 ---
 
-## 3. Exhaustive Filter Specification (`FilterSchema`)
+## 3. Universal Card Filter (`UniversalCardFilterSchema`)
 
-The `FilterSchema` is used across search effects, dynamic counters, and targeting filters:
+Card filtering across searching, targeting, discarding, and dynamic counters is strictly unified under the **Universal Card Filter Architecture** (ADR-0046).
 
-```typescript
-export interface FilterSchema {
-  type?: 'hero' | 'alter_ego' | 'ally' | 'upgrade' | 'support' | 'event' | 'resource' | 'minion' | 'villain' | 'main_scheme' | 'side_scheme' | 'treachery' | 'attachment' | 'obligation' | 'environment';
-  trait?: string;
-  aspect?: 'aggression' | 'justice' | 'leadership' | 'protection' | 'basic' | 'encounter';
-  zone?: 'tableau' | 'hand' | 'deck' | 'discard' | 'setAside' | 'engaged';
-  isUnique?: boolean;
-  costMin?: number;
-  costMax?: number;
-  hasKeyword?: 'Guard' | 'Overkill' | 'Quickstrike' | 'Ranged' | 'Retaliate' | 'Toughness' | 'Crisis' | 'Hazard' | 'Acceleration';
-}
-```
-
-### Field Definitions
-
-| Field | Type | Allowed Values / Format | Description |
-| :--- | :--- | :--- | :--- |
-| `type` | `enum` | `'hero'`, `'alter_ego'`, `'ally'`, `'upgrade'`, `'support'`, `'event'`, `'resource'`, `'minion'`, `'villain'`, `'main_scheme'`, `'side_scheme'`, `'treachery'`, `'attachment'`, `'obligation'`, `'environment'` | Filters by card type code. |
-| `trait` | `string` | Case- and punctuation-resilient string (e.g. `"Tech"`, `"Avenger"`, `"S.H.I.E.L.D."`, `"SHIELD"`) | Matches traits defined on card (case- and punctuation-agnostic). |
-| `aspect` | `enum` | `'aggression'`, `'justice'`, `'leadership'`, `'protection'`, `'basic'`, `'encounter'` | Filters by card faction / aspect. |
-| `zone` | `enum` | `'tableau'`, `'hand'`, `'deck'`, `'discard'`, `'setAside'`, `'engaged'` | Restricts evaluation to a specific zone. |
-| `isUnique` | `boolean` | `true` \| `false` | Filters cards with unique titles (diamond symbol). |
-| `costMin` | `number` | Integer $\ge 0$ | Minimum printed card cost. |
-| `costMax` | `number` | Integer $\ge 0$ | Maximum printed card cost. |
-| `hasKeyword` | `enum` | `'Guard'`, `'Overkill'`, `'Quickstrike'`, `'Ranged'`, `'Retaliate'`, `'Toughness'`, `'Crisis'`, `'Hazard'`, `'Acceleration'` | Matches active keywords / scheme icons. |
+> [!IMPORTANT]
+> **Authoritative Specification:**  
+> For complete reference documentation, criteria breakdown (`traits`, `types`, `aspects`, `codes`, `cost`, `resourceIcons`), and boolean combinators (`all`, `any`, `none`), consult the dedicated specification:  
+> 👉 [**04. Universal Card Filter Specification**](./04_universal_card_filter.md)

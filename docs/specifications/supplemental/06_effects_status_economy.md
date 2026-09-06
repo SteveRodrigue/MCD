@@ -82,7 +82,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 | Parameter | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
 | `target` | `TargetSelector` | No | Target entity to orient (`SELF_IDENTITY`, `SELF`, `CHOSEN_ALLY`, `ALL_ALLIES`, `CHOSEN_CHARACTER`, `ALL_CHARACTERS`, `VILLAIN`, `CHOSEN_MINION`, `ALL_MINIONS`). Defaults to `'SELF_IDENTITY'`. |
-| `filter` | `string \| FilterSchema` | No | Optional filter expression applied to eligible targets (e.g. `trait:Avenger`). |
+| `filter` | `UniversalCardFilter` | No | Universal filter applied to eligible targets per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Avenger"] }`). |
 
 ---
 

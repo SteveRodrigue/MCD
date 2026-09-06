@@ -249,58 +249,106 @@ export type AmountFormula = z.infer<typeof AmountFormulaSchema>;
  */
 export const ResourceTypeSchema = z.enum(['physical', 'energy', 'mental', 'wild']);
 
+export const CardTypeSchema = z.enum([
+  'hero',
+  'alter_ego',
+  'ally',
+  'upgrade',
+  'support',
+  'event',
+  'resource',
+  'minion',
+  'villain',
+  'main_scheme',
+  'side_scheme',
+  'treachery',
+  'attachment',
+  'obligation',
+  'environment',
+]);
+
+export const AspectSchema = z.enum([
+  'aggression',
+  'justice',
+  'leadership',
+  'protection',
+  'basic',
+  'encounter',
+]);
+
+export const KeywordSchema = z.enum([
+  'Guard',
+  'Overkill',
+  'Quickstrike',
+  'Ranged',
+  'Retaliate',
+  'Toughness',
+  'Crisis',
+  'Hazard',
+  'Acceleration',
+]);
+
+export const CharacterStatusSchema = z.enum(['STUNNED', 'CONFUSED', 'TOUGH']);
+
 /**
- * Filter Schema
+ * Comparison criteria for numeric properties (cost, atk, hp, etc.)
  */
-export const FilterSchema = z.object({
-  type: z
-    .enum([
-      'hero',
-      'alter_ego',
-      'ally',
-      'upgrade',
-      'support',
-      'event',
-      'resource',
-      'minion',
-      'villain',
-      'main_scheme',
-      'side_scheme',
-      'treachery',
-      'attachment',
-      'obligation',
-      'environment',
-    ])
-    .optional(),
-  type_code: z.string().optional(),
-  types: z.array(z.string()).optional(),
-  cardTypes: z.array(z.string()).optional(),
-  trait: z.string().optional(),
-  traits: z.array(z.string()).optional(),
-  aspect: z.enum(['aggression', 'justice', 'leadership', 'protection', 'basic', 'encounter']).optional(),
-  aspects: z.array(z.string()).optional(),
-  zone: z.enum(['tableau', 'hand', 'deck', 'discard', 'setAside', 'engaged']).optional(),
-  isUnique: z.boolean().optional(),
-  targetCardCode: z.string().optional(),
-  targetCardCodes: z.array(z.string()).optional(),
-  targetCardName: z.string().optional(),
-  isIdentitySpecific: z.boolean().optional(),
-  costMin: z.number().optional(),
-  costMax: z.number().optional(),
-  hasKeyword: z
-    .enum([
-      'Guard',
-      'Overkill',
-      'Quickstrike',
-      'Ranged',
-      'Retaliate',
-      'Toughness',
-      'Crisis',
-      'Hazard',
-      'Acceleration',
-    ])
-    .optional(),
-});
+export const NumberComparisonSchema = z
+  .object({
+    min: z.number().int().optional(),
+    max: z.number().int().optional(),
+    equals: z.number().int().optional(),
+  })
+  .strict();
+
+export type NumberComparison = z.infer<typeof NumberComparisonSchema>;
+
+/**
+ * Universal Card Criteria Schema (ADR-0046)
+ * Atomic predicate criteria evaluated with logical AND.
+ */
+export const CardCriteriaSchema = z
+  .object({
+    codes: z.array(z.string()).optional(),
+    names: z.array(z.string()).optional(),
+    types: z.array(CardTypeSchema).optional(),
+    traits: z.array(z.string()).optional(),
+    aspects: z.array(AspectSchema).optional(),
+    sets: z.array(z.string()).optional(),
+    isUnique: z.boolean().optional(),
+    isIdentitySpecific: z.boolean().optional(),
+    cost: NumberComparisonSchema.optional(),
+    resourceIcons: z.array(ResourceTypeSchema).optional(),
+    hasKeyword: KeywordSchema.optional(),
+    isExhausted: z.boolean().optional(),
+    hasStatus: z.array(CharacterStatusSchema).optional(),
+  })
+  .strict();
+
+export type CardCriteria = z.infer<typeof CardCriteriaSchema>;
+
+/**
+ * Universal Card Filter Interface (Composable Predicate Tree per ADR-0046)
+ */
+export type UniversalCardFilter = CardCriteria & {
+  all?: UniversalCardFilter[];
+  any?: UniversalCardFilter[];
+  none?: UniversalCardFilter[];
+};
+
+/**
+ * Universal Card Filter Schema (Recursive Zod Schema)
+ */
+export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCriteriaSchema.extend({
+  all: z.lazy(() => z.array(UniversalCardFilterSchema)).optional(),
+  any: z.lazy(() => z.array(UniversalCardFilterSchema)).optional(),
+  none: z.lazy(() => z.array(UniversalCardFilterSchema)).optional(),
+}).strict();
+
+/**
+ * FilterSchema is now strictly canonical UniversalCardFilterSchema (ADR-0046).
+ */
+export const FilterSchema = UniversalCardFilterSchema;
 
 /**
  * Ability Cost Schema
@@ -383,7 +431,7 @@ export type DiscardParams = z.infer<typeof DiscardParamsSchema>;
 export const ExhaustReadyParamsSchema = z
   .object({
     target: TargetSelectorSchema.optional().default('SELF_IDENTITY'),
-    filter: z.union([z.string(), FilterSchema]).optional(),
+    filter: UniversalCardFilterSchema.optional(),
   })
   .strict();
 
@@ -402,36 +450,28 @@ export const DecisionPromptOptionSchema = z.object({
 });
 
 /**
- * Search & Select Destination Routing Params Schema (RR v1.8 p. 19, 26, ADR-0030, ADR-0032)
+ * Search & Select Destination Routing Params Schema (RR v1.8 p. 19, 26, ADR-0030, ADR-0032, ADR-0046)
  */
-export const SearchAndSelectParamsSchema = z.object({
-  source: z
-    .enum(['PLAYER_DECK', 'ENCOUNTER_DECK', 'PLAYER_DISCARD', 'ENCOUNTER_DISCARD', 'PLAYER_HAND'])
-    .default('PLAYER_DECK'),
-  lookCount: z.number().optional(),
-  takeCount: z.number().default(1),
-  filter: FilterSchema.extend({
-    targetCardCode: z.string().optional(),
-    targetCardName: z.string().optional(),
-    traits: z.array(z.string()).optional(),
-    cardTypes: z.array(z.string()).optional(),
-    isIdentitySpecific: z.boolean().optional(),
-  }).optional(),
-  targetCardCode: z.string().optional(),
-  targetCardName: z.string().optional(),
-  trait: z.string().optional(),
-  type: z.string().optional(),
-  selectedDestination: z
-    .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])
-    .default('HAND'),
-  unselectedDestination: z
-    .enum(['DISCARD', 'DECK_BOTTOM', 'DECK_SHUFFLE', 'DECK_TOP', 'LEAVE_IN_PLACE'])
-    .nullable()
-    .optional(),
-  shuffleAfter: z.boolean().optional(),
-  isVoluntary: z.boolean().optional(),
-  promptTitle: z.string().optional(),
-});
+export const SearchAndSelectParamsSchema = z
+  .object({
+    source: z
+      .enum(['PLAYER_DECK', 'ENCOUNTER_DECK', 'PLAYER_DISCARD', 'ENCOUNTER_DISCARD', 'PLAYER_HAND'])
+      .default('PLAYER_DECK'),
+    lookCount: z.number().optional(),
+    takeCount: z.number().default(1),
+    filter: UniversalCardFilterSchema.optional(),
+    selectedDestination: z
+      .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])
+      .default('HAND'),
+    unselectedDestination: z
+      .enum(['DISCARD', 'DECK_BOTTOM', 'DECK_SHUFFLE', 'DECK_TOP', 'LEAVE_IN_PLACE'])
+      .nullable()
+      .optional(),
+    shuffleAfter: z.boolean().optional(),
+    isVoluntary: z.boolean().optional(),
+    promptTitle: z.string().optional(),
+  })
+  .strict();
 
 export type AbilityCost = z.infer<typeof AbilityCostSchema>;
 export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;

@@ -18,6 +18,7 @@ import {
   getKeywordValue,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
+import { matchesCardFilter } from '../filters/card-filter';
 import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
@@ -93,156 +94,13 @@ export function moveDefeatedCardToPile(
 }
 
 /**
- * Evaluates whether a card definition satisfies a declarative FilterSchema predicate (RR v1.8 p. 19, 26).
+ * Universal declarative card filter evaluator (ADR-0046, RR v1.8 p. 19, 26, 28).
+ * Delegates to pure engine module src/engine/filters/card-filter.ts.
  */
+export { matchesCardFilter } from '../filters/card-filter';
+
 export function matchCardFilter(card: NormalizedCard, filter?: any, player?: PlayerState): boolean {
-  if (!filter) return true;
-
-  // Exact card code matching
-  if (filter.targetCardCode && card.code !== filter.targetCardCode) return false;
-  if (
-    filter.targetCardCodes &&
-    Array.isArray(filter.targetCardCodes) &&
-    !filter.targetCardCodes.includes(card.code)
-  ) {
-    return false;
-  }
-
-  // Exact card name matching (case-insensitive)
-  if (
-    filter.targetCardName &&
-    card.name.toLowerCase().trim() !== filter.targetCardName.toLowerCase().trim()
-  ) {
-    return false;
-  }
-
-  // Trait matching (case-insensitive item, substring, and punctuation-normalized matches)
-  if (filter.trait) {
-    const targetTrait = filter.trait.toLowerCase().trim();
-    const targetPunctStripped = targetTrait.replace(/[^a-z0-9]/g, '');
-    const hasTrait = (card.traits || []).some((t) => {
-      const traitLower = t.toLowerCase().trim();
-      const traitPunctStripped = traitLower.replace(/[^a-z0-9]/g, '');
-      return (
-        traitLower === targetTrait ||
-        traitLower.includes(targetTrait) ||
-        (targetPunctStripped.length > 0 &&
-          (traitPunctStripped === targetPunctStripped ||
-            traitPunctStripped.includes(targetPunctStripped)))
-      );
-    });
-    if (!hasTrait) return false;
-  }
-
-  if (filter.traits && Array.isArray(filter.traits)) {
-    const normalizedTargetTraits = filter.traits.map((t: string) => t.toLowerCase().trim());
-    const hasAnyTrait = (card.traits || []).some((t) => {
-      const traitLower = t.toLowerCase().trim();
-      const traitPunctStripped = traitLower.replace(/[^a-z0-9]/g, '');
-      return normalizedTargetTraits.some((target: string) => {
-        const targetPunctStripped = target.replace(/[^a-z0-9]/g, '');
-        return (
-          traitLower === target ||
-          traitLower.includes(target) ||
-          (targetPunctStripped.length > 0 &&
-            (traitPunctStripped === targetPunctStripped ||
-              traitPunctStripped.includes(targetPunctStripped)))
-        );
-      });
-    });
-    if (!hasAnyTrait) return false;
-  }
-
-  // Card Type matching
-  if (filter.type) {
-    const targetType = filter.type.toLowerCase().trim();
-    const cardType = (card.type || '').toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
-    if (cardType !== targetType && rawType !== targetType) return false;
-  }
-
-  if (filter.type_code) {
-    const targetTypeCode = filter.type_code.toLowerCase().trim();
-    const cardType = (card.type || '').toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
-    if (cardType !== targetTypeCode && rawType !== targetTypeCode) return false;
-  }
-
-  if (filter.types && Array.isArray(filter.types)) {
-    const normalizedTypes = filter.types.map((t: string) => t.toLowerCase().trim());
-    const cardType = (card.type || '').toLowerCase().trim();
-    const rawType = ((card.raw as any)?.type_code || '').toLowerCase().trim();
-    if (!normalizedTypes.includes(cardType) && !normalizedTypes.includes(rawType)) return false;
-  }
-
-  if (filter.cardTypes && Array.isArray(filter.cardTypes)) {
-    if (!filter.cardTypes.includes(card.type)) return false;
-  }
-
-  // Aspect matching
-  if (filter.aspect) {
-    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
-    if (cardFaction !== filter.aspect.toLowerCase().trim()) return false;
-  }
-
-  if (filter.aspects && Array.isArray(filter.aspects)) {
-    const normalizedAspects = filter.aspects.map((a: string) => a.toLowerCase().trim());
-    const cardFaction = ((card.raw as any)?.faction_code || '').toLowerCase().trim();
-    if (!normalizedAspects.includes(cardFaction)) return false;
-  }
-
-  // Unicity
-  if (filter.isUnique !== undefined && card.isUnique !== filter.isUnique) {
-    return false;
-  }
-
-  // Identity specificity
-  if (filter.isIdentitySpecific && player) {
-    const heroCode = player.hero.code;
-    const heroSet = (player.hero.raw as any)?.card_set_code || player.hero.name.toLowerCase();
-    const cardSet = (card.raw as any)?.card_set_code || '';
-    if (cardSet !== heroSet && !(card.code || '').startsWith(heroCode.slice(0, 3))) {
-      return false;
-    }
-  }
-
-  // Cost bounds
-  if (
-    typeof filter.costMin === 'number' &&
-    (card.cost === undefined || card.cost < filter.costMin)
-  ) {
-    return false;
-  }
-  if (
-    typeof filter.costMax === 'number' &&
-    (card.cost === undefined || card.cost > filter.costMax)
-  ) {
-    return false;
-  }
-
-  // Resource matching
-  if (filter.resource) {
-    const targetResource = filter.resource.toLowerCase().trim();
-    const resources = card.resources as any;
-    if (!resources) return false;
-    const count = resources[targetResource] || 0;
-    const wildCount = targetResource !== 'wild' ? resources.wild || 0 : 0;
-    if (count <= 0 && wildCount <= 0) return false;
-  }
-
-  if (filter.resources && Array.isArray(filter.resources)) {
-    const resources = card.resources as any;
-    if (!resources) return false;
-    const matchesAny = filter.resources.some((r: string) => {
-      const targetResource = r.toLowerCase().trim();
-      const count = resources[targetResource] || 0;
-      const wildCount = targetResource !== 'wild' ? resources.wild || 0 : 0;
-      return count > 0 || wildCount > 0;
-    });
-    if (!matchesAny) return false;
-  }
-
-  return true;
+  return matchesCardFilter(card, filter, { player });
 }
 
 /**
@@ -730,20 +588,8 @@ export function executeDiscard(
   if (source === 'TABLEAU') {
     const matchingIndices: number[] = [];
     player.tableau.forEach((inst, idx) => {
-      if (!filter) {
+      if (!filter || matchesCardFilter(inst.card, filter, { player, state })) {
         matchingIndices.push(idx);
-      } else {
-        const cardType = inst.card.type?.toLowerCase();
-        const types = (filter.cardTypes || (filter.type ? [filter.type] : [])).map((t: string) =>
-          t.toLowerCase(),
-        );
-        if (types.length > 0) {
-          if (types.includes(cardType)) {
-            matchingIndices.push(idx);
-          }
-        } else {
-          matchingIndices.push(idx);
-        }
       }
     });
 
@@ -2406,10 +2252,7 @@ export function executeStep(
     case 'PUT_INTO_PLAY': {
       const fromZone = (step.params?.from as string) || 'SET_ASIDE';
       const toZone = (step.params?.to as string) || 'ENGAGED_WITH_PLAYER';
-      const filter = (step.params?.filter as Record<string, any>) || {};
-
-      const heroSetCode = player.hero?.setCode || '';
-      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
+      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
 
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
@@ -2425,25 +2268,7 @@ export function executeStep(
       const matches =
         step.params?.target === 'SELF' && context.sourceCardInstance
           ? [context.sourceCardInstance]
-          : sourceList.filter((c) => {
-              if (filter.set === 'PLAYER_NEMESIS') {
-                const isNemesis =
-                  c.card.setCode === nemesisSetCode ||
-                  (c.card.setCode && c.card.setCode.includes('nemesis'));
-                if (!isNemesis) return false;
-              }
-              if (filter.type) {
-                const expectedType =
-                  filter.type === 'side_scheme'
-                    ? CardType.SIDE_SCHEME
-                    : filter.type === 'minion'
-                      ? CardType.MINION
-                      : filter.type;
-                if (c.card.type !== expectedType && c.card.type !== filter.type) return false;
-              }
-              if (filter.code && c.card.code !== filter.code) return false;
-              return true;
-            });
+          : sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }));
 
       if (matches.length === 0) {
         return {
@@ -2553,11 +2378,7 @@ export function executeStep(
     case 'SHUFFLE_INTO_DECK': {
       const fromZone = (step.params?.from as string) || 'SET_ASIDE';
       const toDeck = (step.params?.toDeck as string) || 'ENCOUNTER_DECK';
-      const filter = (step.params?.filter as Record<string, any>) || {};
-
-      const heroSetCode = player.hero?.setCode || '';
-      const nemesisSetCode = heroSetCode ? `${heroSetCode}_nemesis` : '';
-
+      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
@@ -2567,16 +2388,9 @@ export function executeStep(
         sourceList = player.hand || [];
       }
 
-      const matches = sourceList.filter((c) => {
-        if (filter.set === 'PLAYER_NEMESIS') {
-          const isNemesis =
-            c.card.setCode === nemesisSetCode ||
-            (c.card.setCode && c.card.setCode.includes('nemesis'));
-          if (!isNemesis) return false;
-        }
-        if (filter.type && c.card.type !== filter.type) return false;
-        return true;
-      });
+      const matches = sourceList.filter((c) =>
+        matchesCardFilter(c.card, filter, { player, state }),
+      );
 
       if (matches.length === 0) {
         return {

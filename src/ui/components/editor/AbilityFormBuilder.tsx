@@ -737,6 +737,128 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                                     );
                                   }
 
+                                  if (param.type === 'card-filter') {
+                                    const filterObj = (val || {}) as Record<string, any>;
+                                    return (
+                                      <div
+                                        key={param.key}
+                                        className="col-span-full bg-yellow-50/70 border border-black p-2 rounded text-xs space-y-2"
+                                      >
+                                        <div className="flex items-center justify-between">
+                                          <label
+                                            className="block text-[10px] uppercase font-bold text-gray-700"
+                                            title={param.description}
+                                          >
+                                            {param.label} (Universal Filter)
+                                          </label>
+                                          {val && (
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const next = { ...params };
+                                                delete next[param.key];
+                                                handleUpdateStep(aIdx, sIdx, { params: next });
+                                              }}
+                                              className="text-[10px] text-comic-red font-bold hover:underline"
+                                            >
+                                              Clear Filter
+                                            </button>
+                                          )}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                          {/* Traits Input */}
+                                          <div>
+                                            <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                                              Traits (comma-separated)
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={(filterObj.traits || []).join(', ')}
+                                              onChange={(e) => {
+                                                const raw = e.target.value;
+                                                const traits = raw
+                                                  .split(',')
+                                                  .map((t) => t.trim())
+                                                  .filter(Boolean);
+                                                handleUpdateStep(aIdx, sIdx, {
+                                                  params: {
+                                                    ...params,
+                                                    [param.key]: {
+                                                      ...filterObj,
+                                                      traits:
+                                                        traits.length > 0 ? traits : undefined,
+                                                    },
+                                                  },
+                                                });
+                                              }}
+                                              placeholder="e.g. Tech, Avenger"
+                                              className="w-full bg-white border border-black p-1 text-xs rounded"
+                                            />
+                                          </div>
+
+                                          {/* Types Input */}
+                                          <div>
+                                            <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                                              Card Types (comma-separated)
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={(filterObj.types || []).join(', ')}
+                                              onChange={(e) => {
+                                                const raw = e.target.value;
+                                                const types = raw
+                                                  .split(',')
+                                                  .map((t) => t.trim())
+                                                  .filter(Boolean);
+                                                handleUpdateStep(aIdx, sIdx, {
+                                                  params: {
+                                                    ...params,
+                                                    [param.key]: {
+                                                      ...filterObj,
+                                                      types: types.length > 0 ? types : undefined,
+                                                    },
+                                                  },
+                                                });
+                                              }}
+                                              placeholder="e.g. upgrade, support"
+                                              className="w-full bg-white border border-black p-1 text-xs rounded"
+                                            />
+                                          </div>
+
+                                          {/* Card Codes Input */}
+                                          <div>
+                                            <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                                              Card Codes (comma-separated)
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={(filterObj.codes || []).join(', ')}
+                                              onChange={(e) => {
+                                                const raw = e.target.value;
+                                                const codes = raw
+                                                  .split(',')
+                                                  .map((c) => c.trim())
+                                                  .filter(Boolean);
+                                                handleUpdateStep(aIdx, sIdx, {
+                                                  params: {
+                                                    ...params,
+                                                    [param.key]: {
+                                                      ...filterObj,
+                                                      codes: codes.length > 0 ? codes : undefined,
+                                                    },
+                                                  },
+                                                });
+                                              }}
+                                              placeholder="e.g. 01046, 01107"
+                                              className="w-full bg-white border border-black p-1 text-xs rounded"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+
                                   // Text input
                                   return (
                                     <div key={param.key}>

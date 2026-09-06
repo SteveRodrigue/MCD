@@ -8,7 +8,7 @@ import {
 export interface ParameterDescriptor {
   key: string;
   label: string;
-  type: 'number' | 'text' | 'select' | 'boolean';
+  type: 'number' | 'text' | 'select' | 'boolean' | 'card-filter' | 'json';
   options?: readonly string[];
   placeholder?: string;
   defaultValue?: any;
@@ -737,6 +737,26 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         placeholder: '1',
       },
+      {
+        key: 'scaling',
+        label: 'Scaling Mode',
+        type: 'select',
+        options: ['PER_MATCHING_CARD'],
+        description: 'Scale hand size dynamically per matching card in tableau',
+      },
+      {
+        key: 'multiplier',
+        label: 'Scaling Multiplier',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+      },
+      {
+        key: 'filter',
+        label: 'Matching Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter to match cards for hand size bonus',
+      },
     ],
   },
   MODIFY_ALLY_LIMIT: {
@@ -812,25 +832,10 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Number of cards the player may select.',
       },
       {
-        key: 'targetCardCode',
-        label: 'Target Card Code (Optional)',
-        type: 'text',
-        placeholder: 'e.g. 01046',
-        description: 'Search for a specific card code (replaces obsolete SEARCH_DECK_FOR_CARD).',
-      },
-      {
-        key: 'trait',
-        label: 'Target Trait Filter (Optional)',
-        type: 'text',
-        placeholder: 'e.g. Tech or Black Panther',
-        description: 'Filter candidates matching this trait.',
-      },
-      {
-        key: 'type',
-        label: 'Target Card Type (Optional)',
-        type: 'text',
-        placeholder: 'e.g. upgrade, ally, event',
-        description: 'Filter candidates matching this card type.',
+        key: 'filter',
+        label: 'Candidate Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter defining eligible cards player can select',
       },
       {
         key: 'selectedDestination',
@@ -905,9 +910,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       {
         key: 'filter',
         label: 'Target Filter (Optional)',
-        type: 'text',
-        placeholder: 'e.g. trait:Avenger',
-        description: 'Optional filter expression applied to eligible targets.',
+        type: 'card-filter',
+        description: 'Universal card filter applied to eligible targets.',
       },
     ],
   },
@@ -926,9 +930,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       {
         key: 'filter',
         label: 'Target Filter (Optional)',
-        type: 'text',
-        placeholder: 'e.g. trait:Avenger',
-        description: 'Optional filter expression applied to eligible targets.',
+        type: 'card-filter',
+        description: 'Universal card filter applied to eligible targets.',
       },
     ],
   },
@@ -966,6 +969,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
+      },
+      {
+        key: 'filter',
+        label: 'Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter for eligible cards to discard',
       },
       {
         key: 'fallback',
@@ -1115,7 +1124,28 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   PUT_INTO_PLAY: {
     effect: 'PUT_INTO_PLAY',
     description: 'Put card into play without paying resource cost.',
-    parameters: [],
+    parameters: [
+      {
+        key: 'from',
+        label: 'Source Zone',
+        type: 'select',
+        options: ['SET_ASIDE', 'DISCARD', 'HAND', 'DECK'],
+        defaultValue: 'SET_ASIDE',
+      },
+      {
+        key: 'to',
+        label: 'Destination Zone',
+        type: 'select',
+        options: ['TABLEAU', 'ENGAGED_WITH_PLAYER', 'SIDE_SCHEMES'],
+        defaultValue: 'TABLEAU',
+      },
+      {
+        key: 'filter',
+        label: 'Target Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter to match eligible card to put into play',
+      },
+    ],
   },
   PUT_INTO_PLAY_ENGAGED: {
     effect: 'PUT_INTO_PLAY_ENGAGED',

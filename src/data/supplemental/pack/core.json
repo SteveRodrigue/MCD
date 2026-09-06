@@ -73,13 +73,13 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD (source: DECK, count: 2, filter: { resource: mental }, matchingDestination: HAND)"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD (source: DECK, count: 2, filter: { resourceIcons: [\"mental\"] }, matchingDestination: HAND)"
       },
       "attackCost": 0,
       "mechanicSteps": [
@@ -102,7 +102,7 @@
                 "source": "DECK",
                 "count": 2,
                 "filter": {
-                  "resource": "mental"
+                  "resourceIcons": ["mental"]
                 },
                 "matchingDestination": "HAND"
               }
@@ -1148,8 +1148,8 @@
                 "multiplier": 1
               },
               "filter": {
-                "trait": "Tech",
-                "type_code": "upgrade"
+                "traits": ["Tech"],
+                "types": ["upgrade"]
               }
             }
           ]
@@ -1157,13 +1157,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-30T17:28",
-        "reviewedAt": "2026-08-30T17:28",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum hand size of 7).",
-        "reconstructedText": "CONSTANT -> MODIFY_HAND_SIZE (scaling: PER_MATCHING_CARD, filter: { trait: Tech, type_code: upgrade })"
+        "reconstructedText": "CONSTANT -> MODIFY_HAND_SIZE (scaling: PER_MATCHING_CARD, filter: { traits: [\"Tech\"], types: [\"upgrade\"] })"
       }
     },
     "01029b": {
@@ -1595,8 +1595,8 @@
               "params": {
                 "source": "PLAYER_DECK",
                 "filter": {
-                  "trait": "Black Panther",
-                  "type": "upgrade"
+                  "traits": ["Black Panther"],
+                  "types": ["upgrade"]
                 },
                 "takeCount": 1,
                 "selectedDestination": "TABLEAU",
@@ -1610,13 +1610,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T12:28:00Z",
-        "reviewedAt": "2026-09-01T12:28:00Z",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Foresight — <b>Setup</b>: Search your deck for a [[Black Panther]] upgrade and add it to your hand. Shuffle your deck.",
-        "reconstructedText": "SETUP -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { trait: Black Panther, type: upgrade }, selectedDestination: TABLEAU, shuffleAfter: true)"
+        "reconstructedText": "SETUP -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { traits: [\"Black Panther\"], types: [\"upgrade\"] }, selectedDestination: TABLEAU, shuffleAfter: true)"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability/recovery for T'Challa"
@@ -1635,7 +1635,7 @@
               "params": {
                 "source": "PLAYER_DECK",
                 "filter": {
-                  "type": "upgrade"
+                  "types": ["upgrade"]
                 },
                 "takeCount": 1,
                 "selectedDestination": "HAND",
@@ -1649,8 +1649,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T12:28:00Z",
-        "reviewedAt": "2026-09-01T12:28:00Z",
+        "updatedAt": "2026-09-06T12:28:00Z",
+        "reviewedAt": "2026-09-06T12:28:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

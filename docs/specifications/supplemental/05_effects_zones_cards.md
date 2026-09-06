@@ -30,12 +30,12 @@
 {
   "effect": "MODIFY_HAND_SIZE",
   "params": {
-    "scaling": "PER_MATCHING_TABLEAU_CARD",
+    "scaling": "PER_MATCHING_CARD",
     "filter": {
-      "type": "upgrade",
-      "trait": "Tech"
+      "types": ["upgrade"],
+      "traits": ["Tech"]
     },
-    "amountPerCard": 1,
+    "multiplier": 1,
     "maxHandSize": 7,
     "applicableForm": "hero"
   }
@@ -44,9 +44,9 @@
 
 | Parameter        | Type                          | Required | Description                                                        |
 | :--------------- | :---------------------------- | :------- | :----------------------------------------------------------------- |
-| `scaling`        | `"PER_MATCHING_TABLEAU_CARD"` | No       | Multiplies count of matching tableau cards.                        |
-| `filter`         | `FilterSchema`                | No       | Matching criteria (e.g. `{ "type": "upgrade", "trait": "Tech" }`). |
-| `amountPerCard`  | `number`                      | No       | Multiplier per matching card (default `1`).                        |
+| `scaling`        | `"PER_MATCHING_CARD"`         | No       | Multiplies count of matching tableau cards.                        |
+| `filter`         | `UniversalCardFilter`         | No       | Matching criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade"], "traits": ["Tech"] }`). |
+| `multiplier`     | `number`                      | No       | Multiplier per matching card (default `1`).                        |
 | `amount`         | `number`                      | No       | Flat hand size modifier (`+1`, `-1`).                              |
 | `maxHandSize`    | `number`                      | No       | Upper clamp (e.g. `7`).                                            |
 | `minHandSize`    | `number`                      | No       | Lower clamp.                                                       |
@@ -81,8 +81,8 @@
 | `count` | `number \| "ALL"` | No | Number of cards to discard (default: `1`). |
 | `mode` | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"` | No | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling). |
 | `target` | `TargetSelector` | No | Player identity or entity executing or affected by the discard. |
-| `filter` | `FilterSchema` | No | Card filtering criteria (e.g. `{ "cardTypes": ["upgrade", "support"] }`). |
-| `untilFilter` | `FilterSchema` | No | Predicate for iterative milling until a matching card is found. |
+| `filter` | `UniversalCardFilter` | No | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
+| `untilFilter` | `UniversalCardFilter` | No | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md). |
 | `fallback` | `"SURGE" \| "NONE"` | No | Fallback resolution if no matching cards can be discarded (e.g. *Caught Off Guard*). |
 
 #### 🧭 Decision Guide: `DISCARD` vs. `SEARCH_AND_SELECT`
@@ -113,10 +113,7 @@
 | `source` | `enum` | No | `"PLAYER_DECK"` | Source zone (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). |
 | `lookCount` | `number` | No | `undefined` | Number of top cards to look at. If omitted/undefined, searches the entire source zone. |
 | `takeCount` | `number` | No | `1` | Maximum number of matching cards the player may select. |
-| `filter` | `object` | No | `undefined` | Nested filter predicate (e.g. `{ "trait": "Tech", "type": "upgrade" }`, `{ "targetCardCode": "01046" }`). |
-| `targetCardCode` | `string` | No | `undefined` | Flat filter convenience: target a specific card code (e.g. `"01046"`). Supported directly in Card Editor. |
-| `trait` | `string` | No | `undefined` | Flat filter convenience: filter candidates matching this trait (e.g. `"Black Panther"`). |
-| `type` | `string` | No | `undefined` | Flat filter convenience: filter candidates matching this card type (e.g. `"upgrade"`). |
+| `filter` | `UniversalCardFilter` | No | `undefined` | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
 | `selectedDestination` | `enum` | No | `"HAND"` | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`). |
 | `unselectedDestination` | `enum` | No | `null` | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`). |
 | `shuffleAfter` | `boolean` | No | `true` (if lookCount omitted) / `false` | Whether to shuffle the deck after search completion. |
@@ -131,7 +128,7 @@
     "source": "PLAYER_DECK",
     "lookCount": 3,
     "filter": {
-      "trait": "Tech"
+      "traits": ["Tech"]
     },
     "takeCount": 1,
     "selectedDestination": "HAND",
@@ -178,7 +175,7 @@
 ### `PUT_INTO_PLAY`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / _Shadow of the Past_ `01190`, _Rhino Stage II_ `01095`, _Make the Call_ `01071`)
-- **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving all standard entrance lifecycle rules (attaching Toughness/Guard keywords, calculating starting threat for side schemes, and triggering When Revealed / Enters Play responses per RR v1.8 p. 14).
+- **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving all standard entrance lifecycle rules (attaching Toughness/Guard keywords, calculating starting threat for side schemes, and triggering When Revealed / Enters Play responses per RR v1.8 p. 14). Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
 
 ```json
 {
@@ -187,8 +184,8 @@
     "from": "SET_ASIDE",
     "to": "ENGAGED_WITH_PLAYER",
     "filter": {
-      "type": "minion",
-      "set": "PLAYER_NEMESIS"
+      "types": ["minion"],
+      "sets": ["PLAYER_NEMESIS"]
     }
   }
 }
@@ -199,7 +196,7 @@
 ### `SHUFFLE_INTO_DECK`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / _Shadow of the Past_ `01190`, _Ancestral Knowledge_ `01042`)
-- **Description:** Collects matching cards from a specified source zone (`from`: `"SET_ASIDE" | "DISCARD" | "HAND"`), places them into the target deck (`toDeck`: `"ENCOUNTER_DECK" | "PLAYER_DECK"`), and shuffles the deck.
+- **Description:** Collects matching cards from a specified source zone (`from`: `"SET_ASIDE" | "DISCARD" | "HAND"`), places them into the target deck (`toDeck`: `"ENCOUNTER_DECK" | "PLAYER_DECK"`), and shuffles the deck. Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
 
 ```json
 {
@@ -208,7 +205,7 @@
     "from": "SET_ASIDE",
     "toDeck": "ENCOUNTER_DECK",
     "filter": {
-      "set": "PLAYER_NEMESIS"
+      "sets": ["PLAYER_NEMESIS"]
     }
   }
 }

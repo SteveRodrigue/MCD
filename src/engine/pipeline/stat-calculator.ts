@@ -7,6 +7,7 @@ import {
   AlterEgoCard,
   PlayerState,
 } from '../models';
+import { matchesCardFilter } from '../filters/card-filter';
 
 export interface EffectiveVillainStats {
   attack: number;
@@ -223,37 +224,11 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
         for (const step of ab.steps || []) {
           if (step.effect === 'MODIFY_HAND_SIZE') {
             if (step.params?.scaling === 'PER_MATCHING_CARD') {
-              // Count matching cards in player's tableau
-              const filter = step.filter || (step.params?.filter as any) || {};
-              let matches = 0;
-              for (const tableauItem of player.tableau || []) {
-                const card = tableauItem.card;
-                let match = true;
-                if (filter.trait) {
-                  const trait = filter.trait as string;
-                  if (
-                    !card.traits ||
-                    !card.traits.some((t) => {
-                      const tLower = t.toLowerCase();
-                      const traitLower = trait.toLowerCase();
-                      return (
-                        tLower === traitLower ||
-                        tLower.replace(/[^a-z0-9]/g, '') === traitLower.replace(/[^a-z0-9]/g, '')
-                      );
-                    })
-                  ) {
-                    match = false;
-                  }
-                }
-                if (
-                  filter.type_code &&
-                  card.type !== (filter.type_code as string) &&
-                  card.raw?.type_code !== filter.type_code
-                ) {
-                  match = false;
-                }
-                if (match) matches++;
-              }
+              // Count matching cards in player's tableau using universal card filter (ADR-0046)
+              const filter = step.params?.filter || step.filter;
+              const matches = (player.tableau || []).filter((tableauItem) =>
+                matchesCardFilter(tableauItem.card, filter, { player, state: _state }),
+              ).length;
               bonus += matches * ((step.params?.multiplier as number) || 1);
             } else if (step.params?.amount) {
               bonus += (step.params.amount as number) || 0;

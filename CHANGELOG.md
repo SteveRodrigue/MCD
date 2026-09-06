@@ -5,6 +5,11 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & UI: Display Conditional Gate Before Effect Primitive in Ability Form Builder ([#75](https://github.com/SteveRodrigue/MCD/issues/75), `AbilityFormBuilder.tsx`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
+  - **Natural Step Sequencing in Editor:** Moved the Conditional Gate selector dropdown (`ConditionGateSchema.options`) above the Effect Primitive selector inside resolution steps, matching the author's intuitive step definition workflow (evaluating condition/gate first, then selecting the effect primitive and configuring parameters).
+  - **Standardized Comic Form Header:** Elevated the gate selector to a clean, labeled form field (`Conditional Gate`) with default `None (ALWAYS)` for unconditional steps.
+  - **Automated Contract Tests:** Added contract test in `tests/ui/ability-limit-and-zone-editor.test.ts` enforcing that the Conditional Gate control strictly precedes the Effect Primitive selector in `AbilityFormBuilder.tsx`.
+
 - **Bug Fix & UI: Bind Ability Form Builder to `exhaustSelf` and Add `discardSelf` ([#73](https://github.com/SteveRodrigue/MCD/issues/73), `AbilityFormBuilder.tsx`, `DualCardInspector.tsx`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
   - **Schema Alignment on `exhaustSelf`:** Corrected the ability cost checkbox in `AbilityFormBuilder.tsx` to bind to `cost.exhaustSelf` instead of the non-schema key `cost.exhaust`, fixing the issue where existing cards (e.g. *Aunt May* `01006`) appeared unchecked and saving introduced illegal `{"exhaustSelf": true, "exhaust": true}` properties that failed strict Zod validation.
   - **Legacy Cost Key Auto-Cleanup:** Automatically strips any residual `exhaust` property (`delete nextCost.exhaust`) whenever cost values are updated or saved.

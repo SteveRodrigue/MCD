@@ -203,4 +203,21 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       expect(dualInspectorCode).toContain('ab.cost.exhaustSelf');
     });
   });
+
+  describe('Conditional Gate Sequencing in Step Editor (#75)', () => {
+    it('verifies that in AbilityFormBuilder.tsx, the Conditional Gate selector appears before the Effect Primitive selector', () => {
+      const formBuilderPath = path.resolve(
+        __dirname,
+        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+      );
+      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
+
+      const gateIndex = formBuilderCode.indexOf('Conditional Gate');
+      const effectIndex = formBuilderCode.indexOf('Effect Primitive');
+
+      expect(gateIndex).toBeGreaterThan(-1);
+      expect(effectIndex).toBeGreaterThan(-1);
+      expect(gateIndex).toBeLessThan(effectIndex);
+    });
+  });
 });

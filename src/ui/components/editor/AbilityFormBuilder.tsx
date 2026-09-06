@@ -601,6 +601,29 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                               </button>
                             </div>
 
+                            {/* Conditional Gate */}
+                            <div>
+                              <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                                Conditional Gate
+                              </label>
+                              <select
+                                value={step.gate || ''}
+                                onChange={(e) =>
+                                  handleUpdateStep(aIdx, sIdx, {
+                                    gate: e.target.value || undefined,
+                                  })
+                                }
+                                className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                              >
+                                <option value="">None (ALWAYS)</option>
+                                {ConditionGateSchema.options.map((g) => (
+                                  <option key={g} value={g}>
+                                    {g}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
                             {/* Effect Primitive Selector & Description */}
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -746,27 +769,6 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                                 No additional parameters required for this operational primitive.
                               </div>
                             )}
-
-                            {/* Conditional Gate */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-gray-600">Gate:</span>
-                              <select
-                                value={step.gate || ''}
-                                onChange={(e) =>
-                                  handleUpdateStep(aIdx, sIdx, {
-                                    gate: e.target.value || undefined,
-                                  })
-                                }
-                                className="bg-white border border-black px-1 py-0.5 text-[11px] rounded font-mono"
-                              >
-                                <option value="">None (ALWAYS)</option>
-                                {ConditionGateSchema.options.map((g) => (
-                                  <option key={g} value={g}>
-                                    {g}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
                           </div>
                         );
                       })}

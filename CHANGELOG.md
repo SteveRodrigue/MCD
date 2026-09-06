@@ -5,6 +5,14 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature & Engine: Generalize Host Defeat Trigger (`HOST_DEFEATED`) and Player Attachment Lifecycle ([#51](https://github.com/SteveRodrigue/MCD/issues/51), `abilities.ts`, `schema.ts`, `schema.json`, `effects/index.ts`, `action-dispatcher.ts`, `pack/core.json`, `tests/engine/attachments-player.test.ts`):**
+  - **Universal `HOST_DEFEATED` Trigger:** Replaced the deprecated, narrow `ATTACHED_MINION_DEFEATED` trigger with universal `HOST_DEFEATED`, allowing attachments on any defeatable host (Minion, Ally, Villain, Scheme, Hero) to trigger Forced Interrupt/Interrupt/Response abilities when their host is defeated.
+  - **Attachment Owner Routing:** Recorded `ownerId` on attached cards upon attachment (`ATTACH_TO_HOST` and `PLAY_CARD`) so that when a host card is defeated, attached player cards properly return to the owning player's discard pile rather than the encounter discard pile.
+  - **`CHOSEN_SCHEME` Target Prompting:** Updated `REMOVE_THREAT` to support `CHOSEN_SCHEME`. When only the Main Scheme is in play, threat is removed immediately without prompting; when 1 or more Side Schemes are also in play, enqueues an interactive `PendingDecisionPrompt` allowing the player to select the target scheme.
+  - **Spider-Tracer Retrofit:** Updated *Spider-Tracer* (`01007`) in `src/data/supplemental/pack/core.json` to use `HOST_DEFEATED` with `REMOVE_THREAT` targeting `CHOSEN_SCHEME`, and updated audit metadata to 100% confidence.
+  - **Deprecated Trigger Deprecation & Removal:** Completely removed `ATTACHED_MINION_DEFEATED` across engine types, schemas, and documentation.
+  - **Automated Acceptance & Regression Tests:** Added comprehensive tests in `tests/engine/attachments-player.test.ts` covering single-scheme auto-targeting, multi-scheme decision prompt resolution, event damage defeat, owner discard routing, and strict schema rejection of `ATTACHED_MINION_DEFEATED`.
+
 - **Feature & UI: Display Conditional Gate Before Effect Primitive in Ability Form Builder ([#75](https://github.com/SteveRodrigue/MCD/issues/75), `AbilityFormBuilder.tsx`, `tests/ui/ability-limit-and-zone-editor.test.ts`):**
   - **Natural Step Sequencing in Editor:** Moved the Conditional Gate selector dropdown (`ConditionGateSchema.options`) above the Effect Primitive selector inside resolution steps, matching the author's intuitive step definition workflow (evaluating condition/gate first, then selecting the effect primitive and configuring parameters).
   - **Standardized Comic Form Header:** Elevated the gate selector to a clean, labeled form field (`Conditional Gate`) with default `None (ALWAYS)` for unconditional steps.

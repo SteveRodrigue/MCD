@@ -264,14 +264,13 @@
         {
           "id": "spider_tracer_defeat_trigger",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "MINION_DEFEATED",
+          "trigger": "HOST_DEFEATED",
           "steps": [
             {
-              "effect": "WHEN_ATTACHED_HOST_DEFEATED",
+              "effect": "REMOVE_THREAT",
               "params": {
-                "effect": "REMOVE_THREAT",
                 "amount": 3,
-                "target": "MAIN_SCHEME"
+                "target": "CHOSEN_SCHEME"
               }
             }
           ]
@@ -279,13 +278,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-06T01:05:00Z",
+        "reviewedAt": "2026-09-06T01:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Attach to a minion.\n<b>Forced Interrupt</b>: When attached minion is defeated, remove 3 threat from a scheme.",
-        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: MINION_DEFEATED) -> WHEN_ATTACHED_HOST_DEFEATED (effect: REMOVE_THREAT, amount: 3)"
+        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: HOST_DEFEATED) -> REMOVE_THREAT (amount: 3, target: CHOSEN_SCHEME)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to a minion.",

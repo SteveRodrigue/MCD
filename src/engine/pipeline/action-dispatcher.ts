@@ -35,8 +35,8 @@ import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
 import {
   executeEffect,
   checkAndDiscardZeroCounterCard,
-  discardHostAttachmentsAndTuckedCards,
   moveDefeatedCardToPile,
+  processHostDefeated,
 } from '../effects';
 import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
@@ -454,37 +454,10 @@ export function dispatchAction(
         const minionHealth = (minion.card as MinionCard).health || 1;
 
         if (newDamage >= minionHealth) {
-          // Defeated minion -> discard (or Victory Display, RR v1.8 p. 30)
+          // Defeated minion -> trigger attachments & discard (or Victory Display, RR v1.8 p. 30)
+          processHostDefeated(nextState, minion, { player: targetMinionPlayer });
           targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
           moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
-
-          // Trigger minion attachments (e.g. Spider-Tracer 01007)
-          for (const att of minion.attachments || []) {
-            const attAbs = att.card.enrichment?.abilities || [];
-            for (const ab of attAbs) {
-              const hostDefStep = ab.steps?.find((s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED');
-              if (hostDefStep) {
-                const removeAmount = (hostDefStep.params?.amount as number) || 3;
-                nextState.mainScheme.threat = Math.max(
-                  0,
-                  nextState.mainScheme.threat - removeAmount,
-                );
-                nextState.log.push({
-                  id: `log_${Date.now()}`,
-                  timestamp: Date.now(),
-                  category: 'scheme',
-                  key: 'card.effect.removeThreat',
-                  params: {
-                    scheme: nextState.mainScheme.card.name,
-                    amount: removeAmount,
-                    source: att.card.name,
-                  },
-                  onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
-                });
-              }
-            }
-          }
-          discardHostAttachmentsAndTuckedCards(nextState, minion, player.id);
 
           dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
           dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
@@ -601,39 +574,10 @@ export function dispatchAction(
             const minionHealth = (minion.card as MinionCard).health || 1;
 
             if (newDamage >= minionHealth) {
-              // Defeated minion -> discard (or Victory Display, RR v1.8 p. 30)
+              // Defeated minion -> trigger attachments & discard (or Victory Display, RR v1.8 p. 30)
+              processHostDefeated(nextState, minion, { player: targetMinionPlayer });
               targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
               moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
-
-              // Trigger minion attachments (e.g. Spider-Tracer 01007)
-              for (const att of minion.attachments || []) {
-                const attAbs = att.card.enrichment?.abilities || [];
-                for (const ab of attAbs) {
-                  const hostDefStep = ab.steps?.find(
-                    (s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED',
-                  );
-                  if (hostDefStep) {
-                    const removeAmount = (hostDefStep.params?.amount as number) || 3;
-                    nextState.mainScheme.threat = Math.max(
-                      0,
-                      nextState.mainScheme.threat - removeAmount,
-                    );
-                    nextState.log.push({
-                      id: `log_${Date.now()}`,
-                      timestamp: Date.now(),
-                      category: 'scheme',
-                      key: 'card.effect.removeThreat',
-                      params: {
-                        scheme: nextState.mainScheme.card.name,
-                        amount: removeAmount,
-                        source: att.card.name,
-                      },
-                      onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
-                    });
-                  }
-                }
-              }
-              discardHostAttachmentsAndTuckedCards(nextState, minion, player.id);
             } else {
               minion.tokens = { ...minion.tokens, damage: newDamage };
             }
@@ -1052,6 +996,7 @@ export function dispatchAction(
         if (attachAbility) {
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
           const targetHost = (attachStep?.params?.target as string) || 'VILLAIN';
+          (playedCardInstance as any).ownerId = action.playerId;
           attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
         } else {
           player.tableau.push(playedCardInstance);

@@ -233,7 +233,14 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
                   const trait = filter.trait as string;
                   if (
                     !card.traits ||
-                    !card.traits.some((t) => t.toLowerCase() === trait.toLowerCase())
+                    !card.traits.some((t) => {
+                      const tLower = t.toLowerCase();
+                      const traitLower = trait.toLowerCase();
+                      return (
+                        tLower === traitLower ||
+                        tLower.replace(/[^a-z0-9]/g, '') === traitLower.replace(/[^a-z0-9]/g, '')
+                      );
+                    })
                   ) {
                     match = false;
                   }

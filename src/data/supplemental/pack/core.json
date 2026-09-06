@@ -750,13 +750,13 @@
       "abilities": [
         {
           "id": "she_hulk_form_change",
-          "timing": "FORCED_RESPONSE",
+          "timing": "HERO_RESPONSE",
           "trigger": "FORM_CHANGED_TO_HERO",
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amount": 1,
+                "amount": 2,
                 "target": "CHOSEN_ENEMY"
               }
             }
@@ -765,11 +765,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:43:12Z",
+        "reviewedAt": "2026-09-05T22:43:12Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 70,
         "originalText": "\"Do You Even Lift?\" — <b>Response</b>: After you change to this form, deal 2 damage to an enemy.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: FORM_CHANGED_TO_HERO) -> Deal 1 damage to CHOSEN_ENEMY"
       },
@@ -782,14 +782,14 @@
       "abilities": [
         {
           "id": "jennifer_walters_thwart",
-          "timing": "ALTER_EGO_ACTION",
+          "timing": "ALTER_EGO_INTERRUPT",
+          "trigger": "THREAT_WOULD_BE_PLACED",
           "limit": "ONCE_PER_ROUND",
           "steps": [
             {
               "effect": "REMOVE_THREAT",
               "params": {
-                "amount": 1,
-                "target": "CHOSEN_SCHEME"
+                "amount": 1
               }
             }
           ]
@@ -797,11 +797,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:42:30Z",
+        "reviewedAt": "2026-09-05T22:42:30Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)",
         "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Remove 1 threat from CHOSEN_SCHEME"
       },
@@ -910,17 +910,23 @@
           "timing": "ALTER_EGO_ACTION",
           "cost": {
             "discardCard": {
-              "from": "HAND",
-              "maxCount": 5
+              "maxCount": 5,
+              "from": "HAND"
             }
           },
           "steps": [
             {
               "effect": "REMOVE_THREAT",
               "params": {
-                "target": "MAIN_SCHEME",
+                "target": "CHOSEN_SCHEME",
                 "scaling": "PER_DISCARDED_CARD",
                 "multiplier": 1
+              }
+            },
+            {
+              "effect": "DISCARD_ENCOUNTER_DECK",
+              "params": {
+                "count": 1
               }
             }
           ]
@@ -928,11 +934,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-30T17:09",
-        "reviewedAt": "2026-08-30T17:09",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:45:19Z",
+        "reviewedAt": "2026-09-05T22:45:19Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 0,
         "originalText": "<b>Alter-Ego Action</b> <i>(thwart)</i>: Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Discard up to 5 cards from hand] -> REMOVE_THREAT (target: MAIN_SCHEME, scaling: PER_DISCARDED_CARD)"
       },
@@ -962,9 +968,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T11:32",
-        "reviewedAt": "2026-08-31T11:32",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:45:48Z",
+        "reviewedAt": "2026-09-05T22:45:48Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk.",
@@ -1034,11 +1040,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:47:16Z",
+        "reviewedAt": "2026-09-05T22:47:16Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 0,
         "originalText": "<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.",
         "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> Remove 2 threat from CHOSEN_SCHEME"
       },
@@ -1108,7 +1114,7 @@
               "effect": "ADD_STATUS",
               "params": {
                 "status": "STUNNED",
-                "target": "ATTACK_TARGET"
+                "target": "PREVIOUS_TARGET"
               }
             }
           ]
@@ -1116,11 +1122,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-05T22:50:17Z",
+        "reviewedAt": "2026-09-05T22:50:17Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 80,
         "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy.",
         "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 2); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> ADD_STATUS (status: STUNNED, target: ATTACK_TARGET)"
       },

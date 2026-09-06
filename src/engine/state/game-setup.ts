@@ -343,7 +343,16 @@ export function step14_resolveCharacterSetupAbilities(
             let candidateIndices: number[] = [];
             for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
               const deckCard = player.deck[cIdx];
-              const traitMatch = !filter.trait || deckCard.card.traits?.includes(filter.trait);
+              const traitMatch =
+                !filter.trait ||
+                (deckCard.card.traits || []).some((t) => {
+                  const tLower = t.toLowerCase();
+                  const targetLower = filter.trait.toLowerCase();
+                  return (
+                    tLower === targetLower ||
+                    tLower.replace(/[^a-z0-9]/g, '') === targetLower.replace(/[^a-z0-9]/g, '')
+                  );
+                });
               const typeMatch = !filter.type || deckCard.card.type === filter.type;
               const codeMatch =
                 !pConfig?.chosenSetupCardCode || deckCard.card.code === pConfig.chosenSetupCardCode;
@@ -357,7 +366,16 @@ export function step14_resolveCharacterSetupAbilities(
             if (candidateIndices.length === 0 && pConfig?.chosenSetupCardCode) {
               for (let cIdx = 0; cIdx < player.deck.length; cIdx++) {
                 const deckCard = player.deck[cIdx];
-                const traitMatch = !filter.trait || deckCard.card.traits?.includes(filter.trait);
+                const traitMatch =
+                  !filter.trait ||
+                  (deckCard.card.traits || []).some((t) => {
+                    const tLower = t.toLowerCase();
+                    const targetLower = filter.trait.toLowerCase();
+                    return (
+                      tLower === targetLower ||
+                      tLower.replace(/[^a-z0-9]/g, '') === targetLower.replace(/[^a-z0-9]/g, '')
+                    );
+                  });
                 const typeMatch = !filter.type || deckCard.card.type === filter.type;
                 if (traitMatch && typeMatch) {
                   candidateIndices.push(cIdx);

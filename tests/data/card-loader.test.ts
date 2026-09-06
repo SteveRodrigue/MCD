@@ -12,6 +12,7 @@ import {
   VillainCard,
   SideSchemeCard,
 } from '@engine/models';
+import { matchCardFilter } from '@engine/effects';
 
 // Import real upstream JSON datasets directly
 import corePack from '../../data/upstream/pack/core.json';
@@ -24,6 +25,29 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(parseTraits('Genius.')).toEqual(['Genius']);
       expect(parseTraits('')).toEqual([]);
       expect(parseTraits(undefined)).toEqual([]);
+    });
+
+    it('preserves acronym traits with internal periods (e.g. S.H.I.E.L.D., A.I.M.) without decomposing into single letters (#72)', () => {
+      expect(parseTraits('S.H.I.E.L.D. Soldier.')).toEqual(['S.H.I.E.L.D.', 'Soldier']);
+      expect(parseTraits('Location. S.H.I.E.L.D.')).toEqual(['Location', 'S.H.I.E.L.D.']);
+      expect(parseTraits('S.H.I.E.L.D.')).toEqual(['S.H.I.E.L.D.']);
+      expect(parseTraits('A.I.M. Genius.')).toEqual(['A.I.M.', 'Genius']);
+      expect(parseTraits("Batroc's Brigade. Mercenary.")).toEqual(["Batroc's Brigade", 'Mercenary']);
+      expect(parseTraits('Trap!')).toEqual(['Trap!']);
+    });
+
+    it('matches S.H.I.E.L.D. cards case- and punctuation-insensitively via matchCardFilter (#72)', () => {
+      const card = {
+        code: '01010b',
+        name: 'Carol Danvers',
+        traits: ['S.H.I.E.L.D.', 'Soldier'],
+      } as any;
+
+      expect(matchCardFilter(card, { trait: 'S.H.I.E.L.D.' })).toBe(true);
+      expect(matchCardFilter(card, { trait: 'SHIELD' })).toBe(true);
+      expect(matchCardFilter(card, { trait: 'shield' })).toBe(true);
+      expect(matchCardFilter(card, { traits: ['shield', 'avenger'] })).toBe(true);
+      expect(matchCardFilter(card, { trait: 'Hydra' })).toBe(false);
     });
 
     it('correctly aggregates resource yields', () => {
@@ -89,6 +113,23 @@ describe('Card Loader & Normalizer Unit Tests', () => {
       expect(card.recover).toBe(3);
       expect(card.traits).toContain('Genius');
       expect(card.text).toContain('Scientist');
+    });
+
+    it('normalizes Carol Danvers (Alter-Ego form 01010b) with S.H.I.E.L.D. and Soldier traits intact (#72)', () => {
+      const card = catalog.getCard('01010b') as AlterEgoCard;
+      expect(card).toBeDefined();
+      expect(card.name).toBe('Carol Danvers');
+      expect(card.traits).toEqual(['S.H.I.E.L.D.', 'Soldier']);
+      expect(card.traits).not.toContain('S');
+      expect(card.traits).not.toContain('H');
+      expect(card.traits).not.toContain('D');
+    });
+
+    it('normalizes Nick Fury (01084) with S.H.I.E.L.D. and Spy traits intact (#72)', () => {
+      const card = catalog.getCard('01084');
+      expect(card).toBeDefined();
+      expect(card?.name).toBe('Nick Fury');
+      expect(card?.traits).toEqual(['S.H.I.E.L.D.', 'Spy']);
     });
 
     it('retrieves the dual-sided identity via getHeroIdentity helper', () => {

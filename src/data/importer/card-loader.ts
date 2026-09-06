@@ -14,13 +14,36 @@ import {
 } from '@engine/models';
 
 /**
- * Splits raw MarvelsDB traits string (e.g., "Avenger. Genius.") into clean array.
+ * Splits raw MarvelsDB traits string (e.g., "Avenger. Genius.", "S.H.I.E.L.D. Soldier.") into clean array.
+ * Preserves acronyms with internal periods (e.g., "S.H.I.E.L.D.", "A.I.M.") without decomposing them into single letters.
  */
 export function parseTraits(traitsStr?: string): string[] {
   if (!traitsStr || typeof traitsStr !== 'string') return [];
-  return traitsStr
-    .split('.')
-    .map((t) => t.trim())
+  const trimmed = traitsStr.trim();
+  if (!trimmed) return [];
+
+  // Split tokens by delimiter ('.' or '!') followed by whitespace, or at end-of-string.
+  // In Marvel Champions cards, individual traits are separated by a delimiter and whitespace.
+  // Acronyms (e.g. S.H.I.E.L.D., A.I.M.) have periods directly between letters without whitespace.
+  const chunks = trimmed.split(/(?<=[.!?])\s+/);
+
+  return chunks
+    .map((chunk) => {
+      let t = chunk.trim();
+      // If the token matches an acronym with periods after each letter (e.g. "S.H.I.E.L.D." or "A.I.M.")
+      if (/^(?:[A-Za-z]\.)+$/.test(t)) {
+        return t;
+      }
+      // If the acronym is missing its trailing period (e.g. "S.H.I.E.L.D"), add it back
+      if (/^(?:[A-Za-z]\.)+[A-Za-z]$/.test(t)) {
+        return `${t}.`;
+      }
+      // Otherwise, strip any trailing period if not part of an acronym
+      if (t.endsWith('.')) {
+        t = t.slice(0, -1).trim();
+      }
+      return t;
+    })
     .filter((t) => t.length > 0);
 }
 

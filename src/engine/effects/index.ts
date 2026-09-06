@@ -107,22 +107,40 @@ export function matchCardFilter(card: NormalizedCard, filter?: any, player?: Pla
     return false;
   }
 
-  // Trait matching (case-insensitive item or substring matches)
+  // Trait matching (case-insensitive item, substring, and punctuation-normalized matches)
   if (filter.trait) {
     const targetTrait = filter.trait.toLowerCase().trim();
-    const hasTrait = (card.traits || []).some(
-      (t) => t.toLowerCase().trim() === targetTrait || t.toLowerCase().includes(targetTrait),
-    );
+    const targetPunctStripped = targetTrait.replace(/[^a-z0-9]/g, '');
+    const hasTrait = (card.traits || []).some((t) => {
+      const traitLower = t.toLowerCase().trim();
+      const traitPunctStripped = traitLower.replace(/[^a-z0-9]/g, '');
+      return (
+        traitLower === targetTrait ||
+        traitLower.includes(targetTrait) ||
+        (targetPunctStripped.length > 0 &&
+          (traitPunctStripped === targetPunctStripped ||
+            traitPunctStripped.includes(targetPunctStripped)))
+      );
+    });
     if (!hasTrait) return false;
   }
 
   if (filter.traits && Array.isArray(filter.traits)) {
     const normalizedTargetTraits = filter.traits.map((t: string) => t.toLowerCase().trim());
-    const hasAnyTrait = (card.traits || []).some((t) =>
-      normalizedTargetTraits.some(
-        (target: string) => t.toLowerCase().trim() === target || t.toLowerCase().includes(target),
-      ),
-    );
+    const hasAnyTrait = (card.traits || []).some((t) => {
+      const traitLower = t.toLowerCase().trim();
+      const traitPunctStripped = traitLower.replace(/[^a-z0-9]/g, '');
+      return normalizedTargetTraits.some((target: string) => {
+        const targetPunctStripped = target.replace(/[^a-z0-9]/g, '');
+        return (
+          traitLower === target ||
+          traitLower.includes(target) ||
+          (targetPunctStripped.length > 0 &&
+            (traitPunctStripped === targetPunctStripped ||
+              traitPunctStripped.includes(targetPunctStripped)))
+        );
+      });
+    });
     if (!hasAnyTrait) return false;
   }
 
@@ -410,7 +428,9 @@ export function executeSequence(
       ...context,
       previousResult: prevResult,
       targetInstanceId:
-        step.params?.target === 'PREVIOUS_TARGET' ? prevResult?.targetId : context.targetInstanceId,
+        step.params?.target === 'PREVIOUS_TARGET'
+          ? (prevResult?.targetId ?? context.targetInstanceId)
+          : context.targetInstanceId,
     };
 
     const res = executeStep(currentState, step, stepContext);
@@ -1150,7 +1170,8 @@ export function executeStep(
         target === 'ATTACK_TARGET' ||
         target === 'ATTACKED_ENEMY' ||
         target === 'TARGET_ENEMY' ||
-        target === 'MINION'
+        target === 'MINION' ||
+        target === 'PREVIOUS_TARGET'
       ) {
         if ((target === 'MINION' || context.targetType === 'minion') && context.targetInstanceId) {
           for (const p of state.players) {

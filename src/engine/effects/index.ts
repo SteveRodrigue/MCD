@@ -1456,7 +1456,10 @@ export function executeStep(
         target === 'ALL_HEROES' ||
         target === 'DEFENDING_CHARACTER' ||
         target === 'DEFENDING_PLAYER' ||
-        target === 'PLAYER'
+        target === 'PLAYER' ||
+        target === 'ACTIVE_PLAYER' ||
+        target === 'ACTIVE_IDENTITY' ||
+        target === 'IDENTITY'
       ) {
         const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
         applyStatusToEntity(targetPlayer);

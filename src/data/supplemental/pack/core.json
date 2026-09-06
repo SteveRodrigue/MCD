@@ -156,7 +156,7 @@
         {
           "id": "enhanced_spider_sense",
           "timing": "HERO_INTERRUPT",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
             "discardSelf": true
@@ -171,16 +171,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:20",
-        "reviewedAt": "2026-08-31T13:20",
+        "updatedAt": "2026-09-06T17:26:00Z",
+        "reviewedAt": "2026-09-06T17:26:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: WHEN_REVEALED) [Cost: Discard this card] -> CANCEL_WHEN_REVEALED"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card] -> CANCEL_WHEN_REVEALED"
       },
       "mechanicSteps": [
-        "Hero Interrupt: When a treachery card is revealed, cancel its When Revealed effects."
+        "Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its When Revealed effects."
       ]
     },
     "01005": {
@@ -1710,8 +1710,12 @@
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
-          "traits": ["Black Panther"],
-          "types": ["upgrade"]
+          "traits": [
+            "Black Panther"
+          ],
+          "types": [
+            "upgrade"
+          ]
         }
       },
       "abilities": [
@@ -1744,8 +1748,12 @@
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
-          "traits": ["Black Panther"],
-          "types": ["upgrade"]
+          "traits": [
+            "Black Panther"
+          ],
+          "types": [
+            "upgrade"
+          ]
         }
       },
       "abilities": [
@@ -1778,8 +1786,12 @@
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
-          "traits": ["Black Panther"],
-          "types": ["upgrade"]
+          "traits": [
+            "Black Panther"
+          ],
+          "types": [
+            "upgrade"
+          ]
         }
       },
       "abilities": [
@@ -1812,8 +1824,12 @@
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
-          "traits": ["Black Panther"],
-          "types": ["upgrade"]
+          "traits": [
+            "Black Panther"
+          ],
+          "types": [
+            "upgrade"
+          ]
         }
       },
       "abilities": [
@@ -2447,7 +2463,6 @@
     },
     "01063": {
       "comment": "Support: Response: After you defeat a minion, exhaust to remove 1 threat from a scheme.",
-      "maxPerPlayer": 1,
       "abilities": [
         {
           "id": "interrogation_room_response",
@@ -2461,7 +2476,7 @@
               "effect": "REMOVE_THREAT",
               "params": {
                 "amount": 1,
-                "target": "MAIN_SCHEME"
+                "target": "CHOSEN_SCHEME"
               }
             }
           ]
@@ -2469,11 +2484,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-09-06T21:07:28Z",
+        "reviewedAt": "2026-09-06T21:07:28Z",
+        "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 70,
         "originalText": "Max 1 per player.\n<b>Response</b>: After you defeat a minion, exhaust Interrogation Room → remove 1 threat from a scheme.",
         "reconstructedText": "RESPONSE (Trigger: MINION_DEFEATED) [Cost: Exhaust] -> Remove 1 threat from MAIN_SCHEME"
       },
@@ -2481,7 +2496,8 @@
         "Trigger: Response after you defeat a minion (RESPONSE @ MINION_DEFEATED)",
         "Cost: Exhaust Interrogation Room",
         "Effect: Remove 1 threat from a scheme (Limit once per round)."
-      ]
+      ],
+      "maxPerPlayer": 1
     },
     "01064": {
       "comment": "Support: Enters play with 3 snoop counters. Action: Exhaust and remove 1 counter -> remove 1 threat from a scheme.",

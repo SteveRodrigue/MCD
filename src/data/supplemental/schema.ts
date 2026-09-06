@@ -167,15 +167,7 @@ export const EffectTypeSchema = z.enum([
   'DEAL_DAMAGE',
   'DEAL_DAMAGE_ALL_ENEMIES',
   'DECLARE_DEFENDER',
-  'DISCARD_ATTACHMENT',
-  'DISCARD_CARDS_FROM_HAND_AT_RANDOM',
-  'DISCARD_CARDS_UNDER_HOST',
-  'DISCARD_ENCOUNTER_DECK',
-  'DISCARD_RANDOM_HAND',
-  'DISCARD_SELF',
-  'DISCARD_TOP_DECK_FILTER',
-  'DISCARD_UPGRADE_OR_SUPPORT',
-  'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE',
+  'DISCARD',
   'DOUBLE_RESOURCE_FOR_ASPECT',
   'DRAW_CARDS',
   'DRAW_UP_TO_HAND_SIZE',
@@ -365,6 +357,32 @@ export const RemoveCountersMatchingFilterParamsSchema = z.object({
   counterType: z.string().optional(),
   amount: z.union([z.number(), z.literal('ALL')]).optional(),
 });
+
+export const DiscardParamsSchema = z
+  .object({
+    source: z
+      .enum([
+        'HAND',
+        'DECK',
+        'ENCOUNTER_DECK',
+        'TABLEAU',
+        'HOST',
+        'SELF',
+        'CARDS_UNDER_HOST',
+      ])
+      .optional()
+      .default('HAND'),
+    count: z.union([z.number(), z.literal('ALL')]).optional().default(1),
+    mode: z.enum(['CHOSEN', 'RANDOM', 'TOP', 'ALL', 'UNTIL_MATCH']).optional(),
+    target: TargetSelectorSchema.optional(),
+    filter: FilterSchema.optional(),
+    untilFilter: FilterSchema.optional(),
+    fallback: z.enum(['SURGE', 'NONE']).optional(),
+    matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
+  })
+  .strict();
+
+export type DiscardParams = z.infer<typeof DiscardParamsSchema>;
 
 /**
  * Decision Prompt Option Schema

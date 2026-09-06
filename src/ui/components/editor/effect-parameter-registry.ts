@@ -941,113 +941,56 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
 
   // 9. Discard Primitives
-  DISCARD_SELF: {
-    effect: 'DISCARD_SELF',
-    description: 'Discard this card from play as part of its resolution.',
-    parameters: [],
-  },
-  DISCARD_ATTACHMENT: {
-    effect: 'DISCARD_ATTACHMENT',
-    description: 'Discard an attachment from its host card.',
+  DISCARD: {
+    effect: 'DISCARD',
+    description: 'Discard cards from a specified source zone (hand, tableau, deck, host, or self).',
     parameters: [
       {
+        key: 'source',
+        label: 'Source Zone',
+        type: 'select',
+        options: ['HAND', 'DECK', 'ENCOUNTER_DECK', 'TABLEAU', 'HOST', 'SELF', 'CARDS_UNDER_HOST'],
+        defaultValue: 'HAND',
+        description: 'Source zone cards are discarded from (RR v1.8 p. 10)',
+      },
+      {
+        key: 'count',
+        label: 'Card Count',
+        type: 'number',
+        defaultValue: 1,
+        placeholder: '1',
+      },
+      {
+        key: 'mode',
+        label: 'Discard Mode',
+        type: 'select',
+        options: ['CHOSEN', 'RANDOM', 'TOP', 'ALL', 'UNTIL_MATCH'],
+        defaultValue: 'CHOSEN',
+      },
+      {
         key: 'target',
-        label: 'Target Attachment',
+        label: 'Target Player / Entity',
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
       },
-    ],
-  },
-  DISCARD_UPGRADE_OR_SUPPORT: {
-    effect: 'DISCARD_UPGRADE_OR_SUPPORT',
-    description: 'Discard an upgrade or support card from play.',
-    parameters: [
       {
-        key: 'target',
-        label: 'Target',
+        key: 'fallback',
+        label: 'Fallback Action',
         type: 'select',
-        options: TARGET_OPTIONS,
+        options: ['SURGE', 'NONE'],
+        defaultValue: 'NONE',
+        description: 'Action if no cards could be discarded (e.g. Surge)',
       },
-    ],
-  },
-  DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE: {
-    effect: 'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE',
-    description: 'Discard upgrade or support from play; if none in play, trigger Surge.',
-    parameters: [
       {
-        key: 'target',
-        label: 'Target',
+        key: 'matchingDestination',
+        label: 'Matching Destination',
         type: 'select',
-        options: TARGET_OPTIONS,
+        options: ['HAND', 'PLAY', 'DISCARD'],
+        defaultValue: 'DISCARD',
+        description: 'Destination for discarded cards matching filter (e.g. HAND for Black Cat)',
       },
     ],
-  },
-  DISCARD_TOP_DECK_FILTER: {
-    effect: 'DISCARD_TOP_DECK_FILTER',
-    description: 'Discard top card of deck and check resource icon.',
-    parameters: [
-      {
-        key: 'count',
-        label: 'Card Count',
-        type: 'number',
-        defaultValue: 1,
-      },
-      {
-        key: 'filterResource',
-        label: 'Target Resource Icon',
-        type: 'select',
-        options: RESOURCE_OPTIONS,
-      },
-    ],
-  },
-  DISCARD_ENCOUNTER_DECK: {
-    effect: 'DISCARD_ENCOUNTER_DECK',
-    description: 'Discard cards from top of encounter deck.',
-    parameters: [
-      {
-        key: 'count',
-        label: 'Card Count',
-        type: 'number',
-        defaultValue: 1,
-      },
-    ],
-  },
-  DISCARD_RANDOM_HAND: {
-    effect: 'DISCARD_RANDOM_HAND',
-    description: 'Discard a card at random from player hand.',
-    parameters: [
-      {
-        key: 'count',
-        label: 'Card Count',
-        type: 'number',
-        defaultValue: 1,
-      },
-      {
-        key: 'target',
-        label: 'Target Player',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
-  DISCARD_CARDS_FROM_HAND_AT_RANDOM: {
-    effect: 'DISCARD_CARDS_FROM_HAND_AT_RANDOM',
-    description: 'Discard specified number of cards at random from hand.',
-    parameters: [
-      {
-        key: 'count',
-        label: 'Card Count',
-        type: 'number',
-        defaultValue: 1,
-      },
-    ],
-  },
-  DISCARD_CARDS_UNDER_HOST: {
-    effect: 'DISCARD_CARDS_UNDER_HOST',
-    description: 'Discard cards stored under this host card.',
-    parameters: [],
   },
 
   // 10. Attachment & Card State Primitives

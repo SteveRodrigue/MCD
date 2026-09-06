@@ -73,13 +73,13 @@
       "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 50,
         "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD_TOP_DECK_FILTER ({\"count\":2,\"filterResource\":\"mental\"})"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD (source: DECK, count: 2, filter: { resource: mental }, matchingDestination: HAND)"
       },
       "attackCost": 0,
       "mechanicSteps": [
@@ -97,10 +97,14 @@
           "trigger": "CARD_PLAYED",
           "steps": [
             {
-              "effect": "DISCARD_TOP_DECK_FILTER",
+              "effect": "DISCARD",
               "params": {
+                "source": "DECK",
                 "count": 2,
-                "filterResource": "mental"
+                "filter": {
+                  "resource": "mental"
+                },
+                "matchingDestination": "HAND"
               }
             }
           ]
@@ -920,12 +924,6 @@
                 "target": "CHOSEN_SCHEME",
                 "scaling": "PER_DISCARDED_CARD",
                 "multiplier": 1
-              }
-            },
-            {
-              "effect": "DISCARD_ENCOUNTER_DECK",
-              "params": {
-                "count": 1
               }
             }
           ]
@@ -3219,20 +3217,23 @@
           "trigger": "ROUND_END",
           "steps": [
             {
-              "effect": "DISCARD_SELF"
+              "effect": "DISCARD",
+              "params": {
+                "source": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T06:38",
-        "reviewedAt": "2026-09-01T06:38",
+        "updatedAt": "2026-09-05T23:17",
+        "reviewedAt": "2026-09-05T23:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 50,
         "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him.",
-        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]) + FORCED_RESPONSE (ROUND_END) -> DISCARD_SELF"
+        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]) + FORCED_RESPONSE (ROUND_END) -> DISCARD (source: SELF)"
       },
       "mechanicSteps": [
         "Ally: THW 2, ATK 2, Health 3.",

@@ -68,7 +68,7 @@
                     "ENEMY_DEFEATED_BY_HERO_ATTACK",
                     "MINION_ENTERS_PLAY",
                     "TREACHERY_REVEALED",
-                    "ATTACHED_MINION_DEFEATED",
+                    "HOST_DEFEATED",
                     "ATTACHED_ENEMY_ATTACKS",
                     "THREAT_WOULD_BE_PLACED",
                     "MAIN_SCHEME_ADVANCED",

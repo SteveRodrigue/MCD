@@ -320,7 +320,8 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(attachment.card)) {
         state.encounterDiscard.push(attachment);
       } else {
-        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        const ownerId = (attachment as any).ownerId || ownerPlayerId;
+        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
       }
     }
@@ -333,12 +334,57 @@ export function discardHostAttachmentsAndTuckedCards(
       if (isEncounterCard(tucked.card)) {
         state.encounterDiscard.push(tucked);
       } else {
-        const targetP = state.players.find((p) => p.id === ownerPlayerId) || state.players[0];
+        const ownerId = (tucked as any).ownerId || ownerPlayerId;
+        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
       }
     }
     host.cardsUnderneath = [];
   }
+}
+
+/**
+ * Universal helper to process character defeat when cards are attached (RR v1.8 p. 6, 13).
+ * Triggers all 'HOST_DEFEATED' interrupt abilities on attached cards, then cleanly discards them.
+ */
+export function processHostDefeated(
+  state: GameState,
+  hostCard: CardInstance,
+  context?: { player?: PlayerState; sourceCardInstance?: CardInstance },
+): void {
+  const attachments = hostCard.attachments || [];
+  if (attachments.length === 0) return;
+
+  for (const att of attachments) {
+    const abilities = att.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.trigger === 'HOST_DEFEATED') {
+        const ownerId = (att as any).ownerId;
+        const owner =
+          (ownerId ? state.players.find((p) => p.id === ownerId) : undefined) ||
+          context?.player ||
+          state.players[0];
+
+        executeEffect(state, ab, {
+          playerId: owner.id,
+          sourceCardInstance: att,
+        });
+
+        state.log.push({
+          id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: `ability.${ab.id}.triggered`,
+          params: { card: att.card.name, host: hostCard.card.name },
+          onomatopoeia: 'HOST DEFEATED!',
+        });
+      }
+    }
+  }
+
+  const ownerPlayerId = context?.player?.id || state.players[0]?.id;
+  discardHostAttachmentsAndTuckedCards(state, hostCard, ownerPlayerId);
 }
 
 /**
@@ -700,6 +746,7 @@ export function executeStep(
               const newDmg = currentDmg + amount;
               const minionHp = (minion.card as MinionCard).health || 1;
               if (newDmg >= minionHp) {
+                processHostDefeated(state, minion, { player: p });
                 p.engagedMinions.splice(i, 1);
                 moveDefeatedCardToPile(state, minion, state.encounterDiscard);
               } else {
@@ -808,6 +855,7 @@ export function executeStep(
 
             if (newDmg >= minionHp) {
               const excessDmg = newDmg - minionHp;
+              processHostDefeated(state, minion, { player: p });
               p.engagedMinions.splice(minionIdx, 1);
               moveDefeatedCardToPile(state, minion, state.encounterDiscard);
 
@@ -834,33 +882,6 @@ export function executeStep(
                   },
                   onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
                 });
-              }
-
-              // Process attached cards on defeated minion (e.g. Spider-Tracer 01008)
-              for (const att of minion.attachments || []) {
-                const attAbs = att.card.enrichment?.abilities || [];
-                for (const ab of attAbs) {
-                  const hostDefStep = ab.steps?.find(
-                    (s) => s.effect === 'WHEN_ATTACHED_HOST_DEFEATED',
-                  );
-                  if (hostDefStep) {
-                    const removeAmount = (hostDefStep.params?.amount as number) || 3;
-                    state.mainScheme.threat = Math.max(0, state.mainScheme.threat - removeAmount);
-                    state.log.push({
-                      id: `log_${Date.now()}`,
-                      timestamp: Date.now(),
-                      category: 'scheme',
-                      key: 'card.effect.removeThreat',
-                      params: {
-                        scheme: state.mainScheme.card.name,
-                        amount: removeAmount,
-                        source: att.card.name,
-                      },
-                      onomatopoeia: 'SPIDER-TRACER REMOVES 3 THREAT!',
-                    });
-                  }
-                }
-                p.discard.push(att);
               }
 
               const onomatopoeia = 'SMASH! MINION DEFEATED!';
@@ -1080,22 +1101,104 @@ export function executeStep(
       const amount = (step.params?.amount as number) || 1;
       const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
+      let targetSchemeName = state.mainScheme.card.name;
+      let remainingThreat = state.mainScheme.threat;
 
-      if (targetParam === 'MAIN_SCHEME') {
+      if (targetParam === 'CHOSEN_SCHEME') {
+        const sideSchemes = state.sideSchemes || [];
+        const explicitTargetId =
+          (step.params?.targetInstanceId as string) || context.targetInstanceId;
+
+        if (explicitTargetId) {
+          if (
+            explicitTargetId === 'main_scheme' ||
+            explicitTargetId === state.mainScheme.instanceId
+          ) {
+            removed = Math.min(state.mainScheme.threat, amount);
+            state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+            targetSchemeName = state.mainScheme.card.name;
+            remainingThreat = state.mainScheme.threat;
+          } else {
+            const sideScheme = sideSchemes.find((s) => s.instanceId === explicitTargetId);
+            if (sideScheme) {
+              const current = sideScheme.threat || 0;
+              removed = Math.min(current, amount);
+              sideScheme.threat = Math.max(0, current - amount);
+              targetSchemeName = sideScheme.card.name;
+              remainingThreat = sideScheme.threat;
+            } else {
+              removed = Math.min(state.mainScheme.threat, amount);
+              state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+              targetSchemeName = state.mainScheme.card.name;
+              remainingThreat = state.mainScheme.threat;
+            }
+          }
+        } else if (sideSchemes.length > 0) {
+          // Multiple schemes in play -> enqueue interactive decision prompt
+          const options: DecisionPromptOption[] = [
+            {
+              id: 'main_scheme',
+              label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
+              description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
+              effect: 'REMOVE_THREAT',
+              params: { amount, target: 'MAIN_SCHEME' },
+            },
+            ...sideSchemes.map((s) => ({
+              id: s.instanceId,
+              label: `${s.card.name} (${s.threat || 0} Threat)`,
+              description: `Remove ${amount} threat from ${s.card.name}`,
+              effect: 'REMOVE_THREAT',
+              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
+            })),
+          ];
+
+          enqueueDecisionPrompt(state, {
+            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: 'Choose a Scheme',
+            description: `Select a scheme to remove ${amount} threat from:`,
+            sourceCardName: context.sourceCardInstance?.card.name || 'Spider-Tracer',
+            options,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: 'CHOOSE SCHEME!',
+          };
+        } else {
+          // Only main scheme in play -> remove directly
+          removed = Math.min(state.mainScheme.threat, amount);
+          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+          targetSchemeName = state.mainScheme.card.name;
+          remainingThreat = state.mainScheme.threat;
+        }
+      } else if (targetParam === 'MAIN_SCHEME') {
         removed = Math.min(state.mainScheme.threat, amount);
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-      } else if (context.targetInstanceId) {
-        const sideScheme = (state.sideSchemes || []).find(
-          (s) => s.instanceId === context.targetInstanceId,
-        );
+        targetSchemeName = state.mainScheme.card.name;
+        remainingThreat = state.mainScheme.threat;
+      } else if (targetParam === 'SIDE_SCHEME' || context.targetInstanceId) {
+        const targetId = (step.params?.targetInstanceId as string) || context.targetInstanceId;
+        const sideScheme = (state.sideSchemes || []).find((s) => s.instanceId === targetId);
         if (sideScheme) {
           const current = sideScheme.threat || 0;
           removed = Math.min(current, amount);
           sideScheme.threat = Math.max(0, current - amount);
+          targetSchemeName = sideScheme.card.name;
+          remainingThreat = sideScheme.threat;
+        } else {
+          removed = Math.min(state.mainScheme.threat, amount);
+          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+          targetSchemeName = state.mainScheme.card.name;
+          remainingThreat = state.mainScheme.threat;
         }
       } else {
         removed = Math.min(state.mainScheme.threat, amount);
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+        targetSchemeName = state.mainScheme.card.name;
+        remainingThreat = state.mainScheme.threat;
       }
 
       const onomatopoeia = `-${removed} THREAT!`;
@@ -1108,7 +1211,8 @@ export function executeStep(
         params: {
           player: player.name,
           amount: removed,
-          remainingThreat: state.mainScheme.threat,
+          scheme: targetSchemeName,
+          remainingThreat,
         },
         onomatopoeia,
       });
@@ -1605,6 +1709,8 @@ export function executeStep(
       const targetHost = step.params?.target as string;
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
+
+      (sourceCard as any).ownerId = context.playerId;
 
       attachCardToHost(
         state,

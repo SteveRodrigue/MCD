@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, StatusCard, SideSchemeState } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { step2_villainActivations } from '@engine/pipeline/villain-phase';
@@ -87,7 +87,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(nextState.villain.statusCards).toContain(StatusCard.STUNNED);
   });
 
-  it('01007 Spider-Tracer: Removes 3 threat from scheme when attached minion is defeated', () => {
+  it('01007 Spider-Tracer: Removes 3 threat from scheme when attached minion is defeated (Single Scheme Auto-Targeting)', () => {
     const minionCard = cardCatalog.getCard('01101')!; // Hydra Mercenary (3 HP)
     const minionInstance = createCardInstance(minionCard);
     const tracerCard = cardCatalog.getCard('01007')!;
@@ -97,8 +97,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     state.players[0].engagedMinions = [minionInstance];
     state.mainScheme.threat = 6;
 
-    // Player attacks minion with 3 damage (e.g. basic attack after form change or swinging kick)
-    // Let's set minion health to 1 so basic attack (2 ATK) defeats it
+    // Player attacks minion with 3 damage (basic attack 2 ATK against minion with 2 damage)
     minionInstance.tokens = { damage: 2 };
 
     const res = dispatchAction(state, {
@@ -115,5 +114,155 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(res.state.mainScheme.threat).toBe(3);
     // Spider-Tracer placed in player discard
     expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
+  });
+
+  it('01007 Spider-Tracer: Enqueues decision prompt when multiple schemes are in play (CHOSEN_SCHEME)', () => {
+    const minionCard = cardCatalog.getCard('01101')!;
+    const minionInstance = createCardInstance(minionCard);
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+
+    const sideSchemeCard = cardCatalog.getCard('01107')! as any; // Bomb Scare (3 threat)
+    const sideSchemeInstance: SideSchemeState = {
+      instanceId: 'side_scheme_bomb_scare',
+      card: sideSchemeCard,
+      threat: 3,
+    };
+
+    state.sideSchemes = [sideSchemeInstance];
+    minionInstance.attachments = [tracerInstance];
+    state.players[0].engagedMinions = [minionInstance];
+    state.mainScheme.threat = 5;
+
+    minionInstance.tokens = { damage: 2 };
+
+    const res = dispatchAction(state, {
+      type: 'BASIC_ATTACK',
+      playerId: 'p1',
+      targetType: 'minion',
+      targetInstanceId: minionInstance.instanceId,
+    });
+
+    expect(res.result.success).toBe(true);
+    // Minion defeated and removed
+    expect(res.state.players[0].engagedMinions.length).toBe(0);
+
+    // Decision prompt enqueued because 2 schemes are in play
+    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(res.state.pendingDecisionPrompt!.options.length).toBe(2);
+
+    // Player chooses Bomb Scare
+    const sideSchemeOpt = res.state.pendingDecisionPrompt!.options.find(
+      (o) => o.id === sideSchemeInstance.instanceId,
+    );
+    expect(sideSchemeOpt).toBeDefined();
+
+    const resolveRes = dispatchAction(res.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: sideSchemeOpt!.id,
+    });
+
+    expect(resolveRes.result.success).toBe(true);
+    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    // 3 threat removed from Bomb Scare (3 - 3 = 0)
+    expect(resolveRes.state.sideSchemes[0].threat).toBe(0);
+    // Main scheme threat untouched
+    expect(resolveRes.state.mainScheme.threat).toBe(5);
+    // Spider-Tracer placed in player discard
+    expect(resolveRes.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
+  });
+
+  it('01007 Spider-Tracer: Routes attachment to correct ownerId discard upon host defeat', () => {
+    const minionCard = cardCatalog.getCard('01101')!;
+    const minionInstance = createCardInstance(minionCard);
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+    (tracerInstance as any).ownerId = 'p1';
+
+    minionInstance.attachments = [tracerInstance];
+    // Engaged with dummy player 2
+    state.players.push({
+      ...state.players[0],
+      id: 'p2',
+      name: 'Player 2',
+      engagedMinions: [minionInstance],
+      discard: [],
+    });
+    minionInstance.tokens = { damage: 2 };
+    state.mainScheme.threat = 4;
+
+    const res = dispatchAction(state, {
+      type: 'BASIC_ATTACK',
+      playerId: 'p1',
+      targetType: 'minion',
+      targetInstanceId: minionInstance.instanceId,
+    });
+
+    expect(res.result.success).toBe(true);
+    // Discarded to p1 (owner), NOT p2
+    expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
+    expect(res.state.players[1].discard.some((c) => c.card.code === '01007')).toBe(false);
+  });
+
+  it('01007 Spider-Tracer: Triggers HOST_DEFEATED when attached minion is defeated by an event effect (DEAL_DAMAGE)', async () => {
+    const { executeEffect } = await import('@engine/effects');
+
+    const minionCard = cardCatalog.getCard('01101')!; // 3 HP
+    const minionInstance = createCardInstance(minionCard);
+    const tracerCard = cardCatalog.getCard('01007')!;
+    const tracerInstance = createCardInstance(tracerCard);
+
+    minionInstance.attachments = [tracerInstance];
+    state.players[0].engagedMinions = [minionInstance];
+    state.mainScheme.threat = 6;
+
+    // Execute DEAL_DAMAGE effect dealing 3 damage to the minion (e.g. Haymaker)
+    const attackAbility = {
+      id: 'event_attack',
+      timing: 'HERO_ACTION' as const,
+      steps: [
+        {
+          effect: 'DEAL_DAMAGE',
+          params: { amount: 3, target: 'CHOSEN_MINION' },
+        },
+      ],
+    };
+
+    const res = executeEffect(state, attackAbility, {
+      playerId: 'p1',
+      targetType: 'minion',
+      targetInstanceId: minionInstance.instanceId,
+    });
+
+    expect(res.success).toBe(true);
+    // Minion defeated and removed
+    expect(res.state.players[0].engagedMinions.length).toBe(0);
+    // Spider-Tracer triggered and removed 3 threat (6 - 3 = 3)
+    expect(res.state.mainScheme.threat).toBe(3);
+    // Spider-Tracer discarded to player's discard
+    expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
+  });
+
+  it('strictly rejects deprecated ATTACHED_MINION_DEFEATED and validates HOST_DEFEATED in CardAbilitySchema', async () => {
+    const { CardAbilitySchema } = await import('../../src/data/supplemental/schema');
+
+    // Valid with HOST_DEFEATED
+    const validAbility = {
+      id: 'test_host_defeated',
+      timing: 'FORCED_INTERRUPT',
+      trigger: 'HOST_DEFEATED',
+      steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3, target: 'CHOSEN_SCHEME' } }],
+    };
+    expect(CardAbilitySchema.safeParse(validAbility).success).toBe(true);
+
+    // Rejects deprecated ATTACHED_MINION_DEFEATED
+    const deprecatedAbility = {
+      id: 'test_deprecated_trigger',
+      timing: 'FORCED_INTERRUPT',
+      trigger: 'ATTACHED_MINION_DEFEATED',
+      steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3 } }],
+    };
+    expect(CardAbilitySchema.safeParse(deprecatedAbility).success).toBe(false);
   });
 });

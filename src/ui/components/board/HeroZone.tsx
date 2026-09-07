@@ -537,72 +537,74 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 return (
                   <div
                     key={ally.instanceId}
-                    className={`flex flex-col items-center relative ${
+                    className={`flex flex-col items-center ${
                       ally.attachments && ally.attachments.length > 0 ? 'ml-6 sm:ml-8 mb-12' : ''
                     }`}
                   >
-                    {/* Host Ally Card Container (Foreground: z-30) */}
-                    <div className="relative z-30 flex flex-col items-center">
-                      <CardView
-                        card={ally.card}
-                        instance={ally}
-                        size="sm"
-                        enableHoverZoom={true}
-                        onClick={() => {
-                          if (canAct && onDispatchAction) {
-                            // Default action: Thwart if threat > 0, else attack
-                            if (canThw) {
-                              onDispatchAction({
-                                type: 'ALLY_THWART',
-                                playerId: player.id,
-                                allyInstanceId: ally.instanceId,
-                                targetType: 'main_scheme',
-                              });
-                            } else {
-                              handleInitiateAttack('ally', ally.instanceId);
-                            }
-                          }
-                        }}
-                      />
-                      {/* Ally Action Mini-Console */}
-                      <div className="flex items-center gap-1 w-full justify-center mt-1">
-                        <button
-                          onClick={() => handleInitiateAttack('ally', ally.instanceId)}
-                          disabled={!canAct}
-                          className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                          title={
-                            canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'
-                          }
-                        >
-                          ⚔️ {allyStats.attack}
-                        </button>
-                        <button
-                          onClick={() =>
-                            onDispatchAction?.({
-                              type: 'ALLY_THWART',
-                              playerId: player.id,
-                              allyInstanceId: ally.instanceId,
-                              targetType: 'main_scheme',
-                            })
-                          }
-                          disabled={!canThw}
-                          className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                          title={
-                            canThw
-                              ? `Thwart main scheme for ${allyStats.thwart} threat`
-                              : 'No threat on schemes or ally exhausted'
-                          }
-                        >
-                          🛡️ {allyStats.thwart}
-                        </button>
-                      </div>
+                    {/* Ally Action Mini-Console (Positioned above card at z-30) */}
+                    <div className="flex items-center gap-1 w-full justify-center mb-1 z-30">
+                      <button
+                        onClick={() => handleInitiateAttack('ally', ally.instanceId)}
+                        disabled={!canAct}
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        title={canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'}
+                      >
+                        ⚔️ {allyStats.attack}
+                      </button>
+                      <button
+                        onClick={() =>
+                          onDispatchAction?.({
+                            type: 'ALLY_THWART',
+                            playerId: player.id,
+                            allyInstanceId: ally.instanceId,
+                            targetType: 'main_scheme',
+                          })
+                        }
+                        disabled={!canThw}
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        title={
+                          canThw
+                            ? `Thwart main scheme for ${allyStats.thwart} threat`
+                            : 'No threat on schemes or ally exhausted'
+                        }
+                      >
+                        🛡️ {allyStats.thwart}
+                      </button>
                     </div>
-                    {/* Fan-Down Staircase Attachments Stack (Positioned behind host ally) */}
-                    <CardAttachmentFan
-                      attachments={ally.attachments}
-                      cardsUnderneath={ally.cardsUnderneath}
-                      mode="staircase"
-                    />
+
+                    {/* Dedicated Host Card & Attachment Anchor Container (Coordinates align with top of host card) */}
+                    <div className="relative flex flex-col items-center">
+                      <div className="relative z-30 flex flex-col items-center">
+                        <CardView
+                          card={ally.card}
+                          instance={ally}
+                          size="sm"
+                          enableHoverZoom={true}
+                          onClick={() => {
+                            if (canAct && onDispatchAction) {
+                              // Default action: Thwart if threat > 0, else attack
+                              if (canThw) {
+                                onDispatchAction({
+                                  type: 'ALLY_THWART',
+                                  playerId: player.id,
+                                  allyInstanceId: ally.instanceId,
+                                  targetType: 'main_scheme',
+                                });
+                              } else {
+                                handleInitiateAttack('ally', ally.instanceId);
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+
+                      {/* Fan-Down Staircase Attachments Stack (Anchored to top of host card) */}
+                      <CardAttachmentFan
+                        attachments={ally.attachments}
+                        cardsUnderneath={ally.cardsUnderneath}
+                        mode="staircase"
+                      />
+                    </div>
                   </div>
                 );
               })}

@@ -510,8 +510,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           )}
         </div>
 
-        {/* Allies Row (Expands in remaining space) */}
-        <div className="flex-1 min-w-[200px] bg-amber-50/60 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2 min-h-[220px]">
+        {/* Allies Row (Dynamically adjusts width to fit number of allies; Tableau fills remainder) */}
+        <div className="w-fit min-w-[180px] max-w-full bg-amber-50/60 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2 min-h-[220px] shrink-0">
           <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-amber-200 pb-1.5">
             <span className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-comic-blue" />
@@ -520,7 +520,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </div>
 
           {player.allies.length > 0 ? (
-            <div className="flex flex-wrap gap-3 items-center pt-1">
+            <div className="flex flex-wrap gap-3 items-start pt-1">
               {player.allies.map((ally) => {
                 const allyStats = gameState
                   ? getEffectiveAllyStats(gameState, ally)
@@ -534,12 +534,16 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   ((gameState?.mainScheme?.threat || 0) > 0 ||
                     (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
+                const attachmentCount = ally.attachments?.length || 0;
+                // Dynamic vertical expansion: each fan-down attachment offsets ~68-70px
+                const verticalExtraPx = attachmentCount > 0 ? attachmentCount * 70 : 0;
+                const horizontalExtraClass = attachmentCount > 0 ? 'ml-4 sm:ml-6' : '';
+
                 return (
                   <div
                     key={ally.instanceId}
-                    className={`flex flex-col items-center ${
-                      ally.attachments && ally.attachments.length > 0 ? 'ml-6 sm:ml-8 mb-12' : ''
-                    }`}
+                    className={`flex flex-col items-center transition-all ${horizontalExtraClass}`}
+                    style={{ marginBottom: `${verticalExtraPx}px` }}
                   >
                     {/* Ally Action Mini-Console (Positioned above card at z-30) */}
                     <div className="flex items-center gap-1 w-full justify-center mb-1 z-30">
@@ -610,7 +614,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               })}
             </div>
           ) : (
-            <div className="h-36 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-xs text-slate-400 font-semibold bg-white/50">
+            <div className="h-36 w-36 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center text-center text-xs text-slate-400 font-semibold bg-white/50">
               No allies in play
             </div>
           )}

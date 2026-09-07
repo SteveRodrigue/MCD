@@ -62,7 +62,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
             // Stacking behind host: Host is z-30.
             // Att 0 (idx=0) is z-20, Att 1 (idx=1) is z-10, etc.
             const zIndex = (attachments.length - idx) * 10;
-            const topOffset = `${(idx + 1) * 27}%`;
+            const topOffset = `${(idx + 1) * 42}%`;
             const leftOffset = `${(idx + 1) * -11}%`;
 
             return (

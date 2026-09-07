@@ -23,11 +23,11 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
   }
 
   return (
-    <div className={`flex flex-col items-center w-full mt-2 relative ${className}`}>
+    <div className={`flex flex-col items-center w-full relative ${className}`}>
       {/* 1. Tucked Face-Down Cards Underneath Badge (RR v1.8 p. 6) */}
       {hasCardsUnderneath && (
         <div
-          className="mb-1 flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-900 text-amber-300 border-2 border-amber-400 rounded-full text-[10px] font-comic uppercase tracking-wider shadow-comic-sm z-10"
+          className="my-1 flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-900 text-amber-300 border-2 border-amber-400 rounded-full text-[10px] font-comic uppercase tracking-wider shadow-comic-sm z-30"
           title="Face-down cards placed under this card (Out of play)"
         >
           <span>📦</span>
@@ -37,8 +37,8 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
 
       {/* 2. Vertical Fan-Down Cascading Card Artwork Stack (RR v1.8 p. 5 / Issue #44) */}
       {hasAttachments && (
-        <div className="flex flex-col items-center w-full">
-          <div className="flex flex-col items-center w-full pt-1">
+        <div className="flex flex-col items-center w-full -mt-5 sm:-mt-6">
+          <div className="flex flex-col items-center w-full">
             {attachments.map((att, idx) => {
               const modifier = att.card.enrichment?.abilities?.find((a) =>
                 a.steps?.some((s) => s.effect === 'MODIFY_STAT'),
@@ -60,7 +60,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                 <div
                   key={att.instanceId || `att_${idx}`}
                   className={`relative flex flex-col items-center transition-all duration-200 ${
-                    idx > 0 ? '-mt-16 sm:-mt-20 hover:z-40' : 'hover:z-40'
+                    idx > 0 ? '-mt-24 sm:-mt-28 hover:z-40' : 'hover:z-40'
                   }`}
                   style={{ zIndex: 10 + idx }}
                 >

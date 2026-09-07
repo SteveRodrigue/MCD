@@ -5,6 +5,8 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { step2_villainActivations } from '@engine/pipeline/villain-phase';
 import { getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
+import { canPlayCard, evaluateCardPlayability } from '@engine/pipeline/legality-checker';
+import { getLegalActionsForPlayer } from '@engine/pipeline/legal-actions-generator';
 
 describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-Tracer)', () => {
   let state: GameState;
@@ -529,5 +531,134 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     const heroActions = getLegalActionsForPlayer(state, 'p1');
     expect(heroActions.handCardActions.some((a) => a.cardCode === '01009')).toBe(true);
+  });
+
+  describe('01074 Inspired: Ally Targeting, Prompts, and Legality Check (Issue #82)', () => {
+    it('Inspired cannot be played if 0 allies are in play (RR v1.8 p. 16: cannot alter game state)', () => {
+      const inspiredCard = cardCatalog.getCard('01074')!;
+      const inspiredInst = createCardInstance(inspiredCard);
+      state.players[0].hand = [inspiredInst];
+      state.players[0].allies = [];
+
+      const check = canPlayCard(state, 'p1', inspiredInst.instanceId, []);
+      expect(check.allowed).toBe(false);
+      expect(check.reason?.toLowerCase()).toContain('ally');
+
+      const playability = evaluateCardPlayability(state, 'p1', inspiredInst);
+      expect(playability.isPlayable).toBe(false);
+      expect(playability.reasons.some((r) => r.toLowerCase().includes('ally'))).toBe(true);
+
+      const actions = getLegalActionsForPlayer(state, 'p1');
+      expect(actions.handCardActions.some((a) => a.cardCode === '01074')).toBe(false);
+
+      const res = dispatchAction(state, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: inspiredInst.instanceId,
+        paymentCardInstanceIds: [],
+      });
+      expect(res.result.success).toBe(false);
+      expect(res.result.error?.toLowerCase()).toContain('ally');
+    });
+
+    it('Auto-attaches Inspired to single ally in play and boosts stats', () => {
+      const daredevilCard = cardCatalog.getCard('01058')!; // 2 THW, 2 ATK
+      const daredevilInst = createCardInstance(daredevilCard);
+      state.players[0].allies = [daredevilInst];
+
+      const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
+      const paymentCard2 = createCardInstance(cardCatalog.getCard('01005')!);
+      const inspiredCard = cardCatalog.getCard('01074')!; // Cost 1
+      const inspiredInst = createCardInstance(inspiredCard);
+      state.players[0].hand = [inspiredInst, paymentCard, paymentCard2];
+
+      const check = canPlayCard(state, 'p1', inspiredInst.instanceId, [paymentCard.instanceId]);
+      expect(check.allowed).toBe(true);
+
+      const res = dispatchAction(state, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: inspiredInst.instanceId,
+        paymentCardInstanceIds: [paymentCard.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      // Inspired must be in daredevilInst.attachments, NOT player.tableau
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01074')).toBe(false);
+      const updatedDaredevil = res.state.players[0].allies.find(
+        (a) => a.instanceId === daredevilInst.instanceId,
+      );
+      expect(updatedDaredevil?.attachments?.some((c) => c.card.code === '01074')).toBe(true);
+
+      // Verify stat calculation (+1 THW, +1 ATK)
+      const stats = getEffectiveAllyStats(res.state, updatedDaredevil!);
+      expect(stats.thwart).toBe(3);
+      expect(stats.attack).toBe(3);
+    });
+
+    it('Enqueues decision prompt when multiple allies are in play and resolves attachment to selected ally', () => {
+      const daredevilCard = cardCatalog.getCard('01058')!;
+      const daredevilInst = createCardInstance(daredevilCard);
+      const spiderWomanCard = cardCatalog.getCard('01075')!; // Cost 4, 2 THW, 2 ATK
+      const spiderWomanInst = createCardInstance(spiderWomanCard);
+      state.players[0].allies = [daredevilInst, spiderWomanInst];
+
+      const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
+      const inspiredCard = cardCatalog.getCard('01074')!;
+      const inspiredInst = createCardInstance(inspiredCard);
+      state.players[0].hand = [inspiredInst, paymentCard];
+
+      // Playing without specifying targetInstanceId should enqueue a prompt
+      const res = dispatchAction(state, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: inspiredInst.instanceId,
+        paymentCardInstanceIds: [paymentCard.instanceId],
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.pendingDecisionPrompt).toBeDefined();
+      expect(res.state.pendingDecisionPrompt?.options.length).toBe(2);
+      expect(
+        res.state.pendingDecisionPrompt?.options.some((o) => o.id === spiderWomanInst.instanceId),
+      ).toBe(true);
+
+      // Resolve decision prompt choosing Spider-Woman
+      const resolveRes = dispatchAction(res.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: spiderWomanInst.instanceId,
+      });
+
+      expect(resolveRes.result.success).toBe(true);
+      expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+
+      const updatedSpiderWoman = resolveRes.state.players[0].allies.find(
+        (a) => a.instanceId === spiderWomanInst.instanceId,
+      );
+      const updatedDaredevil = resolveRes.state.players[0].allies.find(
+        (a) => a.instanceId === daredevilInst.instanceId,
+      );
+
+      expect(updatedSpiderWoman?.attachments?.some((c) => c.card.code === '01074')).toBe(true);
+      expect(updatedDaredevil?.attachments?.some((c) => c.card.code === '01074')).toBe(false);
+    });
+
+    it('Enforces maxPerHost: 1 (Cannot attach a second Inspired to the same ally)', () => {
+      const daredevilCard = cardCatalog.getCard('01058')!;
+      const daredevilInst = createCardInstance(daredevilCard);
+      const existingInspired = createCardInstance(cardCatalog.getCard('01074')!);
+      daredevilInst.attachments = [existingInspired];
+      state.players[0].allies = [daredevilInst];
+
+      const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
+      const newInspired = createCardInstance(cardCatalog.getCard('01074')!);
+      state.players[0].hand = [newInspired, paymentCard];
+
+      // Since the only ally in play already has Inspired (maxPerHost: 1), card is unplayable
+      const check = canPlayCard(state, 'p1', newInspired.instanceId, [paymentCard.instanceId]);
+      expect(check.allowed).toBe(false);
+      expect(check.reason?.toLowerCase()).toContain('all in-play allies');
+    });
   });
 });

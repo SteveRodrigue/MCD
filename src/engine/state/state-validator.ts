@@ -210,16 +210,17 @@ export function attachCardToHost(
         if (ally) break;
       }
     }
-    if (!ally) ally = state.players[0]?.allies?.[0];
+    if (!ally) {
+      for (const p of state.players) {
+        if (p.allies && p.allies.length > 0) {
+          ally = p.allies[0];
+          break;
+        }
+      }
+    }
     if (ally) {
       if (!ally.attachments) ally.attachments = [];
       ally.attachments.push(cardInstance);
-    } else {
-      const p = state.players.find((p) => p.id === targetHostId) || state.players[0];
-      if (p) {
-        if (!p.tableau) p.tableau = [];
-        p.tableau.push(cardInstance);
-      }
     }
   } else if (uTarget === 'CHOSEN_MINION' || uTarget === 'MINION' || uTarget === 'ALL_MINIONS') {
     let minion: CardInstance | undefined;

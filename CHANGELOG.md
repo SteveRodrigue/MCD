@@ -5,8 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & UI: Remove Redundant Text Pill Badge in Staircase Fan Mode ([#84](https://github.com/SteveRodrigue/MCD/issues/84), `CardAttachmentFan.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
+  - **Clean Artwork Presentation:** Removed the redundant title and stat modifier text pill badge (`<div className="flex items-center gap-1 mb-0.5 bg-slate-950/90 ...">`) from staircase fan mode in `CardAttachmentFan.tsx`, allowing full visibility of the authentic card art without cluttering or clipping behind the host card.
+  - **Offset Harmonization:** Updated staircase fan tests in `tests/ui/ally-attachment-fan.test.ts` to calibrate with 27% downward and 11% leftward offsets per attachment index.
+
 - **Fix & UI: Ally Attachment Staircase Fan Layout & Exhaustion Isolation ([#83](https://github.com/SteveRodrigue/MCD/issues/83), `CardAttachmentFan.tsx`, `HeroZone.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
-  - **Staircase Fan Geometry:** Updated `<CardAttachmentFan>` to support `mode="staircase"` with exact 50% downward (`top: (idx + 1) * 50%`) and 20% leftward (`left: (idx + 1) * -20%`) offsets per attachment index behind host ally cards.
+  - **Staircase Fan Geometry:** Updated `<CardAttachmentFan>` to support `mode="staircase"` with 27% downward (`top: (idx + 1) * 27%`) and 11% leftward (`left: (idx + 1) * -11%`) offsets per attachment index behind host ally cards.
   - **Z-Index Layering Behind Host:** Positioned host ally card at `z-30` in the foreground and cascaded attachments behind host with descending z-indices (`(total - idx) * 10`, e.g. Att 0 at `z-20`, Att 1 at `z-10`), elevating to `hover:z-40` with `zoomOrigin="bottom-left"` upon hover zoom.
   - **Exhaustion Isolation:** Ensured attachments behind an exhausted host ally remain upright and unexhausted (`isExhausted={att.exhausted ?? false}`), preserving clear visibility without inheriting host ally rotation.
   - **Spacing & Layout:** Dynamically added left margin (`ml-6 sm:ml-8`) and bottom margin (`mb-12`) to ally card slots in `HeroZone.tsx` when attachments exist to prevent overlap with adjacent allies in play.

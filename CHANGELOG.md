@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & UI: Dynamic Vertical Scaling for Ally Attachments & Width Scaling for Allies Section ([#87](https://github.com/SteveRodrigue/MCD/issues/87), `HeroZone.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
+  - **Dynamic Vertical Space Allocation:** Computed dynamic bottom spacing (`attachmentCount * 70px`) for each ally card slot in `HeroZone.tsx`, ensuring the parent panel automatically stretches to accommodate multiple fanning attachments without clipping or overflowing.
+  - **Fluid Allies in Play Panel Width:** Replaced rigid `flex-1 min-w-[200px]` with `w-fit min-w-[180px] max-w-full shrink-0` on the "Allies in Play" panel, allowing it to hug the current ally count and dynamically allocate remaining horizontal space to the player's Tableau (Upgrades & Supports).
+  - **Calibrated Empty State:** Sized the empty allies slot placeholder to a neat compact box (`h-36 w-36`) that fits naturally when 0 allies are in play.
+  - **Contract & Regression Testing:** Added unit tests verifying dynamic vertical space scaling across 0, 1, and 2 attachments in `tests/ui/ally-attachment-fan.test.ts`.
+
 - **Fix & UI: Anchor Ally Staircase Fan Directly to Host CardView ([#86](https://github.com/SteveRodrigue/MCD/issues/86), `HeroZone.tsx`):**
   - **Origin Alignment:** Isolated the host ally card and `<CardAttachmentFan>` in a dedicated `relative` container underneath the action buttons in `HeroZone.tsx`.
   - **Attachment Precision:** Ensures `top: (idx + 1) * 27%` and `left: (idx + 1) * -11%` calculate strictly from the top-left boundary of the host ally card artwork, rather than from the action buttons above the card.

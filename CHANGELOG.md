@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & UI: Ally Attachment Staircase Fan Layout & Exhaustion Isolation ([#83](https://github.com/SteveRodrigue/MCD/issues/83), `CardAttachmentFan.tsx`, `HeroZone.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
+  - **Staircase Fan Geometry:** Updated `<CardAttachmentFan>` to support `mode="staircase"` with exact 50% downward (`top: (idx + 1) * 50%`) and 20% leftward (`left: (idx + 1) * -20%`) offsets per attachment index behind host ally cards.
+  - **Z-Index Layering Behind Host:** Positioned host ally card at `z-30` in the foreground and cascaded attachments behind host with descending z-indices (`(total - idx) * 10`, e.g. Att 0 at `z-20`, Att 1 at `z-10`), elevating to `hover:z-40` with `zoomOrigin="bottom-left"` upon hover zoom.
+  - **Exhaustion Isolation:** Ensured attachments behind an exhausted host ally remain upright and unexhausted (`isExhausted={att.exhausted ?? false}`), preserving clear visibility without inheriting host ally rotation.
+  - **Spacing & Layout:** Dynamically added left margin (`ml-6 sm:ml-8`) and bottom margin (`mb-12`) to ally card slots in `HeroZone.tsx` when attachments exist to prevent overlap with adjacent allies in play.
+  - **Acceptance Tests:** Verified with automated unit tests in `tests/ui/ally-attachment-fan.test.ts` ensuring coordinate calculation, descending z-index stacking, and state exhaustion isolation.
+
 - **Fix & Engine: Ally Targeting, Decision Prompting, and Visual Fan-Down Attachments ([#82](https://github.com/SteveRodrigue/MCD/issues/82), RR v1.8 p. 5, 16, `legality-checker.ts`, `action-dispatcher.ts`, `state-validator.ts`, `HeroZone.tsx`, `CardAttachmentFan.tsx`, `tests/engine/attachments-player.test.ts`):**
   - **Rules Alignment (RR v1.8 p. 5 "Attachment", p. 16 "Play Restrictions, Permissions, and Costs"):** Implemented rules-accurate targeting, legality validation, and attachment host selection for upgrade attachments targeting allies (e.g. *Inspired* `01074` with `ATTACH_TO_HOST: CHOSEN_ALLY, maxPerHost: 1`).
   - **Play Legality & maxPerHost Checking (`src/engine/pipeline/legality-checker.ts`):** Implemented `evaluateAllyTargetRequirement` checking for eligible in-play allies across players and strictly enforcing `maxPerHost` limits. Prevents playing ally attachments when 0 eligible allies are in play or when all existing allies already have the maximum copies of that attachment attached.

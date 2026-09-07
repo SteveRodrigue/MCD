@@ -5,6 +5,14 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Fix & UI: Anchor Ally Staircase Fan Directly to Host CardView ([#86](https://github.com/SteveRodrigue/MCD/issues/86), `HeroZone.tsx`):**
+  - **Origin Alignment:** Isolated the host ally card and `<CardAttachmentFan>` in a dedicated `relative` container underneath the action buttons in `HeroZone.tsx`.
+  - **Attachment Precision:** Ensures `top: (idx + 1) * 27%` and `left: (idx + 1) * -11%` calculate strictly from the top-left boundary of the host ally card artwork, rather than from the action buttons above the card.
+
+- **Fix & UI: Position Ally Action Buttons Above Card ([#85](https://github.com/SteveRodrigue/MCD/issues/85), `HeroZone.tsx`):**
+  - **Layout & Interaction Flow:** Relocated the ally attack and thwart action mini-console (`⚔️ ATK` and `🛡️ THW`) from below the ally card (`mt-1`) to directly above the ally card (`mb-1`) within the `z-30` foreground container in `HeroZone.tsx`.
+  - **Zero Attachment Interference:** Eliminates visual and interactive interference between ally action buttons and fanning attachments cascading downward and leftward behind the host card.
+
 - **Fix & UI: Remove Redundant Text Pill Badge in Staircase Fan Mode ([#84](https://github.com/SteveRodrigue/MCD/issues/84), `CardAttachmentFan.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
   - **Clean Artwork Presentation:** Removed the redundant title and stat modifier text pill badge (`<div className="flex items-center gap-1 mb-0.5 bg-slate-950/90 ...">`) from staircase fan mode in `CardAttachmentFan.tsx`, allowing full visibility of the authentic card art without cluttering or clipping behind the host card.
   - **Offset Harmonization:** Updated staircase fan tests in `tests/ui/ally-attachment-fan.test.ts` to calibrate with 27% downward and 11% leftward offsets per attachment index.

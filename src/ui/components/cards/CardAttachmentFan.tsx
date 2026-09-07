@@ -43,14 +43,10 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
         </div>
       )}
 
-      {/* 2. Staircase Fan-Down Mode (Issue #83: 50% down, 20% left behind host) */}
+      {/* 2. Staircase Fan-Down Mode (Issue #83 & #84) */}
       {hasAttachments && mode === 'staircase' && (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
           {attachments.map((att, idx) => {
-            const modifier = att.card.enrichment?.abilities?.find((a) =>
-              a.steps?.some((s) => s.effect === 'MODIFY_STAT'),
-            );
-            const statParam = modifier?.steps?.find((s) => s.effect === 'MODIFY_STAT')?.params;
             const hasAction = att.card.enrichment?.abilities?.some(
               (a) =>
                 a.timing === 'HERO_ACTION' ||
@@ -66,8 +62,8 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
             // Stacking behind host: Host is z-30.
             // Att 0 (idx=0) is z-20, Att 1 (idx=1) is z-10, etc.
             const zIndex = (attachments.length - idx) * 10;
-            const topOffset = `${(idx + 1) * 50}%`;
-            const leftOffset = `${(idx + 1) * -20}%`;
+            const topOffset = `${(idx + 1) * 27}%`;
+            const leftOffset = `${(idx + 1) * -11}%`;
 
             return (
               <div
@@ -79,18 +75,6 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                   zIndex,
                 }}
               >
-                {/* Top Badge: Name & Stat Modifier Pill */}
-                <div className="flex items-center gap-1 mb-0.5 bg-slate-950/90 text-white border border-comic-black rounded px-1.5 py-0.5 shadow-comic-sm z-20 w-max max-w-[120px]">
-                  <span className="font-comic text-[9px] text-amber-300 font-bold truncate max-w-[80px]">
-                    {att.card.name}
-                  </span>
-                  {statParam && (
-                    <span className="bg-comic-red text-white font-comic text-[8px] px-1 rounded font-bold shrink-0">
-                      +{String(statParam.amount)} {String(statParam.stat || '').substring(0, 3)}
-                    </span>
-                  )}
-                </div>
-
                 {/* CardView with Dynamic Hover Zoom (unrotated even if host exhausted) */}
                 <div
                   onClick={(e) => {

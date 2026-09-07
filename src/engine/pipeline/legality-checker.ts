@@ -570,6 +570,70 @@ export function evaluateMinionTargetRequirement(
 }
 
 /**
+ * Evaluates whether a card requires ally targets (RR v1.8 p. 5, 16, 17)
+ * and whether eligible ally targets currently exist in play (respecting maxPerHost).
+ */
+export function evaluateAllyTargetRequirement(
+  state: GameState,
+  _player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  const abilities = card.enrichment?.abilities || [];
+
+  let requiresAlly = false;
+  let maxPerHost: number | undefined;
+
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const target = step.params?.target;
+      if (
+        step.effect === 'ATTACH_TO_HOST' &&
+        (target === 'CHOSEN_ALLY' || target === 'ALLY' || target === 'ALL_ALLIES')
+      ) {
+        requiresAlly = true;
+        if (step.params?.maxPerHost !== undefined) {
+          maxPerHost = Number(step.params.maxPerHost);
+        }
+      }
+    }
+  }
+
+  if (requiresAlly) {
+    const allAllies: CardInstance[] = [];
+    for (const p of state.players) {
+      for (const a of p.allies || []) {
+        allAllies.push(a);
+      }
+    }
+
+    if (allAllies.length === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot play this card: requires an ally in play to attach to.',
+      };
+    }
+
+    if (maxPerHost !== undefined && maxPerHost > 0) {
+      const eligibleAllies = allAllies.filter((ally) => {
+        const attachedCount = (ally.attachments || []).filter(
+          (att) => att.card.code === card.code || att.card.name === card.name,
+        ).length;
+        return attachedCount < maxPerHost!;
+      });
+
+      if (eligibleAllies.length === 0) {
+        return {
+          allowed: false,
+          reason: `Cannot play this card: all in-play allies already have the maximum number (${maxPerHost}) of '${card.name}' attached.`,
+        };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Evaluates universal play restrictions declared on card enrichment (RR v1.8 p. 16).
  * Covers identity form, form traits, identity traits, controlled card requirements, and identity names.
  */
@@ -755,6 +819,12 @@ export function canPlayCard(
   const minionCheck = evaluateMinionTargetRequirement(state, player, card);
   if (!minionCheck.allowed) {
     return minionCheck;
+  }
+
+  // Ally target and attachment requirement check (RR v1.8 p. 5, 16, 17)
+  const allyCheck = evaluateAllyTargetRequirement(state, player, card);
+  if (!allyCheck.allowed) {
+    return allyCheck;
   }
 
   const abilities = card.enrichment?.abilities || [];
@@ -1043,6 +1113,12 @@ export function evaluateCardPlayability(
   const minionPlayabilityCheck = evaluateMinionTargetRequirement(state, player, card);
   if (!minionPlayabilityCheck.allowed && minionPlayabilityCheck.reason) {
     reasons.push(minionPlayabilityCheck.reason);
+  }
+
+  // Ally target and attachment requirement check (RR v1.8 p. 5, 16, 17)
+  const allyPlayabilityCheck = evaluateAllyTargetRequirement(state, player, card);
+  if (!allyPlayabilityCheck.allowed && allyPlayabilityCheck.reason) {
+    reasons.push(allyPlayabilityCheck.reason);
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)

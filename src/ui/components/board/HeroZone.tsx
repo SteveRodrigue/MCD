@@ -535,62 +535,68 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
                 return (
-                  <div key={ally.instanceId} className="flex flex-col items-center gap-1">
-                    <CardView
-                      card={ally.card}
-                      instance={ally}
-                      size="sm"
-                      enableHoverZoom={true}
-                      onClick={() => {
-                        if (canAct && onDispatchAction) {
-                          // Default action: Thwart if threat > 0, else attack
-                          if (canThw) {
-                            onDispatchAction({
+                  <div key={ally.instanceId} className="flex flex-col items-center">
+                    {/* Host Ally Card Container */}
+                    <div className="relative z-20 flex flex-col items-center">
+                      <CardView
+                        card={ally.card}
+                        instance={ally}
+                        size="sm"
+                        enableHoverZoom={true}
+                        onClick={() => {
+                          if (canAct && onDispatchAction) {
+                            // Default action: Thwart if threat > 0, else attack
+                            if (canThw) {
+                              onDispatchAction({
+                                type: 'ALLY_THWART',
+                                playerId: player.id,
+                                allyInstanceId: ally.instanceId,
+                                targetType: 'main_scheme',
+                              });
+                            } else {
+                              handleInitiateAttack('ally', ally.instanceId);
+                            }
+                          }
+                        }}
+                      />
+                      {/* Ally Action Mini-Console */}
+                      <div className="flex items-center gap-1 w-full justify-center mt-1">
+                        <button
+                          onClick={() => handleInitiateAttack('ally', ally.instanceId)}
+                          disabled={!canAct}
+                          className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                          title={
+                            canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'
+                          }
+                        >
+                          ⚔️ {allyStats.attack}
+                        </button>
+                        <button
+                          onClick={() =>
+                            onDispatchAction?.({
                               type: 'ALLY_THWART',
                               playerId: player.id,
                               allyInstanceId: ally.instanceId,
                               targetType: 'main_scheme',
-                            });
-                          } else {
-                            handleInitiateAttack('ally', ally.instanceId);
+                            })
                           }
-                        }
-                      }}
-                    />
+                          disabled={!canThw}
+                          className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                          title={
+                            canThw
+                              ? `Thwart main scheme for ${allyStats.thwart} threat`
+                              : 'No threat on schemes or ally exhausted'
+                          }
+                        >
+                          🛡️ {allyStats.thwart}
+                        </button>
+                      </div>
+                    </div>
+                    {/* Fan-Down Attachments Stack */}
                     <CardAttachmentFan
                       attachments={ally.attachments}
                       cardsUnderneath={ally.cardsUnderneath}
                     />
-                    {/* Ally Action Mini-Console */}
-                    <div className="flex items-center gap-1 w-full justify-center">
-                      <button
-                        onClick={() => handleInitiateAttack('ally', ally.instanceId)}
-                        disabled={!canAct}
-                        className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'}
-                      >
-                        ⚔️ {allyStats.attack}
-                      </button>
-                      <button
-                        onClick={() =>
-                          onDispatchAction?.({
-                            type: 'ALLY_THWART',
-                            playerId: player.id,
-                            allyInstanceId: ally.instanceId,
-                            targetType: 'main_scheme',
-                          })
-                        }
-                        disabled={!canThw}
-                        className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={
-                          canThw
-                            ? `Thwart main scheme for ${allyStats.thwart} threat`
-                            : 'No threat on schemes or ally exhausted'
-                        }
-                      >
-                        🛡️ {allyStats.thwart}
-                      </button>
-                    </div>
                   </div>
                 );
               })}

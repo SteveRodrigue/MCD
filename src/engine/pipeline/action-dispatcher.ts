@@ -1137,6 +1137,70 @@ export function dispatchAction(
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
             }
+          } else if (
+            (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') &&
+            !action.targetInstanceId
+          ) {
+            const maxPerHost =
+              attachStep?.params?.maxPerHost !== undefined
+                ? Number(attachStep.params.maxPerHost)
+                : undefined;
+
+            const allAllies: { ally: CardInstance; player: PlayerState }[] = [];
+            for (const p of nextState.players) {
+              for (const a of p.allies || []) {
+                if (maxPerHost !== undefined && maxPerHost > 0) {
+                  const currentAttached = (a.attachments || []).filter(
+                    (att) =>
+                      att.card.code === playedCardInstance.card.code ||
+                      att.card.name === playedCardInstance.card.name,
+                  ).length;
+                  if (currentAttached >= maxPerHost) continue;
+                }
+                allAllies.push({ ally: a, player: p });
+              }
+            }
+
+            if (allAllies.length > 1) {
+              const options: DecisionPromptOption[] = allAllies.map(
+                ({ ally, player: ctrlPlayer }) => ({
+                  id: ally.instanceId,
+                  label: `${ally.card.name} (${ctrlPlayer.name})`,
+                  description: `Attach ${playedCardInstance.card.name} to ${ally.card.name}`,
+                  effect: 'ATTACH_TO_HOST',
+                  params: {
+                    isAttachmentAllyChoice: true,
+                    attachmentCard: playedCardInstance,
+                    ownerId: action.playerId,
+                  },
+                }),
+              );
+
+              const prompt: PendingDecisionPrompt = {
+                promptId: `prompt_attach_ally_${Date.now()}`,
+                playerId: action.playerId,
+                title: 'Choose Ally Host',
+                description: `Choose which ally to attach ${playedCardInstance.card.name} to:`,
+                sourceCardName: playedCardInstance.card.name,
+                options,
+                isVoluntary: false,
+              };
+
+              const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+              return {
+                state: enqueuedState,
+                result: { success: true, onomatopoeia: 'CHOOSE ALLY!' },
+              };
+            } else if (allAllies.length === 1) {
+              attachCardToHost(
+                nextState,
+                playedCardInstance,
+                targetHost,
+                allAllies[0].ally.instanceId,
+              );
+            } else {
+              attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+            }
           } else {
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
           }
@@ -1747,6 +1811,39 @@ export function dispatchAction(
             player: player.name,
             card: activePrompt.sourceCardName,
             host: selectedOption?.label || chosenMinionId,
+          },
+          onomatopoeia: 'ATTACHED!',
+        });
+
+        return { state: poppedState, result: { success: true, onomatopoeia: 'ATTACHED!' } };
+      }
+
+      if (activePrompt && activePrompt.options.some((o) => o.params?.isAttachmentAllyChoice)) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const chosenAllyId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
+        const attachmentCard = (selectedOption?.params?.attachmentCard ||
+          activePrompt.options[0]?.params?.attachmentCard) as CardInstance | undefined;
+        const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options[0]?.params?.ownerId) as string | undefined;
+
+        if (attachmentCard) {
+          (attachmentCard as any).ownerId = ownerId;
+          attachCardToHost(poppedState, attachmentCard, 'CHOSEN_ALLY', chosenAllyId);
+        }
+
+        poppedState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: poppedState.roundNumber,
+          phase: poppedState.phase,
+          category: 'ability',
+          actor: { name: player.name, type: player.currentForm },
+          key: 'card.attached.to_host',
+          params: {
+            player: player.name,
+            card: activePrompt.sourceCardName,
+            host: selectedOption?.label || chosenAllyId,
           },
           onomatopoeia: 'ATTACHED!',
         });

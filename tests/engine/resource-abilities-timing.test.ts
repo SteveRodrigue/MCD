@@ -73,8 +73,8 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
     webShooter.tokens = { damage: 0, threat: 0, counters: 3 };
     player.tableau.push(webShooter);
 
-    // Add a 1-cost card to hand (First Aid 01074)
-    const firstAid = createCardInstance(cardCatalog.getCard('01074')!); // Cost 1
+    // Add a 1-cost card to hand (First Aid 01086)
+    const firstAid = createCardInstance(cardCatalog.getCard('01086')!); // Cost 1
     player.hand = [firstAid];
 
     // Play First Aid (Cost 1): Pay using Web-Shooter (generator)

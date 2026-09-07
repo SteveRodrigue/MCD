@@ -33,7 +33,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     player.tableau.push(tacTeam);
 
     // Hand has First Aid (Cost 1)
-    const firstAid = createCardInstance(cardCatalog.getCard('01074')!);
+    const firstAid = createCardInstance(cardCatalog.getCard('01086')!);
     player.hand = [firstAid];
 
     // Attempt to pay for First Aid using Tac Team (which is NOT a resource generator)
@@ -81,7 +81,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     webShooter.tokens = { damage: 0, threat: 0, counters: 3 };
     player.tableau.push(webShooter);
 
-    const firstAid = createCardInstance(cardCatalog.getCard('01074')!); // Cost 1
+    const firstAid = createCardInstance(cardCatalog.getCard('01086')!); // Cost 1
     player.hand = [firstAid];
 
     // Pay using Web-Shooter

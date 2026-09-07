@@ -535,9 +535,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
                 return (
-                  <div key={ally.instanceId} className="flex flex-col items-center">
-                    {/* Host Ally Card Container */}
-                    <div className="relative z-20 flex flex-col items-center">
+                  <div
+                    key={ally.instanceId}
+                    className={`flex flex-col items-center relative ${
+                      ally.attachments && ally.attachments.length > 0 ? 'ml-6 sm:ml-8 mb-12' : ''
+                    }`}
+                  >
+                    {/* Host Ally Card Container (Foreground: z-30) */}
+                    <div className="relative z-30 flex flex-col items-center">
                       <CardView
                         card={ally.card}
                         instance={ally}
@@ -592,10 +597,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         </button>
                       </div>
                     </div>
-                    {/* Fan-Down Attachments Stack */}
+                    {/* Fan-Down Staircase Attachments Stack (Positioned behind host ally) */}
                     <CardAttachmentFan
                       attachments={ally.attachments}
                       cardsUnderneath={ally.cardsUnderneath}
+                      mode="staircase"
                     />
                   </div>
                 );

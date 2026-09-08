@@ -225,6 +225,7 @@ export function resolveDecisionPrompt(
       sourceCardInstance: sourceCardInst,
       targetType: optContext?.targetType,
       targetInstanceId: optContext?.targetInstanceId,
+      threatAmount: optContext?.threatAmount,
     });
 
     if (

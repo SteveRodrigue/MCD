@@ -212,7 +212,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [x] **[Issue #25](https://github.com/SteveRodrigue/MCD/issues/25):** `feat(engine): PLAY_CARD_FROM_ZONE primitive for Make the Call (01071)` ([ADR-0047](decisions/0047-playing-cards-from-non-hand-zones.md)).
   - [ ] **[Issue #24](https://github.com/SteveRodrigue/MCD/issues/24):** `feat(engine): until-end-of-phase temporary stat duration (Vision 01068)`.
   - [ ] **[Issue #23](https://github.com/SteveRodrigue/MCD/issues/23):** `feat(engine): Cross-player attachments & ownership (Combat Training 01057)`.
-  - [ ] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
+  - [x] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
 
 ### 1.2. 🔴 `[Must-Have]` Rhino Scenario & Encounter Pools (34 Cards)
 - [x] **Rhino Villain Pipeline (Rhino I `01094`, II `01095`, III `01096`, The Break-In! 1A/1B `01097`):** Multi-stage HP scaling, Tough keyword on stage transition, and scheme acceleration.

@@ -2401,7 +2401,7 @@
       "abilities": [
         {
           "id": "great_responsibility_interrupt",
-          "timing": "INTERRUPT",
+          "timing": "HERO_INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "zone": "HAND",
           "cost": {
@@ -2416,8 +2416,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T11:32",
-        "reviewedAt": "2026-08-31T11:32",
+        "updatedAt": "2026-09-08T07:02:00Z",
+        "reviewedAt": "2026-09-08T07:02:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -3015,7 +3015,7 @@
       "abilities": [
         {
           "id": "get_behind_me_interrupt",
-          "timing": "INTERRUPT",
+          "timing": "HERO_INTERRUPT",
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
@@ -3023,15 +3023,23 @@
           },
           "steps": [
             {
-              "effect": "CANCEL_WHEN_REVEALED_AND_ATTACK"
+              "id": "step_1_cancel",
+              "effect": "CANCEL_WHEN_REVEALED"
+            },
+            {
+              "id": "step_2_attack",
+              "effect": "VILLAIN_ATTACKS",
+              "params": {
+                "target": "SELF_IDENTITY"
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T11:32",
-        "reviewedAt": "2026-08-31T11:32",
+        "updatedAt": "2026-09-08T07:02:00Z",
+        "reviewedAt": "2026-09-08T07:02:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

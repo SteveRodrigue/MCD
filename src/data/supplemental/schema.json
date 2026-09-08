@@ -92,7 +92,8 @@
                     "THREAT_PLACED",
                     "HERO_FLIPPED",
                     "PHASE_START",
-                    "BOOST"
+                    "BOOST",
+                    "SCHEME_THREAT_REDUCED_TO_ZERO"
                   ]
                 },
                 "zone": {
@@ -358,11 +359,29 @@
                           "IF_ZERO_HEALED",
                           "IF_FAILED",
                           "IF_ALREADY_HAS_STATUS",
-                          "IF_RESOURCE_MATCH"
+                          "IF_RESOURCE_MATCH",
+                          "IF_CONDITION_MET"
                         ]
                       },
                       "filter": {
                         "$ref": "#/$defs/__schema0"
+                      },
+                      "condition": {
+                        "type": "string",
+                        "enum": [
+                          "SCHEME_EMPTY",
+                          "TARGET_DEFEATED",
+                          "FULLY_HEALED",
+                          "STATUS_APPLIED",
+                          "EXCESS_DAMAGE_DEALT",
+                          "ALREADY_HAS_STATUS",
+                          "TARGET_ALREADY_EXHAUSTED",
+                          "TARGET_TRAIT_MATCH",
+                          "TARGET_FORM_MATCH",
+                          "RESOURCE_KICKER_MET",
+                          "COUNTER_THRESHOLD_MET",
+                          "ZONE_EMPTY"
+                        ]
                       }
                     },
                     "required": [

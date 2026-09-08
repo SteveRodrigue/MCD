@@ -126,7 +126,11 @@ export function dispatchTrigger(
   }
 
   // 2. Scan tableau, allies & in-play cards
-  for (const cardInst of [...player.tableau, ...player.allies, ...(player.attachments || [])]) {
+  for (const cardInst of [
+    ...(player.tableau || []),
+    ...(player.allies || []),
+    ...(player.attachments || []),
+  ]) {
     const abilities = cardInst.card.enrichment?.abilities || [];
     for (const ability of abilities) {
       if (ability.trigger === trigger) {

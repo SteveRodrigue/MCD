@@ -5,6 +5,16 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Engine & Schema: Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#91](https://github.com/SteveRodrigue/MCD/issues/91)):**
+  - **`StepConditionSchema` Implementation:** Added 12-contract condition taxonomy across Core Step Milestones (`SCHEME_EMPTY`, `TARGET_DEFEATED`, `FULLY_HEALED`, `STATUS_APPLIED`, `EXCESS_DAMAGE_DEALT`), Entity States (`ALREADY_HAS_STATUS`, `TARGET_ALREADY_EXHAUSTED`, `TARGET_TRAIT_MATCH`, `TARGET_FORM_MATCH`), Resource Invariants (`RESOURCE_KICKER_MET`), and Thresholds (`COUNTER_THRESHOLD_MET`, `ZONE_EMPTY`) in `src/data/supplemental/schema.ts` and `src/engine/models/abilities.ts`.
+  - **Sequential Gating (`IF_CONDITION_MET`):** Added `IF_CONDITION_MET` to `ConditionGateSchema` and implemented evaluation in `shouldExecuteStep` to evaluate `conditionMet` from either preceding step or targeted step (`targetStepId`).
+  - **Milestone & Trigger Evaluation in `executeStep`:**
+    - `REMOVE_THREAT`: Evaluates `SCHEME_EMPTY` (`conditionMet = remainingThreat === 0`) and dispatches `SCHEME_THREAT_REDUCED_TO_ZERO` trigger when threat is reduced to 0.
+    - `DEAL_DAMAGE`: Evaluates `EXCESS_DAMAGE_DEALT` (returning `value: excessDmg >= 0` and `conditionMet: excessDmg > 0`) and `TARGET_DEFEATED`.
+    - `HEAL_DAMAGE`: Evaluates `FULLY_HEALED` (`conditionMet = health === maxHealth`).
+    - `ADD_STATUS`: Evaluates `STATUS_APPLIED` (`mutatedState === true`) and `ALREADY_HAS_STATUS`.
+  - **Acceptance Tests:** Added comprehensive test suite in `tests/engine/condition-evaluator.test.ts` verifying Clear the Area patterns, excess damage scalar reporting, defeat checks, healing, and status conditions.
+
 - **Architecture & Schema: ADR-0049 — Composable Value Transformers, Replacement Event Interceptors & Explicit Condition Contracts ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#89](https://github.com/SteveRodrigue/MCD/issues/89), [#90](https://github.com/SteveRodrigue/MCD/issues/90), [#91](https://github.com/SteveRodrigue/MCD/issues/91), [#92](https://github.com/SteveRodrigue/MCD/issues/92)):**
   - **Empirical Zzorba Catalog Audit:** Audited all 120 packs (4,379 cards) and synthesized two universal, comprehensive taxonomies to prevent primitive and condition gate explosion.
   - **9-Window Interception Registry:** Mapped and bound deterministic scalar values across 100% of the game's 611 Interrupts and 142 `"would be"` cards (`THREAT_WOULD_BE_PLACED`, `SCHEME_THREAT_REDUCED_TO_ZERO`, `DAMAGE_WOULD_BE_DEALT`, `CHARACTER_WOULD_BE_DEFEATED`, `TREACHERY_REVEALED`, `ENEMY_WOULD_ATTACK`, `BOOST_CARD_TURNED_FACEUP`, `CARD_WOULD_BE_DISCARDED`, `CARD_WOULD_ENTER_PLAY`).

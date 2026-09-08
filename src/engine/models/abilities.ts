@@ -1,5 +1,6 @@
 import { Keyword } from './enums';
-import type { PlayRequirements } from '../../data/supplemental/schema';
+import type { PlayRequirements, StepCondition } from '../../data/supplemental/schema';
+export type { StepCondition } from '../../data/supplemental/schema';
 
 export type AbilityTiming =
   | 'WHEN_REVEALED'
@@ -59,6 +60,7 @@ export type TriggerType =
   | 'CARD_DISCARDED'
   | 'CARD_LEFT_PLAY'
   | 'DEFEATED'
+  | 'SCHEME_THREAT_REDUCED_TO_ZERO'
   | 'ROUND_END'; // backward-compatible alias
 
 export type EffectType =
@@ -117,7 +119,8 @@ export type ConditionGate =
   | 'IF_ZERO_HEALED'
   | 'IF_FAILED'
   | 'IF_ALREADY_HAS_STATUS'
-  | 'IF_RESOURCE_MATCH';
+  | 'IF_RESOURCE_MATCH'
+  | 'IF_CONDITION_MET';
 
 export interface StepResolutionResult {
   success: boolean;
@@ -142,6 +145,7 @@ export interface AbilityStep {
   params?: Record<string, unknown>;
   gate?: ConditionGate;
   filter?: Record<string, unknown>;
+  condition?: StepCondition;
 }
 
 export interface CardAbility {

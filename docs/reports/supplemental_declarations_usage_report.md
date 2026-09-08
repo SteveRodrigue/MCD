@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-08T02:06:29.357Z`  
+> **Generated:** `2026-09-08T15:11:52.902Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -15,11 +15,11 @@
 | **Open Ambiguity Reports** | **0** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
 | **Total Abilities Declared** | **167** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **162** | Abilities with exactly 1 atomic execution step |
-| **Multi-Step Abilities (2+ Steps)** | **5** | Abilities decomposed into sequenced execution pipelines |
-| **Cards with Multi-Step Sequences** | **5** | Cards containing at least 1 ability with 2+ steps |
+| **Single-Step Abilities (1 Step)** | **161** | Abilities with exactly 1 atomic execution step |
+| **Multi-Step Abilities (2+ Steps)** | **6** | Abilities decomposed into sequenced execution pipelines |
+| **Cards with Multi-Step Sequences** | **6** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **57** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **56** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **24** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -114,8 +114,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `ATTACHMENT_DAMAGE_SHIELD` | `01098` | Armored Rhino Suit (attachment) (core_encounter) | `armored_rhino_suit_shield` |
 | **Effect** | `BOOST_STAT_CHOICE` | `01068` | Vision (ally) (core) | `vision_boost` |
 | **Effect** | `BUFF_ALL_FRIENDLY_CHARACTERS` | `01070` | Lead from the Front (event) (core) | `lead_from_the_front_action` |
-| **Effect** | `CANCEL_WHEN_REVEALED` | `01004` | Enhanced Spider-Sense (event) (core) | `enhanced_spider_sense` |
-| **Effect** | `CANCEL_WHEN_REVEALED_AND_ATTACK` | `01078` | Get Behind Me! (event) (core) | `get_behind_me_interrupt` |
 | **Effect** | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
 | **Effect** | `DEAL_DAMAGE_ALL_ENEMIES` | `01046` | Energy Daggers (upgrade) (core) | `energy_daggers_special` |
 | **Effect** | `DRAW_UP_TO_HAND_SIZE` | `01025` | Split Personality (event) (core) | `split_personality` |
@@ -142,7 +140,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `TAKE_THREAT_AS_DAMAGE` | `01061` | Great Responsibility (event) (core) | `great_responsibility_interrupt` |
 | **Effect** | `TRANSFER_DAMAGE` | `01049` | Vibranium Suit (upgrade) (core) | `vibranium_suit_special` |
 | **Effect** | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | `01189` | Gang-Up (treachery) (core_encounter) | `gang_up_when_revealed` |
-| **Effect** | `VILLAIN_ATTACKS` | `01187` | Assault (treachery) (core_encounter) | `assault_when_revealed` |
 | **Effect** | `VILLAIN_SCHEMES` | `01186` | Advance (treachery) (core_encounter) | `advance_when_revealed` |
 | **Trigger** | `ATTACK` | `01050` | Hulk (ally) (core) | `hulk_after_attack` |
 | **Trigger** | `ATTACK_RESOLVED` | `01028` | Superhuman Strength (upgrade) (core) | `superhuman_strength_stun` |
@@ -214,10 +211,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | `PLAYER_CHOICE` | **3** | `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
+| `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
+| `VILLAIN_ATTACKS` | **2** | `01078` (Get Behind Me! (event)), `01187` (Assault (treachery)) |
 | `ADD_THREAT` | **2** | `01178` (Kree Manipulator (treachery)) |
 | `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
-| `CANCEL_WHEN_REVEALED` | **1** | `01004` (Enhanced Spider-Sense (event)) |
 | `INTERCEPT_ATTACK` | **1** | `01009` (Webbed Up (upgrade)) |
 | `ADD_TRAIT` | **1** | `01017` (Cosmic Flight (upgrade)) |
 | `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
@@ -238,7 +236,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `PLAY_CARD_FROM_ZONE` | **1** | `01071` (Make the Call (event)) |
 | `MODIFY_ALLY_LIMIT` | **1** | `01073` (The Triskelion (support)) |
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | **1** | `01075` (Black Widow (ally)) |
-| `CANCEL_WHEN_REVEALED_AND_ATTACK` | **1** | `01078` (Get Behind Me! (event)) |
 | `REDUCE_NEXT_CARD_COST` | **1** | `01092` (Helicarrier (support)) |
 | `SEARCH_AND_REVEAL_SIDE_SCHEME` | **1** | `01095` (Rhino (villain)) |
 | `ATTACHMENT_DAMAGE_SHIELD` | **1** | `01098` (Armored Rhino Suit (attachment)) |
@@ -248,7 +245,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `RETURN_FACEDOWN_CARDS_TO_OWNERS` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `VILLAIN_SCHEMES` | **1** | `01186` (Advance (treachery)) |
-| `VILLAIN_ATTACKS` | **1** | `01187` (Assault (treachery)) |
 | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | **1** | `01189` (Gang-Up (treachery)) |
 | `SHUFFLE_INTO_DECK` | **1** | `01190` (Shadow of the Past (treachery)) |
 | `PLACE_THREAT_PER_SIDE_SCHEME` | **1** | `01192` (Masterplan (treachery)) |
@@ -299,12 +295,12 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+11 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
-| `INTERRUPT` | **6** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01061` Great Responsibility (event), `01075` Black Widow (ally), `01078` Get Behind Me! (event) *(+1 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
+| `HERO_INTERRUPT` | **5** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01061` Great Responsibility (event), `01078` Get Behind Me! (event), `01082` Indomitable (upgrade) |
+| `INTERRUPT` | **4** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01075` Black Widow (ally), `01085` Emergency (event) |
 | `SETUP` | **4** | `01040b` T'Challa (alter_ego), `01076` Luke Cage (ally), `01096` Rhino (villain), `01102` Sandman (minion) |
 | `SPECIAL` | **4** | `01046` Energy Daggers (upgrade), `01047` Panther Claws (upgrade), `01048` Tactical Genius (upgrade), `01049` Vibranium Suit (upgrade) |
 | `BOOST` | **4** | `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
-| `HERO_INTERRUPT` | **3** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01082` Indomitable (upgrade) |
 | `FORCED_INTERRUPT` | **3** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01098` Armored Rhino Suit (attachment) |
 | `HERO_RESOURCE` | **1** | `01008` Web-Shooter (upgrade) |
 | `HERO_RESPONSE` | **1** | `01019a` She-Hulk (hero) |
@@ -331,8 +327,8 @@ These primitives are declared in schema types or specifications but have **0 act
 | `CHOSEN_ENEMY` | **15** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+10 more)* |
 | `SELF` | **14** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+9 more)* |
 | `CHOSEN_SCHEME` | **10** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+5 more)* |
+| `SELF_IDENTITY` | **8** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) *(+3 more)* |
 | `VILLAIN` | **8** | `01011` Spider-Woman (ally), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery) *(+2 more)* |
-| `SELF_IDENTITY` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01073` The Triskelion (support) *(+2 more)* |
 | `HERO` | **6** | `01159` Ritual Combat (treachery), `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery), `01169` The Vulture's Plans (treachery), `01174` Electromagnetic Backlash (treachery) *(+1 more)* |
 | `CHOSEN_PLAYER` | **3** | `01010b` Carol Danvers (alter_ego), `01091` Avengers Mansion (support), `01092` Helicarrier (support) |
 | `THIS_SIDE_SCHEME` | **3** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) |

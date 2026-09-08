@@ -262,18 +262,28 @@ export function dispatchTrigger(
     }
   }
 
-  // 4. Scan in-hand cards for Threat Placement triggers (e.g. Emergency 01085)
+  // 4. Scan in-hand cards for Threat Placement triggers (e.g. Emergency 01085, Great Responsibility 01061)
   if (trigger === 'THREAT_WOULD_BE_PLACED' && currentThreat > 0) {
     for (const p of state.players) {
       const handInterruptIdx = p.hand.findIndex((c) => {
         const abilities = c.card.enrichment?.abilities || [];
-        return abilities.some((a) => a.trigger === trigger && a.zone === 'HAND');
+        return abilities.some((a) => {
+          if (a.trigger !== trigger || a.zone !== 'HAND') return false;
+          if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
+          if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
+          const costCheck = canPayAbilityCost(state, p, a, c);
+          return costCheck.allowed;
+        });
       });
 
       if (handInterruptIdx !== -1 && currentThreat > 0) {
         const interruptCard = p.hand[handInterruptIdx];
         const ability = interruptCard.card.enrichment!.abilities!.find(
-          (a) => a.trigger === trigger && a.zone === 'HAND',
+          (a) =>
+            a.trigger === trigger &&
+            a.zone === 'HAND' &&
+            (!a.timing.startsWith('HERO_') || p.currentForm === 'hero') &&
+            (!a.timing.startsWith('ALTER_EGO_') || p.currentForm === 'alter_ego'),
         )!;
 
         const isForced = ability.timing.startsWith('FORCED_');
@@ -282,9 +292,19 @@ export function dispatchTrigger(
           if (ability.cost?.discardSelf !== false) {
             p.discard.push(interruptCard);
           }
+          const takeThreatStep = ability.steps?.find((s) => s.effect === 'TAKE_THREAT_AS_DAMAGE');
           const threatStep =
             ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
-          if (threatStep?.effect === 'REMOVE_THREAT') {
+
+          if (takeThreatStep) {
+            // Great Responsibility 01061: Completely replaces threat with damage to hero
+            executeEffect(state, ability, {
+              playerId: p.id,
+              threatAmount: currentThreat,
+              sourceCardInstance: interruptCard,
+            });
+            currentThreat = 0;
+          } else if (threatStep?.effect === 'REMOVE_THREAT') {
             const reduction = Number(threatStep.params?.amount ?? 1);
             currentThreat = Math.max(0, currentThreat - reduction);
             state.log.push({
@@ -311,7 +331,7 @@ export function dispatchTrigger(
                 effect: 'EXECUTE_OPTIONAL_TRIGGER',
                 params: {
                   ability,
-                  context,
+                  context: { ...context, threatAmount: currentThreat },
                   sourceCardInstanceId: interruptCard.instanceId,
                 },
               },

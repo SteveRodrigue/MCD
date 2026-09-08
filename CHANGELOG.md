@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Engine & Supplemental: Decompose Cancel When Revealed and Threat Interrupts into Sequential Steps ([#26](https://github.com/SteveRodrigue/MCD/issues/26)):**
+  - **Sequential Ability Architecture ([ADR-0030](docs/decisions/0030-unified-ability-step-sequence-architecture.md)):** Decomposed *Get Behind Me!* (`01078`) from a monolithic composite into two clean, sequential steps (`CANCEL_WHEN_REVEALED` followed by `VILLAIN_ATTACKS` targeting `SELF_IDENTITY`).
+  - **Interrupt Replacement Trigger Support:** Updated `THREAT_WOULD_BE_PLACED` trigger dispatching in `trigger-dispatcher.ts` to support replacement effect `TAKE_THREAT_AS_DAMAGE` (*Great Responsibility* `01061`), replacing incoming threat with identity damage and enforcing hero form eligibility and ability cost affordability.
+  - **Decision Prompt Queue Integration:** Forwarded `threatAmount` context through the prompt queue and trigger scanner to enable interactive interrupt decisions for replacement effects.
+  - **Supplemental JSON Audit:** Audited and updated `01078` and `01061` in `src/data/supplemental/pack/core.json` to `HERO_INTERRUPT` timing with 100% confidence.
+  - **Testing:** Added comprehensive contract test suite `tests/engine/interrupt-replacement-effects.test.ts` covering automatic resolution, form restrictions, and interactive decision prompts.
+
 - **Schema & Engine: ADR-0048 — Ability Timing vs. Trigger Condition Disambiguation & CARD_PLAYED vs. ENTERS_PLAY ([#88](https://github.com/SteveRodrigue/MCD/issues/88)):**
   - **Schema correction:** Removed `CARD_PLAYED` and `WHEN_PLAYED` from `TimingTypeSchema` — playing a card is an `ACTION`, not a timing class. `TimingTypeSchema` and the engine's `AbilityTiming` type are now in full alignment.
   - **New trigger:** Added `ENTERS_PLAY` to `TriggerTypeSchema` and `TriggerType` union (per RR v1.8 p.11 — fires on both played AND put-into-play).

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-08T15:11:52.902Z`  
+> **Generated:** `2026-09-08T17:35:17.647Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -183,6 +183,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | **Trigger** | `RESOURCE_SPENT` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `ROUND_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `ROUND_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `SCHEME_THREAT_REDUCED_TO_ZERO` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `THREAT_PLACED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `VILLAIN_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `VILLAIN_PHASE_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |

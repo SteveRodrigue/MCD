@@ -333,6 +333,10 @@ export function shouldExecuteStep(
     return !!context.resourcesSpent?.includes(reqAspect);
   }
 
+  if (gate === 'IF_CONDITION_MET') {
+    return !!evaluatedResult && evaluatedResult.conditionMet === true;
+  }
+
   return true;
 }
 
@@ -1065,7 +1069,24 @@ export function executeStep(
                 },
                 onomatopoeia,
               });
-              return { state, success: true, onomatopoeia };
+
+              let conditionMet: boolean | undefined;
+              let resValue: number = amount;
+              if (step.condition === 'EXCESS_DAMAGE_DEALT') {
+                conditionMet = excessDmg > 0;
+                resValue = excessDmg;
+              } else if (step.condition === 'TARGET_DEFEATED') {
+                conditionMet = true;
+              }
+
+              return {
+                state,
+                success: true,
+                mutatedState: true,
+                value: resValue,
+                conditionMet,
+                onomatopoeia,
+              };
             } else {
               minion.tokens = { ...minion.tokens, damage: newDmg };
 
@@ -1104,7 +1125,24 @@ export function executeStep(
                 },
                 onomatopoeia,
               });
-              return { state, success: true, onomatopoeia };
+
+              let conditionMet: boolean | undefined;
+              let resValue: number = amount;
+              if (step.condition === 'EXCESS_DAMAGE_DEALT') {
+                conditionMet = false;
+                resValue = 0;
+              } else if (step.condition === 'TARGET_DEFEATED') {
+                conditionMet = false;
+              }
+
+              return {
+                state,
+                success: true,
+                mutatedState: true,
+                value: resValue,
+                conditionMet,
+                onomatopoeia,
+              };
             }
           }
         }
@@ -1222,11 +1260,19 @@ export function executeStep(
         onomatopoeia,
       });
 
+      const isFullyHealed =
+        target === 'VILLAIN'
+          ? state.villain.health >= (state.villain.maxHealth || 100)
+          : player.health >= player.maxHealth;
+
+      const conditionMet = step.condition === 'FULLY_HEALED' ? isFullyHealed : undefined;
+
       return {
         state,
         success: true,
         mutatedState: healed > 0,
         value: healed,
+        conditionMet,
         onomatopoeia,
       };
     }
@@ -1383,11 +1429,22 @@ export function executeStep(
         onomatopoeia,
       });
 
+      if (removed > 0 && remainingThreat === 0) {
+        dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
+          targetPlayerId: player.id,
+          sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
+          threatAmount: removed,
+        });
+      }
+
+      const conditionMet = step.condition === 'SCHEME_EMPTY' ? remainingThreat === 0 : undefined;
+
       return {
         state,
         success: true,
         mutatedState: removed > 0,
         value: removed,
+        conditionMet,
         onomatopoeia,
       };
     }
@@ -1490,12 +1547,19 @@ export function executeStep(
         onomatopoeia,
       });
 
+      let conditionMet: boolean = alreadyHadStatus;
+      if (step.condition === 'STATUS_APPLIED') {
+        conditionMet = mutatedState;
+      } else if (step.condition === 'ALREADY_HAS_STATUS') {
+        conditionMet = alreadyHadStatus;
+      }
+
       return {
         state,
         success: true,
         mutatedState,
         value: mutatedState ? 1 : 0,
-        conditionMet: alreadyHadStatus,
+        conditionMet,
         onomatopoeia,
       };
     }

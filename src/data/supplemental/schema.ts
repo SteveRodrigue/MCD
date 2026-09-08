@@ -95,6 +95,7 @@ export const TriggerTypeSchema = z.enum([
   'HERO_FLIPPED',
   'PHASE_START',
   'BOOST',
+  'SCHEME_THREAT_REDUCED_TO_ZERO',
 ]);
 
 /**
@@ -128,6 +129,33 @@ export const TargetSelectorSchema = z.enum([
 ]);
 
 /**
+ * Declarative Step Condition Schema across all categories (ADR-0049, RR v1.8 p. 2, 23, 24)
+ */
+export const StepConditionSchema = z.enum([
+  // Core Step Milestones
+  'SCHEME_EMPTY',
+  'TARGET_DEFEATED',
+  'FULLY_HEALED',
+  'STATUS_APPLIED',
+  'EXCESS_DAMAGE_DEALT',
+
+  // Entity & Board States
+  'ALREADY_HAS_STATUS',
+  'TARGET_ALREADY_EXHAUSTED',
+  'TARGET_TRAIT_MATCH',
+  'TARGET_FORM_MATCH',
+
+  // Payment & Resource Invariants
+  'RESOURCE_KICKER_MET',
+
+  // Thresholds & Counters
+  'COUNTER_THRESHOLD_MET',
+  'ZONE_EMPTY',
+]);
+
+export type StepCondition = z.infer<typeof StepConditionSchema>;
+
+/**
  * Sequential Condition Gate Types (RR v1.8 p. 2, 24)
  */
 export const ConditionGateSchema = z.enum([
@@ -139,6 +167,7 @@ export const ConditionGateSchema = z.enum([
   'IF_FAILED',
   'IF_ALREADY_HAS_STATUS',
   'IF_RESOURCE_MATCH',
+  'IF_CONDITION_MET',
 ]);
 
 /**
@@ -509,6 +538,7 @@ export interface AbilityStep {
   params?: Record<string, any>;
   gate?: z.infer<typeof ConditionGateSchema>;
   filter?: z.infer<typeof FilterSchema>;
+  condition?: StepCondition;
 }
 
 /**
@@ -521,6 +551,7 @@ export const AbilityStepSchema = z
     params: z.record(z.string(), z.any()).optional(),
     gate: ConditionGateSchema.optional(),
     filter: FilterSchema.optional(),
+    condition: StepConditionSchema.optional(),
   })
   .strict();
 

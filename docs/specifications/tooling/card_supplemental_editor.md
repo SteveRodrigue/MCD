@@ -12,6 +12,7 @@
 The **Card Supplemental Editor & Live Reviewer GUI** is an integrated developer tool that streamlines reviewing, verifying, and enriching card supplemental data (`src/data/supplemental/pack/*.json`) directly within the Marvel Champions Digital web application.
 
 ### Key Objectives
+
 1. **Multi-Criteria Discovery:** Filter and search cards across all 170+ official Zzorba packs, encounter sets, hero identities, and aspect affinities.
 2. **Dual-Inspector Reviewer:** Compare printed card art and text alongside raw upstream attributes and declarative supplemental rules in real time.
 3. **Live Schema Validation:** Enforce strict adherence to `CardEnrichmentSchema` ([ADR-0043](../../decisions/0043-codebase-grounded-supplemental-schema-validation-and-live-vscode-integration.md)), reporting line-level errors for invalid effect primitives, parameters, or timings.
@@ -40,7 +41,7 @@ graph TD
     end
 
     Game -->|Right-Click Card| ContextMenu
-    ContextMenu -->|window.open('/editor?code=...')| Editor
+    ContextMenu -->|Open Editor| Editor
     Editor -->|Live Schema Diagnostics| ZodValidator
     Editor -->|GET /api/supplemental/packs| ViteMiddleware
     Editor -->|GET /api/supplemental/card/:code| ViteMiddleware
@@ -58,7 +59,9 @@ graph TD
 The API is served directly by the local Vite development server via a custom plugin (`cardSupplementalEditorPlugin` in `vite.config.ts`), active only during development.
 
 ### 3.1. `GET /api/supplemental/packs`
+
 Returns catalog categorization metadata for populating multi-select filter menus:
+
 ```json
 {
   "packs": [
@@ -83,7 +86,9 @@ Returns catalog categorization metadata for populating multi-select filter menus
 ```
 
 ### 3.2. `GET /api/supplemental/cards?pack=:pack&set=:set&faction=:faction&search=:query`
+
 Returns filtered cards across the catalog with enrichment status flags:
+
 ```json
 {
   "total": 101,
@@ -104,7 +109,9 @@ Returns filtered cards across the catalog with enrichment status flags:
 ```
 
 ### 3.3. `GET /api/supplemental/card/:code`
+
 Fetches the complete card definition, including raw upstream data and supplemental definition:
+
 ```json
 {
   "code": "01001a",
@@ -132,7 +139,9 @@ Fetches the complete card definition, including raw upstream data and supplement
 ```
 
 ### 3.4. `POST /api/supplemental/card/:code`
+
 Validates and persists changes to the card's supplemental definition:
+
 - **Request Body:**
   ```json
   {
@@ -159,12 +168,14 @@ Validates and persists changes to the card's supplemental definition:
 ## 4. User Interface & Layout Specifications
 
 The Supplemental Editor UI adheres strictly to the **1960s Comic Pop-Art Theme** ([ADR-0004](../../decisions/0004-visual-art-direction-comic-pop-art.md)):
+
 - Bold heavy black comic borders (`border-3 border-black shadow-comic-pop`).
 - Dynamic Ben-Day halftone dot backgrounds.
 - Bangers headings and high-contrast typography.
 - Status badges: 🟢 Green (100% Verified), 🟡 Yellow (Partial / Draft), 🔴 Red (Schema Error / Missing).
 
 ### 4.1. Workspace Layout
+
 The Editor is organized into a 3-column split view:
 
 ```
@@ -188,6 +199,7 @@ The Editor is organized into a 3-column split view:
 ```
 
 ### 4.2. Dual-Mode Supplemental Builder (Form vs. Raw JSON)
+
 1. **Form Builder Mode:**
    - Dropdown selectors for `timing` (`TimingTypeSchema`), `trigger` (`TriggerTypeSchema`), and `effect` primitives.
    - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`).
@@ -201,6 +213,7 @@ The Editor is organized into a 3-column split view:
 ## 5. In-Game Context Menu Integration
 
 Every card rendered on the active game board attaches a custom `onContextMenu` handler with portal-mounted rendering:
+
 1. **Trigger:** Right-clicking any `<CardView />` on the board (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachment, Discard pile preview).
 2. **Portal Rendering & Auto-Zoom Immunity:**
    - Mounted directly into `document.body` via `ReactDOM.createPortal` with elevated layering (`z-[9999]`).

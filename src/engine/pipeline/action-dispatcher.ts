@@ -61,7 +61,7 @@ import {
 } from './combat-pipeline';
 import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost, initializeCardUses } from '../state/state-validator';
-import { dispatchTrigger, formatAbilityStepsSummary } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -1228,55 +1228,16 @@ export function dispatchAction(
         }
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
-        // Execute declarative CARD_PLAYED abilities (e.g. Mockingbird stun, Black Cat filter, Nick Fury)
-        for (const ability of abilities) {
-          if (
-            ability.trigger === 'CARD_PLAYED' ||
-            ((ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE') &&
-              !ability.trigger)
-          ) {
-            const isForced = ability.timing.startsWith('FORCED_');
-            const hasPlayerChoice = ability.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
-            if (isForced || hasPlayerChoice) {
-              executeEffect(nextState, ability, {
-                playerId: action.playerId,
-                targetType,
-                targetInstanceId: action.targetInstanceId,
-                sourceCardInstance: playedCardInstance,
-              });
-            } else {
-              const cardName = playedCardInstance.card.name;
-              enqueueDecisionPrompt(nextState, {
-                promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-                playerId: player.id,
-                title: `Do you want to use the following ability from ${cardName}?`,
-                description: formatAbilityStepsSummary('CARD_PLAYED', ability.steps || []),
-                sourceCardName: cardName,
-                isVoluntary: true,
-                options: [
-                  {
-                    id: `trigger_${ability.id}`,
-                    label: 'Yes',
-                    effect: 'EXECUTE_OPTIONAL_TRIGGER',
-                    params: {
-                      ability,
-                      context: {
-                        targetType,
-                        targetInstanceId: action.targetInstanceId,
-                      },
-                      sourceCardInstanceId: playedCardInstance.instanceId,
-                    },
-                  },
-                  {
-                    id: 'pass',
-                    label: 'No',
-                    effect: 'PASS',
-                  },
-                ],
-              });
-            }
-          }
-        }
+        // Dispatch CARD_PLAYED trigger (ally was played — cost paid or waived per ADR-0047)
+        dispatchTrigger(nextState, 'CARD_PLAYED', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
+        // Dispatch ENTERS_PLAY trigger (ally has entered an in-play zone — per RR v1.8 p.11)
+        dispatchTrigger(nextState, 'ENTERS_PLAY', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
       } else if (cardType === CardType.EVENT) {
         // Execute declarative event abilities
         for (const ability of abilities) {
@@ -1304,14 +1265,16 @@ export function dispatchAction(
           ownerId: player.id,
         });
 
-        for (const ability of abilities) {
-          if (ability.trigger === 'CARD_PLAYED') {
-            executeEffect(nextState, ability, {
-              playerId: action.playerId,
-              sourceCardInstance: playedCardInstance,
-            });
-          }
-        }
+        // Dispatch CARD_PLAYED trigger (side scheme was played — cost paid)
+        dispatchTrigger(nextState, 'CARD_PLAYED', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
+        // Dispatch ENTERS_PLAY trigger (side scheme has entered the shared scheme area — per RR v1.8 p.11)
+        dispatchTrigger(nextState, 'ENTERS_PLAY', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
 
         nextState.log.push({
           id: `log_${Date.now()}`,
@@ -2103,23 +2066,15 @@ export function dispatchAction(
 
           initializeCardUses(chosenCard);
 
-          // Trigger CARD_PLAYED / CARD_ENTERED_PLAY
-          const abilities = chosenCard.card.enrichment?.abilities || [];
-          for (const ab of abilities) {
-            if (
-              ab.trigger === 'CARD_PLAYED' ||
-              ((ab.timing === 'FORCED_RESPONSE' || ab.timing === 'RESPONSE') && !ab.trigger)
-            ) {
-              const isForced = ab.timing.startsWith('FORCED_');
-              const hasPlayerChoice = ab.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
-              if (isForced || hasPlayerChoice) {
-                executeEffect(poppedState, ab, {
-                  playerId: targetPlayer.id,
-                  sourceCardInstance: chosenCard,
-                });
-              }
-            }
-          }
+          // Trigger CARD_PLAYED (card was played, cost paid per ADR-0047) and ENTERS_PLAY (per RR v1.8 p.11)
+          dispatchTrigger(poppedState, 'CARD_PLAYED', {
+            targetPlayerId: targetPlayer.id,
+            sourceInstanceId: chosenCard.instanceId,
+          });
+          dispatchTrigger(poppedState, 'ENTERS_PLAY', {
+            targetPlayerId: targetPlayer.id,
+            sourceInstanceId: chosenCard.instanceId,
+          });
 
           const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
           poppedState.log.push({

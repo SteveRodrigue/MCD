@@ -50,8 +50,6 @@ export const TimingTypeSchema = z.enum([
   'SETUP',
   'WHEN_REVEALED',
   'BOOST',
-  'CARD_PLAYED',
-  'WHEN_PLAYED',
 ]);
 
 /**
@@ -64,6 +62,7 @@ export const TriggerTypeSchema = z.enum([
   'TAKE_ATTACK_DAMAGE',
   'TAKE_DAMAGE',
   'CARD_PLAYED',
+  'ENTERS_PLAY',
   'PLAYED',
   'MINION_DEFEATED',
   'MINION_DEFEATED_BY_ATTACK',

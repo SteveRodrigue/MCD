@@ -70,11 +70,11 @@
       ]
     },
     "01002": {
-      "comment": "Ally: Forced Response after played -> discard top 2 cards of deck, add Mental resources to hand. No consequential damage from attacking.",
+      "comment": "Ally: Forced Response: After you PLAY Black Cat (CARD_PLAYED, not ENTERS_PLAY) → discard top 2 cards, add Mental-resource cards to hand. No consequential attack damage.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T12:28:00Z",
-        "reviewedAt": "2026-09-06T12:28:00Z",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -83,7 +83,7 @@
       },
       "attackCost": 0,
       "mechanicSteps": [
-        "Trigger: After player plays Black Cat into play from hand (FORCED_RESPONSE @ CARD_PLAYED)",
+        "Trigger: After you play Black Cat from hand (FORCED_RESPONSE @ CARD_PLAYED — intentional: card text says 'after you play', not 'after enters play')",
         "Step 1: Inspect top 2 cards from player draw deck",
         "Step 2: Check each card for printed [mental] resource icons",
         "Step 3: Discard cards lacking printed [mental] resource",
@@ -257,7 +257,7 @@
       "abilities": [
         {
           "id": "spider_tracer_attach",
-          "timing": "CARD_PLAYED",
+          "timing": "ACTION",
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
@@ -284,16 +284,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T01:05:00Z",
-        "reviewedAt": "2026-09-06T01:05:00Z",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Attach to a minion.\n<b>Forced Interrupt</b>: When attached minion is defeated, remove 3 threat from a scheme.",
-        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: HOST_DEFEATED) -> REMOVE_THREAT (amount: 3, target: CHOSEN_SCHEME)"
+        "reconstructedText": "ACTION -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: HOST_DEFEATED) -> REMOVE_THREAT (amount: 3, target: CHOSEN_SCHEME)"
       },
       "mechanicSteps": [
-        "Play Condition: Attach to a minion.",
+        "Action: Attach to a minion when played.",
         "Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme."
       ]
     },
@@ -382,7 +382,7 @@
         "rulesVersion": "v1.8",
         "confidence": 60,
         "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
-        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
+        "reconstructedText": "HERO_ACTION -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: VILLAIN_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
       },
       "mechanicSteps": [
         "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
@@ -462,12 +462,12 @@
       ]
     },
     "01011": {
-      "comment": "Ally: After Spider-Woman enters play, confuse the villain.",
+      "comment": "Ally: Response: After Spider-Woman enters play, confuse the villain.",
       "abilities": [
         {
           "id": "spider_woman_enters_play",
           "timing": "RESPONSE",
-          "trigger": "CARD_PLAYED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
               "effect": "ADD_STATUS",
@@ -481,16 +481,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T00:20:22Z",
-        "reviewedAt": "2026-09-06T00:20:22Z",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Response</b>: After Spider-Woman enters play, confuse the villain.",
-        "reconstructedText": "RESPONSE (Trigger: CARD_PLAYED) -> Give CONFUSED status to CHOSEN_ENEMY"
+        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> ADD_STATUS (CONFUSED, target: VILLAIN)"
       },
       "mechanicSteps": [
-        "Ally card with THW 2, ATK 2, and health 2"
+        "Response: After Spider-Woman enters play (played or put into play), confuse the villain."
       ]
     },
     "01012": {
@@ -1639,9 +1639,9 @@
       "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
       "abilities": [
         {
-          "id": "shuri_search",
+          "id": "shuri_enters_play",
           "timing": "RESPONSE",
-          "trigger": "CARD_PLAYED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
               "effect": "SEARCH_AND_SELECT",
@@ -1664,16 +1664,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T12:28:00Z",
-        "reviewedAt": "2026-09-06T12:28:00Z",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Response</b>: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck.",
-        "reconstructedText": "RESPONSE [Trigger: CARD_PLAYED] -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { type: upgrade }, selectedDestination: HAND, shuffleAfter: true)"
+        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> SEARCH_AND_SELECT (source: PLAYER_DECK, filter: { types: [upgrade] }, selectedDestination: HAND, shuffleAfter: true)"
       },
       "mechanicSteps": [
-        "Ally: Response: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck."
+        "Response: After Shuri enters play (played or put into play), search your deck for an upgrade and add it to your hand. Shuffle your deck."
       ]
     },
     "01042": {
@@ -2624,7 +2624,7 @@
         {
           "id": "maria_hill_enters_play",
           "timing": "RESPONSE",
-          "trigger": "CARD_PLAYED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
               "effect": "DRAW_CARDS",
@@ -2638,16 +2638,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-30T16:35",
-        "reviewedAt": "2026-08-30T16:35",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Response</b>: After Maria Hill enters play, each player draws 1 card.",
-        "reconstructedText": "RESPONSE (CARD_PLAYED) -> DRAW_CARDS (count: 1, target: ALL_PLAYERS)"
+        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> DRAW_CARDS (count: 1, target: ALL_PLAYERS)"
       },
       "mechanicSteps": [
-        "Response: After you play Maria Hill from your hand, each player draws 1 card."
+        "Response: After Maria Hill enters play (played or put into play), each player draws 1 card."
       ]
     },
     "01068": {
@@ -2853,7 +2853,7 @@
       "abilities": [
         {
           "id": "inspired_attach",
-          "timing": "CARD_PLAYED",
+          "timing": "ACTION",
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
@@ -2893,16 +2893,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK.",
-        "reconstructedText": "CARD_PLAYED -> ATTACH_TO_HOST (target: CHOSEN_ALLY, maxPerHost: 1); CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
+        "reconstructedText": "ACTION -> ATTACH_TO_HOST (target: CHOSEN_ALLY, maxPerHost: 1); CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
       },
       "mechanicSteps": [
-        "Play Condition: Attach to an ally. Max 1 per ally.",
+        "Action: Attach to an ally when played. Max 1 per ally.",
         "Constant: Attached ally gets +1 THW and +1 ATK."
       ]
     },
@@ -3187,9 +3187,9 @@
       "comment": "Ally: Forced Response: After Mockingbird enters play, stun an enemy.",
       "abilities": [
         {
-          "id": "mockingbird_when_played",
+          "id": "mockingbird_enters_play",
           "timing": "FORCED_RESPONSE",
-          "trigger": "CARD_PLAYED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
               "effect": "ADD_STATUS",
@@ -3203,26 +3203,25 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Response</b>: After Mockingbird enters play, stun an enemy.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> Give STUNNED status to CHOSEN_ENEMY"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> ADD_STATUS (STUNNED, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
-        "Trigger: Response after Mockingbird enters play (FORCED_RESPONSE @ CARD_PLAYED)",
-        "Effect: Stun an enemy (villain or minion)."
+        "Forced Response: After Mockingbird enters play (played or put into play), stun an enemy (villain or minion)."
       ]
     },
     "01084": {
-      "comment": "ALLY: Nick Fury. When Enters Play: Choose 1 of 3 effects. At end of round, discard Nick Fury.",
+      "comment": "ALLY: Nick Fury. Forced Response: After Nick Fury enters play, choose 1 of 3 effects. At end of round, discard Nick Fury.",
       "abilities": [
         {
           "id": "nick_fury_enters_play",
-          "timing": "CARD_PLAYED",
-          "trigger": "CARD_PLAYED",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
               "effect": "PLAYER_CHOICE",
@@ -3280,17 +3279,17 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-07T17:14:00Z",
+        "reviewedAt": "2026-09-07T17:14:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 95,
         "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him.",
-        "reconstructedText": "CARD_PLAYED -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]) + FORCED_RESPONSE (ROUND_END) -> DISCARD (source: SELF)"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]); FORCED_RESPONSE (Trigger: ROUND_END) -> DISCARD (source: SELF)"
       },
       "mechanicSteps": [
         "Ally: THW 2, ATK 2, Health 3.",
-        "Response: After Nick Fury enters play, choose 1: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy.",
+        "Forced Response: After Nick Fury enters play (played or put into play), choose 1: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy.",
         "Forced Response: At the end of the round, discard Nick Fury if he is still in play."
       ]
     },

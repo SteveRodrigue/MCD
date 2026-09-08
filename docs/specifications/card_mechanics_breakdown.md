@@ -131,10 +131,10 @@ For each card, mechanics are broken down using the following standard schema:
 * **MarvelCDB Link:** [https://marvelcdb.com/card/01084](https://marvelcdb.com/card/01084)
 * **Official Printed Text:** *"**Forced Response**: After Nick Fury enters play, choose one: remove 2 threat from a scheme; or draw 3 cards; or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him."*
 * **Ability Timing & Trigger:**
-  * Ability 1: `FORCED_RESPONSE` @ `CARD_PLAYED` ➔ `NICK_FURY_CHOICE`
+  * Ability 1: `FORCED_RESPONSE` @ `ENTERS_PLAY` ➔ `NICK_FURY_CHOICE`
   * Ability 2: `FORCED_RESPONSE` @ `ROUND_END` ➔ `DISCARD_SELF`
 * **Step-by-Step Resolution:**
-  1. **When Played:** Controller chooses 1 of 3 options:
+  1. **When Enters Play:** Controller chooses 1 of 3 options:
      - Option A: Remove 2 threat from chosen scheme.
      - Option B: Draw 3 cards from player deck.
      - Option C: Deal 4 damage to chosen enemy.

@@ -5,6 +5,21 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Schema & Engine: ADR-0048 — Ability Timing vs. Trigger Condition Disambiguation & CARD_PLAYED vs. ENTERS_PLAY ([#88](https://github.com/SteveRodrigue/MCD/issues/88)):**
+  - **Schema correction:** Removed `CARD_PLAYED` and `WHEN_PLAYED` from `TimingTypeSchema` — playing a card is an `ACTION`, not a timing class. `TimingTypeSchema` and the engine's `AbilityTiming` type are now in full alignment.
+  - **New trigger:** Added `ENTERS_PLAY` to `TriggerTypeSchema` and `TriggerType` union (per RR v1.8 p.11 — fires on both played AND put-into-play).
+  - **7 card entries corrected in `core.json`:**
+    - Spider-Tracer `01007`: `timing: "CARD_PLAYED"` → `timing: "ACTION"` (attachment play is an ACTION).
+    - Inspired `01074`: same fix as Spider-Tracer.
+    - Spider-Woman `01011`, Shuri `01041`, Maria Hill `01067`, Mockingbird `01083`: `trigger: "CARD_PLAYED"` → `trigger: "ENTERS_PLAY"` (card text says "enters play").
+    - Nick Fury `01084`: `timing: "CARD_PLAYED"` → `timing: "FORCED_RESPONSE"`; `trigger: "CARD_PLAYED"` → `trigger: "ENTERS_PLAY"`. Confidence raised from 50% → 95%.
+    - Black Cat `01002`: audit bump only — `trigger: "CARD_PLAYED"` intentionally retained ("after you play", not "after enters play").
+    - Webbed Up `01009`: `reconstructedText` cosmetic fix.
+  - **4 engine dispatch sites refactored** from ad-hoc inline loops to `dispatchTrigger`: ally play (Site 1), player side scheme play (Site 2), `PLAY_CARD_FROM_ZONE` (Site 3), `PUT_INTO_PLAY` effect (Site 4, ENTERS_PLAY only).
+  - **Parser:** Added `ENTERS_PLAY` pattern to `src/tools/card-text-parser/patterns.ts` before CARD_PLAYED for correct priority matching.
+  - **Tests:** New contract test file `tests/engine/play-vs-enters-play.test.ts` (5 tests: A/E/F/H/I). Updated `tests/engine/optional-triggers.test.ts` Spider-Woman assertion.
+  - **Docs:** Added `docs/decisions/0048-ability-timing-vs-trigger-condition-disambiguation.md`; fixed Nick Fury spec in `docs/specifications/card_mechanics_breakdown.md`.
+
 - **Fix & UI: Dynamic Vertical Scaling for Ally Attachments & Width Scaling for Allies Section ([#87](https://github.com/SteveRodrigue/MCD/issues/87), `HeroZone.tsx`, `tests/ui/ally-attachment-fan.test.ts`):**
   - **Dynamic Vertical Space Allocation:** Computed dynamic bottom spacing (`attachmentCount * 70px`) for each ally card slot in `HeroZone.tsx`, ensuring the parent panel automatically stretches to accommodate multiple fanning attachments without clipping or overflowing.
   - **Fluid Allies in Play Panel Width:** Replaced rigid `flex-1 min-w-[200px]` with `w-fit min-w-[180px] max-w-full shrink-0` on the "Allies in Play" panel, allowing it to hug the current ally count and dynamically allocate remaining horizontal space to the player's Tableau (Upgrades & Supports).

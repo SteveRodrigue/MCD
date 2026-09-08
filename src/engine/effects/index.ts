@@ -3427,23 +3427,12 @@ export function executeStep(
 
           initializeCardUses(chosenCard);
 
-          // Dispatch CARD_PLAYED and CARD_ENTERED_PLAY abilities
-          const cardAbilities = chosenCard.card.enrichment?.abilities || [];
-          for (const ab of cardAbilities) {
-            if (
-              ab.trigger === 'CARD_PLAYED' ||
-              ((ab.timing === 'FORCED_RESPONSE' || ab.timing === 'RESPONSE') && !ab.trigger)
-            ) {
-              const isForced = ab.timing.startsWith('FORCED_');
-              const hasPlayerChoice = ab.steps?.some((s) => s.effect === 'PLAYER_CHOICE');
-              if (isForced || hasPlayerChoice) {
-                executeEffect(state, ab, {
-                  playerId: player.id,
-                  sourceCardInstance: chosenCard,
-                });
-              }
-            }
-          }
+          // Dispatch ENTERS_PLAY only — card is put into play, NOT played (RR v1.8 p.21)
+          // CARD_PLAYED does NOT fire here (no cost was paid via the play action)
+          dispatchTrigger(state, 'ENTERS_PLAY', {
+            targetPlayerId: player.id,
+            sourceInstanceId: chosenCard.instanceId,
+          });
 
           const onomatopoeia = `PLAYED ${chosenCard.card.name.toUpperCase()}!`;
           state.log.push({

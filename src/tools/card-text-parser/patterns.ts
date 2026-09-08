@@ -45,6 +45,7 @@ export const TRIGGER_PATTERNS: TriggerPattern[] = [
     regex: /when a treachery card is revealed(?: from the encounter deck)?/i,
     trigger: 'WHEN_REVEALED',
   },
+  { regex: /after ([A-Za-z0-9 '-]+) enters play/i, trigger: 'ENTERS_PLAY' },
   { regex: /after you play ([A-Za-z0-9 '-]+)/i, trigger: 'CARD_PLAYED' },
   { regex: /after ([A-Za-z0-9 '-]+) attacks/i, trigger: 'ATTACK_RESOLVED' },
   { regex: /after ([A-Za-z0-9 '-]+) thwarts/i, trigger: 'THWART_RESOLVED' },

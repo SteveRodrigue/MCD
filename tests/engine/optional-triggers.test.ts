@@ -226,7 +226,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
     });
   });
 
-  describe('Core Set Response 1: Spider-Woman (01011) on CARD_PLAYED', () => {
+  describe('Core Set Response 1: Spider-Woman (01011) on ENTERS_PLAY', () => {
     it('prompts the player and confounds villain when player chooses Yes', () => {
       gameState.players[0].currentForm = 'hero';
       gameState.players[0].activeFormCard = gameState.players[0].hero;
@@ -254,7 +254,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const prompt = playRes.state.pendingDecisionPrompt;
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Woman?');
-      expect(prompt?.description).toBe('CARD_PLAYED -> ADD_STATUS (CONFUSED)');
+      expect(prompt?.description).toBe('ENTERS_PLAY -> ADD_STATUS (CONFUSED)');
 
       // Select 'Yes'
       const yesOption = prompt!.options.find((o) => o.label === 'Yes')!;

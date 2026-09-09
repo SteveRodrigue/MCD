@@ -192,7 +192,6 @@ export const EffectTypeSchema = z.enum([
   'CANCEL_WHEN_REVEALED_AND_ATTACK',
   'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
   'CHANGE_FORM',
-  'CHANGE_FORM_DRAW_TO_HAND_SIZE',
   'CONSUME_INTERCEPTED_EVENT',
   'COST_REDUCER',
   'DEAL_ADDITIONAL_BOOST_CARD',
@@ -202,7 +201,6 @@ export const EffectTypeSchema = z.enum([
   'DISCARD',
   'DOUBLE_RESOURCE_FOR_ASPECT',
   'DRAW_CARDS',
-  'DRAW_UP_TO_HAND_SIZE',
   'EXECUTE_SPECIAL',
   'EXECUTE_WAKANDA_FOREVER',
   'EXHAUST',
@@ -478,6 +476,20 @@ export const DiscardParamsSchema = z
   .strict();
 
 export type DiscardParams = z.infer<typeof DiscardParamsSchema>;
+
+export const DrawCardsLimitSchema = z.enum(['HAND_SIZE', 'PRINTED_HAND_SIZE']);
+export type DrawCardsLimit = z.infer<typeof DrawCardsLimitSchema>;
+
+export const DrawCardsParamsSchema = z
+  .object({
+    count: z.union([z.number(), DynamicValueSourceSchema]).optional(),
+    limit: DrawCardsLimitSchema.optional(),
+    target: TargetSelectorSchema.optional(),
+    targetPlayerId: z.string().optional(),
+  })
+  .strict();
+
+export type DrawCardsParams = z.infer<typeof DrawCardsParamsSchema>;
 
 export const ExhaustReadyParamsSchema = z
   .object({

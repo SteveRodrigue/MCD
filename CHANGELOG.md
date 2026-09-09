@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Refactor & Engine: Unify card draw primitives under `DRAW_CARDS` with `limit` parameter and decompose multi-action sequences ([ADR-0030](docs/decisions/0030-unified-ability-step-sequence-architecture.md), [#7](https://github.com/SteveRodrigue/MCD/issues/7)):**
+  - **Prune Single-Use Draw Primitives:** Completely removed obsolete single-use effect verbs `DRAW_UP_TO_HAND_SIZE` and `CHANGE_FORM_DRAW_TO_HAND_SIZE` from `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, and `src/ui/components/editor/effect-parameter-registry.ts`.
+  - **Expand `DRAW_CARDS` with `limit`:** Added `DrawCardsLimitSchema` (`'HAND_SIZE' | 'PRINTED_HAND_SIZE'`) to `DrawCardsParamsSchema` in `src/data/supplemental/schema.ts` and `src/engine/models/abilities.ts`. `DRAW_CARDS` now natively supports drawing until reaching either printed hand size (e.g. *Split Personality*) or modified effective hand size, with optional `count` capping.
+  - **Supplemental Retrofit:** Retrofitted *Split Personality* (`01025`) in `src/data/supplemental/pack/core.json` to canonical `FLIP_FORM` followed by `DRAW_CARDS` with `limit: "PRINTED_HAND_SIZE"` and `gate: "THEN"`, updating audit metadata to 100% confidence.
+  - **Specifications & Documentation:** Updated `docs/specifications/supplemental/06_effects_zones_cards.md` and `docs/algorithmic_rules_reference.md` to document the unified `DRAW_CARDS` limit schema and prune deprecated composite primitives.
+  - **Contract Tests:** Added unit tests verifying rejection of pruned primitives in `tests/data/supplemental-schema.test.ts`, updated sequence execution in `tests/engine/effect-sequences-and-gates.test.ts`, and added contract tests for `DRAW_CARDS` with `limit: 'PRINTED_HAND_SIZE'` in `tests/engine/player-actions.test.ts`.
+
 - **Refactor & Engine: Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#92](https://github.com/SteveRodrigue/MCD/issues/92)):**
   - **Prune Single-Use `TAKE_THREAT_AS_DAMAGE` Primitive:** Completely removed obsolete single-use effect verb `TAKE_THREAT_AS_DAMAGE` from `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, and `src/ui/components/editor/effect-parameter-registry.ts`.
   - **Supplemental Retrofit:** Migrated *Jennifer Walters* ("I Object!" `01019b`) in `src/data/supplemental/pack/core.json` to canonical `CONSUME_INTERCEPTED_EVENT` with `amount: 1` and updated audit metadata.

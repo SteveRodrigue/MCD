@@ -257,7 +257,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(state.villain.health).toBe(12); // 2 physical damage dealt
     });
 
-    it('mid-action DRAW_UP_TO_HAND_SIZE reshuffles and deals penalty when drawing across deck boundary', () => {
+    it('mid-action DRAW_CARDS with limit: HAND_SIZE reshuffles and deals penalty when drawing across deck boundary', () => {
       const player = state.players[0];
       const card1 = createCardInstance(cardCatalog.getCard('01005')!);
       const card2 = createCardInstance(cardCatalog.getCard('01006')!);
@@ -267,12 +267,15 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.discard = [card2, card3];
       player.hand = [];
       player.dealtEncounterCards = [];
+      // Mock Alter-Ego hand size to 3 for boundary test
+      player.currentForm = 'alter_ego';
+      player.alterEgo.handSize = 3;
 
       const res = executeEffect(
         state,
         {
-          effect: 'DRAW_UP_TO_HAND_SIZE',
-          params: { targetHandSize: 3 },
+          effect: 'DRAW_CARDS',
+          params: { limit: 'HAND_SIZE' },
         },
         { playerId: 'p1' },
       );

@@ -264,8 +264,8 @@ The engine pipeline dispatches discrete lifecycle triggers and performs atomic l
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | `CHOSEN_ENEMY` \| `ALL_ENEMIES` \| `ALL_HEROES` | Damage resolution with Tough card discard, armor counters, and overkill. |
 | `REMOVE_THREAT` | `MAIN_SCHEME` \| `CHOSEN_SCHEME` | Threat removal enforcing Crisis keyword restrictions. |
-| `DRAW_CARDS` | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand. |
-| `CHANGE_FORM_DRAW_TO_HAND_SIZE` | `SELF` | Flips identity card form without consuming basic flip, then draws up to new form's printed hand size limit (*Split Personality* `01025`). |
+| `DRAW_CARDS` | `SELF_IDENTITY` \| `ACTIVE_PLAYER` \| `ALL_PLAYERS` | Draws cards from draw deck into hand, with optional `limit: "HAND_SIZE" \| "PRINTED_HAND_SIZE"` (*Split Personality* `01025`). |
+| `FLIP_FORM` | `SELF` | Flips identity card form without consuming basic flip (*Split Personality* `01025`). |
 | `MODIFY_HAND_SIZE` | `SELF_IDENTITY` | Dynamic aura modifying hand size based on in-play tableau upgrades. |
 | `PLAYER_CHOICE` | `SELF_IDENTITY` | Renders Pop-Art decision prompt modal (*Nick Fury* `01084` choose 1 of 3, *Hydra Bomber*). |
 | `SPAWN_NEMESIS` | `ACTIVE_PLAYER` | Isolates player nemesis set from set-aside pool and puts minion/scheme into play (*Shadow of the Past* `01190`). |

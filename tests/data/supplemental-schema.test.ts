@@ -621,6 +621,8 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         'READY_CHARACTER',
         'READY_IDENTITY',
         'TAKE_THREAT_AS_DAMAGE',
+        'DRAW_UP_TO_HAND_SIZE',
+        'CHANGE_FORM_DRAW_TO_HAND_SIZE',
       ];
 
       for (const primitive of purgedPrimitives) {
@@ -900,6 +902,28 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                   kickerResource: 'physical',
                   overkillOnCondition: true,
                 },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Split Personality (01025) full ability data tree with DRAW_CARDS and limit: PRINTED_HAND_SIZE', () => {
+          const ability = {
+            id: 'split_personality',
+            timing: 'ACTION',
+            steps: [
+              {
+                id: 'split_personality_flip',
+                effect: 'FLIP_FORM',
+              },
+              {
+                id: 'split_personality_draw',
+                effect: 'DRAW_CARDS',
+                params: {
+                  limit: 'PRINTED_HAND_SIZE',
+                },
+                gate: 'THEN',
               },
             ],
           };

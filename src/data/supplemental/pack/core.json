@@ -987,7 +987,7 @@
       ]
     },
     "01025": {
-      "comment": "Event: Action: Change form. Draw cards up to your new form's hand size limit.",
+      "comment": "Event: Action: Change form. Draw cards up to your new form's printed hand size limit.",
       "abilities": [
         {
           "id": "split_personality",
@@ -999,7 +999,10 @@
             },
             {
               "id": "split_personality_draw",
-              "effect": "DRAW_UP_TO_HAND_SIZE",
+              "effect": "DRAW_CARDS",
+              "params": {
+                "limit": "PRINTED_HAND_SIZE"
+              },
               "gate": "THEN"
             }
           ]
@@ -1007,13 +1010,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T04:05",
-        "reviewedAt": "2026-08-31T04:05",
+        "updatedAt": "2026-09-08T21:03:00Z",
+        "reviewedAt": "2026-09-08T21:03:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Action</b>: Change your form <i>(flip your identity card)</i>. Then, draw up to your printed hand size.",
-        "reconstructedText": "ACTION -> SEQUENCE [FLIP_FORM, THEN -> DRAW_UP_TO_HAND_SIZE]"
+        "reconstructedText": "ACTION -> SEQUENCE [FLIP_FORM, THEN -> DRAW_CARDS (limit: PRINTED_HAND_SIZE)]"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Action: Change your form (flip your identity card). Then, draw up to your printed hand size."

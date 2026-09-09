@@ -1,6 +1,11 @@
 import { Keyword } from './enums';
 import type { PlayRequirements, StepCondition } from '../../data/supplemental/schema';
-export type { StepCondition, DynamicValueSource } from '../../data/supplemental/schema';
+export type {
+  StepCondition,
+  DynamicValueSource,
+  DrawCardsLimit,
+  DrawCardsParams,
+} from '../../data/supplemental/schema';
 
 export type AbilityTiming =
   | 'WHEN_REVEALED'

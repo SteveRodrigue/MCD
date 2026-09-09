@@ -214,7 +214,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [ ] **[Issue #23](https://github.com/SteveRodrigue/MCD/issues/23):** `feat(engine): Cross-player attachments & ownership (Combat Training 01057)`.
   - [x] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
   - [ ] **Composable Value Transformers, Event Interception & Explicit Condition Contracts ([ADR-0049](decisions/0049-composable-value-transformers-and-event-interception.md)):**
-    - [ ] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)`
+    - [x] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #91](https://github.com/SteveRodrigue/MCD/issues/91):** `feat(engine): Implement explicit condition evaluation and IF_CONDITION_MET sequential gating (ADR-0049)` ✅ (Completed)
     - [ ] **[Issue #92](https://github.com/SteveRodrigue/MCD/issues/92):** `refactor(data): Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives`

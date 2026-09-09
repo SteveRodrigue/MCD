@@ -10,6 +10,13 @@ import {
   CardAuditRecordSchema,
   EffectTypeSchema,
   AbilityStepSchema,
+  DynamicValueSourceSchema,
+  StepConditionSchema,
+  ConditionGateSchema,
+  AddCountersParamsSchema,
+  SpendCountersParamsSchema,
+  DiscardParamsSchema,
+  SearchAndSelectParamsSchema,
 } from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 import { generateSupplementalSchema } from '../../tools/generate-supplemental-schema';
@@ -631,5 +638,274 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const dups = detectDuplicateJsonKeys(sampleValid);
       expect(dups).toEqual([]);
     });
+
+    describe('DynamicValueSourceSchema & StepConditionSchema (ADR-0049 Contracts)', () => {
+      it('Validates all 5 DynamicValueSource types with multipliers and offsets', () => {
+        const sources = [
+          'INTERCEPTED_VALUE',
+          'PREVIOUS_RESULT',
+          'DISCARDED_COUNT',
+          'ENTITY_COUNT',
+          'STAT_VALUE',
+        ] as const;
+
+        for (const from of sources) {
+          const res = DynamicValueSourceSchema.safeParse({
+            from,
+            multiplier: 2,
+            offset: -1,
+          });
+          expect(res.success, `Expected from: ${from} to pass validation`).toBe(true);
+        }
+      });
+
+      it('Accepts UniversalCardFilter and stat property inside DynamicValueSource', () => {
+        const withFilter = DynamicValueSourceSchema.safeParse({
+          from: 'ENTITY_COUNT',
+          filter: {
+            types: ['upgrade'],
+            traits: ['Tech'],
+          },
+        });
+        expect(withFilter.success).toBe(true);
+
+        const withStat = DynamicValueSourceSchema.safeParse({
+          from: 'STAT_VALUE',
+          stat: 'SUFFERED_DAMAGE',
+          multiplier: 1,
+        });
+        expect(withStat.success).toBe(true);
+      });
+
+      it('Rejects invalid DynamicValueSource configurations', () => {
+        expect(DynamicValueSourceSchema.safeParse({ from: 'INVALID_TOKEN' }).success).toBe(false);
+        expect(DynamicValueSourceSchema.safeParse({ from: 'INTERCEPTED_VALUE', unknownProp: 123 }).success).toBe(false);
+      });
+
+      it('Validates all 12 StepConditionSchema contracts', () => {
+        const conditions = [
+          // Core Milestones
+          'SCHEME_EMPTY',
+          'TARGET_DEFEATED',
+          'FULLY_HEALED',
+          'STATUS_APPLIED',
+          'EXCESS_DAMAGE_DEALT',
+          // Entity States
+          'ALREADY_HAS_STATUS',
+          'TARGET_ALREADY_EXHAUSTED',
+          'TARGET_TRAIT_MATCH',
+          'TARGET_FORM_MATCH',
+          // Resource Invariants
+          'RESOURCE_KICKER_MET',
+          // Thresholds
+          'COUNTER_THRESHOLD_MET',
+          'ZONE_EMPTY',
+        ] as const;
+
+        for (const cond of conditions) {
+          expect(StepConditionSchema.safeParse(cond).success, `Expected condition ${cond} to pass`).toBe(true);
+        }
+
+        expect(StepConditionSchema.safeParse('UNKNOWN_CONDITION').success).toBe(false);
+      });
+
+      it('Accepts IF_CONDITION_MET in ConditionGateSchema and AbilityStepSchema', () => {
+        expect(ConditionGateSchema.safeParse('IF_CONDITION_MET').success).toBe(true);
+
+        const step = AbilityStepSchema.safeParse({
+          id: 'step_2',
+          effect: 'DRAW_CARDS',
+          gate: 'IF_CONDITION_MET',
+          params: {
+            targetStepId: 'step_1',
+            count: 1,
+          },
+        });
+        expect(step.success).toBe(true);
+      });
+
+      it('Accepts DynamicValueSource in param schemas for counters, discard, and search', () => {
+        const addCounters = AddCountersParamsSchema.safeParse({
+          target: 'SELF',
+          counterType: 'energy',
+          amount: { from: 'PREVIOUS_RESULT', multiplier: 1 },
+        });
+        expect(addCounters.success).toBe(true);
+
+        const spendCounters = SpendCountersParamsSchema.safeParse({
+          target: 'SELF',
+          counterType: 'energy',
+          amount: { from: 'INTERCEPTED_VALUE' },
+        });
+        expect(spendCounters.success).toBe(true);
+
+        const discard = DiscardParamsSchema.safeParse({
+          source: 'HAND',
+          count: { from: 'PREVIOUS_RESULT' },
+        });
+        expect(discard.success).toBe(true);
+
+        const search = SearchAndSelectParamsSchema.safeParse({
+          source: 'PLAYER_DECK',
+          lookCount: { from: 'STAT_VALUE', stat: 'ATTACK' },
+          takeCount: 1,
+        });
+        expect(search.success).toBe(true);
+      });
+
+      describe('Core Set Card Ability Declarations Validation', () => {
+        it('Validates Great Responsibility (01061) full ability data tree', () => {
+          const ability = {
+            id: 'great_responsibility_interrupt',
+            timing: 'HERO_INTERRUPT',
+            trigger: 'THREAT_WOULD_BE_PLACED',
+            zone: 'HAND',
+            cost: {
+              discardSelf: true,
+            },
+            steps: [
+              {
+                id: 'consume_threat',
+                effect: 'CONSUME_INTERCEPTED_EVENT',
+              },
+              {
+                id: 'take_damage',
+                effect: 'DEAL_DAMAGE',
+                params: {
+                  target: 'SELF_IDENTITY',
+                  amount: {
+                    from: 'INTERCEPTED_VALUE',
+                  },
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Emergency (01085) full ability data tree', () => {
+          const ability = {
+            id: 'emergency_interrupt',
+            timing: 'INTERRUPT',
+            trigger: 'THREAT_WOULD_BE_PLACED',
+            zone: 'HAND',
+            cost: {
+              discardSelf: true,
+            },
+            steps: [
+              {
+                id: 'reduce_threat',
+                effect: 'CONSUME_INTERCEPTED_EVENT',
+                params: {
+                  amount: 1,
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Jennifer Walters - I Object! (01019b) full ability data tree', () => {
+          const ability = {
+            id: 'jennifer_walters_thwart',
+            timing: 'ALTER_EGO_INTERRUPT',
+            trigger: 'THREAT_WOULD_BE_PLACED',
+            limit: 'ONCE_PER_ROUND',
+            steps: [
+              {
+                id: 'prevent_threat',
+                effect: 'CONSUME_INTERCEPTED_EVENT',
+                params: {
+                  amount: 1,
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Gamma Slam (01021) full ability data tree', () => {
+          const ability = {
+            id: 'gamma_slam_action',
+            timing: 'HERO_ACTION',
+            cost: {
+              discardSelf: true,
+            },
+            steps: [
+              {
+                id: 'deal_damage_step',
+                effect: 'DEAL_DAMAGE',
+                params: {
+                  target: 'CHOSEN_ENEMY',
+                  amount: {
+                    from: 'STAT_VALUE',
+                    stat: 'SUFFERED_DAMAGE',
+                  },
+                  max: 15,
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Photonic Blast (01013) full ability data tree with condition & IF_CONDITION_MET', () => {
+          const ability = {
+            id: 'photonic_blast',
+            timing: 'HERO_ACTION',
+            cost: {
+              discardSelf: true,
+            },
+            steps: [
+              {
+                id: 'damage_step',
+                effect: 'DEAL_DAMAGE',
+                condition: 'RESOURCE_KICKER_MET',
+                params: {
+                  amount: 5,
+                  target: 'CHOSEN_ENEMY',
+                  kickerResource: 'energy',
+                },
+              },
+              {
+                id: 'bonus_draw_step',
+                effect: 'DRAW_CARDS',
+                gate: 'IF_CONDITION_MET',
+                params: {
+                  targetStepId: 'damage_step',
+                  count: 1,
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Validates Relentless Assault (01053) full ability data tree with RESOURCE_KICKER_MET', () => {
+          const ability = {
+            id: 'relentless_assault',
+            timing: 'HERO_ACTION',
+            cost: {
+              discardSelf: true,
+            },
+            steps: [
+              {
+                id: 'strike_step',
+                effect: 'DEAL_DAMAGE',
+                condition: 'RESOURCE_KICKER_MET',
+                params: {
+                  amount: 5,
+                  target: 'CHOSEN_MINION',
+                  kickerResource: 'physical',
+                  overkillOnCondition: true,
+                },
+              },
+            ],
+          };
+          expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+      });
+    });
   });
 });
+

@@ -273,25 +273,6 @@ export type EffectType = z.infer<typeof EffectTypeSchema>;
 export const AmountFormulaSchema = z.enum(['SUFFERED_DAMAGE', 'HERO_ATK']);
 export type AmountFormula = z.infer<typeof AmountFormulaSchema>;
 
-/**
- * Dynamic Value Source Schema (ADR-0049)
- * Declarative value resolution for composable effect amounts and counters.
- */
-export const DynamicValueSourceSchema = z
-  .object({
-    from: z.enum([
-      'INTERCEPTED_VALUE',
-      'PREVIOUS_RESULT',
-      'DISCARDED_COUNT',
-      'ENTITY_COUNT',
-      'STAT_VALUE',
-    ]),
-    multiplier: z.number().optional(),
-    offset: z.number().optional(),
-  })
-  .strict();
-
-export type DynamicValueSource = z.infer<typeof DynamicValueSourceSchema>;
 
 /**
  * Resource Types
@@ -400,6 +381,28 @@ export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCri
 export const FilterSchema = UniversalCardFilterSchema;
 
 /**
+ * Dynamic Value Source Schema (ADR-0049)
+ * Declarative value resolution for composable effect amounts, counters, and scalers.
+ */
+export const DynamicValueSourceSchema = z
+  .object({
+    from: z.enum([
+      'INTERCEPTED_VALUE',
+      'PREVIOUS_RESULT',
+      'DISCARDED_COUNT',
+      'ENTITY_COUNT',
+      'STAT_VALUE',
+    ]),
+    multiplier: z.number().optional(),
+    offset: z.number().optional(),
+    stat: z.string().optional(),
+    filter: UniversalCardFilterSchema.optional(),
+  })
+  .strict();
+
+export type DynamicValueSource = z.infer<typeof DynamicValueSourceSchema>;
+
+/**
  * Ability Cost Schema
  */
 export const AbilityCostSchema = z
@@ -434,13 +437,13 @@ export const AbilityCostSchema = z
 export const AddCountersParamsSchema = z.object({
   target: z.string().optional(),
   counterType: z.string().optional(),
-  amount: z.union([z.number(), z.string()]),
+  amount: z.union([z.number(), z.string(), DynamicValueSourceSchema]),
 });
 
 export const SpendCountersParamsSchema = z.object({
   target: z.string().optional(),
   counterType: z.string().optional(),
-  amount: z.union([z.number(), z.string()]),
+  amount: z.union([z.number(), z.string(), DynamicValueSourceSchema]),
   discardWhenEmpty: z.boolean().optional(),
 });
 
@@ -448,7 +451,7 @@ export const RemoveCountersMatchingFilterParamsSchema = z.object({
   targetZone: z.string().optional(),
   traitFilter: z.string().optional(),
   counterType: z.string().optional(),
-  amount: z.union([z.number(), z.literal('ALL')]).optional(),
+  amount: z.union([z.number(), z.literal('ALL'), DynamicValueSourceSchema]).optional(),
 });
 
 export const DiscardParamsSchema = z
@@ -465,7 +468,7 @@ export const DiscardParamsSchema = z
       ])
       .optional()
       .default('HAND'),
-    count: z.union([z.number(), z.literal('ALL')]).optional().default(1),
+    count: z.union([z.number(), z.literal('ALL'), DynamicValueSourceSchema]).optional().default(1),
     mode: z.enum(['CHOSEN', 'RANDOM', 'TOP', 'ALL', 'UNTIL_MATCH']).optional(),
     target: TargetSelectorSchema.optional(),
     filter: FilterSchema.optional(),
@@ -506,8 +509,8 @@ export const SearchAndSelectParamsSchema = z
     source: z
       .enum(['PLAYER_DECK', 'ENCOUNTER_DECK', 'PLAYER_DISCARD', 'ENCOUNTER_DISCARD', 'PLAYER_HAND'])
       .default('PLAYER_DECK'),
-    lookCount: z.number().optional(),
-    takeCount: z.number().default(1),
+    lookCount: z.union([z.number(), DynamicValueSourceSchema]).optional(),
+    takeCount: z.union([z.number(), DynamicValueSourceSchema]).default(1),
     filter: UniversalCardFilterSchema.optional(),
     selectedDestination: z
       .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])

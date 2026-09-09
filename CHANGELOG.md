@@ -5,6 +5,14 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Schema & Tooling: Formalize StepConditionSchema and DynamicValueSource for Composable Card Effects ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#89](https://github.com/SteveRodrigue/MCD/issues/89)):**
+  - **`DynamicValueSourceSchema` Expansion:** Formalized the complete 5-token dynamic value source taxonomy (`INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `DISCARDED_COUNT`, `ENTITY_COUNT`, `STAT_VALUE`) with support for `multiplier`, `offset`, `stat`, and `filter: UniversalCardFilter` in `src/data/supplemental/schema.ts`.
+  - **Numeric Parameter Unions:** Integrated `DynamicValueSourceSchema` across `AddCountersParamsSchema`, `SpendCountersParamsSchema`, `RemoveCountersMatchingFilterParamsSchema`, `DiscardParamsSchema`, and `SearchAndSelectParamsSchema`.
+  - **Engine Model Re-Exports:** Re-exported `DynamicValueSource` alongside `StepCondition` in `src/engine/models/abilities.ts`.
+  - **Schema Regeneration:** Regenerated `src/data/supplemental/schema.json` via `tools/generate-supplemental-schema.ts` for live IDE autocompletion and schema validation.
+  - **Specifications Updates:** Updated `docs/specifications/supplemental/09_dynamic_formulas.md` and `docs/specifications/supplemental/10_sequences_and_prompts.md` documenting `DynamicValueSourceSchema`, `StepConditionSchema`, and `IF_CONDITION_MET`.
+  - **Contract Test Suite:** Added comprehensive contract tests in `tests/data/supplemental-schema.test.ts` validating all 5 value source types, all 12 condition milestone contracts, and full `abilities: []` data trees for Core Set cards (*Great Responsibility* `01061`, *Emergency* `01085`, *Jennifer Walters* `01019b`, *Gamma Slam* `01021`, *Photonic Blast* `01013`, *Relentless Assault* `01053`).
+
 - **Engine & Schema: Universal CONSUME_INTERCEPTED_EVENT & Scalar Value Binding ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#90](https://github.com/SteveRodrigue/MCD/issues/90)):**
   - **`CONSUME_INTERCEPTED_EVENT` Effect Primitive:** Implemented universal event consumption in `src/engine/effects/index.ts`, `src/data/supplemental/schema.ts`, and `src/engine/models/abilities.ts`. Decrements intercepted scalar values (`remainingInterceptedValue`, `threatAmount`, `damageAmount`) sequentially across multi-step abilities.
   - **Dynamic Value Sources & Formulas (`DynamicValueSourceSchema`):** Added support for `{ from: "INTERCEPTED_VALUE", multiplier?: number, offset?: number }` in `resolveNumericAmount`, binding intercepted scalar trigger context dynamically to subsequent steps (e.g. taking threat as damage in *Great Responsibility*).

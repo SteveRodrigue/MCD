@@ -71,16 +71,46 @@ export function dispatchTrigger(
   const identityAbilities = player.activeFormCard.enrichment?.abilities || [];
   for (const ability of identityAbilities) {
     if (ability.trigger === trigger) {
+      if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
+        continue;
+      }
+      if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
+        continue;
+      }
+
       const isForced = ability.timing.startsWith('FORCED_');
       if (isForced || context.acceptOptionalTriggers === true) {
         if (ability.cost) {
           executeAbilityCost(state, player, ability);
         }
-        executeEffect(state, ability, {
+        if (ability.limit === 'ONCE_PER_ROUND') {
+          if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+          player.usedAbilitiesThisRound[ability.id] =
+            (player.usedAbilitiesThisRound[ability.id] || 0) + 1;
+        } else if (ability.limit === 'ONCE_PER_PHASE') {
+          if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+          player.usedAbilitiesThisPhase[ability.id] =
+            (player.usedAbilitiesThisPhase[ability.id] || 0) + 1;
+        }
+        const effCtx = {
           playerId: player.id,
           targetType: context.targetType as any,
           targetInstanceId: context.targetInstanceId,
-        });
+          threatAmount: currentThreat,
+          damageAmount: currentDamage,
+          interceptedValue: currentThreat || currentDamage,
+        };
+        executeEffect(state, ability, effCtx);
+        if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+          currentThreat = effCtx.threatAmount;
+        }
+        if (
+          (trigger === 'TAKE_ATTACK_DAMAGE' || trigger === 'TAKE_DAMAGE') &&
+          effCtx.damageAmount !== undefined
+        ) {
+          currentDamage = effCtx.damageAmount;
+          if (currentDamage === 0) isPrevented = true;
+        }
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
@@ -115,7 +145,12 @@ export function dispatchTrigger(
               effect: 'EXECUTE_OPTIONAL_TRIGGER',
               params: {
                 ability,
-                context,
+                context: {
+                  ...context,
+                  threatAmount: currentThreat,
+                  damageAmount: currentDamage,
+                  interceptedValue: currentThreat || currentDamage,
+                },
               },
             },
             {
@@ -319,7 +354,6 @@ export function dispatchTrigger(
             p.discard.push(interruptCard);
           }
           const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
-          const takeThreatStep = ability.steps?.find((s) => s.effect === 'TAKE_THREAT_AS_DAMAGE');
           const threatStep =
             ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
 
@@ -332,15 +366,6 @@ export function dispatchTrigger(
             };
             executeEffect(state, ability, effCtx);
             currentThreat = effCtx.threatAmount ?? 0;
-          } else if (takeThreatStep) {
-            // Backward-compatibility: Great Responsibility 01061 legacy primitive
-            executeEffect(state, ability, {
-              playerId: p.id,
-              threatAmount: currentThreat,
-              interceptedValue: currentThreat,
-              sourceCardInstance: interruptCard,
-            });
-            currentThreat = 0;
           } else if (threatStep?.effect === 'REMOVE_THREAT') {
             const reduction = Number(threatStep.params?.amount ?? 1);
             currentThreat = Math.max(0, currentThreat - reduction);

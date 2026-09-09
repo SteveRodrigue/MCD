@@ -255,7 +255,6 @@ export const EffectTypeSchema = z.enum([
   'SPAWN_NEMESIS',
   'SPEND_COUNTERS',
   'SURGE',
-  'TAKE_THREAT_AS_DAMAGE',
   'TRANSFER_DAMAGE',
   'TRIGGER_SURGE',
   'TRIGGER_WAKANDA_UPGRADES',

@@ -217,7 +217,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
     - [x] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #91](https://github.com/SteveRodrigue/MCD/issues/91):** `feat(engine): Implement explicit condition evaluation and IF_CONDITION_MET sequential gating (ADR-0049)` ✅ (Completed)
-    - [ ] **[Issue #92](https://github.com/SteveRodrigue/MCD/issues/92):** `refactor(data): Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives`
+    - [x] **[Issue #92](https://github.com/SteveRodrigue/MCD/issues/92):** `refactor(data): Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives` ✅ (Completed)
 
 ### 1.2. 🔴 `[Must-Have]` Rhino Scenario & Encounter Pools (34 Cards)
 - [x] **Rhino Villain Pipeline (Rhino I `01094`, II `01095`, III `01096`, The Break-In! 1A/1B `01097`):** Multi-stage HP scaling, Tough keyword on stage transition, and scheme acceleration.

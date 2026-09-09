@@ -9,6 +9,7 @@ export interface TriggerContext {
   damageAmount?: number;
   preventedDamage?: boolean;
   threatAmount?: number;
+  interceptedValue?: number;
   targetType?: string;
   targetInstanceId?: string;
   acceptOptionalTriggers?: boolean;
@@ -20,6 +21,7 @@ export interface TriggerDispatchResult {
   preventedDamage?: boolean;
   damageAmount?: number;
   threatAmount?: number;
+  interceptedValue?: number;
   cancelled?: boolean;
   hasPendingPrompt?: boolean;
 }
@@ -37,6 +39,9 @@ export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[])
       if (s.effect === 'HEAL_DAMAGE') return `HEAL_DAMAGE (${s.params?.amount ?? 1})`;
       if (s.effect === 'ADD_STATUS') return `ADD_STATUS (${s.params?.status})`;
       if (s.effect === 'PREVENT_DAMAGE') return `PREVENT_DAMAGE (${s.params?.amount ?? 'ALL'})`;
+      if (s.effect === 'CONSUME_INTERCEPTED_EVENT') {
+        return `CONSUME_INTERCEPTED_EVENT (${s.params?.amount ?? 'ALL'})`;
+      }
       return s.effect;
     })
     .join(', ');
@@ -222,8 +227,21 @@ export function dispatchTrigger(
         if (ability.cost?.discardSelf !== false) {
           player.discard.push(interruptCard);
         }
+        const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
         const firstStep = ability.steps?.[0];
-        if (firstStep?.effect === 'PREVENT_DAMAGE') {
+        if (hasConsume) {
+          const effCtx = {
+            playerId: player.id,
+            sourceCardInstance: interruptCard,
+            damageAmount: currentDamage,
+            interceptedValue: currentDamage,
+          };
+          executeEffect(state, ability, effCtx);
+          currentDamage = effCtx.damageAmount ?? 0;
+          if (currentDamage === 0) {
+            isPrevented = true;
+          }
+        } else if (firstStep?.effect === 'PREVENT_DAMAGE') {
           currentDamage = 0;
           isPrevented = true;
           state.log.push({
@@ -250,7 +268,11 @@ export function dispatchTrigger(
               effect: 'EXECUTE_OPTIONAL_TRIGGER',
               params: {
                 ability,
-                context,
+                context: {
+                  ...context,
+                  damageAmount: currentDamage,
+                  interceptedValue: currentDamage,
+                },
                 sourceCardInstanceId: interruptCard.instanceId,
               },
             },
@@ -296,15 +318,26 @@ export function dispatchTrigger(
           if (ability.cost?.discardSelf !== false) {
             p.discard.push(interruptCard);
           }
+          const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
           const takeThreatStep = ability.steps?.find((s) => s.effect === 'TAKE_THREAT_AS_DAMAGE');
           const threatStep =
             ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
 
-          if (takeThreatStep) {
-            // Great Responsibility 01061: Completely replaces threat with damage to hero
+          if (hasConsume) {
+            const effCtx = {
+              playerId: p.id,
+              threatAmount: currentThreat,
+              interceptedValue: currentThreat,
+              sourceCardInstance: interruptCard,
+            };
+            executeEffect(state, ability, effCtx);
+            currentThreat = effCtx.threatAmount ?? 0;
+          } else if (takeThreatStep) {
+            // Backward-compatibility: Great Responsibility 01061 legacy primitive
             executeEffect(state, ability, {
               playerId: p.id,
               threatAmount: currentThreat,
+              interceptedValue: currentThreat,
               sourceCardInstance: interruptCard,
             });
             currentThreat = 0;
@@ -335,7 +368,11 @@ export function dispatchTrigger(
                 effect: 'EXECUTE_OPTIONAL_TRIGGER',
                 params: {
                   ability,
-                  context: { ...context, threatAmount: currentThreat },
+                  context: {
+                    ...context,
+                    threatAmount: currentThreat,
+                    interceptedValue: currentThreat,
+                  },
                   sourceCardInstanceId: interruptCard.instanceId,
                 },
               },

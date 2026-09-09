@@ -2121,7 +2121,15 @@ export function dispatchAction(
             activePrompt?.options.find((o) => o.id === action.selectedOptionId)?.params as any
           )?.ability;
           const preventStep = optAbility?.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
-          if (preventStep) {
+          const consumeStep = optAbility?.steps?.find(
+            (s: any) => s.effect === 'CONSUME_INTERCEPTED_EVENT',
+          );
+          if (consumeStep) {
+            preventedDamage =
+              consumeStep.params?.amount !== undefined
+                ? Number(consumeStep.params.amount)
+                : (attackCtx.pendingDamage ?? 0);
+          } else if (preventStep) {
             const isAll = preventStep.params?.amount === 'ALL' || preventStep.params?.preventAll;
             preventedDamage = isAll
               ? (attackCtx.pendingDamage ?? 0)

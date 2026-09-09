@@ -193,6 +193,7 @@ export const EffectTypeSchema = z.enum([
   'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
   'CHANGE_FORM',
   'CHANGE_FORM_DRAW_TO_HAND_SIZE',
+  'CONSUME_INTERCEPTED_EVENT',
   'COST_REDUCER',
   'DEAL_ADDITIONAL_BOOST_CARD',
   'DEAL_DAMAGE',
@@ -271,6 +272,26 @@ export type EffectType = z.infer<typeof EffectTypeSchema>;
  */
 export const AmountFormulaSchema = z.enum(['SUFFERED_DAMAGE', 'HERO_ATK']);
 export type AmountFormula = z.infer<typeof AmountFormulaSchema>;
+
+/**
+ * Dynamic Value Source Schema (ADR-0049)
+ * Declarative value resolution for composable effect amounts and counters.
+ */
+export const DynamicValueSourceSchema = z
+  .object({
+    from: z.enum([
+      'INTERCEPTED_VALUE',
+      'PREVIOUS_RESULT',
+      'DISCARDED_COUNT',
+      'ENTITY_COUNT',
+      'STAT_VALUE',
+    ]),
+    multiplier: z.number().optional(),
+    offset: z.number().optional(),
+  })
+  .strict();
+
+export type DynamicValueSource = z.infer<typeof DynamicValueSourceSchema>;
 
 /**
  * Resource Types

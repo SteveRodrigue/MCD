@@ -61,7 +61,41 @@ export interface EffectExecutionContext {
   collectedCardInstanceIds?: string[];
   threatAmount?: number;
   damageAmount?: number;
+  interceptedValue?: number;
+  remainingInterceptedValue?: number;
   choice?: string;
+}
+
+/**
+ * Universal dynamic numeric amount resolver (ADR-0049)
+ * Resolves literal numbers, INTERCEPTED_VALUE, PREVIOUS_RESULT, etc., with optional multiplier and offset.
+ */
+export function resolveNumericAmount(
+  amountParam: any,
+  context: Partial<EffectExecutionContext>,
+  fallback: number = 0,
+): number {
+  if (typeof amountParam === 'number') {
+    return amountParam;
+  }
+  if (!amountParam || typeof amountParam !== 'object') {
+    return fallback;
+  }
+
+  const from = amountParam.from;
+  const multiplier = typeof amountParam.multiplier === 'number' ? amountParam.multiplier : 1;
+  const offset = typeof amountParam.offset === 'number' ? amountParam.offset : 0;
+
+  let baseValue = 0;
+  if (from === 'INTERCEPTED_VALUE') {
+    baseValue = context.interceptedValue ?? context.threatAmount ?? context.damageAmount ?? 0;
+  } else if (from === 'PREVIOUS_RESULT') {
+    baseValue = context.previousResult?.value ?? 0;
+  } else if (from === 'DISCARDED_COUNT') {
+    baseValue = context.previousResult?.value ?? 0;
+  }
+
+  return Math.max(0, baseValue * multiplier + offset);
 }
 
 export interface EffectResult {
@@ -378,6 +412,17 @@ export function executeSequence(
     const res = executeStep(currentState, step, stepContext);
     currentState = res.state;
 
+    // Propagate mutated context fields back to sequence context
+    if (stepContext.remainingInterceptedValue !== undefined) {
+      context.remainingInterceptedValue = stepContext.remainingInterceptedValue;
+    }
+    if (stepContext.threatAmount !== undefined) {
+      context.threatAmount = stepContext.threatAmount;
+    }
+    if (stepContext.damageAmount !== undefined) {
+      context.damageAmount = stepContext.damageAmount;
+    }
+
     prevResult = {
       success: res.success,
       mutatedState: res.mutatedState ?? res.success,
@@ -411,6 +456,11 @@ export function executeEffect(
   abilityOrStep: CardAbility | AbilityStep,
   context: EffectExecutionContext,
 ): EffectResult {
+  // Normalize interceptedValue from legacy / caller-provided threatAmount or damageAmount
+  if (context.interceptedValue === undefined) {
+    context.interceptedValue = context.threatAmount ?? context.damageAmount;
+  }
+
   // Handle ability cost (e.g. discardSelf on in-play upgrades/attachments)
   if (
     'cost' in abilityOrStep &&
@@ -859,7 +909,7 @@ export function executeStep(
     }
 
     case 'DEAL_DAMAGE': {
-      let amount = (step.params?.amount as number) || 0;
+      let amount = resolveNumericAmount(step.params?.amount, context, 0);
       if (
         step.params?.amountFormula === 'HERO_ATK' ||
         (step.params?.amount as any) === 'HERO_ATK'
@@ -941,9 +991,58 @@ export function executeStep(
       }
 
       const targetType =
-        targetParam === 'ALL_HEROES' || targetParam === 'HERO'
+        targetParam === 'ALL_HEROES' ||
+        targetParam === 'HERO' ||
+        targetParam === 'SELF_IDENTITY' ||
+        targetParam === 'IDENTITY' ||
+        targetParam === 'SELF'
           ? 'hero'
           : context.targetType || 'villain';
+
+      if (targetParam === 'SELF_IDENTITY' || targetParam === 'IDENTITY' || targetParam === 'SELF') {
+        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          player.statusCards.splice(toughIdx, 1);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.dealDamage',
+            params: {
+              player: player.name,
+              target: 'hero',
+              amount: 0,
+              toughAbsorbed: true,
+            },
+            onomatopoeia: 'CLANG! (TOUGH)',
+          });
+        } else {
+          player.health = Math.max(0, player.health - amount);
+          if (player.health <= 0) state.winner = 'VILLAIN';
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.dealDamage',
+            params: {
+              player: player.name,
+              target: 'hero',
+              amount,
+              remainingHealth: player.health,
+            },
+            onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+          });
+        }
+        return {
+          state,
+          success: true,
+          mutatedState: amount > 0,
+          value: amount,
+          onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+        };
+      }
 
       if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {
         for (const p of state.players) {
@@ -1230,7 +1329,7 @@ export function executeStep(
     }
 
     case 'HEAL_DAMAGE': {
-      const amount = (step.params?.amount as number) || 0;
+      const amount = resolveNumericAmount(step.params?.amount, context, 0);
       const target = (step.params?.target as string) || 'SELF';
       let healed = 0;
 
@@ -1310,7 +1409,7 @@ export function executeStep(
     }
 
     case 'REMOVE_THREAT': {
-      const amount = (step.params?.amount as number) || 1;
+      const amount = resolveNumericAmount(step.params?.amount, context, 1);
       const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
       let targetSchemeName = state.mainScheme.card.name;
@@ -1964,6 +2063,47 @@ export function executeStep(
         state,
         success: true,
         onomatopoeia: 'GET BEHIND ME! VILLAIN ATTACKS!',
+      };
+    }
+
+    case 'CONSUME_INTERCEPTED_EVENT': {
+      const currentVal =
+        context.remainingInterceptedValue ??
+        context.interceptedValue ??
+        context.threatAmount ??
+        context.damageAmount ??
+        0;
+      const amountToConsume =
+        step.params?.amount !== undefined
+          ? Math.min(currentVal, resolveNumericAmount(step.params.amount, context, currentVal))
+          : currentVal;
+
+      const remaining = Math.max(0, currentVal - amountToConsume);
+      context.remainingInterceptedValue = remaining;
+      if (context.threatAmount !== undefined) {
+        context.threatAmount = remaining;
+      }
+      if (context.damageAmount !== undefined) {
+        context.damageAmount = remaining;
+      }
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'card.effect.consumeInterceptedEvent',
+        params: { player: player.name, consumed: amountToConsume, remaining },
+        onomatopoeia: 'EVENT INTERCEPTED!',
+      });
+
+      return {
+        state,
+        success: true,
+        mutatedState: amountToConsume > 0,
+        value: amountToConsume,
+        onomatopoeia: 'EVENT INTERCEPTED!',
       };
     }
 

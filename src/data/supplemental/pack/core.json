@@ -126,23 +126,21 @@
           },
           "steps": [
             {
-              "effect": "PREVENT_DAMAGE",
-              "params": {
-                "amount": "ALL"
-              }
+              "id": "prevent_all_damage",
+              "effect": "CONSUME_INTERCEPTED_EVENT"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-08T19:50:00Z",
+        "reviewedAt": "2026-09-08T19:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.",
-        "reconstructedText": "INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) [Cost: Discard this card] -> PREVENT_DAMAGE ({\"amount\":\"ALL\"})"
+        "reconstructedText": "INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT"
       },
       "mechanicSteps": [
         "Trigger: When hero would take damage from an attack (INTERRUPT @ TAKE_ATTACK_DAMAGE)",
@@ -2397,7 +2395,7 @@
       ]
     },
     "01061": {
-      "comment": "Defense Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
+      "comment": "Justice Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
       "abilities": [
         {
           "id": "great_responsibility_interrupt",
@@ -2409,25 +2407,36 @@
           },
           "steps": [
             {
-              "effect": "TAKE_THREAT_AS_DAMAGE"
+              "id": "consume_threat",
+              "effect": "CONSUME_INTERCEPTED_EVENT"
+            },
+            {
+              "id": "take_damage",
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "target": "SELF_IDENTITY",
+                "amount": {
+                  "from": "INTERCEPTED_VALUE"
+                }
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-08T07:02:00Z",
-        "reviewedAt": "2026-09-08T07:02:00Z",
+        "updatedAt": "2026-09-08T19:50:00Z",
+        "reviewedAt": "2026-09-08T19:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Interrupt</b>: When any amount of threat would be placed on a scheme, you take it as damage instead.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Take threat as damage on hero"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT -> DEAL_DAMAGE (amount: INTERCEPTED_VALUE, target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
         "Cost: Discard Great Responsibility from hand",
-        "Effect: Take that threat as damage on your hero instead of placing threat on the scheme"
+        "Effect: Consume the intercepted threat event (preventing all impending threat from being placed on the scheme) and deal damage equal to that intercepted threat value to your hero"
       ]
     },
     "01062": {
@@ -3302,7 +3311,7 @@
       ]
     },
     "01085": {
-      "comment": "Event: Interrupt (thwart): When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
+      "comment": "Basic Event: Interrupt (thwart): When threat would be placed on a scheme, reduce the amount of threat placed by 1.",
       "abilities": [
         {
           "id": "emergency_interrupt",
@@ -3314,10 +3323,10 @@
           },
           "steps": [
             {
-              "effect": "REMOVE_THREAT",
+              "id": "reduce_threat",
+              "effect": "CONSUME_INTERCEPTED_EVENT",
               "params": {
-                "amount": 1,
-                "target": "ACTIVE_SCHEME"
+                "amount": 1
               }
             }
           ]
@@ -3325,18 +3334,18 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T11:32",
-        "reviewedAt": "2026-08-31T11:32",
+        "updatedAt": "2026-09-08T19:50:00Z",
+        "reviewedAt": "2026-09-08T19:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Interrupt</b> <i>(thwart)</i>: When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
-        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> Remove 1 threat from the scheme"
+        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT (amount: 1)"
       },
       "mechanicSteps": [
         "Trigger: Interrupt when threat would be placed on a scheme (INTERRUPT @ THREAT_WOULD_BE_PLACED)",
         "Cost: Discard Emergency from hand",
-        "Effect: Reduce threat placed on the scheme by 1"
+        "Effect: Consume 1 of the impending threat placed on the scheme (reducing impending threat by 1)"
       ]
     },
     "01086": {

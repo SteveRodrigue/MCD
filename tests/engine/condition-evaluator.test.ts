@@ -49,7 +49,12 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           dealtEncounterCards: [],
           currentForm: 'hero',
           hero: { code: '01001a', name: 'Spider-Man', type: CardType.HERO, handSize: 5 } as any,
-          alterEgo: { code: '01001b', name: 'Peter Parker', type: CardType.ALTER_EGO, handSize: 6 } as any,
+          alterEgo: {
+            code: '01001b',
+            name: 'Peter Parker',
+            type: CardType.ALTER_EGO,
+            handSize: 6,
+          } as any,
           availableForms: [
             { code: '01001a', name: 'Spider-Man', type: CardType.HERO, handSize: 5 } as any,
             { code: '01001b', name: 'Peter Parker', type: CardType.ALTER_EGO, handSize: 6 } as any,

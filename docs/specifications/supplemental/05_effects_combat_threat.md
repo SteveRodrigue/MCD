@@ -133,3 +133,49 @@
   }
 }
 ```
+
+---
+
+### `CONSUME_INTERCEPTED_EVENT`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Consumes a scalar amount (or all if `amount` is omitted) of an active intercepted event (e.g. `TAKE_ATTACK_DAMAGE`, `THREAT_WOULD_BE_PLACED`) within an `INTERRUPT` window. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount` across sequential ability execution steps.
+
+```json
+{
+  "effect": "CONSUME_INTERCEPTED_EVENT",
+  "params": {
+    "amount": 1
+  }
+}
+```
+
+| Parameter | Type                                         | Required | Default | Description                                                                                    |
+| :-------- | :------------------------------------------- | :------- | :------ | :--------------------------------------------------------------------------------------------- |
+| `amount`  | `number \| { from: "INTERCEPTED_VALUE", ...}` | No       | `All`   | Amount of incoming event value to consume. If omitted, consumes all remaining value to zero. |
+
+---
+
+## 3. Dynamic Value Sources & Numeric Amount Resolution
+
+The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, and `CONSUME_INTERCEPTED_EVENT`:
+
+```json
+{
+  "effect": "DEAL_DAMAGE",
+  "params": {
+    "amount": {
+      "from": "INTERCEPTED_VALUE",
+      "multiplier": 1,
+      "offset": 0
+    },
+    "target": "SELF_IDENTITY"
+  }
+}
+```
+
+- **`from: "INTERCEPTED_VALUE"`**: Binds the scalar quantity captured from the trigger interception context (`threatAmount`, `damageAmount`, or `interceptedValue`).
+- **`multiplier`**: Optional scalar multiplier (defaults to `1`).
+- **`offset`**: Optional integer offset (e.g., `-1`, `+2`) to support modifier formulas (defaults to `0`).
+
+

@@ -226,6 +226,9 @@ export function resolveDecisionPrompt(
       targetType: optContext?.targetType,
       targetInstanceId: optContext?.targetInstanceId,
       threatAmount: optContext?.threatAmount,
+      damageAmount: optContext?.damageAmount,
+      interceptedValue:
+        optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
     });
 
     if (

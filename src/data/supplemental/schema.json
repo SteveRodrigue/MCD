@@ -271,6 +271,7 @@
                           "CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER",
                           "CHANGE_FORM",
                           "CHANGE_FORM_DRAW_TO_HAND_SIZE",
+                          "CONSUME_INTERCEPTED_EVENT",
                           "COST_REDUCER",
                           "DEAL_ADDITIONAL_BOOST_CARD",
                           "DEAL_DAMAGE",

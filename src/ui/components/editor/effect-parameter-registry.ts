@@ -198,6 +198,19 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
+  CONSUME_INTERCEPTED_EVENT: {
+    effect: 'CONSUME_INTERCEPTED_EVENT',
+    description: 'Consume or nullify impending intercepted event (threat, damage, defeat).',
+    parameters: [
+      {
+        key: 'amount',
+        label: 'Consumed Amount',
+        type: 'number',
+        defaultValue: 1,
+        placeholder: 'Leave blank to consume all',
+      },
+    ],
+  },
   HEAL_DAMAGE: {
     effect: 'HEAL_DAMAGE',
     description: 'Heal damage from target identity, ally, or friendly character.',

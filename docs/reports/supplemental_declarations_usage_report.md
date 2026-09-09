@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-09T00:29:38.970Z`  
+> **Generated:** `2026-09-09T01:07:06.685Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **7** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **7** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **56** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **55** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **24** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -92,7 +92,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `DISCARD` | **12** | `01002` Black Cat (ally), `01084` Nick Fury (ally), `01100` Enhanced Ivory Horn (attachment) *(+9 more)* |
 | **Effect** | `MODIFY_STAT` | **11** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+7 more)* |
 | **Effect** | `REMOVE_THREAT` | **10** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
-| **Effect** | `DRAW_CARDS` | **7** | `01001a` Spider-Man (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support) *(+4 more)* |
+| **Effect** | `DRAW_CARDS` | **8** | `01001a` Spider-Man (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support) *(+5 more)* |
 | **Effect** | `HEAL_DAMAGE` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01051` Tigra (ally) *(+4 more)* |
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
@@ -116,7 +116,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `BUFF_ALL_FRIENDLY_CHARACTERS` | `01070` | Lead from the Front (event) (core) | `lead_from_the_front_action` |
 | **Effect** | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
 | **Effect** | `DEAL_DAMAGE_ALL_ENEMIES` | `01046` | Energy Daggers (upgrade) (core) | `energy_daggers_special` |
-| **Effect** | `DRAW_UP_TO_HAND_SIZE` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `EXPLOSION` | `01111` | Explosion (treachery) (core_encounter) | `explosion_when_revealed` |
 | **Effect** | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` | `01106` | Stampede (treachery) (core_encounter) | `stampede_attack` |
@@ -166,7 +165,6 @@ These primitives are declared in schema types or specifications but have **0 act
 
 | Category | Specified Primitive | Status | Notes |
 | :--- | :--- | :--- | :--- |
-| **Effect** | `CHANGE_FORM_DRAW_TO_HAND_SIZE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `DEAL_DAMAGE_SPLIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `EXHAUST` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
@@ -199,7 +197,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `DISCARD` | **12** | `01002` (Black Cat (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01155` (Affairs of State (obligation)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01173` (Electric Whip Attack (treachery)), `01175` (Family Emergency (obligation)), `01188` (Caught Off Guard (treachery)), `01195` (Unknown Card #01195) |
 | `MODIFY_STAT` | **11** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01173` (Electric Whip Attack (treachery)) |
 | `REMOVE_THREAT` | **10** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
-| `DRAW_CARDS` | **7** | `01001a` (Spider-Man (hero)), `01010b` (Carol Danvers (alter_ego)), `01015` (Alpha Flight Station (support)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
+| `DRAW_CARDS` | **8** | `01001a` (Spider-Man (hero)), `01010b` (Carol Danvers (alter_ego)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
 | `HEAL_DAMAGE` | **7** | `01006` (Aunt May (support)), `01010a` (Captain Marvel (hero)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `ADD_THREAT_PER_PLAYER` | **6** | `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)) |
@@ -223,7 +221,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
 | `RETURN_TO_HAND` | **1** | `01020` (Hellcat (ally)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
-| `DRAW_UP_TO_HAND_SIZE` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
 | `REPULSOR_BLAST` | **1** | `01031` (Repulsor Blast (event)) |
 | `GENERATE_TOP_DISCARD_RESOURCES` | **1** | `01033` (Pepper Potts (support)) |

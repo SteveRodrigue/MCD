@@ -296,7 +296,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
   });
 
   describe('Decomposed Core Set Card Abilities', () => {
-    it('Executes Split Personality (01025) as FLIP_FORM + DRAW_UP_TO_HAND_SIZE sequence', () => {
+    it('Executes Split Personality (01025) as FLIP_FORM + DRAW_CARDS (limit: PRINTED_HAND_SIZE) sequence', () => {
       // Starts in Alter-Ego with hand of 1
       state.players[0].currentForm = 'alter_ego';
       state.players[0].hand = [state.players[0].deck.shift()!];
@@ -312,7 +312,10 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           },
           {
             id: 'draw_step',
-            effect: 'DRAW_UP_TO_HAND_SIZE',
+            effect: 'DRAW_CARDS',
+            params: {
+              limit: 'PRINTED_HAND_SIZE',
+            },
             gate: 'THEN' as const,
           },
         ],

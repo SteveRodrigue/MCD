@@ -68,7 +68,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   // 1. Core Card Draw & Manipulation
   DRAW_CARDS: {
     effect: 'DRAW_CARDS',
-    description: 'Draw specified number of cards from deck into hand.',
+    description: 'Draw cards from deck into hand with optional count and hand size limits.',
     parameters: [
       {
         key: 'count',
@@ -79,18 +79,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Number of cards to draw (RR v1.8 p. 12)',
       },
       {
-        key: 'target',
-        label: 'Target Player',
+        key: 'limit',
+        label: 'Hand Size Limit',
         type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
+        options: ['PRINTED_HAND_SIZE', 'HAND_SIZE'] as const,
+        description: 'Upper boundary constraint for drawing cards (RR v1.8 p. 13)',
       },
-    ],
-  },
-  DRAW_UP_TO_HAND_SIZE: {
-    effect: 'DRAW_UP_TO_HAND_SIZE',
-    description: 'Draw cards until player reaches their maximum hand size.',
-    parameters: [
       {
         key: 'target',
         label: 'Target Player',
@@ -99,11 +93,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 'SELF',
       },
     ],
-  },
-  CHANGE_FORM_DRAW_TO_HAND_SIZE: {
-    effect: 'CHANGE_FORM_DRAW_TO_HAND_SIZE',
-    description: 'Change identity form and draw up to hand size.',
-    parameters: [],
   },
 
   // 2. Damage & Combat Primitives

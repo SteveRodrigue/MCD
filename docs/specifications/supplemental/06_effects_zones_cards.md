@@ -6,8 +6,8 @@
 
 ### `DRAW_CARDS`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43))
-- **Description:** Draws N cards from target player's draw deck into hand. Handles deck reshuffle and acceleration token penalties.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Draws N cards from target player's draw deck into hand, with optional hand size boundary limits. Handles deck reshuffle and acceleration token penalties.
 
 ```json
 {
@@ -18,6 +18,22 @@
   }
 }
 ```
+
+```json
+{
+  "effect": "DRAW_CARDS",
+  "params": {
+    "limit": "PRINTED_HAND_SIZE"
+  }
+}
+```
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `count` | `number \| DynamicValueSource` | No | Number of cards to draw. Defaults to `1` if `limit` is not specified. |
+| `limit` | `"HAND_SIZE" \| "PRINTED_HAND_SIZE"` | No | Upper boundary constraint. When set without `count`, draws until hand reaches limit. When set with `count`, draws up to `count` without exceeding limit. |
+| `target` | `TargetSelector` | No | Target player selector (`ACTIVE_PLAYER`, `CHOSEN_PLAYER`, `ALL_PLAYERS`, etc.). Defaults to triggering player. |
+| `targetPlayerId` | `string` | No | Explicit target player identifier. |
 
 ---
 
@@ -154,19 +170,6 @@
     "shuffleAfter": true,
     "promptTitle": "Foresight: Search deck for a Black Panther upgrade"
   }
-}
-```
-
----
-
-### `CHANGE_FORM_DRAW_TO_HAND_SIZE`
-
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1082`](../../../src/engine/effects/index.ts#L1082) / _Split Personality_ `01025`)
-- **Description:** Flips the player's active identity card to their alternate form independently without consuming or requiring their basic once-per-round form change action (`basicChangeFormUsedThisRound`), then draws cards from deck up to the printed hand size limit of the newly active form.
-
-```json
-{
-  "effect": "CHANGE_FORM_DRAW_TO_HAND_SIZE"
 }
 ```
 

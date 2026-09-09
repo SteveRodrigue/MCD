@@ -10,6 +10,7 @@ import {
   MainSchemeCard,
   createCardInstance,
   evaluateCardPlayability,
+  executeEffect,
   Keyword,
 } from '@engine/index';
 
@@ -844,6 +845,65 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(
           res2.state.players[0].discard.some((c) => c.instanceId === nonTech2.instanceId),
         ).toBe(true);
+      });
+    });
+
+    describe('DRAW_CARDS with limit parameter', () => {
+      it('draws up to printed hand size when limit: PRINTED_HAND_SIZE is specified', () => {
+        const player = gameState.players[0];
+        // Peter Parker Alter-Ego hand size is 6
+        player.currentForm = 'alter_ego';
+        player.hand = player.deck.splice(0, 2); // 2 in hand
+        expect(player.hand.length).toBe(2);
+
+        const step = {
+          effect: 'DRAW_CARDS' as const,
+          params: {
+            limit: 'PRINTED_HAND_SIZE' as const,
+          },
+        };
+
+        const res = executeEffect(
+          gameState,
+          {
+            id: 'draw_test',
+            timing: 'ACTION' as const,
+            steps: [step],
+          },
+          { playerId: 'p1' },
+        );
+
+        expect(res.success).toBe(true);
+        // Alter-Ego handSize = 6, drew 4 cards
+        expect(res.state.players[0].hand.length).toBe(6);
+      });
+
+      it('respects count cap when both count and limit: PRINTED_HAND_SIZE are specified', () => {
+        const player = gameState.players[0];
+        player.currentForm = 'alter_ego';
+        player.hand = player.deck.splice(0, 2); // 2 in hand
+
+        const step = {
+          effect: 'DRAW_CARDS' as const,
+          params: {
+            count: 2,
+            limit: 'PRINTED_HAND_SIZE' as const,
+          },
+        };
+
+        const res = executeEffect(
+          gameState,
+          {
+            id: 'draw_capped_test',
+            timing: 'ACTION' as const,
+            steps: [step],
+          },
+          { playerId: 'p1' },
+        );
+
+        expect(res.success).toBe(true);
+        // Started with 2, count is 2 (limit is 6) -> draws only 2, resulting in 4
+        expect(res.state.players[0].hand.length).toBe(4);
       });
     });
   });

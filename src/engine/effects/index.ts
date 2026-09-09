@@ -30,6 +30,7 @@ import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
+  getEffectiveHandSize,
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
@@ -789,7 +790,10 @@ export function executeStep(
       return executeDiscard(state, step, context);
     }
     case 'DRAW_CARDS': {
-      const count = (step.params?.count as number) || 1;
+      const rawCount = step.params?.count;
+      const count =
+        rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
+      const limit = step.params?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
       const targetParam = step.params?.target as string | undefined;
       const targetPlayerId =
         (step.params?.targetPlayerId as string) ||
@@ -798,17 +802,32 @@ export function executeStep(
           ? context.targetInstanceId
           : undefined);
 
+      const getPlayerTargetLimit = (p: PlayerState): number | undefined => {
+        if (!limit) return undefined;
+        if (limit === 'PRINTED_HAND_SIZE') {
+          const isHero = p.currentForm === 'hero';
+          return isHero
+            ? ((p.hero as any)?.handSize ?? p.activeFormCard.raw?.hand_size ?? 5)
+            : ((p.alterEgo as any)?.handSize ?? p.activeFormCard.raw?.hand_size ?? 6);
+        }
+        // limit === 'HAND_SIZE'
+        return getEffectiveHandSize(p, state);
+      };
+
       // If a specific target player was designated (e.g. from decision prompt resolution)
       if (targetPlayerId) {
         const targetP = state.players.find((p) => p.id === targetPlayerId);
         if (targetP) {
+          const targetLimit = getPlayerTargetLimit(targetP);
           let drawnForP = 0;
-          for (let i = 0; i < count; i++) {
+          while (
+            (count === undefined || drawnForP < count) &&
+            (targetLimit === undefined || targetP.hand.length < targetLimit)
+          ) {
             const drawn = drawPlayerCard(state, targetP.id);
-            if (drawn) {
-              targetP.hand.push(drawn);
-              drawnForP += 1;
-            }
+            if (!drawn) break;
+            targetP.hand.push(drawn);
+            drawnForP += 1;
           }
           state.log.push({
             id: `log_${Date.now()}_${targetP.id}`,
@@ -820,12 +839,15 @@ export function executeStep(
               player: targetP.name,
               count: drawnForP,
               handSize: targetP.hand.length,
+              ...(targetLimit !== undefined ? { targetLimit } : {}),
             },
             onomatopoeia: `DRAW +${drawnForP}!`,
           });
           return {
             state,
             success: true,
+            mutatedState: drawnForP > 0,
+            value: drawnForP,
             onomatopoeia: `DRAW +${drawnForP}!`,
           };
         }
@@ -833,6 +855,7 @@ export function executeStep(
 
       // If targeting CHOSEN_PLAYER in multiplayer mode, prompt the player to select the recipient
       if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1) {
+        const effectiveCount = count ?? 1;
         const sourceCardName =
           context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Ability';
         const promptId = `prompt_${Date.now()}_choose_player`;
@@ -840,15 +863,16 @@ export function executeStep(
           promptId,
           playerId: player.id,
           title: 'Choose a Player',
-          description: `Choose a player to draw ${count} card${count > 1 ? 's' : ''}:`,
+          description: `Choose a player to draw ${effectiveCount} card${effectiveCount > 1 ? 's' : ''}:`,
           sourceCardName,
           options: state.players.map((p) => ({
             id: `draw_${p.id}`,
             label: `${p.name} (${p.hero?.name || 'Hero'})`,
-            description: `Give ${count} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
+            description: `Give ${effectiveCount} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
             effect: 'DRAW_CARDS',
             params: {
-              count,
+              count: rawCount,
+              limit,
               targetPlayerId: p.id,
             },
           })),
@@ -876,14 +900,15 @@ export function executeStep(
       let totalDrawn = 0;
 
       for (const p of targetPlayers) {
+        const targetLimit = getPlayerTargetLimit(p);
         let drawnForP = 0;
-        for (let i = 0; i < count; i++) {
+        const maxDraw = count !== undefined ? count : limit ? Infinity : 1;
+        while (drawnForP < maxDraw && (targetLimit === undefined || p.hand.length < targetLimit)) {
           const drawn = drawPlayerCard(state, p.id);
-          if (drawn) {
-            p.hand.push(drawn);
-            drawnForP += 1;
-            totalDrawn += 1;
-          }
+          if (!drawn) break;
+          p.hand.push(drawn);
+          drawnForP += 1;
+          totalDrawn += 1;
         }
         state.log.push({
           id: `log_${Date.now()}_${p.id}`,
@@ -895,6 +920,7 @@ export function executeStep(
             player: p.name,
             count: drawnForP,
             handSize: p.hand.length,
+            ...(targetLimit !== undefined ? { targetLimit } : {}),
           },
           onomatopoeia: `DRAW +${drawnForP}!`,
         });
@@ -904,6 +930,8 @@ export function executeStep(
       return {
         state,
         success: true,
+        mutatedState: totalDrawn > 0,
+        value: totalDrawn,
         onomatopoeia,
       };
     }
@@ -2706,38 +2734,6 @@ export function executeStep(
       };
     }
 
-    case 'DRAW_UP_TO_HAND_SIZE': {
-      const targetHandSize =
-        (step.params?.targetHandSize as number) ||
-        (player.currentForm === 'hero' ? player.hero.handSize || 5 : player.alterEgo.handSize || 6);
-
-      let drawnCount = 0;
-      while (player.hand.length < targetHandSize) {
-        const card = drawPlayerCard(state, player.id);
-        if (!card) break;
-        player.hand.push(card);
-        drawnCount += 1;
-      }
-
-      const onomatopoeia = `REFILL HAND (+${drawnCount})!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.drawUpToHandSize',
-        params: { player: player.name, drawnCount, targetHandSize },
-        onomatopoeia,
-      });
-      return {
-        state,
-        success: true,
-        mutatedState: drawnCount > 0,
-        value: drawnCount,
-        onomatopoeia,
-      };
-    }
-
     case 'TRIGGER_SURGE':
     case 'SURGE': {
       const surgeCard = drawEncounterCard(state);
@@ -2831,17 +2827,6 @@ export function executeStep(
         value: 1,
         onomatopoeia,
       };
-    }
-
-    case 'CHANGE_FORM_DRAW_TO_HAND_SIZE': {
-      return executeSequence(
-        state,
-        [
-          { id: 'step_1_flip', effect: 'FLIP_FORM' },
-          { id: 'step_2_draw', effect: 'DRAW_UP_TO_HAND_SIZE' },
-        ],
-        context,
-      );
     }
 
     case 'HULK_DISCARD_RESOLUTION': {

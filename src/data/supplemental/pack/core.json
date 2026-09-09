@@ -784,7 +784,7 @@
       ]
     },
     "01019b": {
-      "comment": "Alter-Ego Identity: Alter-Ego Action: Remove 1 threat from a scheme (limit 1/round).",
+      "comment": "Alter-Ego Identity: Alter-Ego Interrupt: When threat would be placed on a scheme, prevent 1 of that threat (limit 1/round).",
       "abilities": [
         {
           "id": "jennifer_walters_thwart",
@@ -793,7 +793,8 @@
           "limit": "ONCE_PER_ROUND",
           "steps": [
             {
-              "effect": "REMOVE_THREAT",
+              "id": "prevent_threat",
+              "effect": "CONSUME_INTERCEPTED_EVENT",
               "params": {
                 "amount": 1
               }
@@ -803,16 +804,16 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T15:25:03Z",
-        "reviewedAt": "2026-09-06T15:25:03Z",
-        "reviewedBy": "Steve",
+        "updatedAt": "2026-09-08T20:25:00Z",
+        "reviewedAt": "2026-09-08T20:25:00Z",
+        "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 0,
+        "confidence": 100,
         "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)",
-        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Remove 1 threat from CHOSEN_SCHEME"
+        "reconstructedText": "ALTER_EGO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Limit: once per round] -> CONSUME_INTERCEPTED_EVENT (amount: 1)"
       },
       "mechanicSteps": [
-        "Alter-Ego Identity ability/recovery for Jennifer Walters"
+        "Alter-Ego Identity ability: When threat would be placed on a scheme, prevent 1 of that threat (Limit once per round)."
       ]
     },
     "01020": {

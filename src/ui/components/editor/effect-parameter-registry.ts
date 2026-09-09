@@ -1404,11 +1404,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Prompt player to choose between multiple options.',
     parameters: [],
   },
-  TAKE_THREAT_AS_DAMAGE: {
-    effect: 'TAKE_THREAT_AS_DAMAGE',
-    description: 'Take threat on identity as direct damage.',
-    parameters: [],
-  },
 };
 
 /**

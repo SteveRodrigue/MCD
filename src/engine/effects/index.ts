@@ -2107,23 +2107,6 @@ export function executeStep(
       };
     }
 
-    case 'TAKE_THREAT_AS_DAMAGE': {
-      const amount = (context.threatAmount ?? (step.params?.amount as number)) || 1;
-      player.health = Math.max(0, player.health - amount);
-      if (player.health <= 0) state.winner = 'VILLAIN';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'ability',
-        key: 'card.effect.greatResponsibility',
-        params: { player: player.name, damage: amount },
-        onomatopoeia: 'GREAT RESPONSIBILITY! (DAMAGE TAKEN)',
-      });
-      return { state, success: true, onomatopoeia: 'GREAT RESPONSIBILITY!' };
-    }
-
     case 'EXHAUST': {
       const targetParam = (step.params?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
@@ -184,6 +184,67 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
 
       expect(promptRes.state.players[0].health).toBe(initialHp - 4);
       expect(promptRes.state.players[0].hand).not.toContain(grInst);
+    });
+  });
+
+  describe('01019b Jennifer Walters - I Object! (Alter-Ego Interrupt @ THREAT_WOULD_BE_PLACED)', () => {
+    let sheHulkHero: HeroCard;
+    let jenniferWaltersAlterEgo: AlterEgoCard;
+
+    beforeEach(() => {
+      sheHulkHero = cardCatalog.getCard('01019a') as HeroCard;
+      jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
+
+      state.players[0].hero = sheHulkHero;
+      state.players[0].alterEgo = jenniferWaltersAlterEgo;
+      state.players[0].activeFormCard = jenniferWaltersAlterEgo;
+      state.players[0].currentForm = 'alter_ego';
+    });
+
+    it('prevents 1 threat when threat would be placed in Alter-Ego form', () => {
+      const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+        targetPlayerId: 'p1',
+        threatAmount: 3,
+        acceptOptionalTriggers: true,
+      });
+
+      // 3 threat reduced by 1 to 2 threat
+      expect(triggerRes.threatAmount).toBe(2);
+      expect(triggerRes.state.players[0].usedAbilitiesThisRound?.['jennifer_walters_thwart']).toBe(
+        1,
+      );
+    });
+
+    it('enforces ONCE_PER_ROUND limit: cannot trigger twice in the same round', () => {
+      const firstRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+        targetPlayerId: 'p1',
+        threatAmount: 3,
+        acceptOptionalTriggers: true,
+      });
+
+      expect(firstRes.threatAmount).toBe(2);
+
+      const secondRes = dispatchTrigger(firstRes.state, 'THREAT_WOULD_BE_PLACED', {
+        targetPlayerId: 'p1',
+        threatAmount: 3,
+        acceptOptionalTriggers: true,
+      });
+
+      // Second attempt is not reduced because ability was already used once this round
+      expect(secondRes.threatAmount).toBe(3);
+    });
+
+    it('does not trigger when in Hero form', () => {
+      state.players[0].currentForm = 'hero';
+      state.players[0].activeFormCard = sheHulkHero;
+
+      const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
+        targetPlayerId: 'p1',
+        threatAmount: 3,
+        acceptOptionalTriggers: true,
+      });
+
+      expect(triggerRes.threatAmount).toBe(3);
     });
   });
 });

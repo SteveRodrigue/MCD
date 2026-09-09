@@ -620,6 +620,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         'READY_CARD',
         'READY_CHARACTER',
         'READY_IDENTITY',
+        'TAKE_THREAT_AS_DAMAGE',
       ];
 
       for (const primitive of purgedPrimitives) {

@@ -5,6 +5,12 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Refactor & Engine: Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#92](https://github.com/SteveRodrigue/MCD/issues/92)):**
+  - **Prune Single-Use `TAKE_THREAT_AS_DAMAGE` Primitive:** Completely removed obsolete single-use effect verb `TAKE_THREAT_AS_DAMAGE` from `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, and `src/ui/components/editor/effect-parameter-registry.ts`.
+  - **Supplemental Retrofit:** Migrated *Jennifer Walters* ("I Object!" `01019b`) in `src/data/supplemental/pack/core.json` to canonical `CONSUME_INTERCEPTED_EVENT` with `amount: 1` and updated audit metadata.
+  - **Engine Dispatcher Improvements:** In `src/engine/triggers/trigger-dispatcher.ts`, enforced `ONCE_PER_ROUND` and `ONCE_PER_PHASE` ability limits on in-play identity interrupt abilities, bound `effCtx.threatAmount` and `effCtx.interceptedValue` during identity threat interrupt dispatching, and pruned legacy fallback branches.
+  - **Contract Tests:** Added unit tests asserting schema rejection of `TAKE_THREAT_AS_DAMAGE` and contract tests in `tests/engine/interrupt-replacement-effects.test.ts` verifying 1-threat prevention, limit enforcement, and hero form restriction for *Jennifer Walters*.
+
 - **Schema & Tooling: Formalize StepConditionSchema and DynamicValueSource for Composable Card Effects ([ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md), [#89](https://github.com/SteveRodrigue/MCD/issues/89)):**
   - **`DynamicValueSourceSchema` Expansion:** Formalized the complete 5-token dynamic value source taxonomy (`INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `DISCARDED_COUNT`, `ENTITY_COUNT`, `STAT_VALUE`) with support for `multiplier`, `offset`, `stat`, and `filter: UniversalCardFilter` in `src/data/supplemental/schema.ts`.
   - **Numeric Parameter Unions:** Integrated `DynamicValueSourceSchema` across `AddCountersParamsSchema`, `SpendCountersParamsSchema`, `RemoveCountersMatchingFilterParamsSchema`, `DiscardParamsSchema`, and `SearchAndSelectParamsSchema`.

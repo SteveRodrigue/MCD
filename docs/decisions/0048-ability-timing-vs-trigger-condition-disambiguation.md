@@ -1,4 +1,4 @@
-﻿# [ADR-0048] Ability Timing vs. Trigger Condition Disambiguation & CARD_PLAYED vs. ENTERS_PLAY
+# [ADR-0048] Ability Timing vs. Trigger Condition Disambiguation & CARD_PLAYED vs. ENTERS_PLAY
 
 - **Status:** Accepted
 - **Date:** 2026-09-07
@@ -92,3 +92,4 @@ Concretely, `CARD_PLAYED` and `WHEN_PLAYED` appeared in `TimingTypeSchema` as "t
 - **Risk:** Cards currently relying on the `timing: "CARD_PLAYED"` fallback (no `trigger` field + RESPONSE timing) in the old inline dispatch loop will no longer trigger.
   - **Mitigation:** All affected cards were explicitly audited and corrected in this ADR. The `ENTERS_PLAY` trigger is now declarative — no implicit fallback needed.
 - **Tech debt:** `MINION_ENTERS_PLAY` (Hawkeye) is kept as a distinct trigger for now; collapsing into a filtered `ENTERS_PLAY` is deferred.
+- **In-Play Instance Binding Invariant:** The requirement that in-play entities with `CARD_PLAYED` or `ENTERS_PLAY` only respond when their own `instanceId` matches `sourceInstanceId` is formalized in [ADR-0050](0050-universal-in-play-self-referential-trigger-instance-binding.md).

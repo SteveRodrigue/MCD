@@ -174,6 +174,22 @@ export function dispatchTrigger(
     const abilities = cardInst.card.enrichment?.abilities || [];
     for (const ability of abilities) {
       if (ability.trigger === trigger) {
+        // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
+        // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
+        // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
+        if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
+          if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
+            continue;
+          }
+          if (!context.sourceInstanceId) {
+            continue;
+          }
+        }
+
+        // Ally action-resolution guard:
+        // An ally's ability triggered by THWART_RESOLVED or ATTACK_RESOLVED must only fire
+        // if this specific ally was the character that attacked or thwarted.
+        // Upgrades in the tableau (e.g. Superhuman Strength 01028) trigger on the hero's attack/thwart.
         if (
           cardInst.card.type === 'ally' &&
           (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')

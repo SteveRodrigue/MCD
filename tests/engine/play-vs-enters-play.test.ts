@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Contract tests for ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger semantics.
  *
  * Verifies RR v1.8 invariant:
@@ -193,5 +193,93 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     expect(res.result.success).toBe(true);
     const ally = res.state.players[0].allies.find((a) => a.instanceId === allyInst.instanceId);
     expect(ally?.attachments?.some((a) => a.instanceId === inspiredInst.instanceId)).toBe(true);
+  });
+
+  it('G: Nick Fury FORCED_RESPONSE @ ENTERS_PLAY does NOT re-trigger when a second ally is played (#93)', () => {
+    const nickFury = catalog.getCard('01084')!;
+    const nickFuryInst = createCardInstance(nickFury);
+    const payment1 = makePaymentCards(4);
+    gameState.players[0].hand = [nickFuryInst, ...payment1];
+
+    const res1 = dispatchAction(gameState, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: nickFuryInst.instanceId,
+      paymentCardInstanceIds: payment1.map((c) => c.instanceId),
+    });
+
+    expect(res1.result.success).toBe(true);
+    expect(res1.state.players[0].allies.some((a) => a.instanceId === nickFuryInst.instanceId)).toBe(
+      true,
+    );
+    expect(res1.state.pendingDecisionPrompt).toBeDefined();
+
+    // Resolve Nick Fury's 3-choice prompt
+    const res2 = dispatchAction(res1.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'draw_3_cards',
+    });
+    expect(res2.result.success).toBe(true);
+    expect(res2.state.pendingDecisionPrompt).toBeUndefined();
+
+    // Step 2: Play Mockingbird as a second ally
+    const mockingbird = catalog.getCard('01083')!;
+    const mockingbirdInst = createCardInstance(mockingbird);
+    const payment2 = makePaymentCards(3);
+    res2.state.players[0].hand = [mockingbirdInst, ...payment2];
+
+    const res3 = dispatchAction(res2.state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: mockingbirdInst.instanceId,
+      paymentCardInstanceIds: payment2.map((c) => c.instanceId),
+      targetInstanceId: res2.state.villain.instanceId,
+    });
+
+    expect(res3.result.success).toBe(true);
+    // Nick Fury must NOT have reopened his 3-choice prompt
+    if (res3.state.pendingDecisionPrompt) {
+      expect(res3.state.pendingDecisionPrompt.sourceCardName).not.toBe('Nick Fury');
+    }
+  });
+
+  it('J: Black Cat FORCED_RESPONSE @ CARD_PLAYED does NOT re-trigger when a second card is played', () => {
+    const blackCat = catalog.getCard('01002')!;
+    const blackCatInst = createCardInstance(blackCat);
+    const payment1 = makePaymentCards(4);
+
+    gameState.players[0].hand = [blackCatInst, ...payment1];
+    const initialDeck = gameState.players[0].deck.length;
+
+    const res1 = dispatchAction(gameState, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: blackCatInst.instanceId,
+      paymentCardInstanceIds: payment1.map((c) => c.instanceId),
+    });
+
+    expect(res1.result.success).toBe(true);
+    const deckAfterBlackCat = res1.state.players[0].deck.length;
+    expect(deckAfterBlackCat).toBeLessThan(initialDeck);
+
+    // Play Mockingbird as a second card
+    const mockingbird = catalog.getCard('01083')!;
+    const mockingbirdInst = createCardInstance(mockingbird);
+    const payment2 = makePaymentCards(3);
+    res1.state.players[0].hand = [mockingbirdInst, ...payment2];
+
+    const res2 = dispatchAction(res1.state, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: mockingbirdInst.instanceId,
+      paymentCardInstanceIds: payment2.map((c) => c.instanceId),
+      targetInstanceId: res1.state.villain.instanceId,
+    });
+
+    expect(res2.result.success).toBe(true);
+    // Mockingbird does not discard cards from player deck.
+    // If Black Cat incorrectly re-triggered, deck length would decrease by 2 again!
+    expect(res2.state.players[0].deck.length).toBe(deckAfterBlackCat);
   });
 });

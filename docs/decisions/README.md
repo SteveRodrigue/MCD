@@ -115,6 +115,11 @@ graph TD
         ADR44["ADR-0044: Card Text Parsing & Declarative Mapping Analyzer"]
         ADR45["ADR-0045: Card Supplemental Editor & Live Reviewer GUI"]
     end
+    subgraph Lifecycle["Play & Enters-Play Lifecycle"]
+        ADR47["ADR-0047: Playing Cards From Non-Hand Zones"]
+        ADR48["ADR-0048: Timing vs Trigger & CARD_PLAYED vs ENTERS_PLAY"] --> ADR50["ADR-0050: Universal In-Play Self-Referential Trigger Instance Binding"]
+        ADR49["ADR-0049: Composable Value Transformers & Event Interception"]
+    end
 ```
 
 ---
@@ -172,6 +177,7 @@ graph TD
 | [ADR-0047](0047-playing-cards-from-non-hand-zones.md)                                           | 2026-09-06 | Playing Cards From Non-Hand Zones & Dynamic Target Costs                              | **Accepted**                                                                                                 | Support out-of-hand card plays and dynamic target costs via generalized `sourceZone` permissions and `PLAY_CARD_FROM_ZONE` primitive.                |
 | [ADR-0048](0048-ability-timing-vs-trigger-condition-disambiguation.md)                           | 2026-09-07 | Ability Timing vs. Trigger Condition Disambiguation & CARD_PLAYED vs. ENTERS_PLAY     | **Accepted**                                                                                                 | Remove `CARD_PLAYED`/`WHEN_PLAYED` from `TimingTypeSchema`; add `ENTERS_PLAY` to `TriggerTypeSchema`; correct 7 card entries; refactor 4 inline dispatch loops to `dispatchTrigger`. |
 | [ADR-0049](0049-composable-value-transformers-and-event-interception.md)                         | 2026-09-08 | Composable Value Transformers, Replacement Event Interceptors & Prevention Pipelines | **Accepted**                                                                                                 | Generalize replacement interrupts and dynamic scalers across all 120 Zzorba packs using atomic event consumers and `DynamicValueSource` to eliminate single-use effect primitives. |
+| [ADR-0050](0050-universal-in-play-self-referential-trigger-instance-binding.md)                    | 2026-09-11 | Universal In-Play Self-Referential Trigger Instance Binding                           | **Accepted**                                                                                                 | Guarantee in-play entities with self-referential triggers (ENTERS_PLAY, CARD_PLAYED) only fire when their instanceId matches sourceInstanceId, resolving Issue #93 and preventing multi-card cascade defects. |
 
 
 ---

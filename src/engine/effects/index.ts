@@ -791,8 +791,7 @@ export function executeStep(
     }
     case 'DRAW_CARDS': {
       const rawCount = step.params?.count;
-      const count =
-        rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
+      const count = rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
       const limit = step.params?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
       const targetParam = step.params?.target as string | undefined;
       const targetPlayerId =

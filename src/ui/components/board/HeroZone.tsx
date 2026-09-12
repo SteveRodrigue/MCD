@@ -633,17 +633,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             <div className="flex flex-wrap gap-3 items-center pt-1">
               {player.tableau.map((cardInst) => {
                 const abilities = cardInst.card.enrichment?.abilities || [];
-                const activeAbility = abilities.find(
+                const activeAbilities = abilities.filter(
                   (ab) =>
                     ab.timing === 'ACTION' ||
                     (isHero && ab.timing === 'HERO_ACTION') ||
                     (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
                 );
-                const canUse =
-                  isPlayerTurn &&
-                  activeAbility &&
-                  gameState &&
-                  canPayAbilityCost(gameState, player, activeAbility, cardInst, {}).allowed;
 
                 return (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
@@ -653,39 +648,59 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       size="sm"
                       enableHoverZoom={true}
                       onClick={() => {
-                        if (activeAbility && canUse && onDispatchAction) {
+                        const firstUsable = activeAbilities.find(
+                          (ab) =>
+                            isPlayerTurn &&
+                            gameState &&
+                            canPayAbilityCost(gameState, player, ab, cardInst, {}).allowed,
+                        );
+                        if (firstUsable && onDispatchAction) {
                           onDispatchAction({
                             type: 'USE_CARD_ABILITY',
                             playerId: player.id,
                             cardInstanceId: cardInst.instanceId,
-                            abilityId: activeAbility.id,
+                            abilityId: firstUsable.id,
                           });
                         }
                       }}
                     />
-                    {activeAbility && (
-                      <button
-                        onClick={() =>
-                          onDispatchAction?.({
-                            type: 'USE_CARD_ABILITY',
-                            playerId: player.id,
-                            cardInstanceId: cardInst.instanceId,
-                            abilityId: activeAbility.id,
-                          })
-                        }
-                        disabled={!canUse}
-                        className="w-full font-comic text-[10px] bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={
-                          canUse
-                            ? `Trigger ${activeAbility.id}`
-                            : cardInst.exhausted
-                              ? 'Card is exhausted'
-                              : 'Cannot trigger ability'
-                        }
-                      >
-                        ⚡ USE
-                      </button>
-                    )}
+                    {activeAbilities.map((ab) => {
+                      const costCheck = gameState
+                        ? canPayAbilityCost(gameState, player, ab, cardInst, {})
+                        : { allowed: false, reason: 'Game state not loaded' };
+                      const canUse = isPlayerTurn && costCheck.allowed;
+                      const label = ab.id.includes('add')
+                        ? '⚡ +1 TOKEN'
+                        : ab.id.includes('blast')
+                          ? '💥 BLAST'
+                          : '⚡ USE';
+
+                      return (
+                        <button
+                          key={ab.id}
+                          onClick={() =>
+                            onDispatchAction?.({
+                              type: 'USE_CARD_ABILITY',
+                              playerId: player.id,
+                              cardInstanceId: cardInst.instanceId,
+                              abilityId: ab.id,
+                            })
+                          }
+                          disabled={!canUse}
+                          className="w-full font-comic text-[10px] bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                          title={
+                            canUse
+                              ? `Trigger ${ab.id}`
+                              : costCheck.reason ||
+                                (cardInst.exhausted
+                                  ? 'Card is exhausted'
+                                  : 'Cannot trigger ability')
+                          }
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
                   </div>
                 );
               })}

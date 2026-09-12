@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
-import { CardInstance, PlayerState, GameState, MinionCard } from '../../../engine/models';
+import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
 import { isResourceAbility, isAbilityPlayableInForm } from '../../../engine/pipeline/cost-engine';
 import { FormattedCardText } from '../cards/FormattedCardText';
@@ -65,7 +65,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       setSelectedGeneratorIds([]);
 
       // Default target: villain for attacks, main scheme for thwarts
-      const abilities = cardToPlay.card.enrichment?.abilities || [];
+      // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
+      // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
+      const isEventCard =
+        cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
+      const abilities = isEventCard ? cardToPlay.card.enrichment?.abilities || [] : [];
       const hasAttack = abilities.some((a) =>
         (a.steps || []).some((s) =>
           ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
@@ -260,13 +264,21 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const isCostCovered = totalGenerated >= cost;
 
   // Potential Targets (Enemies or Schemes)
-  const abilities = card?.enrichment?.abilities || [];
-  const isAttack = abilities.some((a) =>
-    (a.steps || []).some((s) =>
-      ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-    ),
-  );
-  const isThwart = abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
+  // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
+  // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
+  const isEventCard = card?.type === CardType.EVENT || (card as any)?.type_code === 'event';
+  const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
+  const isAttack =
+    isEventCard &&
+    abilities.some((a) =>
+      (a.steps || []).some((s) =>
+        ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
+          s.effect,
+        ),
+      ),
+    );
+  const isThwart =
+    isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
 
   const enemyTargets = useMemo(() => {
     const targets: {

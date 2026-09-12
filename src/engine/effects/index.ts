@@ -178,6 +178,7 @@ export function checkAndDiscardZeroCounterCard(
     }
 
     if (discarded) {
+      discardHostAttachmentsAndTuckedCards(state, discarded, player.id);
       const owner =
         (discarded.ownerId ? state.players.find((p) => p.id === discarded.ownerId) : undefined) ||
         player;
@@ -246,6 +247,10 @@ export function discardHostAttachmentsAndTuckedCards(
         const ownerId = (attachment as any).ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(attachment);
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: targetP.id,
+          sourceInstanceId: attachment.instanceId,
+        });
       }
     }
     host.attachments = [];
@@ -260,6 +265,10 @@ export function discardHostAttachmentsAndTuckedCards(
         const ownerId = (tucked as any).ownerId || ownerPlayerId;
         const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
         targetP.discard.push(tucked);
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: targetP.id,
+          sourceInstanceId: tucked.instanceId,
+        });
       }
     }
     host.cardsUnderneath = [];
@@ -276,7 +285,8 @@ export function processHostDefeated(
   context?: { player?: PlayerState; sourceCardInstance?: CardInstance },
 ): void {
   const attachments = hostCard.attachments || [];
-  if (attachments.length === 0) return;
+  const cardsUnderneath = hostCard.cardsUnderneath || [];
+  if (attachments.length === 0 && cardsUnderneath.length === 0) return;
 
   for (const att of attachments) {
     const abilities = att.card.enrichment?.abilities || [];
@@ -686,6 +696,7 @@ export function executeDiscard(
   if (source === 'SELF') {
     const cardInst = context.sourceCardInstance;
     if (cardInst) {
+      discardHostAttachmentsAndTuckedCards(state, cardInst, player.id);
       removeCardFromAllZones(state, cardInst.instanceId);
       if (isEncounterCard(cardInst.card)) {
         state.encounterDiscard.push(cardInst);
@@ -2861,6 +2872,7 @@ export function executeStep(
           const hulkIdx = player.allies.findIndex((a) => a.card.code === '01050');
           if (hulkIdx !== -1) {
             const [hulkAlly] = player.allies.splice(hulkIdx, 1);
+            discardHostAttachmentsAndTuckedCards(state, hulkAlly, player.id);
             player.discard.push(hulkAlly);
             state.log.push({
               id: `log_${Date.now()}`,

@@ -254,4 +254,74 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
       ),
     ).toBeUndefined();
   });
+
+  it('discovers legal basic attack and ally attack actions against minions engaged with other players (#99)', () => {
+    const p1 = state.players[0];
+    p1.currentForm = 'hero';
+    p1.activeFormCard = ironManHero;
+    p1.exhausted = false;
+
+    // Add Spider-Woman ally to P1
+    p1.allies = [
+      {
+        instanceId: 'ally_sw',
+        card: cardCatalog.getCard('01011')!,
+        exhausted: false,
+      },
+    ];
+
+    // Add Player 2 to game with an engaged minion
+    const p2Identity = cardCatalog.getHeroIdentity('spider_man')!;
+    state.players.push({
+      ...state.players[0],
+      id: 'p2',
+      name: 'Peter Parker',
+      hero: p2Identity.hero,
+      alterEgo: p2Identity.alterEgo,
+      activeFormCard: p2Identity.hero,
+      currentForm: 'hero',
+      health: 10,
+      maxHealth: 10,
+      hand: [],
+      deck: [],
+      discard: [],
+      tableau: [],
+      allies: [],
+      attachments: [],
+      cardsUnderneath: [],
+      statusCards: [],
+      engagedMinions: [
+        {
+          instanceId: 'minion_p2_hydra',
+          card: cardCatalog.getCard('01101')!, // Hydra Mercenary
+          exhausted: false,
+        },
+      ],
+      exhausted: false,
+    });
+
+    const report = getLegalActionsForPlayer(state, p1.id);
+
+    // 1. Basic attack action against P2's engaged minion
+    const p1MinionAttack = report.identityActions.find(
+      (a) =>
+        a.action.type === 'BASIC_ATTACK' &&
+        (a.action as any).targetType === 'minion' &&
+        (a.action as any).targetInstanceId === 'minion_p2_hydra',
+    );
+    expect(p1MinionAttack).toBeDefined();
+    expect(p1MinionAttack?.headline).toContain('Hydra Mercenary');
+    expect(p1MinionAttack?.headline).toContain('Peter Parker');
+
+    // 2. Ally attack action against P2's engaged minion
+    const allyMinionAttack = report.boardActions.find(
+      (a) =>
+        a.action.type === 'ALLY_ATTACK' &&
+        (a.action as any).targetType === 'minion' &&
+        (a.action as any).targetInstanceId === 'minion_p2_hydra',
+    );
+    expect(allyMinionAttack).toBeDefined();
+    expect(allyMinionAttack?.headline).toContain('Hydra Mercenary');
+    expect(allyMinionAttack?.headline).toContain('Peter Parker');
+  });
 });

@@ -1366,11 +1366,17 @@ export function dispatchAction(
       }
 
       // Execute cost payment
-      const { discardedCount } = executeAbilityCost(nextState, player, ability, targetCardInst, {
-        discardCardInstanceIds: (action as any).discardCardInstanceIds,
-        paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
-        targetInstanceId: action.targetInstanceId,
-      });
+      const { discardedCount, resourcesPaid } = executeAbilityCost(
+        nextState,
+        player,
+        ability,
+        targetCardInst,
+        {
+          discardCardInstanceIds: (action as any).discardCardInstanceIds,
+          paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
+          targetInstanceId: action.targetInstanceId,
+        },
+      );
 
       // Discard on empty counters if Uses counters exhausted (RR v1.8 p. 30)
       if (targetCardInst) {
@@ -1390,6 +1396,27 @@ export function dispatchAction(
                   params: {
                     ...s.params,
                     amount: discardedCount * ((s.params?.multiplier as number) || 1),
+                  },
+                }
+              : s,
+          ),
+        };
+      }
+
+      // Dynamic parameter scaling per resource spent (e.g. Energy Channel 01018: Add 1 counter per energy spent)
+      const resourceScalingStep = ability.steps?.find(
+        (s) => s.params?.scaling === 'PER_RESOURCE_SPENT',
+      );
+      if (resourceScalingStep) {
+        effectiveAbility = {
+          ...effectiveAbility,
+          steps: effectiveAbility.steps.map((s) =>
+            s === resourceScalingStep
+              ? {
+                  ...s,
+                  params: {
+                    ...s.params,
+                    amount: resourcesPaid * ((s.params?.multiplier as number) || 1),
                   },
                 }
               : s,

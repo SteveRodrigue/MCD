@@ -159,4 +159,265 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(res.state.villain.health).toBe(initialVillainHealth - 1);
     });
   });
+
+  describe('01018 Energy Channel (Variable Resource Cost, Overpayment & Blast Invariants)', () => {
+    it('Test 1A: Rejects counter placement when hand lacks Energy or Wild resources', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has only mental card (01004)
+      p1.hand = [
+        { instanceId: 'mental_card', card: cardCatalog.getCard('01004')!, exhausted: false },
+      ];
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toMatch(/insufficient|resource/i);
+      expect(res.state.players[0].hand.length).toBe(1);
+      expect(res.state.players[0].tableau[0].tokens?.counters || 0).toBe(0);
+    });
+
+    it('Test 1B: Spend 1 Energy resource card to place 1 counter', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has 1-energy card (01002 Black Cat)
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
+      p1.discard = [];
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      expect(res.state.players[0].discard.length).toBe(1);
+      expect(res.state.players[0].tableau[0].counters?.energy).toBe(1);
+    });
+
+    it('Test 1C: Spend 1 Wild resource card to place 1 counter (Wild Substitution)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has 1-wild card (01011 Spider-Woman)
+      p1.hand = [
+        { instanceId: 'wild_card', card: cardCatalog.getCard('01011')!, exhausted: false },
+      ];
+      p1.discard = [];
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      expect(res.state.players[0].discard.length).toBe(1);
+      expect(res.state.players[0].tableau[0].counters?.energy).toBe(1);
+    });
+
+    it('Test 1D: Spend 2 Energy resources (Energy 01088 yielding 2 energy) to place 2 counters', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has Energy (01088, provides 2 energy)
+      p1.hand = [
+        { instanceId: 'double_energy', card: cardCatalog.getCard('01088')!, exhausted: false },
+      ];
+      p1.discard = [];
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['double_energy'],
+      } as any);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      expect(res.state.players[0].discard.length).toBe(1);
+      expect(res.state.players[0].tableau[0].counters?.energy).toBe(2);
+    });
+
+    it('Test 1E: Allow placing counters beyond 5 (Overpayment Invariant)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
+      p1.discard = [];
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 5 },
+          counters: { energy: 5 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].tableau[0].counters?.energy).toBe(6);
+    });
+
+    it('Test 2A: Rejects Blast when Energy Channel has 0 counters (RR v1.8 p. 3)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_blast',
+        targetInstanceId: state.villain.instanceId,
+      });
+
+      expect(res.result.success).toBe(false);
+      expect(res.result.error).toMatch(/0 counters/i);
+      expect(res.state.players[0].tableau.length).toBe(1);
+    });
+
+    it('Test 2B: Executes Blast when Energy Channel has 3 counters (Deals 6 damage)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 3 },
+          counters: { energy: 3 },
+          exhausted: false,
+        },
+      ];
+
+      const initialVillainHealth = state.villain.health;
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_blast',
+        targetInstanceId: state.villain.instanceId,
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].tableau.length).toBe(0);
+      expect(res.state.players[0].discard.some((c) => c.instanceId === 'ec_inst')).toBe(true);
+      expect(res.state.villain.health).toBe(initialVillainHealth - 6);
+    });
+
+    it('Test 2C: Executes Blast with 6 counters, clamping damage to exactly 10', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 6 },
+          counters: { energy: 6 },
+          exhausted: false,
+        },
+      ];
+
+      const initialVillainHealth = state.villain.health;
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_blast',
+        targetInstanceId: state.villain.instanceId,
+      });
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].tableau.length).toBe(0);
+      expect(res.state.villain.health).toBe(initialVillainHealth - 10);
+    });
+  });
 });

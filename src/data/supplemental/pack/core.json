@@ -712,7 +712,9 @@
               "params": {
                 "target": "SELF",
                 "counterType": "energy",
-                "amount": 1
+                "amount": 1,
+                "scaling": "PER_RESOURCE_SPENT",
+                "multiplier": 1
               }
             }
           ]
@@ -739,13 +741,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-01T13:14:00Z",
-        "reviewedAt": "2026-09-01T13:14:00Z",
+        "updatedAt": "2026-09-11T22:36:00Z",
+        "reviewedAt": "2026-09-11T22:36:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here.",
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> ADD_COUNTERS (counterType: energy, amount: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_ON_TARGET, counterType: energy, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
+        "reconstructedText": "ACTION [Cost: Spend X [energy]] -> ADD_COUNTERS (counterType: energy, scaling: PER_RESOURCE_SPENT, multiplier: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_ON_TARGET, counterType: energy, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."

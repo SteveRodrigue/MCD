@@ -118,7 +118,81 @@ export function canPayAbilityCost(
     }
   }
 
-  // 6. Target existence validation for abilities requiring minions (RR v1.8 p. 19, 28)
+  // 6. Resource Cost Validation (cost.resourceCost, e.g. { energy: 1 })
+  if (cost.resourceCost) {
+    const requiredType =
+      typeof cost.resourceCost === 'object' ? Object.keys(cost.resourceCost)[0] : undefined;
+    const requiredAmount =
+      typeof cost.resourceCost === 'number'
+        ? cost.resourceCost
+        : requiredType
+          ? cost.resourceCost[requiredType] || 1
+          : 1;
+
+    const specifiedPaymentIds = _options?.paymentCardInstanceIds || [];
+    if (specifiedPaymentIds.length > 0) {
+      let providedAmount = 0;
+      for (const id of specifiedPaymentIds) {
+        const cardInst = player.hand.find((c) => c.instanceId === id);
+        if (!cardInst) {
+          return { allowed: false, reason: `Selected payment card ${id} not found in hand.` };
+        }
+        const res = cardInst.card.resources;
+        if (!requiredType) {
+          providedAmount += res?.total || 1;
+        } else {
+          const matching = (res as any)?.[requiredType] || 0;
+          const wild = res?.wild || 0;
+          providedAmount += matching + wild;
+        }
+      }
+      if (providedAmount < requiredAmount) {
+        return {
+          allowed: false,
+          reason: `Insufficient resources selected (Requires ${requiredAmount} ${requiredType || 'resources'}, provided ${providedAmount}).`,
+        };
+      }
+    } else {
+      // General availability check across player hand cards
+      let availableAmount = 0;
+      for (const cardInst of player.hand) {
+        const res = cardInst.card.resources;
+        if (!requiredType) {
+          availableAmount += res?.total || 1;
+        } else {
+          const matching = (res as any)?.[requiredType] || 0;
+          const wild = res?.wild || 0;
+          availableAmount += matching + wild;
+        }
+      }
+      if (availableAmount < requiredAmount) {
+        return {
+          allowed: false,
+          reason: `Insufficient resources in hand (Requires ${requiredAmount} ${requiredType || 'resources'}, has ${availableAmount}).`,
+        };
+      }
+    }
+  }
+
+  // 7. RR v1.8 p. 3 Zero-State Invariant for COUNTERS_ON_TARGET / COUNTERS_MULTIPLIER
+  for (const step of ability.steps || []) {
+    if (
+      step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
+      step.params?.amountFormula === 'COUNTERS_MULTIPLIER'
+    ) {
+      const counterType = (step.params?.counterType as string) || 'energy';
+      const count =
+        sourceCardInst?.counters?.[counterType] ?? sourceCardInst?.tokens?.counters ?? 0;
+      if (count <= 0) {
+        return {
+          allowed: false,
+          reason: `Cannot trigger ability: card has 0 counters.`,
+        };
+      }
+    }
+  }
+
+  // 8. Target existence validation for abilities requiring minions (RR v1.8 p. 19, 28)
   for (const step of ability.steps || []) {
     const target = step.params?.target;
     if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
@@ -149,10 +223,10 @@ export function executeAbilityCost(
   ability: CardAbility,
   sourceCardInst?: CardInstance,
   options?: AbilityPaymentOptions,
-): { state: GameState; discardedCount: number } {
+): { state: GameState; discardedCount: number; resourcesPaid: number } {
   const cost = ability.cost;
   let discardedCount = 0;
-  if (!cost) return { state, discardedCount: 0 };
+  if (!cost) return { state, discardedCount: 0, resourcesPaid: 0 };
 
   // 1. Exhaustion
   const isExhaustSelf = cost.exhaustSelf || (cost as any).exhaust;
@@ -269,7 +343,66 @@ export function executeAbilityCost(
     }
   }
 
-  return { state, discardedCount };
+  // 5. Resource Cost Payment (cost.resourceCost)
+  let resourcesPaid = 0;
+  if (cost.resourceCost) {
+    const requiredType =
+      typeof cost.resourceCost === 'object' ? Object.keys(cost.resourceCost)[0] : undefined;
+    const requiredAmount =
+      typeof cost.resourceCost === 'number'
+        ? cost.resourceCost
+        : requiredType
+          ? cost.resourceCost[requiredType] || 1
+          : 1;
+
+    const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
+    if (specifiedPaymentIds.length > 0) {
+      for (const id of specifiedPaymentIds) {
+        const idx = player.hand.findIndex((c) => c.instanceId === id);
+        if (idx !== -1) {
+          const [discarded] = player.hand.splice(idx, 1);
+          player.discard.push(discarded);
+          discardedCount++;
+          const res = discarded.card.resources;
+          if (!requiredType) {
+            resourcesPaid += res?.total || 1;
+          } else {
+            const matching = (res as any)?.[requiredType] || 0;
+            const wild = res?.wild || 0;
+            resourcesPaid += matching + wild;
+          }
+        }
+      }
+    } else {
+      // Auto-consume cards from hand until requiredAmount is satisfied
+      while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
+        let cardIdx = -1;
+        if (!requiredType) {
+          cardIdx = 0;
+        } else {
+          cardIdx = player.hand.findIndex((c) => {
+            const res = c.card.resources;
+            return ((res as any)?.[requiredType] || 0) > 0 || (res?.wild || 0) > 0;
+          });
+        }
+        if (cardIdx === -1) break;
+
+        const [discarded] = player.hand.splice(cardIdx, 1);
+        player.discard.push(discarded);
+        discardedCount++;
+        const res = discarded.card.resources;
+        if (!requiredType) {
+          resourcesPaid += res?.total || 1;
+        } else {
+          const matching = (res as any)?.[requiredType] || 0;
+          const wild = res?.wild || 0;
+          resourcesPaid += matching + wild;
+        }
+      }
+    }
+  }
+
+  return { state, discardedCount, resourcesPaid };
 }
 
 /**

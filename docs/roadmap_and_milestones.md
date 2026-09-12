@@ -226,7 +226,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - Expert: *Exhaustion* (`01191`), *Masterplan* (`01192`), *Under Fire* (`01193`).
 - [x] **Bomb Scare Modular Set (Default Recommended):** *Bomb Scare* (`01108`), *Hydra Bomber* (`01110`), *False Alarm* (`01109`), *Explosion* (`01111`).
 - [x] **5 Core Hero Nemesis Sets:** Vulture / Highway Robbery (Spider-Man), Yon-Rogg / The Yon-Rogg Incident (Captain Marvel), Titania / Personal Vendetta (She-Hulk), Whiplash / Imminent Meltdown (Iron Man), Killmonger / Usurp the Throne (Black Panther).
-- [ ] **[Issue #36](https://github.com/SteveRodrigue/MCD/issues/36):** Centralize dynamic formula evaluator for state tokens (*Explosion* threat scaling, *Jessica Jones* side scheme scaling).
+- [x] **[Issue #36](https://github.com/SteveRodrigue/MCD/issues/36):** Centralize dynamic formula evaluator for state tokens (*Explosion* threat scaling, *Jessica Jones* side scheme scaling, *Gamma Slam*, *Energy Channel*, *Counter-Punch*) ✅ (Completed)
 
 ### 1.3. 🟠 `[Should-Have]` Comic Tabletop UI & Ergonomics
 - [x] **Pop-Art Combat Modals:** Interactive `AttackTargetModal.tsx`, `IdentityActionModal.tsx`, `DecisionPromptModal.tsx`, and Defender declaration window.

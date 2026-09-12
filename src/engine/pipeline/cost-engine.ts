@@ -174,13 +174,14 @@ export function canPayAbilityCost(
     }
   }
 
-  // 7. RR v1.8 p. 3 Zero-State Invariant for COUNTERS_ON_TARGET / COUNTERS_MULTIPLIER
+  // 7. RR v1.8 p. 3 Zero-State Invariant for COUNTERS (e.g. Energy Channel 01019)
   for (const step of ability.steps || []) {
-    if (
-      step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
-      step.params?.amountFormula === 'COUNTERS_MULTIPLIER'
-    ) {
-      const counterType = (step.params?.counterType as string) || 'energy';
+    const amountObj =
+      typeof step.params?.amount === 'object' && step.params?.amount !== null
+        ? (step.params.amount as Record<string, any>)
+        : null;
+    if (amountObj?.from === 'COUNTERS') {
+      const counterType = (amountObj.counterType as string) || 'energy';
       const count =
         sourceCardInst?.counters?.[counterType] ?? sourceCardInst?.tokens?.counters ?? 0;
       if (count <= 0) {

@@ -2,7 +2,6 @@ import {
   type EffectType,
   TargetSelectorSchema,
   ResourceTypeSchema,
-  AmountFormulaSchema,
 } from '../../../data/supplemental/schema';
 
 export interface ParameterDescriptor {
@@ -24,7 +23,6 @@ export interface EffectDescriptor {
 // Reusable standard parameter options
 export const TARGET_OPTIONS = TargetSelectorSchema.options;
 export const RESOURCE_OPTIONS = ResourceTypeSchema.options;
-export const AMOUNT_FORMULA_OPTIONS = AmountFormulaSchema.options;
 export const STATUS_OPTIONS = ['STUNNED', 'CONFUSED', 'TOUGH'] as const;
 export const STAT_OPTIONS = ['ATK', 'THW', 'DEF', 'REC', 'ATTACK', 'SCHEME'] as const;
 export const KEYWORD_OPTIONS = [
@@ -113,20 +111,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'CHOSEN_ENEMY',
-      },
-      {
-        key: 'amountFormula',
-        label: 'Dynamic Formula',
-        type: 'select',
-        options: AMOUNT_FORMULA_OPTIONS,
-        description: 'Dynamic damage calculation (RR v1.8 p. 11, 31)',
-      },
-      {
-        key: 'max',
-        label: 'Max Ceiling Cap',
-        type: 'number',
-        placeholder: 'e.g. 15',
-        description: 'Optional upper ceiling limit for dynamic damage',
       },
       {
         key: 'overkill',

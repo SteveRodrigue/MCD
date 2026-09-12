@@ -72,8 +72,11 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
           {
             effect: 'DEAL_DAMAGE' as const,
             params: {
-              amountFormula: 'SUFFERED_DAMAGE',
-              max: 15,
+              amount: {
+                from: 'STAT_VALUE',
+                stat: 'SUFFERED_DAMAGE',
+                clamp: { max: 15 },
+              },
               target: 'ENEMY',
             },
           },
@@ -117,8 +120,11 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
           {
             effect: 'DEAL_DAMAGE' as const,
             params: {
-              amountFormula: 'SUFFERED_DAMAGE',
-              max: 15,
+              amount: {
+                from: 'STAT_VALUE',
+                stat: 'SUFFERED_DAMAGE',
+                clamp: { max: 15 },
+              },
               target: 'ENEMY',
             },
           },
@@ -162,8 +168,10 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
           {
             effect: 'DEAL_DAMAGE' as const,
             params: {
-              amountFormula: 'SUFFERED_DAMAGE',
-              // Note: 'max' omitted intentionally to verify uncapped scaling
+              amount: {
+                from: 'STAT_VALUE',
+                stat: 'SUFFERED_DAMAGE',
+              },
               target: 'ENEMY',
             },
           },
@@ -188,8 +196,11 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
           {
             effect: 'DEAL_DAMAGE' as const,
             params: {
-              amountFormula: 'SUFFERED_DAMAGE',
-              max: 15,
+              amount: {
+                from: 'STAT_VALUE',
+                stat: 'SUFFERED_DAMAGE',
+                clamp: { max: 15 },
+              },
               target: 'ENEMY',
             },
           },
@@ -218,8 +229,11 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
           {
             effect: 'DEAL_DAMAGE' as const,
             params: {
-              amountFormula: 'SUFFERED_DAMAGE',
-              max: 15,
+              amount: {
+                from: 'STAT_VALUE',
+                stat: 'SUFFERED_DAMAGE',
+                clamp: { max: 15 },
+              },
               target: 'ENEMY',
             },
           },

@@ -28,7 +28,6 @@ import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
-  getEffectiveHeroStats,
   getEffectiveMaxHealth,
   getEffectiveHandSize,
   hasEntityKeyword,
@@ -67,36 +66,33 @@ export interface EffectExecutionContext {
   choice?: string;
 }
 
+export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
+import { evaluateDynamicAmount } from './dynamic-formula-evaluator';
+
 /**
- * Universal dynamic numeric amount resolver (ADR-0049)
- * Resolves literal numbers, INTERCEPTED_VALUE, PREVIOUS_RESULT, etc., with optional multiplier and offset.
+ * Universal dynamic numeric amount resolver (ADR-0049, ADR-0052)
+ * Resolves literal numbers, tokens, and DynamicValueSource with full math, fractions, and clamping.
  */
 export function resolveNumericAmount(
   amountParam: any,
   context: Partial<EffectExecutionContext>,
   fallback: number = 0,
+  options?: {
+    state?: GameState;
+    player?: PlayerState;
+    targetInstanceId?: string;
+    targetCardInstance?: CardInstance;
+    sourceCardInstance?: CardInstance;
+  },
 ): number {
-  if (typeof amountParam === 'number') {
-    return amountParam;
-  }
-  if (!amountParam || typeof amountParam !== 'object') {
-    return fallback;
-  }
-
-  const from = amountParam.from;
-  const multiplier = typeof amountParam.multiplier === 'number' ? amountParam.multiplier : 1;
-  const offset = typeof amountParam.offset === 'number' ? amountParam.offset : 0;
-
-  let baseValue = 0;
-  if (from === 'INTERCEPTED_VALUE') {
-    baseValue = context.interceptedValue ?? context.threatAmount ?? context.damageAmount ?? 0;
-  } else if (from === 'PREVIOUS_RESULT') {
-    baseValue = context.previousResult?.value ?? 0;
-  } else if (from === 'DISCARDED_COUNT') {
-    baseValue = context.previousResult?.value ?? 0;
-  }
-
-  return Math.max(0, baseValue * multiplier + offset);
+  return evaluateDynamicAmount(amountParam, context, {
+    fallback,
+    state: options?.state || (context as any)?.state,
+    player: options?.player || (context as any)?.player,
+    targetInstanceId: options?.targetInstanceId || (context as any)?.targetInstanceId,
+    targetCardInstance: options?.targetCardInstance || (context as any)?.targetCardInstance,
+    sourceCardInstance: options?.sourceCardInstance || context?.sourceCardInstance,
+  });
 }
 
 export interface EffectResult {
@@ -936,37 +932,12 @@ export function executeStep(
     }
 
     case 'DEAL_DAMAGE': {
-      let amount = resolveNumericAmount(step.params?.amount, context, 0);
-      if (
-        step.params?.amountFormula === 'HERO_ATK' ||
-        (step.params?.amount as any) === 'HERO_ATK'
-      ) {
-        amount = getEffectiveHeroStats(state, player).attack;
-      } else if (step.params?.amountFormula === 'SUFFERED_DAMAGE') {
-        const damageSustained = Math.max(0, getEffectiveMaxHealth(player, state) - player.health);
-        amount =
-          typeof step.params?.max === 'number'
-            ? Math.min(step.params.max, damageSustained)
-            : damageSustained;
-      } else if (
-        step.params?.amountFormula === 'COUNTERS_ON_TARGET' ||
-        step.params?.amountFormula === 'COUNTERS_MULTIPLIER'
-      ) {
-        const target = step.params?.target || 'SELF';
-        const counterType = (step.params?.counterType as string) || 'energy';
-        const multiplier = (step.params?.multiplier as number) || 1;
-        const max = (step.params?.max as number) || 999;
-        let counterCount = 0;
-        if (target === 'IDENTITY') {
-          counterCount = player.counters?.[counterType] || 0;
-        } else if (context.sourceCardInstance) {
-          counterCount =
-            context.sourceCardInstance.counters?.[counterType] ??
-            context.sourceCardInstance.tokens?.counters ??
-            0;
-        }
-        amount = Math.min(max, counterCount * multiplier);
-      }
+      let amount = resolveNumericAmount(step.params?.amount, context, 0, {
+        state,
+        player,
+        sourceCardInstance: context.sourceCardInstance,
+        targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+      });
       const targetParam = step.params?.target as string | undefined;
 
       if (targetParam === 'ALL_ENEMIES') {
@@ -1356,7 +1327,7 @@ export function executeStep(
     }
 
     case 'HEAL_DAMAGE': {
-      const amount = resolveNumericAmount(step.params?.amount, context, 0);
+      const amount = resolveNumericAmount(step.params?.amount, context, 0, { state, player });
       const target = (step.params?.target as string) || 'SELF';
       let healed = 0;
 
@@ -1436,7 +1407,7 @@ export function executeStep(
     }
 
     case 'REMOVE_THREAT': {
-      const amount = resolveNumericAmount(step.params?.amount, context, 1);
+      const amount = resolveNumericAmount(step.params?.amount, context, 1, { state, player });
       const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
       let targetSchemeName = state.mainScheme.card.name;

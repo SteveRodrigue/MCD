@@ -499,11 +499,6 @@ export function resolveActiveEncounterCardAfterInterrupt(
           playerId: player.id,
           sourceCardInstance: cardInstance,
         });
-      } else if (ability.timing === 'FORCED_RESPONSE') {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
       }
     }
   } else if (card.type === CardType.SIDE_SCHEME) {
@@ -532,11 +527,6 @@ export function resolveActiveEncounterCardAfterInterrupt(
           playerId: player.id,
           sourceCardInstance: cardInstance,
         });
-      } else if (ability.timing === 'FORCED_RESPONSE') {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
       }
     }
   } else if (card.type === CardType.ATTACHMENT) {
@@ -558,11 +548,6 @@ export function resolveActiveEncounterCardAfterInterrupt(
           playerId: player.id,
           sourceCardInstance: cardInstance,
         });
-      } else if (ability.timing === 'FORCED_RESPONSE') {
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: cardInstance,
-        });
       }
     }
   } else {
@@ -570,7 +555,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
     if (!isCancelled) {
       const abilities = card.enrichment?.abilities || [];
       for (const ability of abilities) {
-        if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'FORCED_RESPONSE') {
+        if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
           executeEffect(state, ability, {
             playerId: player.id,
             sourceCardInstance: cardInstance,

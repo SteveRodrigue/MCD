@@ -452,6 +452,7 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
     expect(playedAlly?.ownerId).toBe('player_2');
 
     // Player 1 commands Maria Hill to thwart, taking fatal consequential damage
+    stateAfterPlay.mainScheme.threat = 3;
     const { state: stateAfterThwart, result: thwartResult } = dispatchAction(stateAfterPlay, {
       type: 'ALLY_THWART',
       playerId: 'player_1',

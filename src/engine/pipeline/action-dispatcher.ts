@@ -25,6 +25,7 @@ import {
   canBasicAttack,
   canAllyAttack,
   canBasicThwart,
+  canAllyThwart,
   canPlayCard,
   isCardRestricted,
   getCardRestrictedWeight,
@@ -612,15 +613,20 @@ export function dispatchAction(
     }
 
     case 'ALLY_THWART': {
-      const player = getPlayer(nextState, action.playerId);
-      if (!player) return { state, result: { success: false, error: 'Player not found' } };
+      const check = canAllyThwart(
+        nextState,
+        action.playerId,
+        action.allyInstanceId,
+        action.targetType,
+        action.targetInstanceId,
+      );
+      if (!check.allowed) {
+        return { state, result: { success: false, error: check.reason } };
+      }
 
+      const player = getPlayer(nextState, action.playerId)!;
       const allyIdx = player.allies.findIndex((a) => a.instanceId === action.allyInstanceId);
-      if (allyIdx === -1)
-        return { state, result: { success: false, error: 'Ally not found in play' } };
-
       const ally = player.allies[allyIdx];
-      if (ally.exhausted) return { state, result: { success: false, error: 'Ally is exhausted' } };
 
       ally.exhausted = true;
       const allyCard = ally.card as AllyCard;
@@ -628,7 +634,46 @@ export function dispatchAction(
       const thwValue = allyStats.thwart;
 
       if (action.targetType === 'main_scheme') {
-        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - thwValue);
+        const removed = Math.min(nextState.mainScheme.threat, thwValue);
+        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removed);
+      } else if (action.targetType === 'side_scheme' && action.targetInstanceId) {
+        const schemeIndex = nextState.sideSchemes.findIndex(
+          (s) => s.instanceId === action.targetInstanceId,
+        );
+        if (schemeIndex !== -1) {
+          const sideScheme = nextState.sideSchemes[schemeIndex];
+          const removed = Math.min(sideScheme.threat, thwValue);
+          sideScheme.threat -= removed;
+
+          if (sideScheme.threat <= 0) {
+            nextState.sideSchemes.splice(schemeIndex, 1);
+
+            const defeatedInstance: CardInstance = {
+              instanceId: sideScheme.instanceId,
+              card: sideScheme.card,
+            };
+
+            // Resolve 'When Defeated' reward abilities declared on the scheme itself
+            const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
+            for (const ability of defeatedAbilities) {
+              if (
+                ability.trigger === 'DEFEATED' &&
+                (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE')
+              ) {
+                executeEffect(nextState, ability, {
+                  playerId: sideScheme.ownerId || player.id,
+                  sourceCardInstance: defeatedInstance,
+                });
+              }
+            }
+
+            // Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
+            const destinationPile = sideScheme.ownerId
+              ? getPlayer(nextState, sideScheme.ownerId)!.discard
+              : nextState.encounterDiscard;
+            moveDefeatedCardToPile(nextState, defeatedInstance, destinationPile);
+          }
+        }
       }
 
       nextState.log.push({

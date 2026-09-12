@@ -20,6 +20,7 @@ interface IdentityActionModalProps {
   onClose: () => void;
   onDispatchAction?: (action: GameAction) => void;
   onInitiateHeroAttack?: () => void;
+  onInitiateHeroThwart?: () => void;
 }
 
 export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
@@ -29,6 +30,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   onClose,
   onDispatchAction,
   onInitiateHeroAttack,
+  onInitiateHeroThwart,
 }) => {
   if (!isOpen) return null;
 
@@ -273,7 +275,10 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 <button
                   disabled={!canThwart}
                   onClick={() => {
-                    if (canThwartMain) {
+                    onClose();
+                    if (onInitiateHeroThwart) {
+                      onInitiateHeroThwart();
+                    } else if (canThwartMain) {
                       onDispatchAction?.({
                         type: 'BASIC_THWART',
                         playerId: player.id,
@@ -287,7 +292,6 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                         targetInstanceId: eligibleSideScheme.instanceId,
                       });
                     }
-                    onClose();
                   }}
                   className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
                     canThwart

@@ -16,15 +16,21 @@ import {
   GameState,
   HeroCard,
   AlterEgoCard,
+  CardInstance,
   GameAction,
   Keyword,
   hasKeyword,
+  CardAbility,
 } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { IdentityActionModal } from './IdentityActionModal';
 import { AttackTargetModal } from './AttackTargetModal';
+import { AllyActionModal } from './AllyActionModal';
+import { TableauActionModal } from './TableauActionModal';
+import { ThwartTargetModal } from './ThwartTargetModal';
 import { EnemyTarget, getValidAttackTargets } from './attack-target-utils';
+import { SchemeTarget, getValidThwartTargets } from './thwart-target-utils';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -100,6 +106,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     isHero && !player.exhausted && isPlayerTurn && validHeroAttackTargets.length > 0;
   const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;
 
+  // Ally & Tableau Action Selection States
+  const [selectedAllyForModal, setSelectedAllyForModal] = useState<CardInstance | null>(null);
+  const [selectedTableauCardForModal, setSelectedTableauCardForModal] =
+    useState<CardInstance | null>(null);
+
   // Attack Target Selection State
   const [attackModalState, setAttackModalState] = useState<{
     isOpen: boolean;
@@ -116,53 +127,94 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     targets: [],
   });
 
+  // Thwart Target Selection State
+  const [thwartModalState, setThwartModalState] = useState<{
+    isOpen: boolean;
+    thwarterName: string;
+    thwarterType: 'hero' | 'ally';
+    allyInstanceId?: string;
+    thwartValue: number;
+    consequentialDamage?: number;
+    targets: SchemeTarget[];
+  }>({
+    isOpen: false,
+    thwarterName: '',
+    thwarterType: 'hero',
+    thwartValue: 0,
+    targets: [],
+  });
+
   const handleInitiateAttack = (attackerType: 'hero' | 'ally', allyInstanceId?: string) => {
     if (!gameState || !onDispatchAction) return;
 
     if (attackerType === 'hero') {
       const targets = getValidAttackTargets(gameState, player.id, 'hero');
       if (targets.length === 0) return;
-      if (targets.length === 1) {
-        onDispatchAction({
-          type: 'BASIC_ATTACK',
-          playerId: player.id,
-          targetType: targets[0].type,
-          targetInstanceId: targets[0].instanceId,
-        });
-      } else {
-        setAttackModalState({
-          isOpen: true,
-          attackerName: player.activeFormCard.name,
-          attackerType: 'hero',
-          attackDamage: effectiveStats.attack,
-          targets,
-        });
-      }
+      setAttackModalState({
+        isOpen: true,
+        attackerName: player.activeFormCard.name,
+        attackerType: 'hero',
+        attackDamage: effectiveStats.attack,
+        targets,
+      });
     } else if (allyInstanceId) {
       const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
       if (!ally) return;
       const allyStats = getEffectiveAllyStats(gameState, ally);
       const targets = getValidAttackTargets(gameState, player.id, 'ally', allyInstanceId);
       if (targets.length === 0) return;
-      if (targets.length === 1) {
-        onDispatchAction({
-          type: 'ALLY_ATTACK',
-          playerId: player.id,
-          allyInstanceId,
-          targetType: targets[0].type,
-          targetInstanceId: targets[0].instanceId,
-        });
-      } else {
-        setAttackModalState({
-          isOpen: true,
-          attackerName: ally.card.name,
-          attackerType: 'ally',
-          allyInstanceId,
-          attackDamage: allyStats.attack,
-          targets,
-        });
-      }
+      setAttackModalState({
+        isOpen: true,
+        attackerName: ally.card.name,
+        attackerType: 'ally',
+        allyInstanceId,
+        attackDamage: allyStats.attack,
+        targets,
+      });
     }
+  };
+
+  const handleInitiateThwart = (thwarterType: 'hero' | 'ally', allyInstanceId?: string) => {
+    if (!gameState || !onDispatchAction) return;
+
+    if (thwarterType === 'hero') {
+      const targets = getValidThwartTargets(gameState, player.id, 'hero');
+      if (targets.length === 0) return;
+      setThwartModalState({
+        isOpen: true,
+        thwarterName: player.activeFormCard.name,
+        thwarterType: 'hero',
+        thwartValue: effectiveStats.thwart,
+        targets,
+      });
+    } else if (allyInstanceId) {
+      const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
+      if (!ally) return;
+      const allyStats = getEffectiveAllyStats(gameState, ally);
+      const targets = getValidThwartTargets(gameState, player.id, 'ally', allyInstanceId);
+      if (targets.length === 0) return;
+      const consequential =
+        (ally.card as any).thwartCost ?? (ally.card as any).consequentialDamage?.thwart ?? 1;
+      setThwartModalState({
+        isOpen: true,
+        thwarterName: ally.card.name,
+        thwarterType: 'ally',
+        allyInstanceId,
+        thwartValue: allyStats.thwart,
+        consequentialDamage: consequential,
+        targets,
+      });
+    }
+  };
+
+  const handleSelectTableauAbility = (ability: CardAbility, cardInst: CardInstance) => {
+    if (!onDispatchAction) return;
+    onDispatchAction({
+      type: 'USE_CARD_ABILITY',
+      playerId: player.id,
+      cardInstanceId: cardInst.instanceId,
+      abilityId: ability.id,
+    });
   };
 
   return (
@@ -481,13 +533,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
                   <button
                     disabled={!canThwart}
-                    onClick={() =>
-                      onDispatchAction({
-                        type: 'BASIC_THWART',
-                        playerId: player.id,
-                        targetType: 'main_scheme',
-                      })
-                    }
+                    onClick={() => handleInitiateThwart('hero')}
                     className={`font-comic text-xs py-1 px-1.5 rounded-lg border-2 border-comic-black flex items-center justify-center gap-1 transition-all shadow-comic-sm ${
                       canThwart
                         ? 'bg-comic-blue hover:bg-sky-600 text-white font-bold active:translate-y-0.5'
@@ -556,19 +602,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         ⚔️ {allyStats.attack}
                       </button>
                       <button
-                        onClick={() =>
-                          onDispatchAction?.({
-                            type: 'ALLY_THWART',
-                            playerId: player.id,
-                            allyInstanceId: ally.instanceId,
-                            targetType: 'main_scheme',
-                          })
-                        }
+                        onClick={() => handleInitiateThwart('ally', ally.instanceId)}
                         disabled={!canThw}
                         className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
                         title={
                           canThw
-                            ? `Thwart main scheme for ${allyStats.thwart} threat`
+                            ? `Thwart scheme for ${allyStats.thwart} threat`
                             : 'No threat on schemes or ally exhausted'
                         }
                       >
@@ -584,21 +623,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           instance={ally}
                           size="sm"
                           enableHoverZoom={true}
-                          onClick={() => {
-                            if (canAct && onDispatchAction) {
-                              // Default action: Thwart if threat > 0, else attack
-                              if (canThw) {
-                                onDispatchAction({
-                                  type: 'ALLY_THWART',
-                                  playerId: player.id,
-                                  allyInstanceId: ally.instanceId,
-                                  targetType: 'main_scheme',
-                                });
-                              } else {
-                                handleInitiateAttack('ally', ally.instanceId);
-                              }
-                            }
-                          }}
+                          onClick={() => setSelectedAllyForModal(ally)}
                         />
                       </div>
 
@@ -647,22 +672,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       instance={cardInst}
                       size="sm"
                       enableHoverZoom={true}
-                      onClick={() => {
-                        const firstUsable = activeAbilities.find(
-                          (ab) =>
-                            isPlayerTurn &&
-                            gameState &&
-                            canPayAbilityCost(gameState, player, ab, cardInst, {}).allowed,
-                        );
-                        if (firstUsable && onDispatchAction) {
-                          onDispatchAction({
-                            type: 'USE_CARD_ABILITY',
-                            playerId: player.id,
-                            cardInstanceId: cardInst.instanceId,
-                            abilityId: firstUsable.id,
-                          });
-                        }
-                      }}
+                      onClick={() => setSelectedTableauCardForModal(cardInst)}
                     />
                     {activeAbilities.map((ab) => {
                       const costCheck = gameState
@@ -721,7 +731,34 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         onClose={() => setIsIdentityModalOpen(false)}
         onDispatchAction={onDispatchAction}
         onInitiateHeroAttack={() => handleInitiateAttack('hero')}
+        onInitiateHeroThwart={() => handleInitiateThwart('hero')}
       />
+
+      {/* Ally Action Selector Modal */}
+      {selectedAllyForModal && (
+        <AllyActionModal
+          isOpen={!!selectedAllyForModal}
+          ally={selectedAllyForModal}
+          player={player}
+          gameState={gameState}
+          onClose={() => setSelectedAllyForModal(null)}
+          onInitiateAllyAttack={(id) => handleInitiateAttack('ally', id)}
+          onInitiateAllyThwart={(id) => handleInitiateThwart('ally', id)}
+          onDispatchAction={onDispatchAction}
+        />
+      )}
+
+      {/* Tableau (Support/Upgrade/Attachment) Action Selector Modal */}
+      {selectedTableauCardForModal && (
+        <TableauActionModal
+          isOpen={!!selectedTableauCardForModal}
+          cardInstance={selectedTableauCardForModal}
+          player={player}
+          gameState={gameState}
+          onClose={() => setSelectedTableauCardForModal(null)}
+          onSelectAbility={handleSelectTableauAbility}
+        />
+      )}
 
       {/* Attack Target Selection Modal (ADR-0020 / Target Prompt) */}
       <AttackTargetModal
@@ -750,6 +787,36 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           setAttackModalState((prev) => ({ ...prev, isOpen: false }));
         }}
         onClose={() => setAttackModalState((prev) => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* Thwart Target Selection Modal */}
+      <ThwartTargetModal
+        isOpen={thwartModalState.isOpen}
+        thwarterName={thwartModalState.thwarterName}
+        thwarterType={thwartModalState.thwarterType}
+        thwartValue={thwartModalState.thwartValue}
+        consequentialDamage={thwartModalState.consequentialDamage}
+        targets={thwartModalState.targets}
+        onSelectTarget={(target) => {
+          if (thwartModalState.thwarterType === 'hero') {
+            onDispatchAction?.({
+              type: 'BASIC_THWART',
+              playerId: player.id,
+              targetType: target.type,
+              targetInstanceId: target.instanceId,
+            });
+          } else if (thwartModalState.allyInstanceId) {
+            onDispatchAction?.({
+              type: 'ALLY_THWART',
+              playerId: player.id,
+              allyInstanceId: thwartModalState.allyInstanceId,
+              targetType: target.type,
+              targetInstanceId: target.instanceId,
+            });
+          }
+          setThwartModalState((prev) => ({ ...prev, isOpen: false }));
+        }}
+        onClose={() => setThwartModalState((prev) => ({ ...prev, isOpen: false }))}
       />
     </section>
   );

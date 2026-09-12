@@ -273,6 +273,78 @@ export function canBasicThwart(
 }
 
 /**
+ * Checks if an ally can thwart a scheme (RR v1.8 p. 3 "Ally", 11 "Crisis", 20 "Patrol", 29 "Thwart").
+ */
+export function canAllyThwart(
+  state: GameState,
+  playerId: string,
+  allyInstanceId: string,
+  targetType: 'main_scheme' | 'side_scheme',
+  targetInstanceId?: string,
+): { allowed: boolean; reason?: string } {
+  const player = getPlayer(state, playerId);
+  if (!player) return { allowed: false, reason: 'Player not found' };
+
+  if (state.phase === GamePhase.PLAYER_PHASE) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return { allowed: false, reason: `Not your turn (Currently ${activePlayer.name}'s turn).` };
+    }
+  }
+
+  const ally = player.allies.find((a) => a.instanceId === allyInstanceId);
+  if (!ally) return { allowed: false, reason: 'Ally not found in play.' };
+
+  if (ally.exhausted) {
+    return { allowed: false, reason: 'Ally is exhausted.' };
+  }
+
+  if (targetType === 'side_scheme') {
+    if (!targetInstanceId) {
+      return { allowed: false, reason: 'Side scheme target instance ID must be specified.' };
+    }
+    const sideScheme = state.sideSchemes.find((s) => s.instanceId === targetInstanceId);
+    if (!sideScheme) {
+      return { allowed: false, reason: 'Target side scheme is not in play.' };
+    }
+    if (sideScheme.threat <= 0) {
+      return { allowed: false, reason: 'Cannot thwart a scheme with no threat.' };
+    }
+  }
+
+  if (targetType === 'main_scheme') {
+    if (!state.mainScheme || state.mainScheme.threat <= 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot thwart a scheme with no threat.',
+      };
+    }
+
+    const hasPatrolMinion = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.PATROL));
+    if (hasPatrolMinion) {
+      return {
+        allowed: false,
+        reason: 'Cannot thwart the main scheme while an engaged minion with Patrol is in play.',
+      };
+    }
+
+    const hasCrisisScheme = state.sideSchemes.some((s) => {
+      const sideCard = s.card as SideSchemeCard;
+      return sideCard.hasCrisis || hasKeyword(s.card, Keyword.CRISIS);
+    });
+
+    if (hasCrisisScheme) {
+      return {
+        allowed: false,
+        reason: 'Cannot thwart the main scheme while a side scheme with a Crisis icon is in play.',
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Checks if a card possesses the Restricted keyword (RR v1.8 p. 25).
  */
 export function isCardRestricted(card: NormalizedCard): boolean {

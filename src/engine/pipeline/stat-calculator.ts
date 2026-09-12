@@ -274,6 +274,54 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
 }
 
 /**
+ * Computes dynamic effective Ally Limit for a player (RR v1.8 p. 3 'Ally Limit', ADR-0018).
+ * Base: 3 allies.
+ * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS or MODIFY_ALLY_LIMIT.
+ */
+export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): number {
+  const BASE_ALLY_LIMIT = 3;
+  let bonus = 0;
+
+  // 1. Scan player's own tableau (for CONTROLLER / SELF_IDENTITY auras, e.g. The Triskelion 01073)
+  for (const item of player.tableau || []) {
+    const abilities = item.card.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') {
+            bonus += Number(step.params?.amount) || 1;
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Scan other players' tableaus for tablewide aura effects (target: 'ALL_PLAYERS')
+  if (state) {
+    for (const p of state.players) {
+      if (p.id === player.id) continue;
+      for (const item of p.tableau || []) {
+        const abilities = item.card.enrichment?.abilities || [];
+        for (const ab of abilities) {
+          if (ab.timing === 'CONSTANT') {
+            for (const step of ab.steps || []) {
+              if (
+                (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') &&
+                step.params?.target === 'ALL_PLAYERS'
+              ) {
+                bonus += Number(step.params?.amount) || 1;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return BASE_ALLY_LIMIT + bonus;
+}
+
+/**
  * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword.
  */
 export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {

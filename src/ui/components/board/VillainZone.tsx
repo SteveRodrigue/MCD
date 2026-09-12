@@ -12,6 +12,7 @@ import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getEncounterSetName } from './villain-zone-utils';
+import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculator';
 
 interface VillainZoneProps {
   villain: VillainState;
@@ -55,6 +56,12 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
   const threatPercent = Math.min(100, (mainScheme.threat / mainScheme.targetThreat) * 100);
   const healthPercent = Math.max(0, (villain.health / villain.maxHealth) * 100);
+
+  const effectiveStats = useMemo(() => getEffectiveVillainStats({} as any, villain), [villain]);
+  const baseAtk = villain.card.attack ?? 0;
+  const baseSch = villain.card.scheme ?? 0;
+  const atkBonus = effectiveStats.attack - baseAtk;
+  const schBonus = effectiveStats.scheme - baseSch;
 
   const topDiscard = encounterDiscard[encounterDiscard.length - 1];
 
@@ -202,12 +209,26 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             <div className="flex items-center justify-around bg-white px-2 py-0.5 rounded border border-comic-black text-xs font-bold shadow-comic-xs">
               <div className="flex flex-col items-center">
                 <span className="text-slate-500 text-[8px] uppercase">SCH</span>
-                <span className="text-comic-blue font-black">{villain.card.scheme ?? 0}</span>
+                <span
+                  className={`flex items-center ${schBonus > 0 ? 'text-amber-600 font-black' : 'text-comic-blue font-black'}`}
+                >
+                  {effectiveStats.scheme}
+                  {schBonus > 0 && (
+                    <span className="text-[8px] text-amber-500 ml-0.5">+{schBonus}</span>
+                  )}
+                </span>
               </div>
               <div className="h-3 w-px bg-slate-300" />
               <div className="flex flex-col items-center">
                 <span className="text-slate-500 text-[8px] uppercase">ATK</span>
-                <span className="text-comic-red font-black">{villain.card.attack ?? 0}</span>
+                <span
+                  className={`flex items-center ${atkBonus > 0 ? 'text-rose-600 font-black' : 'text-comic-red font-black'}`}
+                >
+                  {effectiveStats.attack}
+                  {atkBonus > 0 && (
+                    <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
+                  )}
+                </span>
               </div>
             </div>
 

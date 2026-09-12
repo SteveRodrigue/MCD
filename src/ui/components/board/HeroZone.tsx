@@ -36,6 +36,7 @@ import {
   getEffectiveHeroStats,
   getEffectiveHandSize,
   getEffectiveAllyStats,
+  getEffectiveAllyLimit,
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 
@@ -81,6 +82,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     player,
   );
   const effectiveHandSize = getEffectiveHandSize(player, gameState);
+  const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
   const baseThw = isHero ? heroCard.thwart || 0 : 0;
@@ -567,7 +569,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-600 border-b border-amber-200 pb-1.5">
             <span className="flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-comic-blue" />
-              Allies in Play ({player.allies.length} / 3)
+              Allies in Play ({player.allies.length} / {effectiveAllyLimit})
             </span>
           </div>
 

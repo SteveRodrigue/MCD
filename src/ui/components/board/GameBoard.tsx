@@ -16,6 +16,7 @@ import {
   getLegalActionsForPlayer,
   LegalActionItem,
 } from '../../../engine/pipeline/legal-actions-generator';
+import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -188,7 +189,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                       discard={player.discard}
                       setAsideCards={player.setAsideCards}
                       heroName={player.name}
-                      handSizeLimit={(player.activeFormCard as any).handSize ?? 6}
+                      handSizeLimit={getEffectiveHandSize(player, gameState)}
                       seatNumber={idx + 1}
                       isFocused={isFocused}
                       isMultiHero={true}
@@ -219,7 +220,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               discard={singlePlayer.discard}
               setAsideCards={singlePlayer.setAsideCards}
               heroName={singlePlayer.name}
-              handSizeLimit={(singlePlayer.activeFormCard as any).handSize ?? 6}
+              handSizeLimit={getEffectiveHandSize(singlePlayer, gameState)}
               seatNumber={1}
               isFocused={true}
               isMultiHero={false}

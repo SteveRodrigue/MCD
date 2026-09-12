@@ -19,6 +19,7 @@ import {
   AbilityPaymentOptions,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
+import { getEffectiveAllyLimit } from './stat-calculator';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -566,27 +567,9 @@ export function checkUniqueCardPlayable(
  * Modifiers: Scans in-play cards for CONSTANT abilities with ALLY_LIMIT_BONUS.
  */
 export function getPlayerAllyLimit(state: GameState, playerId: string): number {
-  const BASE_ALLY_LIMIT = 3;
-  let bonus = 0;
-
-  for (const p of state.players) {
-    for (const item of p.tableau) {
-      const abilities = item.card.enrichment?.abilities || [];
-      for (const ab of abilities) {
-        const limitStep = ab.steps?.find(
-          (s) => s.effect === 'ALLY_LIMIT_BONUS' || s.effect === 'MODIFY_ALLY_LIMIT',
-        );
-        if (ab.timing === 'CONSTANT' && limitStep) {
-          const target = limitStep.params?.target || 'CONTROLLER';
-          if (target === 'ALL_PLAYERS' || p.id === playerId) {
-            bonus += Number(limitStep.params?.amount) || 1;
-          }
-        }
-      }
-    }
-  }
-
-  return BASE_ALLY_LIMIT + bonus;
+  const player = getPlayer(state, playerId);
+  if (!player) return 3;
+  return getEffectiveAllyLimit(player, state);
 }
 
 /**

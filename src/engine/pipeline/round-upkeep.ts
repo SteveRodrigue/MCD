@@ -1,6 +1,7 @@
 import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase } from './player-phase';
+import { discardHostAttachmentsAndTuckedCards } from '../effects';
 
 /**
  * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32)
@@ -35,13 +36,18 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
           (ab.trigger === 'ROUND_END' ||
             ab.trigger === 'ROUND_ENDED' ||
             ab.timing === 'FORCED_RESPONSE') &&
-          ab.steps?.some((s) => s.effect === 'DISCARD_SELF'),
+          ab.steps?.some(
+            (s) =>
+              s.effect === 'DISCARD_SELF' ||
+              (s.effect === 'DISCARD' && s.params?.source === 'SELF'),
+          ),
       );
     });
     for (const ally of endRoundAllies) {
       const idx = player.allies.indexOf(ally);
       if (idx !== -1) {
         player.allies.splice(idx, 1);
+        discardHostAttachmentsAndTuckedCards(state, ally, player.id);
         const owner =
           (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
         owner.discard.push(ally);

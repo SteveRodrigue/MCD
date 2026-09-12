@@ -599,6 +599,7 @@ export function dispatchAction(
       const allyHp = allyCard.health || 2;
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
+        processHostDefeated(nextState, ally, { player });
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         owner.discard.push(ally);
       }
@@ -711,6 +712,7 @@ export function dispatchAction(
       const allyHp = allyCard.health || 2;
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
+        processHostDefeated(nextState, ally, { player });
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         owner.discard.push(ally);
       }

@@ -13,7 +13,7 @@ import {
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { executeEffect } from '../effects';
+import { executeEffect, processHostDefeated } from '../effects';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
@@ -660,6 +660,7 @@ export function applyCalculatedAttackDamage(
         // If ally defeated
         if (ally.tokens.damage >= allyMaxHp) {
           player.allies.splice(allyIdx, 1);
+          processHostDefeated(state, ally, { player });
           const owner =
             (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
           owner.discard.push(ally);

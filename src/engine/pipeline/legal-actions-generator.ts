@@ -447,16 +447,16 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     for (const { attachment, hostName } of allAttachments) {
       const abilities = attachment.card.enrichment?.abilities || [];
       for (const ab of abilities) {
-        if (
-          ab.timing === 'HERO_ACTION' ||
-          ab.timing === 'ALTER_EGO_ACTION' ||
-          ab.timing === 'ACTION' ||
+        const isDiscardAbility =
           ab.steps?.some(
             (s) =>
               s.effect === 'DISCARD_ATTACHMENT' ||
-              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
-          )
-        ) {
+              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
+              (s.effect === 'DISCARD' &&
+                (s.params?.source === 'SELF' || s.params?.source === 'HOST')),
+          ) || Boolean(ab.cost?.discardSelf);
+
+        if (isDiscardAbility) {
           // Check form compatibility
           if (ab.timing === 'HERO_ACTION' && player.currentForm !== 'hero') continue;
           if (ab.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') continue;

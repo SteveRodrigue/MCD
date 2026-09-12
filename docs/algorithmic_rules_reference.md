@@ -198,11 +198,25 @@ If multiple `FORCED` triggers or multiple voluntary reactions are eligible at th
 
 ### Algorithm 5.3: BASIC_ATTACK vs DIRECT_DAMAGE (RR v1.8 p. 5–6, 26)
 * **Attack Action (`isAttack: true`):**
-  * Target must be a legal enemy (checks `Guard` keyword on engaged minions).
+  * Target must be a legal enemy (checks `Guard` keyword on engaged minions: an engaged minion with `Guard` blocks only the player it is engaged with and their allies from attacking the villain; other players remain free to attack the villain or the Guard minion per RR v1.8 p. 15).
   * Triggers Defense reactions, *Retaliate* keywords, and *Overkill* calculations.
   * Emits `ENEMY_ATTACKED` and `OVERKILL_OCCURRED(excessDamage)` events.
 * **Direct Damage (`isAttack: false`):**
   * Ignores `Guard` and does not trigger *Retaliate* or attack-specific interrupts (e.g. *Ground Stomp*, *Energy Channel*).
+
+### Algorithm 5.4: BASIC_THWART & THREAT_REMOVAL (RR v1.8 p. 11, 20, 29, 30)
+* **Thwart Action & Threat Removal Requirements:**
+  * Requires at least one eligible scheme target in play with threat $> 0$.
+  * **Crisis Keyword (RR v1.8 p. 11):** While a side scheme with a Crisis icon is in play, players cannot remove threat from the main scheme.
+  * **Patrol Keyword (RR v1.8 p. 20):** While an engaged minion with Patrol is in play with the acting player, that player cannot thwart the main scheme.
+  * If all side schemes have $0$ threat and the main scheme is blocked by Crisis or Patrol (or has $0$ threat), no threat can be removed, and the thwart action cannot be initiated.
+
+### Algorithm 5.5: ABILITY_INITIATION & TARGET_VALIDITY (RR v1.8 p. 15–16, 29)
+* **Pre-Execution Invariant (`canInitiateAbility`):**
+  * A card or ability cannot be initiated if its effect has no potential to change the game state.
+  * **Thwart & Threat Removal:** Requires $\text{eligibleThreat} > 0$ across unblocked schemes in play.
+  * **Attack & Damage:** Requires at least one targetable enemy in play (respecting Guard on engaged minions).
+  * In-play card abilities and hand event cards that lack valid targets cannot be initiated, preventing cost payment, counter deduction, or exhaustion.
 
 ---
 

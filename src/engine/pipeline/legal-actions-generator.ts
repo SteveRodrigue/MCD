@@ -7,6 +7,7 @@ import {
   canAllyAttack,
   canBasicThwart,
   evaluateCardPlayability,
+  canInitiateAbility,
 } from './legality-checker';
 import {
   getEffectiveHeroStats,
@@ -14,7 +15,7 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
 } from './stat-calculator';
-import { canPayAbilityCost, isResourceAbility } from './cost-engine';
+import { isResourceAbility } from './cost-engine';
 
 export interface LegalActionItem {
   id: string;
@@ -220,7 +221,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
         if (isUsedRound || isUsedPhase) continue;
 
-        const costCheck = canPayAbilityCost(state, player, ab, undefined, {});
+        const costCheck = canInitiateAbility(state, player.id, ab, undefined, {});
         if (costCheck.allowed) {
           identityActions.push({
             id: `action_id_ability_${ab.id}`,
@@ -289,7 +290,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1;
           if (isUsedRound || isUsedPhase) continue;
 
-          const costCheck = canPayAbilityCost(state, player, ab, tableauItem, {});
+          const costCheck = canInitiateAbility(state, player.id, ab, tableauItem, {});
           if (costCheck.allowed) {
             boardActions.push({
               id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,

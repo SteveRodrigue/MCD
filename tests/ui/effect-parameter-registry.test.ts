@@ -33,14 +33,12 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(countParam?.defaultValue).toBe(1);
   });
 
-  it('DEAL_DAMAGE exposes amount, target, amountFormula, max, and overkill', () => {
+  it('DEAL_DAMAGE exposes amount, target, and overkill', () => {
     const desc = getEffectDescriptor('DEAL_DAMAGE');
     const paramKeys = desc.parameters.map((p) => p.key);
 
     expect(paramKeys).toContain('amount');
     expect(paramKeys).toContain('target');
-    expect(paramKeys).toContain('amountFormula');
-    expect(paramKeys).toContain('max');
     expect(paramKeys).toContain('overkill');
   });
 

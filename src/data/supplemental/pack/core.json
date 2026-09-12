@@ -729,10 +729,14 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amountFormula": "COUNTERS_ON_TARGET",
-                "counterType": "energy",
-                "multiplier": 2,
-                "max": 10,
+                "amount": {
+                  "from": "COUNTERS",
+                  "counterType": "energy",
+                  "multiplier": 2,
+                  "clamp": {
+                    "max": 10
+                  }
+                },
                 "target": "CHOSEN_ENEMY"
               }
             }
@@ -741,13 +745,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-11T22:36:00Z",
-        "reviewedAt": "2026-09-11T22:36:00Z",
+        "updatedAt": "2026-09-12T18:05:00Z",
+        "reviewedAt": "2026-09-12T18:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here.",
-        "reconstructedText": "ACTION [Cost: Spend X [energy]] -> ADD_COUNTERS (counterType: energy, scaling: PER_RESOURCE_SPENT, multiplier: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amountFormula: COUNTERS_ON_TARGET, counterType: energy, multiplier: 2, max: 10, target: CHOSEN_ENEMY)"
+        "reconstructedText": "ACTION [Cost: Spend X [energy]] -> ADD_COUNTERS (counterType: energy, scaling: PER_RESOURCE_SPENT, multiplier: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amount: { from: COUNTERS, counterType: energy, multiplier: 2, clamp: { max: 10 } }, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
@@ -858,8 +862,13 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amountFormula": "SUFFERED_DAMAGE",
-                "max": 15,
+                "amount": {
+                  "from": "STAT_VALUE",
+                  "stat": "SUFFERED_DAMAGE",
+                  "clamp": {
+                    "max": 15
+                  }
+                },
                 "target": "CHOSEN_ENEMY"
               }
             }
@@ -868,13 +877,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:20",
-        "reviewedAt": "2026-08-31T13:20",
+        "updatedAt": "2026-09-12T18:05:00Z",
+        "reviewedAt": "2026-09-12T18:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained.",
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amountFormula: SUFFERED_DAMAGE, max: 15, target: ENEMY)"
+        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amount: { from: STAT_VALUE, stat: SUFFERED_DAMAGE, clamp: { max: 15 } }, target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
         "Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
@@ -3002,7 +3011,10 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "amountFormula": "HERO_ATK",
+                "amount": {
+                  "from": "STAT_VALUE",
+                  "stat": "ATTACK"
+                },
                 "target": "ENEMY"
               }
             }
@@ -3011,13 +3023,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T11:32",
-        "reviewedAt": "2026-08-31T11:32",
+        "updatedAt": "2026-09-12T18:05:00Z",
+        "reviewedAt": "2026-09-12T18:05:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Response</b> <i>(attack)</i>: After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK.",
-        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> Deal damage equal to hero's ATK to that enemy"
+        "reconstructedText": "RESPONSE (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> DEAL_DAMAGE (amount: { from: STAT_VALUE, stat: ATTACK }, target: ENEMY)"
       },
       "mechanicSteps": [
         "Trigger: Hero Response after hero defends against an enemy attack (RESPONSE @ HERO_DEFENDED_ATTACK)",

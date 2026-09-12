@@ -265,13 +265,6 @@ export const EffectTypeSchema = z.enum([
 export type EffectType = z.infer<typeof EffectTypeSchema>;
 
 /**
- * Dynamic Amount Formula Types (RR v1.8 p. 11, 31)
- */
-export const AmountFormulaSchema = z.enum(['SUFFERED_DAMAGE', 'HERO_ATK']);
-export type AmountFormula = z.infer<typeof AmountFormulaSchema>;
-
-
-/**
  * Resource Types
  */
 export const ResourceTypeSchema = z.enum(['physical', 'energy', 'mental', 'wild']);
@@ -378,7 +371,7 @@ export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCri
 export const FilterSchema = UniversalCardFilterSchema;
 
 /**
- * Dynamic Value Source Schema (ADR-0049)
+ * Dynamic Value Source Schema (ADR-0049, ADR-0052)
  * Declarative value resolution for composable effect amounts, counters, and scalers.
  */
 export const DynamicValueSourceSchema = z
@@ -389,11 +382,33 @@ export const DynamicValueSourceSchema = z
       'DISCARDED_COUNT',
       'ENTITY_COUNT',
       'STAT_VALUE',
+      'COUNTERS',
+      'CARD_ATTRIBUTE',
     ]),
+    stat: z
+      .enum([
+        'SUFFERED_DAMAGE',
+        'ATTACK',
+        'HERO_ATK',
+        'THWART',
+        'DEFENSE',
+        'RECOVERY',
+        'THREAT',
+        'DAMAGE',
+      ])
+      .optional(),
+    counterType: z.string().optional(),
+    target: TargetSelectorSchema.optional(),
+    filter: UniversalCardFilterSchema.optional(),
+    attribute: z.enum(['BOOST_ICONS', 'PRINTED_RESOURCES', 'PRINTED_COST']).optional(),
     multiplier: z.number().optional(),
     offset: z.number().optional(),
-    stat: z.string().optional(),
-    filter: UniversalCardFilterSchema.optional(),
+    clamp: z
+      .object({
+        min: z.number().optional(),
+        max: z.number().optional(),
+      })
+      .optional(),
   })
   .strict();
 

@@ -104,6 +104,7 @@ graph TD
         ADR38["ADR-0038: Special Ability Plugin Architecture & Sequential Ordering"]
         ADR39["ADR-0039: Resource Ability Timing Triad & Form Gating"]
         ADR46["ADR-0046: Universal Declarative Card Filtering Architecture"]
+        ADR52["ADR-0052: Centralized Dynamic Formula & State Value Evaluator Engine"]
     end
     subgraph Integrity["State Integrity & Cost Enforcement"]
         ADR40["ADR-0040: Card Conservation & Atomic Zone Transfer"]
@@ -179,6 +180,7 @@ graph TD
 | [ADR-0049](0049-composable-value-transformers-and-event-interception.md)                         | 2026-09-08 | Composable Value Transformers, Replacement Event Interceptors & Prevention Pipelines | **Accepted**                                                                                                 | Generalize replacement interrupts and dynamic scalers across all 120 Zzorba packs using atomic event consumers and `DynamicValueSource` to eliminate single-use effect primitives. |
 | [ADR-0050](0050-universal-in-play-self-referential-trigger-instance-binding.md)                    | 2026-09-11 | Universal In-Play Self-Referential Trigger Instance Binding                           | **Accepted**                                                                                                 | Guarantee in-play entities with self-referential triggers (ENTERS_PLAY, CARD_PLAYED) only fire when their instanceId matches sourceInstanceId, resolving Issue #93 and preventing multi-card cascade defects. |
 | [ADR-0051](0051-universal-two-stage-in-play-card-interaction-and-action-selection.md)              | 2026-09-12 | Universal Two-Stage In-Play Card Interaction & Action Selection Pipeline              | **Accepted**                                                                                                 | Eliminate silent default attacks and thwarts; require Stage 1 action selection and Stage 2 target/payment prompts across Hero, Allies, Supports, and Upgrades (Fixes #98). |
+| [ADR-0052](0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md)                   | 2026-09-12 | Centralized Dynamic Formula & State Value Evaluator Engine                           | **Accepted**                                                                                                 | Centralize dynamic mathematical evaluation into `evaluateDynamicAmount`, adhere to RR v1.8 calculation rules, eliminate `amountFormula` tech debt, and unify dynamic scalars under `DynamicValueSource`. |
 
 
 ---

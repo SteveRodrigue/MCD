@@ -3,15 +3,16 @@ name: problem-report-triage
 description: >-
   Inbox-Zero triage protocol that converts local Dev Mode "Report a Problem"
   captures in logs/reports/*.json into tracked GitHub Issues formatted per
-  the official .github/ISSUE_TEMPLATE forms ([BUG]: with bug/triage labels,
+  the official .github/ISSUE_TEMPLATE forms ([BUG]: with bug/needs-review labels,
   [FEAT]: with enhancement label), always preserving the reporter's verbatim
-  original text in a dedicated section for later human review. Before
-  filing, searches open GitHub issues for duplicates/near-matches and, when
-  found, merges by commenting on the existing issue and applying the repo's
-  existing 'duplicate' label instead of creating a new one. Maps report
-  priority to the repo's real priority:P0-blocker..P3-low labels, logs
-  progress in logs/skills/, and leaves logs/reports/ empty (Inbox Zero) at
-  the end of every run. Trigger whenever asked to "triage reports", "file
+  original text in a dedicated section for later human review. Enforces a 55KB
+  body length limit to prevent GitHub GraphQL limits, splitting overflow details
+  into issue comments when needed. Before filing, searches open GitHub issues for
+  duplicates/near-matches and, when found, merges by commenting on the existing
+  issue and applying the repo's existing 'duplicate' label instead of creating
+  a new one. Maps report priority to the repo's real priority:P0-blocker..P3-low
+  labels, logs progress in logs/skills/, and leaves logs/reports/ empty (Inbox Zero)
+  at the end of every run. Trigger whenever asked to "triage reports", "file
   pending problem reports", "clear logs/reports", or prefixed with
   'problem-report-triage:'.
 ---
@@ -130,11 +131,11 @@ N/A — filed via Dev Mode; no rules citation was captured. Add one during triag
 > <report.description, character-for-character, unedited — this is the single source of truth for what the reporter actually said>
 
 <details>
-<summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>
+<summary>🎮 GameState Snapshot at time of report (click to expand)</summary>
 
-\`\`\`json
-<full gameState JSON — attach in full; it is the only diagnostic artifact available>
-\`\`\`
+```json
+<gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
+```
 
 </details>
 
@@ -175,11 +176,11 @@ N/A — not captured via Dev Mode; explore during triage.
 > <report.description, character-for-character, unedited>
 
 <details>
-<summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>
+<summary>🎮 GameState Snapshot at time of report (click to expand)</summary>
 
-\`\`\`json
-<full gameState JSON>
-\`\`\`
+```json
+<gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
+```
 
 </details>
 
@@ -188,7 +189,22 @@ N/A — not captured via Dev Mode; explore during triage.
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
 ```
 
-Never invent Expected Behavior, Rules Citations, Environment details, or Alternatives that the reporter did not state — always mark them "Not stated" / "N/A" and defer to the verbatim section. The GameState JSON is always attached in full (both templates) since it is cheap, lossless, and the only diagnostic artifact available for a Dev Mode report.
+Never invent Expected Behavior, Rules Citations, Environment details, or Alternatives that the reporter did not state — always mark them "Not stated" / "N/A" and defer to the verbatim section.
+
+#### 🛡️ GitHub Issue Body Size Limit Guardrail (Max 65,536 Characters)
+
+GitHub enforces a strict limit of **65,536 characters** on issue bodies (`GraphQL: Body is too long (maximum is 65536 characters)`). Full serialized `gameState` trees frequently exceed 500 KB.
+
+To prevent creation errors:
+1. **Size Budget:** The formatted issue body must not exceed **55,000 characters**.
+2. **If Full Body $\le$ 55,000 Characters:** Embed the entire `gameState` JSON inside `<details><summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>`.
+3. **If Full Body > 55,000 Characters:**
+   - **In the Main Issue Body:** Include a concise excerpt of key reproduction fields (`id`, `roundNumber`, `phase`, `scenarioId`, `difficulty`, `heroicLevel`, `firstPlayerIndex`, `activePlayerIndex`, and player array with `id`, `name`, `currentForm`, `health`, `maxHealth`).
+   - Add an explicit callout directly in the details block or above it:
+     ```markdown
+     > ⚠️ **Full GameState snapshot exceeded issue body limits. More details available in the comments below.**
+     ```
+   - **In Step 4a (Comments):** Post the complete `gameState` JSON into the issue thread as one or more follow-up comments using `gh issue comment <NUM> --body-file <temp-comment-file>.md`. If the JSON itself exceeds 55,000 characters, break it into numbered sequential parts (e.g. `Part 1/N`, `Part 2/N`) or post the active scenario and player subtrees separately.
 
 ### Step 3: Duplicate / Merge Detection 🔍
 
@@ -237,11 +253,11 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 
 **Do not use `report.labels` verbatim.** Re-derive the label set from `report.type` and `report.priority` against the repository's real, existing taxonomy (verified with `gh label list` — all of these labels already exist, so `gh label create` is never needed for a standard report):
 
-| `report.type` | Title Prefix | Labels                               |
-| ------------- | ------------ | ------------------------------------ |
-| `bug`         | `[BUG]: `    | `bug`, `triage`, `priority:<mapped>` |
-| `improvement` | `[FEAT]: `   | `enhancement`, `priority:<mapped>`   |
-| `feature`     | `[FEAT]: `   | `enhancement`, `priority:<mapped>`   |
+| `report.type` | Title Prefix | Labels                                            |
+| ------------- | ------------ | ------------------------------------------------- |
+| `bug`         | `[BUG]: `    | `bug`, `priority:<mapped>`, `needs-review`        |
+| `improvement` | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review`|
+| `feature`     | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review`|
 
 Priority mapping (`report.priority` → repo label — note `P0` renames from `critical` to `blocker`):
 
@@ -255,13 +271,18 @@ Priority mapping (`report.priority` → repo label — note `P0` renames from `c
 ```bash
 gh issue create \
   --title "[BUG]: <report.title, tag normalized>" \
-  --label "bug,triage,priority:P1-high" \
+  --label "bug,priority:P1-high,needs-review" \
   --body-file <temp-body-file>.md
 ```
 
-### Step 4a: Verify & Log
+### Step 4a: Verify, Comment Overflow & Log
 
-Confirm the issue was created (`gh issue view <NUM>` or inspect the `gh issue create` output URL). Append `[FILE]` and `[ATTACH]` log lines with the real issue number and URL.
+1. Confirm the issue was created (`gh issue view <NUM>` or inspect the `gh issue create` output URL).
+2. **Comment Overflow Payload (if applicable):** If the full GameState snapshot was omitted from the issue body due to the 55,000 character limit, post the complete GameState (or chunked parts if $>55,000$ chars) as follow-up comments:
+   ```bash
+   gh issue comment <NUM> --body-file <temp-gamestate-comment>.md
+   ```
+3. Append `[FILE]` and `[ATTACH]` log lines with the real issue number and URL.
 
 ### Step 5: Prune the Local Report (Inbox Zero)
 
@@ -279,7 +300,8 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 
 ## 🛑 Safety Notes
 
-- This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `triage`, `enhancement`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
+- This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `enhancement`, `needs-review`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
+- **Enforce Body Length Limit ($\le$ 55,000 characters):** GitHub issues fail with GraphQL errors if the body exceeds 65,536 characters. Always inspect the generated body length before executing `gh issue create`, and post full payloads in comments when needed.
 - **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a _summary of the section below_, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
 - If a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
 - **Never guess at a duplicate match.** If duplicate-detection confidence is below the 80% threshold, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread.

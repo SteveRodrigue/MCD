@@ -37,7 +37,7 @@ import {
   getEffectiveHandSize,
   getEffectiveAllyStats,
 } from '../../../engine/pipeline/stat-calculator';
-import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
+import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 
 interface HeroZoneProps {
   player: PlayerState;
@@ -96,6 +96,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const validHeroAttackTargets = gameState
     ? getValidAttackTargets(gameState, player.id, 'hero')
     : [];
+  const validHeroThwartTargets = gameState
+    ? getValidThwartTargets(gameState, player.id, 'hero')
+    : [];
   const canFlip = !player.basicChangeFormUsedThisRound && !player.formChangedThisRound;
   const canRecover =
     !isHero &&
@@ -104,7 +107,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     player.health < effectiveMaxHealth;
   const canAttack =
     isHero && !player.exhausted && isPlayerTurn && validHeroAttackTargets.length > 0;
-  const canThwart = isHero && !player.exhausted && (gameState?.mainScheme?.threat || 0) > 0;
+  const canThwart =
+    isHero && !player.exhausted && isPlayerTurn && validHeroThwartTargets.some((t) => t.allowed);
 
   // Ally & Tableau Action Selection States
   const [selectedAllyForModal, setSelectedAllyForModal] = useState<CardInstance | null>(null);
@@ -524,7 +528,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     title={
                       player.exhausted
                         ? 'Hero is exhausted'
-                        : `Exhaust to attack for ${effectiveStats.attack} DMG`
+                        : !canAttack
+                          ? 'No valid attack targets'
+                          : `Exhaust to attack for ${effectiveStats.attack} DMG`
                     }
                   >
                     <Swords className="w-3 h-3" />
@@ -542,7 +548,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     title={
                       player.exhausted
                         ? 'Hero is exhausted'
-                        : (gameState?.mainScheme?.threat || 0) <= 0
+                        : !canThwart
                           ? 'No threat to thwart'
                           : `Exhaust to remove ${effectiveStats.thwart} threat`
                     }
@@ -676,7 +682,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     />
                     {activeAbilities.map((ab) => {
                       const costCheck = gameState
-                        ? canPayAbilityCost(gameState, player, ab, cardInst, {})
+                        ? canInitiateAbility(gameState, player.id, ab, cardInst, {})
                         : { allowed: false, reason: 'Game state not loaded' };
                       const canUse = isPlayerTurn && costCheck.allowed;
                       const label = ab.id.includes('add')

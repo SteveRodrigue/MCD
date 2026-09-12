@@ -9,9 +9,15 @@ import {
   Keyword,
   hasKeyword,
   getKeywordValue,
+  CardAbility,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
-import { isResourceAbility, isAbilityPlayableInForm } from './cost-engine';
+import {
+  isResourceAbility,
+  isAbilityPlayableInForm,
+  canPayAbilityCost,
+  AbilityPaymentOptions,
+} from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
@@ -706,6 +712,216 @@ export function evaluateAllyTargetRequirement(
 }
 
 /**
+ * Checks whether any valid scheme with threat can currently have threat removed (RR v1.8 p. 11, 20, 29, 30).
+ * Accounts for:
+ * - Scheme threat > 0
+ * - Crisis Keyword: Prevents removing threat from main scheme while a Crisis side scheme is in play
+ * - Patrol Keyword: Prevents a player from removing threat from main scheme while engaged with a Patrol minion
+ */
+export function hasEligibleThreatRemovalTarget(
+  state: GameState,
+  playerId: string,
+  targetType: string = 'CHOSEN_SCHEME',
+  targetInstanceId?: string,
+): boolean {
+  const player = getPlayer(state, playerId);
+
+  const hasCrisisScheme = (state.sideSchemes || []).some((s) => {
+    const sideCard = s.card as SideSchemeCard;
+    return Boolean(sideCard?.hasCrisis || hasKeyword(s.card, Keyword.CRISIS));
+  });
+
+  const hasPatrolMinion = (player?.engagedMinions || []).some((m) =>
+    hasKeyword(m.card, Keyword.PATROL),
+  );
+
+  const isMainSchemeEligible =
+    Boolean(state.mainScheme) &&
+    (state.mainScheme.threat || 0) > 0 &&
+    !hasCrisisScheme &&
+    !hasPatrolMinion;
+
+  if (targetType === 'MAIN_SCHEME') {
+    return isMainSchemeEligible;
+  }
+
+  if (targetType === 'SIDE_SCHEME') {
+    if (targetInstanceId) {
+      const side = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
+      return Boolean(side && side.threat > 0);
+    }
+    return (state.sideSchemes || []).some((s) => s.threat > 0);
+  }
+
+  // CHOSEN_SCHEME or default
+  if (targetInstanceId) {
+    if (targetInstanceId === 'main_scheme' || targetInstanceId === state.mainScheme?.instanceId) {
+      return isMainSchemeEligible;
+    }
+    const side = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
+    return Boolean(side && side.threat > 0);
+  }
+
+  return isMainSchemeEligible || (state.sideSchemes || []).some((s) => s.threat > 0);
+}
+
+/**
+ * Evaluates whether a card requires scheme targets with threat to be played (RR v1.8 p. 15, 29, 30; Issue #101).
+ * An Event whose primary effect is removing threat cannot be played if no scheme has eligible threat.
+ */
+export function evaluateSchemeTargetRequirement(
+  state: GameState,
+  player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  // Only events execute their abilities immediately upon being played (RR v1.8 p. 12)
+  if (card.type !== CardType.EVENT) {
+    return { allowed: true };
+  }
+
+  const abilities = card.enrichment?.abilities || [];
+  for (const ab of abilities) {
+    // Only check action / play abilities, not reactive interrupt/response
+    const isAction =
+      ab.timing === 'ACTION' ||
+      ab.timing === 'HERO_ACTION' ||
+      ab.timing === 'ALTER_EGO_ACTION' ||
+      !ab.timing;
+    if (!isAction) continue;
+
+    const steps = ab.steps || [];
+    const threatStep = steps.find((s) => s.effect === 'REMOVE_THREAT');
+    if (threatStep) {
+      const targetParam = (threatStep.params?.target as string) || 'CHOSEN_SCHEME';
+      const targetInstId = threatStep.params?.targetInstanceId as string | undefined;
+      if (!hasEligibleThreatRemovalTarget(state, player.id, targetParam, targetInstId)) {
+        return {
+          allowed: false,
+          reason: 'Cannot play this card: No scheme has threat to remove.',
+        };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Evaluates whether an ability on an in-play card or identity can be legally initiated (RR v1.8 p. 15-16, 29, 30; Issue #101).
+ * Validates:
+ * 1. Active player turn for actions (RR v1.8 p. 19).
+ * 2. Identity form requirements (Hero form for HERO_ACTION, Alter-Ego for ALTER_EGO_ACTION).
+ * 3. Ability limits (ONCE_PER_ROUND, ONCE_PER_PHASE).
+ * 4. Ability costs (via canPayAbilityCost).
+ * 5. Valid targets & Potential to change the game state (eligible scheme threat, Crisis, Patrol, Guard, etc.).
+ */
+export function canInitiateAbility(
+  state: GameState,
+  playerId: string,
+  ability: CardAbility,
+  sourceCardInst?: CardInstance,
+  options?: AbilityPaymentOptions,
+): { allowed: boolean; reason?: string } {
+  const player = getPlayer(state, playerId);
+  if (!player) return { allowed: false, reason: 'Player not found.' };
+
+  // 1. Player Turn Validation for Actions
+  if (
+    state.phase === GamePhase.PLAYER_PHASE &&
+    (ability.timing === 'ACTION' ||
+      ability.timing === 'HERO_ACTION' ||
+      ability.timing === 'ALTER_EGO_ACTION')
+  ) {
+    const activePlayer = state.players[state.activePlayerIndex];
+    if (activePlayer && activePlayer.id !== playerId) {
+      return {
+        allowed: false,
+        reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
+      };
+    }
+  }
+
+  // 2. Identity Form Validation
+  if (ability.timing.startsWith('HERO_') && player.currentForm !== 'hero') {
+    return { allowed: false, reason: 'Can only use this ability in Hero form.' };
+  }
+  if (ability.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') {
+    return { allowed: false, reason: 'Can only use this ability in Alter-Ego form.' };
+  }
+
+  // 3. Limit Validation (ONCE_PER_ROUND, ONCE_PER_PHASE)
+  const abilityKey = sourceCardInst ? `${sourceCardInst.instanceId}_${ability.id}` : ability.id;
+  if (
+    ability.limit === 'ONCE_PER_ROUND' &&
+    (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
+  ) {
+    return {
+      allowed: false,
+      reason: `Ability '${ability.id}' has already been used this round (Limit: once per round).`,
+    };
+  }
+  if (
+    ability.limit === 'ONCE_PER_PHASE' &&
+    (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
+  ) {
+    return {
+      allowed: false,
+      reason: `Ability '${ability.id}' has already been used this phase (Limit: once per phase).`,
+    };
+  }
+
+  // 4. Cost Validation
+  const costCheck = canPayAbilityCost(state, player, ability, sourceCardInst, options);
+  if (!costCheck.allowed) {
+    return costCheck;
+  }
+
+  // 5. Target & Potential to Change Game State (RR v1.8 p. 15-16, 29, 30)
+  for (const step of ability.steps || []) {
+    // 5A. Threat Removal / Thwart
+    if (step.effect === 'REMOVE_THREAT') {
+      const targetParam = (step.params?.target as string) || 'CHOSEN_SCHEME';
+      const targetInstId = (step.params?.targetInstanceId as string) || options?.targetInstanceId;
+      if (!hasEligibleThreatRemovalTarget(state, playerId, targetParam, targetInstId)) {
+        return {
+          allowed: false,
+          reason: 'Cannot trigger ability: No scheme has threat to remove.',
+        };
+      }
+    }
+
+    // 5B. Attack / Enemy Target Damage
+    if (step.effect === 'ATTACK' || (step.effect === 'DEAL_DAMAGE' && step.params?.target)) {
+      const target = (step.params?.target as string) || 'CHOSEN_ENEMY';
+      const allMinions = state.players.flatMap((p) => p.engagedMinions || []);
+      const hasGuard = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
+
+      if (target === 'CHOSEN_MINION' || target === 'MINION') {
+        if (allMinions.length === 0) {
+          return { allowed: false, reason: 'Cannot trigger ability: No minion in play to target.' };
+        }
+      } else if (target === 'VILLAIN') {
+        if (hasGuard) {
+          return {
+            allowed: false,
+            reason: 'Cannot attack villain while an engaged minion with Guard is in play.',
+          };
+        }
+      } else if (target === 'CHOSEN_ENEMY' || target === 'ENEMY') {
+        if (allMinions.length === 0 && hasGuard) {
+          return {
+            allowed: false,
+            reason: 'Cannot attack: Villain is protected by an engaged minion with Guard.',
+          };
+        }
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Evaluates universal play restrictions declared on card enrichment (RR v1.8 p. 16).
  * Covers identity form, form traits, identity traits, controlled card requirements, and identity names.
  */
@@ -897,6 +1113,12 @@ export function canPlayCard(
   const allyCheck = evaluateAllyTargetRequirement(state, player, card);
   if (!allyCheck.allowed) {
     return allyCheck;
+  }
+
+  // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)
+  const schemeCheck = evaluateSchemeTargetRequirement(state, player, card);
+  if (!schemeCheck.allowed) {
+    return schemeCheck;
   }
 
   const abilities = card.enrichment?.abilities || [];
@@ -1191,6 +1413,12 @@ export function evaluateCardPlayability(
   const allyPlayabilityCheck = evaluateAllyTargetRequirement(state, player, card);
   if (!allyPlayabilityCheck.allowed && allyPlayabilityCheck.reason) {
     reasons.push(allyPlayabilityCheck.reason);
+  }
+
+  // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)
+  const schemePlayabilityCheck = evaluateSchemeTargetRequirement(state, player, card);
+  if (!schemePlayabilityCheck.allowed && schemePlayabilityCheck.reason) {
+    reasons.push(schemePlayabilityCheck.reason);
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)

@@ -31,8 +31,9 @@ import {
   getCardRestrictedWeight,
   getPlayerRestrictedCount,
   getPlayerRestrictedLimit,
+  canInitiateAbility,
 } from './legality-checker';
-import { canPayAbilityCost, executeAbilityCost } from './cost-engine';
+import { executeAbilityCost } from './cost-engine';
 import {
   executeEffect,
   checkAndDiscardZeroCounterCard,
@@ -1400,14 +1401,14 @@ export function dispatchAction(
         };
       }
 
-      // Cost validation and pre-check
-      const costCheck = canPayAbilityCost(nextState, player, ability, targetCardInst, {
+      // Ability initiation & target validity check (RR v1.8 p. 15-16, 29, 30; Issue #101)
+      const initCheck = canInitiateAbility(nextState, action.playerId, ability, targetCardInst, {
         discardCardInstanceIds: (action as any).discardCardInstanceIds,
         paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
         targetInstanceId: action.targetInstanceId,
       });
-      if (!costCheck.allowed) {
-        return { state, result: { success: false, error: costCheck.reason } };
+      if (!initCheck.allowed) {
+        return { state, result: { success: false, error: initCheck.reason } };
       }
 
       // Execute cost payment

@@ -8,10 +8,10 @@ import {
 import {
   canChangeForm,
   canBasicRecover,
-  canBasicAttack,
   canBasicThwart,
+  canInitiateAbility,
 } from '../../../engine/pipeline/legality-checker';
-import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
+import { getIdentityAttackState } from './identity-action-utils';
 
 interface IdentityActionModalProps {
   isOpen: boolean;
@@ -58,11 +58,9 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const canRecover =
     !isHero && isPlayerTurn && recoverCheck.allowed && player.health < effectiveMaxHealth;
 
-  // 3. Attack Check
-  const attackCheck = gameState
-    ? canBasicAttack(gameState, player.id, 'villain')
-    : { allowed: isHero && !player.exhausted };
-  const canAttack = isHero && isPlayerTurn && attackCheck.allowed;
+  // 3. Attack Check (Supports Guard Minions & Multi-Target)
+  const attackState = getIdentityAttackState(player, gameState, effectiveStats.attack);
+  const { canAttack, canAttackVillain, eligibleMinion } = attackState;
 
   // 4. Thwart Check
   const canThwartMain = gameState
@@ -166,7 +164,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             const abilityKey = ab.id;
             const alreadyUsed = (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
             const costCheck = gameState
-              ? canPayAbilityCost(gameState, player, ab, undefined, {})
+              ? canInitiateAbility(gameState, player.id, ab, undefined, {})
               : { allowed: !alreadyUsed };
             const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
 
@@ -231,11 +229,18 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                     onClose();
                     if (onInitiateHeroAttack) {
                       onInitiateHeroAttack();
-                    } else {
+                    } else if (canAttackVillain) {
                       onDispatchAction?.({
                         type: 'BASIC_ATTACK',
                         playerId: player.id,
                         targetType: 'villain',
+                      });
+                    } else if (eligibleMinion?.instanceId) {
+                      onDispatchAction?.({
+                        type: 'BASIC_ATTACK',
+                        playerId: player.id,
+                        targetType: 'minion',
+                        targetInstanceId: eligibleMinion.instanceId,
                       });
                     }
                   }}
@@ -256,9 +261,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                         Attack ({effectiveStats.attack} DMG)
                       </span>
                       <span className="text-[10px] text-slate-600 block">
-                        {player.exhausted
-                          ? 'Hero is exhausted'
-                          : `Exhaust to attack villain for ${effectiveStats.attack} damage`}
+                        {attackState.subtext}
                       </span>
                     </div>
                   </div>

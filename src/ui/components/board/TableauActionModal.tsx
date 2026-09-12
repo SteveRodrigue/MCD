@@ -2,7 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Zap, X, Layers } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, CardAbility } from '../../../engine/models';
-import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
+import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 
 interface TableauActionModalProps {
   isOpen: boolean;
@@ -117,10 +117,10 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
           <div className="grid grid-cols-1 gap-2.5">
             {actionableAbilities.map((ab) => {
               const alreadyUsed = (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
-              const costCheck = gameState
-                ? canPayAbilityCost(gameState, player, ab, cardInstance, {})
+              const abilityCheck = gameState
+                ? canInitiateAbility(gameState, player.id, ab, cardInstance, {})
                 : { allowed: false, reason: 'Game state unavailable' };
-              const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
+              const canTrigger = isPlayerTurn && !alreadyUsed && abilityCheck.allowed;
 
               const description =
                 ab.steps?.[0]?.params?.description || `Trigger ${ab.id.replace(/_/g, ' ')}`;
@@ -161,7 +161,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
                           ? String(description)
                           : alreadyUsed
                             ? 'Already used this round'
-                            : costCheck.reason || 'Cannot trigger ability'}
+                            : abilityCheck.reason || 'Cannot trigger ability'}
                       </span>
                     </div>
                   </div>

@@ -227,4 +227,58 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       expect(resourceRes.result.error).toContain('Hero form');
     });
   });
+
+  describe('Swinging Web Kick (01005) Target Selection Invariants', () => {
+    it('deals 8 damage to and defeats a minion engaged with another player (#99)', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      // Add Player 2 to the game
+      const p2Identity = catalog.getHeroIdentity('she_hulk')!;
+      gameState.players.push({
+        ...gameState.players[0],
+        id: 'p2',
+        name: 'Jennifer Walters',
+        hero: p2Identity.hero,
+        alterEgo: p2Identity.alterEgo,
+        activeFormCard: p2Identity.hero,
+        currentForm: 'hero',
+        hand: [],
+        deck: [],
+        discard: [],
+        tableau: [],
+        allies: [],
+        engagedMinions: [],
+      });
+
+      // Spawn Hydra Bomber (HP 2) engaged with Player 2
+      const hydraBomber = createCardInstance(catalog.getCard('01110')!);
+      gameState.players[1].engagedMinions = [hydraBomber];
+
+      // Give Player 1 Swinging Web Kick (Cost 3) and 3 payment cards
+      const swkCard = catalog.getCard('01005')!;
+      const swkInst = createCardInstance(swkCard);
+      const pay1 = createCardInstance(catalog.getCard('01003')!);
+      const pay2 = createCardInstance(catalog.getCard('01003')!);
+      const pay3 = createCardInstance(catalog.getCard('01003')!);
+      gameState.players[0].hand = [swkInst, pay1, pay2, pay3];
+
+      // Player 1 plays Swinging Web Kick targeting Player 2's engaged minion
+      const playRes = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: swkInst.instanceId,
+        paymentCardInstanceIds: [pay1.instanceId, pay2.instanceId, pay3.instanceId],
+        targetInstanceId: hydraBomber.instanceId,
+      });
+
+      expect(playRes.result.success).toBe(true);
+      // Minion on Player 2 was defeated (took 8 damage, had 2 HP) and removed from Player 2's engagedMinions
+      expect(playRes.state.players[1].engagedMinions.length).toBe(0);
+      // Minion is in encounter discard pile
+      expect(
+        playRes.state.encounterDiscard.some((c) => c.instanceId === hydraBomber.instanceId),
+      ).toBe(true);
+    });
+  });
 });

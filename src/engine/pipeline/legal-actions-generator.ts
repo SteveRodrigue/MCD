@@ -130,25 +130,31 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         });
       }
 
-      // Attack engaged minions
-      for (const minion of player.engagedMinions || []) {
-        const minionAtkCheck = canBasicAttack(state, playerId, 'minion', minion.instanceId);
-        if (minionAtkCheck.allowed) {
-          identityActions.push({
-            id: `action_basic_attack_minion_${minion.instanceId}`,
-            category: 'identity',
-            headline: `Strike Minion: ${minion.card.name}`,
-            subtext: `Exhaust ${player.activeFormCard.name} to deal ${effectiveStats.attack} damage to minion`,
-            action: {
-              type: 'BASIC_ATTACK',
-              playerId: player.id,
-              targetType: 'minion',
-              targetInstanceId: minion.instanceId,
-            },
-            badge: `${effectiveStats.attack} ATK`,
-            iconType: 'attack',
-            cardCode: player.hero.code,
-          });
+      // Attack engaged minions (tablewide per RR v1.8 p. 5, 10)
+      for (const p of state.players) {
+        for (const minion of p.engagedMinions || []) {
+          const minionAtkCheck = canBasicAttack(state, playerId, 'minion', minion.instanceId);
+          if (minionAtkCheck.allowed) {
+            const headline =
+              p.id === player.id
+                ? `Strike Minion: ${minion.card.name}`
+                : `Strike Minion: ${minion.card.name} (${p.name})`;
+            identityActions.push({
+              id: `action_basic_attack_minion_${minion.instanceId}`,
+              category: 'identity',
+              headline,
+              subtext: `Exhaust ${player.activeFormCard.name} to deal ${effectiveStats.attack} damage to minion`,
+              action: {
+                type: 'BASIC_ATTACK',
+                playerId: player.id,
+                targetType: 'minion',
+                targetInstanceId: minion.instanceId,
+              },
+              badge: `${effectiveStats.attack} ATK`,
+              iconType: 'attack',
+              cardCode: player.hero.code,
+            });
+          }
         }
       }
 
@@ -334,33 +340,39 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           });
         }
 
-        // Ally Attack on engaged minions
-        for (const minion of player.engagedMinions || []) {
-          const minionAtkCheck = canAllyAttack(
-            state,
-            player.id,
-            ally.instanceId,
-            'minion',
-            minion.instanceId,
-          );
-          if (minionAtkCheck.allowed) {
-            boardActions.push({
-              id: `action_ally_attack_minion_${ally.instanceId}_${minion.instanceId}`,
-              category: 'board',
-              headline: `Ally Strike: ${ally.card.name} ➔ ${minion.card.name}`,
-              subtext: `Exhaust ${ally.card.name} to deal ${allyStats.attack} damage to minion`,
-              action: {
-                type: 'ALLY_ATTACK',
-                playerId: player.id,
-                allyInstanceId: ally.instanceId,
-                targetType: 'minion',
-                targetInstanceId: minion.instanceId,
-              },
-              badge: `${allyStats.attack} ATK`,
-              iconType: 'attack',
-              targetCardInstance: ally,
-              cardCode: ally.card.code,
-            });
+        // Ally Attack on engaged minions (tablewide per RR v1.8 p. 5, 10)
+        for (const p of state.players) {
+          for (const minion of p.engagedMinions || []) {
+            const minionAtkCheck = canAllyAttack(
+              state,
+              player.id,
+              ally.instanceId,
+              'minion',
+              minion.instanceId,
+            );
+            if (minionAtkCheck.allowed) {
+              const headline =
+                p.id === player.id
+                  ? `Ally Strike: ${ally.card.name} ➔ ${minion.card.name}`
+                  : `Ally Strike: ${ally.card.name} ➔ ${minion.card.name} (${p.name})`;
+              boardActions.push({
+                id: `action_ally_attack_minion_${ally.instanceId}_${minion.instanceId}`,
+                category: 'board',
+                headline,
+                subtext: `Exhaust ${ally.card.name} to deal ${allyStats.attack} damage to minion`,
+                action: {
+                  type: 'ALLY_ATTACK',
+                  playerId: player.id,
+                  allyInstanceId: ally.instanceId,
+                  targetType: 'minion',
+                  targetInstanceId: minion.instanceId,
+                },
+                badge: `${allyStats.attack} ATK`,
+                iconType: 'attack',
+                targetCardInstance: ally,
+                cardCode: ally.card.code,
+              });
+            }
           }
         }
 

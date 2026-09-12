@@ -282,19 +282,22 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         hp: gameState.villain.health,
       },
     ];
-    // Engaged minions
-    player.engagedMinions.forEach((m) => {
-      targets.push({
-        id: m.instanceId,
-        name: `${m.card.name} (Minion)`,
-        type: 'minion',
-        hp: (m.card as MinionCard).health
-          ? (m.card as MinionCard).health - (m.tokens?.damage || 0)
-          : 0,
+    // Engaged minions across all players (RR v1.8 p. 5, 10)
+    gameState.players.forEach((p) => {
+      (p.engagedMinions || []).forEach((m) => {
+        targets.push({
+          id: m.instanceId,
+          name:
+            p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
+          type: 'minion',
+          hp: (m.card as MinionCard).health
+            ? (m.card as MinionCard).health - (m.tokens?.damage || 0)
+            : 0,
+        });
       });
     });
     return targets;
-  }, [gameState.villain, player.engagedMinions]);
+  }, [gameState.villain, gameState.players, player.id]);
 
   const schemeTargets = useMemo(() => {
     const targets: {

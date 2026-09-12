@@ -7,6 +7,7 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
   getEffectiveAllyStats,
+  getEffectiveAllyLimit,
 } from '../../src/engine/pipeline/stat-calculator';
 import { evaluateCardPlayability, canPlayCard } from '../../src/engine/pipeline/legality-checker';
 import { executePlayerCleanup } from '../../src/engine/pipeline/player-phase-cleanup';
@@ -188,6 +189,41 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
 
       const playRes = canPlayCard(state, p1.id, 'arc_inst', ['pay1', 'pay2']);
       expect(playRes.allowed).toBe(true);
+    });
+  });
+
+  describe('getEffectiveAllyLimit (RR v1.8 p. 3, ADR-0018)', () => {
+    it('defaults to 3 allies when no modifiers are present', () => {
+      const p1 = state.players[0];
+      expect(getEffectiveAllyLimit(p1, state)).toBe(3);
+    });
+
+    it('increases ally limit to 4 with The Triskelion (01073)', () => {
+      const p1 = state.players[0];
+      const triskelion = cardCatalog.getCard('01073')!;
+      p1.tableau.push({ instanceId: 'tri_1', card: triskelion, exhausted: false });
+
+      expect(getEffectiveAllyLimit(p1, state)).toBe(4);
+    });
+
+    it('isolates ally limit bonus to the controlling player', () => {
+      const p1 = state.players[0];
+      const triskelion = cardCatalog.getCard('01073')!;
+      p1.tableau.push({ instanceId: 'tri_1', card: triskelion, exhausted: false });
+
+      const p2 = { ...p1, id: 'p2', tableau: [] };
+      state.players.push(p2 as any);
+
+      expect(getEffectiveAllyLimit(p1, state)).toBe(4);
+      expect(getEffectiveAllyLimit(p2, state)).toBe(3);
+    });
+
+    it('falls back to evaluating player tableau if gameState is omitted', () => {
+      const p1 = state.players[0];
+      const triskelion = cardCatalog.getCard('01073')!;
+      p1.tableau.push({ instanceId: 'tri_1', card: triskelion, exhausted: false });
+
+      expect(getEffectiveAllyLimit(p1)).toBe(4);
     });
   });
 });

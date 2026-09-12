@@ -342,6 +342,72 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       // Base threat 2 + 1 per player = 3 total threat
       expect(gameState.sideSchemes[0].threat).toBe(3);
     });
+
+    it('does not trigger Sandman (01102) MINION_ATTACKED Forced Response upon reveal (#97 regression)', () => {
+      const sandmanCard = catalog.getCard('01102')!;
+      const sandmanInstance = createCardInstance(sandmanCard);
+      gameState.players[0].dealtEncounterCards = [sandmanInstance];
+
+      // Setup encounter deck with known top cards: Eviction Notice (01165) and "I'm Tough!" (01105)
+      const evictionNotice = createCardInstance(catalog.getCard('01165')!);
+      const imTough = createCardInstance(catalog.getCard('01105')!);
+      gameState.encounterDeck = [evictionNotice, imTough];
+      gameState.encounterDiscard = [];
+
+      step5_revealEncounterCards(gameState);
+
+      // Sandman enters play engaged with player
+      expect(gameState.players[0].engagedMinions.length).toBe(1);
+      expect(gameState.players[0].engagedMinions[0].card.code).toBe('01102');
+      // Sandman receives Toughness from keyword
+      expect(gameState.players[0].engagedMinions[0].statusCards?.includes(StatusCard.TOUGH)).toBe(
+        true,
+      );
+
+      // Sandman's Forced Response (MINION_ATTACKED) must NOT fire on reveal!
+      // The encounter deck must still contain both cards and discard must be empty.
+      expect(gameState.encounterDeck.length).toBe(2);
+      expect(gameState.encounterDeck[0].card.code).toBe('01165');
+      expect(gameState.encounterDeck[1].card.code).toBe('01105');
+      expect(gameState.encounterDiscard.length).toBe(0);
+    });
+
+    it("applies Tough status to Villain when 'I'm Tough!' (01105) is revealed and Villain is not tough", () => {
+      const imToughCard = catalog.getCard('01105')!;
+      const imToughInstance = createCardInstance(imToughCard);
+      gameState.players[0].dealtEncounterCards = [imToughInstance];
+      gameState.villain.statusCards = [];
+      gameState.encounterDiscard = [];
+
+      step5_revealEncounterCards(gameState);
+
+      // Villain receives Tough status
+      expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);
+      // Card is discarded
+      expect(gameState.encounterDiscard.length).toBe(1);
+      expect(gameState.encounterDiscard[0].card.code).toBe('01105');
+    });
+
+    it("triggers Surge when 'I'm Tough!' (01105) is revealed and Villain is already tough", () => {
+      const imToughCard = catalog.getCard('01105')!;
+      const imToughInstance = createCardInstance(imToughCard);
+      gameState.players[0].dealtEncounterCards = [imToughInstance];
+      gameState.villain.statusCards = [StatusCard.TOUGH];
+      gameState.encounterDiscard = [];
+
+      // Put a minion on top of the encounter deck to be revealed by Surge
+      const nextCard = createCardInstance(catalog.getCard('01101')!);
+      gameState.encounterDeck = [nextCard];
+
+      step5_revealEncounterCards(gameState);
+
+      // Villain still has Tough status
+      expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);
+      // Surge resolved: nextCard (01101) was revealed into play as an engaged minion
+      expect(gameState.players[0].engagedMinions.some((m) => m.card.code === '01101')).toBe(true);
+      // 'I'm Tough!' is in discard
+      expect(gameState.encounterDiscard.some((c) => c.card.code === '01105')).toBe(true);
+    });
   });
 
   describe('Step 6: Round Upkeep & Full Phase Execution (RR v1.8 p. 32)', () => {

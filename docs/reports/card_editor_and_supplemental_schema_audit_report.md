@@ -473,8 +473,8 @@ flowchart TD
 
 **Goal:** One last end-to-end pass confirming the entire migration is internally consistent before declaring the taxonomy work complete.
 
-- [ ] **8.1 — Full Quality Gate Run:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
-- [ ] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across active `src/`, `tests/`, `docs/`, and `tools/` paths to confirm zero remaining references outside historical ADR/report tables. The preserved audit `reconstructedText` for deferred cards 01031 and 01050 is an explicit post-Phase-8 re-integration exception.
-- [ ] **8.3 — Manual Playtest Smoke Check:** Launch `npm run dev`, play a short Rhino scenario turn exercising at least one migrated card from each category (a `SEARCH`-based upgrade, a status-inflicting card, a defeated-trigger card) to confirm end-to-end UI behavior.
-- [ ] **8.4 — Update `docs/roadmap_and_milestones.md`:** Mark the taxonomy consolidation milestone complete.
-- [ ] **8.5 — Close Tracking Issues:** Close the GitHub issue(s) filed for this work with a summary comment referencing ADR-0058 and this report.
+- [x] **8.1 — Full Quality Gate Run:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
+- [x] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across active `src/`, `tests/`, `docs/`, and `tools/` paths to confirm zero remaining references outside historical ADR/report tables. The preserved audit `reconstructedText` for deferred cards 01031 and 01050 is an explicit post-Phase-8 re-integration exception.
+- [x] **8.3 — Manual Playtest Smoke Check:** Launch `npm run dev`, play a short Rhino scenario turn exercising at least one migrated card from each category (a `SEARCH`-based upgrade, a status-inflicting card, a defeated-trigger card) to confirm end-to-end UI behavior.
+- [x] **8.4 — Update `docs/roadmap_and_milestones.md`:** Mark the taxonomy consolidation milestone complete.
+- [x] **8.5 — Close Tracking Issues:** Close the GitHub issue(s) filed for this work with a summary comment referencing ADR-0058 and this report.

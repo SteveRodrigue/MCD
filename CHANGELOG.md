@@ -5,6 +5,14 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature (Engine & UI): Infinite Trigger Loop Detection & Prevention Guardrails ([RR v1.8 p. 16, 24](docs/algorithmic_rules_reference.md), [ADR-0053](docs/decisions/0053-infinite-trigger-loop-detection-and-prevention-guardrails.md), [#48](https://github.com/SteveRodrigue/MCD/issues/48)):**
+  - **Dynamic Trigger Call Chain Tracking & Cycle Detection:** Instrumented `dispatchTrigger` and `executeEffect` with an immutable `TriggerCallNode[]` call chain. Proactively detects direct self-looping forced triggers (A ➔ A) and mutual circular dependencies between distinct cards (A ⇄ B) before JavaScript call stack exhaustion occurs.
+  - **Maximum Recursion Depth Ceiling Guard:** Enforces `MAX_TRIGGER_DEPTH = 15` safety limit to gracefully halt pathological unbounded non-cyclic cascades without freezing the engine or UI thread.
+  - **Strongly-Typed Diagnostic Diagnostics (`InfiniteLoopError`):** Created `src/engine/errors/infinite-loop-error.ts` capturing the exact offending cards, ability IDs, trigger events, and formatted cycle string, logged to `state.log` with the 1960s comic onomatopoeia `INFINITE LOOP DETECTED!` and recorded on `state.lastError`.
+  - **UI Comic Modal Alert:** Integrated error boundary catching in `src/ui/App.tsx` (`handleDispatchAction`), presenting a stylized comic pop-art modal dialog detailing the offending loop with options to dismiss or reset the game.
+  - **Architecture Decision Record:** Authored [ADR-0053](docs/decisions/0053-infinite-trigger-loop-detection-and-prevention-guardrails.md) and registered it in `docs/decisions/README.md`.
+  - **Contract & Regression Tests:** Added comprehensive test suite in `tests/engine/infinite-loop-detection.test.ts` (4 tests verifying direct self-loops, mutual circular loops, max depth ceiling, and clean resolution of legitimate nested triggers).
+
 - **Fix (Engine & Rules): Clarify Ally Attachment Discard Ruling & Enforce Cascading Cleanup ([RR v1.8 p. 5, 11, 15, 30](docs/algorithmic_rules_reference.md), [#95](https://github.com/SteveRodrigue/MCD/issues/95)):**
   - **Rules Clarification (RR v1.8):** Clarified definitive ruling that players **cannot** voluntarily discard in-play Ally attachment upgrades (such as *Inspired* `01074`) at will (RR v1.8 p. 11 "Discard", p. 15 "In Play"). Attached cards remain in play until either the host element leaves play or a specific card ability/game effect causes the attached card to leave play (RR v1.8 p. 5 "Attach To"). Upgrades do not count toward the Ally Limit (RR v1.8 p. 30).
   - **Cascading Attachment Cleanup Engine Fix:**

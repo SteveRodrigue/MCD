@@ -2,6 +2,9 @@ import { GameState, TriggerType, AbilityStep } from '@engine/models';
 import { executeEffect } from '../effects';
 import { executeAbilityCost, canPayAbilityCost } from '../pipeline/cost-engine';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-error';
+
+export const MAX_TRIGGER_DEPTH = 15;
 
 export interface TriggerContext {
   targetPlayerId: string;
@@ -14,6 +17,9 @@ export interface TriggerContext {
   targetInstanceId?: string;
   acceptOptionalTriggers?: boolean;
   encounterCardInstance?: any;
+  /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
+  triggerChain?: TriggerCallNode[];
+  triggerDepth?: number;
 }
 
 export interface TriggerDispatchResult {
@@ -24,6 +30,83 @@ export interface TriggerDispatchResult {
   interceptedValue?: number;
   cancelled?: boolean;
   hasPendingPrompt?: boolean;
+}
+
+/**
+ * Validates active trigger call chain for cycles and maximum depth ceiling (ADR-0053, Issue #48).
+ * Throws InfiniteLoopError if a cycle or depth limit is detected.
+ */
+function checkAndRecordTriggerNode(
+  state: GameState,
+  node: TriggerCallNode,
+  chain: TriggerCallNode[],
+): TriggerCallNode[] {
+  // Check if node already exists in ancestor chain (cycle detection)
+  const cycleIndex = chain.findIndex(
+    (n) =>
+      n.trigger === node.trigger &&
+      (n.abilityId === node.abilityId || (!n.abilityId && !node.abilityId)) &&
+      (n.sourceInstanceId === node.sourceInstanceId ||
+        (!n.sourceInstanceId && !node.sourceInstanceId && n.cardCode === node.cardCode)),
+  );
+
+  if (cycleIndex !== -1) {
+    const cycle = [...chain.slice(cycleIndex), node];
+    const loopErr = new InfiniteLoopError(
+      `[INFINITE LOOP DETECTED] Circular trigger cycle detected between forced abilities: ${node.cardName || node.cardCode || 'Unknown Card'} (${node.abilityId || 'ability'} / ${node.trigger})`,
+      {
+        cycle,
+        triggerChain: chain,
+        depth: chain.length,
+      },
+    );
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'engine.infinite_loop_detected',
+      params: {
+        message: loopErr.message,
+        cycle: loopErr.formattedCycle,
+      },
+      onomatopoeia: 'INFINITE LOOP DETECTED!',
+    });
+    state.lastError = {
+      type: 'INFINITE_LOOP',
+      message: loopErr.message,
+      formattedDetails: loopErr.formattedCycle,
+    };
+    throw loopErr;
+  }
+
+  const nextChain = [...chain, node];
+  if (nextChain.length > MAX_TRIGGER_DEPTH) {
+    const loopErr = new InfiniteLoopError(
+      `[INFINITE LOOP DETECTED] Trigger recursion depth limit exceeded (${MAX_TRIGGER_DEPTH}). Unbounded cascade halted.`,
+      {
+        triggerChain: nextChain,
+        depth: nextChain.length,
+        cycle: nextChain.slice(-5),
+      },
+    );
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'engine.infinite_loop_detected',
+      params: {
+        message: loopErr.message,
+        cycle: loopErr.formattedCycle,
+      },
+      onomatopoeia: 'INFINITE LOOP DETECTED!',
+    });
+    state.lastError = {
+      type: 'INFINITE_LOOP',
+      message: loopErr.message,
+      formattedDetails: loopErr.formattedCycle,
+    };
+    throw loopErr;
+  }
+
+  return nextChain;
 }
 
 /**
@@ -57,7 +140,38 @@ export function dispatchTrigger(
   state: GameState,
   trigger: TriggerType,
   context: TriggerContext,
+  triggerChainOverride?: TriggerCallNode[],
 ): TriggerDispatchResult {
+  const currentChain = triggerChainOverride || context.triggerChain || [];
+
+  // Immediate depth ceiling check (ADR-0053, Issue #48)
+  if (currentChain.length >= MAX_TRIGGER_DEPTH) {
+    const loopErr = new InfiniteLoopError(
+      `[INFINITE LOOP DETECTED] Trigger recursion depth limit exceeded (${MAX_TRIGGER_DEPTH}). Unbounded cascade halted.`,
+      {
+        triggerChain: currentChain,
+        depth: currentChain.length,
+        cycle: currentChain.slice(-5),
+      },
+    );
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      key: 'engine.infinite_loop_detected',
+      params: {
+        message: loopErr.message,
+        cycle: loopErr.formattedCycle,
+      },
+      onomatopoeia: 'INFINITE LOOP DETECTED!',
+    });
+    state.lastError = {
+      type: 'INFINITE_LOOP',
+      message: loopErr.message,
+      formattedDetails: loopErr.formattedCycle,
+    };
+    throw loopErr;
+  }
+
   const player = state.players.find((p) => p.id === context.targetPlayerId);
   if (!player) return { state };
 
@@ -80,6 +194,15 @@ export function dispatchTrigger(
 
       const isForced = ability.timing.startsWith('FORCED_');
       if (isForced || context.acceptOptionalTriggers === true) {
+        const node: TriggerCallNode = {
+          trigger,
+          abilityId: ability.id,
+          sourceInstanceId: player.id,
+          cardCode: player.activeFormCard.code,
+          cardName: player.activeFormCard.name,
+        };
+        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
         if (ability.cost) {
           executeAbilityCost(state, player, ability);
         }
@@ -99,6 +222,7 @@ export function dispatchTrigger(
           threatAmount: currentThreat,
           damageAmount: currentDamage,
           interceptedValue: currentThreat || currentDamage,
+          triggerChain: nextChain,
         };
         executeEffect(state, ability, effCtx);
         if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
@@ -204,6 +328,15 @@ export function dispatchTrigger(
 
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: cardInst.instanceId,
+            cardCode: cardInst.card.code,
+            cardName: cardInst.card.name,
+          };
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
           if (ability.cost) {
             const costCheck = canPayAbilityCost(state, player, ability, cardInst);
             if (!costCheck.allowed) continue;
@@ -214,6 +347,7 @@ export function dispatchTrigger(
             sourceCardInstance: cardInst,
             targetType: context.targetType as any,
             targetInstanceId: context.targetInstanceId,
+            triggerChain: nextChain,
           });
         } else {
           // Optional In-Play Ability: Check cost & limits before prompting
@@ -274,6 +408,15 @@ export function dispatchTrigger(
 
       const isForced = ability.timing.startsWith('FORCED_');
       if (isForced || context.acceptOptionalTriggers === true) {
+        const node: TriggerCallNode = {
+          trigger,
+          abilityId: ability.id,
+          sourceInstanceId: interruptCard.instanceId,
+          cardCode: interruptCard.card.code,
+          cardName: interruptCard.card.name,
+        };
+        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
         player.hand.splice(handInterruptIdx, 1);
         if (ability.cost?.discardSelf !== false) {
           player.discard.push(interruptCard);
@@ -286,6 +429,7 @@ export function dispatchTrigger(
             sourceCardInstance: interruptCard,
             damageAmount: currentDamage,
             interceptedValue: currentDamage,
+            triggerChain: nextChain,
           };
           executeEffect(state, ability, effCtx);
           currentDamage = effCtx.damageAmount ?? 0;
@@ -365,6 +509,15 @@ export function dispatchTrigger(
 
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: interruptCard.instanceId,
+            cardCode: interruptCard.card.code,
+            cardName: interruptCard.card.name,
+          };
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
           p.hand.splice(handInterruptIdx, 1);
           if (ability.cost?.discardSelf !== false) {
             p.discard.push(interruptCard);
@@ -379,6 +532,7 @@ export function dispatchTrigger(
               threatAmount: currentThreat,
               interceptedValue: currentThreat,
               sourceCardInstance: interruptCard,
+              triggerChain: nextChain,
             };
             executeEffect(state, ability, effCtx);
             currentThreat = effCtx.threatAmount ?? 0;
@@ -455,6 +609,15 @@ export function dispatchTrigger(
 
       const isForced = ability.timing.startsWith('FORCED_');
       if (isForced || context.acceptOptionalTriggers === true) {
+        const node: TriggerCallNode = {
+          trigger,
+          abilityId: ability.id,
+          sourceInstanceId: interruptCard.instanceId,
+          cardCode: interruptCard.card.code,
+          cardName: interruptCard.card.name,
+        };
+        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
         player.hand.splice(handInterruptIdx, 1);
         if (ability.cost?.discardSelf !== false) {
           player.discard.push(interruptCard);
@@ -462,6 +625,7 @@ export function dispatchTrigger(
         executeEffect(state, ability, {
           playerId: player.id,
           sourceCardInstance: interruptCard,
+          triggerChain: nextChain,
         });
         isCancelled = true;
         if (state.activeEncounterContext) {

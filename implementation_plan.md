@@ -178,3 +178,5 @@
 **Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
 
 **Required prerequisite before retry:** Add and test the missing discarded-resource-count and printed-resource-branching capabilities, complete the remaining canonical engine compatibility paths, then restart Phase 3 from a clean baseline. Do not migrate pack data again until those capabilities have their own additive implementation and contract tests.
+
+**Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11.

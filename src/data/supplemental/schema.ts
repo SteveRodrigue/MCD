@@ -126,6 +126,8 @@ export const TargetSelectorSchema = z.enum([
   'ALL_CHARACTERS',
   'PREVIOUS_TARGET',
   'PREVIOUS_SELECTED_CARD',
+  'TRIGGERING_MINION',
+  'TRIGGERING_ENEMY',
 ]);
 
 /**

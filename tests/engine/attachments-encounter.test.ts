@@ -77,16 +77,26 @@ describe('Encounter Attachments Subsystem (Armored Rhino Suit, Charge, Enhanced 
     // Base 2 ATK + 1 Horn = 3 ATK
     expect(stats.attack).toBe(3);
 
-    // Player spends resources to discard attachment
+    // Player spends 3 physical resources to discard attachment via USE_CARD_ABILITY (ADR-0055)
+    state.players[0].currentForm = 'hero';
+    const phys1 = createCardInstance(cardCatalog.getCard('01003')!);
+    const phys2 = createCardInstance(cardCatalog.getCard('01003')!);
+    const phys3 = createCardInstance(cardCatalog.getCard('01003')!);
+    state.players[0].hand = [phys1, phys2, phys3];
+
     const res = dispatchAction(state, {
-      type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
+      type: 'USE_CARD_ABILITY',
       playerId: 'p1',
-      attachmentInstanceId: hornInstance.instanceId,
+      cardInstanceId: hornInstance.instanceId,
+      abilityId: 'ivory_horn_discard_action',
+      paymentCardInstanceIds: [phys1.instanceId, phys2.instanceId, phys3.instanceId],
     });
 
     expect(res.result.success).toBe(true);
     expect(res.state.villain.attachments.length).toBe(0);
     expect(res.state.encounterDiscard.some((c) => c.card.code === '01100')).toBe(true);
+    expect(res.state.players[0].hand.length).toBe(0);
+    expect(res.state.players[0].discard.length).toBe(3);
 
     const updatedStats = getEffectiveVillainStats(res.state, res.state.villain);
     expect(updatedStats.attack).toBe(2);

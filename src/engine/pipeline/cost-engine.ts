@@ -4,6 +4,7 @@ import { removeCardFromAllZones } from '../state/state-validator';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
+  generatorInstanceIds?: string[];
   discardCardInstanceIds?: string[];
   targetInstanceId?: string;
 }

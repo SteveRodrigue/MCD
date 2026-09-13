@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-13T02:28:32.625Z`  
+> **Generated:** `2026-09-13T16:00:01.112Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -71,7 +71,7 @@ These **19 cards** declare multiple distinct ability headers (e.g. dual Hero/Alt
 | `01096` | **Rhino** | `villain` | `core_encounter` | **2** | • `rhino_stage_iii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `rhino_stage_iii_tough` (`SETUP`, **1 step**) |
 | `01098` | **Armored Rhino Suit** | `attachment` | `core_encounter` | **2** | • `armored_rhino_suit_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `armored_rhino_suit_shield` (`FORCED_INTERRUPT` / `TAKE_ATTACK_DAMAGE`, **1 step**) |
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**) |
-| `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **3** | • `ivory_horn_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`ACTION`, **1 step**) |
+| `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **3** | • `ivory_horn_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01102` | **Sandman** | `minion` | `core_encounter` | **2** | • `sandman_toughness` (`SETUP`, **1 step**)<br/>• `sandman_attack_discard` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**) |
 | `01164` | **Titania's Fury** | `treachery` | `core_encounter` | **2** | • `titanias_fury` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `titanias_fury_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01166` | **Highway Robbery** | `side_scheme` | `core_encounter` | **2** | • `highway_robbery_when_revealed` (`WHEN_REVEALED`, **1 step**)<br/>• `highway_robbery_when_defeated` (`FORCED_RESPONSE` / `DEFEATED`, **1 step**) |
@@ -89,7 +89,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | Category | Primitive Name | Card Count | Example Cards |
 | :--- | :--- | :--- | :--- |
 | **Effect** | `DEAL_DAMAGE` | **24** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+21 more)* |
-| **Effect** | `ADD_STATUS` | **17** | `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade), `01076` Luke Cage (ally) *(+13 more)* |
+| **Effect** | `ADD_STATUS` | **16** | `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade), `01076` Luke Cage (ally) *(+12 more)* |
 | **Effect** | `DISCARD` | **12** | `01002` Black Cat (ally), `01084` Nick Fury (ally), `01100` Enhanced Ivory Horn (attachment) *(+9 more)* |
 | **Effect** | `MODIFY_STAT` | **11** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+7 more)* |
 | **Effect** | `REMOVE_THREAT` | **10** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
@@ -99,7 +99,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
-| **Trigger** | `WHEN_REVEALED` | **45** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+42 more)* |
+| **Trigger** | `WHEN_REVEALED` | **44** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+41 more)* |
 | **Trigger** | `ENTERS_PLAY` | **5** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally) *(+2 more)* |
 
 ---
@@ -151,7 +151,6 @@ These primitives are only declared on a single card. They represent high special
 | **Trigger** | `ENEMY_DEFEATED_BY_HERO_ATTACK` | `01052` | Chase Them Down (event) (core) | `chase_them_down` |
 | **Trigger** | `FORM_CHANGED_TO_HERO` | `01019a` | She-Hulk (hero) (core) | `she_hulk_form_change` |
 | **Trigger** | `HOST_DEFEATED` | `01007` | Spider-Tracer (upgrade) (core) | `spider_tracer_defeat_trigger` |
-| **Trigger** | `MINION_ATTACKED` | `01102` | Sandman (minion) (core_encounter) | `sandman_attack_discard` |
 | **Trigger** | `MINION_DEFEATED` | `01063` | Interrogation Room (support) (core) | `interrogation_room_response` |
 | **Trigger** | `MINION_DEFEATED_BY_ATTACK` | `01051` | Tigra (ally) (core) | `tigra_defeat_heal` |
 | **Trigger** | `MINION_ENTERS_PLAY` | `01066` | Hawkeye (ally) (core) | `hawkeye_arrow_response` |
@@ -195,7 +194,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | **24** | `01005` (Swinging Web Kick (event)), `01013` (Photonic Blast (event)), `01018` (Energy Channel (upgrade)), `01019a` (She-Hulk (hero)), `01021` (Gamma Slam (event)), `01022` (Ground Stomp (event)), `01030` (War Machine (ally)), `01032` (Supersonic Punch (event)), `01038` (Powered Gauntlets (upgrade)), `01047` (Panther Claws (upgrade)), `01053` (Relentless Assault (event)), `01054` (Uppercut (event)), `01056` (Tac Team (support)), `01058` (Daredevil (ally)), `01061` (Great Responsibility (event)), `01066` (Hawkeye (ally)), `01077` (Counter-Punch (event)), `01087` (Haymaker (event)), `01103` (Shocker (minion)), `01159` (Ritual Combat (treachery)), `01164` (Titania's Fury (treachery)), `01168` (Sweeping Swoop (treachery)), `01174` (Electromagnetic Backlash (treachery)), `01179` (Yon-Rogg's Treason (treachery)) |
-| `ADD_STATUS` | **17** | `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01162` (Titania (minion)), `01163` (Genetically Enhanced (attachment)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01172` (Whiplash (minion)), `01177` (Yon-Rogg (minion)), `01194` (Unknown Card #01194) |
+| `ADD_STATUS` | **16** | `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01162` (Titania (minion)), `01163` (Genetically Enhanced (attachment)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
 | `DISCARD` | **12** | `01002` (Black Cat (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01155` (Affairs of State (obligation)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01173` (Electric Whip Attack (treachery)), `01175` (Family Emergency (obligation)), `01188` (Caught Off Guard (treachery)), `01195` (Unknown Card #01195) |
 | `MODIFY_STAT` | **11** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01173` (Electric Whip Attack (treachery)) |
 | `REMOVE_THREAT` | **10** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
@@ -211,11 +210,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | `TRIGGER_SURGE` | **4** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
 | `SEARCH_AND_SELECT` | **3** | `01029b` (Tony Stark (alter_ego)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)) |
 | `PLAYER_CHOICE` | **3** | `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
+| `ADD_THREAT` | **3** | `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
 | `VILLAIN_ATTACKS` | **2** | `01078` (Get Behind Me! (event)), `01187` (Assault (treachery)) |
-| `ADD_THREAT` | **2** | `01178` (Kree Manipulator (treachery)) |
 | `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
 | `INTERCEPT_ATTACK` | **1** | `01009` (Webbed Up (upgrade)) |
 | `ADD_TRAIT` | **1** | `01017` (Cosmic Flight (upgrade)) |
@@ -256,7 +255,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 | Trigger Window | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
-| `WHEN_REVEALED` | **45** | `01095` (Rhino (villain)), `01096` (Rhino (villain)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01103` (Shocker (minion)), `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01110` (Hydra Bomber (minion)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01155` (Affairs of State (obligation)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01159` (Ritual Combat (treachery)), `01160` (Legal Work (obligation)), `01161` (Personal Challenge (side_scheme)), `01162` (Titania (minion)), `01164` (Titania's Fury (treachery)), `01165` (Eviction Notice (obligation)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01170` (Business Problems (obligation)), `01171` (Imminent Overload (side_scheme)), `01172` (Whiplash (minion)), `01174` (Electromagnetic Backlash (treachery)), `01175` (Family Emergency (obligation)), `01176` (The Psyche-Magnitron (side_scheme)), `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01186` (Advance (treachery)), `01187` (Assault (treachery)), `01188` (Caught Off Guard (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)), `01191` (Exhaustion (treachery)), `01192` (Masterplan (treachery)), `01193` (Under Fire (treachery)), `01194` (Unknown Card #01194), `01195` (Unknown Card #01195) |
+| `WHEN_REVEALED` | **44** | `01095` (Rhino (villain)), `01096` (Rhino (villain)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01103` (Shocker (minion)), `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01110` (Hydra Bomber (minion)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01155` (Affairs of State (obligation)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01159` (Ritual Combat (treachery)), `01160` (Legal Work (obligation)), `01161` (Personal Challenge (side_scheme)), `01162` (Titania (minion)), `01164` (Titania's Fury (treachery)), `01165` (Eviction Notice (obligation)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01170` (Business Problems (obligation)), `01171` (Imminent Overload (side_scheme)), `01172` (Whiplash (minion)), `01174` (Electromagnetic Backlash (treachery)), `01175` (Family Emergency (obligation)), `01176` (The Psyche-Magnitron (side_scheme)), `01178` (Kree Manipulator (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01186` (Advance (treachery)), `01187` (Assault (treachery)), `01188` (Caught Off Guard (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)), `01191` (Exhaustion (treachery)), `01192` (Masterplan (treachery)), `01193` (Under Fire (treachery)), `01194` (Unknown Card #01194), `01195` (Unknown Card #01195) |
 | `ENTERS_PLAY` | **5** | `01011` (Spider-Woman (ally)), `01041` (Shuri (ally)), `01067` (Maria Hill (ally)), `01083` (Mockingbird (ally)), `01084` (Nick Fury (ally)) |
 | `TREACHERY_REVEALED` | **3** | `01004` (Enhanced Spider-Sense (event)), `01075` (Black Widow (ally)), `01078` (Get Behind Me! (event)) |
 | `THREAT_WOULD_BE_PLACED` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
@@ -264,6 +263,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `VILLAIN_INITIATES_ATTACK` | **2** | `01001a` (Spider-Man (hero)), `01009` (Webbed Up (upgrade)) |
 | `TAKE_ATTACK_DAMAGE` | **2** | `01003` (Backflip (event)), `01098` (Armored Rhino Suit (attachment)) |
 | `HERO_DEFENDED_ATTACK` | **2** | `01077` (Counter-Punch (event)), `01082` (Indomitable (upgrade)) |
+| `MINION_ATTACKED` | **2** | `01102` (Sandman (minion)), `01177` (Yon-Rogg (minion)) |
 | `CARD_PLAYED` | **1** | `01002` (Black Cat (ally)) |
 | `HOST_DEFEATED` | **1** | `01007` (Spider-Tracer (upgrade)) |
 | `TAKE_DAMAGE` | **1** | `01017` (Cosmic Flight (upgrade)) |
@@ -277,7 +277,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `MINION_DEFEATED` | **1** | `01063` (Interrogation Room (support)) |
 | `MINION_ENTERS_PLAY` | **1** | `01066` (Hawkeye (ally)) |
 | `ROUND_END` | **1** | `01084` (Nick Fury (ally)) |
-| `MINION_ATTACKED` | **1** | `01102` (Sandman (minion)) |
 | `DEFEATED` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `BOOST_STAR_RESOLVED` | **1** | `01178` (Kree Manipulator (treachery)) |
 
@@ -289,10 +288,10 @@ These primitives are declared in schema types or specifications but have **0 act
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
+| `HERO_ACTION` | **25** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
-| `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+19 more)* |
 | `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
-| `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+11 more)* |
+| `ACTION` | **15** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+10 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
@@ -325,7 +324,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `CHOSEN_ENEMY` | **15** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+10 more)* |
-| `SELF` | **14** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+9 more)* |
+| `SELF` | **13** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+8 more)* |
 | `CHOSEN_SCHEME` | **10** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+5 more)* |
 | `SELF_IDENTITY` | **9** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01061` Great Responsibility (event) *(+4 more)* |
 | `VILLAIN` | **8** | `01011` Spider-Woman (ally), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment), `01104` Hard to Keep Down (treachery) *(+2 more)* |

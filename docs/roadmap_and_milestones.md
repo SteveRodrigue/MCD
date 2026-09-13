@@ -218,6 +218,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [ ] **[Issue #24](https://github.com/SteveRodrigue/MCD/issues/24):** `feat(engine): until-end-of-phase temporary stat duration (Vision 01068)`.
   - [ ] **[Issue #23](https://github.com/SteveRodrigue/MCD/issues/23):** `feat(engine): Cross-player attachments & ownership (Combat Training 01057)`.
   - [x] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
+  - [x] **[Issue #105](https://github.com/SteveRodrigue/MCD/issues/105):** `[BUG]: Hawkeye ally Response trigger does not prompt when minion enters play` ✅ (Completed)
   - [ ] **Composable Value Transformers, Event Interception & Explicit Condition Contracts ([ADR-0049](decisions/0049-composable-value-transformers-and-event-interception.md)):**
     - [x] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)
@@ -238,7 +239,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 - [x] **Dynamic Hand & Zone Displays:** Fan-out hand cards, vertical scheme threat gauge, and hero tableau layout.
 - [ ] **[Issue #50](https://github.com/SteveRodrigue/MCD/issues/50):** `[IMPROVEMENT] Adjust UI layout in multiplayer (2+ hero board)` for clean tabletop layout.
 - [ ] **[Issue #4](https://github.com/SteveRodrigue/MCD/issues/4):** `feat(ui): Display active and dynamic traits on card hover/mouseover`.
-- [ ] **Interactive Card Play & Resource Payment Modal:** High-contrast generator tapping and double-resource auto-selection.
+- [x] **Interactive Card Play & Resource Payment Modal ([ADR-0055](decisions/0055-universal-ability-resource-payment-and-action-verb-unification.md) / [Issue #108](https://github.com/SteveRodrigue/MCD/issues/108)) ✅ (Completed):** High-contrast generator tapping, double-resource auto-selection, and interactive paid ability activations for attachments and tableau cards.
 
 ### 1.4. 🔴 `[Must-Have]` Automated 100-Game Headless Match Simulation Gate
 - [ ] **Monte Carlo Verification Suite (`tests/engine/match-simulator.test.ts`):**

@@ -64,6 +64,8 @@ Defines which game entity is chosen or affected by the ability:
 | `'CHOSEN_CHARACTER'` | Player chooses between identity and any ally currently in play. | Interactive selector. |
 | `'ALL_CHARACTERS'` | The player identity and all allies currently in play. | Batch character target. |
 | `'PREVIOUS_TARGET'` | Re-uses target from previous ability step or the triggering combat context. | Step result or event entity. |
+| `'TRIGGERING_MINION'` | The specific minion that triggered the event (e.g. minion entering play for Hawkeye `01066`). | Direct minion reference via `context.targetInstanceId`. |
+| `'TRIGGERING_ENEMY'` | The specific enemy that triggered the event. | Direct enemy reference via `context.targetInstanceId`. |
 
 ---
 

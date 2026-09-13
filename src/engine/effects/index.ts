@@ -224,7 +224,11 @@ export function processHostDefeated(
   for (const att of attachments) {
     const abilities = att.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      if (ab.trigger === 'HOST_DEFEATED') {
+      if (
+        ab.trigger === 'HOST_DEFEATED' ||
+        ab.trigger === 'CHARACTER_DEFEATED' ||
+        ab.trigger === 'DEFEATED'
+      ) {
         const ownerId = (att as any).ownerId;
         const owner =
           (ownerId ? state.players.find((p) => p.id === ownerId) : undefined) ||
@@ -3603,7 +3607,8 @@ export function executeStep(
       if (
         step.effect === 'SEARCH' &&
         step.params?.autoSelectIfUnambiguous !== false &&
-        !isVoluntary
+        !isVoluntary &&
+        !isLookCountSpliced
       ) {
         const selectedCards = matchingCandidates.slice(0, takeCount);
         const selectedIds = new Set(selectedCards.map((card) => card.instanceId));

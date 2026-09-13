@@ -139,14 +139,12 @@ function transformSpecialStep(
   }
 
   if (effect === 'EXPLOSION') {
-    changes.push({ path: `${stepPath}.effect`, before: effect, after: 'DEAL_DAMAGE + DISCARD' });
-    return [
-      makeStep('DEAL_DAMAGE', {
-        amount: 3,
-        target: 'ALL_CHARACTERS',
-      }),
-      makeStep('DISCARD', { source: 'SELF', count: 1 }),
-    ];
+    blockers.push({
+      path: stepPath,
+      effect,
+      reason: 'Bomb Scare threat-dependent damage and no-Bomb-Scare surge semantics are not represented by the current composable schema.',
+    });
+    return step;
   }
 
   if (effect === 'RETRIEVE_CARD_FROM_DISCARD' || effect === 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD') {

@@ -177,6 +177,6 @@
 
 **Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
 
-**Required prerequisite before retry:** Complete the active-catalog canonical engine compatibility paths, then restart Phase 3 from a clean baseline. Repulsor Blast and Hulk are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112 and #113.
+**Required prerequisite before retry:** Add a composable representation for Explosion's Bomb Scare threat-dependent damage and no-Bomb-Scare surge behavior, then restart Phase 3 from a clean baseline. Canonical attachment-defeat timing and full-search versus lookCount prompt compatibility are now covered by regression tests. Repulsor Blast and Hulk are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112 and #113.
 
 **Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11, pending active-catalog compatibility fixes, deferred-card capability work, and a valid migration commit.

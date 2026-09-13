@@ -1,5 +1,9 @@
 import { Keyword } from './enums';
-import type { PlayRequirements, StepCondition, TriggerFilter } from '../../data/supplemental/schema';
+import type {
+  PlayRequirements,
+  StepCondition,
+  TriggerFilter,
+} from '../../data/supplemental/schema';
 export type {
   StepCondition,
   DynamicValueSource,

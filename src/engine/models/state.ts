@@ -213,6 +213,10 @@ export interface PendingDecisionPrompt {
   title: string;
   description: string;
   sourceCardName: string;
+  sourceCardCode?: string;
+  triggerSourceName?: string;
+  triggerSourceCode?: string;
+  triggerType?: string;
   options: DecisionPromptOption[];
   revealedCards?: RevealedCardDisplay[];
   isVoluntary?: boolean;

@@ -66,24 +66,33 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-lg w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div className="bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl max-w-lg w-full flex flex-col max-h-[90vh] overflow-hidden font-comic">
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-          <div className="flex items-center gap-2">
-            <Bug className="w-6 h-6 text-comic-red" />
-            <h3 className="font-comic text-xl text-comic-black uppercase">Report a Problem</h3>
+        <div className="flex items-center justify-between px-6 py-4 bg-comic-red text-white border-b-4 border-comic-black select-none">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-comic-black rounded-lg border border-white/20 shadow-comic-sm">
+              <Bug className="w-5 h-5 text-comic-yellow" />
+            </div>
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-wider text-comic-yellow">
+                BULLPEN FIELD DISPATCH
+              </div>
+              <h3 className="font-comic text-xl text-white uppercase leading-none">
+                Report a Problem
+              </h3>
+            </div>
           </div>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
+            className="p-1.5 rounded-lg border-2 border-comic-black bg-comic-black hover:bg-slate-800 text-white transition-all cursor-pointer shadow-comic-sm"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Type Selector */}
-        <div className="space-y-1.5">
+        {/* Modal Body */}
+        <div className="p-6 space-y-5 overflow-y-auto flex-1 font-comic">
           <span className="font-comic text-sm text-comic-black uppercase">Report Type</span>
           <div className="grid grid-cols-3 gap-1.5">
             {REPORT_TYPES.map((opt) => (
@@ -150,7 +159,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
           type="button"
           onClick={handleSubmit}
           disabled={!description.trim() || status === 'submitting'}
-          className="comic-button-primary w-full px-6 py-2 text-sm font-comic cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 font-black uppercase text-sm bg-comic-yellow hover:bg-yellow-400 text-comic-black rounded-lg border-2 border-comic-black shadow-comic transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99]"
         >
           <Send className="w-4 h-4" />
           <span>{status === 'submitting' ? 'Saving...' : 'Save Report'}</span>

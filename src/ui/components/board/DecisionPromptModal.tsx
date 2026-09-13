@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
+import {
+  Sparkles,
+  HelpCircle,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  Zap,
+  ShieldAlert,
+} from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { CardView } from '../cards/CardView';
+import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { WakandaForeverModal } from './WakandaForeverModal';
 
 interface DecisionPromptModalProps {
@@ -30,155 +39,227 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
     );
   }
 
+  const isForced = !prompt.isVoluntary;
+  const hasTriggerProvenance =
+    Boolean(prompt.triggerSourceName) && prompt.triggerSourceName !== prompt.sourceCardName;
+
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-yellow-400 border-4 border-black rounded-2xl shadow-[8px_8px_0px_rgba(0,0,0,1)] p-5 sm:p-6 overflow-visible">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
         {/* Comic background dots */}
         <div
-          className="absolute inset-0 opacity-10 pointer-events-none rounded-2xl overflow-hidden"
+          className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
             backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
             backgroundSize: '12px 12px',
           }}
         />
 
-        {/* Source Card Badge & Queue Depth Badge */}
-        <div className="relative flex items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2 bg-black text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-            <span>{prompt.sourceCardName}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {prompt.totalQueued && prompt.totalQueued > 1 && (
-              <div className="bg-amber-500 border-2 border-black text-slate-950 px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-                QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
-              </div>
-            )}
-            <div className="bg-red-500 border-2 border-black text-white px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_rgba(0,0,0,1)]">
-              {prompt.isVoluntary ? 'OPTIONAL REACTION' : 'DECISION REQUIRED'}
+        {/* 1. Pop-Art Header */}
+        <div className="relative px-5 py-3.5 bg-comic-yellow border-b-4 border-comic-black flex items-center justify-between text-comic-black select-none">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-comic-black text-comic-yellow rounded-lg shadow-comic-sm">
+              {isForced ? (
+                <ShieldAlert className="w-5 h-5 text-comic-red animate-pulse" />
+              ) : (
+                <Zap className="w-5 h-5 text-comic-yellow" />
+              )}
             </div>
+            <div>
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-800">
+                <span>{isForced ? 'FORCED RESOLUTION' : 'DECISION POINT'}</span>
+                {prompt.totalQueued && prompt.totalQueued > 1 && (
+                  <span className="bg-comic-black text-comic-yellow px-1.5 py-0.2 rounded text-[9px]">
+                    QUEUE: {prompt.queuePosition ?? 1} OF {prompt.totalQueued}
+                  </span>
+                )}
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-comic-black drop-shadow-xs">
+                {isForced ? 'FORCED RESPONSE / INTERRUPT' : 'CHOOSE AN ACTION'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`text-xs font-black uppercase px-2.5 py-1 rounded border-2 border-comic-black shadow-comic-sm ${
+                isForced ? 'bg-comic-red text-white' : 'bg-comic-blue text-white'
+              }`}
+            >
+              {isForced ? 'FORCED' : 'OPTIONAL'}
+            </span>
           </div>
         </div>
 
-        {/* Title & Description */}
-        <div className="relative mb-4">
-          <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-black" />
-            {prompt.title}
-          </h2>
-          {prompt.description && (
-            <p className="mt-1 text-xs sm:text-sm font-bold text-slate-800 bg-yellow-300/80 border-2 border-black/30 p-2.5 rounded-lg">
-              {prompt.description}
-            </p>
+        {/* 2. Provenance & Trigger Banner (Shows Trigger Source -> Ability Host) */}
+        <div className="relative px-5 py-2.5 bg-amber-100 border-b-2 border-comic-black flex flex-wrap items-center justify-between gap-2 text-slate-900">
+          <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
+            {prompt.sourceCardCode && (
+              <CardArtThumbnail
+                cardCode={prompt.sourceCardCode}
+                cardName={prompt.sourceCardName}
+                size="sm"
+              />
+            )}
+
+            {hasTriggerProvenance ? (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-black uppercase bg-slate-200 px-2 py-0.5 rounded border border-comic-black text-slate-700">
+                  TRIGGER: {prompt.triggerSourceName}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-comic-black shrink-0" />
+                <span className="text-[10px] font-black uppercase bg-comic-yellow px-2 py-0.5 rounded border border-comic-black text-comic-black">
+                  ABILITY: {prompt.sourceCardName}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-comic-red" />
+                <span className="text-xs font-black uppercase tracking-wide">
+                  SOURCE: {prompt.sourceCardName}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {prompt.triggerType && (
+            <span className="font-mono text-[10px] font-bold px-2 py-0.5 bg-comic-black text-comic-yellow rounded border border-comic-black uppercase">
+              {prompt.triggerType}
+            </span>
           )}
         </div>
 
-        {/* Visual Scryed/Revealed Cards Gallery (with Non-Tech Cards Grayed Out) */}
-        {prompt.revealedCards && prompt.revealedCards.length > 0 && (
-          <div className="relative mb-4 bg-yellow-300/90 border-2 border-black rounded-xl p-3 shadow-inner overflow-visible">
-            <div className="flex justify-between items-center mb-2 px-1">
-              <span className="text-[11px] font-comic font-black uppercase text-slate-900 tracking-wider">
-                Revealed Cards ({prompt.revealedCards.length})
-              </span>
-              <span className="text-[10px] font-bold text-slate-700 italic">
-                (Click matching card or select option below)
-              </span>
-            </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
-              {prompt.revealedCards.map((rc) => {
-                const isHovered = hoveredCardId === rc.instanceId;
-                return (
-                  <div
-                    key={rc.instanceId}
-                    onMouseEnter={() => setHoveredCardId(rc.instanceId)}
-                    onMouseLeave={() => setHoveredCardId(null)}
-                    onClick={() => {
-                      if (rc.isSelectable && rc.selectableOptionId) {
-                        onSelectOption(rc.selectableOptionId);
-                      }
-                    }}
-                    style={{ zIndex: isHovered ? 60 : 10 }}
-                    className={`flex flex-col items-center gap-1.5 transition-all relative ${
-                      isHovered ? 'z-[60]' : 'z-10'
-                    } ${
-                      rc.isSelectable
-                        ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
-                        : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
-                    }`}
-                  >
-                    <CardView card={rc.card} size="sm" enableHoverZoom={true} zoomOrigin="center" />
-                    <span
-                      className={`font-comic text-[9px] px-2 py-0.5 rounded border border-black font-black uppercase shadow-xs ${
-                        rc.isSelectable
-                          ? 'bg-emerald-400 text-slate-950 animate-pulse'
-                          : 'bg-slate-300 text-slate-700'
-                      }`}
-                    >
-                      {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Option Selection List */}
-        <div className="relative flex flex-col gap-2.5">
-          {prompt.options.map((option, index) => {
-            const isDeclineOption = option.id.includes('none') || option.id.includes('decline');
-
-            return (
-              <button
-                key={option.id}
-                onClick={() => onSelectOption(option.id)}
-                className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 border-3 border-black rounded-xl shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer ${
-                  isDeclineOption
-                    ? 'bg-slate-100 hover:bg-rose-950 text-black hover:text-white'
-                    : 'bg-white hover:bg-slate-900 text-black hover:text-white'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2">
-                    <span
-                      className={`w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black ${
-                        isDeclineOption ? 'bg-rose-400 text-slate-950' : 'bg-yellow-400 text-black'
-                      }`}
-                    >
-                      {index + 1}
-                    </span>
-                    {option.label}
-                  </span>
-                  {isDeclineOption ? (
-                    <XCircle className="w-5 h-5 opacity-0 group-hover:opacity-100 text-rose-400 transition-opacity" />
-                  ) : (
-                    <CheckCircle2 className="w-5 h-5 opacity-0 group-hover:opacity-100 text-yellow-400 transition-opacity" />
-                  )}
-                </div>
-                {option.description && (
-                  <p className="mt-0.5 text-xs font-medium text-slate-600 group-hover:text-slate-300 pl-8">
-                    {option.description}
-                  </p>
-                )}
-              </button>
-            );
-          })}
-          {prompt.isVoluntary &&
-            !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
-              <button
-                onClick={() => onSelectOption('pass')}
-                className="group relative flex items-center justify-between p-3 border-3 border-black rounded-xl bg-slate-200 hover:bg-rose-900 text-slate-800 hover:text-white shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer mt-1 font-black text-sm uppercase tracking-wide"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full border-2 border-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
-                    ✕
-                  </span>
-                  <span>Pass / Do Nothing</span>
-                </div>
-                <XCircle className="w-5 h-5 opacity-0 group-hover:opacity-100 text-rose-400 transition-opacity" />
-              </button>
+        {/* 3. Modal Body */}
+        <div className="relative p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Question Title & Description */}
+          <div className="space-y-1">
+            <h3 className="text-lg sm:text-xl font-black text-comic-black uppercase tracking-tight flex items-center gap-2 leading-snug">
+              <HelpCircle className="w-5 h-5 text-comic-black shrink-0" />
+              <span>{prompt.title}</span>
+            </h3>
+            {prompt.description && (
+              <p className="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 border-2 border-comic-black/30 p-2.5 rounded-lg shadow-xs">
+                {prompt.description}
+              </p>
             )}
+          </div>
+
+          {/* Visual Scryed/Revealed Cards Gallery */}
+          {prompt.revealedCards && prompt.revealedCards.length > 0 && (
+            <div className="bg-amber-100/70 border-2 border-comic-black rounded-xl p-3 shadow-comic-sm overflow-visible">
+              <div className="flex justify-between items-center mb-2 px-1">
+                <span className="text-[11px] font-comic font-black uppercase text-slate-900 tracking-wider">
+                  Revealed Cards ({prompt.revealedCards.length})
+                </span>
+                <span className="text-[10px] font-bold text-slate-700 italic">
+                  (Click matching card or select option below)
+                </span>
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-3 pt-1 overflow-visible">
+                {prompt.revealedCards.map((rc) => {
+                  const isHovered = hoveredCardId === rc.instanceId;
+                  return (
+                    <div
+                      key={rc.instanceId}
+                      onMouseEnter={() => setHoveredCardId(rc.instanceId)}
+                      onMouseLeave={() => setHoveredCardId(null)}
+                      onClick={() => {
+                        if (rc.isSelectable && rc.selectableOptionId) {
+                          onSelectOption(rc.selectableOptionId);
+                        }
+                      }}
+                      style={{ zIndex: isHovered ? 60 : 10 }}
+                      className={`flex flex-col items-center gap-1.5 transition-all relative ${
+                        isHovered ? 'z-[60]' : 'z-10'
+                      } ${
+                        rc.isSelectable
+                          ? 'cursor-pointer hover:scale-105 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] ring-2 ring-emerald-500 rounded-xl p-0.5'
+                          : 'filter grayscale brightness-90 contrast-95 ring-2 ring-slate-400/80 rounded-xl p-0.5 cursor-default'
+                      }`}
+                    >
+                      <CardView
+                        card={rc.card}
+                        size="sm"
+                        enableHoverZoom={true}
+                        zoomOrigin="center"
+                      />
+                      <span
+                        className={`font-comic text-[9px] px-2 py-0.5 rounded border border-comic-black font-black uppercase shadow-xs ${
+                          rc.isSelectable
+                            ? 'bg-emerald-400 text-slate-950 animate-pulse'
+                            : 'bg-slate-300 text-slate-700'
+                        }`}
+                      >
+                        {rc.isSelectable ? '✨ SELECTABLE TECH' : rc.dimmedReason || 'NON-MATCHING'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Option Selection List */}
+          <div className="flex flex-col gap-2.5 pt-1">
+            {prompt.options.map((option, index) => {
+              const isDeclineOption =
+                option.id.includes('none') || option.id.includes('decline') || option.id === 'pass';
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => onSelectOption(option.id)}
+                  className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 border-2 border-comic-black rounded-lg shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer ${
+                    isDeclineOption
+                      ? 'bg-slate-100 hover:bg-comic-red text-comic-black hover:text-white'
+                      : 'bg-white hover:bg-comic-yellow text-comic-black'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2">
+                      <span
+                        className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
+                          isDeclineOption
+                            ? 'bg-rose-300 text-slate-950'
+                            : 'bg-comic-yellow text-comic-black'
+                        }`}
+                      >
+                        {index + 1}
+                      </span>
+                      <span>{option.label}</span>
+                    </span>
+                    {isDeclineOption ? (
+                      <XCircle className="w-5 h-5 text-comic-red group-hover:text-white transition-colors" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 group-hover:text-comic-black transition-colors" />
+                    )}
+                  </div>
+                  {option.description && (
+                    <p className="mt-0.5 text-xs font-bold text-slate-600 group-hover:text-comic-black pl-8">
+                      {option.description}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+
+            {prompt.isVoluntary &&
+              !prompt.options.some((o) => o.id === 'pass' || o.id.includes('decline')) && (
+                <button
+                  onClick={() => onSelectOption('pass')}
+                  className="group relative flex items-center justify-between p-3 border-2 border-comic-black rounded-lg bg-slate-200 hover:bg-comic-red text-slate-800 hover:text-white shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer font-comic font-black text-sm uppercase tracking-wide"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black bg-slate-300 text-slate-900">
+                      ✕
+                    </span>
+                    <span>Pass / Do Nothing</span>
+                  </div>
+                  <XCircle className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
+                </button>
+              )}
+          </div>
         </div>
       </div>
     </div>,

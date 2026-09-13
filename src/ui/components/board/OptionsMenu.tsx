@@ -40,26 +40,33 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white border-4 border-comic-black rounded-2xl shadow-comic-lg max-w-lg w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div className="bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl max-w-lg w-full flex flex-col max-h-[90vh] overflow-hidden font-comic">
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-comic-black pb-3">
-          <div className="flex items-center gap-2">
-            <Settings className="w-6 h-6 text-comic-blue" />
-            <h3 className="font-comic text-xl text-comic-black uppercase">
-              Game Options & Settings
-            </h3>
+        <div className="flex items-center justify-between px-6 py-4 bg-comic-darkBlue text-white border-b-4 border-comic-black select-none">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-comic-black rounded-lg border border-white/20 shadow-comic-sm">
+              <Settings className="w-5 h-5 text-comic-yellow" />
+            </div>
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-wider text-comic-yellow">
+                BULLPEN WORKSHOP
+              </div>
+              <h3 className="font-comic text-xl text-white uppercase leading-none">
+                Game Options & Settings
+              </h3>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg border-2 border-comic-black bg-rose-100 hover:bg-rose-200 text-comic-red transition-all cursor-pointer"
+            className="p-1.5 rounded-lg border-2 border-comic-black bg-comic-black hover:bg-slate-800 text-white transition-all cursor-pointer shadow-comic-sm"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Settings Body */}
-        <div className="space-y-4">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1 font-comic">
           {/* Card Zooming Scale Setting */}
           <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
             <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -299,10 +306,10 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
         </div>
 
         {/* Footer */}
-        <div className="text-center pt-2 border-t border-slate-200">
+        <div className="p-4 bg-comic-paper border-t-2 border-comic-black text-center flex justify-end">
           <button
             onClick={onClose}
-            className="comic-button-primary px-6 py-2 text-sm font-comic cursor-pointer flex items-center gap-2 mx-auto"
+            className="px-6 py-2 text-sm font-comic font-black uppercase bg-comic-yellow hover:bg-yellow-400 text-comic-black rounded-lg border-2 border-comic-black shadow-comic-sm cursor-pointer flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
           >
             <Check className="w-4 h-4" />
             <span>Save & Close</span>

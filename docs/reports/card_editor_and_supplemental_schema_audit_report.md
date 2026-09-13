@@ -394,15 +394,14 @@ flowchart TD
 - [ ] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Repulsor Blast, Hulk, and Explosion are explicitly deferred for post-Phase-8 re-integration ([issues #112](https://github.com/SteveRodrigue/MCD/issues/112), [#113](https://github.com/SteveRodrigue/MCD/issues/113), [#114](https://github.com/SteveRodrigue/MCD/issues/114)); their unsupported abilities were removed from active supplemental declarations. The primitive implementations remain open.
 - [x] **3.5 — Collapse `RETRIEVE_*` into `SEARCH`:** Dedicated transform implemented and dry-run reviewed; pack write remains pending the blocked Phase 3 migration gate.
 - [x] **3.6 — Dry-Run Diff Report:** `--dry-run` prints deterministic per-card/per-field diffs and does not write files; idempotency was verified on the cleaned encounter pack.
-- [ ] **3.7 — Execute Migration on `core.json`:** Run script against [src/data/supplemental/pack/core.json](src/data/supplemental/pack/core.json) only first (smallest blast radius, most scrutinized file). Manually review the diff.
-- [ ] **3.8 — Execute Migration on `core_encounter.json`:** Repeat for [src/data/supplemental/pack/core_encounter.json](src/data/supplemental/pack/core_encounter.json).
-- [ ] **3.9 — Re-run Zod Validation:** `npx tsx tools/audit/supplemental-declarations-analyzer.ts` (or equivalent schema-validate-all script) to confirm every migrated card still parses against `SupplementalPackSchema` with the Phase 2 additive schema.
-- [ ] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** For every migrated ability, regenerate `reconstructedText` to reflect the new primitive names (mechanical string replace is acceptable here since it's a derived/logged field, not gameplay-affecting).
-- [ ] **3.11 — Quality Gate:** `npm run typecheck && npm test` — expect **test failures** at this point (tests still assert legacy string literals); this is the expected, tracked handoff into Phase 5. Do not attempt to fix tests inside Phase 3.
+- [x] **3.7 — Execute Migration on `core.json`:** Migrated `core.json` first with reviewed deterministic diffs; deferred cards 01031 and 01050 remained quarantined.
+- [x] **3.8 — Execute Migration on `core_encounter.json`:** Migrated `core_encounter.json` after the core pack passed declaration validation; deferred Explosion 01111 remained quarantined.
+- [x] **3.9 — Re-run Zod Validation:** `npm run report:declarations` passed after both writes with zero open ambiguities.
+- [x] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** Regenerated affected `reconstructedText` fields mechanically; `originalText` and deferred-card audit metadata were preserved.
+- [x] **3.11 — Quality Gate:** `npm run typecheck && npm test` passed on 2026-09-13. Full suite: 106 files passed, 774 tests passed, 1 existing test skipped.
 
-**Phase 3 execution status:** Repulsor Blast, Hulk, and Explosion are deferred, not blockers. Their unsupported `abilities` declarations are withheld from the active catalog, with audit metadata, printed text, mechanic steps, and `audit.ambiguityFile` issue links preserved for post-Phase-8 re-integration. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine test are green. A full active-pack migration probe still produced 10 behavioral regressions in setup search, damage interception, minion activation, and legacy prompt compatibility; that migration was rolled back.
-**Compatibility sub-task update:** Bidirectional trigger matching, legacy prompt display normalization, villain/minion initiation ordering, canonical setup `SEARCH` routing, and `FORM_CHANGED` response timing/round advancement now pass focused tests and the full suite.
-**Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.5, and 3.6 are complete. 3.4 remains open for deferred primitive implementations; 3.7–3.11 remain open pending the 10 active-catalog regressions being resolved.
+**Phase 3 execution status:** Active catalog migration is complete. Repulsor Blast, Hulk, and Explosion are deferred, not blockers; their unsupported `abilities` declarations remain withheld with audit metadata, printed text, mechanic steps, and `audit.ambiguityFile` issue links preserved for post-Phase-8 re-integration. Canonical trigger compatibility and setup/search routing are green after focused refactors.
+**Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11 are complete. 3.4 remains open for deferred primitive implementations only.
 
 ---
 

@@ -188,7 +188,7 @@
 
 **Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
 
-**Required prerequisite before retry:** Resolve the 10 active-catalog behavioral regressions found by the migrated-pack handoff probe, especially setup search routing, damage interception, minion activation, and legacy prompt compatibility. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine are separately covered by regression tests. Repulsor Blast, Hulk, and Explosion are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
+**Migration result:** Active `core.json` and `core_encounter.json` migration completed after the canonical trigger compatibility, prompt normalization, setup `SEARCH`, and `FORM_CHANGED` lifecycle fixes. The full handoff suite is green. Repulsor Blast, Hulk, and Explosion remain deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
 
 **Compatibility sub-task progress:** Bidirectional legacy/canonical trigger matching, legacy prompt display normalization, villain-versus-minion initiation ordering, canonical Step 14 `SEARCH` routing, and `FORM_CHANGED` optional-response/round advancement behavior are implemented and tested.
 

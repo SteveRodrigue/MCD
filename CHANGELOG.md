@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Migration (Supplemental Schema & Taxonomy): Phase 3 Batch Data Migration ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
+  - Completed Phase 3 batch taxonomy migration across active supplemental card packs (`src/data/supplemental/pack/core.json` and `src/data/supplemental/pack/core_encounter.json`).
+  - Verified 100% canonical naming for active card triggers, effect primitives, target selectors, and audit reconstructed text.
+  - Preserved audit metadata and issue tracking for deferred complex card primitives (Repulsor Blast, Hulk, Explosion) for post-Phase-8 re-integration.
+
 - **Fix (Engine & Supplemental Contract): Trigger filter enforcement for declarative trigger gating ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - Enforced `triggerFilter` checks at trigger dispatch scan sites so eligible responses are rejected unless the event context matches the declarative attacker/target scope.
   - Kept legacy trigger vocabulary compatibility while ensuring attack-only and villain-only filter semantics are fail-closed for unsupported enemy kinds.

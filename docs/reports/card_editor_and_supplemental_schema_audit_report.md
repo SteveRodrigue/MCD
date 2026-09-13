@@ -1,8 +1,8 @@
 # Card Supplemental Schema, Engine Capabilities & Card Editor Audit Report
 
-* **Date:** 2026-09-13
-* **Status:** Draft / Active Discussion
-* **Scope:** Supplemental Zod Schema, Headless Engine Handling, Specification Documentation, and Interactive Card Editor UI
+- **Date:** 2026-09-13
+- **Status:** Draft / Active Discussion
+- **Scope:** Supplemental Zod Schema, Headless Engine Handling, Specification Documentation, and Interactive Card Editor UI
 
 ---
 
@@ -11,6 +11,7 @@
 This audit evaluates the declarative supplemental layer, the headless rules engine, the documentation specifications, and the interactive Card Supplemental Editor ([src/ui/components/editor/](src/ui/components/editor/)).
 
 The engine and supplemental schema have evolved rapidly through recent Architecture Decision Records (ADRs):
+
 - Composable Predicate Filtering ([ADR-0046](docs/decisions/0046-universal-declarative-card-filtering-architecture.md))
 - Out-of-Hand Zone Plays ([ADR-0047](docs/decisions/0047-playing-cards-from-non-hand-zones.md))
 - Timing vs. Trigger Disambiguation ([ADR-0048](docs/decisions/0048-ability-timing-vs-trigger-condition-disambiguation.md))
@@ -30,7 +31,9 @@ However, the **Card Supplemental Editor UI** ([src/ui/components/editor/AbilityF
 ## 🔍 Section 1: Schema Audit ([src/data/supplemental/schema.ts](src/data/supplemental/schema.ts))
 
 ### 1.1 Trigger Types (`TriggerTypeSchema`)
+
 Currently defines **40 trigger types**:
+
 - **Strengths:** Comprehensive coverage across player actions, combat pipelines, and villain phase triggers.
 - **Identified Issues & Gaps:**
   1. **Duplicate / Overlapping Aliases:**
@@ -42,7 +45,9 @@ Currently defines **40 trigger types**:
      - `ATTACK_DECLARED` (distinct from `VILLAIN_INITIATES_ATTACK` for player/ally attacks)
 
 ### 1.2 Effect Primitives (`EffectTypeSchema`)
+
 Currently defines **75 effect primitives**:
+
 - **Strengths:** 100% codebase-grounded with direct handlers in [src/engine/effects/index.ts](src/engine/effects/index.ts).
 - **Identified Issues & Gaps:**
   1. **Legacy Ad-Hoc Primitives:** Several single-use effects remain from early iterations:
@@ -56,12 +61,15 @@ Currently defines **75 effect primitives**:
      - `MODIFY_ALLY_LIMIT` vs. `ALLY_LIMIT_BONUS`
 
 ### 1.3 Target Selector Types (`TargetSelectorSchema`)
+
 Currently defines **26 selector types**:
+
 - **Strengths:** Expanded with `TRIGGERING_MINION` and `TRIGGERING_ENEMY`.
 - **Identified Issues & Gaps:**
   1. **Side Scheme Target Selectors:** Missing `TRIGGERING_SCHEME` and `CHOSEN_SIDE_SCHEME` (currently mapped generically to `SIDE_SCHEME` or by explicit `cardCode`).
 
 ### 1.4 Top-Level Card Attributes (`CardEnrichmentSchema`)
+
 - **Strengths:** Supports `uses`, `playRequirements`, `keywords`, `restrictedSlots`, `additionalBoostCards`, `isLandscape`, and full `audit` metadata.
 - **Identified Issues & Gaps:**
   1. `CardUsesSchema` does not have a standardized enum for counter types (`arrow`, `all-purpose`, `web`, `growth`, `charge`, etc.).
@@ -71,6 +79,7 @@ Currently defines **26 selector types**:
 ## ⚙️ Section 2: Engine Supplemental Handling Audit
 
 ### 2.1 Dynamic Value Evaluator ([src/engine/effects/dynamic-formula-evaluator.ts](src/engine/effects/dynamic-formula-evaluator.ts))
+
 - **Status:** **High Conformity (ADR-0049 & ADR-0052).**
 - Resolves:
   - `INTERCEPTED_VALUE`: Captured value from trigger events (damage, threat).
@@ -83,10 +92,12 @@ Currently defines **26 selector types**:
 - Includes support for `multiplier`, `offset`, and `clamp` (`min`, `max`).
 
 ### 2.2 Universal Card Filter Engine ([src/engine/filters/card-filter.ts](src/engine/filters/card-filter.ts))
+
 - **Status:** **Fully Generalized (ADR-0046).**
 - Recursively processes atomic filter criteria across `all`, `any`, and `none` branch nodes.
 
 ### 2.3 Interactive Prompt & Cost Engines
+
 - **Status:** **Compliant (ADR-0051 & ADR-0055).**
 - Requires `paymentCardInstanceIds` when abilities specify `resourceCost`.
 
@@ -105,12 +116,12 @@ Currently defines **26 selector types**:
 
 ## 🛠️ Section 4: Card Supplemental Editor Findings & Gaps
 
-| Component | Current State | Missing Capability / Gap |
-| :--- | :--- | :--- |
-| **[src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)** | Maps 75 effect descriptors to UI field types | 1. Missing parameter descriptors for newer fields: `cardCode` on `ADD_THREAT`, `DynamicValueSource` builder on `count`/`amount`, and nested `filter` visual picker.<br>2. Parameter types restricted to simple primitives (`number`, `text`, `select`, `boolean`). |
-| **[src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx)** | Form for single-step abilities, timing, comments, and play requirements | 1. **No Visual `DynamicValueSource` Builder:** Forces users into raw static numbers or manual JSON editing in [src/ui/components/editor/RawJsonEditor.tsx](src/ui/components/editor/RawJsonEditor.tsx).<br>2. **No Composable `UniversalCardFilter` Builder:** Only accepts simple trait/type string inputs.<br>3. **Incomplete Cost Builder:** Missing UI inputs for `damageHero`, `damageSelf`, `spendCounters`, and `discardCard`.<br>4. **Missing Sequence Condition Gates:** No visual selector for step `gate` (`THEN`, `IF_PREVIOUS_SUCCESS`) or step `condition` (`TARGET_DEFEATED`, `SCHEME_EMPTY`).<br>5. **Missing `uses` & `keywords` UI:** Top-level card attributes form lacks structured keyword configuration (`{ keyword, amount }`) and `uses` counters configuration. |
-| **[src/ui/components/editor/DualCardInspector.tsx](src/ui/components/editor/DualCardInspector.tsx)** | Dual-panel showing upstream card + raw/form supplemental data | Lacks simulated testing or preview of declarative ability resolution. |
-| **[src/ui/components/editor/CardFilterToolbar.tsx](src/ui/components/editor/CardFilterToolbar.tsx)** | Filters gallery by pack, hero, aspect, status | Functioning well; could add filters for "Has Multi-Step Ability" and "Missing Audit". |
+| Component                                                                                                          | Current State                                                           | Missing Capability / Gap                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)** | Maps 75 effect descriptors to UI field types                            | 1. Missing parameter descriptors for newer fields: `cardCode` on `ADD_THREAT`, `DynamicValueSource` builder on `count`/`amount`, and nested `filter` visual picker.<br>2. Parameter types restricted to simple primitives (`number`, `text`, `select`, `boolean`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **[src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx)**             | Form for single-step abilities, timing, comments, and play requirements | 1. **No Visual `DynamicValueSource` Builder:** Forces users into raw static numbers or manual JSON editing in [src/ui/components/editor/RawJsonEditor.tsx](src/ui/components/editor/RawJsonEditor.tsx).<br>2. **No Composable `UniversalCardFilter` Builder:** Only accepts simple trait/type string inputs.<br>3. **Incomplete Cost Builder:** Missing UI inputs for `damageHero`, `damageSelf`, `spendCounters`, and `discardCard`.<br>4. **Missing Sequence Condition Gates:** No visual selector for step `gate` (`THEN`, `IF_PREVIOUS_SUCCESS`) or step `condition` (`TARGET_DEFEATED`, `SCHEME_EMPTY`).<br>5. **Missing `uses` & `keywords` UI:** Top-level card attributes form lacks structured keyword configuration (`{ keyword, amount }`) and `uses` counters configuration. |
+| **[src/ui/components/editor/DualCardInspector.tsx](src/ui/components/editor/DualCardInspector.tsx)**               | Dual-panel showing upstream card + raw/form supplemental data           | Lacks simulated testing or preview of declarative ability resolution.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **[src/ui/components/editor/CardFilterToolbar.tsx](src/ui/components/editor/CardFilterToolbar.tsx)**               | Filters gallery by pack, hero, aspect, status                           | Functioning well; could add filters for "Has Multi-Step Ability" and "Missing Audit".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ---
 
@@ -126,7 +137,7 @@ graph TD
 
     B1 --> F1[Toggle: Static Number vs Dynamic Source]
     B1 --> F2[Source Dropdowns: Stat, Counters, Entity Count]
-    
+
     B2 --> C1[Visual Chips: Types, Traits, Aspects]
     B2 --> C2[Nested All / Any / None Trees]
 
@@ -139,30 +150,40 @@ graph TD
 ```
 
 ### 🎯 Proposition 1: Visual Dynamic Value Builder
+
 Create a dedicated `<DynamicValueBuilder>` form control in [src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx):
+
 - Toggle between **Static Value** and **Dynamic Formula**.
 - Dropdowns for `from` (`STAT_VALUE`, `COUNTERS`, `ENTITY_COUNT`, `DISCARDED_COUNT`, `INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `CARD_ATTRIBUTE`).
 - Parameter inputs for `stat` (`SUFFERED_DAMAGE`, `HERO_ATK`), `counterType`, `multiplier`, `offset`, and `clamp`.
 
 ### 🎯 Proposition 2: Visual Composable Card Filter Builder
+
 Create a dedicated `<UniversalCardFilterBuilder>` component:
+
 - Visual chip selectors for `types` (`Ally`, `Upgrade`, `Support`, `Event`, `Minion`, `Treachery`), `traits` (`Avenger`, `Tech`), `aspects`, and cost comparison range (`min`, `max`).
 - Visual nesting controls for `all`, `any`, and `none` groups without requiring manual JSON authoring.
 
 ### 🎯 Proposition 3: Top-Level Attributes Editor (Uses & Keywords)
+
 Expand the card metadata accordion in [src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx):
+
 - **Structured Keywords Matrix:** Visual toggle chips for keywords (`Guard`, `Overkill`, `Ranged`, `Toughness`, `Retaliate` with numeric input).
 - **Uses (X) Configuration:** Inputs for `count`, `type` (`"arrow"`, `"charge"`), `max`, and `discardOnEmpty` checkbox.
 - **Restricted Slots & Boost Cards:** Numeric inputs for `restrictedSlots` and `additionalBoostCards`.
 
 ### 🎯 Proposition 4: Multi-Step Sequence & Condition Gate Builder
+
 Add an interactive sequence pipeline editor for multi-step abilities:
+
 - Step reordering and drag handles.
 - Visual Condition Gate selector between steps (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_FAILED`).
 - Step Milestone Condition selector (`TARGET_DEFEATED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `RESOURCE_KICKER_MET`).
 
 ### 🎯 Proposition 5: Full Cost Specification Builder
+
 Expand the ability cost section:
+
 - Checkboxes for `exhaustSelf`, `discardSelf`.
 - Resource cost picker (Physical, Energy, Mental, Wild counts).
 - Counter expenditure configuration (`amount`, `counterType`, `target: SELF | IDENTITY`).

@@ -209,7 +209,8 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 - [ ] **Remaining Core Player Card Issues:**
   - [ ] **[Issue #46](https://github.com/SteveRodrigue/MCD/issues/46):** `[BUG]: Helicarrier cost reduction` across all player card types.
   - [ ] **[Issue #45](https://github.com/SteveRodrigue/MCD/issues/45):** `[BUG]: Alpha Flight Station` discard and draw sequencing.
-  - [ ] **[Issue #48](https://github.com/SteveRodrigue/MCD/issues/48):** `[FEAT]: prevent infinite loop` in circular trigger chains.
+  - [x] **[Issue #48](https://github.com/SteveRodrigue/MCD/issues/48):** `[FEAT]: prevent infinite loop` in circular trigger chains ([ADR-0053](decisions/0053-infinite-trigger-loop-detection-and-prevention-guardrails.md)).
+  - [x] **Universal Uses (X) Counter Depletion & Discard Lifecycle Architecture ([ADR-0057](decisions/0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)):** Centralized counter depletion and discard lifecycle in `cost-engine.ts`, automated discard in `executeAbilityCost`, generator depletion in `action-dispatcher.ts`, and strict non-discard guard for Hawkeye (`01066`).
   - [ ] **[Issue #49](https://github.com/SteveRodrigue/MCD/issues/49):** `[BUG]: reference to card.text in code` normalization.
   - [x] **[Issue #52](https://github.com/SteveRodrigue/MCD/issues/52):** `[FEAT]: Supplemental Data Schema - validation and helper` ([ADR-0043](decisions/0043-codebase-grounded-supplemental-schema-validation-and-live-vscode-integration.md)).
   - [x] **[Issue #53](https://github.com/SteveRodrigue/MCD/issues/53):** `feat(tooling): Card text parsing and declarative mapping analyzer tool` ([ADR-0044](decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md)).

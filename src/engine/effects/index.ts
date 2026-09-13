@@ -138,79 +138,8 @@ export function matchCardFilter(card: NormalizedCard, filter?: any, player?: Pla
   return matchesCardFilter(card, filter, { player });
 }
 
-/**
- * Checks if an in-play card has exhausted its 'Uses' counters and discards it per RR v1.8 p. 30.
- * Dispatches the CARD_DISCARDED trigger.
- */
-export function checkAndDiscardZeroCounterCard(
-  state: GameState,
-  player: PlayerState,
-  cardInstance: CardInstance,
-  counterType?: string,
-): boolean {
-  // Check if card has 'Uses' keyword or enrichment discardOnEmpty
-  const hasUsesKeyword =
-    Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
-    Boolean((cardInstance.card as any).uses) ||
-    hasKeyword(cardInstance.card, Keyword.USES);
-
-  if (!hasUsesKeyword) return false;
-
-  // Calculate remaining counters
-  let remainingCounters = 0;
-  if (cardInstance.counters) {
-    if (counterType && cardInstance.counters[counterType] !== undefined) {
-      remainingCounters = cardInstance.counters[counterType];
-    } else {
-      remainingCounters = Object.values(cardInstance.counters).reduce((sum, v) => sum + v, 0);
-    }
-  } else {
-    remainingCounters = cardInstance.tokens?.counters || 0;
-  }
-
-  if (remainingCounters <= 0) {
-    // 1. Remove from tableau or allies
-    const tabIdx = player.tableau.findIndex((c) => c.instanceId === cardInstance.instanceId);
-    let discarded: CardInstance | undefined;
-    if (tabIdx !== -1) {
-      [discarded] = player.tableau.splice(tabIdx, 1);
-    } else {
-      const allyIdx = player.allies.findIndex((c) => c.instanceId === cardInstance.instanceId);
-      if (allyIdx !== -1) {
-        [discarded] = player.allies.splice(allyIdx, 1);
-      }
-    }
-
-    if (discarded) {
-      discardHostAttachmentsAndTuckedCards(state, discarded, player.id);
-      const owner =
-        (discarded.ownerId ? state.players.find((p) => p.id === discarded.ownerId) : undefined) ||
-        player;
-      owner.discard.push(discarded);
-
-      // 2. Dispatch CARD_DISCARDED trigger
-      dispatchTrigger(state, 'CARD_DISCARDED', {
-        targetPlayerId: player.id,
-        sourceInstanceId: discarded.instanceId,
-      });
-
-      // 3. Comic Log
-      state.log.push({
-        id: `log_${Date.now()}_uses_exhausted`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'card_play',
-        actor: { name: player.name, type: player.currentForm },
-        key: 'card.discarded.uses_exhausted',
-        params: { player: player.name, card: discarded.card.name },
-        onomatopoeia: 'USES EXHAUSTED!',
-      });
-      return true;
-    }
-  }
-  return false;
-}
+import { checkAndDiscardZeroCounterCard } from '../pipeline/cost-engine';
+export { checkAndDiscardZeroCounterCard };
 
 /**
  * Checks whether a card belongs to the encounter deck pool (RR v1.8 p. 11).

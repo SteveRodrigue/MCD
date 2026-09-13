@@ -122,6 +122,7 @@ graph TD
         ADR47["ADR-0047: Playing Cards From Non-Hand Zones"]
         ADR48["ADR-0048: Timing vs Trigger & CARD_PLAYED vs ENTERS_PLAY"] --> ADR50["ADR-0050: Universal In-Play Self-Referential Trigger Instance Binding"]
         ADR49["ADR-0049: Composable Value Transformers & Event Interception"]
+        ADR57["ADR-0057: Universal Uses (X) Counter Depletion & Discard Lifecycle"]
     end
     subgraph CombatTriggers["Combat & Trigger Safeguards"]
         ADR53["ADR-0053: Infinite Trigger Loop Detection & Prevention Guardrails"]
@@ -191,6 +192,7 @@ graph TD
 | [ADR-0054](0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md)        | 2026-09-12 | Parameterized Keyword Stacking & Retaliate Value Accumulation Engine                 | **Accepted**                                                                                                 | Centralize character retaliate calculations into `getEffectiveRetaliate(entity, state?)`, enforce structured `{ keyword, amount }` modeling with zero tech debt in supplemental data, and support RR v1.8 value accumulation across Hero, Ally, Minion, and Villain combat windows (Fixes #64). |
 | [ADR-0055](0055-universal-ability-resource-payment-and-action-verb-unification.md)                | 2026-09-13 | Universal Ability Resource Payment & Action Verb Unification                         | **Accepted**                                                                                                 | Unify in-play card abilities with resource costs under `USE_CARD_ABILITY`, retire ad-hoc `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT`, and enforce player selection via interactive payment modals (Fixes #108).                                                                                     |
 | [ADR-0056](0056-unified-comic-pop-art-modal-and-dialog-design-system.md)                          | 2026-09-13 | Unified Comic Pop-Art Modal & Dialog Design System                                   | **Accepted**                                                                                                 | Standardize in-game prompts, action pickers, and utility sheets under a unified 3-tier Comic Pop-Art design system while preserving the retro newsprint broadsheet of The Daily Bugle.                                                                                                          |
+| [ADR-0057](0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)          | 2026-09-13 | Universal Uses (X) Counter Depletion and Discard Lifecycle Architecture              | **Accepted**                                                                                                 | Centralize `checkAndDiscardZeroCounterCard` in `cost-engine.ts`, auto-execute upon counter exhaustion, cascade attachments/tucked cards, and protect non-discard cards (Hawkeye).                                                                                                               |
 
 ---
 

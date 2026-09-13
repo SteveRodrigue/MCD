@@ -224,11 +224,7 @@ export function processHostDefeated(
   for (const att of attachments) {
     const abilities = att.card.enrichment?.abilities || [];
     for (const ab of abilities) {
-      if (
-        ab.trigger === 'HOST_DEFEATED' ||
-        ab.trigger === 'CHARACTER_DEFEATED' ||
-        ab.trigger === 'DEFEATED'
-      ) {
+      if (ab.trigger === 'CHARACTER_DEFEATED' || ab.trigger === 'DEFEATED') {
         const ownerId = (att as any).ownerId;
         const owner =
           (ownerId ? state.players.find((p) => p.id === ownerId) : undefined) ||
@@ -744,8 +740,7 @@ export function executeStep(
     case 'DISCARD_CARDS': {
       return executeDiscard(state, step, context);
     }
-    case 'DRAW':
-    case 'DRAW_CARDS': {
+    case 'DRAW': {
       const rawCount = step.params?.count;
       const count = rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
       const limit = step.params?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
@@ -824,7 +819,7 @@ export function executeStep(
             id: `draw_${p.id}`,
             label: `${p.name} (${p.hero?.name || 'Hero'})`,
             description: `Give ${effectiveCount} card draw to ${p.name} (Cards in hand: ${p.hand.length})`,
-            effect: 'DRAW_CARDS',
+            effect: 'DRAW',
             params: {
               count: rawCount,
               limit,
@@ -976,7 +971,7 @@ export function executeStep(
             onomatopoeia: 'CLANG! (TOUGH)',
           });
         } else {
-          const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+          const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
             targetPlayerId: player.id,
             targetType: 'player',
             damageAmount: amount,
@@ -1029,7 +1024,7 @@ export function executeStep(
               onomatopoeia: 'CLANG! (TOUGH)',
             });
           } else {
-            const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+            const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
               targetPlayerId: p.id,
               targetType: 'player',
               damageAmount: amount,
@@ -1527,11 +1522,6 @@ export function executeStep(
       });
 
       if (removed > 0 && remainingThreat === 0) {
-        dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO', {
-          targetPlayerId: player.id,
-          sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
-          threatAmount: removed,
-        });
         dispatchTrigger(state, 'SCHEME_DEFEATED', {
           targetPlayerId: player.id,
           sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
@@ -1910,120 +1900,6 @@ export function executeStep(
         onomatopoeia,
       });
       return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
-    }
-
-    case 'NICK_FURY_CHOICE': {
-      // Dynamic AI evaluation: Threat -> Hand -> Damage
-      if (state.mainScheme.threat >= 3) {
-        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - 2);
-        const onomatopoeia = 'NICK FURY REMOVES 2 THREAT!';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'card.effect.removeThreat',
-          params: {
-            player: player.name,
-            card: 'Nick Fury',
-            amount: 2,
-            remainingThreat: state.mainScheme.threat,
-          },
-          onomatopoeia,
-        });
-        return { state, success: true, onomatopoeia };
-      }
-      if (player.hand.length <= 3) {
-        let drawnCount = 0;
-        for (let i = 0; i < 3; i++) {
-          const drawn = player.deck.shift();
-          if (drawn) {
-            player.hand.push(drawn);
-            drawnCount += 1;
-          }
-        }
-        const onomatopoeia = `NICK FURY DRAWS +${drawnCount} CARDS!`;
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'card.effect.drawCards',
-          params: {
-            player: player.name,
-            card: 'Nick Fury',
-            count: drawnCount,
-            handSize: player.hand.length,
-          },
-          onomatopoeia,
-        });
-        return { state, success: true, onomatopoeia };
-      }
-      const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
-      if (toughIdx !== -1) {
-        state.villain.statusCards.splice(toughIdx, 1);
-        const onomatopoeia = 'NICK FURY BREAKS TOUGH!';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'card.effect.dealDamage',
-          params: {
-            player: player.name,
-            card: 'Nick Fury',
-            amount: 0,
-            toughAbsorbed: true,
-          },
-          onomatopoeia,
-        });
-        return { state, success: true, onomatopoeia };
-      }
-      state.villain.health = Math.max(0, state.villain.health - 4);
-      if (state.villain.health <= 0) state.winner = 'HEROES';
-      const onomatopoeia = 'NICK FURY DEALS 4 DAMAGE!';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.dealDamage',
-        params: {
-          player: player.name,
-          card: 'Nick Fury',
-          damage: 4,
-          remainingHealth: state.villain.health,
-        },
-        onomatopoeia,
-      });
-      return { state, success: true, onomatopoeia };
-    }
-
-    case 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE': {
-      if (player.currentForm === 'alter_ego') {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      } else {
-        // Villain attacks hero immediately (ATK damage)
-        const atkDmg = (state.villain.card as any).attack || 2;
-        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          player.statusCards.splice(toughIdx, 1);
-          return {
-            state,
-            success: true,
-            onomatopoeia: 'CLANG! (TOUGH ABSORBS ATTACK)',
-          };
-        }
-        player.health = Math.max(0, player.health - atkDmg);
-        if (player.health <= 0) state.winner = 'VILLAIN';
-        return {
-          state,
-          success: true,
-          onomatopoeia: `VILLAIN ATTACKS! ${atkDmg} DAMAGE!`,
-        };
-      }
     }
 
     case 'ATTACH_TO_HOST': {
@@ -2556,7 +2432,6 @@ export function executeStep(
       return executeSequence(state, branchSteps as AbilityStep[], context);
     }
 
-    case 'EXPLOSION':
     case 'HERO_FORM_BRANCH': {
       const bombScare = state.sideSchemes.find(
         (s) => s.card.code === '01109' || (s.card.name || '').includes('Bomb Scare'),
@@ -2570,47 +2445,6 @@ export function executeStep(
         const surgeCard = state.encounterDeck.shift();
         if (surgeCard) player.dealtEncounterCards.push(surgeCard);
         return { state, success: true, onomatopoeia: 'SURGE!' };
-      }
-    }
-
-    case 'PLACE_THREAT_PER_SIDE_SCHEME': {
-      const amount = (step.params?.amount as number) || 4;
-      if (state.sideSchemes.length > 0) {
-        for (const s of state.sideSchemes) {
-          s.threat += amount;
-        }
-        return {
-          state,
-          success: true,
-          onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!`,
-        };
-      } else {
-        // Discard until a side scheme is found, then reveal it
-        let foundSideScheme: CardInstance | undefined;
-        while (state.encounterDeck.length > 0) {
-          const card = state.encounterDeck.shift()!;
-          if (card.card.type === CardType.SIDE_SCHEME) {
-            foundSideScheme = card;
-            break;
-          }
-          state.encounterDiscard.push(card);
-        }
-        if (foundSideScheme) {
-          const sideCard = foundSideScheme.card as SideSchemeCard;
-          const baseThreat =
-            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
-          state.sideSchemes.push({
-            instanceId: foundSideScheme.instanceId,
-            card: sideCard,
-            threat: baseThreat,
-          });
-          return {
-            state,
-            success: true,
-            onomatopoeia: 'SIDE SCHEME REVEALED!',
-          };
-        }
-        return { state, success: true, onomatopoeia: 'NO SIDE SCHEMES FOUND' };
       }
     }
 
@@ -2952,6 +2786,49 @@ export function executeStep(
     case 'ADD_THREAT': {
       const amount = (step.params?.amount as number) || 1;
       const target = (step.params?.target as string) || 'MAIN_SCHEME';
+
+      if (target === 'ALL_SIDE_SCHEMES') {
+        if (state.sideSchemes.length > 0) {
+          for (const s of state.sideSchemes) {
+            s.threat = (s.threat || 0) + amount;
+          }
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!`,
+          };
+        } else {
+          // Discard until a side scheme is found, then reveal it
+          let foundSideScheme: CardInstance | undefined;
+          while (state.encounterDeck.length > 0) {
+            const card = state.encounterDeck.shift()!;
+            if (card.card.type === CardType.SIDE_SCHEME) {
+              foundSideScheme = card;
+              break;
+            }
+            state.encounterDiscard.push(card);
+          }
+          if (foundSideScheme) {
+            const sideCard = foundSideScheme.card as SideSchemeCard;
+            const baseThreat =
+              sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+            state.sideSchemes.push({
+              instanceId: foundSideScheme.instanceId,
+              card: sideCard,
+              threat: baseThreat,
+            });
+            return {
+              state,
+              success: true,
+              mutatedState: true,
+              onomatopoeia: 'SIDE SCHEME REVEALED!',
+            };
+          }
+          return { state, success: true, onomatopoeia: 'NO SIDE SCHEMES FOUND' };
+        }
+      }
       const cardCode =
         (step.params?.cardCode as string) ||
         (target !== 'MAIN_SCHEME' && target !== 'THIS_SIDE_SCHEME' && /^\d{5}$/.test(target)
@@ -3159,91 +3036,6 @@ export function executeStep(
       };
     }
 
-    case 'HULK_DISCARD_RESOLUTION': {
-      const discarded = drawPlayerCard(state, player.id);
-      if (discarded) {
-        player.discard.push(discarded);
-        const cardRaw = discarded.card.raw || ({} as any);
-        const hasPhysical = Boolean(
-          cardRaw.resource_physical || (discarded.card as any).resource === 'physical',
-        );
-        const hasEnergy = Boolean(
-          cardRaw.resource_energy || (discarded.card as any).resource === 'energy',
-        );
-        const hasMental = Boolean(
-          cardRaw.resource_mental || (discarded.card as any).resource === 'mental',
-        );
-        const hasWild = Boolean(
-          cardRaw.resource_wild || (discarded.card as any).resource === 'wild',
-        );
-
-        // Physical or Wild: Deal 2 damage to an enemy
-        if (hasPhysical || hasWild) {
-          state.villain.health = Math.max(0, state.villain.health - 2);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'hulk.physical.damage',
-            params: { damage: 2, villain: state.villain.card.name },
-            onomatopoeia: 'HULK SMASH! 2 DAMAGE!',
-          });
-        }
-
-        // Energy or Wild: Deal 1 damage to each character
-        if (hasEnergy || hasWild) {
-          for (const p of state.players) {
-            p.health = Math.max(0, p.health - 1);
-            for (const a of p.allies) {
-              if (!a.tokens) a.tokens = {};
-              a.tokens.damage = (a.tokens.damage || 0) + 1;
-            }
-            for (const m of p.engagedMinions) {
-              if (!m.tokens) m.tokens = {};
-              m.tokens.damage = (m.tokens.damage || 0) + 1;
-            }
-          }
-          state.villain.health = Math.max(0, state.villain.health - 1);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'hulk.energy.aoe',
-            params: { damage: 1 },
-            onomatopoeia: 'ENERGY BURST! 1 DAMAGE TO ALL!',
-          });
-        }
-
-        // Mental or Wild: Discard Hulk
-        if (hasMental || hasWild) {
-          const hulkIdx = player.allies.findIndex((a) => a.card.code === '01050');
-          if (hulkIdx !== -1) {
-            const [hulkAlly] = player.allies.splice(hulkIdx, 1);
-            discardHostAttachmentsAndTuckedCards(state, hulkAlly, player.id);
-            player.discard.push(hulkAlly);
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: state.roundNumber,
-              phase: state.phase,
-              key: 'hulk.mental.discard',
-              params: { ally: 'Hulk' },
-              onomatopoeia: 'HULK CALMS DOWN AND DISCARDS!',
-            });
-          }
-        }
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: 1,
-        onomatopoeia: 'HULK RESOLVED!',
-      };
-    }
-
     case 'ADD_COUNTERS':
     case 'ADD_COUNTER':
     case 'MODIFY_COUNTER': {
@@ -3399,54 +3191,6 @@ export function executeStep(
       };
     }
 
-    case 'REPULSOR_BLAST':
-    case 'REPULSOR_BLAST_DAMAGE': {
-      const discardCount = (step.params?.discardCount as number) || 5;
-      let energyCount = 0;
-
-      for (let i = 0; i < discardCount; i++) {
-        const drawn = drawPlayerCard(state, player.id);
-        if (drawn) {
-          player.discard.push(drawn);
-          const raw = drawn.card.raw || ({} as any);
-          const cardEnergy = raw.resource_energy || drawn.card.resources?.energy || 0;
-          const cardWild = raw.resource_wild || drawn.card.resources?.wild || 0;
-          energyCount += cardEnergy + cardWild;
-        }
-      }
-
-      const totalDmg = 1 + energyCount * 2;
-      const targetEnemy =
-        context.targetType === 'minion' && context.targetInstanceId ? 'minion' : 'villain';
-
-      if (targetEnemy === 'villain') {
-        const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          state.villain.statusCards.splice(toughIdx, 1);
-        } else {
-          state.villain.health = Math.max(0, state.villain.health - totalDmg);
-        }
-      }
-
-      const onomatopoeia = `REPULSOR BLAST! ${totalDmg} DAMAGE (${energyCount} ENERGY)!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'iron_man.repulsor_blast',
-        params: { totalDmg, energyCount, villain: state.villain.card.name },
-        onomatopoeia,
-      });
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: totalDmg,
-        onomatopoeia,
-      };
-    }
-
     case 'GENERATE_TOP_DISCARD_RESOURCES': {
       const topCard = player.discard[player.discard.length - 1];
       let resCount = 1;
@@ -3462,33 +3206,7 @@ export function executeStep(
       };
     }
 
-    case 'RETRIEVE_CARD_FROM_DISCARD':
-    case 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD': {
-      const traitFilter = (step.params?.trait as string) || 'Tech';
-      // Search from top of discard (last item) downwards
-      for (let i = player.discard.length - 1; i >= 0; i--) {
-        const item = player.discard[i];
-        if (item.card.traits?.includes(traitFilter) && item.card.type === CardType.UPGRADE) {
-          const [retrieved] = player.discard.splice(i, 1);
-          player.hand.push(retrieved);
-          return {
-            state,
-            success: true,
-            mutatedState: true,
-            onomatopoeia: `RETRIEVED ${retrieved.card.name}!`,
-          };
-        }
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: false,
-        onomatopoeia: 'NO TECH UPGRADE IN DISCARD',
-      };
-    }
-
-    case 'SEARCH':
-    case 'SEARCH_AND_SELECT': {
+    case 'SEARCH': {
       const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
       const lookCount = step.params?.lookCount as number | undefined;
       const takeCount = (step.params?.takeCount as number) || 1;
@@ -3862,37 +3580,6 @@ export function executeStep(
       };
     }
 
-    case 'SEARCH_AND_REVEAL_SIDE_SCHEME': {
-      const targetCardCode = step.params?.targetCardCode as string | undefined;
-      let foundIndex = state.encounterDeck.findIndex(
-        (c) => !targetCardCode || c.card.code === targetCardCode,
-      );
-      let cardInst: CardInstance | undefined;
-      if (foundIndex !== -1) {
-        [cardInst] = state.encounterDeck.splice(foundIndex, 1);
-      } else {
-        foundIndex = state.encounterDiscard.findIndex(
-          (c) => !targetCardCode || c.card.code === targetCardCode,
-        );
-        if (foundIndex !== -1) {
-          [cardInst] = state.encounterDiscard.splice(foundIndex, 1);
-        }
-      }
-      if (cardInst) {
-        state.sideSchemes.push(cardInst as any);
-        dispatchTrigger(state, 'WHEN_REVEALED', {
-          targetPlayerId: player.id,
-          sourceInstanceId: cardInst.instanceId,
-        });
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        onomatopoeia: 'SIDE SCHEME REVEALED!',
-      };
-    }
-
     case 'REDUCE_NEXT_CARD_COST': {
       const amount = (step.params?.amount as number) || 1;
       player.costReductions = (player.costReductions || 0) + amount;
@@ -3904,8 +3591,7 @@ export function executeStep(
       };
     }
 
-    case 'PLAY_FROM_ZONE':
-    case 'PLAY_CARD_FROM_ZONE': {
+    case 'PLAY_FROM_ZONE': {
       const source = (step.params?.source as string) || 'PLAYER_DISCARD';
       const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
       const costMode = (step.params?.costMode as string) || 'PRINTED_COST';
@@ -4099,7 +3785,7 @@ export function dealDirectDamage(
       player.statusCards.splice(toughIdx, 1);
       return { damageDealt: 0, absorbedByTough: true };
     }
-    const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+    const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: amount,
       triggerChain,

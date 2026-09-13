@@ -318,10 +318,10 @@ function parseAbilityLine(line: string): ParsedAbilityResult | null {
     });
   }
 
-  // Infer zone: if timing is interrupt/response and trigger is TAKE_ATTACK_DAMAGE / WHEN_REVEALED on event
+  // Infer zone: if timing is interrupt/response and trigger is DAMAGE_WOULD_BE_TAKEN / WHEN_REVEALED on event
   let zone: any;
   if (timing === 'INTERRUPT' || timing === 'HERO_INTERRUPT') {
-    if (trigger === 'TAKE_ATTACK_DAMAGE' || trigger === 'WHEN_REVEALED') {
+    if (trigger === 'DAMAGE_WOULD_BE_TAKEN' || trigger === 'WHEN_REVEALED') {
       zone = 'HAND';
       if (!cost) {
         cost = { discardSelf: true };

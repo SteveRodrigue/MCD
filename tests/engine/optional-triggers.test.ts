@@ -75,7 +75,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const prompt = gameState.pendingDecisionPrompt;
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Man?');
-      expect(prompt?.description).toBe('VILLAIN_INITIATES_ATTACK -> DRAW_CARDS (1)');
+      expect(prompt?.description).toBe('ENEMY_INITIATES_ATTACK -> DRAW (1)');
       expect(prompt?.isVoluntary).toBe(true);
       expect(prompt?.options.some((o) => o.label === 'Yes')).toBe(true);
       expect(prompt?.options.some((o) => o.label === 'No' || o.id === 'pass')).toBe(true);
@@ -163,7 +163,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const prompt = gameState.pendingDecisionPrompt;
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Backflip?');
-      expect(prompt?.description).toBe('TAKE_ATTACK_DAMAGE -> CONSUME_INTERCEPTED_EVENT (ALL)');
+      expect(prompt?.description).toBe('DAMAGE_WOULD_BE_TAKEN -> CONSUME_INTERCEPTED_EVENT (ALL)');
 
       // Select 'Yes'
       const yesOption = prompt!.options.find((o) => o.label === 'Yes')!;

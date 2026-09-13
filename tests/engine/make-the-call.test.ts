@@ -10,7 +10,7 @@ import {
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
 
-describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
+describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
   let state: GameState;
   let player1: PlayerState;
   let player2: PlayerState;
@@ -148,7 +148,7 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
           timing: 'ACTION',
           steps: [
             {
-              effect: 'PLAY_CARD_FROM_ZONE',
+              effect: 'PLAY_FROM_ZONE',
               params: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
@@ -208,7 +208,7 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
           timing: 'ACTION',
           steps: [
             {
-              effect: 'PLAY_CARD_FROM_ZONE',
+              effect: 'PLAY_FROM_ZONE',
               params: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
@@ -267,7 +267,7 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
           timing: 'ACTION',
           steps: [
             {
-              effect: 'PLAY_CARD_FROM_ZONE',
+              effect: 'PLAY_FROM_ZONE',
               params: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
@@ -412,7 +412,7 @@ describe('Make the Call & PLAY_CARD_FROM_ZONE (ADR-0047)', () => {
           timing: 'ACTION',
           steps: [
             {
-              effect: 'PLAY_CARD_FROM_ZONE',
+              effect: 'PLAY_FROM_ZONE',
               params: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },

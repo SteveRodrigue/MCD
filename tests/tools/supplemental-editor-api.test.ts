@@ -170,10 +170,10 @@ describe('CardSupplementalService & Editor API Middleware', () => {
             {
               id: 'hero_draw',
               timing: 'INTERRUPT',
-              trigger: 'VILLAIN_INITIATES_ATTACK',
+              trigger: 'ENEMY_INITIATES_ATTACK',
               steps: [
                 {
-                  effect: 'DRAW_CARDS',
+                  effect: 'DRAW',
                   params: { amount: 1 },
                 },
               ],

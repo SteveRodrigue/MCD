@@ -88,7 +88,7 @@ describe('Promoted Core Player Cards', () => {
       trigger: 'CARD_PLAYED' as const,
       steps: [
         {
-          effect: 'DRAW_CARDS',
+          effect: 'DRAW',
           params: {
             count: 1,
             target: 'ALL_PLAYERS',

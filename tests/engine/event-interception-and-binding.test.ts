@@ -153,7 +153,7 @@ describe('Universal CONSUME_INTERCEPTED_EVENT and Scalar Value Binding (ADR-0049
       gameState.players[0].hand = [backflipInst];
 
       // 4 damage would be dealt
-      const dispatchRes = dispatchTrigger(gameState, 'TAKE_ATTACK_DAMAGE', {
+      const dispatchRes = dispatchTrigger(gameState, 'DAMAGE_WOULD_BE_TAKEN', {
         targetPlayerId: 'p1',
         damageAmount: 4,
         acceptOptionalTriggers: true,

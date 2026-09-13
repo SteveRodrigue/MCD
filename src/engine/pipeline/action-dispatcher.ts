@@ -2295,12 +2295,9 @@ export function dispatchAction(
       if (
         activePrompt &&
         resultingState.activeAttackContext?.pendingDamage !== undefined &&
-        (activePrompt.description?.includes('TAKE_ATTACK_DAMAGE') ||
-          activePrompt.description?.includes('DAMAGE_WOULD_BE_TAKEN') ||
+        (activePrompt.description?.includes('DAMAGE_WOULD_BE_TAKEN') ||
           activePrompt.options.some(
-            (o) =>
-              (o.params as any)?.ability?.trigger === 'TAKE_ATTACK_DAMAGE' ||
-              (o.params as any)?.ability?.trigger === 'DAMAGE_WOULD_BE_TAKEN',
+            (o) => (o.params as any)?.ability?.trigger === 'DAMAGE_WOULD_BE_TAKEN',
           ))
       ) {
         const attackCtx = resultingState.activeAttackContext;

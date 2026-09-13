@@ -55,11 +55,11 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.hand = [];
       player.dealtEncounterCards = [];
 
-      // Draw 2 cards via executeEffect DRAW_CARDS
+      // Draw 2 cards via executeEffect DRAW
       const result = executeEffect(
         state,
         {
-          effect: 'DRAW_CARDS',
+          effect: 'DRAW',
           params: { count: 2 },
         },
         { playerId: 'p1' },
@@ -186,12 +186,12 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       player.dealtEncounterCards = [];
       state.villain.health = 20;
 
-      // Execute REPULSOR_BLAST (discards 3 cards, each with 2 energy = 6 energy total)
+      // Execute DISCARD (discards 3 cards from deck across deck boundary)
       const res = executeEffect(
         state,
         {
-          effect: 'REPULSOR_BLAST',
-          params: { discardCount: 3 },
+          effect: 'DISCARD',
+          params: { source: 'DECK', count: 3 },
         },
         { playerId: 'p1' },
       );
@@ -201,8 +201,6 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(player.dealtEncounterCards.length).toBe(1);
       // All 3 cards processed: 2 from initial deck + discard reshuffle, 1 from new deck
       expect(player.deck.length + player.discard.length).toBe(3);
-      // Damage dealt: base 1 + 6 energy * 2 = 13 damage
-      expect(state.villain.health).toBe(7);
     });
 
     it('mid-action Black Cat DISCARD reshuffles and deals penalty when deck runs dry', () => {
@@ -235,7 +233,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(player.dealtEncounterCards.length).toBe(1);
     });
 
-    it('mid-action Hulk HULK_DISCARD_RESOLUTION reshuffles and deals penalty when deck is empty', () => {
+    it('mid-action Hulk DISCARD reshuffles and deals penalty when deck is empty', () => {
       const player = state.players[0];
       const physicalCard = createCardInstance(cardCatalog.getCard('01026')!);
 
@@ -247,17 +245,17 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       const res = executeEffect(
         state,
         {
-          effect: 'HULK_DISCARD_RESOLUTION',
+          effect: 'DISCARD',
+          params: { source: 'DECK', count: 1 },
         },
         { playerId: 'p1' },
       );
 
       expect(res.success).toBe(true);
       expect(player.dealtEncounterCards.length).toBe(1);
-      expect(state.villain.health).toBe(12); // 2 physical damage dealt
     });
 
-    it('mid-action DRAW_CARDS with limit: HAND_SIZE reshuffles and deals penalty when drawing across deck boundary', () => {
+    it('mid-action DRAW with limit: HAND_SIZE reshuffles and deals penalty when drawing across deck boundary', () => {
       const player = state.players[0];
       const card1 = createCardInstance(cardCatalog.getCard('01005')!);
       const card2 = createCardInstance(cardCatalog.getCard('01006')!);
@@ -274,7 +272,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       const res = executeEffect(
         state,
         {
-          effect: 'DRAW_CARDS',
+          effect: 'DRAW',
           params: { limit: 'HAND_SIZE' },
         },
         { playerId: 'p1' },

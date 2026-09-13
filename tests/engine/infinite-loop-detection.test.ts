@@ -73,7 +73,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
           {
             id: 'ability_self_echo',
             timing: 'FORCED_INTERRUPT',
-            trigger: 'TAKE_DAMAGE',
+            trigger: 'DAMAGE_TAKEN',
             steps: [
               {
                 effect: 'DEAL_DAMAGE',
@@ -89,7 +89,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     player.tableau.push(cardInst);
 
     expect(() => {
-      dispatchTrigger(gameState, 'TAKE_DAMAGE', {
+      dispatchTrigger(gameState, 'DAMAGE_TAKEN', {
         targetPlayerId: player.id,
         targetType: 'player',
         damageAmount: 1,
@@ -97,7 +97,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     }).toThrow(InfiniteLoopError);
 
     try {
-      dispatchTrigger(gameState, 'TAKE_DAMAGE', {
+      dispatchTrigger(gameState, 'DAMAGE_TAKEN', {
         targetPlayerId: player.id,
         targetType: 'player',
         damageAmount: 1,
@@ -107,7 +107,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
       expect(loopErr.name).toBe('InfiniteLoopError');
       expect(loopErr.formattedCycle).toContain('Echo Chamber');
       expect(loopErr.formattedCycle).toContain('ability_self_echo');
-      expect(loopErr.formattedCycle).toContain('TAKE_DAMAGE');
+      expect(loopErr.formattedCycle).toContain('DAMAGE_TAKEN');
       expect(loopErr.cycle.length).toBeGreaterThanOrEqual(2);
     }
 
@@ -157,7 +157,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
           {
             id: 'ability_memory_b',
             timing: 'FORCED_INTERRUPT',
-            trigger: 'TAKE_DAMAGE',
+            trigger: 'DAMAGE_TAKEN',
             steps: [
               {
                 effect: 'DISCARD_CARDS',
@@ -227,7 +227,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     expect(() => {
       dispatchTrigger(
         gameState,
-        'TAKE_DAMAGE',
+        'DAMAGE_TAKEN',
         {
           targetPlayerId: player.id,
           targetType: 'player',
@@ -247,7 +247,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
   it('4. Legitimate nested non-looping triggers resolve cleanly without false positives', () => {
     const player = gameState.players[0];
 
-    // Card 1: On TAKE_DAMAGE -> HEAL 1 damage (does not emit TAKE_DAMAGE)
+    // Card 1: On DAMAGE_TAKEN -> HEAL 1 damage (does not emit DAMAGE_TAKEN)
     const healCard = makeMockCard({
       code: 'test_heal_legit',
       name: 'First Aid Kit',
@@ -259,7 +259,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
           {
             id: 'ability_legit_heal',
             timing: 'FORCED_INTERRUPT',
-            trigger: 'TAKE_DAMAGE',
+            trigger: 'DAMAGE_TAKEN',
             steps: [
               {
                 effect: 'HEAL_DAMAGE',
@@ -271,7 +271,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
       },
     });
 
-    // Card 2: On TAKE_DAMAGE -> ADD_STATUS TOUGH (does not emit TAKE_DAMAGE)
+    // Card 2: On DAMAGE_TAKEN -> ADD_STATUS TOUGH (does not emit DAMAGE_TAKEN)
     const shieldCard = makeMockCard({
       code: 'test_shield_legit',
       name: 'Energy Barrier',
@@ -283,7 +283,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
           {
             id: 'ability_legit_shield',
             timing: 'FORCED_INTERRUPT',
-            trigger: 'TAKE_DAMAGE',
+            trigger: 'DAMAGE_TAKEN',
             steps: [
               {
                 effect: 'ADD_STATUS',
@@ -299,7 +299,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
     player.tableau.push(createCardInstance(shieldCard));
 
     expect(() => {
-      const res = dispatchTrigger(gameState, 'TAKE_DAMAGE', {
+      const res = dispatchTrigger(gameState, 'DAMAGE_TAKEN', {
         targetPlayerId: player.id,
         targetType: 'player',
         damageAmount: 2,

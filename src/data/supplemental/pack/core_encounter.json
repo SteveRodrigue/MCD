@@ -27,14 +27,16 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "SEARCH_AND_REVEAL_SIDE_SCHEME",
+              "effect": "SEARCH",
               "params": {
-                "targetCardCode": "01107",
-                "searchZones": [
-                  "ENCOUNTER_DECK",
-                  "ENCOUNTER_DISCARD"
-                ],
-                "shuffleDeck": "ENCOUNTER_DECK"
+                "source": "ENCOUNTER_DECK",
+                "filter": {
+                  "targetCardCode": "01107"
+                },
+                "takeCount": 1,
+                "selectedDestination": "TABLEAU",
+                "shuffleAfter": true,
+                "autoSelectIfUnambiguous": true
               }
             }
           ]
@@ -1757,9 +1759,10 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
+              "effect": "ADD_THREAT",
               "params": {
-                "amount": 4
+                "amount": 4,
+                "target": "ALL_SIDE_SCHEMES"
               }
             }
           ]

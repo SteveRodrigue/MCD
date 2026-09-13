@@ -5,7 +5,7 @@ import { discardHostAttachmentsAndTuckedCards } from '../effects';
 
 /**
  * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32)
- * 1. Dispatches ROUND_ENDED and ROUND_END triggers.
+ * 1. Dispatches ROUND_ENDED triggers.
  * 2. Discards allies with round-end forced discard abilities (e.g. Nick Fury 01084).
  * 3. Readies all player cards (identities, allies, tableau upgrades/supports).
  * 4. Resets once-per-round limits and form change flags.
@@ -19,7 +19,6 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
   // 1. Dispatch Round Ended triggers across players
   for (const player of state.players) {
     dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
-    dispatchTrigger(state, 'ROUND_END', { targetPlayerId: player.id });
   }
 
   // 2. Pass First Player Token
@@ -28,14 +27,12 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
 
   // 3. Ready all player cards & reset round flags
   for (const player of state.players) {
-    // Discard allies with ROUND_END / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
+    // Discard allies with ROUND_ENDED / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
     const endRoundAllies = player.allies.filter((a) => {
       const abilities = a.card.enrichment?.abilities || [];
       return abilities.some(
         (ab) =>
-          (ab.trigger === 'ROUND_END' ||
-            ab.trigger === 'ROUND_ENDED' ||
-            ab.timing === 'FORCED_RESPONSE') &&
+          (ab.trigger === 'ROUND_ENDED' || ab.timing === 'FORCED_RESPONSE') &&
           ab.steps?.some(
             (s) =>
               s.effect === 'DISCARD_SELF' ||

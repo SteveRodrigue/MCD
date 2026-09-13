@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-13T21:27:51.013Z`  
+> **Generated:** `2026-09-13T21:55:37.676Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **7** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **7** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **51** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **49** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **19** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -67,7 +67,7 @@ These **19 cards** declare multiple distinct ability headers (e.g. dual Hero/Alt
 | `01028` | **Superhuman Strength** | `upgrade` | `core` | **2** | • `superhuman_strength_atk` (`CONSTANT`, **1 step**)<br/>• `superhuman_strength_stun` (`FORCED_RESPONSE` / `ATTACK_RESOLVED`, **1 step**) |
 | `01039` | **Rocket Boots** | `upgrade` | `core` | **2** | • `rocket_boots_hp` (`CONSTANT`, **1 step**)<br/>• `rocket_boots_aerial` (`HERO_ACTION`, **1 step**) |
 | `01074` | **Inspired** | `upgrade` | `core` | **3** | • `inspired_attach` (`ACTION`, **1 step**)<br/>• `inspired_thw_bonus` (`CONSTANT`, **1 step**)<br/>• `inspired_atk_bonus` (`CONSTANT`, **1 step**) |
-| `01084` | **Nick Fury** | `ally` | `core` | **2** | • `nick_fury_enters_play` (`FORCED_RESPONSE` / `ENTERS_PLAY`, **1 step**)<br/>• `nick_fury_round_end_discard` (`FORCED_RESPONSE` / `ROUND_END`, **1 step**) |
+| `01084` | **Nick Fury** | `ally` | `core` | **2** | • `nick_fury_enters_play` (`FORCED_RESPONSE` / `ENTERS_PLAY`, **1 step**)<br/>• `nick_fury_round_end_discard` (`FORCED_RESPONSE` / `ROUND_ENDED`, **1 step**) |
 | `01096` | **Rhino** | `villain` | `core_encounter` | **2** | • `rhino_stage_iii_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `rhino_stage_iii_tough` (`SETUP`, **1 step**) |
 | `01098` | **Armored Rhino Suit** | `attachment` | `core_encounter` | **2** | • `armored_rhino_suit_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `armored_rhino_suit_shield` (`FORCED_INTERRUPT` / `DAMAGE_WOULD_BE_TAKEN`, **1 step**) |
 | `01099` | **Charge** | `attachment` | `core_encounter` | **3** | • `charge_attach` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `charge_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `charge_overkill` (`CONSTANT`, **1 step**) |
@@ -98,6 +98,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
+| **Effect** | `SEARCH` | **5** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+2 more)* |
 | **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
 | **Trigger** | `WHEN_REVEALED` | **43** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+40 more)* |
 | **Trigger** | `ENTERS_PLAY` | **5** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally) *(+2 more)* |
@@ -125,14 +126,12 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `INTERCEPT_ATTACK` | `01009` | Webbed Up (upgrade) (core) | `webbed_up_intercept` |
 | **Effect** | `MODIFY_ALLY_LIMIT` | `01073` | The Triskelion (support) (core) | `triskelion_ally_limit` |
 | **Effect** | `MODIFY_HAND_SIZE` | `01029a` | Iron Man (hero) (core) | `iron_man_hand_size` |
-| **Effect** | `PLACE_THREAT_PER_SIDE_SCHEME` | `01192` | Masterplan (treachery) (core_encounter) | `masterplan_when_revealed` |
 | **Effect** | `PLAY_FROM_ZONE` | `01071` | Make the Call (event) (core) | `make_the_call` |
 | **Effect** | `PREVENT_DAMAGE` | `01017` | Cosmic Flight (upgrade) (core) | `cosmic_flight_prevent` |
 | **Effect** | `REDUCE_NEXT_CARD_COST` | `01092` | Helicarrier (support) (core) | `helicarrier_action` |
 | **Effect** | `RETURN_FACEDOWN_CARDS_TO_OWNERS` | `01166` | Highway Robbery (side_scheme) (core_encounter) | `highway_robbery_when_defeated` |
 | **Effect** | `RETURN_TO_HAND` | `01020` | Hellcat (ally) (core) | `hellcat_return` |
 | **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_when_revealed` |
-| **Effect** | `SEARCH_AND_REVEAL_SIDE_SCHEME` | `01095` | Rhino (villain) (core_encounter) | `rhino_stage_ii_when_revealed` |
 | **Effect** | `SHUFFLE_DISCARD_INTO_DECK` | `01042` | Ancestral Knowledge (event) (core) | `ancestral_knowledge_action` |
 | **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `shadow_of_the_past_when_revealed` |
 | **Effect** | `TRANSFER_DAMAGE` | `01049` | Vibranium Suit (upgrade) (core) | `vibranium_suit_special` |
@@ -144,7 +143,7 @@ These primitives are only declared on a single card. They represent high special
 | **Trigger** | `CARD_PLAYED` | `01002` | Black Cat (ally) (core) | `black_cat_when_played` |
 | **Trigger** | `FORM_CHANGED` | `01019a` | She-Hulk (hero) (core) | `she_hulk_form_change` |
 | **Trigger** | `MINION_ENTERS_PLAY` | `01066` | Hawkeye (ally) (core) | `hawkeye_arrow_response` |
-| **Trigger** | `ROUND_END` | `01084` | Nick Fury (ally) (core) | `nick_fury_round_end_discard` |
+| **Trigger** | `ROUND_ENDED` | `01084` | Nick Fury (ally) (core) | `nick_fury_round_end_discard` |
 | **Trigger** | `THWART_RESOLVED` | `01058` | Daredevil (ally) (core) | `daredevil_after_thwart` |
 
 ---
@@ -158,6 +157,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | **Effect** | `DEAL_DAMAGE_SPLIT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `DRAW_CARDS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `EXHAUST` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
+| **Effect** | `PLACE_THREAT_PER_SIDE_SCHEME` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `PLAY_CARD_FROM_ZONE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `SEARCH_AND_SELECT` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
@@ -165,29 +165,15 @@ These primitives are declared in schema types or specifications but have **0 act
 | **Trigger** | `ATTACHED_ENEMY_ATTACKS` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `DAMAGE_TAKEN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `ENEMY_DEFEATED_BY_HERO_ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `FORM_CHANGED_TO_ALTER_EGO` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `FORM_CHANGED_TO_HERO` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `HERO_DEFENDED_ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `HERO_FLIPPED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `HOST_DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `MAIN_SCHEME_ADVANCED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `MINION_DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `MINION_DEFEATED_BY_ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `PHASE_START` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `PLAYED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `PLAYER_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `PLAYER_PHASE_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `RESOURCE_SPENT` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `ROUND_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `ROUND_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `SCHEME_DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `SCHEME_THREAT_REDUCED_TO_ZERO` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `STATUS_REMOVED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `TAKE_ATTACK_DAMAGE` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `TAKE_DAMAGE` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `THREAT_PLACED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
-| **Trigger** | `VILLAIN_INITIATES_ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `VILLAIN_PHASE_BEGAN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `VILLAIN_PHASE_ENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 
@@ -207,14 +193,14 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `ADD_THREAT_PER_PLAYER` | **6** | `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
+| `SEARCH` | **5** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01095` (Rhino (villain)) |
 | `GRANT_KEYWORD` | **5** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
 | `CONSUME_INTERCEPTED_EVENT` | **4** | `01003` (Backflip (event)), `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
-| `SEARCH` | **4** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)) |
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `TRIGGER_SURGE` | **4** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
+| `ADD_THREAT` | **4** | `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)), `01192` (Masterplan (treachery)) |
 | `PLAYER_CHOICE` | **3** | `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
-| `ADD_THREAT` | **3** | `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
@@ -237,7 +223,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `MODIFY_ALLY_LIMIT` | **1** | `01073` (The Triskelion (support)) |
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | **1** | `01075` (Black Widow (ally)) |
 | `REDUCE_NEXT_CARD_COST` | **1** | `01092` (Helicarrier (support)) |
-| `SEARCH_AND_REVEAL_SIDE_SCHEME` | **1** | `01095` (Rhino (villain)) |
 | `ATTACHMENT_DAMAGE_SHIELD` | **1** | `01098` (Armored Rhino Suit (attachment)) |
 | `FORM_BRANCH` | **1** | `01106` (Stampede (treachery)) |
 | `GIVE_ADDITIONAL_BOOST_CARD` | **1** | `01164` (Titania's Fury (treachery)) |
@@ -246,7 +231,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `VILLAIN_SCHEMES` | **1** | `01186` (Advance (treachery)) |
 | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | **1** | `01189` (Gang-Up (treachery)) |
 | `SHUFFLE_INTO_DECK` | **1** | `01190` (Shadow of the Past (treachery)) |
-| `PLACE_THREAT_PER_SIDE_SCHEME` | **1** | `01192` (Masterplan (treachery)) |
 | `REVEAL_ENCOUNTER_CARD` | **1** | `01193` (Under Fire (treachery)) |
 
 ---
@@ -272,7 +256,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACK_RESOLVED` | **1** | `01028` (Superhuman Strength (upgrade)) |
 | `THWART_RESOLVED` | **1** | `01058` (Daredevil (ally)) |
 | `MINION_ENTERS_PLAY` | **1** | `01066` (Hawkeye (ally)) |
-| `ROUND_END` | **1** | `01084` (Nick Fury (ally)) |
+| `ROUND_ENDED` | **1** | `01084` (Nick Fury (ally)) |
 | `BOOST_STAR_RESOLVED` | **1** | `01178` (Kree Manipulator (treachery)) |
 
 ---
@@ -341,3 +325,4 @@ These primitives are declared in schema types or specifications but have **0 act
 | `DEFENDING_CHARACTER` | **1** | `01168` Sweeping Swoop (treachery) |
 | `DEFENDING_PLAYER` | **1** | `01173` Electric Whip Attack (treachery) |
 | `ACTIVE_PLAYER` | **1** | `01188` Caught Off Guard (treachery) |
+| `ALL_SIDE_SCHEMES` | **1** | `01192` Masterplan (treachery) |

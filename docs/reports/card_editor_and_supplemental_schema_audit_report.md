@@ -70,7 +70,7 @@ To achieve a clean, maintainable, and mathematically consistent declarative laye
 | **`THWART_RESOLVED`**        | Response (Past)         | Full thwart execution pipeline concluded.                                                                              |
 
 > [!WARNING]
-> **Trigger scope filters are not implemented yet.** `ENEMY_INITIATES_ATTACK` currently has no declarative attacker-kind or engagement filter. The current pipeline dispatches it only for villain attacks, which makes cards such as Spider-Sense appear correct by accident rather than by contract. The universal event must carry attacker kind, attacker instance, attacked player, and engagement scope, and abilities must be able to filter that context before this taxonomy is complete.
+> **Trigger scope filters are not implemented yet.** `ENEMY_INITIATES_ATTACK` currently has no declarative attacker-kind, source-card, or engagement filter. The current pipeline dispatches it only for villain attacks, which makes cards such as Spider-Sense appear correct by accident rather than by contract. The universal event must carry attacker kind, `sourceInstanceId`, `sourceCardCode`, attacked player, and engagement scope, and abilities must be able to filter that context before this taxonomy is complete.
 
 #### C. Threat & Scheme Windows
 
@@ -382,7 +382,7 @@ flowchart TD
 - [x] **2.10 — Regenerate `schema.json`:** Regenerated with `npm run schema:generate`.
 - [x] **2.11 — New Contract Tests:** Added `tests/engine/remove-status-effect.test.ts` and `tests/engine/defeated-trigger-dispatch.test.ts`, plus schema/search/form/combat assertions.
 - [x] **2.12 — Quality Gate:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` passed on 2026-09-13. Full suite: 106 files passed, 773 tests passed, 1 existing test skipped.
-- [ ] **2.13 — Implement universal `triggerFilter`:** Add a strict `TriggerFilterSchema`/`triggerFilter` ability field, structured event context, and one evaluator applied at every trigger-dispatch scan site. Support attacker kind/instance/card filter, attacked player, engagement scope, target form/type, damage source/target type, defeat entity/cause, and form-change direction. Dispatch one `ENEMY_INITIATES_ATTACK` event per attack; do not create overlapping villain/minion/engaged trigger dispatches. Migrate Spider-Sense to `{ attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` and add fail-closed contract tests for all scopes.
+- [ ] **2.13 — Implement universal `triggerFilter`:** Add a strict `TriggerFilterSchema`/`triggerFilter` ability field, structured event context, and one evaluator applied at every trigger-dispatch scan site. Support attacker kind, `sourceInstanceId`, `sourceCardCode`, attacker card filter, attacked player, engagement scope, target form/type, damage source/target type, defeat entity/cause, and form-change direction. Dispatch one `ENEMY_INITIATES_ATTACK` event per attack; do not create overlapping villain/minion/engaged trigger dispatches. Migrate Spider-Sense to `{ attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` and add fail-closed contract tests for all scopes and source-card identity matching.
 
 **Phase 2 execution status:** All items 2.1–2.12 are complete. Phase 3 is not started; legacy vocabulary and supplemental pack data remain intact.
 

@@ -45,7 +45,7 @@
 - **[MODIFY] `src/engine/triggers/trigger-dispatcher.ts`**
   - Add compatibility handling for canonical damage/attack triggers where the current dispatcher has explicit legacy-name checks, preserving loop guards and optional-trigger behavior.
   - Add a single trigger-equivalence resolver so legacy and canonical names match in either direction during the migration window; preserve the original display vocabulary when building optional-trigger prompt descriptions.
-  - Add the missing universal trigger-scope layer: `ENEMY_INITIATES_ATTACK` context must include attacker kind/instance, attacked player, and engagement scope; ability-level filters must be evaluated before resolution.
+  - Add the missing universal trigger-scope layer: `ENEMY_INITIATES_ATTACK` context must include attacker kind, attacker instance, source card definition ID (`sourceCardCode`), attacked player, and engagement scope; ability-level filters must be evaluated before resolution.
   - Apply the same `triggerFilter` evaluator at every existing ability scan site, including identity, in-play cards, encounter cards, and hand interrupts; filtering must happen before costs, limits, prompts, or effect execution.
 
 - **[MODIFY] `src/engine/pipeline/action-dispatcher.ts` and `src/engine/state/game-setup.ts`**
@@ -58,7 +58,7 @@
 
 - **[MODIFY] `src/data/supplemental/schema.ts`**
   - Add strict `TriggerFilterSchema` and optional `triggerFilter` to `CardAbilitySchema`.
-  - Use a generic filter contract with event-family fields: `attackerKind`, `attackerCardFilter`, `attackerInstanceId`, `targetPlayerScope`, `targetForm`, `isEngaged`, `damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, and `formChangeDirection`.
+  - Use a generic filter contract with event-family fields: `attackerKind`, `attackerCardFilter`, `sourceCardCode`, `attackerInstanceId`, `targetPlayerScope`, `targetForm`, `isEngaged`, `damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, and `formChangeDirection`.
   - Keep all fields optional so the same mechanism works for any trigger; the evaluator only uses fields present in the event context. Unsupported context/filter combinations must fail closed rather than silently match.
 
 - **[MODIFY] `src/data/supplemental/pack/core.json`**
@@ -149,9 +149,11 @@
 interface TriggerEventContext {
   targetPlayerId: string;
   sourceInstanceId?: string;
+  sourceCardCode?: string;
   attacker?: {
     kind: 'VILLAIN' | 'MINION';
     instanceId?: string;
+    cardCode?: string;
     card?: CardInstance;
     isEngagedWithTarget: boolean;
   };

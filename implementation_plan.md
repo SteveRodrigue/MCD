@@ -177,6 +177,6 @@
 
 **Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
 
-**Required prerequisite before retry:** None for active-catalog migration. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine are covered by regression tests. Repulsor Blast, Hulk, and Explosion are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
+**Required prerequisite before retry:** Resolve the 10 active-catalog behavioral regressions found by the migrated-pack handoff probe, especially setup search routing, damage interception, minion activation, and legacy prompt compatibility. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine are separately covered by regression tests. Repulsor Blast, Hulk, and Explosion are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
 
 **Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11, pending active-catalog compatibility fixes, deferred-card capability work, and a valid migration commit.

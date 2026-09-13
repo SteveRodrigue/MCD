@@ -279,6 +279,12 @@ export interface GameState {
   activeEncounterContext?: EncounterExecutionContext;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
+  /** Last engine diagnostic error recorded (e.g. infinite trigger loop, invariant violation) */
+  lastError?: {
+    type: 'INFINITE_LOOP' | 'INVARIANT_VIOLATION' | string;
+    message: string;
+    formattedDetails?: string;
+  };
 }
 
 /**

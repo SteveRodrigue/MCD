@@ -33,6 +33,7 @@ import {
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { TriggerCallNode } from '../errors/infinite-loop-error';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
 import {
@@ -64,6 +65,8 @@ export interface EffectExecutionContext {
   interceptedValue?: number;
   remainingInterceptedValue?: number;
   choice?: string;
+  /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
+  triggerChain?: TriggerCallNode[];
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -549,6 +552,7 @@ export function executeDiscard(
           dispatchTrigger(state, 'CARD_DISCARDED', {
             targetPlayerId: targetPlayer.id,
             sourceInstanceId: discarded.instanceId,
+            triggerChain: context.triggerChain,
           });
           state.log.push({
             id: `log_${Date.now()}_${discarded.instanceId}`,
@@ -583,6 +587,7 @@ export function executeDiscard(
         dispatchTrigger(state, 'CARD_DISCARDED', {
           targetPlayerId: targetPlayer.id,
           sourceInstanceId: discarded.instanceId,
+          triggerChain: context.triggerChain,
         });
       }
     }
@@ -617,6 +622,7 @@ export function executeDiscard(
         dispatchTrigger(state, 'CARD_DISCARDED', {
           targetPlayerId: player.id,
           sourceInstanceId: card.instanceId,
+          triggerChain: context.triggerChain,
         });
       }
     }
@@ -664,6 +670,7 @@ export function executeDiscard(
       dispatchTrigger(state, 'CARD_DISCARDED', {
         targetPlayerId: player.id,
         sourceInstanceId: discarded.instanceId,
+        triggerChain: context.triggerChain,
       });
       state.log.push({
         id: `log_${Date.now()}`,
@@ -793,7 +800,8 @@ export function executeStep(
   if (!player) return { state, success: false, error: 'Player not found' };
 
   switch (step.effect) {
-    case 'DISCARD': {
+    case 'DISCARD':
+    case 'DISCARD_CARDS': {
       return executeDiscard(state, step, context);
     }
     case 'DRAW_CARDS': {
@@ -1027,7 +1035,14 @@ export function executeStep(
             onomatopoeia: 'CLANG! (TOUGH)',
           });
         } else {
-          player.health = Math.max(0, player.health - amount);
+          const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+            targetPlayerId: player.id,
+            targetType: 'player',
+            damageAmount: amount,
+            triggerChain: context.triggerChain,
+          });
+          const finalDmg = prevResult.damageAmount ?? amount;
+          player.health = Math.max(0, player.health - finalDmg);
           if (player.health <= 0) state.winner = 'VILLAIN';
           state.log.push({
             id: `log_${Date.now()}`,
@@ -1038,10 +1053,10 @@ export function executeStep(
             params: {
               player: player.name,
               target: 'hero',
-              amount,
+              amount: finalDmg,
               remainingHealth: player.health,
             },
-            onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+            onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
           });
         }
         return {
@@ -1073,7 +1088,14 @@ export function executeStep(
               onomatopoeia: 'CLANG! (TOUGH)',
             });
           } else {
-            p.health = Math.max(0, p.health - amount);
+            const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
+              targetPlayerId: p.id,
+              targetType: 'player',
+              damageAmount: amount,
+              triggerChain: context.triggerChain,
+            });
+            const finalDmg = prevResult.damageAmount ?? amount;
+            p.health = Math.max(0, p.health - finalDmg);
             if (p.health <= 0) state.winner = 'VILLAIN';
             state.log.push({
               id: `log_${Date.now()}`,
@@ -1084,10 +1106,10 @@ export function executeStep(
               params: {
                 player: p.name,
                 target: 'hero',
-                amount,
+                amount: finalDmg,
                 remainingHealth: p.health,
               },
-              onomatopoeia: `OUCH! ${amount} DAMAGE!`,
+              onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
             });
           }
         }
@@ -3685,6 +3707,7 @@ export function dealDirectDamage(
     | { type: 'ALLY'; instanceId: string },
   amount: number,
   playerId?: string,
+  triggerChain?: TriggerCallNode[],
 ): { damageDealt: number; absorbedByTough: boolean } {
   if (amount <= 0) return { damageDealt: 0, absorbedByTough: false };
 
@@ -3698,6 +3721,7 @@ export function dealDirectDamage(
     const prevResult = dispatchTrigger(state, 'TAKE_DAMAGE', {
       targetPlayerId: player.id,
       damageAmount: amount,
+      triggerChain,
     });
     const finalDmg = prevResult.damageAmount ?? amount;
     player.health = Math.max(0, player.health - finalDmg);

@@ -13,3 +13,4 @@ export * from './pipeline';
 export * from './simulation';
 export * from './scenarios';
 export * from './decks';
+export * from './errors/infinite-loop-error';

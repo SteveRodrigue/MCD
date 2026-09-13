@@ -205,6 +205,17 @@ export class CardSupplementalService {
           (!hasSupplemental || !noSupplementalNeeded)
         )
           continue;
+        if (filters.status === 'has_multistep') {
+          const abilities = supplemental?.abilities || [];
+          const hasMulti = abilities.some(
+            (a: any) => Array.isArray(a.steps) && a.steps.length >= 2,
+          );
+          if (!hasMulti) continue;
+        }
+        if (filters.status === 'missing_audit') {
+          const audit = supplemental?.audit;
+          if (audit?.originalText && audit?.reconstructedText) continue;
+        }
       }
 
       results.push({

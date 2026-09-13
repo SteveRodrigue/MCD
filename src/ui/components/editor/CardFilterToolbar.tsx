@@ -176,6 +176,8 @@ export const CardFilterToolbar: React.FC<CardFilterToolbarProps> = ({
             <option value="valid_supplemental">✓ Valid Schema</option>
             <option value="invalid_supplemental">🔴 Schema Error</option>
             <option value="vanilla_supplemental">🛡️ Vanilla (No Supplemental Needed)</option>
+            <option value="has_multistep">⚡ Has Multi-Step Ability</option>
+            <option value="missing_audit">📝 Missing Audit Metadata</option>
           </select>
         </div>
 

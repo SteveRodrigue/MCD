@@ -1,7 +1,7 @@
 # Card Supplemental Schema, Engine Capabilities & Card Editor Audit Report
 
 - **Date:** 2026-09-13
-- **Status:** Draft / Active Discussion
+- **Status:** Approved — In Execution
 - **Scope:** Supplemental Zod Schema, Headless Engine Handling, Specification Documentation, and Interactive Card Editor UI
 
 ---
@@ -24,55 +24,191 @@ The engine and supplemental schema have evolved rapidly through recent Architect
 - Unified Comic Pop-Art Dialog Design System ([ADR-0056](docs/decisions/0056-unified-comic-pop-art-modal-and-dialog-design-system.md))
 - Universal Uses Counter Depletion and Discard Lifecycle ([ADR-0057](docs/decisions/0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md))
 
-However, the **Card Supplemental Editor UI** ([src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx) and [src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)) currently supports only flat, basic parameters and lacks visual builders for dynamic formulas, composable filters, multi-step sequence condition gates, and comprehensive cost structures.
+While the headless engine and schema are robust, the **Card Supplemental Editor UI** ([src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx) and [src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)) currently supports only flat, basic parameters and lacks visual builders for dynamic formulas, composable filters, multi-step sequence condition gates, and comprehensive cost structures.
 
 ---
 
-## 🔍 Section 1: Schema Audit ([src/data/supplemental/schema.ts](src/data/supplemental/schema.ts))
+## 🏛️ Foundational Design Principles & Taxonomy Rules
+
+To achieve a clean, maintainable, and mathematically consistent declarative layer across all cards, we establish 5 core naming invariants:
+
+1. **"CARD" is Superfluous:** In a card game engine, `DRAW`, `DISCARD`, `ENTERS_PLAY`, `REVEAL` naturally operate on cards. The token `CARD` is omitted from primitives, triggers, and selectors unless required for disambiguation (e.g. `CARD_ATTRIBUTE` vs `STAT_VALUE`).
+2. **Grammatical Structure by Category:**
+   - **Triggers (Events):** `[SUBJECT]_[VERB_TENSE]` (e.g. `DAMAGE_TAKEN`, `SCHEME_DEFEATED`, `ROUND_ENDED`).
+   - **Effect Primitives (Commands):** `[IMPERATIVE_VERB]_[TARGET_OR_QUALIFIER]` (e.g. `DRAW`, `DEAL_DAMAGE`, `ADD_COUNTERS`, `REMOVE_THREAT`, `MODIFY_STAT`).
+3. **Temporal Verb Tenses (RR v1.8 Priority):**
+   - **Interrupts (Prospective/Pre-Resolution):** Subjunctive `_WOULD_BE_` or `_INITIATES_` (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`, `ENEMY_INITIATES_ATTACK`).
+   - **Responses (Post-Resolution):** Past participle (e.g. `DAMAGE_TAKEN`, `THREAT_PLACED`, `CARD_PLAYED`, `DEFEATED`, `ROUND_ENDED`).
+4. **Strict Pluralization for Multi-Entity Operations:** Anything that can affect $1$ to $N$ items uses a plural name (e.g. `ADD_COUNTERS`, `REMOVE_COUNTERS`, `DRAW`, `DISCARD`). Dual single/plural variant names are prohibited.
+5. **Zero Single-Use / Legacy Tech Debt:** Single-card bespoke primitives are deprecated and decomposed into composable primitives + `DynamicValueSource`.
+
+---
+
+## 🔍 Section 1: Schema Audit & Canonical Naming Taxonomy
 
 ### 1.1 Trigger Types (`TriggerTypeSchema`)
 
-Currently defines **40 trigger types**:
+#### A. Defeat & Lifecycle Windows
 
-- **Strengths:** Comprehensive coverage across player actions, combat pipelines, and villain phase triggers.
-- **Identified Issues & Gaps:**
-  1. **Duplicate / Overlapping Aliases:**
-     - `TAKE_ATTACK_DAMAGE` vs. `TAKE_DAMAGE` vs. `DAMAGE_TAKEN`
-     - `ROUND_END` vs. `ROUND_ENDED`
-     - `CARD_PLAYED` vs. `PLAYED`
-  2. **Missing In-Flight Combat Triggers:**
-     - `CHARACTER_DEFEATED` (generalized character defeat, distinct from `MINION_DEFEATED` and `HOST_DEFEATED`)
-     - `ATTACK_DECLARED` (distinct from `VILLAIN_INITIATES_ATTACK` for player/ally attacks)
+| Canonical Trigger        | Meaning & Supported Context                                                                                                                | Replaces / Consolidates                                                                                      |
+| :----------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| **`DEFEATED`**           | Universal root trigger emitted whenever any entity is defeated. Context provides `entityType` (`'CHARACTER'`, `'SCHEME'`, `'ATTACHMENT'`). | `MINION_DEFEATED`, `MINION_DEFEATED_BY_ATTACK`, `ENEMY_DEFEATED_BY_HERO_ATTACK`, `HOST_DEFEATED`, `DEFEATED` |
+| **`CHARACTER_DEFEATED`** | Explicit trigger for when a character (Hero, Ally, Minion, Villain) is reduced to 0 HP and defeated.                                       | `MINION_DEFEATED`, `HOST_DEFEATED`                                                                           |
+| **`SCHEME_DEFEATED`**    | Explicit trigger for when a scheme (Side Scheme or Main Scheme) is defeated / cleared of threat.                                           | `SCHEME_THREAT_REDUCED_TO_ZERO`                                                                              |
+| **`ENTERS_PLAY`**        | Card enters the in-play zone. Context provides entering card instance and controller.                                                      | `ENTERS_PLAY`, `MINION_ENTERS_PLAY`                                                                          |
+| **`CARD_PLAYED`**        | Card was actively played from hand or non-hand zone with resources paid.                                                                   | `CARD_PLAYED`, `PLAYED`                                                                                      |
+
+#### B. Combat & Damage Windows
+
+| Canonical Trigger            | Timing / Tense          | Meaning                                                                                                                |
+| :--------------------------- | :---------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| **`ENEMY_INITIATES_ATTACK`** | Interrupt (Prospective) | Enemy declares attack against player identity / character. Replaces `VILLAIN_INITIATES_ATTACK`.                        |
+| **`DAMAGE_WOULD_BE_TAKEN`**  | Interrupt (Prospective) | Damage calculated and about to be dealt (prevention/replacement window). Replaces `TAKE_ATTACK_DAMAGE`, `TAKE_DAMAGE`. |
+| **`DAMAGE_TAKEN`**           | Response (Past)         | Damage was successfully dealt and applied to hit points.                                                               |
+| **`ATTACK_DEFENDED`**        | Response (Past)         | Identity or ally successfully exhausted to defend against an attack. Replaces `HERO_DEFENDED_ATTACK`.                  |
+| **`ATTACK_RESOLVED`**        | Response (Past)         | Full attack execution pipeline concluded.                                                                              |
+| **`THWART_RESOLVED`**        | Response (Past)         | Full thwart execution pipeline concluded.                                                                              |
+
+#### C. Threat & Scheme Windows
+
+| Canonical Trigger            | Timing / Tense          | Meaning                                                                             |
+| :--------------------------- | :---------------------- | :---------------------------------------------------------------------------------- |
+| **`THREAT_WOULD_BE_PLACED`** | Interrupt (Prospective) | Threat is about to be placed on a scheme (Great Responsibility / Emergency window). |
+| **`THREAT_PLACED`**          | Response (Past)         | Threat was successfully added to a scheme.                                          |
+| **`MAIN_SCHEME_ADVANCED`**   | Response (Past)         | Main scheme exceeded threshold and advanced to next stage.                          |
+
+#### D. Form, Status, Phase & Encounter Windows
+
+| Canonical Trigger                                 | Timing / Meaning                                                          | Replaces                                                            |
+| :------------------------------------------------ | :------------------------------------------------------------------------ | :------------------------------------------------------------------ |
+| **`FORM_CHANGED`**                                | Form change completed (context carries `newForm: 'hero' \| 'alter_ego'`). | `FORM_CHANGED_TO_HERO`, `FORM_CHANGED_TO_ALTER_EGO`, `HERO_FLIPPED` |
+| **`STATUS_REMOVED`**                              | Status card (Stunned, Confused, Tough) was discarded / cured.             | _New primitive companion trigger_                                   |
+| **`WHEN_REVEALED`**                               | When-revealed resolution / interrupt window.                              | `WHEN_REVEALED`, `TREACHERY_REVEALED`                               |
+| **`ROUND_BEGAN` / `ROUND_ENDED`**                 | Round lifecycle boundaries.                                               | `ROUND_END`, `ROUND_ENDED`                                          |
+| **`PLAYER_PHASE_BEGAN` / `PLAYER_PHASE_ENDED`**   | Player phase boundaries.                                                  | `PHASE_START`                                                       |
+| **`VILLAIN_PHASE_BEGAN` / `VILLAIN_PHASE_ENDED`** | Villain phase boundaries.                                                 | —                                                                   |
+
+---
 
 ### 1.2 Effect Primitives (`EffectTypeSchema`)
 
-Currently defines **75 effect primitives**:
+#### A. Card & Zone Operations (No "CARD", Always Plural)
 
-- **Strengths:** 100% codebase-grounded with direct handlers in [src/engine/effects/index.ts](src/engine/effects/index.ts).
-- **Identified Issues & Gaps:**
-  1. **Legacy Ad-Hoc Primitives:** Several single-use effects remain from early iterations:
-     - `EXPLOSION` (can be expressed via `DEAL_DAMAGE_ALL_ENEMIES` + `DynamicValueSource`)
-     - `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` (can be expressed via `FORM_BRANCH`)
-     - `NICK_FURY_CHOICE` (can be expressed via `PLAYER_CHOICE`)
-     - `HULK_DISCARD_RESOLUTION` (can be expressed via `DISCARD` + `DynamicValueSource`)
-  2. **Duplicate Naming Aliases:**
-     - `ADD_COUNTER` vs. `ADD_COUNTERS`
-     - `REMOVE_COUNTER` vs. `REMOVE_COUNTERS`
-     - `MODIFY_ALLY_LIMIT` vs. `ALLY_LIMIT_BONUS`
+| Canonical Effect        | Parameter Schema & Description                                                                                                                                                                                                                                                                                   | Replaces                                                                                                           |
+| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| **`DRAW`**              | `{ count?: number \| DynamicValueSource, limit?: 'HAND_SIZE' \| 'PRINTED_HAND_SIZE', target?: TargetSelector }`                                                                                                                                                                                                  | `DRAW_CARDS`                                                                                                       |
+| **`DISCARD`**           | `{ count?: number \| 'ALL' \| DynamicValueSource, source?: 'HAND' \| 'DECK' \| 'TABLEAU' \| 'HOST' \| 'SELF', filter?: UniversalCardFilter, mode?: 'CHOSEN' \| 'RANDOM' \| 'TOP' }`                                                                                                                              | `DISCARD`, `DISCARD_CARDS`                                                                                         |
+| **`PUT_INTO_PLAY`**     | `{ destination?: 'TABLEAU' \| 'ENGAGED_WITH_PLAYER', engagedWith?: 'SELF' \| 'TARGET', target?: TargetSelector }`                                                                                                                                                                                                | `PUT_INTO_PLAY`, `PUT_INTO_PLAY_ENGAGED`, `SPAWN_MINION_ENGAGED`                                                   |
+| **`PLAY_FROM_ZONE`**    | `{ source: 'PLAYER_DISCARD' \| 'ANY_PLAYER_DISCARD' \| 'PLAYER_DECK' \| 'SET_ASIDE', filter?: UniversalCardFilter, costMode?: 'PRINTED_COST' \| 'FREE' \| 'REDUCED' }`                                                                                                                                           | `PLAY_CARD_FROM_ZONE`                                                                                              |
+| **`SEARCH`**            | `{ source: 'PLAYER_DECK' \| 'ENCOUNTER_DECK' \| 'PLAYER_DISCARD' \| 'ENCOUNTER_DISCARD' \| 'PLAYER_HAND', lookCount?: number \| DynamicValueSource, takeCount?: number, filter?: UniversalCardFilter, selectedDestination?: 'HAND' \| 'TABLEAU' \| 'DECK_TOP' \| 'DISCARD', autoSelectIfUnambiguous?: boolean }` | `SEARCH_AND_SELECT`, `SEARCH_AND_PLAY_UPGRADE`, `RETRIEVE_CARD_FROM_DISCARD`, `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` |
+| **`RETURN_TO_HAND`**    | `{ target?: TargetSelector, filter?: UniversalCardFilter }`                                                                                                                                                                                                                                                      | `RETURN_TO_HAND`, `RETURN_FACEDOWN_CARDS_TO_OWNERS`                                                                |
+| **`SHUFFLE_INTO_DECK`** | `{ source?: 'DISCARD' \| 'HAND' \| 'PLAY', target?: TargetSelector }`                                                                                                                                                                                                                                            | `SHUFFLE_DISCARD_INTO_DECK`, `SHUFFLE_INTO_DECK`                                                                   |
+
+> [!NOTE]
+> **`SEARCH` Consolidation Rationale:** `RETRIEVE_CARD_FROM_DISCARD` / `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` are a redundant, hand-rolled special case of `SEARCH` with `source: 'PLAYER_DISCARD'` — both scan a zone, apply a `UniversalCardFilter`, and route matches to a destination. The rename from `SEARCH_AND_SELECT` to `SEARCH` aligns with RR v1.8 p. 26 ("Search") and drops the narrative `_AND_SELECT` suffix (selection is implied by every zone-inspection primitive). To preserve the current silent/automatic UX of `RETRIEVE_*` (no prompt when there is only one valid outcome), `SEARCH` gains a new `autoSelectIfUnambiguous?: boolean` param (default `true`): when the number of matching candidates is `<= takeCount`, the effect resolves automatically without a `PendingDecisionPrompt`. This also benefits every other `SEARCH` call with an equivalently unambiguous match set.
+>
+> **Considered Alternative (Rejected for Now):** Splitting into `SEARCH` (full-zone, `lookCount` omitted, RR p. 26) vs. `LOOK_AT` (top-N, `lookCount` set, RR p. 19 "Look at") would more precisely mirror the two distinct RR phrases, but adds a second enum value for a distinction the existing `lookCount` param already self-documents. Revisit only if Card Editor UX reviewers need the RR terms to be visually separated.
+
+#### B. Combat, Damage & Threat Primitives
+
+| Canonical Effect     | Parameter Schema & Description                                                                             | Replaces                                                              |
+| :------------------- | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| **`DEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector, overkill?: boolean, ranged?: boolean }`   | `DEAL_DAMAGE`, `DEAL_DAMAGE_ALL_ENEMIES`                              |
+| **`HEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector }`                                         | `HEAL_DAMAGE`, `HEAL_DAMAGE_WITH_SURGE`                               |
+| **`PREVENT_DAMAGE`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | `PREVENT_DAMAGE`, `CONSUME_INTERCEPTED_EVENT`                         |
+| **`REMOVE_THREAT`**  | `{ amount: number \| DynamicValueSource, target: TargetSelector }`                                         | `REMOVE_THREAT`                                                       |
+| **`ADD_THREAT`**     | `{ amount: number \| DynamicValueSource, target: TargetSelector, cardCode?: string, perPlayer?: boolean }` | `ADD_THREAT`, `ADD_THREAT_PER_PLAYER`, `PLACE_THREAT_PER_SIDE_SCHEME` |
+
+#### C. Counters & Status Primitives (Symmetric Status & Strict Plural Counters)
+
+| Canonical Effect      | Parameter Schema & Description                                                                                                                               | Replaces                                                                                 |
+| :-------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| **`ADD_COUNTERS`**    | `{ amount: number \| DynamicValueSource, counterType?: string, target?: TargetSelector }`                                                                    | `ADD_COUNTER`, `ADD_COUNTERS`                                                            |
+| **`REMOVE_COUNTERS`** | `{ amount: number \| 'ALL' \| DynamicValueSource, counterType?: string, target?: TargetSelector, filter?: UniversalCardFilter, discardWhenEmpty?: boolean }` | `REMOVE_COUNTER`, `REMOVE_COUNTERS`, `SPEND_COUNTERS`, `REMOVE_COUNTERS_MATCHING_FILTER` |
+| **`ADD_STATUS`**      | `{ status: 'STUNNED' \| 'CONFUSED' \| 'TOUGH', target: TargetSelector }`                                                                                     | `ADD_STATUS`, `ADD_STATUS_WITH_SURGE`                                                    |
+| **`REMOVE_STATUS`**   | `{ status: 'STUNNED' \| 'CONFUSED' \| 'TOUGH' \| 'ALL', target: TargetSelector }`                                                                            | _New Missing Core Primitive_                                                             |
+
+#### D. Stats, Limits & Control Flow Primitives
+
+| Canonical Effect              | Parameter Schema & Description                                                                                                                                                  | Replaces                                                           |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
+| **`MODIFY_STAT`**             | `{ stat: 'ATK' \| 'THW' \| 'DEF' \| 'REC' \| 'SCHEME', amount: number \| DynamicValueSource, target: TargetSelector, duration?: 'UNTIL_END_OF_PHASE' \| 'UNTIL_END_OF_ROUND' }` | `MODIFY_STAT`, `BOOST_STAT_CHOICE`, `BUFF_ALL_FRIENDLY_CHARACTERS` |
+| **`MODIFY_ALLY_LIMIT`**       | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_ALLY_LIMIT`, `ALLY_LIMIT_BONUS`                            |
+| **`MODIFY_RESTRICTED_LIMIT`** | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `RESTRICTED_LIMIT_BONUS`                                           |
+| **`MODIFY_HAND_SIZE`**        | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_HAND_SIZE`                                                 |
+| **`MODIFY_MAX_HEALTH`**       | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_MAX_HEALTH`                                                |
+| **`PLAYER_CHOICE`**           | `{ options: Array<{ label: string, steps: AbilityStep[] }> }`                                                                                                                   | `PLAYER_CHOICE`, `NICK_FURY_CHOICE`                                |
+| **`FORM_BRANCH`**             | `{ heroSteps?: AbilityStep[], alterEgoSteps?: AbilityStep[] }`                                                                                                                  | `HERO_FORM_BRANCH`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`          |
+
+#### E. Retirement of Bespoke Legacy Primitives (Tech Debt Decomposition)
+
+| Legacy Single-Use Primitive               | Decomposed Into Composable Architecture                                                                               |
+| :---------------------------------------- | :-------------------------------------------------------------------------------------------------------------------- |
+| `NICK_FURY_CHOICE`                        | `PLAYER_CHOICE` with 3 options: (1) `DRAW` count 3, (2) `REMOVE_THREAT` amount 2, (3) `DEAL_DAMAGE` amount 4          |
+| `EXPLOSION`                               | `DEAL_DAMAGE` (`target: 'ALL_CHARACTERS'`, `amount: 3`) + `DISCARD` (`target: 'SELF'`)                                |
+| `HULK_DISCARD_RESOLUTION`                 | `DISCARD` (`count: 1`, `source: 'HAND'`) + `DynamicValueSource` (`attribute: 'PRINTED_RESOURCES'`)                    |
+| `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`     | `FORM_BRANCH` (`heroSteps: [VILLAIN_ATTACKS]`, `alterEgoSteps: [TRIGGER_SURGE]`)                                      |
+| `REPULSOR_BLAST`, `REPULSOR_BLAST_DAMAGE` | `DISCARD` (`count: 3`, `source: 'DECK'`) + `DEAL_DAMAGE` (`amount: DynamicValueSource from DISCARDED_RESOURCE_COUNT`) |
+
+---
 
 ### 1.3 Target Selector Types (`TargetSelectorSchema`)
 
-Currently defines **26 selector types**:
+Disambiguates **Controlled** (player's own board area) vs. **Friendly / Table-Wide** (any player's allies/characters across the board):
 
-- **Strengths:** Expanded with `TRIGGERING_MINION` and `TRIGGERING_ENEMY`.
-- **Identified Issues & Gaps:**
-  1. **Side Scheme Target Selectors:** Missing `TRIGGERING_SCHEME` and `CHOSEN_SIDE_SCHEME` (currently mapped generically to `SIDE_SCHEME` or by explicit `cardCode`).
+```typescript
+export const TargetSelectorSchema = z.enum([
+  // 1. Identity & Self
+  'SELF', // The triggering card / ability host itself
+  'SELF_IDENTITY', // The active player's Hero or Alter-Ego
+  'TRIGGERING_HERO', // Hero that initiated or suffered the trigger
 
-### 1.4 Top-Level Card Attributes (`CardEnrichmentSchema`)
+  // 2. Players
+  'ACTIVE_PLAYER', // Player whose turn/action it currently is
+  'CHOSEN_PLAYER', // Prompted target player
+  'ALL_PLAYERS', // Every player at the table
 
-- **Strengths:** Supports `uses`, `playRequirements`, `keywords`, `restrictedSlots`, `additionalBoostCards`, `isLandscape`, and full `audit` metadata.
-- **Identified Issues & Gaps:**
-  1. `CardUsesSchema` does not have a standardized enum for counter types (`arrow`, `all-purpose`, `web`, `growth`, `charge`, etc.).
+  // 3. Controlled Entities (Own Player Board)
+  'CHOSEN_CONTROLLED_ALLY', // "an ally you control"
+  'ALL_CONTROLLED_ALLIES', // "all allies you control"
+  'CHOSEN_CONTROLLED_CHARACTER', // "a character you control" (Hero or own ally)
+  'ALL_CONTROLLED_CHARACTERS', // "all characters you control"
+
+  // 4. Friendly Entities (Table-Wide Player Side)
+  'CHOSEN_ALLY', // "an ally" (any player's ally in play)
+  'ALL_ALLIES', // "all allies in play"
+  'CHOSEN_FRIENDLY_CHARACTER', // "a friendly character" (any hero or ally)
+  'ALL_FRIENDLY_CHARACTERS', // "all friendly characters" (all heroes + allies)
+  'ALL_HEROES', // "all heroes"
+
+  // 5. Enemies (Villain & Minions)
+  'VILLAIN', // Primary scenario villain
+  'CHOSEN_ENEMY', // Prompted enemy (Villain or any Minion)
+  'ALL_ENEMIES', // Villain + all minions in play
+  'ENGAGED_ENEMIES', // Enemies engaged with active player
+  'CHOSEN_MINION', // Prompted minion across entire table
+  'ALL_MINIONS', // All minions in play
+  'CHOSEN_ENGAGED_MINION', // Prompted minion engaged with active player
+  'ENGAGED_MINIONS', // All minions engaged with active player
+  'TRIGGERING_ENEMY', // Enemy that caused the trigger event
+  'TRIGGERING_MINION', // Minion that caused the trigger event
+
+  // 6. Universal Characters (Both Sides)
+  'CHOSEN_CHARACTER', // Any character in play (Friend or Foe)
+  'ALL_CHARACTERS', // All heroes, allies, villains, minions
+
+  // 7. Schemes (Main & Side)
+  'MAIN_SCHEME', // Primary main scheme
+  'CHOSEN_SIDE_SCHEME', // Prompted side scheme
+  'CHOSEN_SCHEME', // Prompted scheme (Main or Side)
+  'ALL_SCHEMES', // Main scheme + all side schemes in play
+  'TRIGGERING_SCHEME', // Scheme causing the trigger event
+
+  // 8. Pipeline Context Continuity
+  'PREVIOUS_TARGET', // Inherited target from immediate preceding step
+  'PREVIOUS_SELECTED_CARD', // Card resolved in previous search/select step
+]);
+```
 
 ---
 
@@ -81,51 +217,41 @@ Currently defines **26 selector types**:
 ### 2.1 Dynamic Value Evaluator ([src/engine/effects/dynamic-formula-evaluator.ts](src/engine/effects/dynamic-formula-evaluator.ts))
 
 - **Status:** **High Conformity (ADR-0049 & ADR-0052).**
-- Resolves:
-  - `INTERCEPTED_VALUE`: Captured value from trigger events (damage, threat).
-  - `PREVIOUS_RESULT`: Return value from immediate preceding step in an ability sequence.
-  - `DISCARDED_COUNT`: Number of cards discarded in preceding step.
-  - `COUNTERS`: Dynamic counter count from a designated entity or card.
-  - `STAT_VALUE`: Evaluates character stats (`SUFFERED_DAMAGE`, `ATTACK`, `HERO_ATK`, `THWART`, `DEFENSE`, `RECOVERY`).
-  - `ENTITY_COUNT`: Counts entities matching a `filter` across player boards or encounter zones.
-  - `CARD_ATTRIBUTE`: Inspects card attributes (`BOOST_ICONS`, `PRINTED_RESOURCES`, `PRINTED_COST`).
-- Includes support for `multiplier`, `offset`, and `clamp` (`min`, `max`).
+- Resolves all 7 dynamic data sources:
+  1. `INTERCEPTED_VALUE`: Captured value from trigger events (damage, threat).
+  2. `PREVIOUS_RESULT`: Return value from immediate preceding step.
+  3. `DISCARDED_COUNT`: Number of cards discarded in preceding step.
+  4. `COUNTERS`: Dynamic counter count on a target card/entity.
+  5. `STAT_VALUE`: Evaluates character stats (`SUFFERED_DAMAGE`, `ATTACK`, `HERO_ATK`, `THWART`, `DEFENSE`, `RECOVERY`).
+  6. `ENTITY_COUNT`: Counts entities matching a `UniversalCardFilter` across player boards or encounter zones.
+  7. `CARD_ATTRIBUTE`: Inspects printed card attributes (`BOOST_ICONS`, `PRINTED_RESOURCES`, `PRINTED_COST`).
+- Supports `multiplier`, `offset`, and `clamp` (`min`, `max`).
 
 ### 2.2 Universal Card Filter Engine ([src/engine/filters/card-filter.ts](src/engine/filters/card-filter.ts))
 
 - **Status:** **Fully Generalized (ADR-0046).**
-- Recursively processes atomic filter criteria across `all`, `any`, and `none` branch nodes.
+- Evaluates composable criteria trees (`codes`, `names`, `types`, `traits`, `aspects`, `sets`, `isUnique`, `cost`, `resourceIcons`, `hasKeyword`, `hasStatus`, `isExhausted`) combined with boolean branch nodes (`all`, `any`, `none`).
 
-### 2.3 Interactive Prompt & Cost Engines
+### 2.3 Interactive Prompt & Cost Engines ([src/engine/pipeline/cost-engine.ts](src/engine/pipeline/cost-engine.ts))
 
-- **Status:** **Compliant (ADR-0051 & ADR-0055).**
+- **Status:** **Compliant (ADR-0051, ADR-0055, ADR-0057).**
 - Requires `paymentCardInstanceIds` when abilities specify `resourceCost`.
+- Automatically evaluates counter depletion and discard lifecycle for "Uses" cards upon cost payment.
 
 ---
 
-## 📚 Section 3: Documentation Audit ([docs/specifications/](docs/specifications/))
+## 📚 Section 3: Documentation & Specification Audit
 
 1. **Stale Schema Specification ([docs/specifications/supplemental_data_schema.md](docs/specifications/supplemental_data_schema.md)):**
    - References legacy flat effect schemas and predates `UniversalCardFilter` (ADR-0046) and `DynamicValueSource` (ADR-0049, ADR-0052).
 2. **Supplemental Documentation Chapters ([docs/specifications/supplemental/](docs/specifications/supplemental/)):**
-   - Chapters 01 through 11 are well-structured, but need synchronization with recently introduced parameters (`requiresModal`, `targetInstanceId`, `cardCode` targeting in `ADD_THREAT`, `DynamicValueSource`).
-3. **ADR Index ([docs/decisions/README.md](docs/decisions/README.md)):**
-   - Maintained through ADR-0056 and ADR-0057.
+   - Chapters 01 through 11 require updating to include `REMOVE_STATUS`, controlled vs. friendly target selectors, and the removal of legacy single-use primitives.
+3. **ADR Alignment ([docs/decisions/README.md](docs/decisions/README.md)):**
+   - Up to date through ADR-0057.
 
 ---
 
-## 🛠️ Section 4: Card Supplemental Editor Findings & Gaps
-
-| Component                                                                                                          | Current State                                                           | Missing Capability / Gap                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| :----------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **[src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)** | Maps 75 effect descriptors to UI field types                            | 1. Missing parameter descriptors for newer fields: `cardCode` on `ADD_THREAT`, `DynamicValueSource` builder on `count`/`amount`, and nested `filter` visual picker.<br>2. Parameter types restricted to simple primitives (`number`, `text`, `select`, `boolean`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| **[src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx)**             | Form for single-step abilities, timing, comments, and play requirements | 1. **No Visual `DynamicValueSource` Builder:** Forces users into raw static numbers or manual JSON editing in [src/ui/components/editor/RawJsonEditor.tsx](src/ui/components/editor/RawJsonEditor.tsx).<br>2. **No Composable `UniversalCardFilter` Builder:** Only accepts simple trait/type string inputs.<br>3. **Incomplete Cost Builder:** Missing UI inputs for `damageHero`, `damageSelf`, `spendCounters`, and `discardCard`.<br>4. **Missing Sequence Condition Gates:** No visual selector for step `gate` (`THEN`, `IF_PREVIOUS_SUCCESS`) or step `condition` (`TARGET_DEFEATED`, `SCHEME_EMPTY`).<br>5. **Missing `uses` & `keywords` UI:** Top-level card attributes form lacks structured keyword configuration (`{ keyword, amount }`) and `uses` counters configuration. |
-| **[src/ui/components/editor/DualCardInspector.tsx](src/ui/components/editor/DualCardInspector.tsx)**               | Dual-panel showing upstream card + raw/form supplemental data           | Lacks simulated testing or preview of declarative ability resolution.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| **[src/ui/components/editor/CardFilterToolbar.tsx](src/ui/components/editor/CardFilterToolbar.tsx)**               | Filters gallery by pack, hero, aspect, status                           | Functioning well; could add filters for "Has Multi-Step Ability" and "Missing Audit".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-
----
-
-## 💡 Suggestions & Roadmap for Streamlining the Card Editor
+## 🛠️ Section 4: Card Supplemental Editor UI Gaps & Propositions
 
 ```mermaid
 graph TD
@@ -151,10 +277,10 @@ graph TD
 
 ### 🎯 Proposition 1: Visual Dynamic Value Builder
 
-Create a dedicated `<DynamicValueBuilder>` form control in [src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx):
+Create a dedicated `<DynamicValueBuilder>` sub-form in [src/ui/components/editor/AbilityFormBuilder.tsx](src/ui/components/editor/AbilityFormBuilder.tsx):
 
 - Toggle between **Static Value** and **Dynamic Formula**.
-- Dropdowns for `from` (`STAT_VALUE`, `COUNTERS`, `ENTITY_COUNT`, `DISCARDED_COUNT`, `INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `CARD_ATTRIBUTE`).
+- Dropdown for `from` (`STAT_VALUE`, `COUNTERS`, `ENTITY_COUNT`, `DISCARDED_COUNT`, `INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `CARD_ATTRIBUTE`).
 - Parameter inputs for `stat` (`SUFFERED_DAMAGE`, `HERO_ATK`), `counterType`, `multiplier`, `offset`, and `clamp`.
 
 ### 🎯 Proposition 2: Visual Composable Card Filter Builder
@@ -191,16 +317,155 @@ Expand the ability cost section:
 
 ---
 
-## 📌 Phased Implementation Plan
+## 📌 Phased Migration & Implementation Plan
 
-1. **Phase 1: Foundation & GitHub Issues (Current Stage):**
-   - Review and refine this audit report.
-   - File tracking issues for identified schema redundancies and documentation drift.
-2. **Phase 2: Post-ADR-0057 Pass:**
-   - Re-verify counter depletion lifecycle and `uses` parameters once ADR-0057 implementation is finalized.
-3. **Phase 3: Editor Parameter Registry & Sub-Builders Implementation:**
-   - Update [src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts).
-   - Implement `<DynamicValueBuilder>` and `<UniversalCardFilterBuilder>`.
-   - Implement `<CostBuilder>`, `<SequenceStepBuilder>`, and top-level `<CardAttributesBuilder>`.
-4. **Phase 4: Acceptance Testing & Verification:**
-   - Add comprehensive component tests in `tests/ui/` covering all new visual builders and form roundtrips.
+> **How to use this section:** Each phase is split into small, independently shippable sub-phases with a single clear goal, an exact file scope, and a task checklist (`- [ ]`). Check items off as they land so progress is visible directly in this report. Every sub-phase should end green on `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` before starting the next one — no sub-phase depends on code from a _later_ sub-phase. **Phase 0 must be fully checked off before Phase 1 begins.**
+
+```mermaid
+flowchart TD
+    P0["Phase 0: Pre-Flight Checklist"] --> P1["Phase 1: ADR-0058 Taxonomy Record"]
+    P1 --> P2["Phase 2: Schema & Engine Additive Changes"]
+    P2 --> P3["Phase 3: Batch Data Migration"]
+    P3 --> P4["Phase 4: Engine & Tooling Cleanup"]
+    P4 --> P5["Phase 5: Test Suite Realignment"]
+    P5 --> P6["Phase 6: Card Editor UI Upgrade"]
+    P6 --> P7["Phase 7: Documentation & Specification Sync"]
+    P7 --> P8["Phase 8: Final Full-Repo Verification & Closure"]
+```
+
+### Phase 0 — Pre-Flight Checklist
+
+**Goal:** Confirm the repository, tracking artifacts, and execution environment are in a safe, unambiguous starting state before any schema/engine/data change is made. Nothing in Phase 1 may start until every item below is checked.
+
+- [x] **0.1 — Approve & Freeze This Report:** Flip the report's header `Status:` line from `Final Proposed Taxonomy & Implementation Roadmap` to `Approved — In Execution` so it is unambiguous (to any future reader or agent) that this is no longer a draft under discussion but the authoritative execution plan.
+- [x] **0.2 — File a Tracking GitHub Issue:** Create a `[FEAT]` issue (e.g. "Declarative schema taxonomy consolidation — ADR-0058") covering all 8 phases. Reference it as `(Refs #NNN)` in every commit made during Phases 1–7, and close it with `(Closes #NNN)` in Phase 8.5. Tracking issue: [#111](https://github.com/SteveRodrigue/MCD/issues/111).
+- [ ] **0.3 — Verify Clean Working Tree & Up-to-Date `main`:** `git status` must report a clean tree and `Your branch is up to date with 'origin/main'` before Phase 1.1 creates the ADR file. **Blocked:** `main` is synchronized with `origin/main`, but the worktree contains pre-existing modifications to this report and the generated declarations report, plus an untracked `.agents/skills/schema-taxonomy-migration/` directory.
+- [x] **0.4 — Verify `docs/ambiguities/` is Inbox Zero:** Confirm no card is mid-review with an open ambiguity file that references a primitive/trigger name being renamed — a card resolved using an old name mid-migration would be missed by the Phase 3 rename pass. `docs/ambiguities/` contains only its README.
+- [x] **0.5 — Concurrency Guard — No Overlapping In-Flight Work:** Confirm no other open GitHub issue, PR, or active agent session is currently editing `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, `src/engine/pipeline/cost-engine.ts`, `src/engine/pipeline/action-dispatcher.ts`, `src/engine/triggers/trigger-dispatcher.ts`, or any file under `src/data/supplemental/pack/`. No open pull requests or other active agent sessions were found; re-check this immediately before starting Phase 2 and again before Phase 3, since new card-integration work could land in between.
+- [x] **0.6 — Confirm Required Tooling Exists:** Verify `npm run schema:generate` (JSON Schema export, used in Phase 2.10/4.8) and `npm run report:declarations` (used in every quality gate) both run successfully against the current `main` before any change is made. Both commands passed on 2026-09-13.
+- [x] **0.7 — Confirm No Migration Script Name Collision:** Verify `tools/audit/migrate-declarative-taxonomy.ts` (Phase 3.1) does not already exist under a different name/purpose in `tools/audit/` or `tools/`. No matching file or purpose was found.
+- [x] **0.8 — Capture Baseline Metrics Snapshot:** Record and log (e.g. in `logs/skills/`) the current `npm test` file/test counts, `npm run typecheck` result, and the full `npm run report:declarations` summary output (Total Cards Scanned, Cards with Abilities, Total Abilities Declared, Unique Effect Types, Unique Trigger Types, etc.) so Phase 8.1's final run can be diffed against a known-good baseline instead of just checked for "still green." Baseline logged in `logs/skills/schema_taxonomy_migration_2026-09-13.log`.
+- [x] **0.9 — Decide Branch Strategy for the Phase 3→5 Red-Test Window:** Phase 3 (data migrated) intentionally leaves test assertions red until Phase 5 fixes them (see 3.11). Decide and record here: **(a)** Phases 2–5 will be executed as one uninterrupted session/day before any push to `main` (matches this repo's existing direct-to-`main` convention), **or (b)** the work will happen on a dedicated branch (e.g. `feat/adr-0058-taxonomy`) and only merge once Phase 5.8 is green. Do not begin Phase 3 without having made this choice explicit. Decision: **(a), one uninterrupted session/day before pushing to `main`**.
+- [x] **0.10 — Confirm Progress Tracking Ownership:** Agree that the checkboxes in this report file are the single source of truth for cross-session progress — each sub-phase's checkbox is ticked and committed as part of that sub-phase's own commit, not batched at the end. This report is the authoritative progress tracker; each later sub-phase will be checked off with its own commit.
+
+**Phase 0 execution status:** Items 0.2 and 0.4–0.10 are complete. Item 0.3 remains blocked until the pre-existing worktree changes are resolved by their owner. Phase 1 is not started.
+
+---
+
+### Phase 1 — Record ADR-0058 (Taxonomy & Naming Conventions)
+
+**Goal:** Get the naming rules and full old→new mapping tables ratified in a single authoritative ADR before touching any code, so every later phase cites it instead of re-litigating names.
+
+- [ ] **1.1 — Draft ADR-0058:** Copy `docs/decisions/template.md` to `docs/decisions/0058-declarative-schema-naming-conventions-and-primitive-consolidation.md`. Populate Context, the 5 naming invariants (Section "🏛️ Foundational Design Principles" above), Decision Drivers, and Considered Options (status quo vs. full rename vs. partial rename).
+- [ ] **1.2 — Embed Full Mapping Tables:** Copy the finalized old→new tables from Sections 1.1–1.3 of this report (Triggers, Effects, Target Selectors) verbatim into the ADR's "Decision Outcome" so the ADR is self-contained and doesn't just link back to a report that may be pruned later.
+- [ ] **1.3 — Register in ADR Index:** Add the ADR-0058 row to `docs/decisions/README.md` log table and the appropriate Mermaid lineage graph (link from ADR-0046, ADR-0048, ADR-0049 since this supersedes/refines their naming).
+- [ ] **1.4 — Quality Gate:** `npm run format:check && npm run lint` (docs-only change, no code touched yet).
+
+---
+
+### Phase 2 — Schema & Engine Additive Changes (Zero Breakage, Old Names Still Work)
+
+**Goal:** Introduce every new canonical name as a **valid alias** alongside the existing one, and implement the two genuinely new primitives (`REMOVE_STATUS`, `SEARCH.autoSelectIfUnambiguous`) and new selectors — without removing anything yet. This phase is purely additive so nothing can regress mid-migration.
+
+- [ ] **2.1 — Extend `TriggerTypeSchema` ([src/data/supplemental/schema.ts](src/data/supplemental/schema.ts)):** Add `DEFEATED`, `CHARACTER_DEFEATED`, `SCHEME_DEFEATED`, `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, `ATTACK_DEFENDED`, `FORM_CHANGED`, `STATUS_REMOVED` as new enum members. Leave every existing legacy member in place.
+- [ ] **2.2 — Extend `EffectTypeSchema`:** Add `DRAW`, `PUT_INTO_PLAY` variants, `PLAY_FROM_ZONE`, `SEARCH` (with `autoSelectIfUnambiguous?: boolean`), `ADD_COUNTERS`/`REMOVE_COUNTERS` canonical forms (already plural — confirm no change needed), `MODIFY_ALLY_LIMIT`, `MODIFY_RESTRICTED_LIMIT`, `REMOVE_STATUS`, `FORM_BRANCH`. Leave every legacy member in place.
+- [ ] **2.3 — Extend `TargetSelectorSchema`:** Add `CHOSEN_CONTROLLED_ALLY`, `ALL_CONTROLLED_ALLIES`, `CHOSEN_CONTROLLED_CHARACTER`, `ALL_CONTROLLED_CHARACTERS`, `CHOSEN_FRIENDLY_CHARACTER`, `ALL_FRIENDLY_CHARACTERS`, `CHOSEN_SIDE_SCHEME`, `ALL_SCHEMES`, `TRIGGERING_SCHEME`.
+- [ ] **2.4 — Mirror in `src/engine/models/abilities.ts`:** Update the `TriggerType`/`EffectType` TS union types to match the new Zod enums 1:1 (these are currently hand-duplicated from `schema.ts`; verify or consolidate to a single source of type truth as part of this step).
+- [ ] **2.5 — Implement `REMOVE_STATUS` handler ([src/engine/effects/index.ts](src/engine/effects/index.ts)):** New `case 'REMOVE_STATUS':` mirroring the existing `ADD_STATUS` handler's target resolution, removing the matching status token/card and dispatching a new `STATUS_REMOVED` trigger via `dispatchTrigger`.
+- [ ] **2.6 — Implement `DEFEATED` / `CHARACTER_DEFEATED` / `SCHEME_DEFEATED` dispatch ([src/engine/pipeline/combat-pipeline.ts](src/engine/pipeline/combat-pipeline.ts), [src/engine/pipeline/action-dispatcher.ts](src/engine/pipeline/action-dispatcher.ts)):** At every existing call site that currently only dispatches `MINION_DEFEATED` / `HOST_DEFEATED` / `SCHEME_THREAT_REDUCED_TO_ZERO`, add an additional dispatch of the new canonical trigger with `entityType` context, alongside (not replacing) the legacy dispatch.
+- [ ] **2.7 — Implement `autoSelectIfUnambiguous` on `SEARCH_AND_SELECT` ([src/engine/effects/index.ts](src/engine/effects/index.ts)):** Before building the `PendingDecisionPrompt`, if `autoSelectIfUnambiguous !== false` and `candidates.length <= takeCount`, auto-resolve the selection synchronously (same code path `RETRIEVE_CARD_FROM_DISCARD` uses today) and skip the prompt.
+- [ ] **2.8 — Add backward-compatible `case` aliases:** In every `switch (step.effect)` block, add the new canonical names as additional `case` labels falling through to the existing legacy handler body (e.g. `case 'DRAW': case 'DRAW_CARDS': { ... }`), so both old and new supplemental data validate and execute identically.
+- [ ] **2.9 — Add controlled-vs-friendly target resolution ([src/engine/effects/index.ts](src/engine/effects/index.ts) target-resolution helper, likely `resolveTargets` or equivalent):** Implement the new selectors by filtering `player.allies`/`player.tableau` by `controllerId === player.id` (controlled) vs. iterating `state.players` (friendly/table-wide).
+- [ ] **2.10 — Regenerate `schema.json`:** Run the existing JSON Schema export tool (per ADR-0043) so `src/data/supplemental/schema.json` reflects the additive enum changes for live VS Code diagnostics.
+- [ ] **2.11 — New Contract Tests:** Add `tests/engine/remove-status-effect.test.ts` and `tests/engine/defeated-trigger-dispatch.test.ts` covering the two brand-new behaviors in isolation (not yet touching existing card data).
+- [ ] **2.12 — Quality Gate:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build`. All existing tests must still pass unmodified — this phase adds, it does not change behavior for existing cards.
+
+---
+
+### Phase 3 — Batch Data Migration (Supplemental JSON Rewrite)
+
+**Goal:** Rewrite every card's `trigger`/`effect`/`target` string in the supplemental packs to the new canonical names, using a deterministic, re-runnable script — not manual hand-editing — so the migration is auditable and reversible.
+
+- [ ] **3.1 — Author Migration Script Skeleton ([tools/audit/migrate-declarative-taxonomy.ts](tools/audit/migrate-declarative-taxonomy.ts)):** Follow the existing pattern in [tools/migrate-supplemental-to-steps.ts](tools/migrate-supplemental-to-steps.ts) (read `src/data/supplemental/pack/*.json`, transform, rewrite in place with stable key ordering).
+- [ ] **3.2 — Build the Rename Map Constant:** Hard-code the full old→new lookup tables for `trigger`, `effect`, and `target`/`params.target` fields directly from ADR-0058's tables (single source of truth — no duplicated logic between the script and the ADR).
+- [ ] **3.3 — Recursive Step/Ability Walker:** Implement a walker that visits every `ability.trigger`, every `step.effect`, and every `string` value under `step.params.target` / `step.params.exhaustCard` / filter `target` fields, applying the rename map. Must recurse into nested `PLAYER_CHOICE` option `steps` arrays and `FORM_BRANCH` `heroSteps`/`alterEgoSteps`.
+- [ ] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Add explicit, hand-written transform functions (not generic rename) for the 5 entries in Section 1.2.E (`NICK_FURY_CHOICE`, `EXPLOSION`, `HULK_DISCARD_RESOLUTION`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`, `REPULSOR_BLAST`/`REPULSOR_BLAST_DAMAGE`) — these change `step` _shape_, not just the label, so each needs a dedicated function producing the composable replacement steps.
+- [ ] **3.5 — Collapse `RETRIEVE_*` into `SEARCH`:** Dedicated transform turning `RETRIEVE_CARD_FROM_DISCARD` / `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` steps into `SEARCH` steps with `source: 'PLAYER_DISCARD'`, the correct `filter`, `takeCount: 1`, `selectedDestination: 'HAND'`, `autoSelectIfUnambiguous: true`.
+- [ ] **3.6 — Dry-Run Diff Report:** Script supports a `--dry-run` flag printing a per-card, per-field before/after diff to stdout (or a markdown report in `logs/skills/`) for manual spot-check before committing to disk writes.
+- [ ] **3.7 — Execute Migration on `core.json`:** Run script against [src/data/supplemental/pack/core.json](src/data/supplemental/pack/core.json) only first (smallest blast radius, most scrutinized file). Manually review the diff.
+- [ ] **3.8 — Execute Migration on `core_encounter.json`:** Repeat for [src/data/supplemental/pack/core_encounter.json](src/data/supplemental/pack/core_encounter.json).
+- [ ] **3.9 — Re-run Zod Validation:** `npx tsx tools/audit/supplemental-declarations-analyzer.ts` (or equivalent schema-validate-all script) to confirm every migrated card still parses against `SupplementalPackSchema` with the Phase 2 additive schema.
+- [ ] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** For every migrated ability, regenerate `reconstructedText` to reflect the new primitive names (mechanical string replace is acceptable here since it's a derived/logged field, not gameplay-affecting).
+- [ ] **3.11 — Quality Gate:** `npm run typecheck && npm test` — expect **test failures** at this point (tests still assert legacy string literals); this is the expected, tracked handoff into Phase 5. Do not attempt to fix tests inside Phase 3.
+
+---
+
+### Phase 4 — Engine & Tooling Cleanup (Remove Legacy Aliases)
+
+**Goal:** Now that no supplemental data references the old names, delete the legacy code paths so there is exactly one name per concept — closing out the "zero tech debt" invariant.
+
+- [ ] **4.1 — Remove Legacy Enum Members ([src/data/supplemental/schema.ts](src/data/supplemental/schema.ts)):** Delete every superseded `TriggerTypeSchema` / `EffectTypeSchema` / `TargetSelectorSchema` member listed in the "Replaces" columns of Sections 1.1–1.3.
+- [ ] **4.2 — Remove Legacy `case` Fallthroughs ([src/engine/effects/index.ts](src/engine/effects/index.ts)):** Delete the old `case 'DRAW_CARDS':`, `case 'SEARCH_AND_SELECT':`, `case 'RETRIEVE_CARD_FROM_DISCARD':`, etc. labels added in 2.8, keeping only the canonical `case` label per handler.
+- [ ] **4.3 — Delete Retired Single-Use Handlers:** Remove the dedicated `case 'NICK_FURY_CHOICE':`, `case 'EXPLOSION':`, `case 'HULK_DISCARD_RESOLUTION':`, `case 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE':`, `case 'REPULSOR_BLAST':`/`case 'REPULSOR_BLAST_DAMAGE':` blocks entirely (their behavior now lives purely in composable `PLAYER_CHOICE`/`FORM_BRANCH`/`DISCARD`/`DEAL_DAMAGE` handlers).
+- [ ] **4.4 — Clean `src/engine/models/abilities.ts`:** Remove the now-dead legacy union members so the TS type matches the pruned Zod schema exactly.
+- [ ] **4.5 — Update Trigger Dispatch Call Sites:** In [src/engine/pipeline/combat-pipeline.ts](src/engine/pipeline/combat-pipeline.ts), [src/engine/pipeline/action-dispatcher.ts](src/engine/pipeline/action-dispatcher.ts), [src/engine/pipeline/round-upkeep.ts](src/engine/pipeline/round-upkeep.ts), [src/engine/triggers/trigger-dispatcher.ts](src/engine/triggers/trigger-dispatcher.ts): replace remaining string literals (`'VILLAIN_INITIATES_ATTACK'`, `'TAKE_ATTACK_DAMAGE'`, `'TAKE_DAMAGE'`, `'ROUND_END'`, `'HOST_DEFEATED'`, `'SCHEME_THREAT_REDUCED_TO_ZERO'`) with the canonical names, and remove the now-redundant _dual_ dispatch added in 2.6 (single canonical dispatch only).
+- [ ] **4.6 — Card Text Parser Patterns ([src/tools/card-text-parser/patterns.ts](src/tools/card-text-parser/patterns.ts), [src/tools/card-text-parser/parser.ts](src/tools/card-text-parser/parser.ts)):** Update every regex-to-trigger mapping (`VILLAIN_INITIATES_ATTACK` → `ENEMY_INITIATES_ATTACK`, `TAKE_ATTACK_DAMAGE`/`TAKE_DAMAGE` → `DAMAGE_WOULD_BE_TAKEN`, etc.) so future card text parsing emits canonical names directly.
+- [ ] **4.7 — Locale & Log Formatting ([src/locales/en/combat-log.json](src/locales/en/combat-log.json), [src/locales/fr/combat-log.json](src/locales/fr/combat-log.json), [src/ui/utils/comic-log-formatter.ts](src/ui/utils/comic-log-formatter.ts)):** Update any locale keys keyed on old trigger/effect names (e.g. `CARD_PLAYED`, `STATUS_REMOVED`) to match; add missing `STATUS_REMOVED` locale entries (EN + FR) since Phase 2 introduced the trigger.
+- [ ] **4.8 — Regenerate `schema.json` Again:** Re-export after member removal so the JSON Schema no longer offers deleted names as valid VS Code autocomplete suggestions.
+- [ ] **4.9 — Quality Gate:** `npm run typecheck` (expect the compiler to surface every remaining stale reference as a hard type error — use these compiler errors as your removal checklist rather than grepping manually).
+
+---
+
+### Phase 5 — Test Suite Realignment
+
+**Goal:** Bring every test file that asserts on legacy string literals up to date, split by subsystem so failures are triaged in small, reviewable batches instead of one giant diff.
+
+- [ ] **5.1 — Engine Trigger Tests:** Update `tests/engine/optional-triggers.test.ts`, `tests/engine/spider-man-cards.test.ts`, `tests/engine/interrupt-replacement-effects.test.ts`, `tests/engine/event-interception-and-binding.test.ts` — replace `VILLAIN_INITIATES_ATTACK`/`TAKE_ATTACK_DAMAGE`/`TAKE_DAMAGE` assertions and prompt `description` string expectations with canonical names.
+- [ ] **5.2 — Search/Retrieve Tests:** Update `tests/engine/search-and-select-routing.test.ts` (rename file to `search-routing.test.ts` for consistency), `tests/engine/hero-promotions-pass.test.ts`, `tests/data/supplemental-schema.test.ts` — replace `SEARCH_AND_SELECT` effect literals with `SEARCH`; add new assertions for `autoSelectIfUnambiguous` auto-resolve behavior (no prompt) and explicit `RETRIEVE_*`-equivalent `SEARCH { source: 'PLAYER_DISCARD' }` cases.
+- [ ] **5.3 — Counters & Limits Tests:** Update `tests/engine/hero-promotions-pass.test.ts` (`ADD_COUNTER` → `ADD_COUNTERS`), `tests/engine/promoted-player-cards.test.ts` (`ALLY_LIMIT_BONUS` → `MODIFY_ALLY_LIMIT`).
+- [ ] **5.4 — Legacy Single-Use Primitive Tests:** Update `tests/engine/deck-exhaustion-invariants.test.ts` (`REPULSOR_BLAST`, `HULK_DISCARD_RESOLUTION`), `tests/engine/treacheries-activations.test.ts` (Explosion card — confirm this asserts on the _card_ `01111`, not the `EXPLOSION` effect primitive; only touch if it does reference the primitive), `tests/ui/card-payment-modal-targeting.test.ts` (effect literal array containing `REPULSOR_BLAST`, `EXPLOSION`).
+- [ ] **5.5 — Card Text Parser Tests:** Update `tests/tools/card-text-parser.test.ts` trigger assertions to canonical names, matching the Phase 4.6 pattern changes.
+- [ ] **5.6 — Editor & Tooling Tests:** Update `tests/ui/effect-parameter-registry.test.ts` (`getEffectDescriptor('SEARCH_AND_SELECT')` → `getEffectDescriptor('SEARCH')`), `tests/tools/supplemental-editor-api.test.ts`.
+- [ ] **5.7 — New Regression Tests for Removed Legacy Names:** Add explicit negative-path tests asserting the old enum values are now rejected by `EffectTypeSchema`/`TriggerTypeSchema` (`.safeParse(...).success === false`), locking in that the cleanup is permanent and won't silently regress.
+- [ ] **5.8 — Quality Gate:** `npm test` must be 100% green with zero skipped tests before proceeding.
+
+---
+
+### Phase 6 — Card Editor UI Upgrade
+
+**Goal:** Bring the visual Card Supplemental Editor up to parity with the (now-cleaned) schema, split into one sub-phase per new builder component so each ships and is testable independently.
+
+- [ ] **6.1 — Parameter Registry Sync ([src/ui/components/editor/effect-parameter-registry.ts](src/ui/components/editor/effect-parameter-registry.ts)):** Update all descriptor keys/labels to canonical names from Phase 4; add descriptors for `REMOVE_STATUS`, `MODIFY_RESTRICTED_LIMIT`, `FORM_BRANCH`. Remove descriptors for deleted legacy effects.
+- [ ] **6.2 — `<DynamicValueBuilder>` Component (new file, e.g. `src/ui/components/editor/DynamicValueBuilder.tsx`):** Static-vs-formula toggle, `from` dropdown, conditional sub-fields (`stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp.min`/`clamp.max`). Wire into any `AbilityFormBuilder.tsx` parameter of type `number | DynamicValueSource`.
+- [ ] **6.3 — `<UniversalCardFilterBuilder>` Component (new file, e.g. `src/ui/components/editor/UniversalCardFilterBuilder.tsx`):** Chip multi-select for `types`/`traits`/`aspects`, numeric range for `cost`, and a recursive `all`/`any`/`none` nested-group UI (start with 1 level of nesting depth for v1, note 2+ levels as a follow-up).
+- [ ] **6.4 — Top-Level `<CardAttributesBuilder>` Section (extend `AbilityFormBuilder.tsx`):** Structured keyword chip matrix (`Guard`, `Overkill`, `Ranged`, `Toughness`, `Retaliate` + numeric amount), `uses` sub-form (`count`, `type`, `max`, `discardOnEmpty`), `restrictedSlots`/`additionalBoostCards` numeric inputs.
+- [ ] **6.5 — `<SequenceStepBuilder>` Enhancements (extend `AbilityFormBuilder.tsx` step list):** Drag handles for step reordering, `gate` dropdown between steps, `condition` dropdown per step.
+- [ ] **6.6 — `<CostBuilder>` Section (extend `AbilityFormBuilder.tsx`):** Checkboxes for `exhaustSelf`/`discardSelf`, resource-type chip picker for `resources`/`resourceCost`, `spendCounters` sub-form, `discardCard` sub-form, `damageHero`/`damageSelf` numeric inputs.
+- [ ] **6.7 — `CardFilterToolbar.tsx` Additions:** Add "Has Multi-Step Ability" and "Missing Audit" quick filters.
+- [ ] **6.8 — Component Tests:** One test file per new component (`DynamicValueBuilder.test.ts`, `UniversalCardFilterBuilder.test.ts`) plus updated `AbilityFormBuilder` integration tests covering round-trip (build via UI → resulting JSON matches expected shape → re-load into UI reproduces the same selections).
+- [ ] **6.9 — Quality Gate:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build`.
+
+---
+
+### Phase 7 — Documentation & Specification Sync
+
+**Goal:** Make the written specs match the shipped schema/engine exactly, so the next contributor reads accurate docs instead of the pre-migration vocabulary.
+
+- [ ] **7.1 — Rewrite [docs/specifications/supplemental_data_schema.md](docs/specifications/supplemental_data_schema.md):** Replace all legacy identifiers; document `UniversalCardFilter` and `DynamicValueSource` as first-class concepts (currently under-documented per Section 3 of this audit).
+- [ ] **7.2 — Update `docs/specifications/supplemental/01` through `11`:** Chapter-by-chapter pass adding `REMOVE_STATUS`, the controlled-vs-friendly selector distinction, `SEARCH` consolidation (with a note on the retired `RETRIEVE_*`/`SEARCH_AND_SELECT` names), and removing every retired single-use primitive's documentation entry (or marking it "Removed in ADR-0058" with a pointer, per project convention for historical traceability).
+- [ ] **7.3 — Update [docs/coding_guidelines.md](docs/coding_guidelines.md):** Add the 5 taxonomy invariants as a permanent naming-convention section so future card integrations follow the rules by default instead of rediscovering them.
+- [ ] **7.4 — Update [CHEATSHEET.md](CHEATSHEET.md) and [docs/algorithmic_rules_reference.md](docs/algorithmic_rules_reference.md)** if either references any renamed primitive/trigger by name.
+- [ ] **7.5 — CHANGELOG.md Entry:** Single consolidated `[Unreleased]` entry summarizing the taxonomy migration (ADR-0058), listing the primitive/trigger/selector rename table and the two new capabilities (`REMOVE_STATUS`, `SEARCH.autoSelectIfUnambiguous`).
+- [ ] **7.6 — Quality Gate:** `npm run format:check` (docs-only).
+
+---
+
+### Phase 8 — Final Full-Repo Verification & Closure
+
+**Goal:** One last end-to-end pass confirming the entire migration is internally consistent before declaring the taxonomy work complete.
+
+- [ ] **8.1 — Full Quality Gate Run:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
+- [ ] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across `src/`, `tests/`, `docs/`, `tools/` to confirm zero remaining references outside of ADR historical text and this report's "before" tables.
+- [ ] **8.3 — Manual Playtest Smoke Check:** Launch `npm run dev`, play a short Rhino scenario turn exercising at least one migrated card from each category (a `SEARCH`-based upgrade, a status-inflicting card, a defeated-trigger card) to confirm end-to-end UI behavior.
+- [ ] **8.4 — Update `docs/roadmap_and_milestones.md`:** Mark the taxonomy consolidation milestone complete.
+- [ ] **8.5 — Close Tracking Issues:** Close the GitHub issue(s) filed for this work with a summary comment referencing ADR-0058 and this report.

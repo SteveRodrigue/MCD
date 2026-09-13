@@ -21,6 +21,7 @@ export const CardAuditRecordSchema = z
     reviewedBy: z.string().optional(),
     rulesVersion: z.string().optional(),
     confidence: z.number().min(0).max(100).optional(),
+    ambiguityFile: z.string().optional(),
     originalText: z.string().optional(),
     reconstructedText: z.string().optional(),
   })

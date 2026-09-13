@@ -99,3 +99,82 @@
 6. Run the complete Phase 2 quality gate.
 7. Update Phase 2 checkboxes and the migration log only after the gate passes.
 8. Commit one Phase 2 sub-phase commit referencing issue #111; do not begin Phase 3 in the same change.
+
+---
+
+# Phase 3 Implementation Plan: Batch Supplemental Data Migration
+
+**Tracking issue:** #111  
+**Governing ADR:** ADR-0058  
+**Scope:** Phase 3 only; legacy schema names remain valid until Phase 4 cleanup.  
+**Approval gate:** No migration script, supplemental pack JSON, tests, or generated declaration report changes begin until this Phase 3 plan is explicitly approved.
+
+## Rules Reference (RR v1.8) & Spec Analysis
+
+- Preserve the Phase 2 additive compatibility window: every legacy and canonical name must parse and execute while data is migrated.
+- Use ADR-0058 as the sole rename/decomposition source. Do not infer mappings from current card text or derive ad hoc transforms.
+- Preserve RR v1.8 timing, target ownership, zone routing, and cost semantics. String renames may be mechanical; shape-changing primitives require dedicated transforms and manual review.
+- `SEARCH` migrations must use `source: 'PLAYER_DISCARD'`, `takeCount: 1`, `selectedDestination: 'HAND'`, and `autoSelectIfUnambiguous: true` for both `RETRIEVE_*` primitives.
+- Nested `PLAYER_CHOICE` and `FORM_BRANCH` step arrays must be traversed recursively. Audit fields are derived metadata and may be updated mechanically after the gameplay declaration is transformed.
+
+## Proposed Changes
+
+- **[NEW] `tools/audit/migrate-declarative-taxonomy.ts`**
+  - Read one or more selected files under `src/data/supplemental/pack/`.
+  - Support `--dry-run`, `--file <name>`, and an explicit write mode; default behavior must not write files.
+  - Use stable JSON serialization and print per-card/per-field before/after diffs.
+  - Keep the rename map as a single hard-coded constant sourced from ADR-0058.
+
+- **[MODIFY] `src/data/supplemental/pack/core.json` and `core_encounter.json`**
+  - Migrate one pack at a time only after reviewing its dry-run diff.
+  - Rewrite ability triggers, step effects, target values, nested filter target values, and applicable audit reconstruction text.
+  - Do not change card `originalText`, card identity, timing, cost, or unrelated fields.
+
+- **[NEW/MODIFY] Focused migration tests or audit fixtures**
+  - Test idempotency, dry-run no-write behavior, recursive nested walking, exact rename coverage, and each bespoke decomposition.
+  - Validate output through `SupplementalPackSchema` and `report:declarations` after each pack.
+
+- **[MODIFY] `docs/reports/card_editor_and_supplemental_schema_audit_report.md` and migration log**
+  - Check off each Phase 3 sub-phase only after its own dry-run, reviewed write, validation, and quality gate.
+
+## Acceptance / Contract Tests Plan
+
+- `--dry-run` produces deterministic diffs and leaves file hashes unchanged.
+- Re-running the migration on already canonical data produces no diff and no additional changes.
+- Every `ability.trigger`, `step.effect`, `params.target`, `params.exhaustCard`, and nested filter target is visited recursively.
+- `NICK_FURY_CHOICE`, `EXPLOSION`, `HULK_DISCARD_RESOLUTION`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`, and `REPULSOR_BLAST`/`REPULSOR_BLAST_DAMAGE` become the exact composable step shapes specified by ADR-0058.
+- `RETRIEVE_CARD_FROM_DISCARD` and `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` become canonical `SEARCH` declarations with the prescribed discard source/filter/destination/default selection behavior.
+- `core.json` and `core_encounter.json` each pass `SupplementalPackSchema` after migration, with zero duplicate keys and zero open ambiguity reports.
+- `npm run report:declarations` completes after each pack and the final Phase 3 metrics are recorded.
+- Phase 3 handoff gate: `npm run typecheck` passes; `npm test` may fail only for expected legacy string assertions and those failures are recorded, not repaired in Phase 3.
+
+## Open Questions & Design Decisions
+
+> [!IMPORTANT]
+> The report describes five shape-changing decompositions but does not provide every existing card parameter shape. Before writing transforms, inspect each matching card entry and isolate any card whose fields cannot be mapped with >=95% confidence; do not guess or silently drop parameters.
+
+> [!WARNING]
+> `core.json` and `core_encounter.json` contain the active release catalog. The first write must be limited to one file, reviewed with `git diff`, and schema-validated before the second file is touched.
+
+> [!IMPORTANT]
+> Phase 3 intentionally does not update test assertions. Any failures caused solely by legacy string literals must be reported as the planned Phase 3→5 red-test window, while parse/type/schema failures must stop the phase immediately.
+
+## Execution Order
+
+1. Obtain explicit approval for this Phase 3 plan.
+2. Re-check `git status`, open PRs/issues, controlled files, and script-name collision.
+3. Add migration script tests and implement dry-run-only logic first.
+4. Run a no-write dry-run against `core.json`; review every diff category.
+5. Write and validate `core.json`; record its migration log entry.
+6. Run the same dry-run/write/validate sequence for `core_encounter.json`.
+7. Regenerate audit reconstruction fields and run declarations analysis.
+8. Run Phase 3 typecheck/test handoff gate and record expected legacy assertion failures without fixing them.
+9. Check off Phase 3 items, commit one issue-referenced Phase 3 commit, and stop before Phase 4.
+
+## Phase 3 Execution Result
+
+**Blocked before commit:** The dry-run found two unsupported shape changes in `core.json` (`REPULSOR_BLAST`/`REPULSOR_BLAST_DAMAGE` and `HULK_DISCARD_RESOLUTION`). Dedicated issues were created: [#112](https://github.com/SteveRodrigue/MCD/issues/112) and [#113](https://github.com/SteveRodrigue/MCD/issues/113). Their unsupported `abilities` arrays are withheld while audit metadata, printed text, mechanic steps, and machine-readable ambiguity links are preserved. A safe-write probe for the remaining declarations was schema-valid but caused 16 behavioral regressions, including attachment defeat timing, canonical attack trigger handling, canonical search prompt behavior, and Explosion's Bomb Scare conditional behavior. The temporary migration was rolled back before the cleanup; the cleaned pack baseline is green.
+
+**Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
+
+**Required prerequisite before retry:** Add and test the missing discarded-resource-count and printed-resource-branching capabilities, complete the remaining canonical engine compatibility paths, then restart Phase 3 from a clean baseline. Do not migrate pack data again until those capabilities have their own additive implementation and contract tests.

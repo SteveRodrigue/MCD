@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-13T18:59:08.196Z`  
+> **Generated:** `2026-09-13T19:22:34.462Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -10,17 +10,17 @@
 | Metric | Count | Description |
 | :--- | :--- | :--- |
 | **Total Cards Registered** | **156** | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **146** | Cards with executable `abilities: [...]` |
+| **Active Declared Cards** | **144** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **10** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **0** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **168** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **161** | Abilities with exactly 1 atomic execution step |
+| **Total Abilities Declared** | **166** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **159** | Abilities with exactly 1 atomic execution step |
 | **Multi-Step Abilities (2+ Steps)** | **7** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **7** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **55** | Distinct effect primitive types actively declared |
-| **Unique Triggers In Use** | **24** | Distinct trigger window types actively declared |
+| **Unique Effects In Use** | **53** | Distinct effect primitive types actively declared |
+| **Unique Triggers In Use** | **23** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
 
@@ -123,7 +123,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` | `01106` | Stampede (treachery) (core_encounter) | `stampede_attack` |
 | **Effect** | `GENERATE_TOP_DISCARD_RESOURCES` | `01033` | Pepper Potts (support) (core) | `pepper_potts_res` |
 | **Effect** | `GIVE_ADDITIONAL_BOOST_CARD` | `01164` | Titania's Fury (treachery) (core_encounter) | `titanias_fury_boost` |
-| **Effect** | `HULK_DISCARD_RESOLUTION` | `01050` | Hulk (ally) (core) | `hulk_after_attack` |
 | **Effect** | `INTERCEPT_ATTACK` | `01009` | Webbed Up (upgrade) (core) | `webbed_up_intercept` |
 | **Effect** | `MODIFY_ALLY_LIMIT` | `01073` | The Triskelion (support) (core) | `triskelion_ally_limit` |
 | **Effect** | `MODIFY_HAND_SIZE` | `01029a` | Iron Man (hero) (core) | `iron_man_hand_size` |
@@ -131,7 +130,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `PLAY_CARD_FROM_ZONE` | `01071` | Make the Call (event) (core) | `make_the_call` |
 | **Effect** | `PREVENT_DAMAGE` | `01017` | Cosmic Flight (upgrade) (core) | `cosmic_flight_prevent` |
 | **Effect** | `REDUCE_NEXT_CARD_COST` | `01092` | Helicarrier (support) (core) | `helicarrier_action` |
-| **Effect** | `REPULSOR_BLAST` | `01031` | Repulsor Blast (event) (core) | `repulsor_blast_action` |
 | **Effect** | `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` | `01034` | Stark Tower (support) (core) | `stark_tower_retrieve` |
 | **Effect** | `RETURN_FACEDOWN_CARDS_TO_OWNERS` | `01166` | Highway Robbery (side_scheme) (core_encounter) | `highway_robbery_when_defeated` |
 | **Effect** | `RETURN_TO_HAND` | `01020` | Hellcat (ally) (core) | `hellcat_return` |
@@ -142,7 +140,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `TRANSFER_DAMAGE` | `01049` | Vibranium Suit (upgrade) (core) | `vibranium_suit_special` |
 | **Effect** | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | `01189` | Gang-Up (treachery) (core_encounter) | `gang_up_when_revealed` |
 | **Effect** | `VILLAIN_SCHEMES` | `01186` | Advance (treachery) (core_encounter) | `advance_when_revealed` |
-| **Trigger** | `ATTACK` | `01050` | Hulk (ally) (core) | `hulk_after_attack` |
 | **Trigger** | `ATTACK_RESOLVED` | `01028` | Superhuman Strength (upgrade) (core) | `superhuman_strength_stun` |
 | **Trigger** | `BASIC_ATTACK_PERFORMED` | `01024` | One-Two Punch (event) (core) | `one_two_punch_response` |
 | **Trigger** | `BOOST_STAR_RESOLVED` | `01178` | Kree Manipulator (treachery) (core_encounter) | `kree_manipulator_boost` |
@@ -171,6 +168,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | **Effect** | `RETALIATE` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Effect** | `SPAWN_NEMESIS` | 🟡 `0 Cards` | Documented in `docs/specifications/supplemental/` but has 0 card declarations. |
 | **Trigger** | `ATTACHED_ENEMY_ATTACKS` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
+| **Trigger** | `ATTACK` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `ATTACK_DEFENDED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `CHARACTER_DEFEATED` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
 | **Trigger** | `DAMAGE_TAKEN` | 🟡 `0 Cards` | Defined in `TriggerTypeSchema` but has 0 card declarations. |
@@ -230,13 +228,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | `RETURN_TO_HAND` | **1** | `01020` (Hellcat (ally)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
-| `REPULSOR_BLAST` | **1** | `01031` (Repulsor Blast (event)) |
 | `GENERATE_TOP_DISCARD_RESOURCES` | **1** | `01033` (Pepper Potts (support)) |
 | `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` | **1** | `01034` (Stark Tower (support)) |
 | `SHUFFLE_DISCARD_INTO_DECK` | **1** | `01042` (Ancestral Knowledge (event)) |
 | `DEAL_DAMAGE_ALL_ENEMIES` | **1** | `01046` (Energy Daggers (upgrade)) |
 | `TRANSFER_DAMAGE` | **1** | `01049` (Vibranium Suit (upgrade)) |
-| `HULK_DISCARD_RESOLUTION` | **1** | `01050` (Hulk (ally)) |
 | `BOOST_STAT_CHOICE` | **1** | `01068` (Vision (ally)) |
 | `BUFF_ALL_FRIENDLY_CHARACTERS` | **1** | `01070` (Lead from the Front (event)) |
 | `PLAY_CARD_FROM_ZONE` | **1** | `01071` (Make the Call (event)) |
@@ -277,7 +273,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `FORM_CHANGED_TO_HERO` | **1** | `01019a` (She-Hulk (hero)) |
 | `BASIC_ATTACK_PERFORMED` | **1** | `01024` (One-Two Punch (event)) |
 | `ATTACK_RESOLVED` | **1** | `01028` (Superhuman Strength (upgrade)) |
-| `ATTACK` | **1** | `01050` (Hulk (ally)) |
 | `MINION_DEFEATED_BY_ATTACK` | **1** | `01051` (Tigra (ally)) |
 | `ENEMY_DEFEATED_BY_HERO_ATTACK` | **1** | `01052` (Chase Them Down (event)) |
 | `THWART_RESOLVED` | **1** | `01058` (Daredevil (ally)) |
@@ -294,9 +289,9 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Ability Timings:
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
-| `HERO_ACTION` | **25** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
+| `FORCED_RESPONSE` | **28** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01083` Mockingbird (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+22 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
+| `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+19 more)* |
 | `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
 | `ACTION` | **15** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+10 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |
@@ -330,7 +325,7 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Target Selectors:
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `CHOSEN_ENEMY` | **15** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+10 more)* |
+| `CHOSEN_ENEMY` | **14** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+9 more)* |
 | `SELF` | **13** | `01001a` Spider-Man (hero), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01051` Tigra (ally), `01076` Luke Cage (ally) *(+8 more)* |
 | `CHOSEN_SCHEME` | **10** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+5 more)* |
 | `SELF_IDENTITY` | **9** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01061` Great Responsibility (event) *(+4 more)* |

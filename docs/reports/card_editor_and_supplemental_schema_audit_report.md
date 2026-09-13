@@ -382,7 +382,7 @@ flowchart TD
 - [x] **2.10 — Regenerate `schema.json`:** Regenerated with `npm run schema:generate`.
 - [x] **2.11 — New Contract Tests:** Added `tests/engine/remove-status-effect.test.ts` and `tests/engine/defeated-trigger-dispatch.test.ts`, plus schema/search/form/combat assertions.
 - [x] **2.12 — Quality Gate:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` passed on 2026-09-13. Full suite: 106 files passed, 773 tests passed, 1 existing test skipped.
-- [ ] **2.13 — Implement universal trigger scope filters:** Add structured attacker context to `ENEMY_INITIATES_ATTACK` and an ability-level filter for attacker kind and engagement scope. Migrate Spider-Sense to an explicit villain-only filter; add contract tests proving villain-only, minion-only, enemy-wide, and engaged-player reactions do not cross-fire.
+- [ ] **2.13 — Implement universal `triggerFilter`:** Add a strict `TriggerFilterSchema`/`triggerFilter` ability field, structured event context, and one evaluator applied at every trigger-dispatch scan site. Support attacker kind/instance/card filter, attacked player, engagement scope, target form/type, damage source/target type, defeat entity/cause, and form-change direction. Dispatch one `ENEMY_INITIATES_ATTACK` event per attack; do not create overlapping villain/minion/engaged trigger dispatches. Migrate Spider-Sense to `{ attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` and add fail-closed contract tests for all scopes.
 
 **Phase 2 execution status:** All items 2.1–2.12 are complete. Phase 3 is not started; legacy vocabulary and supplemental pack data remain intact.
 

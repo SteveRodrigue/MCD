@@ -148,7 +148,7 @@
 ### `CONSUME_INTERCEPTED_EVENT`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
-- **Description:** Consumes a scalar amount (or all if `amount` is omitted) of an active intercepted event (e.g. `TAKE_ATTACK_DAMAGE`, `THREAT_WOULD_BE_PLACED`) within an `INTERRUPT` window. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount` across sequential ability execution steps.
+- **Description:** Consumes a scalar amount (or all if `amount` is omitted) of an active intercepted event (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`) within an `INTERRUPT` window. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount` across sequential ability execution steps.
 
 ```json
 {
@@ -159,8 +159,8 @@
 }
 ```
 
-| Parameter | Type                                         | Required | Default | Description                                                                                    |
-| :-------- | :------------------------------------------- | :------- | :------ | :--------------------------------------------------------------------------------------------- |
+| Parameter | Type                                          | Required | Default | Description                                                                                  |
+| :-------- | :-------------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------- |
 | `amount`  | `number \| { from: "INTERCEPTED_VALUE", ...}` | No       | `All`   | Amount of incoming event value to consume. If omitted, consumes all remaining value to zero. |
 
 ---
@@ -186,5 +186,3 @@ The engine supports dynamic numeric resolution via `resolveNumericAmount` for pa
 - **`from: "INTERCEPTED_VALUE"`**: Binds the scalar quantity captured from the trigger interception context (`threatAmount`, `damageAmount`, or `interceptedValue`).
 - **`multiplier`**: Optional scalar multiplier (defaults to `1`).
 - **`offset`**: Optional integer offset (e.g., `-1`, `+2`) to support modifier formulas (defaults to `0`).
-
-

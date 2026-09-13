@@ -4,14 +4,14 @@
 
 ## 1. Card Draw & Hand Mechanics
 
-### `DRAW_CARDS`
+### `DRAW`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
 - **Description:** Draws N cards from target player's draw deck into hand, with optional hand size boundary limits. Handles deck reshuffle and acceleration token penalties.
 
 ```json
 {
-  "effect": "DRAW_CARDS",
+  "effect": "DRAW",
   "params": {
     "count": 2,
     "target": "ACTIVE_PLAYER"
@@ -21,19 +21,19 @@
 
 ```json
 {
-  "effect": "DRAW_CARDS",
+  "effect": "DRAW",
   "params": {
     "limit": "PRINTED_HAND_SIZE"
   }
 }
 ```
 
-| Parameter | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `count` | `number \| DynamicValueSource` | No | Number of cards to draw. Defaults to `1` if `limit` is not specified. |
-| `limit` | `"HAND_SIZE" \| "PRINTED_HAND_SIZE"` | No | Upper boundary constraint. When set without `count`, draws until hand reaches limit. When set with `count`, draws up to `count` without exceeding limit. |
-| `target` | `TargetSelector` | No | Target player selector (`ACTIVE_PLAYER`, `CHOSEN_PLAYER`, `ALL_PLAYERS`, etc.). Defaults to triggering player. |
-| `targetPlayerId` | `string` | No | Explicit target player identifier. |
+| Parameter        | Type                                 | Required | Description                                                                                                                                              |
+| :--------------- | :----------------------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `count`          | `number \| DynamicValueSource`       | No       | Number of cards to draw. Defaults to `1` if `limit` is not specified.                                                                                    |
+| `limit`          | `"HAND_SIZE" \| "PRINTED_HAND_SIZE"` | No       | Upper boundary constraint. When set without `count`, draws until hand reaches limit. When set with `count`, draws up to `count` without exceeding limit. |
+| `target`         | `TargetSelector`                     | No       | Target player selector (`ACTIVE_PLAYER`, `CHOSEN_PLAYER`, `ALL_PLAYERS`, etc.). Defaults to triggering player.                                           |
+| `targetPlayerId` | `string`                             | No       | Explicit target player identifier.                                                                                                                       |
 
 ---
 
@@ -58,15 +58,15 @@
 }
 ```
 
-| Parameter        | Type                          | Required | Description                                                        |
-| :--------------- | :---------------------------- | :------- | :----------------------------------------------------------------- |
-| `scaling`        | `"PER_MATCHING_CARD"`         | No       | Multiplies count of matching tableau cards.                        |
-| `filter`         | `UniversalCardFilter`         | No       | Matching criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade"], "traits": ["Tech"] }`). |
-| `multiplier`     | `number`                      | No       | Multiplier per matching card (default `1`).                        |
-| `amount`         | `number`                      | No       | Flat hand size modifier (`+1`, `-1`).                              |
-| `maxHandSize`    | `number`                      | No       | Upper clamp (e.g. `7`).                                            |
-| `minHandSize`    | `number`                      | No       | Lower clamp.                                                       |
-| `applicableForm` | `"hero" \| "alter_ego"`       | No       | Restricts bonus to specific identity form.                         |
+| Parameter        | Type                    | Required | Description                                                                                                                                 |
+| :--------------- | :---------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| `scaling`        | `"PER_MATCHING_CARD"`   | No       | Multiplies count of matching tableau cards.                                                                                                 |
+| `filter`         | `UniversalCardFilter`   | No       | Matching criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade"], "traits": ["Tech"] }`). |
+| `multiplier`     | `number`                | No       | Multiplier per matching card (default `1`).                                                                                                 |
+| `amount`         | `number`                | No       | Flat hand size modifier (`+1`, `-1`).                                                                                                       |
+| `maxHandSize`    | `number`                | No       | Upper clamp (e.g. `7`).                                                                                                                     |
+| `minHandSize`    | `number`                | No       | Lower clamp.                                                                                                                                |
+| `applicableForm` | `"hero" \| "alter_ego"` | No       | Restricts bonus to specific identity form.                                                                                                  |
 
 ---
 
@@ -83,7 +83,7 @@
   "params": {
     "source": "TABLEAU",
     "filter": {
-      "cardTypes": ["upgrade", "support"]
+      "types": ["upgrade", "support"]
     },
     "fallback": "SURGE",
     "target": "ACTIVE_PLAYER"
@@ -91,55 +91,56 @@
 }
 ```
 
-| Parameter | Type | Required | Description |
-| :--- | :--- | :--- | :--- |
-| `source` | `"HAND" \| "DECK" \| "ENCOUNTER_DECK" \| "TABLEAU" \| "HOST" \| "SELF" \| "CARDS_UNDER_HOST"` | No | Source zone cards leave from (default: `"HAND"`). |
-| `count` | `number \| "ALL"` | No | Number of cards to discard (default: `1`). |
-| `mode` | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"` | No | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling). |
-| `target` | `TargetSelector` | No | Player identity or entity executing or affected by the discard. |
-| `filter` | `UniversalCardFilter` | No | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
-| `untilFilter` | `UniversalCardFilter` | No | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md). |
-| `fallback` | `"SURGE" \| "NONE"` | No | Fallback resolution if no matching cards can be discarded (e.g. *Caught Off Guard*). |
+| Parameter     | Type                                                                                          | Required | Description                                                                                                                              |
+| :------------ | :-------------------------------------------------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `source`      | `"HAND" \| "DECK" \| "ENCOUNTER_DECK" \| "TABLEAU" \| "HOST" \| "SELF" \| "CARDS_UNDER_HOST"` | No       | Source zone cards leave from (default: `"HAND"`).                                                                                        |
+| `count`       | `number \| "ALL"`                                                                             | No       | Number of cards to discard (default: `1`).                                                                                               |
+| `mode`        | `"CHOSEN" \| "RANDOM" \| "TOP" \| "ALL" \| "UNTIL_MATCH"`                                     | No       | Selection algorithm (`"RANDOM"` for hand penalties, `"TOP"` for deck milling).                                                           |
+| `target`      | `TargetSelector`                                                                              | No       | Player identity or entity executing or affected by the discard.                                                                          |
+| `filter`      | `UniversalCardFilter`                                                                         | No       | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
+| `untilFilter` | `UniversalCardFilter`                                                                         | No       | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md).      |
+| `fallback`    | `"SURGE" \| "NONE"`                                                                           | No       | Fallback resolution if no matching cards can be discarded (e.g. _Caught Off Guard_).                                                     |
 
-#### 🧭 Decision Guide: `DISCARD` vs. `SEARCH_AND_SELECT`
+#### 🧭 Decision Guide: `DISCARD` vs. `SEARCH`
 
-| Feature | `DISCARD` (Attrition & Removal) | `SEARCH_AND_SELECT` (Discovery & Retrieval) |
-| :--- | :--- | :--- |
-| **Rules Reference** | **"Discard" (p. 10)** | **"Search" (p. 26)** & **"Look at" (p. 19)** |
-| **Primary Intent** | Destruction, penalty, or milling into discard pile. | Inspection, drafting, or tutoring cards to keep/play. |
-| **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`). | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
-| **Example Cards** | *Caught Off Guard*, *Black Cat* (01002), *Charge*, Obligations, Treachery hand discard. | *Tony Stark* (Futurist `01029b`), *Make the Call*, *Ancestral Knowledge*. |
+| Feature              | `DISCARD` (Attrition & Removal)                                                         | `SEARCH` (Discovery & Retrieval)                                                                                                                     |
+| :------------------- | :-------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Rules Reference**  | **"Discard" (p. 10)**                                                                   | **"Search" (p. 26)** & **"Look at" (p. 19)**                                                                                                         |
+| **Primary Intent**   | Destruction, penalty, or milling into discard pile.                                     | Inspection, drafting, or tutoring cards to keep/play.                                                                                                |
+| **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`).                        | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
+| **Example Cards**    | _Caught Off Guard_, _Black Cat_ (01002), _Charge_, Obligations, Treachery hand discard. | _Tony Stark_ (Futurist `01029b`), _Make the Call_, _Ancestral Knowledge_.                                                                            |
 
-- **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH_AND_SELECT`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
+- **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
 
 ---
 
 ## 3. Search, Split & Zone Manipulations
 
-### `SEARCH_AND_SELECT`
+### `SEARCH`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`)
-- **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`).
-- **Supersedes:** `SEARCH_DECK_FOR_CARD` (deprecated and removed in Issue #39). All deck and zone searching is unified under `SEARCH_AND_SELECT`.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`)
+- **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`) and automatic resolution for unambiguous matches (`autoSelectIfUnambiguous`).
 
 #### Parameters
 
-| Parameter | Type | Required | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| `source` | `enum` | No | `"PLAYER_DECK"` | Source zone (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). |
-| `lookCount` | `number` | No | `undefined` | Number of top cards to look at. If omitted/undefined, searches the entire source zone. |
-| `takeCount` | `number` | No | `1` | Maximum number of matching cards the player may select. |
-| `filter` | `UniversalCardFilter` | No | `undefined` | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
-| `selectedDestination` | `enum` | No | `"HAND"` | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`). |
-| `unselectedDestination` | `enum` | No | `null` | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`). |
-| `shuffleAfter` | `boolean` | No | `true` (if lookCount omitted) / `false` | Whether to shuffle the deck after search completion. |
-| `isVoluntary` | `boolean` | No | `false` | When `true`, player may choose fewer than `takeCount` cards or decline. |
-| `promptTitle` | `string` | No | Contextual | Custom user-facing dialog title displayed in the decision prompt modal. |
+| Parameter                 | Type                  | Required | Default                                 | Description                                                                                                                                                                     |
+| :------------------------ | :-------------------- | :------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `source`                  | `enum`                | No       | `"PLAYER_DECK"`                         | Source zone (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`).                                                                  |
+| `lookCount`               | `number`              | No       | `undefined`                             | Number of top cards to look at. If omitted/undefined, searches the entire source zone.                                                                                          |
+| `takeCount`               | `number`              | No       | `1`                                     | Maximum number of matching cards the player may select.                                                                                                                         |
+| `filter`                  | `UniversalCardFilter` | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
+| `selectedDestination`     | `enum`                | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`).                                                                     |
+| `unselectedDestination`   | `enum`                | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                      |
+| `shuffleAfter`            | `boolean`             | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the deck after search completion.                                                                                                                            |
+| `autoSelectIfUnambiguous` | `boolean`             | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when matching candidate count $\le$ `takeCount`.                                                                  |
+| `isVoluntary`             | `boolean`             | No       | `false`                                 | When `true`, player may choose fewer than `takeCount` cards or decline.                                                                                                         |
+| `promptTitle`             | `string`              | No       | Contextual                              | Custom user-facing dialog title displayed in the decision prompt modal.                                                                                                         |
 
 #### Example 1: Look & Split (Tony Stark Futurist `01029b`)
+
 ```json
 {
-  "effect": "SEARCH_AND_SELECT",
+  "effect": "SEARCH",
   "params": {
     "source": "PLAYER_DECK",
     "lookCount": 3,
@@ -156,14 +157,15 @@
 ```
 
 #### Example 2: Full-Deck Tutor Search (T'Challa Foresight `01040b` / Shuri `01041`)
+
 ```json
 {
-  "effect": "SEARCH_AND_SELECT",
+  "effect": "SEARCH",
   "params": {
     "source": "PLAYER_DECK",
     "filter": {
-      "trait": "Black Panther",
-      "type": "upgrade"
+      "traits": ["Black Panther"],
+      "types": ["upgrade"]
     },
     "takeCount": 1,
     "selectedDestination": "HAND",
@@ -216,14 +218,14 @@
 
 ---
 
-### `PLAY_CARD_FROM_ZONE`
+### `PLAY_FROM_ZONE`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0047](../../decisions/0047-playing-cards-from-non-hand-zones.md) / Issue [#25](https://github.com/SteveRodrigue/MCD/issues/25) - _Make the Call_ `01071`)
 - **Description:** Enables playing a card from a non-hand zone (e.g. `PLAYER_DISCARD`, `ANY_PLAYER_DISCARD`, `PLAYER_DECK`, `ATTACHED`, `TUCKED`) matching filter constraints, with optional cost mode (`PRINTED_COST`, `FREE`, `REDUCED`).
 
 ```json
 {
-  "effect": "PLAY_CARD_FROM_ZONE",
+  "effect": "PLAY_FROM_ZONE",
   "params": {
     "source": "ANY_PLAYER_DISCARD",
     "filter": {

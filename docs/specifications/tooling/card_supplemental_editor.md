@@ -188,10 +188,10 @@ The Editor is organized into a 3-column split view:
 | - Faction: [All Factions   v]      | ------------------------ | Abilities Tree:               |
 | - Search: [spider...       ]       | Printed Text:            | [+] Add Ability               |
 | ---------------------------------- | "Interrupt: When..."     | ├─ Timing: [HERO_INTERRUPT v] |
-| Cards (101):                       |                          | ├─ Trigger: [VILLAIN_INIT...] |
+| Cards (101):                       |                          | ├─ Trigger: [ENEMY_INIT...]   |
 | > 01001a Spider-Man        [100%]  | Upstream Zzorba Meta:    | ├─ Cost: [Exhaust: Yes]       |
 |   01001b Peter Parker      [100%]  | - Traits: Avenger        | └─ Steps (1):                 |
-|   01002  Spider-Tracer     [100%]  | - Type: Hero             |    └─ Primitive: [DRAW_CARDS] |
+|   01002  Spider-Tracer     [100%]  | - Type: Hero             |    └─ Primitive: [DRAW]       |
 |   01003  Web-Shooter       [100%]  | - Hand Size: 5           |       Params: { amount: 1 }   |
 |   01004  Backflip          [100%]  | - HP: 10                 |                               |
 |                                    |                          | Live Zod Diagnostics: (0 err) |

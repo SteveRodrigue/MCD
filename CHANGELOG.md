@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Documentation (Specifications & Guidelines): Phase 7 Specification & Coding Guidelines Sync ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
+  - Synchronized written specifications in `docs/specifications/` to match active canonical schema taxonomy (`DRAW`, `DISCARD`, `SEARCH`, `PLAY_FROM_ZONE`, `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, `CHARACTER_DEFEATED`).
+  - Purged all deprecated and retired primitive tokens from active specification documents, enforcing that specifications reflect strictly what is present and supported in the code.
+  - Added Section 11 ("Declarative Schema Taxonomy & Naming Invariants") to `docs/coding_guidelines.md`.
+
 - **Cleanup (Engine, Schema & Tooling): Phase 4 Engine Cleanup & Phase 5 Test Realignment ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - Removed superseded legacy enum members (`TriggerTypeSchema`, `EffectTypeSchema`, `TargetSelectorSchema`) from `src/data/supplemental/schema.ts` and `src/engine/models/abilities.ts`.
   - Deleted legacy `case` fallthrough labels (`DRAW_CARDS`, `SEARCH_AND_SELECT`, `PLAY_CARD_FROM_ZONE`, `RETRIEVE_CARD_FROM_DISCARD`) and retired single-use handlers (`NICK_FURY_CHOICE`, `EXPLOSION`, `HULK_DISCARD_RESOLUTION`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`, `REPULSOR_BLAST`) from `src/engine/effects/index.ts`.

@@ -1258,22 +1258,7 @@
       ]
     },
     "01031": {
-      "comment": "Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
-      "abilities": [
-        {
-          "id": "repulsor_blast_action",
-          "timing": "HERO_ACTION",
-          "steps": [
-            {
-              "effect": "REPULSOR_BLAST",
-              "params": {
-                "discardCount": 5,
-                "target": "CHOSEN_ENEMY"
-              }
-            }
-          ]
-        }
-      ],
+      "comment": "BLOCKED -- Repulsor Blast supplemental ability withheld pending discarded-energy counting capability. See GitHub issue #112. Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-31T14:20",
@@ -1281,6 +1266,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/112",
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy.",
         "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST (discardCount: 5, target: CHOSEN_ENEMY)"
       },
@@ -2051,20 +2037,7 @@
       ]
     },
     "01050": {
-      "comment": "Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
-      "abilities": [
-        {
-          "id": "hulk_after_attack",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "ATTACK",
-          "steps": [
-            {
-              "effect": "HULK_DISCARD_RESOLUTION",
-              "params": {}
-            }
-          ]
-        }
-      ],
+      "comment": "BLOCKED -- Hulk supplemental ability withheld pending printed-resource branching capability. See GitHub issue #113. Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-31T13:20",
@@ -2072,6 +2045,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
+        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/113",
         "originalText": "<b>Forced Response</b>: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:\n[physical] - Deal 2 damage to an enemy.\n[energy] - Deal 1 damage to each character.\n[mental] - Discard Hulk.\n[wild] - All of the above.",
         "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK) -> HULK_DISCARD_RESOLUTION"
       },

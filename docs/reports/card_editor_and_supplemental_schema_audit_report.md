@@ -400,6 +400,8 @@ flowchart TD
 - [ ] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** For every migrated ability, regenerate `reconstructedText` to reflect the new primitive names (mechanical string replace is acceptable here since it's a derived/logged field, not gameplay-affecting).
 - [ ] **3.11 — Quality Gate:** `npm run typecheck && npm test` — expect **test failures** at this point (tests still assert legacy string literals); this is the expected, tracked handoff into Phase 5. Do not attempt to fix tests inside Phase 3.
 
+**Phase 3 execution status:** Blocked before migration commit. The dry-run and safe-write probe identified two shape-changing declarations that cannot be represented correctly by the Phase 2 schema/engine: Repulsor Blast requires discarded-energy counting ([issue #112](https://github.com/SteveRodrigue/MCD/issues/112)), and Hulk requires printed-resource branching ([issue #113](https://github.com/SteveRodrigue/MCD/issues/113)). Their unsupported `abilities` declarations are temporarily withheld, with audit metadata and printed text preserved and `audit.ambiguityFile` linking each issue. A temporary encounter/core migration was rolled back after 16 behavioral regressions were detected; the cleaned pack baseline is green. No Phase 3 checkbox is marked complete.
+
 ---
 
 ### Phase 4 — Engine & Tooling Cleanup (Remove Legacy Aliases)

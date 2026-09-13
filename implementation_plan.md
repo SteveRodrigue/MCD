@@ -179,4 +179,4 @@
 
 **Required prerequisite before retry:** Complete the active-catalog canonical engine compatibility paths, then restart Phase 3 from a clean baseline. Repulsor Blast and Hulk are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112 and #113.
 
-**Sub-phases closed:** 3.1, 3.2, 3.3, 3.4, 3.5, and 3.6. **Still blocked/open:** 3.7-3.11, pending active-catalog compatibility fixes and a valid migration commit.
+**Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11, pending active-catalog compatibility fixes, deferred-card capability work, and a valid migration commit.

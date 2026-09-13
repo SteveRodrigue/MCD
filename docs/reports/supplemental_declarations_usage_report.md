@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-13T01:41:52.252Z`  
+> **Generated:** `2026-09-13T02:28:32.625Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -14,11 +14,11 @@
 | **No Supplemental Needed** | **10** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **0** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **167** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **160** | Abilities with exactly 1 atomic execution step |
+| **Total Abilities Declared** | **168** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **161** | Abilities with exactly 1 atomic execution step |
 | **Multi-Step Abilities (2+ Steps)** | **7** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **7** | Cards containing at least 1 ability with 2+ steps |
-| **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
+| **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
 | **Unique Effects In Use** | **55** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **24** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
@@ -54,9 +54,9 @@ These **10 cards** have been audited and explicitly verified as `"noSupplemental
 
 ---
 
-## 📋 4. Cards with Multiple Abilities (2+ Abilities Declared — 18 Cards)
+## 📋 4. Cards with Multiple Abilities (2+ Abilities Declared — 19 Cards)
 
-These **18 cards** declare multiple distinct ability headers (e.g. dual Hero/Alter-Ego actions, combined Constant modifiers with triggered Actions, or multiple Response triggers):
+These **19 cards** declare multiple distinct ability headers (e.g. dual Hero/Alter-Ego actions, combined Constant modifiers with triggered Actions, or multiple Response triggers):
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -76,6 +76,7 @@ These **18 cards** declare multiple distinct ability headers (e.g. dual Hero/Alt
 | `01164` | **Titania's Fury** | `treachery` | `core_encounter` | **2** | • `titanias_fury` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `titanias_fury_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01166` | **Highway Robbery** | `side_scheme` | `core_encounter` | **2** | • `highway_robbery_when_revealed` (`WHEN_REVEALED`, **1 step**)<br/>• `highway_robbery_when_defeated` (`FORCED_RESPONSE` / `DEFEATED`, **1 step**) |
 | `01168` | **Sweeping Swoop** | `treachery` | `core_encounter` | **2** | • `sweeping_swoop` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `sweeping_swoop_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01172` | **Whiplash** | `minion` | `core_encounter` | **2** | • `whiplash_response` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `whiplash_retaliate` (`CONSTANT`, **1 step**) |
 | `01173` | **Electric Whip Attack** | `treachery` | `core_encounter` | **2** | • `electric_whip_attack` (`CONSTANT`, **1 step**)<br/>• `electric_whip_attack_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01178` | **Kree Manipulator** | `treachery` | `core_encounter` | **2** | • `kree_manipulator_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `kree_manipulator_boost` (`BOOST` / `BOOST_STAR_RESOLVED`, **1 step**) |
 
@@ -97,6 +98,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
+| **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
 | **Trigger** | `WHEN_REVEALED` | **45** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+42 more)* |
 | **Trigger** | `ENTERS_PLAY` | **5** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally) *(+2 more)* |
 
@@ -202,8 +204,8 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `ADD_THREAT_PER_PLAYER` | **6** | `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
+| `GRANT_KEYWORD` | **5** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
 | `CONSUME_INTERCEPTED_EVENT` | **4** | `01003` (Backflip (event)), `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
-| `GRANT_KEYWORD` | **4** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)) |
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `TRIGGER_SURGE` | **4** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
@@ -289,7 +291,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
 | `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+19 more)* |
-| `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
+| `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+11 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |

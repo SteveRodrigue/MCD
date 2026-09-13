@@ -308,6 +308,18 @@ export const KeywordSchema = z.enum([
   'Acceleration',
 ]);
 
+/**
+ * Structured parameterized keyword declaration (ADR-0054).
+ */
+export const StructuredKeywordSchema = z
+  .object({
+    keyword: z.string().min(1),
+    amount: z.number().int().positive().optional(),
+  })
+  .strict();
+
+export const KeywordEntrySchema = z.union([z.string(), StructuredKeywordSchema]);
+
 export const CharacterStatusSchema = z.enum(['STUNNED', 'CONFUSED', 'TOUGH']);
 
 /**
@@ -685,7 +697,7 @@ export const CardEnrichmentSchema = z
     maxPerPlayer: z.number().optional(),
     uses: CardUsesSchema.optional(),
     victoryPoints: z.number().optional(),
-    keywords: z.array(z.string()).optional(),
+    keywords: z.array(KeywordEntrySchema).optional(),
     traits: z.array(z.string()).optional(),
     restrictedSlots: z.number().int().positive().optional(),
     additionalBoostCards: z.number().int().positive().optional(),

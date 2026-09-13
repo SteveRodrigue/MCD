@@ -131,7 +131,6 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   const retaliateMatch = text.match(/\bretaliate\s+(\d+)\b/i);
   if (retaliateMatch) {
     keywords.add(`Retaliate ${retaliateMatch[1]}` as any);
-    keywords.add(Keyword.RETALIATE);
   } else if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
     keywords.add(Keyword.RETALIATE);
   }

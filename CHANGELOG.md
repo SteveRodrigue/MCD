@@ -5,6 +5,20 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+- **Feature (Engine & Supplemental): Parameterized Keyword Stacking & Retaliate Value Accumulation ([RR v1.8 p. 24](docs/algorithmic_rules_reference.md), [ADR-0054](docs/decisions/0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md), [#64](https://github.com/SteveRodrigue/MCD/issues/64)):**
+  - **Dynamic Retaliate Value Accumulator (`getEffectiveRetaliate`):** Implemented centralized calculation in `src/engine/pipeline/stat-calculator.ts` dynamically aggregating active Retaliate magnitudes across character base card keywords, enrichment keywords, constant abilities, attachments, and player tableau upgrades per RR v1.8 p. 24 ("If a character has multiple instances of retaliate, the values of each instance are added together").
+  - **Structured Parameter Modeling & Zero Tech Debt:** Standardized `ParameterizedKeyword` interface (`{ keyword: Keyword | string, amount?: number }`) in `src/engine/models/keyword.ts` and `StructuredKeywordSchema` in `src/data/supplemental/schema.ts`. Rewrote all project supplemental definitions to the canonical structured format with zero legacy string tokens:
+    - *Black Panther* (`01040a`): rewritten to `GRANT_KEYWORD` (`keyword: "Retaliate"`, `amount: 1`).
+    - *Whiplash* (`01172`): enriched with explicit declarative `GRANT_KEYWORD` (`keyword: "Retaliate"`, `amount: 1`).
+  - **Universal Character Parity & Combat Pipeline Integration:**
+    - Step 7 enemy attacks (`step7_resolvePostAttackAndRetaliate`): evaluated for surviving Hero defenders and surviving Ally defenders (`attackContext.defender?.type === 'ALLY'`).
+    - Basic attacks (`action-dispatcher.ts`): triggers Retaliate counter-damage against the attacking player when Villain or Minion survives a basic attack.
+    - Ally attacks (`action-dispatcher.ts`): triggers Retaliate counter-damage against the attacking ally when Villain or Minion survives an ally attack.
+    - Damage effects (`effects/index.ts`): enhanced `DEAL_DAMAGE` to evaluate `getEffectiveRetaliate` on surviving minions and villains attacked by card effects.
+  - **Engine Normalization Layer (`parseKeywordItem`):** Created transparent parser in `src/engine/models/keyword.ts` ensuring backward compatibility for raw upstream cards and tokens (`Retaliate 1`, `Incite 2`).
+  - **Architecture Decision Record:** Authored [ADR-0054](docs/decisions/0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md) and registered it in `docs/decisions/README.md`.
+  - **Acceptance Tests:** Added 18 comprehensive tests in `tests/engine/parameterized-keywords-retaliate.test.ts` covering structured parsing, keyword stacking, Step 7 enemy attack retaliate (surviving vs defeated Hero/Ally), basic attacks, and ally attacks.
+
 - **Feature (Engine & UI): Infinite Trigger Loop Detection & Prevention Guardrails ([RR v1.8 p. 16, 24](docs/algorithmic_rules_reference.md), [ADR-0053](docs/decisions/0053-infinite-trigger-loop-detection-and-prevention-guardrails.md), [#48](https://github.com/SteveRodrigue/MCD/issues/48)):**
   - **Dynamic Trigger Call Chain Tracking & Cycle Detection:** Instrumented `dispatchTrigger` and `executeEffect` with an immutable `TriggerCallNode[]` call chain. Proactively detects direct self-looping forced triggers (A ➔ A) and mutual circular dependencies between distinct cards (A ⇄ B) before JavaScript call stack exhaustion occurs.
   - **Maximum Recursion Depth Ceiling Guard:** Enforces `MAX_TRIGGER_DEPTH = 15` safety limit to gracefully halt pathological unbounded non-cyclic cascades without freezing the engine or UI thread.

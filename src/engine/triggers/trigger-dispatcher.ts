@@ -6,6 +6,47 @@ import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-erro
 
 export const MAX_TRIGGER_DEPTH = 15;
 
+const TRIGGER_EQUIVALENTS: Record<string, string[]> = {
+  ENEMY_INITIATES_ATTACK: ['VILLAIN_INITIATES_ATTACK'],
+  DAMAGE_WOULD_BE_TAKEN: ['TAKE_ATTACK_DAMAGE', 'TAKE_DAMAGE'],
+  ATTACK_DEFENDED: ['HERO_DEFENDED_ATTACK'],
+  CHARACTER_DEFEATED: ['MINION_DEFEATED', 'MINION_DEFEATED_BY_ATTACK', 'HOST_DEFEATED'],
+  DEFEATED: ['ENEMY_DEFEATED_BY_HERO_ATTACK'],
+  SCHEME_DEFEATED: ['SCHEME_THREAT_REDUCED_TO_ZERO'],
+  FORM_CHANGED: ['FORM_CHANGED_TO_HERO', 'FORM_CHANGED_TO_ALTER_EGO', 'HERO_FLIPPED'],
+};
+
+const LEGACY_TRIGGER_DISPLAY: Record<string, string> = Object.fromEntries(
+  Object.entries(TRIGGER_EQUIVALENTS).flatMap(([canonical, legacyNames]) =>
+    legacyNames.map((legacyName) => [canonical, legacyNames[0] || legacyName]),
+  ),
+);
+
+export function triggersAreEquivalent(
+  left: string | undefined,
+  right: string | undefined,
+): boolean {
+  if (!left || !right) return false;
+  if (left === right) return true;
+  return (
+    TRIGGER_EQUIVALENTS[left]?.includes(right) === true ||
+    TRIGGER_EQUIVALENTS[right]?.includes(left) === true
+  );
+}
+
+function displayTriggerName(trigger: string): string {
+  return LEGACY_TRIGGER_DISPLAY[trigger] || trigger;
+}
+
+function displayEffectName(effect: string): string {
+  const aliases: Record<string, string> = {
+    DRAW: 'DRAW_CARDS',
+    SEARCH: 'SEARCH_AND_SELECT',
+    PLAY_FROM_ZONE: 'PLAY_CARD_FROM_ZONE',
+  };
+  return aliases[effect] || effect;
+}
+
 export interface TriggerContext {
   targetPlayerId: string;
   sourceInstanceId?: string;
@@ -119,7 +160,9 @@ function checkAndRecordTriggerNode(
 export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[]): string {
   const stepDescriptions = (steps || [])
     .map((s) => {
-      if (s.effect === 'DRAW_CARDS') return `DRAW_CARDS (${s.params?.count ?? 1})`;
+      if (s.effect === 'DRAW_CARDS' || s.effect === 'DRAW') {
+        return `${displayEffectName(s.effect)} (${s.params?.count ?? 1})`;
+      }
       if (s.effect === 'DEAL_DAMAGE') return `DEAL_DAMAGE (${s.params?.amount ?? 1})`;
       if (s.effect === 'REMOVE_THREAT') return `REMOVE_THREAT (${s.params?.amount ?? 1})`;
       if (s.effect === 'HEAL_DAMAGE') return `HEAL_DAMAGE (${s.params?.amount ?? 1})`;
@@ -128,10 +171,10 @@ export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[])
       if (s.effect === 'CONSUME_INTERCEPTED_EVENT') {
         return `CONSUME_INTERCEPTED_EVENT (${s.params?.amount ?? 'ALL'})`;
       }
-      return s.effect;
+      return displayEffectName(s.effect);
     })
     .join(', ');
-  return `${trigger} -> ${stepDescriptions}`;
+  return `${displayTriggerName(trigger)} -> ${stepDescriptions}`;
 }
 
 /**
@@ -190,7 +233,7 @@ export function dispatchTrigger(
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
   const identityAbilities = player ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
-    if (ability.trigger === trigger) {
+    if (triggersAreEquivalent(ability.trigger, trigger)) {
       if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
         continue;
       }
@@ -320,7 +363,7 @@ export function dispatchTrigger(
     ]) {
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
-        if (ability.trigger === trigger) {
+        if (triggersAreEquivalent(ability.trigger, trigger)) {
           // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
           // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
           // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
@@ -440,13 +483,13 @@ export function dispatchTrigger(
   ) {
     const handInterruptIdx = player.hand.findIndex((c) => {
       const abilities = c.card.enrichment?.abilities || [];
-      return abilities.some((a) => a.trigger === trigger && a.zone === 'HAND');
+      return abilities.some((a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND');
     });
 
     if (handInterruptIdx !== -1) {
       const interruptCard = player.hand[handInterruptIdx];
       const ability = interruptCard.card.enrichment!.abilities!.find(
-        (a) => a.trigger === trigger && a.zone === 'HAND',
+        (a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND',
       )!;
 
       const isForced = ability.timing.startsWith('FORCED_');
@@ -552,7 +595,7 @@ export function dispatchTrigger(
         const interruptCard = p.hand[handInterruptIdx];
         const ability = interruptCard.card.enrichment!.abilities!.find(
           (a) =>
-            a.trigger === trigger &&
+            triggersAreEquivalent(a.trigger, trigger) &&
             a.zone === 'HAND' &&
             (!a.timing.startsWith('HERO_') || p.currentForm === 'hero') &&
             (!a.timing.startsWith('ALTER_EGO_') || p.currentForm === 'alter_ego'),
@@ -657,7 +700,7 @@ export function dispatchTrigger(
       const interruptCard = player.hand[handInterruptIdx];
       const ability = interruptCard.card.enrichment!.abilities!.find(
         (a) =>
-          a.trigger === trigger &&
+          triggersAreEquivalent(a.trigger, trigger) &&
           a.zone === 'HAND' &&
           (!a.timing.startsWith('HERO_') || player.currentForm === 'hero') &&
           (!a.timing.startsWith('ALTER_EGO_') || player.currentForm === 'alter_ego'),

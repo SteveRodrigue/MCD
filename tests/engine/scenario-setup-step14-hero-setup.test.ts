@@ -75,6 +75,49 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     expect(player.tableau[0].card.name).toBe('Panther Claws');
   });
 
+  it('resolves canonical SEARCH setup abilities during Step 14', () => {
+    const canonicalAlterEgo = {
+      ...bpIdentity.alterEgo,
+      enrichment: {
+        ...bpIdentity.alterEgo.enrichment,
+        abilities: [
+          {
+            id: 'canonical_setup_search',
+            timing: 'SETUP' as const,
+            steps: [
+              {
+                effect: 'SEARCH' as const,
+                params: {
+                  source: 'PLAYER_DECK',
+                  filter: { traits: ['Black Panther'], types: ['upgrade'] },
+                  selectedDestination: 'TABLEAU',
+                },
+              },
+            ],
+          },
+        ],
+      },
+    } as AlterEgoCard;
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Black Panther',
+          hero: bpIdentity.hero,
+          alterEgo: canonicalAlterEgo,
+          deckCards: bpDeckCards,
+        },
+      ],
+      shuffleFn: (arr) => arr,
+      skipMulligan: true,
+    });
+
+    expect(state.players[0].tableau).toHaveLength(1);
+    expect(state.players[0].tableau[0].card.traits).toContain('Black Panther');
+  });
+
   it('leaves heroes without Setup abilities unaffected (Spider-Man 01001b)', () => {
     const smDeckCards = Array(15).fill(cardCatalog.getCard('01005')!); // Web-Shooter
 

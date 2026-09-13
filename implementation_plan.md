@@ -190,4 +190,8 @@
 
 **Required prerequisite before retry:** Resolve the 10 active-catalog behavioral regressions found by the migrated-pack handoff probe, especially setup search routing, damage interception, minion activation, and legacy prompt compatibility. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine are separately covered by regression tests. Repulsor Blast, Hulk, and Explosion are deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
 
+**Compatibility sub-task progress:** Bidirectional legacy/canonical trigger matching, legacy prompt display normalization, villain-versus-minion initiation ordering, and canonical Step 14 `SEARCH` routing are implemented and focused-tested. One `FORM_CHANGED` lifecycle regression remains: canonical matching now activates the legacy She-Hulk response during form change, and the round-advance test must be reconciled with that intended canonical behavior before the next full migration probe.
+
+**Completed compatibility slices:** Trigger equivalence/prompt compatibility and canonical Step 14 search routing. **Next slice:** reconcile `FORM_CHANGED` response timing and round advancement; do not rerun pack migration until the full suite is green.
+
 **Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11, pending active-catalog compatibility fixes, deferred-card capability work, and a valid migration commit.

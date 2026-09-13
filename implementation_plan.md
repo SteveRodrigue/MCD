@@ -45,6 +45,7 @@
 - **[MODIFY] `src/engine/triggers/trigger-dispatcher.ts`**
   - Add compatibility handling for canonical damage/attack triggers where the current dispatcher has explicit legacy-name checks, preserving loop guards and optional-trigger behavior.
   - Add a single trigger-equivalence resolver so legacy and canonical names match in either direction during the migration window; preserve the original display vocabulary when building optional-trigger prompt descriptions.
+  - Add the missing universal trigger-scope layer: `ENEMY_INITIATES_ATTACK` context must include attacker kind/instance, attacked player, and engagement scope; ability-level filters must be evaluated before resolution.
 
 - **[MODIFY] `src/engine/pipeline/action-dispatcher.ts` and `src/engine/state/game-setup.ts`**
   - Recognize `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED` in prompt continuation and setup/search routing paths, not only in direct combat dispatch calls.
@@ -77,6 +78,8 @@
 - Optional-trigger prompt descriptions preserve the established legacy text during the compatibility window, while canonical data still resolves the same ability.
 - Canonical trigger dispatch does not duplicate optional prompts, skip minion/quickstrike attacks, consume the wrong defense window, or alter phase/round continuation.
 - `game-setup.ts` and all setup/search consumers recognize canonical `SEARCH` as equivalent to `SEARCH_AND_SELECT`.
+- `ENEMY_INITIATES_ATTACK` scope filters distinguish villain-only, minion-only, any-enemy, and engaged-player reactions without duplicate dispatches.
+- Spider-Sense uses an explicit villain-only filter; its behavior does not depend on whether the combat pipeline happens to dispatch the universal event for minions.
 - `SEARCH` auto-resolves when `autoSelectIfUnambiguous !== false` and candidates are `<= takeCount`; it creates the existing pending decision when ambiguous or explicitly disabled.
 - Controlled selectors never target another player’s board; friendly/table-wide selectors include eligible entities across players.
 - `npm run schema:generate` produces a schema JSON containing the additive enum members.
@@ -99,6 +102,9 @@
 
 > [!IMPORTANT]
 > The Phase 3 migration probe demonstrated that adding canonical enum members and direct dispatches is insufficient. Before another pack write, complete the compatibility follow-up for `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED`, including trigger matching, prompt rendering, setup routing, and continuation semantics. Treat the 10 observed migrated-pack regressions as contract failures, not expected legacy-string test fallout.
+
+> [!WARNING]
+> `triggerFilter` is currently only a design requirement; it does not exist in the schema, engine, supplemental data, or tests. Do not claim Spider-Sense is semantically villain-only until the filter is implemented and the card declaration is migrated to use it.
 
 ## Execution Order
 

@@ -158,7 +158,7 @@
         {
           "id": "armored_rhino_suit_shield",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "TAKE_ATTACK_DAMAGE",
+          "trigger": "DAMAGE_WOULD_BE_TAKEN",
           "steps": [
             {
               "effect": "ATTACHMENT_DAMAGE_SHIELD",
@@ -179,7 +179,7 @@
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "Attach to Rhino.\n<b>Forced Interrupt</b>: When any amount of damage would be dealt to Rhino, place it here instead. Then, if there is at least 5 damage here, discard Armored Rhino Suit.",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); FORCED_INTERRUPT (Trigger: TAKE_ATTACK_DAMAGE) -> ATTACHMENT_DAMAGE_SHIELD (mode: PREVENT_ALL_AND_DISCARD, maxAbsorb: 5)"
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); FORCED_INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) -> ATTACHMENT_DAMAGE_SHIELD (mode: PREVENT_ALL_AND_DISCARD, maxAbsorb: 5)"
       },
       "mechanicSteps": [
         "Play Condition: Attach to Rhino.",
@@ -506,9 +506,18 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE",
+              "effect": "FORM_BRANCH",
               "params": {
-                "target": "ACTIVE_PLAYER"
+                "heroSteps": [
+                  {
+                    "effect": "VILLAIN_ATTACKS"
+                  }
+                ],
+                "alterEgoSteps": [
+                  {
+                    "effect": "TRIGGER_SURGE"
+                  }
+                ]
               }
             }
           ]
@@ -1271,7 +1280,10 @@
               "params": {
                 "source": "TABLEAU",
                 "filter": {
-                  "types": ["upgrade", "support"]
+                  "types": [
+                    "upgrade",
+                    "support"
+                  ]
                 },
                 "target": "DEFENDING_PLAYER"
               }
@@ -1546,7 +1558,10 @@
               "params": {
                 "source": "TABLEAU",
                 "filter": {
-                  "types": ["upgrade", "support"]
+                  "types": [
+                    "upgrade",
+                    "support"
+                  ]
                 },
                 "fallback": "SURGE",
                 "target": "ACTIVE_PLAYER"
@@ -1614,8 +1629,12 @@
                 "from": "SET_ASIDE",
                 "to": "ENGAGED_WITH_PLAYER",
                 "filter": {
-                  "types": ["minion"],
-                  "sets": ["PLAYER_NEMESIS"]
+                  "types": [
+                    "minion"
+                  ],
+                  "sets": [
+                    "PLAYER_NEMESIS"
+                  ]
                 }
               }
             },
@@ -1626,8 +1645,12 @@
                 "from": "SET_ASIDE",
                 "to": "SIDE_SCHEMES",
                 "filter": {
-                  "types": ["side_scheme"],
-                  "sets": ["PLAYER_NEMESIS"]
+                  "types": [
+                    "side_scheme"
+                  ],
+                  "sets": [
+                    "PLAYER_NEMESIS"
+                  ]
                 }
               }
             },
@@ -1638,7 +1661,9 @@
                 "from": "SET_ASIDE",
                 "toDeck": "ENCOUNTER_DECK",
                 "filter": {
-                  "sets": ["PLAYER_NEMESIS"]
+                  "sets": [
+                    "PLAYER_NEMESIS"
+                  ]
                 }
               }
             },

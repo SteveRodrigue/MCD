@@ -546,4 +546,71 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     expect(resolveRes.state.players[0].deck[0].instanceId).toBe(instA.instanceId);
     expect(resolveRes.state.players[0].deck[1].instanceId).toBe(instC.instanceId);
   });
+
+  it('auto-resolves canonical SEARCH when the candidate set is unambiguous', () => {
+    const targetCard: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'search_target',
+      name: 'Search Target',
+      type: CardType.UPGRADE,
+      traits: ['Tech'],
+    };
+    const fillerCard: NormalizedCard = {
+      ...cardCatalog.getCard('01005')!,
+      code: 'search_filler',
+      name: 'Search Filler',
+    };
+
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Iron Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [targetCard, fillerCard],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const targetInstance = createCardInstance(targetCard);
+    const fillerInstance = createCardInstance(fillerCard);
+    state.players[0].deck = [targetInstance, fillerInstance];
+    state.players[0].hand = [];
+
+    const result = executeEffect(
+      state,
+      {
+        id: 'canonical_search',
+        timing: 'ACTION',
+        steps: [
+          {
+            effect: 'SEARCH',
+            params: {
+              source: 'PLAYER_DECK',
+              filter: { trait: 'Tech' },
+              takeCount: 1,
+              selectedDestination: 'HAND',
+              autoSelectIfUnambiguous: true,
+            },
+          },
+        ],
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.state.pendingDecisionPrompt).toBeUndefined();
+    expect(result.state.players[0].hand.map((card) => card.instanceId)).toEqual([
+      targetInstance.instanceId,
+    ]);
+    expect(result.state.players[0].deck.map((card) => card.instanceId)).toEqual([
+      fillerInstance.instanceId,
+    ]);
+  });
 });

@@ -1377,6 +1377,70 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Prompt player to choose between multiple options.',
     parameters: [],
   },
+  DRAW: {
+    effect: 'DRAW',
+    description: 'Canonical alias for drawing cards.',
+    parameters: [
+      { key: 'count', label: 'Card Count', type: 'number', defaultValue: 1 },
+      {
+        key: 'limit',
+        label: 'Hand Size Limit',
+        type: 'select',
+        options: ['PRINTED_HAND_SIZE', 'HAND_SIZE'],
+      },
+      { key: 'target', label: 'Target Player', type: 'select', options: TARGET_OPTIONS },
+    ],
+  },
+  FORM_BRANCH: {
+    effect: 'FORM_BRANCH',
+    description: 'Execute steps based on the current identity form.',
+    parameters: [{ key: 'steps', label: 'Branch Steps', type: 'json' }],
+  },
+  MODIFY_RESTRICTED_LIMIT: {
+    effect: 'MODIFY_RESTRICTED_LIMIT',
+    description: 'Modify the restricted card limit.',
+    parameters: [{ key: 'amount', label: 'Amount', type: 'number' }],
+  },
+  PLAY_FROM_ZONE: {
+    effect: 'PLAY_FROM_ZONE',
+    description: 'Canonical alias for playing a card from a non-hand zone.',
+    parameters: [
+      {
+        key: 'source',
+        label: 'Source Zone',
+        type: 'select',
+        options: ['PLAYER_DISCARD', 'ANY_PLAYER_DISCARD', 'PLAYER_DECK', 'SET_ASIDE'],
+      },
+      {
+        key: 'costMode',
+        label: 'Cost Mode',
+        type: 'select',
+        options: ['PRINTED_COST', 'FREE', 'REDUCED'],
+      },
+    ],
+  },
+  SEARCH: {
+    effect: 'SEARCH',
+    description: 'Canonical alias for searching and selecting cards.',
+    parameters: [
+      { key: 'source', label: 'Source Zone', type: 'select', options: SEARCH_SOURCE_OPTIONS },
+      { key: 'takeCount', label: 'Take Count', type: 'number', defaultValue: 1 },
+      {
+        key: 'autoSelectIfUnambiguous',
+        label: 'Auto-select Unambiguous Results',
+        type: 'boolean',
+        defaultValue: true,
+      },
+    ],
+  },
+  REMOVE_STATUS: {
+    effect: 'REMOVE_STATUS',
+    description: 'Remove a status card from a target.',
+    parameters: [
+      { key: 'status', label: 'Status', type: 'select', options: [...STATUS_OPTIONS, 'ALL'] },
+      { key: 'target', label: 'Target', type: 'select', options: TARGET_OPTIONS },
+    ],
+  },
 };
 
 /**

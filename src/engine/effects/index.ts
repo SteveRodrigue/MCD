@@ -740,6 +740,7 @@ export function executeStep(
     case 'DISCARD_CARDS': {
       return executeDiscard(state, step, context);
     }
+    case 'DRAW':
     case 'DRAW_CARDS': {
       const rawCount = step.params?.count;
       const count = rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
@@ -1527,6 +1528,12 @@ export function executeStep(
           sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
           threatAmount: removed,
         });
+        dispatchTrigger(state, 'SCHEME_DEFEATED', {
+          targetPlayerId: player.id,
+          sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
+          entityType: 'SCHEME',
+          threatAmount: removed,
+        });
       }
 
       const conditionMet = step.condition === 'SCHEME_EMPTY' ? remainingThreat === 0 : undefined;
@@ -1653,6 +1660,107 @@ export function executeStep(
         value: mutatedState ? 1 : 0,
         conditionMet,
         onomatopoeia,
+      };
+    }
+
+    case 'REMOVE_STATUS': {
+      const requestedStatus = String(step.params?.status || 'ALL');
+      const normalizedStatus =
+        requestedStatus === 'STUNNED'
+          ? StatusCard.STUNNED
+          : requestedStatus === 'CONFUSED'
+            ? StatusCard.CONFUSED
+            : requestedStatus === 'TOUGH'
+              ? StatusCard.TOUGH
+              : requestedStatus;
+      const statuses =
+        normalizedStatus === 'ALL'
+          ? [StatusCard.STUNNED, StatusCard.CONFUSED, StatusCard.TOUGH]
+          : [normalizedStatus as StatusCard];
+      const target = String(step.params?.target || 'VILLAIN');
+      const targetPlayer =
+        state.players.find((candidate) => candidate.id === context.targetPlayerId) || player;
+      const targets: any[] = [];
+
+      const addTargetByInstanceId = (instanceId: string | undefined) => {
+        if (!instanceId) return;
+        const candidates: any[] = [
+          state.villain,
+          state.mainScheme,
+          ...state.sideSchemes,
+          ...state.players,
+          ...state.players.flatMap((candidate) => [
+            ...candidate.allies,
+            ...candidate.engagedMinions,
+            ...candidate.tableau,
+          ]),
+        ];
+        const match = candidates.find((candidate) => candidate?.instanceId === instanceId);
+        if (match) targets.push(match);
+      };
+
+      if (target === 'VILLAIN' || target === 'TRIGGERING_ENEMY') {
+        targets.push(state.villain);
+      } else if (target === 'CHOSEN_ENEMY' || target === 'CHOSEN_CHARACTER') {
+        addTargetByInstanceId(context.targetInstanceId);
+      } else if (target === 'CHOSEN_CONTROLLED_ALLY') {
+        const ally = targetPlayer.allies.find((candidate) =>
+          context.targetInstanceId ? candidate.instanceId === context.targetInstanceId : true,
+        );
+        if (ally) targets.push(ally);
+      } else if (target === 'ALL_CONTROLLED_ALLIES') {
+        targets.push(...targetPlayer.allies);
+      } else if (target === 'CHOSEN_CONTROLLED_CHARACTER') {
+        addTargetByInstanceId(context.targetInstanceId);
+        if (targets.length === 0) targets.push(targetPlayer);
+      } else if (target === 'ALL_CONTROLLED_CHARACTERS') {
+        targets.push(targetPlayer, ...targetPlayer.allies);
+      } else if (target === 'CHOSEN_FRIENDLY_CHARACTER') {
+        addTargetByInstanceId(context.targetInstanceId);
+      } else if (target === 'ALL_FRIENDLY_CHARACTERS') {
+        for (const candidate of state.players) {
+          targets.push(candidate, ...candidate.allies);
+        }
+      } else if (target === 'CHOSEN_SIDE_SCHEME' || target === 'TRIGGERING_SCHEME') {
+        const scheme = state.sideSchemes.find(
+          (candidate) => candidate.instanceId === context.targetInstanceId,
+        );
+        if (scheme) targets.push(scheme);
+      } else if (target === 'ALL_SCHEMES') {
+        targets.push(state.mainScheme, ...state.sideSchemes);
+      } else if (target === 'ACTIVE_PLAYER' || target === 'SELF_IDENTITY' || target === 'HERO') {
+        targets.push(targetPlayer);
+      } else if (context.targetInstanceId) {
+        addTargetByInstanceId(context.targetInstanceId);
+      }
+
+      let removedCount = 0;
+      for (const entity of targets) {
+        if (!Array.isArray(entity?.statusCards)) continue;
+        const removedStatuses = statuses.filter((status) => entity.statusCards.includes(status));
+        const before = entity.statusCards.length;
+        entity.statusCards = entity.statusCards.filter(
+          (status: StatusCard) => !statuses.includes(status),
+        );
+        if (removedStatuses.length > 0) {
+          removedCount += before - entity.statusCards.length;
+          for (const status of removedStatuses) {
+            dispatchTrigger(state, 'STATUS_REMOVED', {
+              targetPlayerId: targetPlayer.id,
+              targetInstanceId: entity.instanceId,
+              status,
+            });
+          }
+        }
+      }
+
+      return {
+        state,
+        success: true,
+        mutatedState: removedCount > 0,
+        value: removedCount,
+        conditionMet: step.condition === 'STATUS_APPLIED' ? removedCount > 0 : undefined,
+        onomatopoeia: removedCount > 0 ? 'STATUS REMOVED!' : 'NO STATUS TO REMOVE',
       };
     }
 
@@ -2433,6 +2541,15 @@ export function executeStep(
         }
         return { state, success: true, onomatopoeia: 'GANG UP!' };
       }
+    }
+
+    case 'FORM_BRANCH': {
+      const branchSteps =
+        player.currentForm === 'hero' ? step.params?.heroSteps : step.params?.alterEgoSteps;
+      if (!Array.isArray(branchSteps) || branchSteps.length === 0) {
+        return { state, success: true, mutatedState: false, onomatopoeia: 'FORM BRANCH EMPTY' };
+      }
+      return executeSequence(state, branchSteps as AbilityStep[], context);
     }
 
     case 'EXPLOSION':
@@ -3366,6 +3483,7 @@ export function executeStep(
       };
     }
 
+    case 'SEARCH':
     case 'SEARCH_AND_SELECT': {
       const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
       const lookCount = step.params?.lookCount as number | undefined;
@@ -3480,6 +3598,56 @@ export function executeStep(
             isLookCountSpliced,
           },
         });
+      }
+
+      if (
+        step.effect === 'SEARCH' &&
+        step.params?.autoSelectIfUnambiguous !== false &&
+        !isVoluntary
+      ) {
+        const selectedCards = matchingCandidates.slice(0, takeCount);
+        const selectedIds = new Set(selectedCards.map((card) => card.instanceId));
+        const unselectedCards = lookedCards.filter((card) => !selectedIds.has(card.instanceId));
+
+        if (!isLookCountSpliced) {
+          for (const selectedCard of selectedCards) {
+            const selectedIndex = pile.findIndex(
+              (card) => card.instanceId === selectedCard.instanceId,
+            );
+            if (selectedIndex !== -1) pile.splice(selectedIndex, 1);
+          }
+        }
+
+        const routeCards = (cards: CardInstance[], destination: string | null | undefined) => {
+          if (cards.length === 0) return;
+          if (!destination || destination === 'LEAVE_IN_PLACE') {
+            if (sourceZone === 'PLAYER_DISCARD') player.discard.push(...cards);
+            else if (sourceZone === 'PLAYER_HAND') player.hand.push(...cards);
+            else if (sourceZone === 'ENCOUNTER_DECK') state.encounterDeck.unshift(...cards);
+            else if (sourceZone === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(...cards);
+            else player.deck.unshift(...cards);
+          } else if (destination === 'HAND') player.hand.push(...cards);
+          else if (destination === 'TABLEAU') player.tableau.push(...cards);
+          else if (destination === 'DISCARD') {
+            if (sourceZone.startsWith('ENCOUNTER')) state.encounterDiscard.push(...cards);
+            else player.discard.push(...cards);
+          } else if (destination === 'DECK_TOP') {
+            if (sourceZone === 'ENCOUNTER_DECK') state.encounterDeck.unshift(...cards);
+            else player.deck.unshift(...cards);
+          }
+        };
+
+        routeCards(selectedCards, selectedDestination);
+        if (isLookCountSpliced) routeCards(unselectedCards, unselectedDestination);
+        if (shuffleAfter && isDeck) pile.sort(() => Math.random() - 0.5);
+
+        return {
+          state,
+          success: true,
+          mutatedState: selectedCards.length > 0,
+          selectedCardInstanceIds: selectedCards.map((card) => card.instanceId),
+          onomatopoeia: `SEARCHED ${selectedCards.length} CARD(S)!`,
+        };
       }
 
       const prompt: PendingDecisionPrompt = {
@@ -3731,6 +3899,7 @@ export function executeStep(
       };
     }
 
+    case 'PLAY_FROM_ZONE':
     case 'PLAY_CARD_FROM_ZONE': {
       const source = (step.params?.source as string) || 'PLAYER_DISCARD';
       const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
@@ -3885,6 +4054,7 @@ export function executeStep(
     }
 
     case 'ALLY_LIMIT_BONUS':
+    case 'MODIFY_RESTRICTED_LIMIT':
     case 'MODIFY_ALLY_LIMIT': {
       // Evaluated as constant modifier in legality-checker getPlayerAllyLimit
       return {

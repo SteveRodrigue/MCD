@@ -600,7 +600,7 @@ export function step6_calculateAndApplyAttackDamage(
 
   // Damage Prevention Interrupt Window (e.g. Backflip 01003)
   if (attackContext.attackerType === 'VILLAIN' || attackContext.heroDefended) {
-    const defenseResult = dispatchTrigger(state, 'TAKE_ATTACK_DAMAGE', {
+    const defenseResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
@@ -802,11 +802,6 @@ export function step7_resolvePostAttackAndRetaliate(
   // Post-Defense Reactions (e.g. Indomitable 01082 ready hero, Counter-Punch 01077)
   if (attackContext.heroDefended && player) {
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
-      targetPlayerId: player.id,
-      sourceInstanceId: attackContext.attackerCard?.instanceId,
-      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
-    });
-    dispatchTrigger(state, 'HERO_DEFENDED_ATTACK', {
       targetPlayerId: player.id,
       sourceInstanceId: attackContext.attackerCard?.instanceId,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,

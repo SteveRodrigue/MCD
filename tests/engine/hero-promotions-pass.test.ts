@@ -127,27 +127,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
     });
   });
 
-  describe('Iron Man: Repulsor Blast (01031), Pepper Potts (01033), Stark Tower (01034)', () => {
-    it('Repulsor Blast discards 5 cards and deals 1 base + 2 damage per energy resource', () => {
-      const player = state.players[0];
-      // Stack deck with 3 energy cards and 2 mental cards
-      const energyCard = createCardInstance(cardCatalog.getCard('01014')!); // Energy Absorption (3 energy icons)
-      const nonEnergy = createCardInstance(cardCatalog.getCard('01005')!);
-
-      player.deck = [energyCard, nonEnergy, nonEnergy, nonEnergy, nonEnergy];
-      const initialHp = state.villain.health;
-
-      const result = executeEffect(
-        state,
-        { effect: 'REPULSOR_BLAST', params: { discardCount: 5 } },
-        { playerId: 'p1' },
-      );
-
-      expect(result.success).toBe(true);
-      expect(result.value).toBe(1 + 3 * 2); // 1 base + 6 from energy = 7 damage
-      expect(state.villain.health).toBe(initialHp - 7);
-    });
-
+  describe('Iron Man: Pepper Potts (01033), Stark Tower (01034)', () => {
     it('Pepper Potts generates resources of top discard card', () => {
       const player = state.players[0];
       const energyCard = createCardInstance(cardCatalog.getCard('01014')!); // Energy Absorption (3 resources)
@@ -172,7 +152,16 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
 
       const result = executeEffect(
         state,
-        { effect: 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD', params: { trait: 'Tech' } },
+        {
+          effect: 'SEARCH',
+          params: {
+            source: 'PLAYER_DISCARD',
+            filter: { trait: 'Tech', type: 'upgrade' },
+            selectedDestination: 'HAND',
+            takeCount: 1,
+            autoSelectIfUnambiguous: true,
+          },
+        },
         { playerId: 'p1' },
       );
       expect(result.success).toBe(true);
@@ -183,7 +172,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
   });
 
   describe("Black Panther: T'Challa (01040b), Shuri (01041), Ancestral Knowledge (01042), Wakanda Forever! (01043a-d)", () => {
-    it("T'Challa and Shuri search deck for an upgrade and add to hand via canonical SEARCH_AND_SELECT", () => {
+    it("T'Challa and Shuri search deck for an upgrade and add to hand via canonical SEARCH", () => {
       const player = state.players[0];
       const bpUpgrade = createCardInstance(cardCatalog.getCard('01046')!); // Energy Daggers
       const fillerCard = createCardInstance(cardCatalog.getCard('01005')!);
@@ -194,7 +183,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       const result = executeEffect(
         state,
         {
-          effect: 'SEARCH_AND_SELECT',
+          effect: 'SEARCH',
           params: {
             source: 'PLAYER_DECK',
             trait: 'Black Panther',

@@ -848,7 +848,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       });
     });
 
-    describe('DRAW_CARDS with limit parameter', () => {
+    describe('DRAW with limit parameter', () => {
       it('draws up to printed hand size when limit: PRINTED_HAND_SIZE is specified', () => {
         const player = gameState.players[0];
         // Peter Parker Alter-Ego hand size is 6
@@ -857,7 +857,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(player.hand.length).toBe(2);
 
         const step = {
-          effect: 'DRAW_CARDS' as const,
+          effect: 'DRAW' as const,
           params: {
             limit: 'PRINTED_HAND_SIZE' as const,
           },
@@ -884,7 +884,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         player.hand = player.deck.splice(0, 2); // 2 in hand
 
         const step = {
-          effect: 'DRAW_CARDS' as const,
+          effect: 'DRAW' as const,
           params: {
             count: 2,
             limit: 'PRINTED_HAND_SIZE' as const,

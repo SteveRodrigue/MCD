@@ -64,34 +64,6 @@ export const UNSELECTED_DESTINATION_OPTIONS = [
  */
 export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   // 1. Core Card Draw & Manipulation
-  DRAW_CARDS: {
-    effect: 'DRAW_CARDS',
-    description: 'Draw cards from deck into hand with optional count and hand size limits.',
-    parameters: [
-      {
-        key: 'count',
-        label: 'Card Count',
-        type: 'number',
-        defaultValue: 1,
-        placeholder: '1',
-        description: 'Number of cards to draw (RR v1.8 p. 12)',
-      },
-      {
-        key: 'limit',
-        label: 'Hand Size Limit',
-        type: 'select',
-        options: ['PRINTED_HAND_SIZE', 'HAND_SIZE'] as const,
-        description: 'Upper boundary constraint for drawing cards (RR v1.8 p. 13)',
-      },
-      {
-        key: 'target',
-        label: 'Target Player',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
 
   // 2. Damage & Combat Primitives
   DEAL_DAMAGE: {
@@ -318,18 +290,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'MAIN_SCHEME',
-      },
-    ],
-  },
-  PLACE_THREAT_PER_SIDE_SCHEME: {
-    effect: 'PLACE_THREAT_PER_SIDE_SCHEME',
-    description: 'Place threat scaled by number of active side schemes in play.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Threat Per Side Scheme',
-        type: 'number',
-        defaultValue: 1,
       },
     ],
   },
@@ -790,94 +750,10 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
 
   // 7. Search & Select Routing Primitives (RR v1.8 p. 19, 26)
-  SEARCH_AND_SELECT: {
-    effect: 'SEARCH_AND_SELECT',
-    description: 'Search zone, look at Top-N or find cards, and route selected/unselected piles.',
-    parameters: [
-      {
-        key: 'source',
-        label: 'Search Source Zone',
-        type: 'select',
-        options: SEARCH_SOURCE_OPTIONS,
-        defaultValue: 'PLAYER_DECK',
-        description: 'Source zone to search (PLAYER_DECK, ENCOUNTER_DECK, PLAYER_DISCARD, etc.).',
-      },
-      {
-        key: 'lookCount',
-        label: 'Look Count (Top N Cards)',
-        type: 'number',
-        placeholder: 'e.g. 3 (leave blank for entire deck search)',
-        description: 'Number of top cards to look at. Leave blank to search entire zone.',
-      },
-      {
-        key: 'takeCount',
-        label: 'Take Count (Cards to choose)',
-        type: 'number',
-        defaultValue: 1,
-        placeholder: '1',
-        description: 'Number of cards the player may select.',
-      },
-      {
-        key: 'filter',
-        label: 'Candidate Card Filter',
-        type: 'card-filter',
-        description: 'Universal card filter defining eligible cards player can select',
-      },
-      {
-        key: 'selectedDestination',
-        label: 'Selected Destination',
-        type: 'select',
-        options: SELECTED_DESTINATION_OPTIONS,
-        defaultValue: 'HAND',
-        description: 'Destination zone for selected cards (HAND, TABLEAU, DECK_TOP, etc.).',
-      },
-      {
-        key: 'unselectedDestination',
-        label: 'Unselected Destination',
-        type: 'select',
-        options: UNSELECTED_DESTINATION_OPTIONS,
-        defaultValue: 'DISCARD',
-        description: 'Destination zone for remaining looked cards (DISCARD, DECK_BOTTOM, etc.).',
-      },
-      {
-        key: 'shuffleAfter',
-        label: 'Shuffle Deck After Search',
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Whether to shuffle the deck after resolving the search.',
-      },
-      {
-        key: 'isVoluntary',
-        label: 'Voluntary Choice (May choose 0)',
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Whether player can decline or choose fewer than takeCount cards.',
-      },
-      {
-        key: 'promptTitle',
-        label: 'Prompt Title (Optional)',
-        type: 'text',
-        placeholder: 'e.g. Choose 1 card to add to hand',
-        description: 'User-facing prompt title displayed during selection dialog.',
-      },
-    ],
-  },
   SEARCH_AND_PLAY_UPGRADE: {
     effect: 'SEARCH_AND_PLAY_UPGRADE',
     description: 'Search deck or discard for an upgrade and put into play.',
     parameters: [],
-  },
-  SEARCH_AND_REVEAL_SIDE_SCHEME: {
-    effect: 'SEARCH_AND_REVEAL_SIDE_SCHEME',
-    description: 'Search encounter deck for side scheme and reveal it.',
-    parameters: [
-      {
-        key: 'targetCardCode',
-        label: 'Side Scheme Card Code',
-        type: 'text',
-        placeholder: 'e.g. 01107',
-      },
-    ],
   },
 
   // 8. Ready & Exhaust Primitives
@@ -1047,11 +923,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  WHEN_ATTACHED_HOST_DEFEATED: {
-    effect: 'WHEN_ATTACHED_HOST_DEFEATED',
-    description: 'Trigger child effect when attached host card is defeated.',
-    parameters: [],
-  },
 
   // 11. Form & Player Progression Primitives
   CHANGE_FORM: {
@@ -1095,8 +966,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  PLAY_CARD_FROM_ZONE: {
-    effect: 'PLAY_CARD_FROM_ZONE',
+  PLAY_FROM_ZONE: {
+    effect: 'PLAY_FROM_ZONE',
     description:
       'Play a card from a designated zone (e.g. discard, deck) with optional cost modes.',
     parameters: [
@@ -1172,16 +1043,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   PUT_INTO_PLAY_ENGAGED: {
     effect: 'PUT_INTO_PLAY_ENGAGED',
     description: 'Put minion into play engaged with target player.',
-    parameters: [],
-  },
-  RETRIEVE_CARD_FROM_DISCARD: {
-    effect: 'RETRIEVE_CARD_FROM_DISCARD',
-    description: 'Retrieve card from player discard pile.',
-    parameters: [],
-  },
-  RETRIEVE_TECH_UPGRADE_FROM_DISCARD: {
-    effect: 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD',
-    description: 'Retrieve Tech upgrade from discard pile (Stark Tower).',
     parameters: [],
   },
   SHUFFLE_DISCARD_INTO_DECK: {
@@ -1323,53 +1184,9 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Trigger Black Panther suit upgrades in player-selected sequence.',
     parameters: [],
   },
-  REPULSOR_BLAST: {
-    effect: 'REPULSOR_BLAST',
-    description: 'Discard cards and deal damage based on energy icons (Iron Man).',
-    parameters: [
-      {
-        key: 'discardCount',
-        label: 'Cards to Discard',
-        type: 'number',
-        defaultValue: 5,
-      },
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'CHOSEN_ENEMY',
-      },
-    ],
-  },
-  REPULSOR_BLAST_DAMAGE: {
-    effect: 'REPULSOR_BLAST_DAMAGE',
-    description: 'Deal calculated Repulsor Blast energy damage.',
-    parameters: [],
-  },
-  HULK_DISCARD_RESOLUTION: {
-    effect: 'HULK_DISCARD_RESOLUTION',
-    description: 'Resolve Hulk ally mandatory turn-end card discard and effect.',
-    parameters: [],
-  },
-  EXPLOSION: {
-    effect: 'EXPLOSION',
-    description: 'Bomb Scare: Deal 1 damage to each hero in play.',
-    parameters: [],
-  },
-  FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE: {
-    effect: 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE',
-    description: 'Branch based on form: Hero = Villain attacks, Alter-Ego = Surge.',
-    parameters: [],
-  },
   HERO_FORM_BRANCH: {
     effect: 'HERO_FORM_BRANCH',
     description: 'Branch based on hero form state.',
-    parameters: [],
-  },
-  NICK_FURY_CHOICE: {
-    effect: 'NICK_FURY_CHOICE',
-    description: 'Nick Fury enter-play choice: draw 3, remove 2 threat, or 4 damage.',
     parameters: [],
   },
   PLAYER_CHOICE: {
@@ -1400,24 +1217,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     effect: 'MODIFY_RESTRICTED_LIMIT',
     description: 'Modify the restricted card limit.',
     parameters: [{ key: 'amount', label: 'Amount', type: 'number' }],
-  },
-  PLAY_FROM_ZONE: {
-    effect: 'PLAY_FROM_ZONE',
-    description: 'Canonical alias for playing a card from a non-hand zone.',
-    parameters: [
-      {
-        key: 'source',
-        label: 'Source Zone',
-        type: 'select',
-        options: ['PLAYER_DISCARD', 'ANY_PLAYER_DISCARD', 'PLAYER_DECK', 'SET_ASIDE'],
-      },
-      {
-        key: 'costMode',
-        label: 'Cost Mode',
-        type: 'select',
-        options: ['PRINTED_COST', 'FREE', 'REDUCED'],
-      },
-    ],
   },
   SEARCH: {
     effect: 'SEARCH',

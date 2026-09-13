@@ -34,13 +34,13 @@ export interface TriggerPattern {
 export const TRIGGER_PATTERNS: TriggerPattern[] = [
   {
     regex: /when (?:the )?villain initiates an attack against you/i,
-    trigger: 'VILLAIN_INITIATES_ATTACK',
+    trigger: 'ENEMY_INITIATES_ATTACK',
   },
   {
     regex: /when you would take (?:any amount of )?damage from an attack/i,
-    trigger: 'TAKE_ATTACK_DAMAGE',
+    trigger: 'DAMAGE_WOULD_BE_TAKEN',
   },
-  { regex: /when you would take (?:any amount of )?damage/i, trigger: 'TAKE_DAMAGE' },
+  { regex: /when you would take (?:any amount of )?damage/i, trigger: 'DAMAGE_WOULD_BE_TAKEN' },
   {
     regex: /when a treachery card is revealed(?: from the encounter deck)?/i,
     trigger: 'WHEN_REVEALED',
@@ -49,10 +49,10 @@ export const TRIGGER_PATTERNS: TriggerPattern[] = [
   { regex: /after you play ([A-Za-z0-9 '-]+)/i, trigger: 'CARD_PLAYED' },
   { regex: /after ([A-Za-z0-9 '-]+) attacks/i, trigger: 'ATTACK_RESOLVED' },
   { regex: /after ([A-Za-z0-9 '-]+) thwarts/i, trigger: 'THWART_RESOLVED' },
-  { regex: /when attached minion is defeated/i, trigger: 'MINION_DEFEATED' },
-  { regex: /after a minion is defeated/i, trigger: 'MINION_DEFEATED' },
-  { regex: /after you change to this form/i, trigger: 'FORM_CHANGED_TO_HERO' },
-  { regex: /when attached enemy would attack/i, trigger: 'VILLAIN_INITIATES_ATTACK' },
+  { regex: /when attached minion is defeated/i, trigger: 'CHARACTER_DEFEATED' },
+  { regex: /after a minion is defeated/i, trigger: 'CHARACTER_DEFEATED' },
+  { regex: /after you change to this form/i, trigger: 'FORM_CHANGED' },
+  { regex: /when attached enemy would attack/i, trigger: 'ENEMY_INITIATES_ATTACK' },
 ];
 
 export interface LimitPattern {
@@ -185,7 +185,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       }
       return [
         {
-          effect: 'DRAW_CARDS',
+          effect: 'DRAW',
           params,
         },
       ];
@@ -196,7 +196,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     regex: /choose a player to draw (\d+) cards?/i,
     handler: (m) => [
       {
-        effect: 'DRAW_CARDS',
+        effect: 'DRAW',
         params: {
           count: parseInt(m[1], 10),
           target: 'CHOSEN_PLAYER',

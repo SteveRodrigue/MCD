@@ -111,7 +111,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
         },
         {
           id: 'draw_card_if_empty',
-          effect: 'DRAW_CARDS' as const,
+          effect: 'DRAW' as const,
           gate: 'IF_CONDITION_MET' as const,
           params: {
             targetStepId: 'remove_threat_step',
@@ -220,7 +220,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           },
           {
             id: 'draw_on_excess',
-            effect: 'DRAW_CARDS' as const,
+            effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
             params: {
               targetStepId: 'deal_dmg',
@@ -257,7 +257,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           },
           {
             id: 'draw_on_excess',
-            effect: 'DRAW_CARDS' as const,
+            effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
             params: {
               targetStepId: 'deal_dmg',
@@ -341,7 +341,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           },
           {
             id: 'draw_if_full',
-            effect: 'DRAW_CARDS' as const,
+            effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
             params: { count: 1 },
           },
@@ -371,7 +371,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           },
           {
             id: 'draw_on_applied',
-            effect: 'DRAW_CARDS' as const,
+            effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
             params: { count: 1 },
           },

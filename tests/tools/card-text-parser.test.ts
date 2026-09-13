@@ -44,7 +44,7 @@ describe('Card Text Parser', () => {
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
     });
 
-    it('parses Spider-Man (01001a) — Interrupt timing, VILLAIN_INITIATES_ATTACK trigger, DRAW_CARDS', () => {
+    it('parses Spider-Man (01001a) — Interrupt timing, ENEMY_INITIATES_ATTACK trigger, DRAW', () => {
       const text =
         'Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.';
       const result = parseCardText(text, '01001a');
@@ -56,9 +56,9 @@ describe('Card Text Parser', () => {
       const ability = result.enrichment.abilities![0];
       expect(ability.id).toBe('spider_sense');
       expect(ability.timing).toBe('INTERRUPT');
-      expect(ability.trigger).toBe('VILLAIN_INITIATES_ATTACK');
+      expect(ability.trigger).toBe('ENEMY_INITIATES_ATTACK');
       expect(ability.steps[0]).toEqual({
-        effect: 'DRAW_CARDS',
+        effect: 'DRAW',
         params: { count: 1 },
       });
 
@@ -85,7 +85,7 @@ describe('Card Text Parser', () => {
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
     });
 
-    it('parses Backflip (01003) — Interrupt (defense), TAKE_ATTACK_DAMAGE trigger, PREVENT_DAMAGE', () => {
+    it('parses Backflip (01003) — Interrupt (defense), DAMAGE_WOULD_BE_TAKEN trigger, PREVENT_DAMAGE', () => {
       const text =
         '<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.';
       const result = parseCardText(text, '01003');
@@ -95,7 +95,7 @@ describe('Card Text Parser', () => {
 
       const ability = result.enrichment.abilities![0];
       expect(ability.timing).toBe('INTERRUPT');
-      expect(ability.trigger).toBe('TAKE_ATTACK_DAMAGE');
+      expect(ability.trigger).toBe('DAMAGE_WOULD_BE_TAKEN');
       expect(ability.zone).toBe('HAND');
       expect(ability.cost).toEqual({ discardSelf: true });
       expect(ability.steps[0]).toEqual({
@@ -177,7 +177,7 @@ describe('Card Text Parser', () => {
         },
       });
       expect(ability.steps[0]).toEqual({
-        effect: 'DRAW_CARDS',
+        effect: 'DRAW',
         params: {
           count: 1,
           carolBonus: 1,
@@ -199,7 +199,7 @@ describe('Card Text Parser', () => {
         damageHero: 1,
       });
       expect(ability.steps[0]).toEqual({
-        effect: 'DRAW_CARDS',
+        effect: 'DRAW',
         params: { count: 1 },
       });
 

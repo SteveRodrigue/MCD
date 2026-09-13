@@ -14,9 +14,7 @@ describe('CardPaymentModal Targeting Invariants (Issue #94)', () => {
       isEventCard &&
       abilities.some((a: any) =>
         (a.steps || []).some((s: any) =>
-          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
-            s.effect,
-          ),
+          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES'].includes(s.effect),
         ),
       );
     const isThwart =

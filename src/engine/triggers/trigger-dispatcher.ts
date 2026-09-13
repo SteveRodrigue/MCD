@@ -18,12 +18,6 @@ const TRIGGER_EQUIVALENTS: Record<string, string[]> = {
   FORM_CHANGED: ['FORM_CHANGED_TO_HERO', 'FORM_CHANGED_TO_ALTER_EGO', 'HERO_FLIPPED'],
 };
 
-const LEGACY_TRIGGER_DISPLAY: Record<string, string> = Object.fromEntries(
-  Object.entries(TRIGGER_EQUIVALENTS).flatMap(([canonical, legacyNames]) =>
-    legacyNames.map((legacyName) => [canonical, legacyNames[0] || legacyName]),
-  ),
-);
-
 export function triggersAreEquivalent(
   left: string | undefined,
   right: string | undefined,
@@ -37,16 +31,11 @@ export function triggersAreEquivalent(
 }
 
 function displayTriggerName(trigger: string): string {
-  return LEGACY_TRIGGER_DISPLAY[trigger] || trigger;
+  return trigger;
 }
 
 function displayEffectName(effect: string): string {
-  const aliases: Record<string, string> = {
-    DRAW: 'DRAW_CARDS',
-    SEARCH: 'SEARCH_AND_SELECT',
-    PLAY_FROM_ZONE: 'PLAY_CARD_FROM_ZONE',
-  };
-  return aliases[effect] || effect;
+  return effect;
 }
 
 function matchesTriggerFilter(
@@ -362,12 +351,7 @@ export function dispatchTrigger(
         if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
           currentThreat = effCtx.threatAmount;
         }
-        if (
-          (trigger === 'TAKE_ATTACK_DAMAGE' ||
-            trigger === 'DAMAGE_WOULD_BE_TAKEN' ||
-            trigger === 'TAKE_DAMAGE') &&
-          effCtx.damageAmount !== undefined
-        ) {
+        if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
           currentDamage = effCtx.damageAmount;
           if (currentDamage === 0) isPrevented = true;
         }
@@ -564,11 +548,8 @@ export function dispatchTrigger(
     }
   }
 
-  // 3. Scan in-hand cards for Hand Damage triggers (e.g. Backflip for TAKE_ATTACK_DAMAGE)
-  if (
-    (trigger === 'TAKE_ATTACK_DAMAGE' || trigger === 'DAMAGE_WOULD_BE_TAKEN') &&
-    currentDamage > 0
-  ) {
+  // 3. Scan in-hand cards for Hand Damage triggers (e.g. Backflip for DAMAGE_WOULD_BE_TAKEN)
+  if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && currentDamage > 0) {
     const handInterruptIdx = player.hand.findIndex((c) => {
       const abilities = c.card.enrichment?.abilities || [];
       return abilities.some((a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND');

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Cleanup (Engine, Schema & Tooling): Phase 4 Engine Cleanup & Phase 5 Test Realignment ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
+  - Removed superseded legacy enum members (`TriggerTypeSchema`, `EffectTypeSchema`, `TargetSelectorSchema`) from `src/data/supplemental/schema.ts` and `src/engine/models/abilities.ts`.
+  - Deleted legacy `case` fallthrough labels (`DRAW_CARDS`, `SEARCH_AND_SELECT`, `PLAY_CARD_FROM_ZONE`, `RETRIEVE_CARD_FROM_DISCARD`) and retired single-use handlers (`NICK_FURY_CHOICE`, `EXPLOSION`, `HULK_DISCARD_RESOLUTION`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`, `REPULSOR_BLAST`) from `src/engine/effects/index.ts`.
+  - Replaced legacy string literals across combat, action, upkeep, and trigger dispatcher pipelines with single canonical trigger dispatches.
+  - Aligned card text parser patterns and parameter editor registry to canonical names, and regenerated `src/data/supplemental/schema.json`.
+  - Realigned test suite across all 106 test files to assert on canonical triggers and effect primitives with 100% pass rate.
+
 - **Migration (Supplemental Schema & Taxonomy): Phase 3 Batch Data Migration ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - Completed Phase 3 batch taxonomy migration across active supplemental card packs (`src/data/supplemental/pack/core.json` and `src/data/supplemental/pack/core_encounter.json`).
   - Verified 100% canonical naming for active card triggers, effect primitives, target selectors, and audit reconstructed text.

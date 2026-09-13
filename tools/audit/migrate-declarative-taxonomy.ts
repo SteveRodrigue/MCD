@@ -20,6 +20,7 @@ const TRIGGER_RENAMES: Record<string, string> = {
   FORM_CHANGED_TO_HERO: 'FORM_CHANGED',
   FORM_CHANGED_TO_ALTER_EGO: 'FORM_CHANGED',
   HERO_FLIPPED: 'FORM_CHANGED',
+  ROUND_END: 'ROUND_ENDED',
 };
 
 const EFFECT_RENAMES: Record<string, string> = {

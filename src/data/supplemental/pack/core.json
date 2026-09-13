@@ -3291,7 +3291,7 @@
         {
           "id": "nick_fury_round_end_discard",
           "timing": "FORCED_RESPONSE",
-          "trigger": "ROUND_END",
+          "trigger": "ROUND_ENDED",
           "steps": [
             {
               "effect": "DISCARD",
@@ -3310,7 +3310,7 @@
         "rulesVersion": "v1.8",
         "confidence": 95,
         "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]); FORCED_RESPONSE (Trigger: ROUND_END) -> DISCARD (source: SELF)"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]); FORCED_RESPONSE (Trigger: ROUND_ENDED) -> DISCARD (source: SELF)"
       },
       "mechanicSteps": [
         "Ally: THW 2, ATK 2, Health 3.",

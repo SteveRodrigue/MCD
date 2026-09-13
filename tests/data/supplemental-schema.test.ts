@@ -294,10 +294,10 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
-    it('Accepts canonical SEARCH_AND_SELECT primitive in AbilityStepSchema with nested or flat filter params', () => {
+    it('Accepts canonical SEARCH primitive in AbilityStepSchema with nested or flat filter params', () => {
       expect(
         AbilityStepSchema.safeParse({
-          effect: 'SEARCH_AND_SELECT',
+          effect: 'SEARCH',
           params: {
             source: 'PLAYER_DECK',
             lookCount: 3,
@@ -311,7 +311,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
       expect(
         AbilityStepSchema.safeParse({
-          effect: 'SEARCH_AND_SELECT',
+          effect: 'SEARCH',
           params: {
             source: 'PLAYER_DECK',
             targetCardCode: '01046',
@@ -438,7 +438,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const validHandAbility = {
         id: 'backflip',
         timing: 'INTERRUPT',
-        trigger: 'TAKE_ATTACK_DAMAGE',
+        trigger: 'DAMAGE_WOULD_BE_TAKEN',
         zone: 'HAND',
         steps: [{ effect: 'PREVENT_DAMAGE', params: { amount: 'ALL' } }],
       };
@@ -675,21 +675,26 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(EffectTypeSchema.safeParse(effect).success, `Expected ${effect} to parse`).toBe(true);
       }
       for (const target of canonicalTargets) {
-        expect(CardAbilitySchema.safeParse({
-          id: `target_${target.toLowerCase()}`,
-          timing: 'ACTION',
-          steps: [{ effect: 'DRAW_CARDS', params: { target } }],
-        }).success, `Expected target ${target} to parse`).toBe(true);
+        expect(
+          CardAbilitySchema.safeParse({
+            id: `target_${target.toLowerCase()}`,
+            timing: 'ACTION',
+            steps: [{ effect: 'DRAW', params: { target } }],
+          }).success,
+          `Expected target ${target} to parse`,
+        ).toBe(true);
       }
 
-      expect(EffectTypeSchema.safeParse('DRAW_CARDS').success).toBe(true);
-      expect(EffectTypeSchema.safeParse('SEARCH_AND_SELECT').success).toBe(true);
-      expect(CardAbilitySchema.safeParse({
-        id: 'legacy_trigger_compatibility',
-        timing: 'ACTION',
-        trigger: 'VILLAIN_INITIATES_ATTACK',
-        steps: [{ effect: 'DRAW_CARDS', params: { count: 1 } }],
-      }).success).toBe(true);
+      expect(EffectTypeSchema.safeParse('DRAW_CARDS').success).toBe(false);
+      expect(EffectTypeSchema.safeParse('SEARCH_AND_SELECT').success).toBe(false);
+      expect(
+        CardAbilitySchema.safeParse({
+          id: 'legacy_trigger_compatibility',
+          timing: 'ACTION',
+          trigger: 'VILLAIN_INITIATES_ATTACK',
+          steps: [{ effect: 'DRAW', params: { count: 1 } }],
+        }).success,
+      ).toBe(false);
     });
 
     it('Correctly passes on JSON with non-duplicate nested keys', () => {
@@ -773,7 +778,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
         const step = AbilityStepSchema.safeParse({
           id: 'step_2',
-          effect: 'DRAW_CARDS',
+          effect: 'DRAW',
           gate: 'IF_CONDITION_MET',
           params: {
             targetStepId: 'step_1',
@@ -928,7 +933,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               },
               {
                 id: 'bonus_draw_step',
-                effect: 'DRAW_CARDS',
+                effect: 'DRAW',
                 gate: 'IF_CONDITION_MET',
                 params: {
                   targetStepId: 'damage_step',
@@ -964,7 +969,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
         });
 
-        it('Validates Split Personality (01025) full ability data tree with DRAW_CARDS and limit: PRINTED_HAND_SIZE', () => {
+        it('Validates Split Personality (01025) full ability data tree with DRAW and limit: PRINTED_HAND_SIZE', () => {
           const ability = {
             id: 'split_personality',
             timing: 'ACTION',
@@ -975,7 +980,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               },
               {
                 id: 'split_personality_draw',
-                effect: 'DRAW_CARDS',
+                effect: 'DRAW',
                 params: {
                   limit: 'PRINTED_HAND_SIZE',
                 },

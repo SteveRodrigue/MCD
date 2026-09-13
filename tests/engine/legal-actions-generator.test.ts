@@ -229,7 +229,7 @@ describe('Legal Actions Generator (The Daily Bugle Action Bulletins)', () => {
               id: 'test_action',
               timing: 'ACTION',
               limit: 'ONCE_PER_ROUND',
-              steps: [{ effect: 'DRAW_CARDS', params: { count: 1 } }],
+              steps: [{ effect: 'DRAW', params: { count: 1 } }],
             },
           ],
         },

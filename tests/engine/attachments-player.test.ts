@@ -246,23 +246,23 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(res.state.players[0].discard.some((c) => c.card.code === '01007')).toBe(true);
   });
 
-  it('strictly rejects deprecated ATTACHED_MINION_DEFEATED and validates HOST_DEFEATED in CardAbilitySchema', async () => {
+  it('strictly rejects deprecated HOST_DEFEATED and validates CHARACTER_DEFEATED in CardAbilitySchema', async () => {
     const { CardAbilitySchema } = await import('../../src/data/supplemental/schema');
 
-    // Valid with HOST_DEFEATED
+    // Valid with CHARACTER_DEFEATED
     const validAbility = {
-      id: 'test_host_defeated',
+      id: 'test_character_defeated',
       timing: 'FORCED_INTERRUPT',
-      trigger: 'HOST_DEFEATED',
+      trigger: 'CHARACTER_DEFEATED',
       steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3, target: 'CHOSEN_SCHEME' } }],
     };
     expect(CardAbilitySchema.safeParse(validAbility).success).toBe(true);
 
-    // Rejects deprecated ATTACHED_MINION_DEFEATED
+    // Rejects deprecated HOST_DEFEATED
     const deprecatedAbility = {
       id: 'test_deprecated_trigger',
       timing: 'FORCED_INTERRUPT',
-      trigger: 'ATTACHED_MINION_DEFEATED',
+      trigger: 'HOST_DEFEATED',
       steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3 } }],
     };
     expect(CardAbilitySchema.safeParse(deprecatedAbility).success).toBe(false);

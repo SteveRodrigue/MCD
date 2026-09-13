@@ -19,9 +19,9 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     }
   });
 
-  it('DRAW_CARDS exposes count and target without legacy card-specific carolBonus', () => {
-    const desc = getEffectDescriptor('DRAW_CARDS');
-    expect(desc.effect).toBe('DRAW_CARDS');
+  it('DRAW exposes count and target without legacy card-specific carolBonus', () => {
+    const desc = getEffectDescriptor('DRAW');
+    expect(desc.effect).toBe('DRAW');
 
     const paramKeys = desc.parameters.map((p) => p.key);
     expect(paramKeys).toContain('count');
@@ -63,22 +63,13 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(amountParam?.type).toBe('number');
   });
 
-  it('SEARCH_AND_SELECT exposes destination routing, card picking, universal filter, and prompt controls', () => {
-    const desc = getEffectDescriptor('SEARCH_AND_SELECT');
+  it('SEARCH exposes source, takeCount, and autoSelectIfUnambiguous controls', () => {
+    const desc = getEffectDescriptor('SEARCH');
     const paramKeys = desc.parameters.map((p) => p.key);
 
     expect(paramKeys).toContain('source');
-    expect(paramKeys).toContain('lookCount');
     expect(paramKeys).toContain('takeCount');
-    expect(paramKeys).toContain('filter');
-    expect(paramKeys).toContain('selectedDestination');
-    expect(paramKeys).toContain('unselectedDestination');
-    expect(paramKeys).toContain('shuffleAfter');
-    expect(paramKeys).toContain('isVoluntary');
-    expect(paramKeys).toContain('promptTitle');
-
-    const filterParam = desc.parameters.find((p) => p.key === 'filter');
-    expect(filterParam?.type).toBe('card-filter');
+    expect(paramKeys).toContain('autoSelectIfUnambiguous');
   });
 
   it('GRANT_KEYWORD exposes keyword, amount, duration, and target', () => {

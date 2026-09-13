@@ -79,7 +79,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'ALTER_EGO_ACTION',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'PLAYER_DECK',
               lookCount: 3,
@@ -91,6 +91,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               unselectedDestination: 'DISCARD',
               shuffleAfter: false,
               promptTitle: 'Futurist: Choose 1 Tech card to add to hand',
+              autoSelectIfUnambiguous: false,
             },
           },
         ],
@@ -185,7 +186,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'ALTER_EGO_ACTION',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'PLAYER_DECK',
               lookCount: 3,
@@ -273,7 +274,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'ACTION',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'PLAYER_DECK',
               filter: {
@@ -353,7 +354,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'SETUP',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'PLAYER_DECK',
               filter: {
@@ -364,6 +365,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               selectedDestination: 'TABLEAU',
               unselectedDestination: null,
               shuffleAfter: true,
+              autoSelectIfUnambiguous: false,
             },
           },
         ],
@@ -432,7 +434,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'WHEN_REVEALED',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'ENCOUNTER_DECK',
               filter: {
@@ -443,6 +445,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               selectedDestination: 'TABLEAU',
               unselectedDestination: null,
               shuffleAfter: true,
+              autoSelectIfUnambiguous: false,
             },
           },
         ],
@@ -517,7 +520,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         timing: 'ACTION',
         steps: [
           {
-            effect: 'SEARCH_AND_SELECT',
+            effect: 'SEARCH',
             params: {
               source: 'PLAYER_DECK',
               lookCount: 3,
@@ -525,6 +528,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
               selectedDestination: 'HAND',
               unselectedDestination: 'DECK_TOP',
               shuffleAfter: false,
+              autoSelectIfUnambiguous: false,
             },
           },
         ],

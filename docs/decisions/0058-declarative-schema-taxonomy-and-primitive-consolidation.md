@@ -38,6 +38,8 @@ A single canonical vocabulary reduces ambiguity across the schema, engine, suppl
 
 `SEARCH` receives an `autoSelectIfUnambiguous?: boolean` parameter so the unified primitive can preserve the current no-prompt behavior for unambiguous retrievals without retaining retrieval-specific effect names. `REMOVE_STATUS` is introduced as a genuinely missing composable primitive, paired with `STATUS_REMOVED`. Controlled and friendly selectors are explicit so ownership and table-wide targeting cannot be conflated.
 
+`ENEMY_INITIATES_ATTACK` is a universal event, not a synonym for villain attack. Its context must identify attacker kind (`VILLAIN` or `MINION`), attacker instance, attacked player, and engagement scope. Ability declarations must support a scope filter, such as `attackerKind: 'VILLAIN'` for Spider-Sense, so villain-only, minion-only, enemy-wide, and engaged-player reactions do not depend on which event names the pipeline happens to dispatch. This trigger-filter contract is a required follow-up, not yet an implemented Phase 2 capability.
+
 The full mapping contract follows. These tables are copied from Sections 1.1–1.3 of the governing audit report and are self-contained here so later implementation work does not depend on the report remaining unchanged.
 
 ### 1. Trigger Types (`TriggerTypeSchema`)

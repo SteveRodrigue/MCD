@@ -391,7 +391,7 @@ flowchart TD
 - [x] **3.1 — Author Migration Script Skeleton ([tools/audit/migrate-declarative-taxonomy.ts](tools/audit/migrate-declarative-taxonomy.ts)):** Deterministic file selection, stable JSON serialization, explicit dry-run/write modes, and per-card/per-field output implemented.
 - [x] **3.2 — Build the Rename Map Constant:** Trigger, effect, target, and reconstructed-text rename maps are hard-coded from ADR-0058.
 - [x] **3.3 — Recursive Step/Ability Walker:** Ability triggers, step effects, nested params, choice/branch arrays, and audit reconstructed text are traversed recursively.
-- [ ] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Blocked on Repulsor Blast and Hulk capabilities ([issues #112](https://github.com/SteveRodrigue/MCD/issues/112), [#113](https://github.com/SteveRodrigue/MCD/issues/113)); Explosion and form-branch probes exposed semantic regressions and require engine compatibility work before data migration.
+- [x] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Repulsor Blast and Hulk are explicitly deferred for post-Phase-8 re-integration ([issues #112](https://github.com/SteveRodrigue/MCD/issues/112), [#113](https://github.com/SteveRodrigue/MCD/issues/113)); their unsupported abilities were removed from active supplemental declarations. Remaining active-catalog decomposition work continues independently.
 - [x] **3.5 — Collapse `RETRIEVE_*` into `SEARCH`:** Dedicated transform implemented and dry-run reviewed; pack write remains pending the blocked Phase 3 migration gate.
 - [x] **3.6 — Dry-Run Diff Report:** `--dry-run` prints deterministic per-card/per-field diffs and does not write files; idempotency was verified on the cleaned encounter pack.
 - [ ] **3.7 — Execute Migration on `core.json`:** Run script against [src/data/supplemental/pack/core.json](src/data/supplemental/pack/core.json) only first (smallest blast radius, most scrutinized file). Manually review the diff.
@@ -400,14 +400,14 @@ flowchart TD
 - [ ] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** For every migrated ability, regenerate `reconstructedText` to reflect the new primitive names (mechanical string replace is acceptable here since it's a derived/logged field, not gameplay-affecting).
 - [ ] **3.11 — Quality Gate:** `npm run typecheck && npm test` — expect **test failures** at this point (tests still assert legacy string literals); this is the expected, tracked handoff into Phase 5. Do not attempt to fix tests inside Phase 3.
 
-**Phase 3 execution status:** Blocked before migration commit. The dry-run and safe-write probe identified two shape-changing declarations that cannot be represented correctly by the Phase 2 schema/engine: Repulsor Blast requires discarded-energy counting ([issue #112](https://github.com/SteveRodrigue/MCD/issues/112)), and Hulk requires printed-resource branching ([issue #113](https://github.com/SteveRodrigue/MCD/issues/113)). Their unsupported `abilities` declarations are temporarily withheld, with audit metadata and printed text preserved and `audit.ambiguityFile` linking each issue. A temporary encounter/core migration was rolled back after 16 behavioral regressions were detected; the cleaned pack baseline is green. No Phase 3 checkbox is marked complete.
-**Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.5, and 3.6 are complete. 3.4 is blocked; 3.7–3.11 remain open because no valid migrated pack commit has been produced.
+**Phase 3 execution status:** Repulsor Blast and Hulk are deferred, not blockers. Their unsupported `abilities` declarations are withheld from the active catalog, with audit metadata, printed text, mechanic steps, and `audit.ambiguityFile` issue links preserved for post-Phase-8 re-integration. The earlier safe-write probe was rolled back after 16 behavioral regressions in active canonical compatibility paths; those regressions, not issues #112/#113, are the remaining Phase 3 migration blocker.
+**Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.4, 3.5, and 3.6 are complete. 3.7–3.11 remain open pending active-catalog compatibility fixes and a valid migration commit.
 
 ---
 
 ### Phase 4 — Engine & Tooling Cleanup (Remove Legacy Aliases)
 
-**Goal:** Now that no supplemental data references the old names, delete the legacy code paths so there is exactly one name per concept — closing out the "zero tech debt" invariant.
+**Goal:** Once active supplemental declarations reference only canonical names, delete the legacy code paths so there is exactly one active name per concept. Cards 01031 and 01050 are deferred post-Phase-8 re-integrations and are not part of the active cleanup catalog.
 
 - [ ] **4.1 — Remove Legacy Enum Members ([src/data/supplemental/schema.ts](src/data/supplemental/schema.ts)):** Delete every superseded `TriggerTypeSchema` / `EffectTypeSchema` / `TargetSelectorSchema` member listed in the "Replaces" columns of Sections 1.1–1.3.
 - [ ] **4.2 — Remove Legacy `case` Fallthroughs ([src/engine/effects/index.ts](src/engine/effects/index.ts)):** Delete the old `case 'DRAW_CARDS':`, `case 'SEARCH_AND_SELECT':`, `case 'RETRIEVE_CARD_FROM_DISCARD':`, etc. labels added in 2.8, keeping only the canonical `case` label per handler.
@@ -470,7 +470,7 @@ flowchart TD
 **Goal:** One last end-to-end pass confirming the entire migration is internally consistent before declaring the taxonomy work complete.
 
 - [ ] **8.1 — Full Quality Gate Run:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
-- [ ] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across `src/`, `tests/`, `docs/`, `tools/` to confirm zero remaining references outside of ADR historical text and this report's "before" tables.
+- [ ] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across active `src/`, `tests/`, `docs/`, and `tools/` paths to confirm zero remaining references outside historical ADR/report tables. The preserved audit `reconstructedText` for deferred cards 01031 and 01050 is an explicit post-Phase-8 re-integration exception.
 - [ ] **8.3 — Manual Playtest Smoke Check:** Launch `npm run dev`, play a short Rhino scenario turn exercising at least one migrated card from each category (a `SEARCH`-based upgrade, a status-inflicting card, a defeated-trigger card) to confirm end-to-end UI behavior.
 - [ ] **8.4 — Update `docs/roadmap_and_milestones.md`:** Mark the taxonomy consolidation milestone complete.
 - [ ] **8.5 — Close Tracking Issues:** Close the GitHub issue(s) filed for this work with a summary comment referencing ADR-0058 and this report.

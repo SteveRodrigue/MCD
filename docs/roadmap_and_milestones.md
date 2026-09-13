@@ -220,6 +220,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [ ] **[Issue #23](https://github.com/SteveRodrigue/MCD/issues/23):** `feat(engine): Cross-player attachments & ownership (Combat Training 01057)`.
   - [x] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
   - [x] **[Issue #105](https://github.com/SteveRodrigue/MCD/issues/105):** `[BUG]: Hawkeye ally Response trigger does not prompt when minion enters play` ✅ (Completed)
+  - [x] **Declarative Schema Taxonomy & Primitive Consolidation ([ADR-0058](decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md)):** Consolidated card triggers, effect primitives, and target selectors; migrated pack data; deleted legacy aliases; realigned test suite; upgraded Card Editor UI; and synchronized documentation set. ✅ (Completed)
   - [ ] **Composable Value Transformers, Event Interception & Explicit Condition Contracts ([ADR-0049](decisions/0049-composable-value-transformers-and-event-interception.md)):**
     - [x] **[Issue #89](https://github.com/SteveRodrigue/MCD/issues/89):** `feat(schema): Formalize StepConditionSchema and DynamicValueSource for composable card effects (ADR-0049)` ✅ (Completed)
     - [x] **[Issue #90](https://github.com/SteveRodrigue/MCD/issues/90):** `feat(engine): Implement universal CONSUME_INTERCEPTED_EVENT and scalar value binding in trigger dispatcher (ADR-0049)` ✅ (Completed)

@@ -126,33 +126,10 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
   });
 
-  it('01111 Explosion: Deals threat damage if Bomb Scare is in play, otherwise surges', () => {
+  it('01111 Explosion: remains quarantined until conditional resolution is implemented', () => {
     const explosionCard = cardCatalog.getCard('01111')!;
-    const explosionInst = createCardInstance(explosionCard);
-    const ability = explosionCard.enrichment!.abilities![0];
-
-    // 1. When Bomb Scare (01109) is in play with 3 threat
-    const bombScareCard = cardCatalog.getCard('01109') as SideSchemeCard;
-    const bombScareInst = createCardInstance(bombScareCard);
-    state.sideSchemes = [{ instanceId: bombScareInst.instanceId, card: bombScareCard, threat: 3 }];
-
-    const initialHp = state.players[0].health;
-    const resWithScheme = executeEffect(state, ability, {
-      playerId: 'p1',
-      sourceCardInstance: explosionInst,
-    });
-    expect(resWithScheme.success).toBe(true);
-    expect(resWithScheme.state.players[0].health).toBe(initialHp - 3);
-
-    // 2. When Bomb Scare is not in play -> Surges
-    state.sideSchemes = [];
-    const initialDealt = state.players[0].dealtEncounterCards.length;
-    const resNoScheme = executeEffect(state, ability, {
-      playerId: 'p1',
-      sourceCardInstance: explosionInst,
-    });
-    expect(resNoScheme.success).toBe(true);
-    expect(resNoScheme.state.players[0].dealtEncounterCards.length).toBe(initialDealt + 1);
+    expect(explosionCard.enrichment?.abilities).toBeUndefined();
+    expect(explosionCard.enrichment?.audit?.ambiguityFile).toContain('/issues/114');
   });
 
   it('01192 Masterplan: Places 4 threat on each side scheme, or searches encounter deck for one', () => {

@@ -683,20 +683,7 @@
       ]
     },
     "01111": {
-      "comment": "TREACHERY: Explosion. When Revealed: If Bomb Scare is in play, deal X damage where X is threat on Bomb Scare. Otherwise surge.",
-      "abilities": [
-        {
-          "id": "explosion_when_revealed",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "EXPLOSION",
-              "params": {}
-            }
-          ]
-        }
-      ],
+      "comment": "BLOCKED -- Explosion supplemental ability withheld pending Bomb Scare conditional resolution capability. See GitHub issue #114. TREACHERY: Explosion. When Revealed: If Bomb Scare is in play, deal X damage where X is threat on Bomb Scare. Otherwise surge.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T14:40",
@@ -704,6 +691,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
+        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/114",
         "originalText": "<b>When Revealed</b>: If Bomb Scare is in play, assign X damage among heroes and allies, where X is the amount of threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
         "reconstructedText": "WHEN_REVEALED -> EXPLOSION (If Bomb Scare in play, deal threat damage; otherwise surge)"
       },

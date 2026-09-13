@@ -1,277 +1,160 @@
-# Phase 2 Implementation Plan: Additive Schema & Engine Changes
+# Card Supplemental Editor UI Upgrade: Comprehensive Integration Plan
 
-**Tracking issue:** #111  
-**Governing ADR:** ADR-0058  
-**Scope:** Phase 2 only; legacy names remain valid throughout this phase.  
-**Approval gate:** No source, test, schema JSON, or supplemental data edits begin until this plan is explicitly approved.
-
-## Rules Reference (RR v1.8) & Spec Analysis
-
-- **Timing and trigger priority:** Preserve the existing interrupt/response ordering defined by RR v1.8 pp. 23–24. Add canonical trigger dispatches alongside legacy dispatches so existing responses remain valid during the compatibility window.
-- **Defeat and lifecycle events:** A defeated entity must emit the appropriate event after the state mutation is complete, with entity context available to response abilities. The universal `DEFEATED` event and narrower `CHARACTER_DEFEATED` / `SCHEME_DEFEATED` events will be additive aliases, not replacements.
-- **Damage and prevention windows:** Keep prospective damage handling in the current RR v1.8 p. 24 pipeline. `DAMAGE_WOULD_BE_TAKEN` must coexist with `TAKE_ATTACK_DAMAGE` / `TAKE_DAMAGE` until data migration and cleanup phases.
-- **Status rules:** Stalwart and Steady behavior remains governed by RR v1.8 p. 28. `REMOVE_STATUS` must use the same target resolution and status-token conventions as `ADD_STATUS`, and `STATUS_REMOVED` must be dispatched only when a status is actually removed.
-- **Search and zone rules:** Preserve the zone and selection semantics described by RR v1.8 pp. 19 and 26. Add `SEARCH` as an additive alias for `SEARCH_AND_SELECT` and support `autoSelectIfUnambiguous?: boolean`, defaulting to the existing automatic behavior when candidates are no more numerous than `takeCount`.
-- **Cost and atomic resolution:** No Phase 2 change may bypass the existing cost/resolution stack or prompt queue. Any synchronous search resolution must use the existing card-transfer path and preserve shuffle, destination, voluntary-selection, and pending-prompt behavior.
-- **Active architectural decisions:** ADR-0046 governs composable card filters; ADR-0048 governs timing versus trigger vocabulary; ADR-0049 and ADR-0052 govern dynamic values and event interception; ADR-0053 governs trigger-loop safeguards; ADR-0058 governs the canonical names and additive-before-cleanup sequencing.
-
-## Proposed Changes
-
-- **[MODIFY] `src/data/supplemental/schema.ts`**
-  - Add the Phase 2 canonical trigger members alongside all legacy members.
-  - Add canonical effect members and the optional `autoSelectIfUnambiguous` parameter shape without removing existing effect names.
-  - Add controlled, friendly, side-scheme, all-scheme, and triggering-scheme selectors alongside existing selectors.
-  - Keep `DEFEATED` if already present and avoid duplicate enum entries.
-
-- **[MODIFY] `src/engine/models/abilities.ts`**
-  - Extend the hand-maintained `TriggerType` and `EffectType` unions to cover the Zod vocabulary 1:1 where these unions are used by engine contracts.
-  - Preserve existing compatibility literals and avoid broad unrelated type consolidation in this phase.
-
-- **[MODIFY] `src/engine/effects/index.ts`**
-  - Add `REMOVE_STATUS` handling beside `ADD_STATUS`, including status selection, target resolution, immunity/duplicate behavior, mutation reporting, and `STATUS_REMOVED` dispatch.
-  - Add canonical effect switch aliases (`DRAW`, `DISCARD`, `PUT_INTO_PLAY`, `PLAY_FROM_ZONE`, `SEARCH`, canonical counter/status/limit/form names) falling through to existing handlers where semantics are already equivalent.
-  - Add `SEARCH` handling as an additive path over `SEARCH_AND_SELECT`; implement default automatic resolution only for an unambiguous candidate set and retain the pending decision path otherwise.
-  - Extend target resolution for controlled versus friendly characters/allies and the new scheme selectors without changing existing selector behavior.
-  - Add canonical defeat/scheme trigger dispatches alongside existing legacy dispatches at the relevant mutation sites.
-
-- **[MODIFY] `src/engine/pipeline/combat-pipeline.ts`**
-  - Dispatch `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED` alongside their legacy trigger names at the existing combat timing points.
-  - Add canonical defeat dispatches where the combat pipeline currently emits legacy defeat events, preserving event context and dispatch ordering.
-
-- **[MODIFY] `src/engine/pipeline/action-dispatcher.ts`**
-  - Add canonical trigger dispatches at action-driven defeat/scheme/form lifecycle sites and update any trigger-name checks required to recognize both vocabulary generations.
-  - Do not remove or rewrite legacy branches in Phase 2.
-
-- **[MODIFY] `src/engine/triggers/trigger-dispatcher.ts`**
-  - Add compatibility handling for canonical damage/attack triggers where the current dispatcher has explicit legacy-name checks, preserving loop guards and optional-trigger behavior.
-  - Add a single trigger-equivalence resolver so legacy and canonical names match in either direction during the migration window; preserve the original display vocabulary when building optional-trigger prompt descriptions.
-  - Add the missing universal trigger-scope layer: `ENEMY_INITIATES_ATTACK` context must include attacker kind, attacker instance, source card definition ID (`sourceCardCode`), attacked player, and engagement scope; ability-level filters must be evaluated before resolution.
-  - Apply the same `triggerFilter` evaluator at every existing ability scan site, including identity, in-play cards, encounter cards, and hand interrupts; filtering must happen before costs, limits, prompts, or effect execution.
-
-- **[MODIFY] `src/engine/pipeline/action-dispatcher.ts` and `src/engine/state/game-setup.ts`**
-  - Recognize `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED` in prompt continuation and setup/search routing paths, not only in direct combat dispatch calls.
-  - Preserve legacy prompt titles/descriptions and existing defense/attack continuation ordering while canonical data is active.
-
-- **[MODIFY] `src/engine/models/abilities.ts` and `src/engine/models/state.ts`**
-  - Add typed `TriggerFilter` and structured attack/event context fields without weakening existing trigger unions.
-  - Extend `AttackExecutionContext` only with data needed to construct the universal event context; do not create parallel trigger variants for every attacker/scope combination.
-
-- **[MODIFY] `src/data/supplemental/schema.ts`**
-  - Add strict `TriggerFilterSchema` and optional `triggerFilter` to `CardAbilitySchema`.
-  - Use a generic filter contract with event-family fields: `attackerKind`, `attackerCardFilter`, `sourceCardCode`, `attackerInstanceId`, `targetPlayerScope`, `targetForm`, `isEngaged`, `damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, and `formChangeDirection`.
-  - Keep all fields optional so the same mechanism works for any trigger; the evaluator only uses fields present in the event context. Unsupported context/filter combinations must fail closed rather than silently match.
-
-- **[MODIFY] `src/data/supplemental/pack/core.json`**
-  - Add `triggerFilter: { attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` to Spider-Sense after the schema/evaluator exists.
-
-- **[MODIFY] `src/data/supplemental/schema.json`**
-  - Regenerate after `TriggerFilterSchema` is finalized.
-
-- **[MODIFY] `src/data/supplemental/schema.json`**
-  - Regenerate with `npm run schema:generate` after the TypeScript/Zod schema changes.
-
-- **[NEW] `tests/engine/remove-status-effect.test.ts`**
-  - Contract-test removing each supported status, `ALL`, missing-status no-op behavior, status-removal trigger emission, and target legality.
-
-- **[NEW] `tests/engine/defeated-trigger-dispatch.test.ts`**
-  - Contract-test canonical universal/narrow defeat events, entity context, legacy event preservation, and scheme defeat dispatch.
-
-- **[MODIFY] Nearby existing contract tests only where needed for new additive behavior**
-  - `tests/data/supplemental-schema.test.ts` for additive enum and parameter acceptance.
-  - `tests/engine/search-and-select-routing.test.ts` for `SEARCH` alias and automatic-versus-prompted selection.
-  - `tests/engine/advanced-status-and-minion-modifiers.test.ts` for `REMOVE_STATUS` status semantics.
-  - `tests/engine/attachments-player.test.ts` for controlled/friendly selector validation if the existing selector contract is the nearest fixture.
-  - Existing assertions remain unchanged unless a new additive assertion is required.
-
-## Acceptance / Contract Tests Plan
-
-- `TriggerTypeSchema.safeParse` accepts every Phase 2 canonical trigger and continues accepting every legacy trigger.
-- `EffectTypeSchema.safeParse` accepts canonical effects, `REMOVE_STATUS`, and `SEARCH` with `autoSelectIfUnambiguous`; legacy effects still parse.
-- `TargetSelectorSchema.safeParse` accepts all nine new selectors and existing selectors remain valid.
-- `REMOVE_STATUS` removes one requested status, removes all requested statuses, does nothing when absent, respects target legality, and emits `STATUS_REMOVED` only after an actual mutation.
-- Defeating a character or scheme emits canonical trigger context while preserving the corresponding legacy trigger dispatch.
-- `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED` match abilities declared under either the canonical or legacy spelling, regardless of which spelling the pipeline dispatches.
-- Optional-trigger prompt descriptions preserve the established legacy text during the compatibility window, while canonical data still resolves the same ability.
-- Canonical trigger dispatch does not duplicate optional prompts, skip minion/quickstrike attacks, consume the wrong defense window, or alter phase/round continuation.
-- `game-setup.ts` and all setup/search consumers recognize canonical `SEARCH` as equivalent to `SEARCH_AND_SELECT`.
-- `ENEMY_INITIATES_ATTACK` scope filters distinguish villain-only, minion-only, any-enemy, and engaged-player reactions without duplicate dispatches.
-- Spider-Sense uses an explicit villain-only filter; its behavior does not depend on whether the combat pipeline happens to dispatch the universal event for minions.
-- All six current dispatcher scan sites apply identical trigger-filter semantics; no scan path bypasses the filter.
-- A trigger with no `triggerFilter` preserves current exact/equivalent trigger behavior.
-- A filter field absent from the event context never matches; it does not default to `true`.
-- `attackerCardFilter` reuses `matchesCardFilter()` for attacker card traits/types/keywords without duplicating card predicate logic.
-- A single `ENEMY_INITIATES_ATTACK` event is dispatched per attack; villain/minion/engagement selection occurs through context filtering, not multiple overlapping trigger dispatches.
-- Legacy trigger aliases continue to match during the compatibility window, but legacy and canonical spellings cannot execute the same ability twice for one event.
-- Spider-Sense fires for a villain attacking its player, does not fire for a minion attack, and does not fire for a villain attacking another player.
-- Generic enemy reactions fire for villain and minion attacks; engaged-only filters exclude attacks targeting another player.
-- Damage, defeat, and form filters have focused tests proving their context fields and fail-closed behavior.
-- `SEARCH` auto-resolves when `autoSelectIfUnambiguous !== false` and candidates are `<= takeCount`; it creates the existing pending decision when ambiguous or explicitly disabled.
-- Controlled selectors never target another player’s board; friendly/table-wide selectors include eligible entities across players.
-- `npm run schema:generate` produces a schema JSON containing the additive enum members.
-- Full Phase 2 gate must pass with existing assertions intact:
-  `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
-
-## Open Questions & Design Decisions
-
-> [!IMPORTANT]
-> The current report lists several canonical names whose existing handlers are not yet proven equivalent (`DISCARD`, `HEAL_DAMAGE`, `PREVENT_DAMAGE`, `MODIFY_STAT`, and some zone/form variants). Before implementing each alias, inspect its current parameter shape and handler semantics. If the shapes differ materially, keep the alias out of that switch until a focused additive contract is defined; do not silently coerce data in Phase 2.
-
-> [!WARNING]
-> The report requests `DEFEATED` / `CHARACTER_DEFEATED` / `SCHEME_DEFEATED` dispatches at every legacy defeat call site, but the current code also contains attachment-specific `HOST_DEFEATED` handling. The implementation must preserve attachment cascade timing and avoid firing character-only triggers for attachments. Confirm the `entityType` mapping in the nearest state mutation code before editing.
-
-> [!IMPORTANT]
-> The current `TriggerTypeSchema` and engine `TriggerType` union are already not perfectly aligned. Phase 2 will add the requested canonical members and the minimum missing existing members required for type-safe dispatch, but a broad schema/union cleanup belongs in a separately scoped refactor unless the compiler makes it unavoidable.
-
-> [!WARNING]
-> Phase 2 must not rewrite supplemental pack JSON or delete legacy enum members/handlers. Those actions are reserved for Phases 3 and 4 under ADR-0058’s sequencing invariant.
-
-> [!IMPORTANT]
-> The chosen contract name is `triggerFilter`. It is distinct from `AbilityStep.filter`, which filters cards for effect execution. `triggerFilter` filters event context before an ability is eligible to resolve.
-
-> [!IMPORTANT]
-> The Phase 3 migration probe demonstrated that adding canonical enum members and direct dispatches is insufficient. Before another pack write, complete the compatibility follow-up for `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED`, including trigger matching, prompt rendering, setup routing, and continuation semantics. Treat the 10 observed migrated-pack regressions as contract failures, not expected legacy-string test fallout.
-
-> [!WARNING]
-> `triggerFilter` is currently only a design requirement; it does not exist in the schema, engine, supplemental data, or tests. Do not claim Spider-Sense is semantically villain-only until the filter is implemented and the card declaration is migrated to use it.
-
-## TriggerFilter Execution Order
-
-1. The pipeline constructs one canonical event context and dispatches one canonical trigger event.
-2. Trigger equivalence resolves legacy ability names to the canonical event family.
-3. `triggerFilter` is evaluated against the structured event context.
-4. Zone, form, timing, cost, and ability-limit checks run only for filter-matching abilities.
-5. Forced abilities execute; optional abilities enqueue prompts using the established display vocabulary.
-6. The active trigger chain records the canonical event and ability identity for loop detection.
-
-## TriggerFilter Context Contract
-
-```typescript
-interface TriggerEventContext {
-  targetPlayerId: string;
-  sourceInstanceId?: string;
-  sourceCardCode?: string;
-  attacker?: {
-    kind: 'VILLAIN' | 'MINION';
-    instanceId?: string;
-    cardCode?: string;
-    card?: CardInstance;
-    isEngagedWithTarget: boolean;
-  };
-  target?: {
-    playerId: string;
-    form?: 'HERO' | 'ALTER_EGO';
-    kind?: 'IDENTITY' | 'ALLY' | 'MINION' | 'VILLAIN' | 'SCHEME';
-    instanceId?: string;
-  };
-  damage?: {
-    sourceType: 'ATTACK' | 'SCHEME' | 'EFFECT';
-    targetType: 'HERO' | 'ALLY' | 'SCHEME';
-  };
-  defeat?: {
-    entityType: 'CHARACTER' | 'SCHEME' | 'ATTACHMENT';
-    causedByAttack: boolean;
-  };
-  formChange?: {
-    from: 'HERO' | 'ALTER_EGO';
-    to: 'HERO' | 'ALTER_EGO';
-  };
-}
-```
-
-`triggerFilter` is a universal mechanism, but each trigger family supplies only the context it can prove. Missing context never matches a requested filter field. This keeps the mechanism generic without pretending every event has every property.
-
-## Execution Order
-
-1. Obtain explicit approval for this plan.
-2. Re-check the current worktree, open PRs/issues, and controlled Phase 2 files.
-3. Add schema and type vocabulary entries.
-4. Add engine aliases and genuinely new handlers with focused tests.
-5. Regenerate `schema.json` and run the focused contract tests.
-6. Run the complete Phase 2 quality gate.
-7. Update Phase 2 checkboxes and the migration log only after the gate passes.
-8. Commit one Phase 2 sub-phase commit referencing issue #111; do not begin Phase 3 in the same change.
+**Tracking Issue:** Phase 6 UI Completion & Section 4 Proposition Alignment  
+**Governing ADRs:** ADR-0045 (Card Supplemental Editor), ADR-0046 (Universal Card Filter), ADR-0049 & ADR-0052 (Dynamic Values), ADR-0054 (Structured Keywords), ADR-0055 & ADR-0057 (Cost Engine & Uses), ADR-0058 (Declarative Taxonomy)  
+**Approval Gate:** Hard stop. No source or test modifications will begin until this plan is reviewed and approved.
 
 ---
 
-# Phase 3 Implementation Plan: Batch Supplemental Data Migration
+## 1. Rules Reference (RR v1.8) & Specification Analysis
 
-**Tracking issue:** #111  
-**Governing ADR:** ADR-0058  
-**Scope:** Phase 3 only; legacy schema names remain valid until Phase 4 cleanup.  
-**Approval gate:** No migration script, supplemental pack JSON, tests, or generated declaration report changes begin until this Phase 3 plan is explicitly approved.
+The Card Supplemental Editor is the developer & authoring interface for declaring card enrichment metadata (`CardEnrichmentSchema`) across all 170+ Marvel Champions cards. To achieve 100% declarative authoring without resorting to raw JSON editing, the visual editor must support the complete declarative grammar:
 
-## Rules Reference (RR v1.8) & Spec Analysis
+1. **Universal Card Filter (RR v1.8 p. 19, 26, ADR-0046):**
+   - Evaluating atomic criteria: `codes`, `names`, `types`, `traits`, `aspects`, `sets`, `isUnique`, `isIdentitySpecific`, `isExhausted`, `cost` comparison (`min`, `max`, `equals`), `resourceIcons`, `hasKeyword`, and `hasStatus`.
+   - Composable boolean grouping: `all` (AND), `any` (OR), `none` (NOT) branches.
+2. **Dynamic Values & Formulas (ADR-0049, ADR-0052):**
+   - Static numeric constants vs. dynamic formulas (`from: 'STAT_VALUE' | 'COUNTERS' | 'ENTITY_COUNT' | 'DISCARDED_COUNT' | 'INTERCEPTED_VALUE' | 'PREVIOUS_RESULT' | 'CARD_ATTRIBUTE'`).
+   - Dynamic parameters: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp: { min, max }`.
+3. **Card-Level Attributes & Uses (RR v1.8 p. 30 'Uses', ADR-0054, ADR-0057):**
+   - Structured keywords matrix: `Guard`, `Overkill`, `Ranged`, `Toughness`, `Crisis`, `Hazard`, `Acceleration`, `Quickstrike`, `Retaliate` (+ numeric amount).
+   - "Uses" counters lifecycle: `count`, `type` / `counterType`, `max`, `discardOnEmpty`.
+   - Numeric metadata: `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`, `traits`.
+4. **Trigger Filters (ADR-0058):**
+   - Event scoping: `attackerKind` (`VILLAIN` | `MINION` | `ANY_ENEMY`), `targetPlayerScope` (`SELF` | `OTHER` | `ANY`), `targetForm`, `isEngaged`, `damageSourceType`, `defeatEntityType`, `defeatByAttack`, `formChangeDirection`.
+5. **Full Ability Cost Specification (RR v1.8 p. 10 'Cost', ADR-0051, ADR-0055):**
+   - Host card manipulation: `exhaustSelf`, `discardSelf`.
+   - Damage costs: `damageSelf`, `damageHero`.
+   - Resource payments: `resources` (Physical, Energy, Mental, Wild counts) and `resourceCost` array.
+   - Counter payments: `spendCounters` (`counterType`, `amount`, `target: SELF | IDENTITY`).
+   - Card discarding: `discardCard` (`count`, `maxCount`, `from: HAND | DECK | PLAY`).
+6. **Multi-Step Resolution Pipelines (ADR-0030, ADR-0058):**
+   - Step sequencing: Reordering controls (Move Up / Move Down).
+   - Step gates: `gate` (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_FAILED`).
+   - Step milestone conditions: `condition` (`TARGET_DEFEATED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `RESOURCE_KICKER_MET`).
+   - Step-level `filter` and `id`.
 
-- Preserve the Phase 2 additive compatibility window: every legacy and canonical name must parse and execute while data is migrated.
-- Use ADR-0058 as the sole rename/decomposition source. Do not infer mappings from current card text or derive ad hoc transforms.
-- Preserve RR v1.8 timing, target ownership, zone routing, and cost semantics. String renames may be mechanical; shape-changing primitives require dedicated transforms and manual review.
-- `SEARCH` migrations must use `source: 'PLAYER_DISCARD'`, `takeCount: 1`, `selectedDestination: 'HAND'`, and `autoSelectIfUnambiguous: true` for both `RETRIEVE_*` primitives.
-- Nested `PLAYER_CHOICE` and `FORM_BRANCH` step arrays must be traversed recursively. Audit fields are derived metadata and may be updated mechanically after the gameplay declaration is transformed.
+---
 
-## Proposed Changes
+## 2. Comprehensive Gap Analysis of Built vs. Integrated Editor Features
 
-- **[NEW] `tools/audit/migrate-declarative-taxonomy.ts`**
-  - Read one or more selected files under `src/data/supplemental/pack/`.
-  - Support `--dry-run`, `--file <name>`, and an explicit write mode; default behavior must not write files.
-  - Use stable JSON serialization and print per-card/per-field before/after diffs.
-  - Keep the rename map as a single hard-coded constant sourced from ADR-0058.
+Here is the exact audit of what exists in code vs. what is actually integrated into the live editor:
 
-- **[MODIFY] `src/data/supplemental/pack/core.json` and `core_encounter.json`**
-  - Migrate one pack at a time only after reviewing its dry-run diff.
-  - Rewrite ability triggers, step effects, target values, nested filter target values, and applicable audit reconstruction text.
-  - Do not change card `originalText`, card identity, timing, cost, or unrelated fields.
+| Feature / Sub-System                     | Existing Scaffolded Code                                                                         | Current Integration Status in Editor                                                  | Missing Integration / Gaps                                                                                                                                                                                                                                                                                                                                                                  |
+| :--------------------------------------- | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1. Universal Card Filter**             | `src/ui/components/editor/UniversalCardFilterBuilder.tsx` exists                                 | ❌ **NOT Integrated** (Hardcoded 3-textbox fallback used in `AbilityFormBuilder.tsx`) | • Component is never imported in `AbilityFormBuilder.tsx`.<br>• Component itself lacks `cost` range, `resourceIcons`, `keywords`, `statuses`, `isUnique`, `isExhausted`, and `all`/`any`/`none` groups.<br>• `SEARCH` in `effect-parameter-registry.ts` is missing `filter` parameter.<br>• `playRequirements.controlFilter` and `triggerFilter.attackerCardFilter` do not use the builder. |
+| **2. Dynamic Value Builder**             | `src/ui/components/editor/DynamicValueBuilder.tsx` exists                                        | ❌ **NOT Integrated**                                                                 | • Component is never imported or rendered in `AbilityFormBuilder.tsx`.<br>• All numeric effect parameters only render `<input type="number">` without dynamic toggle.                                                                                                                                                                                                                       |
+| **3. Card Attributes (Uses & Keywords)** | Zod schema in `schema.ts` (`CardUsesSchema`, `StructuredKeywordSchema`, `restrictedSlots`, etc.) | ❌ **NOT Integrated**                                                                 | • `AbilityFormBuilder.tsx` only renders `comment`, `maxPerPlayer`, `confidence`, `reviewedBy`, and `noSupplementalNeeded`.<br>• Zero UI for `uses` (`count`, `type`, `max`, `discardOnEmpty`).<br>• Zero UI for `keywords` chip matrix.<br>• Zero UI for `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`.                             |
+| **4. Trigger Filter Builder**            | Zod schema in `schema.ts` (`TriggerFilterSchema`)                                                | ❌ **NOT Integrated**                                                                 | • `AbilityFormBuilder.tsx` only has a flat trigger dropdown.<br>• Zero UI for configuring `triggerFilter` (`attackerKind`, `targetPlayerScope`, `damageSourceType`, `defeatByAttack`, etc.).                                                                                                                                                                                                |
+| **5. Ability Cost Specification**        | Zod schema in `schema.ts` (`AbilityCostSchema`)                                                  | ⚠️ **Partially Implemented (20%)**                                                    | • Only has checkboxes for `exhaustSelf`, `discardSelf`, and `damageSelf`.<br>• Missing `resources` / `resourceCost` picker.<br>• Missing `spendCounters` sub-form.<br>• Missing `discardCard` sub-form.<br>• Missing `damageHero` input.                                                                                                                                                    |
+| **6. Multi-Step Sequencing & Gates**     | Zod schema in `schema.ts` (`AbilityStepSchema`, `StepConditionSchema`)                           | ⚠️ **Partially Implemented (30%)**                                                    | • Has basic `gate` dropdown and effect selector.<br>• Missing Step Reordering buttons (Move Up / Move Down).<br>• Missing `condition` (milestone condition) dropdown.<br>• Missing step-level `filter` builder.                                                                                                                                                                             |
+| **7. Parameter Registry Completeness**   | `effect-parameter-registry.ts`                                                                   | ⚠️ **Mostly Complete (95%)**                                                          | • Missing `filter` parameter descriptor on `SEARCH`.<br>• Missing `type: 'dynamic-number'` or dynamic capability descriptor on scalable parameters.                                                                                                                                                                                                                                         |
 
-- **[NEW/MODIFY] Focused migration tests or audit fixtures**
-  - Test idempotency, dry-run no-write behavior, recursive nested walking, exact rename coverage, and each bespoke decomposition.
-  - Validate output through `SupplementalPackSchema` and `report:declarations` after each pack.
+---
 
-- **[MODIFY] `docs/reports/card_editor_and_supplemental_schema_audit_report.md` and migration log**
-  - Check off each Phase 3 sub-phase only after its own dry-run, reviewed write, validation, and quality gate.
+## 3. Proposed Changes (File-by-File)
 
-## Acceptance / Contract Tests Plan
+### 📁 `src/ui/components/editor/UniversalCardFilterBuilder.tsx` [MODIFY]
 
-- `--dry-run` produces deterministic diffs and leaves file hashes unchanged.
-- Re-running the migration on already canonical data produces no diff and no additional changes.
-- Every `ability.trigger`, `step.effect`, `params.target`, `params.exhaustCard`, and nested filter target is visited recursively.
-- `NICK_FURY_CHOICE`, `EXPLOSION`, `HULK_DISCARD_RESOLUTION`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`, and `REPULSOR_BLAST`/`REPULSOR_BLAST_DAMAGE` become the exact composable step shapes specified by ADR-0058.
-- `RETRIEVE_CARD_FROM_DISCARD` and `RETRIEVE_TECH_UPGRADE_FROM_DISCARD` become canonical `SEARCH` declarations with the prescribed discard source/filter/destination/default selection behavior.
-- `core.json` and `core_encounter.json` each pass `SupplementalPackSchema` after migration, with zero duplicate keys and zero open ambiguity reports.
-- `npm run report:declarations` completes after each pack and the final Phase 3 metrics are recorded.
-- Phase 3 handoff gate: `npm run typecheck` passes; `npm test` may fail only for expected legacy string assertions and those failures are recorded, not repaired in Phase 3.
+- Expand UI to support all `CardCriteria` fields:
+  - **Identity & Codes:** `codes` input, `names` input, `isUnique` toggle, `isIdentitySpecific` toggle, `isExhausted` toggle.
+  - **Classification:** `types` chip matrix, `traits` tag input, `aspects` chip matrix, `sets` input.
+  - **Comparison & Resources:** `cost` range controls (`min`, `max`, `equals`), `resourceIcons` multi-select chips (`physical`, `energy`, `mental`, `wild`).
+  - **Status & Keywords:** `hasKeyword` dropdown, `hasStatus` multi-select chips (`STUNNED`, `CONFUSED`, `TOUGH`).
+  - **Boolean Combinators (Level 1):** Add toggle to add/manage `all`, `any`, `none` sub-filter branches.
+- Provide clean styling matching Comic Pop-Art theme.
 
-## Open Questions & Design Decisions
+### 📁 `src/ui/components/editor/DynamicValueBuilder.tsx` [MODIFY]
+
+- Ensure full alignment with `DynamicValueSourceSchema`:
+  - `from` selector: `STAT_VALUE`, `COUNTERS`, `ENTITY_COUNT`, `DISCARDED_COUNT`, `INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `CARD_ATTRIBUTE`.
+  - Conditional parameter sub-fields: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp.min`, `clamp.max`, `target`.
+- Support seamless toggle between a fixed number and dynamic formula.
+
+### 📁 `src/ui/components/editor/effect-parameter-registry.ts` [MODIFY]
+
+- Add `filter` parameter to `SEARCH` effect descriptor (`type: 'card-filter'`).
+- Support `dynamic-number` or mark numeric parameters supporting `DynamicValueSource` (`amount`, `count`, `bonusDamage`, `threatAmount`).
+
+### 📁 `src/ui/components/editor/AbilityFormBuilder.tsx` [MODIFY]
+
+1. **Import & Wire Sub-Builders:**
+   - Import `<UniversalCardFilterBuilder>` and `<DynamicValueBuilder>`.
+2. **Upgrade Card-Level Attributes Accordion:**
+   - **Uses (X) Sub-Form:** `count`, `type` / `counterType`, `max`, `discardOnEmpty`.
+   - **Structured Keywords Matrix:** Interactive toggle chips for `Guard`, `Overkill`, `Ranged`, `Toughness`, `Crisis`, `Hazard`, `Acceleration`, `Quickstrike`, plus `Retaliate` with numeric amount input.
+   - **Card Properties:** `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`.
+   - **Play Requirements:** Use `<UniversalCardFilterBuilder>` for `controlFilter`.
+3. **Add Trigger Filter Section:**
+   - When an ability has a `trigger` (e.g. `ENEMY_INITIATES_ATTACK`, `DEFEATED`, etc.), show a collapsible **Trigger Filter (Scope & Target)** sub-form (`attackerKind`, `targetPlayerScope`, `damageSourceType`, `defeatByAttack`, etc.).
+4. **Upgrade Ability Cost Section:**
+   - Add Resource Cost picker (`physical`, `energy`, `mental`, `wild` counts).
+   - Add `spendCounters` sub-form (`amount`, `counterType`, `target: SELF | IDENTITY`).
+   - Add `discardCard` sub-form (`count`, `maxCount`, `from: HAND | DECK | PLAY`).
+   - Add `damageHero` input.
+5. **Upgrade Multi-Step Sequence Pipeline:**
+   - Add step reordering buttons (Move Up `↑`, Move Down `↓`).
+   - Add `condition` dropdown (`StepConditionSchema.options`).
+   - Replace old inline card-filter textboxes with `<UniversalCardFilterBuilder>`.
+   - Replace numeric effect parameters with `<DynamicValueBuilder>`.
+
+### 📁 `tests/ui/AbilityFormBuilder.test.tsx` [NEW]
+
+- Visual & interaction tests for `AbilityFormBuilder`:
+  - Renders card-level uses & keywords and updates state.
+  - Renders trigger filter when trigger selected and updates state.
+  - Mounts `UniversalCardFilterBuilder` for card-filter parameters and round-trips filter criteria.
+  - Mounts `DynamicValueBuilder` for numeric parameters and switches to formula mode.
+  - Allows step reordering (moving Step 2 up to Step 1).
+
+### 📁 `tests/ui/UniversalCardFilterBuilder.test.ts` & `DynamicValueBuilder.test.ts` [MODIFY]
+
+- Update unit tests to verify extended criteria rendering and state changes.
+
+### 📁 `docs/reports/card_editor_and_supplemental_schema_audit_report.md` [MODIFY]
+
+- Update Section 4 and Phase 6 status accurately based on real implementation verification.
+
+---
+
+## 4. Acceptance & Contract Tests Plan
+
+1. **Round-Trip Form Editing:**
+   - Build an ability with `SEARCH` + `filter: { traits: ['Tech'], types: ['upgrade'], cost: { max: 3 } }` via UI $\to$ outputs canonical Zod-valid JSON $\to$ re-loading into UI accurately populates all chips and inputs.
+2. **Dynamic Value Round-Trip:**
+   - Configure `amount: { from: 'STAT_VALUE', stat: 'ATTACK', multiplier: 2 }` via UI $\to$ outputs valid `DynamicValueSource` $\to$ switching back to fixed number resets to numeric value.
+3. **Card-Level Uses & Keywords Round-Trip:**
+   - Configure `uses: { count: 3, type: 'charge', discardOnEmpty: true }` and `keywords: ['Guard', { keyword: 'Retaliate', amount: 1 }]` $\to$ valid `CardEnrichmentSchema`.
+4. **Trigger Filter Round-Trip:**
+   - Configure `trigger: 'ENEMY_INITIATES_ATTACK'`, `triggerFilter: { attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` $\to$ valid `CardAbilitySchema`.
+5. **Step Sequencing & Conditions:**
+   - Add 3 steps $\to$ reorder step 3 to step 2 $\to$ add `gate: 'IF_PREVIOUS_SUCCESS'` and `condition: 'TARGET_DEFEATED'` $\to$ valid `AbilityStepSchema`.
+6. **Full Suite Quality Gate:**
+   - `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
+
+---
+
+## 5. Open Questions & Design Decisions
 
 > [!IMPORTANT]
-> The report describes five shape-changing decompositions but does not provide every existing card parameter shape. Before writing transforms, inspect each matching card entry and isolate any card whose fields cannot be mapped with >=95% confidence; do not guess or silently drop parameters.
+> **Pop-Art Visual Consistency:** All new builder sub-forms will adopt the project's Comic Pop-Art style (`bg-comic-paper`, `border-black`, `shadow-comic-xs`, bold typography, uppercase label tags) to maintain cohesive aesthetics across the Editor suite.
 
-> [!WARNING]
-> `core.json` and `core_encounter.json` contain the active release catalog. The first write must be limited to one file, reviewed with `git diff`, and schema-validated before the second file is touched.
+> [!NOTE]
+> **Nesting Depth for Filter Combinators:** In this phase, `all`, `any`, and `none` groups will support 1 level of nesting depth within the visual UI. Deeper arbitrary recursion can be configured via the Raw JSON Editor tab if ever needed.
 
-> [!IMPORTANT]
-> Phase 3 intentionally does not update test assertions. Any failures caused solely by legacy string literals must be reported as the planned Phase 3→5 red-test window, while parse/type/schema failures must stop the phase immediately.
+---
 
-## Execution Order
+## 6. Execution Order
 
-1. Obtain explicit approval for this Phase 3 plan.
-2. Re-check `git status`, open PRs/issues, controlled files, and script-name collision.
-3. Add migration script tests and implement dry-run-only logic first.
-4. Run a no-write dry-run against `core.json`; review every diff category.
-5. Write and validate `core.json`; record its migration log entry.
-6. Run the same dry-run/write/validate sequence for `core_encounter.json`.
-7. Regenerate audit reconstruction fields and run declarations analysis.
-8. Run Phase 3 typecheck/test handoff gate and record expected legacy assertion failures without fixing them.
-9. Check off Phase 3 items, commit one issue-referenced Phase 3 commit, and stop before Phase 4.
-
-## Phase 3 Execution Result
-
-**Blocked before commit:** The dry-run found two unsupported shape changes in `core.json` (`REPULSOR_BLAST`/`REPULSOR_BLAST_DAMAGE` and `HULK_DISCARD_RESOLUTION`). Dedicated issues were created: [#112](https://github.com/SteveRodrigue/MCD/issues/112) and [#113](https://github.com/SteveRodrigue/MCD/issues/113). Their unsupported `abilities` arrays are withheld while audit metadata, printed text, mechanic steps, and machine-readable ambiguity links are preserved. A safe-write probe for the remaining declarations was schema-valid but caused 16 behavioral regressions, including attachment defeat timing, canonical attack trigger handling, canonical search prompt behavior, and Explosion's Bomb Scare conditional behavior. The temporary migration was rolled back before the cleanup; the cleaned pack baseline is green.
-
-**Verified after cleanup:** `npm run typecheck` passes; `npm test` passes with 106 files, 773 tests, and 1 existing skipped test; focused data tests pass; `npm run report:declarations` reports 144 cards with abilities, 166 abilities, and 0 open ambiguities.
-
-**Migration result:** Active `core.json` and `core_encounter.json` migration completed after the canonical trigger compatibility, prompt normalization, setup `SEARCH`, and `FORM_CHANGED` lifecycle fixes. The full handoff suite is green. Repulsor Blast, Hulk, and Explosion remain deferred post-Phase-8 re-integrations, not blockers for Phase 4 cleanup; their dedicated capabilities can be built later under issues #112, #113, and #114.
-
-**Compatibility sub-task progress:** Bidirectional legacy/canonical trigger matching, legacy prompt display normalization, villain-versus-minion initiation ordering, canonical Step 14 `SEARCH` routing, and `FORM_CHANGED` optional-response/round advancement behavior are implemented and tested.
-
-**Completed compatibility slices:** Trigger equivalence/prompt compatibility, canonical Step 14 search routing, and `FORM_CHANGED` response timing/round advancement. The full suite is green; the next step is a fresh active-pack migration probe.
-
-**Sub-phases closed:** 3.1, 3.2, 3.3, 3.5, and 3.6. **Still blocked/open:** 3.4 and 3.7-3.11, pending active-catalog compatibility fixes, deferred-card capability work, and a valid migration commit.
+1. **Sub-Phase 6.1:** Upgrade `<UniversalCardFilterBuilder>` component with full `CardCriteria` fields, chip selectors, range inputs, and Level 1 combinators.
+2. **Sub-Phase 6.2:** Upgrade `<DynamicValueBuilder>` with all `from` sources and parameters.
+3. **Sub-Phase 6.3:** Update `effect-parameter-registry.ts` to include `filter` on `SEARCH` and dynamic parameter tags.
+4. **Sub-Phase 6.4:** Expand `AbilityFormBuilder.tsx` with:
+   - Uses & Structured Keywords sub-forms.
+   - Numeric metadata inputs (`restrictedSlots`, `victoryPoints`, etc.).
+   - Full Ability Cost sub-form (`resources`, `spendCounters`, `discardCard`, `damageHero`).
+   - Trigger Filter sub-form.
+   - Step reordering controls and `condition` selector.
+   - Integrated `<UniversalCardFilterBuilder>` and `<DynamicValueBuilder>`.
+5. **Sub-Phase 6.5:** Add comprehensive component & integration tests in `tests/ui/`.
+6. **Sub-Phase 6.6:** Run the full quality gate (`format:check`, `lint`, `typecheck`, `test`, `build`, `report:declarations`) and update documentation/reports.

@@ -77,7 +77,8 @@ function matchesTriggerFilter(
   }
 
   if (filter.sourceCardCode) {
-    const actualSourceCardCode = context.sourceCardCode || context.encounterCardInstance?.card?.code;
+    const actualSourceCardCode =
+      context.sourceCardCode || context.encounterCardInstance?.card?.code;
     if (!actualSourceCardCode || actualSourceCardCode !== filter.sourceCardCode) {
       return false;
     }
@@ -89,8 +90,7 @@ function matchesTriggerFilter(
 
   if (filter.targetPlayerScope) {
     if (!player || !context.targetPlayerId) return false;
-    const actualScope =
-      context.targetPlayerId === player.id ? 'SELF' : 'OTHER';
+    const actualScope = context.targetPlayerId === player.id ? 'SELF' : 'OTHER';
     if (filter.targetPlayerScope === 'ANY') {
       // no-op, allowed by explicit contract
     } else if (actualScope !== filter.targetPlayerScope) {
@@ -114,7 +114,8 @@ function matchesTriggerFilter(
 
   if (filter.isEngaged !== undefined) {
     const actualEngaged =
-      Boolean(context.targetType) && ['VILLAIN', 'MINION', 'ENEMY'].includes(String(context.targetType).toUpperCase());
+      Boolean(context.targetType) &&
+      ['VILLAIN', 'MINION', 'ENEMY'].includes(String(context.targetType).toUpperCase());
     if (actualEngaged !== filter.isEngaged) {
       return false;
     }

@@ -1,6 +1,15 @@
-import { GameState, PlayerState, CardInstance, CardAbility, AbilityTiming } from '../models';
+import {
+  GameState,
+  PlayerState,
+  CardInstance,
+  CardAbility,
+  AbilityTiming,
+  Keyword,
+  hasKeyword,
+} from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
+import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -311,6 +320,7 @@ export function executeAbilityCost(
           (sourceCardInst.tokens.counters || 0) - amount,
         );
       }
+      checkAndDiscardZeroCounterCard(state, player, sourceCardInst, counterType);
     }
   }
 
@@ -424,4 +434,139 @@ export function isAbilityPlayableInForm(
   if (timing.startsWith('HERO_') && currentForm !== 'hero') return false;
   if (timing.startsWith('ALTER_EGO_') && currentForm !== 'alter_ego') return false;
   return true;
+}
+
+/**
+ * Cascades hosted attachments and tucked cards to appropriate discard piles when a host leaves play (RR v1.8 p. 5, 6).
+ */
+function cascadeAttachmentsAndTuckedCards(
+  state: GameState,
+  cardInstance: CardInstance,
+  defaultPlayerId: string,
+): void {
+  if (cardInstance.attachments && cardInstance.attachments.length > 0) {
+    for (const attachment of cardInstance.attachments) {
+      const type = attachment.card?.type?.toLowerCase();
+      const isEncounter =
+        type === 'minion' ||
+        type === 'treachery' ||
+        type === 'side_scheme' ||
+        type === 'attachment' ||
+        type === 'obligation';
+      if (isEncounter) {
+        state.encounterDiscard.push(attachment);
+      } else {
+        const ownerId = (attachment as any).ownerId || defaultPlayerId;
+        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
+        targetP.discard.push(attachment);
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: targetP.id,
+          sourceInstanceId: attachment.instanceId,
+        });
+      }
+    }
+    cardInstance.attachments = [];
+  }
+
+  if (cardInstance.cardsUnderneath && cardInstance.cardsUnderneath.length > 0) {
+    for (const tucked of cardInstance.cardsUnderneath) {
+      const type = tucked.card?.type?.toLowerCase();
+      const isEncounter =
+        type === 'minion' ||
+        type === 'treachery' ||
+        type === 'side_scheme' ||
+        type === 'attachment' ||
+        type === 'obligation';
+      if (isEncounter) {
+        state.encounterDiscard.push(tucked);
+      } else {
+        const ownerId = (tucked as any).ownerId || defaultPlayerId;
+        const targetP = state.players.find((p) => p.id === ownerId) || state.players[0];
+        targetP.discard.push(tucked);
+        dispatchTrigger(state, 'CARD_DISCARDED', {
+          targetPlayerId: targetP.id,
+          sourceInstanceId: tucked.instanceId,
+        });
+      }
+    }
+    cardInstance.cardsUnderneath = [];
+  }
+}
+
+/**
+ * Checks if an in-play card has exhausted its 'Uses' counters and discards it per RR v1.8 p. 30 and ADR-0057.
+ * Cascades hosted attachments and cards underneath to appropriate discard piles, routes host card to owner's
+ * discard, dispatches the CARD_DISCARDED trigger, and logs comic onomatopoeia.
+ * Strictly respects discardOnEmpty: false for cards that enter with counters but lack the Uses keyword (e.g. Hawkeye 01066).
+ */
+export function checkAndDiscardZeroCounterCard(
+  state: GameState,
+  player: PlayerState,
+  cardInstance: CardInstance,
+  counterType?: string,
+): boolean {
+  // Strict non-discard guard: if enrichment explicitly marks discardOnEmpty as false, do not discard
+  if (cardInstance.card.enrichment?.uses?.discardOnEmpty === false) return false;
+
+  // Check if card has 'Uses' keyword or enrichment discardOnEmpty
+  const hasUsesKeyword =
+    Boolean(cardInstance.card.enrichment?.uses?.discardOnEmpty) ||
+    Boolean((cardInstance.card as any).uses) ||
+    hasKeyword(cardInstance.card, Keyword.USES);
+
+  if (!hasUsesKeyword) return false;
+
+  // Calculate remaining counters
+  let remainingCounters = 0;
+  if (counterType && cardInstance.counters && cardInstance.counters[counterType] !== undefined) {
+    remainingCounters = cardInstance.counters[counterType];
+  } else if (cardInstance.counters && Object.keys(cardInstance.counters).length > 0) {
+    remainingCounters = Object.values(cardInstance.counters).reduce((sum, v) => sum + v, 0);
+  } else {
+    remainingCounters = cardInstance.tokens?.counters || 0;
+  }
+
+  if (remainingCounters <= 0) {
+    // Check if card is already in a discard pile to prevent duplicate discard processing
+    const isAlreadyDiscarded =
+      state.players.some((p) => p.discard.some((c) => c.instanceId === cardInstance.instanceId)) ||
+      state.encounterDiscard.some((c) => c.instanceId === cardInstance.instanceId);
+    if (isAlreadyDiscarded) return false;
+
+    // 1. Remove using removeCardFromAllZones
+    removeCardFromAllZones(state, cardInstance.instanceId);
+
+    // 2. Cascade attachments & cards underneath to discard via helper or loop
+    cascadeAttachmentsAndTuckedCards(state, cardInstance, player.id);
+
+    // 3. Push to owner's discard (or player's discard if owner not found)
+    const owner =
+      (cardInstance.ownerId
+        ? state.players.find((p) => p.id === cardInstance.ownerId)
+        : undefined) || player;
+    owner.discard.push(cardInstance);
+
+    // 4. Dispatch CARD_DISCARDED trigger
+    dispatchTrigger(state, 'CARD_DISCARDED', {
+      targetPlayerId: player.id,
+      sourceInstanceId: cardInstance.instanceId,
+    });
+
+    // 5. Append comic log entry card.discarded.uses_exhausted with onomatopoeia 'USES EXHAUSTED!'
+    state.log.push({
+      id: `log_${Date.now()}_uses_exhausted`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'card_play',
+      actor: { name: player.name, type: player.currentForm },
+      key: 'card.discarded.uses_exhausted',
+      params: { player: player.name, card: cardInstance.card.name },
+      onomatopoeia: 'USES EXHAUSTED!',
+    });
+
+    return true;
+  }
+
+  return false;
 }

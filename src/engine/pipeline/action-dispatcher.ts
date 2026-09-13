@@ -33,13 +33,8 @@ import {
   getPlayerRestrictedLimit,
   canInitiateAbility,
 } from './legality-checker';
-import { executeAbilityCost } from './cost-engine';
-import {
-  executeEffect,
-  checkAndDiscardZeroCounterCard,
-  moveDefeatedCardToPile,
-  processHostDefeated,
-} from '../effects';
+import { executeAbilityCost, checkAndDiscardZeroCounterCard } from './cost-engine';
+import { executeEffect, moveDefeatedCardToPile, processHostDefeated } from '../effects';
 import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
@@ -1170,14 +1165,20 @@ export function dispatchAction(
             player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
           }
 
-          // Generic counter decrement and discardOnEmpty handling (ADR-0018)
+          // Generic counter decrement and discardOnEmpty handling (ADR-0018, ADR-0057)
           if (gCard.card.enrichment?.uses) {
+            const counterType = gCard.card.enrichment.uses.type;
+            if (counterType && gCard.counters && gCard.counters[counterType] !== undefined) {
+              gCard.counters[counterType] = Math.max(0, gCard.counters[counterType] - 1);
+            }
             const currentCounters = gCard.tokens?.counters || 0;
             gCard.tokens = { ...gCard.tokens, counters: Math.max(0, currentCounters - 1) };
-            if (gCard.card.enrichment.uses.discardOnEmpty && (gCard.tokens?.counters ?? 0) <= 0) {
-              player.tableau.splice(gIdx, 1);
-              player.discard.push(gCard);
-            }
+            checkAndDiscardZeroCounterCard(
+              nextState,
+              player,
+              gCard,
+              gCard.card.enrichment.uses.type,
+            );
           }
         }
       }

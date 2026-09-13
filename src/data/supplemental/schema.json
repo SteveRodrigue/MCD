@@ -103,6 +103,90 @@
                     "SCHEME_THREAT_REDUCED_TO_ZERO"
                   ]
                 },
+                "triggerFilter": {
+                  "type": "object",
+                  "properties": {
+                    "attackerKind": {
+                      "type": "string",
+                      "enum": [
+                        "VILLAIN",
+                        "MINION",
+                        "ANY_ENEMY"
+                      ]
+                    },
+                    "attackerCardFilter": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "sourceCardCode": {
+                      "type": "string"
+                    },
+                    "sourceInstanceId": {
+                      "type": "string"
+                    },
+                    "targetPlayerScope": {
+                      "type": "string",
+                      "enum": [
+                        "SELF",
+                        "OTHER",
+                        "ANY"
+                      ]
+                    },
+                    "targetForm": {
+                      "type": "string",
+                      "enum": [
+                        "HERO",
+                        "ALTER_EGO"
+                      ]
+                    },
+                    "targetType": {
+                      "type": "string",
+                      "enum": [
+                        "VILLAIN",
+                        "MINION",
+                        "SCHEME",
+                        "CHARACTER"
+                      ]
+                    },
+                    "isEngaged": {
+                      "type": "boolean"
+                    },
+                    "damageSourceType": {
+                      "type": "string",
+                      "enum": [
+                        "ATTACK",
+                        "SCHEME",
+                        "EFFECT"
+                      ]
+                    },
+                    "damageTargetType": {
+                      "type": "string",
+                      "enum": [
+                        "HERO",
+                        "ALLY",
+                        "SCHEME"
+                      ]
+                    },
+                    "defeatEntityType": {
+                      "type": "string",
+                      "enum": [
+                        "CHARACTER",
+                        "SCHEME",
+                        "ATTACHMENT"
+                      ]
+                    },
+                    "defeatByAttack": {
+                      "type": "boolean"
+                    },
+                    "formChangeDirection": {
+                      "type": "string",
+                      "enum": [
+                        "HERO_TO_ALTER_EGO",
+                        "ALTER_EGO_TO_HERO"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                },
                 "zone": {
                   "type": "string",
                   "enum": [

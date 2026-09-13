@@ -402,6 +402,26 @@ export const UniversalCardFilterSchema: z.ZodType<UniversalCardFilter> = CardCri
   none: z.lazy(() => z.array(UniversalCardFilterSchema)).optional(),
 }).strict();
 
+export const TriggerFilterSchema = z
+  .object({
+    attackerKind: z.enum(['VILLAIN', 'MINION', 'ANY_ENEMY']).optional(),
+    attackerCardFilter: UniversalCardFilterSchema.optional(),
+    sourceCardCode: z.string().optional(),
+    sourceInstanceId: z.string().optional(),
+    targetPlayerScope: z.enum(['SELF','OTHER','ANY']).optional(),
+    targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
+    targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER']).optional(),
+    isEngaged: z.boolean().optional(),
+    damageSourceType: z.enum(['ATTACK', 'SCHEME', 'EFFECT']).optional(),
+    damageTargetType: z.enum(['HERO', 'ALLY', 'SCHEME']).optional(),
+    defeatEntityType: z.enum(['CHARACTER', 'SCHEME', 'ATTACHMENT']).optional(),
+    defeatByAttack: z.boolean().optional(),
+    formChangeDirection: z.enum(['HERO_TO_ALTER_EGO', 'ALTER_EGO_TO_HERO']).optional(),
+  })
+  .strict();
+
+export type TriggerFilter = z.infer<typeof TriggerFilterSchema>;
+
 /**
  * FilterSchema is now strictly canonical UniversalCardFilterSchema (ADR-0046).
  */
@@ -650,6 +670,7 @@ export interface CardAbility {
   id: string;
   timing: z.infer<typeof TimingTypeSchema>;
   trigger?: z.infer<typeof TriggerTypeSchema>;
+  triggerFilter?: TriggerFilter;
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
@@ -665,6 +686,7 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     id: z.string().min(1),
     timing: TimingTypeSchema,
     trigger: TriggerTypeSchema.optional(),
+    triggerFilter: TriggerFilterSchema.optional(),
     zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),

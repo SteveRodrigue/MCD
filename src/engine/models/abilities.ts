@@ -1,10 +1,11 @@
 import { Keyword } from './enums';
-import type { PlayRequirements, StepCondition } from '../../data/supplemental/schema';
+import type { PlayRequirements, StepCondition, TriggerFilter } from '../../data/supplemental/schema';
 export type {
   StepCondition,
   DynamicValueSource,
   DrawCardsLimit,
   DrawCardsParams,
+  TriggerFilter,
 } from '../../data/supplemental/schema';
 
 export type AbilityTiming =
@@ -169,6 +170,7 @@ export interface CardAbility {
   id: string;
   timing: AbilityTiming;
   trigger?: TriggerType;
+  triggerFilter?: TriggerFilter;
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
   tags?: string[];

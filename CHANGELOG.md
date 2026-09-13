@@ -5,6 +5,13 @@ All notable changes to **Marvel Champions Digital (MCD)** will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- **Fix (Engine & Supplemental Contract): Trigger filter enforcement for declarative trigger gating ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
+  - Enforced `triggerFilter` checks at trigger dispatch scan sites so eligible responses are rejected unless the event context matches the declarative attacker/target scope.
+  - Kept legacy trigger vocabulary compatibility while ensuring attack-only and villain-only filter semantics are fail-closed for unsupported enemy kinds.
+  - Regenerated the checked-in supplemental schema artifact to keep `src/data/supplemental/schema.json` synchronized with the canonical TypeScript schema.
+
 - **Feature (Engine & Lifecycle): Universal Uses (X) Counter Depletion & Discard Lifecycle Architecture ([RR v1.8 p. 30](docs/algorithmic_rules_reference.md), [ADR-0057](docs/decisions/0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)):**
   - **Centralized Depletion & Discard Lifecycle (`checkAndDiscardZeroCounterCard`):** Centralized `checkAndDiscardZeroCounterCard` in `src/engine/pipeline/cost-engine.ts` (re-exported by `src/engine/effects/index.ts`), automating card removal, attachment cascading, trigger dispatch, and comic logging whenever an in-play card exhausts its uses counters.
   - **Automatic Discard in Ability Cost Execution (`executeAbilityCost`):** Integrated `checkAndDiscardZeroCounterCard` directly into `executeAbilityCost` after deducting `cost.spendCounters` from `sourceCardInst`, ensuring all card abilities and prompt queue decisions automatically trigger discard upon spending their final counter without caller boilerplate.

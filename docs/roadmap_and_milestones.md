@@ -21,12 +21,12 @@ To maximize delivery velocity, eliminate scope dispersion, and ship our first co
 
 All uncompleted and future roadmap items are categorized using the following priority scale:
 
-| Level  | Badge                        | Description                                                                                              | Target            |
-| :----- | :--------------------------- | :------------------------------------------------------------------------------------------------------- | :---------------- |
-| **P0** | `🔴 [Must-Have]`             | **Rhino Release Blocker:** Non-negotiable for a complete, 100% playable Rhino vs. Core Heroes vertical slice. | Current Sprint (Gate 1) |
-| **P1** | `🟠 [Should-Have]`           | **High Priority / Polish:** Essential UX, interactive modals, and key ergonomics for the Rhino Release. | Gate 1 Polish     |
-| **P2** | `🟡 [Nice-to-Have]`          | **Post-Rhino Expansion:** Klaw & Ultron bosses, extra modular sets, and audio/visual flourishes.         | Gate 2 & Gate 3   |
-| **P3** | `🔵 [Future / Expansion]`    | **Expansions & Ecosystem:** Player Side Schemes, 3-sided heroes, campaign decks, native desktop binaries. | Gate 4+           |
+| Level  | Badge                     | Description                                                                                                   | Target                  |
+| :----- | :------------------------ | :------------------------------------------------------------------------------------------------------------ | :---------------------- |
+| **P0** | `🔴 [Must-Have]`          | **Rhino Release Blocker:** Non-negotiable for a complete, 100% playable Rhino vs. Core Heroes vertical slice. | Current Sprint (Gate 1) |
+| **P1** | `🟠 [Should-Have]`        | **High Priority / Polish:** Essential UX, interactive modals, and key ergonomics for the Rhino Release.       | Gate 1 Polish           |
+| **P2** | `🟡 [Nice-to-Have]`       | **Post-Rhino Expansion:** Klaw & Ultron bosses, extra modular sets, and audio/visual flourishes.              | Gate 2 & Gate 3         |
+| **P3** | `🔵 [Future / Expansion]` | **Expansions & Ecosystem:** Player Side Schemes, 3-sided heroes, campaign decks, native desktop binaries.     | Gate 4+                 |
 
 ---
 
@@ -156,7 +156,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Removed dead/redundant cost primitives (`spendTokens`, `removeCounter`, `spendCounter`) from `AbilityCostSchema` and `AbilityCost`.
   - Consolidated all counter depletion on the canonical `spendCounters: { counterType?: string, amount: number, target?: 'SELF' | 'IDENTITY' }` primitive.
   - Pruned fallback branches from `cost-engine.ts`, regenerated `schema.json`, and updated `03_costs_and_targeting.md`.
-- [x] **Unify Fragmented EXHAUST_* and READY_* into Universal EXHAUST and READY Primitives with Target Selectors (RR v1.8 p. 13, 23 / [Issue #65](https://github.com/SteveRodrigue/MCD/issues/65)) ✅ (Completed):**
+- [x] _*Unify Fragmented EXHAUST_* and READY__ into Universal EXHAUST and READY Primitives with Target Selectors (RR v1.8 p. 13, 23 / [Issue #65](https://github.com/SteveRodrigue/MCD/issues/65)) ✅ (Completed):**
   - Consolidated fragmented primitives into universal `EXHAUST` and `READY` consuming `target` selectors (`SELF_IDENTITY`, `SELF`, `CHOSEN_ALLY`, `ALL_ALLIES`, `CHOSEN_CHARACTER`, `ALL_CHARACTERS`, `VILLAIN`, `CHOSEN_MINION`, `ALL_MINIONS`).
   - Completely purged all 6 legacy primitives (`EXHAUST_HERO`, `EXHAUST_IDENTITY`, `READY_ALLY`, `READY_CARD`, `READY_CHARACTER`, `READY_IDENTITY`) with zero legacy retention.
   - Added visual Card Editor support in `AbilityFormBuilder.tsx` and `effect-parameter-registry.ts`.
@@ -174,6 +174,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
 _Objective: Equip developers and card authors with an integrated visual editor and live reviewer GUI to accelerate Core Set card audits, verify declarative rules, and hot-reload supplemental JSON directly from the running application ([ADR-0045](decisions/0045-card-supplemental-editor-and-live-reviewer-gui.md), [Specification](specifications/tooling/card_supplemental_editor.md))._
 
 ### Milestones & Tasks:
+
 - [x] **Step 1: Local Vite Dev Server REST Middleware (`/api/supplemental/*`) ([Issue #60](https://github.com/SteveRodrigue/MCD/issues/60)) ✅ (Completed):**
   - Implement `cardSupplementalEditorPlugin` in `vite.config.ts` handling `GET /api/supplemental/packs`, `GET /api/supplemental/cards`, `GET /api/supplemental/card/:code`, and `POST /api/supplemental/card/:code`.
   - Validate payloads against authoritative `CardEnrichmentSchema` (`schema.ts`) prior to disk writes.
@@ -190,7 +191,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
   - Atomic Save action (`Ctrl+S` / Save button) updating disk JSON and triggering Vite HMR with session reset toast.
 - [x] **Step 4: In-Game Tabletop Context Menu Integration ([Issue #62](https://github.com/SteveRodrigue/MCD/issues/62)) ✅ (Completed):**
   - Attach custom `onContextMenu` handler to all in-game `<CardView />` instances on the tabletop (Player Hand, Tableau, Villain Zone, Main Scheme, Side Schemes, Attachments).
-  - Provide *"Open in Supplemental Editor"* action that launches `/editor?code=<cardCode>` in a new browser tab/window without losing active game state.
+  - Provide _"Open in Supplemental Editor"_ action that launches `/editor?code=<cardCode>` in a new browser tab/window without losing active game state.
 
 ---
 
@@ -199,6 +200,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
 _Objective: Complete, test, and ship a 100% polished, playable vertical slice featuring all 5 Core Heroes battling against the Rhino Scenario on Standard and Expert difficulty with full UI and headless simulation proof ([ADR-0002](decisions/0002-decoupled-headless-rules-engine.md), [ADR-0004](decisions/0004-visual-art-direction-comic-pop-art.md))._
 
 ### 1.1. 🔴 `[Must-Have]` Core Set Player Cards & Primitives (101 Cards — Inbox Zero)
+
 - [x] **Universal Ability Step Sequencing & Cost Engine ([ADR-0024](decisions/0024-declarative-action-cost-engine-and-state-mutation-pre-checks.md), [ADR-0030](decisions/0030-unified-ability-step-sequence-architecture.md)):** Unified `steps: AbilityStep[]` pipeline with conditional gates (`ALWAYS`, `THEN`, `IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`).
 - [x] **Core Hero Signature Mechanics Completed:**
   - Spider-Man (`01001a/b`): Spider-Sense, Web-Shooter ([Issue #42](https://github.com/SteveRodrigue/MCD/issues/42)), Backflip, Enhanced Spider-Sense ([Issue #1](https://github.com/SteveRodrigue/MCD/issues/1)).
@@ -228,15 +230,17 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
     - [x] **[Issue #92](https://github.com/SteveRodrigue/MCD/issues/92):** `refactor(data): Retrofit Core Set replacement & condition cards to ADR-0049 and prune single-use primitives` ✅ (Completed)
 
 ### 1.2. 🔴 `[Must-Have]` Rhino Scenario & Encounter Pools (34 Cards)
+
 - [x] **Rhino Villain Pipeline (Rhino I `01094`, II `01095`, III `01096`, The Break-In! 1A/1B `01097`):** Multi-stage HP scaling, Tough keyword on stage transition, and scheme acceleration.
 - [x] **Standard & Expert Encounter Pools:**
-  - Standard: *Advance* (`01186`), *Assault* (`01187`), *Caught Off Guard* (`01188`), *Gang-Up* (`01189`), *Shadow of the Past* (`01190`).
-  - Expert: *Exhaustion* (`01191`), *Masterplan* (`01192`), *Under Fire* (`01193`).
-- [x] **Bomb Scare Modular Set (Default Recommended):** *Bomb Scare* (`01108`), *Hydra Bomber* (`01110`), *False Alarm* (`01109`), *Explosion* (`01111`).
+  - Standard: _Advance_ (`01186`), _Assault_ (`01187`), _Caught Off Guard_ (`01188`), _Gang-Up_ (`01189`), _Shadow of the Past_ (`01190`).
+  - Expert: _Exhaustion_ (`01191`), _Masterplan_ (`01192`), _Under Fire_ (`01193`).
+- [x] **Bomb Scare Modular Set (Default Recommended):** _Bomb Scare_ (`01108`), _Hydra Bomber_ (`01110`), _False Alarm_ (`01109`), _Explosion_ (`01111`).
 - [x] **5 Core Hero Nemesis Sets:** Vulture / Highway Robbery (Spider-Man), Yon-Rogg / The Yon-Rogg Incident (Captain Marvel), Titania / Personal Vendetta (She-Hulk), Whiplash / Imminent Meltdown (Iron Man), Killmonger / Usurp the Throne (Black Panther).
-- [x] **[Issue #36](https://github.com/SteveRodrigue/MCD/issues/36):** Centralize dynamic formula evaluator for state tokens (*Explosion* threat scaling, *Jessica Jones* side scheme scaling, *Gamma Slam*, *Energy Channel*, *Counter-Punch*) ✅ (Completed)
+- [x] **[Issue #36](https://github.com/SteveRodrigue/MCD/issues/36):** Centralize dynamic formula evaluator for state tokens (_Explosion_ threat scaling, _Jessica Jones_ side scheme scaling, _Gamma Slam_, _Energy Channel_, _Counter-Punch_) ✅ (Completed)
 
 ### 1.3. 🟠 `[Should-Have]` Comic Tabletop UI & Ergonomics
+
 - [x] **Pop-Art Combat Modals:** Interactive `AttackTargetModal.tsx`, `IdentityActionModal.tsx`, `DecisionPromptModal.tsx`, and Defender declaration window.
 - [x] **Dynamic Hand & Zone Displays:** Fan-out hand cards, vertical scheme threat gauge, and hero tableau layout.
 - [ ] **[Issue #50](https://github.com/SteveRodrigue/MCD/issues/50):** `[IMPROVEMENT] Adjust UI layout in multiplayer (2+ hero board)` for clean tabletop layout.
@@ -244,6 +248,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 - [x] **Interactive Card Play & Resource Payment Modal ([ADR-0055](decisions/0055-universal-ability-resource-payment-and-action-verb-unification.md) / [Issue #108](https://github.com/SteveRodrigue/MCD/issues/108)) ✅ (Completed):** High-contrast generator tapping, double-resource auto-selection, and interactive paid ability activations for attachments and tableau cards.
 
 ### 1.4. 🔴 `[Must-Have]` Automated 100-Game Headless Match Simulation Gate
+
 - [ ] **Monte Carlo Verification Suite (`tests/engine/match-simulator.test.ts`):**
   - Automated headless runner executing 100 complete simulated games (Spider-Man, Captain Marvel, She-Hulk, Iron Man, Black Panther) against Rhino on Standard and Expert.
   - Asserts zero state corruption, zero deadlocks, and verified win/loss condition evaluations.
@@ -255,11 +260,12 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 _Objective: Expand the Core Set scenario catalog to include Klaw and Ultron bosses with their unique encounter mechanics ([ADR-0033](decisions/0033-official-15-step-scenario-setup-engine-and-modular-plugin-pipeline.md))._
 
 ### Milestones & Tasks:
+
 - [ ] **Klaw Scenario Plugin (`klaw` - 17 cards) & Masters of Evil (`masters_of_evil` - 6 cards):**
   - 2 boost cards per attack, sonic convergence weapons, minion horde spawning.
 - [ ] **Ultron Scenario Plugin (`ultron` - 22 cards) & Under Attack (`under_attack` - 4 cards):**
   - Facedown drone deck attachments, drone minion state machine, Invulnerable keyword.
-- [ ] **Modular Scenario Customizer:** Free mix-and-match of *Bomb Scare*, *Masters of Evil*, and *Under Attack*.
+- [ ] **Modular Scenario Customizer:** Free mix-and-match of _Bomb Scare_, _Masters of Evil_, and _Under Attack_.
 
 ---
 
@@ -268,6 +274,7 @@ _Objective: Expand the Core Set scenario catalog to include Klaw and Ultron boss
 _Objective: Scale to 2–4 players cooperative tabletop with collaborative triggers and community deck import ([ADR-0014](decisions/0014-marvelcdb-deck-schema-and-metadata-decks.md), [ADR-0032](decisions/0032-universal-resolution-stack-decision-prompt-queue-and-nested-interrupts.md))._
 
 ### Milestones & Tasks:
+
 - [ ] **[Issue #37](https://github.com/SteveRodrigue/MCD/issues/37):** `Alliance` keyword collaborative resource pooling and `Team-Up` dual-identity prerequisites.
 - [ ] **Cross-Player Cooperative Actions:** "Action: Ask another player to..." resolution stack prompts.
 - [ ] **1-Click MarvelCDB Community Deck Import:** Direct deck loading via REST API.
@@ -280,6 +287,7 @@ _Objective: Scale to 2–4 players cooperative tabletop with collaborative trigg
 _Objective: Scale the engine to support official expansion waves, campaign expansions, and advanced card archetypes ([ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md), [ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md), [ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md))._
 
 ### Milestones & Tasks:
+
 - [x] **[ADR-0034](decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md) / [Issue #34](https://github.com/SteveRodrigue/MCD/issues/34):** Player Side Schemes, persistent Victory Display, and auxiliary campaign decks.
 - [x] **[ADR-0035](decisions/0035-universal-multi-form-identities-and-generic-counter-engine.md) / [Issue #33](https://github.com/SteveRodrigue/MCD/issues/33):** Universal 51-counter engine and multi-form identities.
 - [x] **[ADR-0036](decisions/0036-advanced-status-card-dynamics-and-minion-activations.md) / [Issue #35](https://github.com/SteveRodrigue/MCD/issues/35):** Stalwart/Steady status dynamics and minion activation modifiers.

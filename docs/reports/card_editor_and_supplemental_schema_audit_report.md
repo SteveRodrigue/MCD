@@ -356,10 +356,10 @@ flowchart TD
 
 **Goal:** Get the naming rules and full old→new mapping tables ratified in a single authoritative ADR before touching any code, so every later phase cites it instead of re-litigating names.
 
-- [ ] **1.1 — Draft ADR-0058:** Copy `docs/decisions/template.md` to `docs/decisions/0058-declarative-schema-naming-conventions-and-primitive-consolidation.md`. Populate Context, the 5 naming invariants (Section "🏛️ Foundational Design Principles" above), Decision Drivers, and Considered Options (status quo vs. full rename vs. partial rename).
-- [ ] **1.2 — Embed Full Mapping Tables:** Copy the finalized old→new tables from Sections 1.1–1.3 of this report (Triggers, Effects, Target Selectors) verbatim into the ADR's "Decision Outcome" so the ADR is self-contained and doesn't just link back to a report that may be pruned later.
-- [ ] **1.3 — Register in ADR Index:** Add the ADR-0058 row to `docs/decisions/README.md` log table and the appropriate Mermaid lineage graph (link from ADR-0046, ADR-0048, ADR-0049 since this supersedes/refines their naming).
-- [ ] **1.4 — Quality Gate:** `npm run format:check && npm run lint` (docs-only change, no code touched yet).
+- [x] **1.1 — Draft ADR-0058:** Copy `docs/decisions/template.md` to `docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md`. Populate Context, the 5 naming invariants (Section "🏛️ Foundational Design Principles" above), Decision Drivers, and Considered Options (status quo vs. full rename vs. partial rename).
+- [x] **1.2 — Embed Full Mapping Tables:** Copy the finalized old→new tables from Sections 1.1–1.3 of this report (Triggers, Effects, Target Selectors) verbatim into the ADR's "Decision Outcome" so the ADR is self-contained and doesn't just link back to a report that may be pruned later.
+- [x] **1.3 — Register in ADR Index:** Add the ADR-0058 row to `docs/decisions/README.md` log table and the appropriate Mermaid lineage graph (link from ADR-0046, ADR-0048, ADR-0049 since this supersedes/refines their naming).
+- [x] **1.4 — Quality Gate:** `npm run format:check && npm run lint` (docs-only change, no code touched yet). Passed on 2026-09-13.
 
 ---
 

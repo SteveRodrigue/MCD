@@ -124,6 +124,9 @@ graph TD
         ADR49["ADR-0049: Composable Value Transformers & Event Interception"]
         ADR57["ADR-0057: Universal Uses (X) Counter Depletion & Discard Lifecycle"]
     end
+    ADR46 --> ADR58["ADR-0058: Declarative Schema Taxonomy & Primitive Consolidation"]
+    ADR48 --> ADR58
+    ADR49 --> ADR58
     subgraph CombatTriggers["Combat & Trigger Safeguards"]
         ADR53["ADR-0053: Infinite Trigger Loop Detection & Prevention Guardrails"]
         ADR54["ADR-0054: Parameterized Keyword Stacking & Retaliate Value Accumulation Engine"]
@@ -193,6 +196,7 @@ graph TD
 | [ADR-0055](0055-universal-ability-resource-payment-and-action-verb-unification.md)                | 2026-09-13 | Universal Ability Resource Payment & Action Verb Unification                         | **Accepted**                                                                                                 | Unify in-play card abilities with resource costs under `USE_CARD_ABILITY`, retire ad-hoc `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT`, and enforce player selection via interactive payment modals (Fixes #108).                                                                                     |
 | [ADR-0056](0056-unified-comic-pop-art-modal-and-dialog-design-system.md)                          | 2026-09-13 | Unified Comic Pop-Art Modal & Dialog Design System                                   | **Accepted**                                                                                                 | Standardize in-game prompts, action pickers, and utility sheets under a unified 3-tier Comic Pop-Art design system while preserving the retro newsprint broadsheet of The Daily Bugle.                                                                                                          |
 | [ADR-0057](0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)          | 2026-09-13 | Universal Uses (X) Counter Depletion and Discard Lifecycle Architecture              | **Accepted**                                                                                                 | Centralize `checkAndDiscardZeroCounterCard` in `cost-engine.ts`, auto-execute upon counter exhaustion, cascade attachments/tucked cards, and protect non-discard cards (Hawkeye).                                                                                                               |
+| [ADR-0058](0058-declarative-schema-taxonomy-and-primitive-consolidation.md)                       | 2026-09-13 | Declarative Schema Taxonomy and Primitive Consolidation                              | **Accepted**                                                                                                 | Establish one canonical trigger, effect, and target-selector vocabulary with additive compatibility aliases, deterministic data migration, and phased legacy cleanup (Refs #111).                                                                                                                 |
 
 ---
 

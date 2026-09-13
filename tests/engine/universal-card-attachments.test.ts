@@ -217,7 +217,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
   });
 
   describe('4. Legal Actions Discovery for Attachment Discard Abilities', () => {
-    it('surfaces SPEND_RESOURCES_TO_DISCARD_ATTACHMENT in legal actions for identity attachment', () => {
+    it('surfaces USE_CARD_ABILITY in legal actions for attachment discard when affordable', () => {
       const state = setupGame({
         scenarioId: 'rhino',
         players: [
@@ -239,8 +239,9 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       player.currentForm = 'hero';
       player.activeFormCard = spiderManHero;
       player.hand = [
-        createCardInstance(cardCatalog.getCard('01014')!), // Physical resource
-        createCardInstance(cardCatalog.getCard('01015')!), // Energy resource
+        createCardInstance(cardCatalog.getCard('01003')!), // Physical resource
+        createCardInstance(cardCatalog.getCard('01003')!), // Physical resource
+        createCardInstance(cardCatalog.getCard('01003')!), // Physical resource
       ];
 
       // Attach Enhanced Ivory Horn to villain
@@ -250,8 +251,8 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
       const legalReport = getLegalActionsForPlayer(state, 'p1');
       const discardAction = legalReport.allActions.find(
         (a) =>
-          a.action.type === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' &&
-          (a.action as any).attachmentInstanceId === ivoryHorn.instanceId,
+          a.action.type === 'USE_CARD_ABILITY' &&
+          (a.action as any).cardInstanceId === ivoryHorn.instanceId,
       );
 
       expect(discardAction).toBeDefined();

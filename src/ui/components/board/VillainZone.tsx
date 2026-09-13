@@ -21,6 +21,7 @@ interface VillainZoneProps {
   encounterDeck: CardInstance[];
   encounterDiscard: CardInstance[];
   accelerationTokens: number;
+  onSelectAttachment?: (attachment: CardInstance) => void;
 }
 
 type SortMode = 'deck_order' | 'card_type' | 'encounter_set';
@@ -45,6 +46,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   encounterDeck,
   encounterDiscard,
   accelerationTokens,
+  onSelectAttachment,
 }) => {
   const { devMode } = useGameSettings();
   const [showDeckModal, setShowDeckModal] = useState(false);
@@ -258,6 +260,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               <CardAttachmentFan
                 attachments={villain.attachments}
                 cardsUnderneath={villain.cardsUnderneath}
+                onSelectAttachment={onSelectAttachment}
               />
             </div>
           </div>

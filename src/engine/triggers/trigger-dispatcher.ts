@@ -1,4 +1,4 @@
-import { GameState, TriggerType, AbilityStep } from '@engine/models';
+import { GameState, TriggerType, AbilityStep, PlayerState } from '@engine/models';
 import { executeEffect } from '../effects';
 import { executeAbilityCost, canPayAbilityCost } from '../pipeline/cost-engine';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
@@ -172,7 +172,10 @@ export function dispatchTrigger(
     throw loopErr;
   }
 
-  const player = state.players.find((p) => p.id === context.targetPlayerId);
+  const player =
+    state.players.find((p) => p.id === context.targetPlayerId) ||
+    state.players[state.firstPlayerIndex] ||
+    state.players[0];
   if (!player) return { state };
 
   let currentDamage = context.damageAmount ?? 0;
@@ -182,7 +185,7 @@ export function dispatchTrigger(
   let hasPendingPrompt = false;
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
-  const identityAbilities = player.activeFormCard.enrichment?.abilities || [];
+  const identityAbilities = player ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (ability.trigger === trigger) {
       if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
@@ -290,106 +293,122 @@ export function dispatchTrigger(
   }
 
   // 2. Scan tableau, allies & in-play cards
-  for (const cardInst of [
-    ...(player.tableau || []),
-    ...(player.allies || []),
-    ...(player.attachments || []),
-  ]) {
-    const abilities = cardInst.card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (ability.trigger === trigger) {
-        // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
-        // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
-        // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
-        if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
-          if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
-            continue;
-          }
-          if (!context.sourceInstanceId) {
-            continue;
-          }
-        }
+  const playersToScanForInPlay: PlayerState[] =
+    trigger === 'MINION_ENTERS_PLAY'
+      ? [player, ...state.players.filter((p) => p.id !== player.id)]
+      : [player];
 
-        // Ally action-resolution guard:
-        // An ally's ability triggered by THWART_RESOLVED or ATTACK_RESOLVED must only fire
-        // if this specific ally was the character that attacked or thwarted.
-        // Upgrades in the tableau (e.g. Superhuman Strength 01028) trigger on the hero's attack/thwart.
-        if (
-          cardInst.card.type === 'ally' &&
-          (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')
-        ) {
-          if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
-            continue;
+  for (const controller of playersToScanForInPlay) {
+    if (hasPendingPrompt) break;
+    for (const cardInst of [
+      ...(controller.tableau || []),
+      ...(controller.allies || []),
+      ...(controller.attachments || []),
+    ]) {
+      const abilities = cardInst.card.enrichment?.abilities || [];
+      for (const ability of abilities) {
+        if (ability.trigger === trigger) {
+          // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
+          // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
+          // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
+          if (trigger === 'ENTERS_PLAY' || trigger === 'CARD_PLAYED') {
+            if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
+              continue;
+            }
+            if (!context.sourceInstanceId) {
+              continue;
+            }
           }
-          if (!context.sourceInstanceId) {
-            continue;
+
+          // Ally action-resolution guard:
+          // An ally's ability triggered by THWART_RESOLVED or ATTACK_RESOLVED must only fire
+          // if this specific ally was the character that attacked or thwarted.
+          // Upgrades in the tableau (e.g. Superhuman Strength 01028) trigger on the hero's attack/thwart.
+          if (
+            cardInst.card.type === 'ally' &&
+            (trigger === 'THWART_RESOLVED' || trigger === 'ATTACK_RESOLVED')
+          ) {
+            if (context.sourceInstanceId && context.sourceInstanceId !== cardInst.instanceId) {
+              continue;
+            }
+            if (!context.sourceInstanceId) {
+              continue;
+            }
           }
-        }
 
-        const isForced = ability.timing.startsWith('FORCED_');
-        if (isForced || context.acceptOptionalTriggers === true) {
-          const node: TriggerCallNode = {
-            trigger,
-            abilityId: ability.id,
-            sourceInstanceId: cardInst.instanceId,
-            cardCode: cardInst.card.code,
-            cardName: cardInst.card.name,
-          };
-          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+          const isForced = ability.timing.startsWith('FORCED_');
+          if (isForced || context.acceptOptionalTriggers === true) {
+            const node: TriggerCallNode = {
+              trigger,
+              abilityId: ability.id,
+              sourceInstanceId: cardInst.instanceId,
+              cardCode: cardInst.card.code,
+              cardName: cardInst.card.name,
+            };
+            const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
-          if (ability.cost) {
-            const costCheck = canPayAbilityCost(state, player, ability, cardInst);
+            if (ability.cost) {
+              const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
+              if (!costCheck.allowed) continue;
+              executeAbilityCost(state, controller, ability, cardInst);
+            }
+            executeEffect(state, ability, {
+              playerId: controller.id,
+              sourceCardInstance: cardInst,
+              targetType: context.targetType as any,
+              targetInstanceId: context.targetInstanceId,
+              triggerChain: nextChain,
+            });
+          } else {
+            // Optional In-Play Ability: Check cost & limits before prompting
+            const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
             if (!costCheck.allowed) continue;
-            executeAbilityCost(state, player, ability, cardInst);
-          }
-          executeEffect(state, ability, {
-            playerId: player.id,
-            sourceCardInstance: cardInst,
-            targetType: context.targetType as any,
-            targetInstanceId: context.targetInstanceId,
-            triggerChain: nextChain,
-          });
-        } else {
-          // Optional In-Play Ability: Check cost & limits before prompting
-          const costCheck = canPayAbilityCost(state, player, ability, cardInst);
-          if (!costCheck.allowed) continue;
 
-          if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
-            continue;
-          }
-          if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
-            continue;
-          }
+            if (
+              ability.limit === 'ONCE_PER_ROUND' &&
+              controller.usedAbilitiesThisRound?.[ability.id]
+            ) {
+              continue;
+            }
+            if (
+              ability.limit === 'ONCE_PER_PHASE' &&
+              controller.usedAbilitiesThisPhase?.[ability.id]
+            ) {
+              continue;
+            }
 
-          const cardName = cardInst.card.name;
-          enqueueDecisionPrompt(state, {
-            promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            playerId: player.id,
-            title: `Do you want to use the following ability from ${cardName}?`,
-            description: formatAbilityStepsSummary(trigger, ability.steps || []),
-            sourceCardName: cardName,
-            isVoluntary: true,
-            options: [
-              {
-                id: `trigger_${ability.id}`,
-                label: 'Yes',
-                effect: 'EXECUTE_OPTIONAL_TRIGGER',
-                params: {
-                  ability,
-                  context,
-                  sourceCardInstanceId: cardInst.instanceId,
+            const cardName = cardInst.card.name;
+            enqueueDecisionPrompt(state, {
+              promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              playerId: controller.id,
+              title: `Do you want to use the following ability from ${cardName}?`,
+              description: formatAbilityStepsSummary(trigger, ability.steps || []),
+              sourceCardName: cardName,
+              isVoluntary: true,
+              options: [
+                {
+                  id: `trigger_${ability.id}`,
+                  label: 'Yes',
+                  effect: 'EXECUTE_OPTIONAL_TRIGGER',
+                  params: {
+                    ability,
+                    context,
+                    sourceCardInstanceId: cardInst.instanceId,
+                  },
                 },
-              },
-              {
-                id: 'pass',
-                label: 'No',
-                effect: 'PASS',
-              },
-            ],
-          });
-          hasPendingPrompt = true;
+                {
+                  id: 'pass',
+                  label: 'No',
+                  effect: 'PASS',
+                },
+              ],
+            });
+            hasPendingPrompt = true;
+            break;
+          }
         }
       }
+      if (hasPendingPrompt) break;
     }
   }
 

@@ -11,6 +11,14 @@ export function createCardInstance(card: NormalizedCard): CardInstance {
     throw new Error(`Supplemental data is missing for card ${card.code} (${card.name})`);
   }
   instanceCounter += 1;
+  const uses = card.enrichment?.uses;
+  const initialCounters: Record<string, number> = {};
+  let totalCounters = 0;
+  if (uses) {
+    const counterType = uses.type || 'all_purpose';
+    initialCounters[counterType] = uses.count;
+    totalCounters = uses.count;
+  }
   return {
     instanceId: `inst_${instanceCounter}_${card.code}`,
     card: {
@@ -21,8 +29,9 @@ export function createCardInstance(card: NormalizedCard): CardInstance {
     tokens: {
       damage: 0,
       threat: 0,
-      counters: 0,
+      counters: totalCounters,
     },
+    counters: initialCounters,
     statusCards: [],
     attachments: [],
   };

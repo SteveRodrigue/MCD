@@ -146,20 +146,6 @@ export function executeMinionAttackAgainstPlayer(
     options,
   );
 
-  // Forced Responses on minion attack (e.g. Sandman 01102: discard top 2 cards of encounter deck)
-  // When resolved synchronously or immediately without pending prompt
-  if (!nextState.pendingDecisionPrompt) {
-    const abilities = minion.card.enrichment?.abilities || [];
-    for (const ability of abilities) {
-      if (
-        ability.trigger === 'MINION_ATTACKED' ||
-        (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')
-      ) {
-        executeEffect(nextState, ability, { playerId: player.id, sourceCardInstance: minion });
-      }
-    }
-  }
-
   return nextState;
 }
 
@@ -501,6 +487,13 @@ export function resolveActiveEncounterCardAfterInterrupt(
         });
       }
     }
+
+    dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+      targetPlayerId: player.id,
+      sourceInstanceId: cardInstance.instanceId,
+      targetInstanceId: cardInstance.instanceId,
+      encounterCardInstance: cardInstance,
+    });
   } else if (card.type === CardType.SIDE_SCHEME) {
     const sideSchemeCard = card as SideSchemeCard;
     const baseThreat =

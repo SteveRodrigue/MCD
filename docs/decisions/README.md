@@ -51,6 +51,7 @@ graph TD
     ADR28 -->|Superseded by| ADR30["ADR-0030: Unified AbilityStep[] Architecture"]
     ADR21["ADR-0021: Composable Primitives"] --> ADR29["ADR-0029: Generic Zone Primitives (PUT_INTO_PLAY)"]
     ADR29 --> ADR30
+    ADR30 --> ADR55["ADR-0055: Universal Ability Resource Payment"]
 ```
 
 ### 3. Combat & Resolution Stack
@@ -88,6 +89,7 @@ _The comic-book presentation layer, which composes the art direction, i18n, and 
 ```mermaid
 graph TD
     ADR04["ADR-0004: Comic Pop-Art Art Direction"] --> ADR37["ADR-0037: Comic Dialogue & Voice Localization"]
+    ADR04 --> ADR56["ADR-0056: Unified Comic Pop-Art Modal & Dialog Design System"]
     ADR05["ADR-0005: i18n & Localization"] --> ADR37
     ADR09["ADR-0009: Action History & Combat Log"] --> ADR37
 ```
@@ -187,6 +189,8 @@ graph TD
 | [ADR-0052](0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md)                   | 2026-09-12 | Centralized Dynamic Formula & State Value Evaluator Engine                           | **Accepted**                                                                                                 | Centralize dynamic mathematical evaluation into `evaluateDynamicAmount`, adhere to RR v1.8 calculation rules, eliminate `amountFormula` tech debt, and unify dynamic scalars under `DynamicValueSource`. |
 | [ADR-0053](0053-infinite-trigger-loop-detection-and-prevention-guardrails.md)                      | 2026-09-12 | Infinite Trigger Loop Detection & Prevention Guardrails                              | **Accepted**                                                                                                 | Implement dynamic trigger call chain tracking, cycle detection, recursion depth guard, `InfiniteLoopError`, and UI comic alert modal per RR v1.8 (Fixes #48). |
 | [ADR-0054](0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md)        | 2026-09-12 | Parameterized Keyword Stacking & Retaliate Value Accumulation Engine                 | **Accepted**                                                                                                 | Centralize character retaliate calculations into `getEffectiveRetaliate(entity, state?)`, enforce structured `{ keyword, amount }` modeling with zero tech debt in supplemental data, and support RR v1.8 value accumulation across Hero, Ally, Minion, and Villain combat windows (Fixes #64). |
+| [ADR-0055](0055-universal-ability-resource-payment-and-action-verb-unification.md)                | 2026-09-13 | Universal Ability Resource Payment & Action Verb Unification                         | **Accepted**                                                                                                 | Unify in-play card abilities with resource costs under `USE_CARD_ABILITY`, retire ad-hoc `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT`, and enforce player selection via interactive payment modals (Fixes #108). |
+| [ADR-0056](0056-unified-comic-pop-art-modal-and-dialog-design-system.md)                         | 2026-09-13 | Unified Comic Pop-Art Modal & Dialog Design System                                   | **Accepted**                                                                                                 | Standardize in-game prompts, action pickers, and utility sheets under a unified 3-tier Comic Pop-Art design system while preserving the retro newsprint broadsheet of The Daily Bugle. |
 
 
 ---

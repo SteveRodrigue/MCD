@@ -220,6 +220,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['energy_card'],
       });
 
       expect(res.result.success).toBe(true);
@@ -254,6 +255,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['wild_card'],
       });
 
       expect(res.result.success).toBe(true);
@@ -322,6 +324,7 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
         playerId: p1.id,
         cardInstanceId: 'ec_inst',
         abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['energy_card'],
       });
 
       expect(res.result.success).toBe(true);

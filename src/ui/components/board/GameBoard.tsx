@@ -36,6 +36,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);
+  const [pendingPaymentAction, setPendingPaymentAction] = useState<LegalActionItem | null>(null);
 
   const { edgeScrollSpeed } = useGameSettings();
 
@@ -92,9 +93,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     }
   }, [isMultiHero, activeSeatIndex, scrollToChild]);
 
-  // Execute action from Daily Bugle
+  // Execute action from Daily Bugle or interactive tabletop element
   const handleSelectNewspaperAction = (item: LegalActionItem) => {
     if (item.requiresModal === 'payment' && item.targetCardInstance) {
+      setPendingPaymentAction(item);
       setPaymentModalCard(item.targetCardInstance);
     } else if (onDispatchAction) {
       onDispatchAction(item.action);
@@ -128,6 +130,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           encounterDeck={gameState.encounterDeck}
           encounterDiscard={gameState.encounterDiscard}
           accelerationTokens={gameState.accelerationTokens}
+          onSelectAttachment={(att) => {
+            const matchAction = legalReport.boardActions.find(
+              (a) =>
+                a.targetCardInstance?.instanceId === att.instanceId ||
+                (a.action as any)?.cardInstanceId === att.instanceId,
+            );
+            if (matchAction) {
+              handleSelectNewspaperAction(matchAction);
+            }
+          }}
         />
 
         {/* Multi-Hero Panoramic Track (or Solo Play Area) */}
@@ -254,30 +266,70 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onDismiss={() => setIsEndTurnPromptOpen(false)}
       />
 
-      {/* 6. Card Payment Modal (Triggered via Newspaper) */}
+      {/* 6. Card Payment Modal (Triggered via Newspaper or In-Play Interaction) */}
       {paymentModalCard && (
         <CardPaymentModal
           isOpen={true}
           cardToPlay={paymentModalCard}
+          abilityCost={
+            pendingPaymentAction?.action.type === 'USE_CARD_ABILITY'
+              ? (() => {
+                  const ab = paymentModalCard.card.enrichment?.abilities?.find(
+                    (a) => a.id === (pendingPaymentAction.action as any).abilityId,
+                  );
+                  if (ab?.cost?.resourceCost) {
+                    const reqType =
+                      typeof ab.cost.resourceCost === 'object'
+                        ? (Object.keys(ab.cost.resourceCost)[0] as any)
+                        : undefined;
+                    const amount =
+                      typeof ab.cost.resourceCost === 'number'
+                        ? ab.cost.resourceCost
+                        : reqType
+                          ? ab.cost.resourceCost[reqType] || 1
+                          : 1;
+                    return {
+                      amount,
+                      resourceType: reqType,
+                      title: pendingPaymentAction.headline,
+                    };
+                  }
+                  return undefined;
+                })()
+              : undefined
+          }
           player={activePlayer}
           gameState={gameState}
-          onClose={() => setPaymentModalCard(null)}
+          onClose={() => {
+            setPaymentModalCard(null);
+            setPendingPaymentAction(null);
+          }}
           onConfirmPlay={(
             paymentHandCardIds: string[],
             generatorCardIds: string[],
             targetInstanceId?: string,
           ) => {
             if (onDispatchAction) {
-              onDispatchAction({
-                type: 'PLAY_CARD',
-                playerId: activePlayer.id,
-                cardInstanceId: paymentModalCard.instanceId,
-                paymentCardInstanceIds: paymentHandCardIds,
-                generatorInstanceIds: generatorCardIds,
-                targetInstanceId,
-              });
+              if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
+                onDispatchAction({
+                  ...pendingPaymentAction.action,
+                  paymentCardInstanceIds: paymentHandCardIds,
+                  generatorInstanceIds: generatorCardIds,
+                  targetInstanceId,
+                });
+              } else {
+                onDispatchAction({
+                  type: 'PLAY_CARD',
+                  playerId: activePlayer.id,
+                  cardInstanceId: paymentModalCard.instanceId,
+                  paymentCardInstanceIds: paymentHandCardIds,
+                  generatorInstanceIds: generatorCardIds,
+                  targetInstanceId,
+                });
+              }
             }
             setPaymentModalCard(null);
+            setPendingPaymentAction(null);
           }}
         />
       )}

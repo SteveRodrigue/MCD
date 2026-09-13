@@ -10,6 +10,11 @@ interface CardPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   cardToPlay: CardInstance | null;
+  abilityCost?: {
+    amount: number;
+    resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
+    title?: string;
+  };
   player: PlayerState;
   gameState: GameState;
   onConfirmPlay: (
@@ -23,6 +28,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   isOpen,
   onClose,
   cardToPlay,
+  abilityCost,
   player,
   gameState,
   onConfirmPlay,
@@ -103,10 +109,12 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   }, [isOpen, onClose]);
 
   const card = cardToPlay?.card;
-  const cost = card?.cost ?? 0;
+  const cost = abilityCost ? abilityCost.amount : (card?.cost ?? 0);
 
-  // Available hand payment cards (all hand cards except the card being played)
-  const availableHandCards = player.hand.filter((c) => c.instanceId !== cardToPlay?.instanceId);
+  // Available hand payment cards (all hand cards except the card being played if played from hand)
+  const availableHandCards = abilityCost
+    ? player.hand
+    : player.hand.filter((c) => c.instanceId !== cardToPlay?.instanceId);
 
   // Available generators: Identity resource abilities + ready tableau generators (ADR-0018)
   const availableGenerators = useMemo(() => {
@@ -261,12 +269,26 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     card?.faction,
   ]);
 
-  const isCostCovered = totalGenerated >= cost;
+  const isCostCovered = useMemo(() => {
+    if (abilityCost?.resourceType) {
+      const matching =
+        abilityCost.resourceType === 'physical'
+          ? resourceBreakdown.physicalCount
+          : abilityCost.resourceType === 'energy'
+            ? resourceBreakdown.energyCount
+            : abilityCost.resourceType === 'mental'
+              ? resourceBreakdown.mentalCount
+              : totalGenerated;
+      return matching + resourceBreakdown.wildCount >= cost;
+    }
+    return totalGenerated >= cost;
+  }, [abilityCost, resourceBreakdown, totalGenerated, cost]);
 
   // Potential Targets (Enemies or Schemes)
   // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
   // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
-  const isEventCard = card?.type === CardType.EVENT || (card as any)?.type_code === 'event';
+  const isEventCard =
+    !abilityCost && (card?.type === CardType.EVENT || (card as any)?.type_code === 'event');
   const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
   const isAttack =
     isEventCard &&
@@ -370,7 +392,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 Resource Payment & Action
               </span>
               <h2 className="text-xl font-black uppercase text-comic-black tracking-tight leading-none">
-                Play {card.name}
+                {abilityCost?.title || `Play ${card.name}`}
               </h2>
             </div>
           </div>
@@ -408,7 +430,9 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               </span>
               <div className="flex items-center space-x-1">
                 <span className="text-3xl font-black text-comic-red">{cost}</span>
-                <span className="text-xs font-bold uppercase text-comic-black">Res</span>
+                <span className="text-xs font-bold uppercase text-comic-black">
+                  {abilityCost?.resourceType ? abilityCost.resourceType : 'Res'}
+                </span>
               </div>
             </div>
           </div>

@@ -15,5 +15,8 @@
       "fileMatch": ["/src/data/supplemental/pack/*.json"],
       "url": "./src/data/supplemental/schema.json"
     }
-  ]
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "gh": true
+  }
 }

@@ -136,7 +136,9 @@
                         "CHOSEN_CHARACTER",
                         "ALL_CHARACTERS",
                         "PREVIOUS_TARGET",
-                        "PREVIOUS_SELECTED_CARD"
+                        "PREVIOUS_SELECTED_CARD",
+                        "TRIGGERING_MINION",
+                        "TRIGGERING_ENEMY"
                       ]
                     },
                     "discardSelf": {

@@ -67,6 +67,70 @@ import { attachCardToHost, initializeCardUses } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
 /**
+ * Scans all in-play zones for a card instance by instanceId or card code (ADR-0055).
+ * Searches player tableaus, allies, identity attachments, ally attachments,
+ * minion attachments, villain attachments, and scheme attachments.
+ */
+export function findInPlayCardInstance(
+  state: GameState,
+  instanceId: string,
+): CardInstance | undefined {
+  for (const p of state.players || []) {
+    const fromTableau = p.tableau.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromTableau) return fromTableau;
+
+    const fromAllies = p.allies.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromAllies) return fromAllies;
+
+    const fromAttachments = p.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromAttachments) return fromAttachments;
+
+    for (const a of p.allies || []) {
+      const fromAllyAtt = a.attachments?.find(
+        (c) => c.instanceId === instanceId || c.card.code === instanceId,
+      );
+      if (fromAllyAtt) return fromAllyAtt;
+    }
+
+    for (const m of p.engagedMinions || []) {
+      const fromMinionAtt = m.attachments?.find(
+        (c) => c.instanceId === instanceId || c.card.code === instanceId,
+      );
+      if (fromMinionAtt) return fromMinionAtt;
+    }
+  }
+
+  if (state.villain) {
+    const fromVillainAtt = state.villain.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromVillainAtt) return fromVillainAtt;
+  }
+
+  if (state.mainScheme) {
+    const fromMainSchemeAtt = state.mainScheme.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromMainSchemeAtt) return fromMainSchemeAtt;
+  }
+
+  for (const s of state.sideSchemes || []) {
+    const fromSideSchemeAtt = s.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromSideSchemeAtt) return fromSideSchemeAtt;
+  }
+
+  return undefined;
+}
+
+/**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
  */
 export function routeCardInstances(
@@ -1424,11 +1488,8 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
-      // Find card in tableau, allies, attachments, or identity
-      let targetCardInst =
-        player.tableau.find((c) => c.instanceId === action.cardInstanceId) ||
-        player.allies.find((c) => c.instanceId === action.cardInstanceId) ||
-        player.attachments?.find((c) => c.instanceId === action.cardInstanceId);
+      // Find card in all in-play zones or identity (ADR-0055)
+      let targetCardInst = findInPlayCardInstance(nextState, action.cardInstanceId);
       const isIdentity = player.activeFormCard.code === action.cardInstanceId;
 
       const enrichment = isIdentity
@@ -1485,10 +1546,24 @@ export function dispatchAction(
         };
       }
 
+      // Resource payment validation: Player must explicitly select payment cards (RR v1.8 p. 25 / ADR-0055)
+      if (ability.cost?.resourceCost) {
+        if (!action.paymentCardInstanceIds || action.paymentCardInstanceIds.length === 0) {
+          return {
+            state,
+            result: {
+              success: false,
+              error: 'Payment cards must be selected to satisfy the resource cost.',
+            },
+          };
+        }
+      }
+
       // Ability initiation & target validity check (RR v1.8 p. 15-16, 29, 30; Issue #101)
       const initCheck = canInitiateAbility(nextState, action.playerId, ability, targetCardInst, {
         discardCardInstanceIds: (action as any).discardCardInstanceIds,
-        paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
+        paymentCardInstanceIds: action.paymentCardInstanceIds,
+        generatorInstanceIds: action.generatorInstanceIds,
         targetInstanceId: action.targetInstanceId,
       });
       if (!initCheck.allowed) {
@@ -1503,7 +1578,8 @@ export function dispatchAction(
         targetCardInst,
         {
           discardCardInstanceIds: (action as any).discardCardInstanceIds,
-          paymentCardInstanceIds: (action as any).paymentCardInstanceIds,
+          paymentCardInstanceIds: action.paymentCardInstanceIds,
+          generatorInstanceIds: action.generatorInstanceIds,
           targetInstanceId: action.targetInstanceId,
         },
       );
@@ -1660,133 +1736,27 @@ export function dispatchAction(
     }
 
     case 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT': {
-      const player = getPlayer(nextState, action.playerId);
-      if (!player) return { state, result: { success: false, error: 'Player not found' } };
-
-      let foundAttachment: CardInstance | undefined;
-      let containerArray: CardInstance[] | undefined;
-
-      // 1. Check Villain
-      const vIdx = (nextState.villain.attachments || []).findIndex(
-        (att) =>
-          att.instanceId === action.attachmentInstanceId ||
-          att.card.code === action.attachmentInstanceId,
+      // Transitional forwarder to USE_CARD_ABILITY (ADR-0055)
+      const targetCard = findInPlayCardInstance(nextState, action.attachmentInstanceId);
+      const abilities = targetCard?.card.enrichment?.abilities || [];
+      const discardAbility = abilities.find(
+        (ab) =>
+          ab.steps?.some(
+            (s) =>
+              s.effect === 'DISCARD_ATTACHMENT' ||
+              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
+              (s.effect === 'DISCARD' &&
+                (s.params?.source === 'SELF' || s.params?.source === 'HOST')),
+          ) || Boolean(ab.cost?.discardSelf),
       );
-      if (vIdx !== -1) {
-        containerArray = nextState.villain.attachments;
-        foundAttachment = containerArray[vIdx];
-      }
 
-      // 2. Check Player Identity attachments (e.g. Caught in a Web)
-      if (!foundAttachment) {
-        for (const p of nextState.players) {
-          const pIdx = (p.attachments || []).findIndex(
-            (att) =>
-              att.instanceId === action.attachmentInstanceId ||
-              att.card.code === action.attachmentInstanceId,
-          );
-          if (pIdx !== -1 && p.attachments) {
-            containerArray = p.attachments;
-            foundAttachment = containerArray[pIdx];
-            break;
-          }
-        }
-      }
-
-      // 3. Check Minions
-      if (!foundAttachment) {
-        for (const p of nextState.players) {
-          for (const m of p.engagedMinions) {
-            const mIdx = (m.attachments || []).findIndex(
-              (att) =>
-                att.instanceId === action.attachmentInstanceId ||
-                att.card.code === action.attachmentInstanceId,
-            );
-            if (mIdx !== -1 && m.attachments) {
-              containerArray = m.attachments;
-              foundAttachment = containerArray[mIdx];
-              break;
-            }
-          }
-          if (foundAttachment) break;
-        }
-      }
-
-      // 4. Check Allies
-      if (!foundAttachment) {
-        for (const p of nextState.players) {
-          for (const a of p.allies) {
-            const aIdx = (a.attachments || []).findIndex(
-              (att) =>
-                att.instanceId === action.attachmentInstanceId ||
-                att.card.code === action.attachmentInstanceId,
-            );
-            if (aIdx !== -1 && a.attachments) {
-              containerArray = a.attachments;
-              foundAttachment = containerArray[aIdx];
-              break;
-            }
-          }
-          if (foundAttachment) break;
-        }
-      }
-
-      // 5. Check Main Scheme & Side Schemes
-      if (!foundAttachment) {
-        const msIdx = (nextState.mainScheme.attachments || []).findIndex(
-          (att) =>
-            att.instanceId === action.attachmentInstanceId ||
-            att.card.code === action.attachmentInstanceId,
-        );
-        if (msIdx !== -1 && nextState.mainScheme.attachments) {
-          containerArray = nextState.mainScheme.attachments;
-          foundAttachment = containerArray[msIdx];
-        }
-      }
-
-      if (!foundAttachment || !containerArray) {
-        return { state, result: { success: false, error: 'Attachment not found on any entity' } };
-      }
-
-      // Discard payment cards from player hand if provided
-      if (action.paymentCardInstanceIds) {
-        for (const pId of action.paymentCardInstanceIds) {
-          const hIdx = player.hand.findIndex((c) => c.instanceId === pId);
-          if (hIdx !== -1) {
-            const [discarded] = player.hand.splice(hIdx, 1);
-            player.discard.push(discarded);
-          }
-        }
-      }
-
-      const removeIdx = containerArray.indexOf(foundAttachment);
-      if (removeIdx !== -1) {
-        containerArray.splice(removeIdx, 1);
-      }
-
-      if (
-        foundAttachment.card.type === CardType.ATTACHMENT ||
-        (foundAttachment.card as any).faction_code === 'encounter' ||
-        (foundAttachment.card as any).card_set_code
-      ) {
-        nextState.encounterDiscard.push(foundAttachment);
-      } else {
-        player.discard.push(foundAttachment);
-      }
-
-      const onomatopoeia = 'ATTACHMENT DISCARDED!';
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
-        category: 'ability',
-        key: 'attachment.discarded.byPlayer',
-        params: { player: player.name, attachment: foundAttachment.card.name },
-        onomatopoeia,
+      return dispatchAction(nextState, {
+        type: 'USE_CARD_ABILITY',
+        playerId: action.playerId,
+        cardInstanceId: action.attachmentInstanceId,
+        abilityId: discardAbility ? discardAbility.id : 'ivory_horn_discard_action',
+        paymentCardInstanceIds: action.paymentCardInstanceIds,
       });
-
-      return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
     case 'RESOLVE_DECISION_PROMPT': {

@@ -875,6 +875,23 @@ export function step7_resolvePostAttackAndRetaliate(
       state.encounterDiscard.push(chargeAtt);
     }
   }
+
+  // Forced Responses on minion attack (e.g. Sandman 01102, Yon-Rogg 01177)
+  if (attackContext.attackerType === 'MINION' && attackContext.attackerCard) {
+    const minion = attackContext.attackerCard;
+    const abilities = minion.card.enrichment?.abilities || [];
+    for (const ability of abilities) {
+      if (
+        ability.trigger === 'MINION_ATTACKED' ||
+        (ability.timing === 'FORCED_RESPONSE' && ability.trigger === 'ATTACK')
+      ) {
+        executeEffect(state, ability, {
+          playerId: attackContext.targetPlayerId,
+          sourceCardInstance: minion,
+        });
+      }
+    }
+  }
 }
 
 /**

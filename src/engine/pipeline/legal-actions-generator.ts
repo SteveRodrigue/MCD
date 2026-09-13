@@ -15,7 +15,7 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
 } from './stat-calculator';
-import { isResourceAbility } from './cost-engine';
+import { isResourceAbility, canPayAbilityCost } from './cost-engine';
 
 export interface LegalActionItem {
   id: string;
@@ -307,6 +307,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               },
               badge: formatTimingBadge(ab.timing),
               iconType: 'ability',
+              requiresModal: ab.cost?.resourceCost ? 'payment' : undefined,
               targetCardInstance: tableauItem,
               cardCode: tableauItem.card.code,
             });
@@ -461,19 +462,43 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           if (ab.timing === 'HERO_ACTION' && player.currentForm !== 'hero') continue;
           if (ab.timing === 'ALTER_EGO_ACTION' && player.currentForm !== 'alter_ego') continue;
 
+          // Check cost affordability (ADR-0055)
+          const costCheck = canPayAbilityCost(state, player, ab, attachment);
+          if (!costCheck.allowed) continue;
+
+          let badge = 'DISCARD ATTACHMENT';
+          if (ab.cost?.resourceCost) {
+            const requiredType =
+              typeof ab.cost.resourceCost === 'object'
+                ? Object.keys(ab.cost.resourceCost)[0]
+                : undefined;
+            const requiredAmount =
+              typeof ab.cost.resourceCost === 'number'
+                ? ab.cost.resourceCost
+                : requiredType
+                  ? ab.cost.resourceCost[requiredType] || 1
+                  : 1;
+            badge = requiredType
+              ? `${requiredAmount} ${requiredType.toUpperCase()}`
+              : `${requiredAmount} RESOURCES`;
+          }
+
           boardActions.push({
             id: `action_attachment_${attachment.instanceId}_${ab.id}`,
             category: 'board',
             headline: `Discard: ${attachment.card.name}`,
-            subtext: `Pay resources to discard ${attachment.card.name} from ${hostName}`,
+            subtext: `Spend resources to discard ${attachment.card.name} from ${hostName}`,
             action: {
-              type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
+              type: 'USE_CARD_ABILITY',
               playerId: player.id,
-              attachmentInstanceId: attachment.instanceId,
+              cardInstanceId: attachment.instanceId,
+              abilityId: ab.id,
             },
-            badge: 'DISCARD ATTACHMENT',
+            badge,
             iconType: 'ability',
+            requiresModal: ab.cost?.resourceCost ? 'payment' : undefined,
             targetCardInstance: attachment,
+            cardCode: attachment.card.code,
           });
         }
       }

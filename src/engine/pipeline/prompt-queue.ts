@@ -200,6 +200,7 @@ export function resolveDecisionPrompt(
 
     let sourceCardInst = sourceCardInstanceId
       ? player?.tableau.find((c) => c.instanceId === sourceCardInstanceId) ||
+        player?.allies.find((c) => c.instanceId === sourceCardInstanceId) ||
         player?.attachments?.find((c) => c.instanceId === sourceCardInstanceId) ||
         player?.hand.find((c) => c.instanceId === sourceCardInstanceId)
       : undefined;

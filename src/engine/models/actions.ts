@@ -84,9 +84,14 @@ export interface UseCardAbilityAction {
   playerId: string;
   cardInstanceId: string;
   abilityId: string;
+  paymentCardInstanceIds?: string[];
+  generatorInstanceIds?: string[];
   targetInstanceId?: string;
 }
 
+/**
+ * @deprecated Use USE_CARD_ABILITY instead (ADR-0055). Kept for backwards compatibility.
+ */
 export interface SpendResourcesToDiscardAttachmentAction {
   type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT';
   playerId: string;

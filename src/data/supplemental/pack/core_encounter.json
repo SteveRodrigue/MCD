@@ -274,7 +274,7 @@
         },
         {
           "id": "ivory_horn_discard_action",
-          "timing": "ACTION",
+          "timing": "HERO_ACTION",
           "cost": {
             "resourceCost": {
               "physical": 3
@@ -292,11 +292,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-13T10:45:00Z",
+        "reviewedAt": "2026-09-13T10:45:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "Attach to Rhino.\n<b>Hero Action</b>: Spend [physical] [physical] [physical] resources → discard this card",
         "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); HERO_ACTION [Cost: Spend 3 [physical]] -> DISCARD (source: SELF)"
       },
@@ -1387,30 +1387,32 @@
       }
     },
     "01177": {
-      "comment": "Minion: Yon-Rogg",
+      "comment": "Minion: Yon-Rogg. Forced Response: After Yon-Rogg attacks, place 1 threat on The Psyche-Magnitron.",
       "abilities": [
         {
           "id": "yon_rogg_response",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "MINION_ATTACKED",
           "steps": [
             {
-              "effect": "ADD_STATUS",
+              "effect": "ADD_THREAT",
               "params": {
-                "status": "TOUGH",
-                "target": "SELF"
+                "amount": 1,
+                "cardCode": "01176"
               }
             }
           ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-13T11:17",
+        "reviewedAt": "2026-09-13T11:17",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 100,
         "originalText": "[star] <b>Forced Response</b>: After Yon-Rogg attacks, place 1 threat on The Psyche-Magnitron.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> ADD_THREAT (amount: 1, cardCode: 01176)"
       }
     },
     "01178": {

@@ -94,19 +94,18 @@
 
 ### `ADD_THREAT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L2569`](../../../src/engine/effects/index.ts#L2569))
-- **Description:** Adds threat to the main scheme.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L2880`](../../../src/engine/effects/index.ts#L2880))
+- **Description:** Adds threat to the main scheme or a specific side scheme.
 
 > [!NOTE]
-> The engine accepts a `target` param and records it in the action log, but the current
-> implementation always adds the threat to `state.mainScheme`.
+> The engine supports targeting specific schemes by `cardCode` (e.g. `'01176'`), `targetInstanceId`, or `target` (`'MAIN_SCHEME'`, `'THIS_SIDE_SCHEME'`). Per RR v1.8 p. 29 ("Targeting"), if a targeted scheme is not in play, the effect logs `scheme.threat.target_missing` and gracefully fizzles without modifying the main scheme.
 
 ```json
 {
   "effect": "ADD_THREAT",
   "params": {
     "amount": 1,
-    "target": "MAIN_SCHEME"
+    "cardCode": "01176"
   }
 }
 ```
@@ -115,8 +114,8 @@
 
 ### `ADD_THREAT_PER_PLAYER`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1498`](../../../src/engine/effects/index.ts#L1498))
-- **Description:** Adds `amount` × (number of players) threat. `target` defaults to `THIS_SIDE_SCHEME`, resolved from the source card instance.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1752`](../../../src/engine/effects/index.ts#L1752))
+- **Description:** Adds `amount` × (number of players) threat. Supports targeting by `cardCode`, `target` (`THIS_SIDE_SCHEME`, `MAIN_SCHEME`), or defaulting to the source side scheme. Fizzles per RR v1.8 p. 29 if the targeted card is not in play.
 
 ```json
 {

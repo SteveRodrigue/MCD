@@ -395,6 +395,7 @@ export function executeSequence(
 ): EffectResult {
   let currentState = state;
   let prevResult: StepResolutionResult | undefined = context.previousResult;
+  let anyStepMutated = false;
   const stepResultsMap = new Map<string, StepResolutionResult>();
   const onomatopoeias: string[] = [];
 
@@ -434,9 +435,14 @@ export function executeSequence(
       context.damageAmount = stepContext.damageAmount;
     }
 
+    const stepMutated = res.mutatedState ?? res.success;
+    if (stepMutated) {
+      anyStepMutated = true;
+    }
+
     prevResult = {
       success: res.success,
-      mutatedState: res.mutatedState ?? res.success,
+      mutatedState: stepMutated,
       value: res.value,
       conditionMet: res.conditionMet,
       targetId: res.selectedCardInstanceIds?.[0],
@@ -454,7 +460,7 @@ export function executeSequence(
   return {
     state: currentState,
     success: true,
-    mutatedState: Array.from(stepResultsMap.values()).some((r) => r.mutatedState),
+    mutatedState: anyStepMutated,
     onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
@@ -1122,11 +1128,14 @@ export function executeStep(
       }
 
       // 1. If targetInstanceId is specified, check engaged minions first
-      if (context.targetInstanceId) {
+      const targetMinionId =
+        step.params?.target === 'TRIGGERING_MINION' || step.params?.target === 'TRIGGERING_ENEMY'
+          ? context.targetInstanceId || (step.params?.targetInstanceId as string)
+          : (step.params?.targetInstanceId as string) || context.targetInstanceId;
+
+      if (targetMinionId) {
         for (const p of state.players) {
-          const minionIdx = p.engagedMinions.findIndex(
-            (m) => m.instanceId === context.targetInstanceId,
-          );
+          const minionIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetMinionId);
           if (minionIdx !== -1) {
             const minion = p.engagedMinions[minionIdx];
             const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
@@ -1753,6 +1762,70 @@ export function executeStep(
       const amountPerPlayer = (step.params?.amount as number) || 1;
       const totalToAdd = amountPerPlayer * state.players.length;
       const target = (step.params?.target as string) || 'THIS_SIDE_SCHEME';
+      const cardCode =
+        (step.params?.cardCode as string) ||
+        (target !== 'THIS_SIDE_SCHEME' && target !== 'MAIN_SCHEME' && /^\d{5}$/.test(target)
+          ? target
+          : undefined);
+
+      if (cardCode) {
+        const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
+        if (sideScheme) {
+          sideScheme.threat = (sideScheme.threat || 0) + totalToAdd;
+          const onomatopoeia = `SIDE SCHEME +${totalToAdd} THREAT!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.addThreat',
+            params: {
+              target: sideScheme.card?.name || 'Side Scheme',
+              cardCode,
+              amount: totalToAdd,
+              currentThreat: sideScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
+        }
+
+        if (state.mainScheme?.card?.code === cardCode) {
+          state.mainScheme.threat = (state.mainScheme.threat || 0) + totalToAdd;
+          const onomatopoeia = `MAIN SCHEME +${totalToAdd} THREAT!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.addThreat',
+            params: {
+              target: state.mainScheme.card?.name || 'Main Scheme',
+              cardCode,
+              amount: totalToAdd,
+              currentThreat: state.mainScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
+        }
+
+        // Targeted scheme is not in play: effect fizzles per RR v1.8 p. 29
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'scheme.threat.target_missing',
+          params: { cardCode, amount: totalToAdd },
+        });
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+        };
+      }
 
       if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
         const scheme = state.sideSchemes.find(
@@ -1776,7 +1849,7 @@ export function executeStep(
             },
             onomatopoeia,
           });
-          return { state, success: true, onomatopoeia };
+          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
         }
       }
 
@@ -1795,7 +1868,7 @@ export function executeStep(
         },
         onomatopoeia,
       });
-      return { state, success: true, onomatopoeia };
+      return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
     }
 
     case 'NICK_FURY_CHOICE': {
@@ -2321,6 +2394,12 @@ export function executeStep(
           params: { minion: minionInst.card.name, player: player.name },
           onomatopoeia: 'MINION ENTERS THE FRAY!',
         });
+        dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+          targetPlayerId: player.id,
+          sourceInstanceId: minionInst.instanceId,
+          targetInstanceId: minionInst.instanceId,
+          encounterCardInstance: minionInst,
+        });
       }
       return { state, success: true, onomatopoeia: 'MINION ENGAGED!' };
     }
@@ -2593,6 +2672,13 @@ export function executeStep(
               });
             }
           }
+
+          dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
+            targetPlayerId: player.id,
+            sourceInstanceId: cardInst.instanceId,
+            targetInstanceId: cardInst.instanceId,
+            encounterCardInstance: cardInst,
+          });
         }
       }
 
@@ -2816,6 +2902,173 @@ export function executeStep(
     case 'ADD_THREAT': {
       const amount = (step.params?.amount as number) || 1;
       const target = (step.params?.target as string) || 'MAIN_SCHEME';
+      const cardCode =
+        (step.params?.cardCode as string) ||
+        (target !== 'MAIN_SCHEME' && target !== 'THIS_SIDE_SCHEME' && /^\d{5}$/.test(target)
+          ? target
+          : undefined);
+      const targetInstanceId =
+        (step.params?.targetInstanceId as string) ||
+        (target.startsWith('scheme_') || target.startsWith('side_') ? target : undefined) ||
+        context.targetInstanceId;
+
+      if (cardCode) {
+        const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
+        if (sideScheme) {
+          sideScheme.threat = (sideScheme.threat || 0) + amount;
+          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'scheme.threat.added',
+            params: {
+              target: sideScheme.card?.name || 'Side Scheme',
+              cardCode,
+              amount,
+              total: sideScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia,
+          };
+        }
+
+        if (state.mainScheme?.card?.code === cardCode) {
+          state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
+          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'scheme.threat.added',
+            params: {
+              target: state.mainScheme.card?.name || 'Main Scheme',
+              cardCode,
+              amount,
+              total: state.mainScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia,
+          };
+        }
+
+        // Targeted scheme is not in play: effect fizzles per RR v1.8 p. 29
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'scheme.threat.target_missing',
+          params: { cardCode, amount },
+        });
+        return {
+          state,
+          success: true,
+          mutatedState: false,
+          value: 0,
+        };
+      }
+
+      if (targetInstanceId) {
+        const sideScheme = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
+        if (sideScheme) {
+          sideScheme.threat = (sideScheme.threat || 0) + amount;
+          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'scheme.threat.added',
+            params: {
+              target: sideScheme.card.name,
+              instanceId: targetInstanceId,
+              amount,
+              total: sideScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia,
+          };
+        }
+
+        if (
+          state.mainScheme &&
+          (state.mainScheme.instanceId === targetInstanceId || targetInstanceId === 'main_scheme')
+        ) {
+          state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
+          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'scheme.threat.added',
+            params: {
+              target: state.mainScheme.card.name,
+              instanceId: targetInstanceId,
+              amount,
+              total: state.mainScheme.threat,
+            },
+            onomatopoeia,
+          });
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia,
+          };
+        }
+      }
+
+      if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
+        const sideScheme = (state.sideSchemes || []).find(
+          (s) =>
+            s.instanceId === context.sourceCardInstance!.instanceId ||
+            s.card.code === context.sourceCardInstance!.card.code,
+        );
+        if (sideScheme) {
+          sideScheme.threat = (sideScheme.threat || 0) + amount;
+          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'scheme.threat.added',
+            params: { target: sideScheme.card.name, amount, total: sideScheme.threat },
+            onomatopoeia,
+          });
+          return {
+            state,
+            success: true,
+            mutatedState: amount > 0,
+            value: amount,
+            onomatopoeia,
+          };
+        }
+      }
+
       state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
       const onomatopoeia = `SCHEME THREAT +${amount}!`;
       state.log.push({

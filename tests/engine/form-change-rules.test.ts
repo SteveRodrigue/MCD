@@ -154,11 +154,23 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     // Flip to Hero
     const res1 = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' });
     expect(res1.state.players[0].basicChangeFormUsedThisRound).toBe(true);
-    res1.state.players[0].health = 50;
+    let postFormState = res1.state;
+    if (postFormState.pendingDecisionPrompt) {
+      const passOption = postFormState.pendingDecisionPrompt.options.find(
+        (option) => option.label === 'No' || option.id === 'pass',
+      );
+      expect(passOption).toBeDefined();
+      postFormState = dispatchAction(postFormState, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: passOption!.id,
+      }).state;
+    }
+    postFormState.players[0].health = 50;
 
     // Run Villain Phase -> Upkeep -> New Round
-    endPlayerPhase(res1.state);
-    const nextState = executeVillainPhase(res1.state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    endPlayerPhase(postFormState);
+    const nextState = executeVillainPhase(postFormState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
     expect(nextState.roundNumber).toBe(2);
     expect(nextState.players[0].basicChangeFormUsedThisRound).toBe(false);
   });

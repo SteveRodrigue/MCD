@@ -460,12 +460,12 @@ flowchart TD
 
 **Goal:** Make the written specs match the shipped schema/engine exactly, so the next contributor reads accurate docs instead of the pre-migration vocabulary.
 
-- [ ] **7.1 — Rewrite [docs/specifications/supplemental_data_schema.md](docs/specifications/supplemental_data_schema.md):** Replace all legacy identifiers; document `UniversalCardFilter` and `DynamicValueSource` as first-class concepts (currently under-documented per Section 3 of this audit).
-- [ ] **7.2 — Update `docs/specifications/supplemental/01` through `11`:** Chapter-by-chapter pass adding `REMOVE_STATUS`, the controlled-vs-friendly selector distinction, `SEARCH` consolidation (with a note on the retired `RETRIEVE_*`/`SEARCH_AND_SELECT` names), and removing every retired single-use primitive's documentation entry (or marking it "Removed in ADR-0058" with a pointer, per project convention for historical traceability).
-- [ ] **7.3 — Update [docs/coding_guidelines.md](docs/coding_guidelines.md):** Add the 5 taxonomy invariants as a permanent naming-convention section so future card integrations follow the rules by default instead of rediscovering them.
-- [ ] **7.4 — Update [CHEATSHEET.md](CHEATSHEET.md) and [docs/algorithmic_rules_reference.md](docs/algorithmic_rules_reference.md)** if either references any renamed primitive/trigger by name.
-- [ ] **7.5 — CHANGELOG.md Entry:** Single consolidated `[Unreleased]` entry summarizing the taxonomy migration (ADR-0058), listing the primitive/trigger/selector rename table and the two new capabilities (`REMOVE_STATUS`, `SEARCH.autoSelectIfUnambiguous`).
-- [ ] **7.6 — Quality Gate:** `npm run format:check` (docs-only).
+- [x] **7.1 — Rewrite [docs/specifications/supplemental_data_schema.md](docs/specifications/supplemental_data_schema.md):** Replace all legacy identifiers; document `UniversalCardFilter` and `DynamicValueSource` as first-class concepts (currently under-documented per Section 3 of this audit).
+- [x] **7.2 — Update `docs/specifications/supplemental/01` through `11`:** Chapter-by-chapter pass adding `REMOVE_STATUS`, the controlled-vs-friendly selector distinction, `SEARCH` consolidation (with a note on the retired `RETRIEVE_*`/`SEARCH_AND_SELECT` names), and removing every retired single-use primitive's documentation entry (or marking it "Removed in ADR-0058" with a pointer, per project convention for historical traceability).
+- [x] **7.3 — Update [docs/coding_guidelines.md](docs/coding_guidelines.md):** Add the 5 taxonomy invariants as a permanent naming-convention section so future card integrations follow the rules by default instead of rediscovering them.
+- [x] **7.4 — Update [CHEATSHEET.md](CHEATSHEET.md) and [docs/algorithmic_rules_reference.md](docs/algorithmic_rules_reference.md)** if either references any renamed primitive/trigger by name.
+- [x] **7.5 — CHANGELOG.md Entry:** Single consolidated `[Unreleased]` entry summarizing the taxonomy migration (ADR-0058), listing the primitive/trigger/selector rename table and the two new capabilities (`REMOVE_STATUS`, `SEARCH.autoSelectIfUnambiguous`).
+- [x] **7.6 — Quality Gate:** `npm run format:check` (docs-only).
 
 ---
 

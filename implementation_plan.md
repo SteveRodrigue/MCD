@@ -46,10 +46,26 @@
   - Add compatibility handling for canonical damage/attack triggers where the current dispatcher has explicit legacy-name checks, preserving loop guards and optional-trigger behavior.
   - Add a single trigger-equivalence resolver so legacy and canonical names match in either direction during the migration window; preserve the original display vocabulary when building optional-trigger prompt descriptions.
   - Add the missing universal trigger-scope layer: `ENEMY_INITIATES_ATTACK` context must include attacker kind/instance, attacked player, and engagement scope; ability-level filters must be evaluated before resolution.
+  - Apply the same `triggerFilter` evaluator at every existing ability scan site, including identity, in-play cards, encounter cards, and hand interrupts; filtering must happen before costs, limits, prompts, or effect execution.
 
 - **[MODIFY] `src/engine/pipeline/action-dispatcher.ts` and `src/engine/state/game-setup.ts`**
   - Recognize `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED` in prompt continuation and setup/search routing paths, not only in direct combat dispatch calls.
   - Preserve legacy prompt titles/descriptions and existing defense/attack continuation ordering while canonical data is active.
+
+- **[MODIFY] `src/engine/models/abilities.ts` and `src/engine/models/state.ts`**
+  - Add typed `TriggerFilter` and structured attack/event context fields without weakening existing trigger unions.
+  - Extend `AttackExecutionContext` only with data needed to construct the universal event context; do not create parallel trigger variants for every attacker/scope combination.
+
+- **[MODIFY] `src/data/supplemental/schema.ts`**
+  - Add strict `TriggerFilterSchema` and optional `triggerFilter` to `CardAbilitySchema`.
+  - Use a generic filter contract with event-family fields: `attackerKind`, `attackerCardFilter`, `attackerInstanceId`, `targetPlayerScope`, `targetForm`, `isEngaged`, `damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, and `formChangeDirection`.
+  - Keep all fields optional so the same mechanism works for any trigger; the evaluator only uses fields present in the event context. Unsupported context/filter combinations must fail closed rather than silently match.
+
+- **[MODIFY] `src/data/supplemental/pack/core.json`**
+  - Add `triggerFilter: { attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` to Spider-Sense after the schema/evaluator exists.
+
+- **[MODIFY] `src/data/supplemental/schema.json`**
+  - Regenerate after `TriggerFilterSchema` is finalized.
 
 - **[MODIFY] `src/data/supplemental/schema.json`**
   - Regenerate with `npm run schema:generate` after the TypeScript/Zod schema changes.
@@ -80,6 +96,15 @@
 - `game-setup.ts` and all setup/search consumers recognize canonical `SEARCH` as equivalent to `SEARCH_AND_SELECT`.
 - `ENEMY_INITIATES_ATTACK` scope filters distinguish villain-only, minion-only, any-enemy, and engaged-player reactions without duplicate dispatches.
 - Spider-Sense uses an explicit villain-only filter; its behavior does not depend on whether the combat pipeline happens to dispatch the universal event for minions.
+- All six current dispatcher scan sites apply identical trigger-filter semantics; no scan path bypasses the filter.
+- A trigger with no `triggerFilter` preserves current exact/equivalent trigger behavior.
+- A filter field absent from the event context never matches; it does not default to `true`.
+- `attackerCardFilter` reuses `matchesCardFilter()` for attacker card traits/types/keywords without duplicating card predicate logic.
+- A single `ENEMY_INITIATES_ATTACK` event is dispatched per attack; villain/minion/engagement selection occurs through context filtering, not multiple overlapping trigger dispatches.
+- Legacy trigger aliases continue to match during the compatibility window, but legacy and canonical spellings cannot execute the same ability twice for one event.
+- Spider-Sense fires for a villain attacking its player, does not fire for a minion attack, and does not fire for a villain attacking another player.
+- Generic enemy reactions fire for villain and minion attacks; engaged-only filters exclude attacks targeting another player.
+- Damage, defeat, and form filters have focused tests proving their context fields and fail-closed behavior.
 - `SEARCH` auto-resolves when `autoSelectIfUnambiguous !== false` and candidates are `<= takeCount`; it creates the existing pending decision when ambiguous or explicitly disabled.
 - Controlled selectors never target another player’s board; friendly/table-wide selectors include eligible entities across players.
 - `npm run schema:generate` produces a schema JSON containing the additive enum members.
@@ -101,10 +126,57 @@
 > Phase 2 must not rewrite supplemental pack JSON or delete legacy enum members/handlers. Those actions are reserved for Phases 3 and 4 under ADR-0058’s sequencing invariant.
 
 > [!IMPORTANT]
+> The chosen contract name is `triggerFilter`. It is distinct from `AbilityStep.filter`, which filters cards for effect execution. `triggerFilter` filters event context before an ability is eligible to resolve.
+
+> [!IMPORTANT]
 > The Phase 3 migration probe demonstrated that adding canonical enum members and direct dispatches is insufficient. Before another pack write, complete the compatibility follow-up for `ENEMY_INITIATES_ATTACK`, `DAMAGE_WOULD_BE_TAKEN`, and `ATTACK_DEFENDED`, including trigger matching, prompt rendering, setup routing, and continuation semantics. Treat the 10 observed migrated-pack regressions as contract failures, not expected legacy-string test fallout.
 
 > [!WARNING]
 > `triggerFilter` is currently only a design requirement; it does not exist in the schema, engine, supplemental data, or tests. Do not claim Spider-Sense is semantically villain-only until the filter is implemented and the card declaration is migrated to use it.
+
+## TriggerFilter Execution Order
+
+1. The pipeline constructs one canonical event context and dispatches one canonical trigger event.
+2. Trigger equivalence resolves legacy ability names to the canonical event family.
+3. `triggerFilter` is evaluated against the structured event context.
+4. Zone, form, timing, cost, and ability-limit checks run only for filter-matching abilities.
+5. Forced abilities execute; optional abilities enqueue prompts using the established display vocabulary.
+6. The active trigger chain records the canonical event and ability identity for loop detection.
+
+## TriggerFilter Context Contract
+
+```typescript
+interface TriggerEventContext {
+  targetPlayerId: string;
+  sourceInstanceId?: string;
+  attacker?: {
+    kind: 'VILLAIN' | 'MINION';
+    instanceId?: string;
+    card?: CardInstance;
+    isEngagedWithTarget: boolean;
+  };
+  target?: {
+    playerId: string;
+    form?: 'HERO' | 'ALTER_EGO';
+    kind?: 'IDENTITY' | 'ALLY' | 'MINION' | 'VILLAIN' | 'SCHEME';
+    instanceId?: string;
+  };
+  damage?: {
+    sourceType: 'ATTACK' | 'SCHEME' | 'EFFECT';
+    targetType: 'HERO' | 'ALLY' | 'SCHEME';
+  };
+  defeat?: {
+    entityType: 'CHARACTER' | 'SCHEME' | 'ATTACHMENT';
+    causedByAttack: boolean;
+  };
+  formChange?: {
+    from: 'HERO' | 'ALTER_EGO';
+    to: 'HERO' | 'ALTER_EGO';
+  };
+}
+```
+
+`triggerFilter` is a universal mechanism, but each trigger family supplies only the context it can prove. Missing context never matches a requested filter field. This keeps the mechanism generic without pretending every event has every property.
 
 ## Execution Order
 

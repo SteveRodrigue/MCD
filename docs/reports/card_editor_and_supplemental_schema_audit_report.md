@@ -401,6 +401,7 @@ flowchart TD
 - [ ] **3.11 — Quality Gate:** `npm run typecheck && npm test` — expect **test failures** at this point (tests still assert legacy string literals); this is the expected, tracked handoff into Phase 5. Do not attempt to fix tests inside Phase 3.
 
 **Phase 3 execution status:** Repulsor Blast, Hulk, and Explosion are deferred, not blockers. Their unsupported `abilities` declarations are withheld from the active catalog, with audit metadata, printed text, mechanic steps, and `audit.ambiguityFile` issue links preserved for post-Phase-8 re-integration. Canonical attachment-defeat timing, full-search versus lookCount prompt compatibility, and the Explosion quarantine test are green. A full active-pack migration probe still produced 10 behavioral regressions in setup search, damage interception, minion activation, and legacy prompt compatibility; that migration was rolled back.
+**Compatibility sub-task update:** Bidirectional trigger matching, legacy prompt display normalization, villain/minion initiation ordering, and canonical setup `SEARCH` routing now pass focused tests. One `FORM_CHANGED` lifecycle regression remains under investigation before another active-pack migration attempt.
 **Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.5, and 3.6 are complete. 3.4 remains open for deferred primitive implementations; 3.7–3.11 remain open pending the 10 active-catalog regressions being resolved.
 
 ---

@@ -313,7 +313,7 @@ export function step14_resolveCharacterSetupAbilities(
 
       for (const ability of setupAbilities) {
         for (const step of ability.steps || []) {
-          if (step.effect === 'SEARCH_AND_SELECT') {
+          if (step.effect === 'SEARCH' || step.effect === 'SEARCH_AND_SELECT') {
             const filter = (step.params?.filter || {}) as Record<string, any>;
             const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
             const shuffleAfter = step.params?.shuffleAfter !== false;

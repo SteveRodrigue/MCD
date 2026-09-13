@@ -154,22 +154,13 @@ export function step2_dispatchInitiationTriggers(
   acceptOptionalTriggers?: boolean,
 ): TriggerDispatchResult {
   if (attackerType === 'VILLAIN') {
-    const legacyResult = dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', {
-      targetPlayerId,
-      acceptOptionalTriggers,
-    });
-    if (legacyResult.hasPendingPrompt) return legacyResult;
     return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
       targetPlayerId,
       attackerType,
       acceptOptionalTriggers,
     });
   }
-  return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
-    targetPlayerId,
-    attackerType,
-    acceptOptionalTriggers,
-  });
+  return { state, hasPendingPrompt: false };
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   CardUsesSchema,
   CardAuditRecordSchema,
   EffectTypeSchema,
+  TriggerTypeSchema,
   AbilityStepSchema,
   DynamicValueSourceSchema,
   StepConditionSchema,
@@ -634,6 +635,61 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     it('Accepts canonical universal EXHAUST and READY in EffectTypeSchema', () => {
       expect(EffectTypeSchema.safeParse('EXHAUST').success).toBe(true);
       expect(EffectTypeSchema.safeParse('READY').success).toBe(true);
+    });
+
+    it('Accepts Phase 2 canonical taxonomy names while retaining legacy names', () => {
+      const canonicalTriggers = [
+        'DEFEATED',
+        'CHARACTER_DEFEATED',
+        'SCHEME_DEFEATED',
+        'ENEMY_INITIATES_ATTACK',
+        'DAMAGE_WOULD_BE_TAKEN',
+        'ATTACK_DEFENDED',
+        'FORM_CHANGED',
+        'STATUS_REMOVED',
+      ];
+      const canonicalEffects = [
+        'DRAW',
+        'PLAY_FROM_ZONE',
+        'SEARCH',
+        'REMOVE_STATUS',
+        'MODIFY_RESTRICTED_LIMIT',
+        'FORM_BRANCH',
+      ];
+      const canonicalTargets = [
+        'CHOSEN_CONTROLLED_ALLY',
+        'ALL_CONTROLLED_ALLIES',
+        'CHOSEN_CONTROLLED_CHARACTER',
+        'ALL_CONTROLLED_CHARACTERS',
+        'CHOSEN_FRIENDLY_CHARACTER',
+        'ALL_FRIENDLY_CHARACTERS',
+        'CHOSEN_SIDE_SCHEME',
+        'ALL_SCHEMES',
+        'TRIGGERING_SCHEME',
+      ];
+
+      for (const trigger of canonicalTriggers) {
+        expect(TriggerTypeSchema.safeParse(trigger).success, `Expected ${trigger} to parse`).toBe(true);
+      }
+      for (const effect of canonicalEffects) {
+        expect(EffectTypeSchema.safeParse(effect).success, `Expected ${effect} to parse`).toBe(true);
+      }
+      for (const target of canonicalTargets) {
+        expect(CardAbilitySchema.safeParse({
+          id: `target_${target.toLowerCase()}`,
+          timing: 'ACTION',
+          steps: [{ effect: 'DRAW_CARDS', params: { target } }],
+        }).success, `Expected target ${target} to parse`).toBe(true);
+      }
+
+      expect(EffectTypeSchema.safeParse('DRAW_CARDS').success).toBe(true);
+      expect(EffectTypeSchema.safeParse('SEARCH_AND_SELECT').success).toBe(true);
+      expect(CardAbilitySchema.safeParse({
+        id: 'legacy_trigger_compatibility',
+        timing: 'ACTION',
+        trigger: 'VILLAIN_INITIATES_ATTACK',
+        steps: [{ effect: 'DRAW_CARDS', params: { count: 1 } }],
+      }).success).toBe(true);
     });
 
     it('Correctly passes on JSON with non-duplicate nested keys', () => {

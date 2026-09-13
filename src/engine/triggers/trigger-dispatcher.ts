@@ -15,6 +15,9 @@ export interface TriggerContext {
   interceptedValue?: number;
   targetType?: string;
   targetInstanceId?: string;
+  entityType?: string;
+  attackerType?: string;
+  status?: string;
   acceptOptionalTriggers?: boolean;
   encounterCardInstance?: any;
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
@@ -232,7 +235,9 @@ export function dispatchTrigger(
           currentThreat = effCtx.threatAmount;
         }
         if (
-          (trigger === 'TAKE_ATTACK_DAMAGE' || trigger === 'TAKE_DAMAGE') &&
+          (trigger === 'TAKE_ATTACK_DAMAGE' ||
+            trigger === 'DAMAGE_WOULD_BE_TAKEN' ||
+            trigger === 'TAKE_DAMAGE') &&
           effCtx.damageAmount !== undefined
         ) {
           currentDamage = effCtx.damageAmount;
@@ -429,7 +434,10 @@ export function dispatchTrigger(
   }
 
   // 3. Scan in-hand cards for Hand Damage triggers (e.g. Backflip for TAKE_ATTACK_DAMAGE)
-  if (trigger === 'TAKE_ATTACK_DAMAGE' && currentDamage > 0) {
+  if (
+    (trigger === 'TAKE_ATTACK_DAMAGE' || trigger === 'DAMAGE_WOULD_BE_TAKEN') &&
+    currentDamage > 0
+  ) {
     const handInterruptIdx = player.hand.findIndex((c) => {
       const abilities = c.card.enrichment?.abilities || [];
       return abilities.some((a) => a.trigger === trigger && a.zone === 'HAND');

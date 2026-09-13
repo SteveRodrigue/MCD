@@ -61,6 +61,21 @@ import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost, initializeCardUses } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 
+function dispatchCanonicalDefeatTriggers(
+  state: GameState,
+  targetPlayerId: string,
+  sourceInstanceId: string,
+  entityType: 'CHARACTER' | 'SCHEME',
+): void {
+  const context = { targetPlayerId, sourceInstanceId, entityType };
+  dispatchTrigger(state, 'DEFEATED', context);
+  if (entityType === 'CHARACTER') {
+    dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
+  } else {
+    dispatchTrigger(state, 'SCHEME_DEFEATED', context);
+  }
+}
+
 /**
  * Scans all in-play zones for a card instance by instanceId or card code (ADR-0055).
  * Searches player tableaus, allies, identity attachments, ally attachments,
@@ -292,6 +307,11 @@ export function dispatchAction(
       player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
       player.basicChangeFormUsedThisRound = true;
       player.formChangedThisRound = true;
+      dispatchTrigger(nextState, 'FORM_CHANGED', {
+        targetPlayerId: player.id,
+        targetType: player.currentForm,
+        sourceInstanceId: player.activeFormCard.code,
+      });
 
       const onomatopoeia = player.currentForm === 'hero' ? 'SUIT UP!' : 'IDENTITY FLIP!';
 
@@ -455,6 +475,12 @@ export function dispatchAction(
         nextState.villain.health = Math.max(0, nextState.villain.health - attackDamage);
 
         if (nextState.villain.health <= 0) {
+          dispatchCanonicalDefeatTriggers(
+            nextState,
+            player.id,
+            nextState.villain.instanceId || 'villain',
+            'CHARACTER',
+          );
           const defeatedState = handleVillainDefeat(nextState, nextState.villain.instanceId);
           return { state: defeatedState, result: { success: true, onomatopoeia: 'POW!' } };
         }
@@ -544,6 +570,12 @@ export function dispatchAction(
           processHostDefeated(nextState, minion, { player: targetMinionPlayer });
           targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
           moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
+          dispatchCanonicalDefeatTriggers(
+            nextState,
+            targetMinionPlayer.id,
+            minion.instanceId,
+            'CHARACTER',
+          );
 
           dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
           dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
@@ -655,6 +687,12 @@ export function dispatchAction(
           } else {
             nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
             if (nextState.villain.health <= 0) {
+              dispatchCanonicalDefeatTriggers(
+                nextState,
+                player.id,
+                nextState.villain.instanceId || 'villain',
+                'CHARACTER',
+              );
               handleVillainDefeat(nextState, nextState.villain.instanceId);
             } else {
               // Retaliate check: If villain survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
@@ -705,6 +743,12 @@ export function dispatchAction(
               processHostDefeated(nextState, minion, { player: targetMinionPlayer });
               targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
               moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
+              dispatchCanonicalDefeatTriggers(
+                nextState,
+                targetMinionPlayer.id,
+                minion.instanceId,
+                'CHARACTER',
+              );
             } else {
               minion.tokens = { ...minion.tokens, damage: newDamage };
               // Retaliate check: If minion survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
@@ -741,6 +785,7 @@ export function dispatchAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
+        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         owner.discard.push(ally);
       }
@@ -795,6 +840,12 @@ export function dispatchAction(
               instanceId: sideScheme.instanceId,
               card: sideScheme.card,
             };
+            dispatchCanonicalDefeatTriggers(
+              nextState,
+              player.id,
+              defeatedInstance.instanceId,
+              'SCHEME',
+            );
 
             // Resolve 'When Defeated' reward abilities declared on the scheme itself
             const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
@@ -854,6 +905,7 @@ export function dispatchAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
+        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         owner.discard.push(ally);
       }
@@ -951,6 +1003,12 @@ export function dispatchAction(
             instanceId: sideScheme.instanceId,
             card: sideScheme.card,
           };
+          dispatchCanonicalDefeatTriggers(
+            nextState,
+            player.id,
+            defeatedInstance.instanceId,
+            'SCHEME',
+          );
 
           // Resolve 'When Defeated' reward abilities declared on the scheme itself (e.g. Highway Robbery 01166)
           const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
@@ -2238,8 +2296,11 @@ export function dispatchAction(
         activePrompt &&
         resultingState.activeAttackContext?.pendingDamage !== undefined &&
         (activePrompt.description?.includes('TAKE_ATTACK_DAMAGE') ||
+          activePrompt.description?.includes('DAMAGE_WOULD_BE_TAKEN') ||
           activePrompt.options.some(
-            (o) => (o.params as any)?.ability?.trigger === 'TAKE_ATTACK_DAMAGE',
+            (o) =>
+              (o.params as any)?.ability?.trigger === 'TAKE_ATTACK_DAMAGE' ||
+              (o.params as any)?.ability?.trigger === 'DAMAGE_WOULD_BE_TAKEN',
           ))
       ) {
         const attackCtx = resultingState.activeAttackContext;

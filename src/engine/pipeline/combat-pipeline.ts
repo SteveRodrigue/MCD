@@ -24,6 +24,16 @@ import {
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
 
+function dispatchCanonicalCharacterDefeat(
+  state: GameState,
+  targetPlayerId: string,
+  sourceInstanceId: string,
+): void {
+  const context = { targetPlayerId, sourceInstanceId, entityType: 'CHARACTER' as const };
+  dispatchTrigger(state, 'DEFEATED', context);
+  dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
+}
+
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
   acceptOptionalTriggers?: boolean;
@@ -144,12 +154,22 @@ export function step2_dispatchInitiationTriggers(
   acceptOptionalTriggers?: boolean,
 ): TriggerDispatchResult {
   if (attackerType === 'VILLAIN') {
-    return dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', {
+    const legacyResult = dispatchTrigger(state, 'VILLAIN_INITIATES_ATTACK', {
       targetPlayerId,
       acceptOptionalTriggers,
     });
+    if (legacyResult.hasPendingPrompt) return legacyResult;
+    return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+      targetPlayerId,
+      attackerType,
+      acceptOptionalTriggers,
+    });
   }
-  return { state, hasPendingPrompt: false };
+  return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+    targetPlayerId,
+    attackerType,
+    acceptOptionalTriggers,
+  });
 }
 
 /**
@@ -600,6 +620,17 @@ export function step6_calculateAndApplyAttackDamage(
       attackContext.pendingDamage = rawDamage;
       return;
     }
+
+    const canonicalResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
+      targetPlayerId: player.id,
+      damageAmount: rawDamage,
+      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+    });
+    rawDamage = canonicalResult.damageAmount ?? rawDamage;
+    if (canonicalResult.hasPendingPrompt) {
+      attackContext.pendingDamage = rawDamage;
+      return;
+    }
   }
 
   applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
@@ -676,6 +707,8 @@ export function applyCalculatedAttackDamage(
             onomatopoeia: 'DEFEATED!',
           });
 
+          dispatchCanonicalCharacterDefeat(state, player.id, ally.instanceId);
+
           // Overkill Check
           if (attackContext.hasOverkill && excessDamage > 0) {
             player.health = Math.max(0, player.health - excessDamage);
@@ -731,6 +764,7 @@ export function applyCalculatedAttackDamage(
       });
 
       if (player.health <= 0) {
+        dispatchCanonicalCharacterDefeat(state, player.id, player.id);
         state.winner = 'VILLAIN';
       }
     }
@@ -776,6 +810,11 @@ export function step7_resolvePostAttackAndRetaliate(
 
   // Post-Defense Reactions (e.g. Indomitable 01082 ready hero, Counter-Punch 01077)
   if (attackContext.heroDefended && player) {
+    dispatchTrigger(state, 'ATTACK_DEFENDED', {
+      targetPlayerId: player.id,
+      sourceInstanceId: attackContext.attackerCard?.instanceId,
+      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+    });
     dispatchTrigger(state, 'HERO_DEFENDED_ATTACK', {
       targetPlayerId: player.id,
       sourceInstanceId: attackContext.attackerCard?.instanceId,

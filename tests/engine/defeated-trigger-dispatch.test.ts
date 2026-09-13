@@ -81,4 +81,40 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
 
     expect(state.players[0].counters?.all_purpose).toBe(1);
   });
+
+  it('filters enemy attack triggers by attacker kind and target scope', () => {
+    const state = createState();
+    const activeForm = state.players[0].activeFormCard as any;
+    activeForm.enrichment = {
+      ...(activeForm.enrichment || {}),
+      abilities: [
+        {
+          id: 'spider_sense',
+          timing: 'FORCED_RESPONSE',
+          trigger: 'ENEMY_INITIATES_ATTACK',
+          triggerFilter: {
+            attackerKind: 'VILLAIN',
+            targetPlayerScope: 'SELF',
+          },
+          steps: [{ effect: 'ADD_COUNTERS', params: { target: 'IDENTITY', amount: 1 } }],
+        },
+      ],
+    };
+
+    dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+      targetPlayerId: 'p1',
+      attackerType: 'VILLAIN',
+      sourceInstanceId: 'villain_1',
+      targetType: 'villain',
+    });
+    expect(state.players[0].counters?.all_purpose).toBe(1);
+
+    dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+      targetPlayerId: 'p1',
+      attackerType: 'MINION',
+      sourceInstanceId: 'minion_1',
+      targetType: 'minion',
+    });
+    expect(state.players[0].counters?.all_purpose).toBe(1);
+  });
 });

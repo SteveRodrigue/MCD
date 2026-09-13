@@ -1,4 +1,6 @@
 import { GameState, TriggerType, AbilityStep, PlayerState } from '@engine/models';
+import { TriggerFilter } from '../../data/supplemental/schema';
+import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect } from '../effects';
 import { executeAbilityCost, canPayAbilityCost } from '../pipeline/cost-engine';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
@@ -47,9 +49,84 @@ function displayEffectName(effect: string): string {
   return aliases[effect] || effect;
 }
 
+function matchesTriggerFilter(
+  filter: TriggerFilter | undefined,
+  context: TriggerContext,
+  player?: PlayerState,
+): boolean {
+  if (!filter) return true;
+
+  if (filter.attackerKind) {
+    const actual =
+      context.attackerKind ??
+      (context.attackerType ? String(context.attackerType).toUpperCase() : undefined);
+    if (actual === 'ANY_ENEMY') {
+      return true;
+    }
+    if (actual !== filter.attackerKind) {
+      return false;
+    }
+  }
+
+  if (filter.attackerCardFilter) {
+    const attackerCard = context.attackerCard?.card || context.encounterCardInstance?.card;
+    if (!attackerCard) return false;
+    if (!matchesCardFilter(attackerCard, filter.attackerCardFilter, { player })) {
+      return false;
+    }
+  }
+
+  if (filter.sourceCardCode) {
+    const actualSourceCardCode = context.sourceCardCode || context.encounterCardInstance?.card?.code;
+    if (!actualSourceCardCode || actualSourceCardCode !== filter.sourceCardCode) {
+      return false;
+    }
+  }
+
+  if (filter.sourceInstanceId && context.sourceInstanceId !== filter.sourceInstanceId) {
+    return false;
+  }
+
+  if (filter.targetPlayerScope) {
+    if (!player || !context.targetPlayerId) return false;
+    const actualScope =
+      context.targetPlayerId === player.id ? 'SELF' : 'OTHER';
+    if (filter.targetPlayerScope === 'ANY') {
+      // no-op, allowed by explicit contract
+    } else if (actualScope !== filter.targetPlayerScope) {
+      return false;
+    }
+  }
+
+  if (filter.targetForm) {
+    const actualForm = context.targetForm?.toUpperCase();
+    if (!actualForm || actualForm !== filter.targetForm) {
+      return false;
+    }
+  }
+
+  if (filter.targetType) {
+    const actualType = context.targetType?.toUpperCase();
+    if (!actualType || actualType !== filter.targetType) {
+      return false;
+    }
+  }
+
+  if (filter.isEngaged !== undefined) {
+    const actualEngaged =
+      Boolean(context.targetType) && ['VILLAIN', 'MINION', 'ENEMY'].includes(String(context.targetType).toUpperCase());
+    if (actualEngaged !== filter.isEngaged) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export interface TriggerContext {
   targetPlayerId: string;
   sourceInstanceId?: string;
+  sourceCardCode?: string;
   damageAmount?: number;
   preventedDamage?: boolean;
   threatAmount?: number;
@@ -58,6 +135,10 @@ export interface TriggerContext {
   targetInstanceId?: string;
   entityType?: string;
   attackerType?: string;
+  attackerKind?: 'VILLAIN' | 'MINION' | 'ANY_ENEMY';
+  targetPlayerScope?: 'SELF' | 'OTHER' | 'ANY';
+  targetForm?: 'HERO' | 'ALTER_EGO';
+  attackerCard?: any;
   status?: string;
   acceptOptionalTriggers?: boolean;
   encounterCardInstance?: any;
@@ -234,6 +315,9 @@ export function dispatchTrigger(
   const identityAbilities = player ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (triggersAreEquivalent(ability.trigger, trigger)) {
+      if (!matchesTriggerFilter(ability.triggerFilter, context, player)) {
+        continue;
+      }
       if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
         continue;
       }
@@ -364,6 +448,9 @@ export function dispatchTrigger(
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
         if (triggersAreEquivalent(ability.trigger, trigger)) {
+          if (!matchesTriggerFilter(ability.triggerFilter, context, controller)) {
+            continue;
+          }
           // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
           // Abilities on in-play cards (allies, upgrades, supports, attachments) triggered by
           // ENTERS_PLAY or CARD_PLAYED must only fire if this specific card was the event source (RR v1.8 pp. 11, 21).
@@ -492,87 +579,89 @@ export function dispatchTrigger(
         (a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND',
       )!;
 
-      const isForced = ability.timing.startsWith('FORCED_');
-      if (isForced || context.acceptOptionalTriggers === true) {
-        const node: TriggerCallNode = {
-          trigger,
-          abilityId: ability.id,
-          sourceInstanceId: interruptCard.instanceId,
-          cardCode: interruptCard.card.code,
-          cardName: interruptCard.card.name,
-        };
-        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
-
-        player.hand.splice(handInterruptIdx, 1);
-        if (ability.cost?.discardSelf !== false) {
-          player.discard.push(interruptCard);
-        }
-        const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
-        const firstStep = ability.steps?.[0];
-        if (hasConsume) {
-          const effCtx = {
-            playerId: player.id,
-            sourceCardInstance: interruptCard,
-            damageAmount: currentDamage,
-            interceptedValue: currentDamage,
-            triggerChain: nextChain,
+      if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
+        const isForced = ability.timing.startsWith('FORCED_');
+        if (isForced || context.acceptOptionalTriggers === true) {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: interruptCard.instanceId,
+            cardCode: interruptCard.card.code,
+            cardName: interruptCard.card.name,
           };
-          executeEffect(state, ability, effCtx);
-          currentDamage = effCtx.damageAmount ?? 0;
-          if (currentDamage === 0) {
-            isPrevented = true;
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+
+          player.hand.splice(handInterruptIdx, 1);
+          if (ability.cost?.discardSelf !== false) {
+            player.discard.push(interruptCard);
           }
-        } else if (firstStep?.effect === 'PREVENT_DAMAGE') {
-          currentDamage = 0;
-          isPrevented = true;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            key: `card.${interruptCard.card.code}.preventedDamage`,
-            params: { player: player.name },
-            onomatopoeia: 'DEFENSE! (0 DAMAGE)',
-          });
-        }
-      } else {
-        const cardName = interruptCard.card.name;
-        enqueueDecisionPrompt(state, {
-          promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          playerId: player.id,
-          title: `Do you want to use the following ability from ${cardName}?`,
-          description: formatAbilityStepsSummary(trigger, ability.steps || []),
-          sourceCardName: cardName,
-          sourceCardCode: interruptCard.card.code,
-          triggerSourceName:
-            context.encounterCardInstance?.card?.name ||
-            (context.targetType === 'villain' ? state.villain.card.name : undefined),
-          triggerSourceCode:
-            context.encounterCardInstance?.card?.code ||
-            (context.targetType === 'villain' ? state.villain.card.code : undefined),
-          triggerType: ability.timing,
-          isVoluntary: true,
-          options: [
-            {
-              id: `trigger_${ability.id}`,
-              label: 'Yes',
-              effect: 'EXECUTE_OPTIONAL_TRIGGER',
-              params: {
-                ability,
-                context: {
-                  ...context,
-                  damageAmount: currentDamage,
-                  interceptedValue: currentDamage,
+          const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
+          const firstStep = ability.steps?.[0];
+          if (hasConsume) {
+            const effCtx = {
+              playerId: player.id,
+              sourceCardInstance: interruptCard,
+              damageAmount: currentDamage,
+              interceptedValue: currentDamage,
+              triggerChain: nextChain,
+            };
+            executeEffect(state, ability, effCtx);
+            currentDamage = effCtx.damageAmount ?? 0;
+            if (currentDamage === 0) {
+              isPrevented = true;
+            }
+          } else if (firstStep?.effect === 'PREVENT_DAMAGE') {
+            currentDamage = 0;
+            isPrevented = true;
+            state.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              key: `card.${interruptCard.card.code}.preventedDamage`,
+              params: { player: player.name },
+              onomatopoeia: 'DEFENSE! (0 DAMAGE)',
+            });
+          }
+        } else {
+          const cardName = interruptCard.card.name;
+          enqueueDecisionPrompt(state, {
+            promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: `Do you want to use the following ability from ${cardName}?`,
+            description: formatAbilityStepsSummary(trigger, ability.steps || []),
+            sourceCardName: cardName,
+            sourceCardCode: interruptCard.card.code,
+            triggerSourceName:
+              context.encounterCardInstance?.card?.name ||
+              (context.targetType === 'villain' ? state.villain.card.name : undefined),
+            triggerSourceCode:
+              context.encounterCardInstance?.card?.code ||
+              (context.targetType === 'villain' ? state.villain.card.code : undefined),
+            triggerType: ability.timing,
+            isVoluntary: true,
+            options: [
+              {
+                id: `trigger_${ability.id}`,
+                label: 'Yes',
+                effect: 'EXECUTE_OPTIONAL_TRIGGER',
+                params: {
+                  ability,
+                  context: {
+                    ...context,
+                    damageAmount: currentDamage,
+                    interceptedValue: currentDamage,
+                  },
+                  sourceCardInstanceId: interruptCard.instanceId,
                 },
-                sourceCardInstanceId: interruptCard.instanceId,
               },
-            },
-            {
-              id: 'pass',
-              label: 'No',
-              effect: 'PASS',
-            },
-          ],
-        });
-        hasPendingPrompt = true;
+              {
+                id: 'pass',
+                label: 'No',
+                effect: 'PASS',
+              },
+            ],
+          });
+          hasPendingPrompt = true;
+        }
       }
     }
   }
@@ -600,6 +689,10 @@ export function dispatchTrigger(
             (!a.timing.startsWith('HERO_') || p.currentForm === 'hero') &&
             (!a.timing.startsWith('ALTER_EGO_') || p.currentForm === 'alter_ego'),
         )!;
+
+        if (!matchesTriggerFilter(ability.triggerFilter, context, p)) {
+          continue;
+        }
 
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
@@ -706,63 +799,65 @@ export function dispatchTrigger(
           (!a.timing.startsWith('ALTER_EGO_') || player.currentForm === 'alter_ego'),
       )!;
 
-      const isForced = ability.timing.startsWith('FORCED_');
-      if (isForced || context.acceptOptionalTriggers === true) {
-        const node: TriggerCallNode = {
-          trigger,
-          abilityId: ability.id,
-          sourceInstanceId: interruptCard.instanceId,
-          cardCode: interruptCard.card.code,
-          cardName: interruptCard.card.name,
-        };
-        const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
+      if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
+        const isForced = ability.timing.startsWith('FORCED_');
+        if (isForced || context.acceptOptionalTriggers === true) {
+          const node: TriggerCallNode = {
+            trigger,
+            abilityId: ability.id,
+            sourceInstanceId: interruptCard.instanceId,
+            cardCode: interruptCard.card.code,
+            cardName: interruptCard.card.name,
+          };
+          const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
-        player.hand.splice(handInterruptIdx, 1);
-        if (ability.cost?.discardSelf !== false) {
-          player.discard.push(interruptCard);
-        }
-        executeEffect(state, ability, {
-          playerId: player.id,
-          sourceCardInstance: interruptCard,
-          triggerChain: nextChain,
-        });
-        isCancelled = true;
-        if (state.activeEncounterContext) {
-          state.activeEncounterContext.cancelled = true;
-        }
-      } else {
-        const cardName = interruptCard.card.name;
-        enqueueDecisionPrompt(state, {
-          promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          playerId: player.id,
-          title: `Do you want to use the following ability from ${cardName}?`,
-          description: formatAbilityStepsSummary(trigger, ability.steps || []),
-          sourceCardName: cardName,
-          sourceCardCode: interruptCard.card.code,
-          triggerSourceName:
-            context.encounterCardInstance?.card?.name || 'Treachery / Encounter Card',
-          triggerSourceCode: context.encounterCardInstance?.card?.code,
-          triggerType: ability.timing,
-          isVoluntary: true,
-          options: [
-            {
-              id: `trigger_${ability.id}`,
-              label: 'Yes',
-              effect: 'EXECUTE_OPTIONAL_TRIGGER',
-              params: {
-                ability,
-                context,
-                sourceCardInstanceId: interruptCard.instanceId,
+          player.hand.splice(handInterruptIdx, 1);
+          if (ability.cost?.discardSelf !== false) {
+            player.discard.push(interruptCard);
+          }
+          executeEffect(state, ability, {
+            playerId: player.id,
+            sourceCardInstance: interruptCard,
+            triggerChain: nextChain,
+          });
+          isCancelled = true;
+          if (state.activeEncounterContext) {
+            state.activeEncounterContext.cancelled = true;
+          }
+        } else {
+          const cardName = interruptCard.card.name;
+          enqueueDecisionPrompt(state, {
+            promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: `Do you want to use the following ability from ${cardName}?`,
+            description: formatAbilityStepsSummary(trigger, ability.steps || []),
+            sourceCardName: cardName,
+            sourceCardCode: interruptCard.card.code,
+            triggerSourceName:
+              context.encounterCardInstance?.card?.name || 'Treachery / Encounter Card',
+            triggerSourceCode: context.encounterCardInstance?.card?.code,
+            triggerType: ability.timing,
+            isVoluntary: true,
+            options: [
+              {
+                id: `trigger_${ability.id}`,
+                label: 'Yes',
+                effect: 'EXECUTE_OPTIONAL_TRIGGER',
+                params: {
+                  ability,
+                  context,
+                  sourceCardInstanceId: interruptCard.instanceId,
+                },
               },
-            },
-            {
-              id: 'pass',
-              label: 'No',
-              effect: 'PASS',
-            },
-          ],
-        });
-        hasPendingPrompt = true;
+              {
+                id: 'pass',
+                label: 'No',
+                effect: 'PASS',
+              },
+            ],
+          });
+          hasPendingPrompt = true;
+        }
       }
     }
   }

@@ -47,6 +47,7 @@ import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
+  getEffectiveRetaliate,
   hasEntityKeyword,
   consumeEntityStatusCards,
 } from './stat-calculator';
@@ -430,6 +431,26 @@ export function dispatchAction(
           targetType: 'villain',
         });
 
+        // Retaliate check: If villain survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
+        const villainRetaliate = getEffectiveRetaliate(nextState.villain, nextState);
+        if (villainRetaliate > 0) {
+          player.health = Math.max(0, player.health - villainRetaliate);
+          nextState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'combat',
+            key: 'retaliate.hit',
+            params: {
+              damage: villainRetaliate,
+              source: nextState.villain.card.name,
+              player: player.name,
+            },
+            onomatopoeia: 'RETALIATE!',
+          });
+        }
+
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
@@ -483,6 +504,26 @@ export function dispatchAction(
             targetType: 'minion',
             targetInstanceId: action.targetInstanceId,
           });
+
+          // Retaliate check: If minion survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
+          const minionRetaliate = getEffectiveRetaliate(minion, nextState);
+          if (minionRetaliate > 0) {
+            player.health = Math.max(0, player.health - minionRetaliate);
+            nextState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: nextState.roundNumber,
+              phase: nextState.phase,
+              category: 'combat',
+              key: 'retaliate.hit',
+              params: {
+                damage: minionRetaliate,
+                source: minion.card.name,
+                player: player.name,
+              },
+              onomatopoeia: 'RETALIATE!',
+            });
+          }
 
           const onomatopoeia = 'BAM!';
           return { state: nextState, result: { success: true, onomatopoeia } };
@@ -556,6 +597,27 @@ export function dispatchAction(
             nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
             if (nextState.villain.health <= 0) {
               handleVillainDefeat(nextState, nextState.villain.instanceId);
+            } else {
+              // Retaliate check: If villain survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
+              const villainRetaliate = getEffectiveRetaliate(nextState.villain, nextState);
+              if (villainRetaliate > 0) {
+                if (!ally.tokens) ally.tokens = {};
+                ally.tokens.damage = (ally.tokens.damage || 0) + villainRetaliate;
+                nextState.log.push({
+                  id: `log_${Date.now()}`,
+                  timestamp: Date.now(),
+                  round: nextState.roundNumber,
+                  phase: nextState.phase,
+                  category: 'combat',
+                  key: 'retaliate.hit',
+                  params: {
+                    damage: villainRetaliate,
+                    source: nextState.villain.card.name,
+                    player: allyCard.name,
+                  },
+                  onomatopoeia: 'RETALIATE!',
+                });
+              }
             }
           }
         }
@@ -586,6 +648,26 @@ export function dispatchAction(
               moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
             } else {
               minion.tokens = { ...minion.tokens, damage: newDamage };
+              // Retaliate check: If minion survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
+              const minionRetaliate = getEffectiveRetaliate(minion, nextState);
+              if (minionRetaliate > 0) {
+                if (!ally.tokens) ally.tokens = {};
+                ally.tokens.damage = (ally.tokens.damage || 0) + minionRetaliate;
+                nextState.log.push({
+                  id: `log_${Date.now()}`,
+                  timestamp: Date.now(),
+                  round: nextState.roundNumber,
+                  phase: nextState.phase,
+                  category: 'combat',
+                  key: 'retaliate.hit',
+                  params: {
+                    damage: minionRetaliate,
+                    source: minion.card.name,
+                    player: allyCard.name,
+                  },
+                  onomatopoeia: 'RETALIATE!',
+                });
+              }
             }
           }
         }

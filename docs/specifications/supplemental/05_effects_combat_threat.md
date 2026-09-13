@@ -56,10 +56,20 @@
 
 ### `RETALIATE` / `QUICKSTRIKE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)`
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0054](../../decisions/0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md))
 - **Description:**
-  - **Retaliate:** Deals X damage back to attacker after receiving an attack.
+  - **Retaliate:** Deals X damage back to attacker after receiving an attack (RR v1.8 p. 24). Values from multiple active instances (base card, attachments, upgrades) are added together.
   - **Quickstrike:** Minion attacks immediately upon engaging hero in Hero form.
+
+```json
+{
+  "effect": "GRANT_KEYWORD",
+  "params": {
+    "keyword": "Retaliate",
+    "amount": 1
+  }
+}
+```
 
 ---
 

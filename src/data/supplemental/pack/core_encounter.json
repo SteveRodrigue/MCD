@@ -1231,15 +1231,30 @@
               }
             }
           ]
+        },
+        {
+          "id": "whiplash_retaliate",
+          "timing": "CONSTANT",
+          "steps": [
+            {
+              "effect": "GRANT_KEYWORD",
+              "params": {
+                "keyword": "Retaliate",
+                "amount": 1
+              }
+            }
+          ]
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "createdAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-12T22:25:00Z",
+        "reviewedAt": "2026-09-12T22:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
+        "confidence": 98,
         "originalText": "Retaliate 1 <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF; CONSTANT -> GRANT_KEYWORD (keyword: Retaliate, amount: 1)"
       }
     },
     "01173": {

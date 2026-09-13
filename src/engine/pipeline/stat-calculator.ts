@@ -8,6 +8,7 @@ import {
   PlayerState,
 } from '../models';
 import { matchesCardFilter } from '../filters/card-filter';
+import { parseKeywordItem } from '../models/keyword';
 
 export interface EffectiveVillainStats {
   attack: number;
@@ -322,22 +323,144 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
 }
 
 /**
- * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword.
+ * Computes dynamic effective Retaliate magnitude for an entity (Player, Villain, Minion, Ally, or CardInstance),
+ * aggregating base card keywords, enrichment keywords, constant abilities, attachments, and tableau upgrades (RR v1.8 p. 24, ADR-0054).
+ * "If a character has multiple instances of retaliate, the values of each instance are added together."
+ */
+export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
+  if (!entity) return 0;
+  let retaliateTotal = 0;
+
+  const targetCard =
+    entity.card || entity.activeFormCard || entity.hero || (entity.type ? entity : undefined);
+
+  // 1. Direct card/entity keywords
+  let baseCardRetaliate = 0;
+  const directKeywords = entity.keywords || targetCard?.keywords || [];
+  for (const k of directKeywords) {
+    const parsed = parseKeywordItem(k);
+    if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+      baseCardRetaliate += parsed.amount;
+    }
+  }
+
+  // 2. Card enrichment keywords
+  const enrichmentKws = entity.enrichment?.keywords || targetCard?.enrichment?.keywords || [];
+  for (const k of enrichmentKws) {
+    const parsed = parseKeywordItem(k);
+    if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+      baseCardRetaliate += parsed.amount;
+    }
+  }
+
+  // 3. Constant abilities on the entity's card itself (e.g. Black Panther 01040a or Whiplash 01172)
+  let selfAbilitiesRetaliate = 0;
+  const selfAbilities = targetCard?.enrichment?.abilities || entity.abilities || [];
+  for (const ab of selfAbilities) {
+    if (ab.timing === 'CONSTANT') {
+      for (const step of ab.steps || []) {
+        if (step.effect === 'GRANT_KEYWORD') {
+          const parsed = parseKeywordItem({
+            keyword: step.params?.keyword,
+            amount: step.params?.amount,
+          });
+          if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+            selfAbilitiesRetaliate += parsed.amount;
+          }
+        }
+      }
+    }
+  }
+
+  // Base character retaliate takes the maximum of printed keywords or declarative ability declaration
+  retaliateTotal += Math.max(baseCardRetaliate, selfAbilitiesRetaliate);
+
+  // 4. In-play attachments on the entity (e.g. Concussion Blasters on Villain, or upgrade attached to Ally/Minion)
+  const attachments = entity.attachments || [];
+  for (const att of attachments) {
+    for (const k of att.card?.keywords || []) {
+      const parsed = parseKeywordItem(k);
+      if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+        retaliateTotal += parsed.amount;
+      }
+    }
+    const attAbilities = att.card?.enrichment?.abilities || [];
+    for (const ab of attAbilities) {
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'GRANT_KEYWORD') {
+            const parsed = parseKeywordItem({
+              keyword: step.params?.keyword,
+              amount: step.params?.amount,
+            });
+            if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+              retaliateTotal += parsed.amount;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 5. In-play tableau upgrades for player (e.g. Electrostatic Armor, Dauntless)
+  if (entity.tableau) {
+    for (const item of entity.tableau) {
+      for (const k of item.card?.keywords || []) {
+        const parsed = parseKeywordItem(k);
+        if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+          retaliateTotal += parsed.amount;
+        }
+      }
+      const itemAbilities = item.card?.enrichment?.abilities || [];
+      for (const ab of itemAbilities) {
+        if (ab.timing === 'CONSTANT') {
+          for (const step of ab.steps || []) {
+            if (step.effect === 'GRANT_KEYWORD') {
+              const parsed = parseKeywordItem({
+                keyword: step.params?.keyword,
+                amount: step.params?.amount,
+              });
+              if (parsed && parsed.name.toLowerCase() === 'retaliate') {
+                retaliateTotal += parsed.amount;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return retaliateTotal;
+}
+
+/**
+ * Checks if an entity (Player, Villain, Minion, CardInstance, or Card) has a specific keyword (ADR-0054).
  */
 export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
   if (!entity) return false;
   const kw = targetKeyword.toLowerCase().trim();
 
+  // Fast-path for retaliate
+  if (kw === 'retaliate' && getEffectiveRetaliate(entity) > 0) {
+    return true;
+  }
+
   // 1. Direct keywords array on card/entity
   const directKeywords = entity.keywords || entity.card?.keywords || entity.hero?.keywords || [];
-  if (directKeywords.some((k: any) => String(k).toLowerCase().trim() === kw)) {
-    return true;
+  for (const k of directKeywords) {
+    const parsed = parseKeywordItem(k);
+    if (parsed && parsed.name.toLowerCase() === kw) return true;
+    const s = String(k).toLowerCase().trim();
+    if (s === kw || s.startsWith(kw + ' ')) return true;
   }
 
   // 2. Card enrichment keywords
   const enrichmentKws = entity.enrichment?.keywords || entity.card?.enrichment?.keywords || [];
-  if (enrichmentKws.some((k: any) => String(k).toLowerCase().trim() === kw)) {
-    return true;
+  for (const k of enrichmentKws) {
+    const parsed = parseKeywordItem(k);
+    if (parsed && parsed.name.toLowerCase() === kw) return true;
+    const s = String(k).toLowerCase().trim();
+    if (s === kw || s.startsWith(kw + ' ')) return true;
   }
 
   // 3. Entity traits check (e.g. traits array)
@@ -354,10 +477,15 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           if (step.effect === 'GRANT_KEYWORD') {
+            const parsed = parseKeywordItem({
+              keyword: step.params?.keyword,
+              amount: step.params?.amount,
+            });
+            if (parsed && parsed.name.toLowerCase() === kw) return true;
             const granted = String(step.params?.keyword || '')
               .toLowerCase()
               .trim();
-            if (granted === kw) return true;
+            if (granted === kw || granted.startsWith(kw + ' ')) return true;
           }
         }
       }
@@ -372,10 +500,15 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
             if (step.effect === 'GRANT_KEYWORD') {
+              const parsed = parseKeywordItem({
+                keyword: step.params?.keyword,
+                amount: step.params?.amount,
+              });
+              if (parsed && parsed.name.toLowerCase() === kw) return true;
               const granted = String(step.params?.keyword || '')
                 .toLowerCase()
                 .trim();
-              if (granted === kw) return true;
+              if (granted === kw || granted.startsWith(kw + ' ')) return true;
             }
           }
         }

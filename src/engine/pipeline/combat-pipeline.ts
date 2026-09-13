@@ -9,7 +9,6 @@ import {
   GamePhase,
   Keyword,
   hasKeyword,
-  getKeywordValue,
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
@@ -17,6 +16,7 @@ import { executeEffect, processHostDefeated } from '../effects';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
+  getEffectiveRetaliate,
   hasEntityKeyword,
   consumeEntityStatusCards,
 } from './stat-calculator';
@@ -788,20 +788,9 @@ export function step7_resolvePostAttackAndRetaliate(
     acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
   });
 
-  // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24)
+  // Step 7 Retaliate: If defending character survived and has Retaliate X, deal X damage back to attacker (RR v1.8 p. 24, ADR-0054)
   if (player && player.health > 0 && attackContext.heroDefended) {
-    // Check Hero or Tableau cards for Retaliate
-    let retaliateX = 0;
-    const heroRetaliate = getKeywordValue(player.hero, Keyword.RETALIATE);
-    if (heroRetaliate !== undefined) {
-      retaliateX = heroRetaliate;
-    }
-    for (const item of player.tableau || []) {
-      const itemRetaliate = getKeywordValue(item.card, Keyword.RETALIATE);
-      if (itemRetaliate !== undefined) {
-        retaliateX += itemRetaliate;
-      }
-    }
+    const retaliateX = getEffectiveRetaliate(player, state);
 
     if (retaliateX > 0) {
       if (attackContext.attackerType === 'VILLAIN') {
@@ -830,6 +819,48 @@ export function step7_resolvePostAttackAndRetaliate(
           params: { damage: retaliateX, minion: minion.card.name },
           onomatopoeia: 'RETALIATE! (HERO)',
         });
+      }
+    }
+  } else if (
+    attackContext.defender?.type === 'ALLY' &&
+    attackContext.defender.allyInstanceId &&
+    player
+  ) {
+    const ally = player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId);
+    if (ally) {
+      const allyRetaliate = getEffectiveRetaliate(ally, state);
+      if (allyRetaliate > 0) {
+        if (attackContext.attackerType === 'VILLAIN') {
+          state.villain.health = Math.max(0, state.villain.health - allyRetaliate);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'retaliate.ally.hit',
+            params: {
+              damage: allyRetaliate,
+              villain: state.villain.card.name,
+              ally: ally.card.name,
+            },
+            onomatopoeia: 'RETALIATE! (ALLY)',
+          });
+        } else if (attackContext.attackerCard) {
+          const minion = attackContext.attackerCard;
+          if (!minion.tokens) minion.tokens = {};
+          minion.tokens.damage = (minion.tokens.damage || 0) + allyRetaliate;
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'retaliate.ally.hit',
+            params: { damage: allyRetaliate, minion: minion.card.name, ally: ally.card.name },
+            onomatopoeia: 'RETALIATE! (ALLY)',
+          });
+        }
       }
     }
   }

@@ -15,7 +15,6 @@ import {
   PlayerState,
   Keyword,
   hasKeyword,
-  getKeywordValue,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -30,6 +29,7 @@ import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
+  getEffectiveRetaliate,
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
@@ -65,6 +65,7 @@ export interface EffectExecutionContext {
   interceptedValue?: number;
   remainingInterceptedValue?: number;
   choice?: string;
+  isAttack?: boolean;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
   triggerChain?: TriggerCallNode[];
 }
@@ -1220,8 +1221,8 @@ export function executeStep(
             } else {
               minion.tokens = { ...minion.tokens, damage: newDmg };
 
-              // Retaliate check if minion survives
-              const retaliateX = getKeywordValue(minion.card, Keyword.RETALIATE) || 0;
+              // Retaliate check if minion survives (RR v1.8 p. 24, ADR-0054)
+              const retaliateX = getEffectiveRetaliate(minion, state);
               if (retaliateX > 0) {
                 player.health = Math.max(0, player.health - retaliateX);
                 state.log.push({
@@ -1351,6 +1352,29 @@ export function executeStep(
         },
         onomatopoeia,
       });
+
+      // Retaliate check if villain survives an attack (RR v1.8 p. 24, ADR-0054)
+      const isAttack = Boolean(step.params?.isAttack || context.isAttack);
+      if (isAttack && state.villain.health > 0) {
+        const villainRetaliate = getEffectiveRetaliate(state.villain, state);
+        if (villainRetaliate > 0) {
+          player.health = Math.max(0, player.health - villainRetaliate);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'retaliate.hit',
+            params: {
+              damage: villainRetaliate,
+              source: state.villain.card.name,
+              player: player.name,
+            },
+            onomatopoeia: 'RETALIATE!',
+          });
+        }
+      }
 
       return {
         state,

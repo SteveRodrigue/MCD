@@ -121,6 +121,10 @@ graph TD
         ADR48["ADR-0048: Timing vs Trigger & CARD_PLAYED vs ENTERS_PLAY"] --> ADR50["ADR-0050: Universal In-Play Self-Referential Trigger Instance Binding"]
         ADR49["ADR-0049: Composable Value Transformers & Event Interception"]
     end
+    subgraph CombatTriggers["Combat & Trigger Safeguards"]
+        ADR53["ADR-0053: Infinite Trigger Loop Detection & Prevention Guardrails"]
+        ADR54["ADR-0054: Parameterized Keyword Stacking & Retaliate Value Accumulation Engine"]
+    end
 ```
 
 ---
@@ -182,6 +186,7 @@ graph TD
 | [ADR-0051](0051-universal-two-stage-in-play-card-interaction-and-action-selection.md)              | 2026-09-12 | Universal Two-Stage In-Play Card Interaction & Action Selection Pipeline              | **Accepted**                                                                                                 | Eliminate silent default attacks and thwarts; require Stage 1 action selection and Stage 2 target/payment prompts across Hero, Allies, Supports, and Upgrades (Fixes #98). |
 | [ADR-0052](0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md)                   | 2026-09-12 | Centralized Dynamic Formula & State Value Evaluator Engine                           | **Accepted**                                                                                                 | Centralize dynamic mathematical evaluation into `evaluateDynamicAmount`, adhere to RR v1.8 calculation rules, eliminate `amountFormula` tech debt, and unify dynamic scalars under `DynamicValueSource`. |
 | [ADR-0053](0053-infinite-trigger-loop-detection-and-prevention-guardrails.md)                      | 2026-09-12 | Infinite Trigger Loop Detection & Prevention Guardrails                              | **Accepted**                                                                                                 | Implement dynamic trigger call chain tracking, cycle detection, recursion depth guard, `InfiniteLoopError`, and UI comic alert modal per RR v1.8 (Fixes #48). |
+| [ADR-0054](0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md)        | 2026-09-12 | Parameterized Keyword Stacking & Retaliate Value Accumulation Engine                 | **Accepted**                                                                                                 | Centralize character retaliate calculations into `getEffectiveRetaliate(entity, state?)`, enforce structured `{ keyword, amount }` modeling with zero tech debt in supplemental data, and support RR v1.8 value accumulation across Hero, Ally, Minion, and Villain combat windows (Fixes #64). |
 
 
 ---

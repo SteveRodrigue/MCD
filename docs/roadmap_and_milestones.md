@@ -110,6 +110,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
 - [x] **Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant ✅ (Completed):**
   - Step 6 Damage Prevention Interrupts (_Backflip_ `01003`, _Cosmic Flight_ `01017`) and Tough preservation.
   - Overkill excess damage routing (bidirectional: Enemy $\rightarrow$ Defending Ally $\rightarrow$ Hero, Player $\rightarrow$ Minion $\rightarrow$ Villain) and `RETALIATE X` return damage in Step 7.
+  - Formalized Parameterized Keyword Stacking & Retaliate Value Accumulation Engine ([ADR-0054](decisions/0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md), [Issue #64](https://github.com/SteveRodrigue/MCD/issues/64)) with canonical structured schema `{ keyword: "Retaliate", amount: 1 }` and zero tech debt.
   - Direct damage vs. attack damage invariant (`dealDirectDamage`).
   - Promotes 8 Core Set cards: _Backflip_ (`01003`), _Enhanced Spider-Sense_ (`01004`), _Cosmic Flight_ (`01017`), _Gamma Slam_ (`01021`), _Hulk_ (`01050`), _Tigra_ (`01051`), _Relentless Assault_ (`01053`), _Uppercut_ (`01054`).
 

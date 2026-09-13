@@ -1585,7 +1585,8 @@
             {
               "effect": "GRANT_KEYWORD",
               "params": {
-                "keyword": "Retaliate 1"
+                "keyword": "Retaliate",
+                "amount": 1
               }
             }
           ]
@@ -1593,13 +1594,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-12T22:25:00Z",
+        "reviewedAt": "2026-09-12T22:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "Retaliate 1. <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>",
-        "reconstructedText": "CONSTANT -> GRANT_KEYWORD (keyword: Retaliate 1)"
+        "reconstructedText": "CONSTANT -> GRANT_KEYWORD (keyword: Retaliate, amount: 1)"
       },
       "mechanicSteps": [
         "Hero Identity ability/stats for Black Panther"

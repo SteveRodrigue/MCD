@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-13T19:22:34.462Z`  
+> **Generated:** `2026-09-13T19:56:20.087Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -10,16 +10,16 @@
 | Metric | Count | Description |
 | :--- | :--- | :--- |
 | **Total Cards Registered** | **156** | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **144** | Cards with executable `abilities: [...]` |
+| **Active Declared Cards** | **143** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **10** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **0** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **166** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **159** | Abilities with exactly 1 atomic execution step |
+| **Total Abilities Declared** | **165** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **158** | Abilities with exactly 1 atomic execution step |
 | **Multi-Step Abilities (2+ Steps)** | **7** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **7** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **53** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **52** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **23** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -99,7 +99,7 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `ADD_THREAT_PER_PLAYER` | **6** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
-| **Trigger** | `WHEN_REVEALED` | **44** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+41 more)* |
+| **Trigger** | `WHEN_REVEALED` | **43** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+40 more)* |
 | **Trigger** | `ENTERS_PLAY` | **5** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally) *(+2 more)* |
 
 ---
@@ -118,7 +118,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `BUFF_ALL_FRIENDLY_CHARACTERS` | `01070` | Lead from the Front (event) (core) | `lead_from_the_front_action` |
 | **Effect** | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
 | **Effect** | `DEAL_DAMAGE_ALL_ENEMIES` | `01046` | Energy Daggers (upgrade) (core) | `energy_daggers_special` |
-| **Effect** | `EXPLOSION` | `01111` | Explosion (treachery) (core_encounter) | `explosion_when_revealed` |
 | **Effect** | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` | `01106` | Stampede (treachery) (core_encounter) | `stampede_attack` |
 | **Effect** | `GENERATE_TOP_DISCARD_RESOURCES` | `01033` | Pepper Potts (support) (core) | `pepper_potts_res` |
@@ -242,7 +241,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `SEARCH_AND_REVEAL_SIDE_SCHEME` | **1** | `01095` (Rhino (villain)) |
 | `ATTACHMENT_DAMAGE_SHIELD` | **1** | `01098` (Armored Rhino Suit (attachment)) |
 | `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE` | **1** | `01106` (Stampede (treachery)) |
-| `EXPLOSION` | **1** | `01111` (Explosion (treachery)) |
 | `GIVE_ADDITIONAL_BOOST_CARD` | **1** | `01164` (Titania's Fury (treachery)) |
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `RETURN_FACEDOWN_CARDS_TO_OWNERS` | **1** | `01166` (Highway Robbery (side_scheme)) |
@@ -258,7 +256,7 @@ These primitives are declared in schema types or specifications but have **0 act
 
 | Trigger Window | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
-| `WHEN_REVEALED` | **44** | `01095` (Rhino (villain)), `01096` (Rhino (villain)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01103` (Shocker (minion)), `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01110` (Hydra Bomber (minion)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01155` (Affairs of State (obligation)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01159` (Ritual Combat (treachery)), `01160` (Legal Work (obligation)), `01161` (Personal Challenge (side_scheme)), `01162` (Titania (minion)), `01164` (Titania's Fury (treachery)), `01165` (Eviction Notice (obligation)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01170` (Business Problems (obligation)), `01171` (Imminent Overload (side_scheme)), `01172` (Whiplash (minion)), `01174` (Electromagnetic Backlash (treachery)), `01175` (Family Emergency (obligation)), `01176` (The Psyche-Magnitron (side_scheme)), `01178` (Kree Manipulator (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01186` (Advance (treachery)), `01187` (Assault (treachery)), `01188` (Caught Off Guard (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)), `01191` (Exhaustion (treachery)), `01192` (Masterplan (treachery)), `01193` (Under Fire (treachery)), `01194` (Unknown Card #01194), `01195` (Unknown Card #01195) |
+| `WHEN_REVEALED` | **43** | `01095` (Rhino (villain)), `01096` (Rhino (villain)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01103` (Shocker (minion)), `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01110` (Hydra Bomber (minion)), `01112` (False Alarm (treachery)), `01155` (Affairs of State (obligation)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01159` (Ritual Combat (treachery)), `01160` (Legal Work (obligation)), `01161` (Personal Challenge (side_scheme)), `01162` (Titania (minion)), `01164` (Titania's Fury (treachery)), `01165` (Eviction Notice (obligation)), `01168` (Sweeping Swoop (treachery)), `01169` (The Vulture's Plans (treachery)), `01170` (Business Problems (obligation)), `01171` (Imminent Overload (side_scheme)), `01172` (Whiplash (minion)), `01174` (Electromagnetic Backlash (treachery)), `01175` (Family Emergency (obligation)), `01176` (The Psyche-Magnitron (side_scheme)), `01178` (Kree Manipulator (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01186` (Advance (treachery)), `01187` (Assault (treachery)), `01188` (Caught Off Guard (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)), `01191` (Exhaustion (treachery)), `01192` (Masterplan (treachery)), `01193` (Under Fire (treachery)), `01194` (Unknown Card #01194), `01195` (Unknown Card #01195) |
 | `ENTERS_PLAY` | **5** | `01011` (Spider-Woman (ally)), `01041` (Shuri (ally)), `01067` (Maria Hill (ally)), `01083` (Mockingbird (ally)), `01084` (Nick Fury (ally)) |
 | `TREACHERY_REVEALED` | **3** | `01004` (Enhanced Spider-Sense (event)), `01075` (Black Widow (ally)), `01078` (Get Behind Me! (event)) |
 | `THREAT_WOULD_BE_PLACED` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
@@ -290,8 +288,8 @@ These primitives are declared in schema types or specifications but have **0 act
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **28** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01083` Mockingbird (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+22 more)* |
-| `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
 | `HERO_ACTION` | **24** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+19 more)* |
+| `WHEN_REVEALED` | **24** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+19 more)* |
 | `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
 | `ACTION` | **15** | `01007` Spider-Tracer (upgrade), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event), `01030` War Machine (ally) *(+10 more)* |
 | `ALTER_EGO_ACTION` | **10** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01015` Alpha Flight Station (support), `01023` Legal Practice (event) *(+5 more)* |

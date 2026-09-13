@@ -142,7 +142,8 @@ function transformSpecialStep(
     blockers.push({
       path: stepPath,
       effect,
-      reason: 'Bomb Scare threat-dependent damage and no-Bomb-Scare surge semantics are not represented by the current composable schema.',
+      reason:
+        'Bomb Scare threat-dependent damage and no-Bomb-Scare surge semantics are not represented by the current composable schema.',
     });
     return step;
   }

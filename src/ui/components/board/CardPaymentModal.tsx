@@ -5,6 +5,7 @@ import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../.
 import { getCardEnrichment } from '../../../data/supplemental';
 import { isResourceAbility, isAbilityPlayableInForm } from '../../../engine/pipeline/cost-engine';
 import { FormattedCardText } from '../cards/FormattedCardText';
+import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -409,17 +410,20 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Card Overview & Cost Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white border-2 border-comic-black rounded-lg shadow-comic-sm">
-            <div className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded border border-comic-black">
-                  {card.type}
-                </span>
-                <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black">
-                  {card.faction}
-                </span>
-              </div>
-              <div className="text-xs text-comic-black/90 font-medium">
-                <FormattedCardText text={card.text} />
+            <div className="flex items-start gap-3">
+              <CardArtThumbnail cardCode={card.code} cardName={card.name} size="md" />
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-blue text-white rounded border border-comic-black">
+                    {card.type}
+                  </span>
+                  <span className="text-xs font-black uppercase px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black">
+                    {card.faction}
+                  </span>
+                </div>
+                <div className="text-xs text-comic-black/90 font-medium">
+                  <FormattedCardText text={card.text} />
+                </div>
               </div>
             </div>
 
@@ -517,18 +521,25 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       key={hCard.instanceId}
                       type="button"
                       onClick={() => toggleHandCard(hCard.instanceId)}
-                      className={`flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${
+                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected
                           ? 'bg-comic-yellow/30 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
                           : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
                       }`}
                     >
-                      <div className="space-y-0.5 pr-2">
-                        <div className="text-xs font-black text-comic-black line-clamp-1">
-                          {hCard.card.name}
-                        </div>
-                        <div className="text-[10px] font-bold text-comic-black/60 uppercase">
-                          {hCard.card.type} • {hCard.card.faction}
+                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
+                        <CardArtThumbnail
+                          cardCode={hCard.card.code}
+                          cardName={hCard.card.name}
+                          size="sm"
+                        />
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="text-xs font-black text-comic-black truncate">
+                            {hCard.card.name}
+                          </div>
+                          <div className="text-[10px] font-bold text-comic-black/60 uppercase truncate">
+                            {hCard.card.type} • {hCard.card.faction}
+                          </div>
                         </div>
                       </div>
 
@@ -565,19 +576,28 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       key={gen.id}
                       type="button"
                       onClick={() => toggleGenerator(gen.id)}
-                      className={`flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${
+                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
                         isSelected
                           ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
                           : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
                       }`}
                     >
-                      <div>
-                        <div className="text-xs font-black text-comic-black">{gen.name}</div>
-                        <div className="text-[10px] text-comic-black/60 font-bold uppercase">
-                          {gen.sublabel}
+                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
+                        <CardArtThumbnail
+                          cardCode={gen.id.split('_')[0]}
+                          cardName={gen.name}
+                          size="sm"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-comic-black truncate">
+                            {gen.name}
+                          </div>
+                          <div className="text-[10px] text-comic-black/60 font-bold uppercase truncate">
+                            {gen.sublabel}
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs font-black px-2 py-0.5 bg-comic-paper border border-comic-black rounded">
+                      <span className="text-xs font-black px-2 py-0.5 bg-comic-paper border border-comic-black rounded shrink-0">
                         +{gen.amount} {gen.resourceType ? gen.resourceType.toUpperCase() : 'RES'}
                       </span>
                     </button>

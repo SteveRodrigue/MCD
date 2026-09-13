@@ -264,6 +264,14 @@ export function dispatchTrigger(
           title: `Do you want to use the following ability from ${cardName}?`,
           description: formatAbilityStepsSummary(trigger, ability.steps || []),
           sourceCardName: cardName,
+          sourceCardCode: player.activeFormCard.code,
+          triggerSourceName:
+            context.encounterCardInstance?.card?.name ||
+            (context.targetType === 'villain' ? state.villain.card.name : undefined),
+          triggerSourceCode:
+            context.encounterCardInstance?.card?.code ||
+            (context.targetType === 'villain' ? state.villain.card.code : undefined),
+          triggerType: ability.timing,
           isVoluntary: true,
           options: [
             {
@@ -384,6 +392,14 @@ export function dispatchTrigger(
               title: `Do you want to use the following ability from ${cardName}?`,
               description: formatAbilityStepsSummary(trigger, ability.steps || []),
               sourceCardName: cardName,
+              sourceCardCode: cardInst.card.code,
+              triggerSourceName:
+                context.encounterCardInstance?.card?.name ||
+                (context.targetType === 'villain' ? state.villain.card.name : undefined),
+              triggerSourceCode:
+                context.encounterCardInstance?.card?.code ||
+                (context.targetType === 'villain' ? state.villain.card.code : undefined),
+              triggerType: ability.timing,
               isVoluntary: true,
               options: [
                 {
@@ -474,6 +490,14 @@ export function dispatchTrigger(
           title: `Do you want to use the following ability from ${cardName}?`,
           description: formatAbilityStepsSummary(trigger, ability.steps || []),
           sourceCardName: cardName,
+          sourceCardCode: interruptCard.card.code,
+          triggerSourceName:
+            context.encounterCardInstance?.card?.name ||
+            (context.targetType === 'villain' ? state.villain.card.name : undefined),
+          triggerSourceCode:
+            context.encounterCardInstance?.card?.code ||
+            (context.targetType === 'villain' ? state.villain.card.code : undefined),
+          triggerType: ability.timing,
           isVoluntary: true,
           options: [
             {
@@ -574,6 +598,11 @@ export function dispatchTrigger(
             title: `Do you want to use the following ability from ${cardName}?`,
             description: formatAbilityStepsSummary(trigger, ability.steps || []),
             sourceCardName: cardName,
+            sourceCardCode: interruptCard.card.code,
+            triggerSourceName:
+              context.encounterCardInstance?.card?.name || 'Main Scheme / Threat Placement',
+            triggerSourceCode: context.encounterCardInstance?.card?.code,
+            triggerType: ability.timing,
             isVoluntary: true,
             options: [
               {
@@ -658,6 +687,11 @@ export function dispatchTrigger(
           title: `Do you want to use the following ability from ${cardName}?`,
           description: formatAbilityStepsSummary(trigger, ability.steps || []),
           sourceCardName: cardName,
+          sourceCardCode: interruptCard.card.code,
+          triggerSourceName:
+            context.encounterCardInstance?.card?.name || 'Treachery / Encounter Card',
+          triggerSourceCode: context.encounterCardInstance?.card?.code,
+          triggerType: ability.timing,
           isVoluntary: true,
           options: [
             {

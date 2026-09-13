@@ -144,7 +144,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
       {/* Raw Attributes Quick Modal */}
       {showRawModal && (
         <div
-          className="fixed inset-0 bg-black/60 z-[10000] flex items-center justify-center p-4 backdrop-blur-xs"
+          className="fixed inset-0 bg-comic-black/80 z-[10000] flex items-center justify-center p-4 backdrop-blur-xs font-comic"
           onClick={() => {
             setShowRawModal(false);
             onClose();
@@ -152,25 +152,25 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
         >
           <div
             ref={modalRef}
-            className="bg-white border-4 border-black max-w-xl w-full p-4 rounded-lg shadow-comic-lg font-sans max-h-[85vh] flex flex-col select-text"
+            className="bg-comic-paper border-4 border-comic-black max-w-xl w-full rounded-xl shadow-comic-xl max-h-[85vh] flex flex-col overflow-hidden select-text"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b-2 border-black pb-2 mb-3">
-              <span className="font-bangers text-lg tracking-wide text-black truncate mr-2 select-text">
-                RAW ATTRIBUTES: {card.name} ({card.code})
+            <div className="flex items-center justify-between px-5 py-3 bg-comic-darkBlue text-white border-b-4 border-comic-black select-none">
+              <span className="font-comic text-lg uppercase tracking-wide text-comic-yellow truncate mr-2 select-text">
+                INSPECT CARD: {card.name} ({card.code})
               </span>
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={handleCopyJson}
-                  className="flex items-center gap-1.5 text-xs font-comic font-bold px-2.5 py-1 bg-slate-100 hover:bg-comic-yellow border-2 border-black rounded transition-colors cursor-pointer shadow-comic-sm"
+                  className="flex items-center gap-1.5 text-xs font-comic font-black px-2.5 py-1 bg-comic-yellow text-comic-black hover:bg-amber-300 border-2 border-comic-black rounded-lg transition-all cursor-pointer shadow-comic-sm"
                   title="Copy full card JSON to clipboard"
                 >
                   {copiedJson ? (
-                    <Check className="w-3.5 h-3.5 text-green-700 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
                   ) : (
-                    <Copy className="w-3.5 h-3.5 text-black shrink-0" />
+                    <Copy className="w-3.5 h-3.5 text-comic-black shrink-0" />
                   )}
                   <span>{copiedJson ? 'Copied JSON!' : 'Copy JSON'}</span>
                 </button>
@@ -179,17 +179,19 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
                     setShowRawModal(false);
                     onClose();
                   }}
-                  className="text-black font-bold p-1 hover:bg-slate-200 rounded cursor-pointer"
+                  className="text-white p-1 bg-comic-black hover:bg-slate-800 rounded-lg border border-white/20 cursor-pointer shadow-comic-sm"
                   title="Close"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <pre className="flex-1 bg-gray-950 text-green-400 font-mono text-xs p-3 rounded overflow-auto border border-black max-h-[60vh] select-text cursor-text">
-              {JSON.stringify(card, null, 2)}
-            </pre>
+            <div className="p-4 flex-1 overflow-auto bg-comic-paper">
+              <pre className="w-full bg-slate-950 text-emerald-400 font-mono text-xs p-3.5 rounded-lg border-2 border-comic-black overflow-auto max-h-[60vh] select-text cursor-text shadow-comic-sm">
+                {JSON.stringify(card, null, 2)}
+              </pre>
+            </div>
           </div>
         </div>
       )}

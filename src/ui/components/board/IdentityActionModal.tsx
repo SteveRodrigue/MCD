@@ -1,6 +1,7 @@
 import React from 'react';
-import { RefreshCw, Heart, Zap, Swords, Target, X } from 'lucide-react';
-import { PlayerState, GameState, GameAction } from '../../../engine/models';
+import { createPortal } from 'react-dom';
+import { RefreshCw, Heart, Zap, Swords, Target, X, Sparkles } from 'lucide-react';
+import { PlayerState, GameState, GameAction, HeroCard, AlterEgoCard } from '../../../engine/models';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -12,6 +13,7 @@ import {
   canInitiateAbility,
 } from '../../../engine/pipeline/legality-checker';
 import { getIdentityAttackState } from './identity-action-utils';
+import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 
 interface IdentityActionModalProps {
   isOpen: boolean;
@@ -58,7 +60,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   const canRecover =
     !isHero && isPlayerTurn && recoverCheck.allowed && player.health < effectiveMaxHealth;
 
-  // 3. Attack Check (Supports Guard Minions & Multi-Target)
+  // 3. Attack Check
   const attackState = getIdentityAttackState(player, gameState, effectiveStats.attack);
   const { canAttack, canAttackVillain, eligibleMinion } = attackState;
 
@@ -71,7 +73,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   );
   const canThwart = isHero && isPlayerTurn && (canThwartMain || !!eligibleSideScheme);
 
-  // 5. Identity Abilities (e.g. Tony Stark Futurist, Carol Danvers Rechannel, Peter Parker Scientist)
+  // 5. Identity Abilities
   const idAbilities = player.activeFormCard.enrichment?.abilities || [];
   const actionableAbilities = idAbilities.filter(
     (ab) =>
@@ -80,86 +82,121 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
       (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
   );
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md bg-[#fbf7ee] text-slate-900 border-4 border-slate-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-sm overflow-hidden flex flex-col font-serif">
-        {/* Header Banner */}
-        <div className="bg-[#f4ebd9] border-b-2 border-slate-900 p-3 relative select-none">
-          <button
-            onClick={onClose}
-            className="absolute top-2 right-2 p-1 bg-slate-900 text-white hover:bg-comic-red rounded border-2 border-slate-950 shadow-comic-sm transition-all cursor-pointer z-10 flex items-center justify-center"
-            title="Cancel & Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
+        {/* Comic dots pattern */}
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(#000 2px, transparent 2px)',
+            backgroundSize: '12px 12px',
+          }}
+        />
 
-          <div className="flex justify-between items-center text-[10px] uppercase tracking-widest text-slate-700 font-bold border-b border-slate-800 pb-1 mb-1 pr-8">
-            <span>IDENTITY ACTIONS</span>
-            <span
-              className={`font-comic font-black px-1.5 py-0.2 rounded border border-slate-900 uppercase text-[9px] ${
-                isHero ? 'bg-comic-red text-white' : 'bg-amber-300 text-slate-950'
-              }`}
-            >
-              {isHero ? 'HERO FORM' : 'ALTER-EGO FORM'}
-            </span>
-          </div>
-
-          <div className="text-center py-1">
-            <h2 className="text-2xl font-black uppercase tracking-tight font-serif text-slate-950 leading-none">
-              {player.activeFormCard.name}
-            </h2>
-            <p className="text-[11px] italic text-slate-700 font-serif mt-0.5">
-              Choose an available action for this character:
-            </p>
-          </div>
-        </div>
-
-        {/* Action Options List */}
-        <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto divide-y divide-slate-300">
-          {/* 1. Alter-Ego Recover Action */}
-          {!isHero && (
-            <div className="pt-2 first:pt-0">
-              <button
-                disabled={!canRecover}
-                onClick={() => {
-                  onDispatchAction?.({ type: 'BASIC_RECOVER', playerId: player.id });
-                  onClose();
-                }}
-                className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
-                  canRecover
-                    ? 'bg-emerald-100 hover:bg-emerald-200 cursor-pointer hover:shadow-md'
-                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+        {/* 1. Header Banner */}
+        <div
+          className={`relative px-5 py-3.5 border-b-4 border-comic-black flex items-center justify-between select-none ${
+            isHero ? 'bg-comic-red text-white' : 'bg-comic-yellow text-comic-black'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <CardArtThumbnail
+              cardCode={player.activeFormCard.code}
+              cardName={player.activeFormCard.name}
+              size="sm"
+            />
+            <div>
+              <div
+                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-wider ${
+                  isHero ? 'text-comic-yellow' : 'text-slate-800'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`p-1.5 rounded-full border border-slate-900 ${canRecover ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-500'}`}
-                  >
-                    <Heart className="w-4 h-4 fill-current" />
-                  </div>
-                  <div>
-                    <span className="font-comic font-bold text-xs block text-slate-950">
-                      Recover (+{effectiveStats.recovery} HP)
-                    </span>
-                    <span className="text-[10px] text-slate-600 block">
-                      {player.health >= effectiveMaxHealth
-                        ? `Already at maximum health (${player.health} / ${effectiveMaxHealth} HP)`
-                        : player.exhausted
-                          ? 'Identity is exhausted'
-                          : `Exhaust ${player.activeFormCard.name} to heal from ${player.health} to ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`}
-                    </span>
-                  </div>
-                </div>
-                <span
-                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canRecover ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}
-                >
-                  REC: {effectiveStats.recovery}
-                </span>
-              </button>
+                <span>{isHero ? 'HERO IDENTITY' : 'ALTER-EGO IDENTITY'}</span>
+                {player.exhausted && (
+                  <span className="bg-comic-black text-white px-1.5 py-0.2 rounded text-[9px]">
+                    EXHAUSTED
+                  </span>
+                )}
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-tight leading-none drop-shadow-xs">
+                {player.activeFormCard.name}
+              </h2>
             </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 bg-comic-black hover:bg-slate-800 text-white rounded-lg border-2 border-white/40 shadow-comic-sm transition-transform active:scale-95 cursor-pointer"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* 2. Character Overview Banner */}
+        <div className="relative px-5 py-2 bg-amber-100 border-b-2 border-comic-black flex items-center justify-between text-slate-900 text-xs font-bold">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-comic-red" />
+            <span>
+              Health: {player.health} / {effectiveMaxHealth} HP
+            </span>
+          </div>
+          <span className="font-mono text-[10px] px-2 py-0.5 bg-comic-black text-comic-yellow rounded">
+            HAND SIZE:{' '}
+            {(player.activeFormCard as unknown as HeroCard | AlterEgoCard).handSize ??
+              (isHero ? 5 : 6)}
+          </span>
+        </div>
+
+        {/* 3. Action Options List */}
+        <div className="p-4 space-y-2.5 max-h-[60vh] overflow-y-auto">
+          {/* Alter-Ego Recover Action */}
+          {!isHero && (
+            <button
+              disabled={!canRecover}
+              onClick={() => {
+                onDispatchAction?.({ type: 'BASIC_RECOVER', playerId: player.id });
+                onClose();
+              }}
+              className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
+                canRecover
+                  ? 'bg-emerald-100 hover:bg-emerald-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                  : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className={`p-1.5 rounded-full border border-comic-black ${
+                    canRecover ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-500'
+                  }`}
+                >
+                  <Heart className="w-4 h-4 fill-current" />
+                </div>
+                <div>
+                  <span className="font-comic font-black text-xs block text-slate-950">
+                    Recover (+{effectiveStats.recovery} HP)
+                  </span>
+                  <span className="text-[10px] text-slate-600 block">
+                    {player.health >= effectiveMaxHealth
+                      ? `Already at maximum health (${player.health} / ${effectiveMaxHealth} HP)`
+                      : player.exhausted
+                        ? 'Identity is exhausted'
+                        : `Exhaust ${player.activeFormCard.name} to heal from ${player.health} to ${Math.min(effectiveMaxHealth, player.health + effectiveStats.recovery)} HP`}
+                  </span>
+                </div>
+              </div>
+              <span
+                className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
+                  canRecover ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
+                } shrink-0`}
+              >
+                REC: {effectiveStats.recovery}
+              </span>
+            </button>
           )}
 
-          {/* 2. Identity Special Abilities (e.g. Tony Stark Futurist) */}
+          {/* Identity Special Abilities */}
           {actionableAbilities.map((ab) => {
             const abilityKey = ab.id;
             const alreadyUsed = (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1;
@@ -169,224 +206,234 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             const canTrigger = isPlayerTurn && !alreadyUsed && costCheck.allowed;
 
             return (
-              <div key={ab.id} className="pt-2 first:pt-0">
-                <button
-                  disabled={!canTrigger}
-                  onClick={() => {
-                    onDispatchAction?.({
-                      type: 'USE_CARD_ABILITY',
-                      playerId: player.id,
-                      cardInstanceId: player.activeFormCard.code,
-                      abilityId: ab.id,
-                    });
-                    onClose();
-                  }}
-                  className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
-                    canTrigger
-                      ? 'bg-amber-100 hover:bg-amber-200 cursor-pointer hover:shadow-md'
-                      : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`p-1.5 rounded-full border border-slate-900 ${canTrigger ? 'bg-amber-400 text-slate-950' : 'bg-slate-300 text-slate-500'}`}
-                    >
-                      <Zap className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-comic font-bold text-xs block text-slate-950">
-                        {ab.id.replace(/_/g, ' ').toUpperCase()}
-                      </span>
-                      <span className="text-[10px] text-slate-600 block">
-                        {alreadyUsed
-                          ? 'Already used this round (Limit: once per round)'
-                          : ab.steps?.[0]?.params?.description
-                            ? String(ab.steps[0].params.description)
-                            : ab.id === 'futurist'
-                              ? 'Look at top 3 cards of deck, add 1 Tech card to hand, discard rest.'
-                              : `Trigger ${player.activeFormCard.name}'s special ability`}
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canTrigger ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}
+              <button
+                key={ab.id}
+                disabled={!canTrigger}
+                onClick={() => {
+                  onDispatchAction?.({
+                    type: 'USE_CARD_ABILITY',
+                    playerId: player.id,
+                    cardInstanceId: player.activeFormCard.code,
+                    abilityId: ab.id,
+                  });
+                  onClose();
+                }}
+                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
+                  canTrigger
+                    ? 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`p-1.5 rounded-full border border-comic-black ${
+                      canTrigger
+                        ? 'bg-comic-yellow text-comic-black'
+                        : 'bg-slate-300 text-slate-500'
+                    }`}
                   >
-                    ACTION
-                  </span>
-                </button>
-              </div>
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-comic font-black text-xs block text-slate-950">
+                      {ab.id.replace(/_/g, ' ').toUpperCase()}
+                    </span>
+                    <span className="text-[10px] text-slate-600 block">
+                      {alreadyUsed
+                        ? 'Already used this round (Limit: once per round)'
+                        : ab.steps?.[0]?.params?.description
+                          ? String(ab.steps[0].params.description)
+                          : ab.id === 'futurist'
+                            ? 'Look at top 3 cards of deck, add 1 Tech card to hand, discard rest.'
+                            : `Trigger ${player.activeFormCard.name}'s special ability`}
+                    </span>
+                  </div>
+                </div>
+                <span
+                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
+                    canTrigger ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
+                  } shrink-0`}
+                >
+                  ACTION
+                </span>
+              </button>
             );
           })}
 
-          {/* 3. Hero Basic Attack & Thwart */}
+          {/* Hero Basic Attack & Thwart */}
           {isHero && (
             <>
               {/* Hero Strike */}
-              <div className="pt-2 first:pt-0">
-                <button
-                  disabled={!canAttack}
-                  onClick={() => {
-                    onClose();
-                    if (onInitiateHeroAttack) {
-                      onInitiateHeroAttack();
-                    } else if (canAttackVillain) {
-                      onDispatchAction?.({
-                        type: 'BASIC_ATTACK',
-                        playerId: player.id,
-                        targetType: 'villain',
-                      });
-                    } else if (eligibleMinion?.instanceId) {
-                      onDispatchAction?.({
-                        type: 'BASIC_ATTACK',
-                        playerId: player.id,
-                        targetType: 'minion',
-                        targetInstanceId: eligibleMinion.instanceId,
-                      });
-                    }
-                  }}
-                  className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
-                    canAttack
-                      ? 'bg-rose-100 hover:bg-rose-200 cursor-pointer hover:shadow-md'
-                      : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`p-1.5 rounded-full border border-slate-900 ${canAttack ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-500'}`}
-                    >
-                      <Swords className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-comic font-bold text-xs block text-slate-950">
-                        Attack ({effectiveStats.attack} DMG)
-                      </span>
-                      <span className="text-[10px] text-slate-600 block">
-                        {attackState.subtext}
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canAttack ? 'bg-slate-900 text-rose-300' : 'bg-slate-300 text-slate-500'} shrink-0`}
+              <button
+                disabled={!canAttack}
+                onClick={() => {
+                  onClose();
+                  if (onInitiateHeroAttack) {
+                    onInitiateHeroAttack();
+                  } else if (canAttackVillain) {
+                    onDispatchAction?.({
+                      type: 'BASIC_ATTACK',
+                      playerId: player.id,
+                      targetType: 'villain',
+                    });
+                  } else if (eligibleMinion?.instanceId) {
+                    onDispatchAction?.({
+                      type: 'BASIC_ATTACK',
+                      playerId: player.id,
+                      targetType: 'minion',
+                      targetInstanceId: eligibleMinion.instanceId,
+                    });
+                  }
+                }}
+                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
+                  canAttack
+                    ? 'bg-rose-100 hover:bg-rose-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`p-1.5 rounded-full border border-comic-black ${
+                      canAttack ? 'bg-comic-red text-white' : 'bg-slate-300 text-slate-500'
+                    }`}
                   >
-                    {effectiveStats.attack} ATK
-                  </span>
-                </button>
-              </div>
+                    <Swords className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-comic font-black text-xs block text-slate-950">
+                      Attack ({effectiveStats.attack} DMG)
+                    </span>
+                    <span className="text-[10px] text-slate-600 block">{attackState.subtext}</span>
+                  </div>
+                </div>
+                <span
+                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
+                    canAttack ? 'bg-comic-black text-rose-300' : 'bg-slate-300 text-slate-500'
+                  } shrink-0`}
+                >
+                  {effectiveStats.attack} ATK
+                </span>
+              </button>
 
               {/* Hero Thwart */}
-              <div className="pt-2">
-                <button
-                  disabled={!canThwart}
-                  onClick={() => {
-                    onClose();
-                    if (onInitiateHeroThwart) {
-                      onInitiateHeroThwart();
-                    } else if (canThwartMain) {
-                      onDispatchAction?.({
-                        type: 'BASIC_THWART',
-                        playerId: player.id,
-                        targetType: 'main_scheme',
-                      });
-                    } else if (eligibleSideScheme) {
-                      onDispatchAction?.({
-                        type: 'BASIC_THWART',
-                        playerId: player.id,
-                        targetType: 'side_scheme',
-                        targetInstanceId: eligibleSideScheme.instanceId,
-                      });
-                    }
-                  }}
-                  className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
-                    canThwart
-                      ? 'bg-sky-100 hover:bg-sky-200 cursor-pointer hover:shadow-md'
-                      : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`p-1.5 rounded-full border border-slate-900 ${canThwart ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-500'}`}
-                    >
-                      <Target className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-comic font-bold text-xs block text-slate-950">
-                        Thwart ({effectiveStats.thwart} THW)
-                      </span>
-                      <span className="text-[10px] text-slate-600 block">
-                        {player.exhausted
-                          ? 'Hero is exhausted'
-                          : !canThwart
-                            ? 'No threat on schemes (Target not valid)'
-                            : canThwartMain
-                              ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
-                              : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`}
-                      </span>
-                    </div>
-                  </div>
-                  <span
-                    className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canThwart ? 'bg-slate-900 text-sky-300' : 'bg-slate-300 text-slate-500'} shrink-0`}
+              <button
+                disabled={!canThwart}
+                onClick={() => {
+                  onClose();
+                  if (onInitiateHeroThwart) {
+                    onInitiateHeroThwart();
+                  } else if (canThwartMain) {
+                    onDispatchAction?.({
+                      type: 'BASIC_THWART',
+                      playerId: player.id,
+                      targetType: 'main_scheme',
+                    });
+                  } else if (eligibleSideScheme) {
+                    onDispatchAction?.({
+                      type: 'BASIC_THWART',
+                      playerId: player.id,
+                      targetType: 'side_scheme',
+                      targetInstanceId: eligibleSideScheme.instanceId,
+                    });
+                  }
+                }}
+                className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
+                  canThwart
+                    ? 'bg-sky-100 hover:bg-sky-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                    : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`p-1.5 rounded-full border border-comic-black ${
+                      canThwart ? 'bg-sky-500 text-white' : 'bg-slate-300 text-slate-500'
+                    }`}
                   >
-                    {effectiveStats.thwart} THW
-                  </span>
-                </button>
-              </div>
+                    <Target className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-comic font-black text-xs block text-slate-950">
+                      Thwart ({effectiveStats.thwart} THW)
+                    </span>
+                    <span className="text-[10px] text-slate-600 block">
+                      {player.exhausted
+                        ? 'Hero is exhausted'
+                        : !canThwart
+                          ? 'No threat on schemes (Target not valid)'
+                          : canThwartMain
+                            ? `Exhaust to remove ${effectiveStats.thwart} threat from main scheme`
+                            : `Exhaust to remove ${effectiveStats.thwart} threat from ${eligibleSideScheme?.card.name}`}
+                    </span>
+                  </div>
+                </div>
+                <span
+                  className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
+                    canThwart ? 'bg-comic-black text-sky-300' : 'bg-slate-300 text-slate-500'
+                  } shrink-0`}
+                >
+                  {effectiveStats.thwart} THW
+                </span>
+              </button>
             </>
           )}
 
-          {/* 4. Change Form / Flip */}
-          <div className="pt-2">
-            <button
-              disabled={!canFlip}
-              onClick={() => {
-                onDispatchAction?.({ type: 'CHANGE_FORM', playerId: player.id });
-                onClose();
-              }}
-              className={`w-full text-left p-2.5 rounded border-2 border-slate-900 transition-all flex items-center justify-between gap-2 shadow-sm ${
-                canFlip
-                  ? isHero
-                    ? 'bg-amber-100 hover:bg-amber-200 cursor-pointer'
-                    : 'bg-comic-red/20 hover:bg-comic-red/30 cursor-pointer'
-                  : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={`p-1.5 rounded-full border border-slate-900 ${canFlip ? 'bg-slate-900 text-white' : 'bg-slate-300 text-slate-500'}`}
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="font-comic font-bold text-xs block text-slate-950">
-                    {isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)'}
-                  </span>
-                  <span className="text-[10px] text-slate-600 block">
-                    {!flipCheck.allowed
-                      ? 'Already changed form this round (Limit: once per round)'
-                      : 'Change identity form'}
-                  </span>
-                </div>
-              </div>
-              <span
-                className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded ${canFlip ? 'bg-slate-900 text-amber-300' : 'bg-slate-300 text-slate-500'} shrink-0`}
+          {/* Change Form / Flip */}
+          <button
+            disabled={!canFlip}
+            onClick={() => {
+              onDispatchAction?.({ type: 'CHANGE_FORM', playerId: player.id });
+              onClose();
+            }}
+            className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
+              canFlip
+                ? isHero
+                  ? 'bg-amber-100 hover:bg-comic-yellow cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                  : 'bg-comic-red/20 hover:bg-comic-red/30 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <div
+                className={`p-1.5 rounded-full border border-comic-black ${
+                  canFlip ? 'bg-comic-black text-white' : 'bg-slate-300 text-slate-500'
+                }`}
               >
-                1 / ROUND
-              </span>
-            </button>
-          </div>
+                <RefreshCw className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-comic font-black text-xs block text-slate-950">
+                  {isHero ? 'Flip to Alter-Ego' : 'Suit Up (Hero Form)'}
+                </span>
+                <span className="text-[10px] text-slate-600 block">
+                  {!flipCheck.allowed
+                    ? 'Already changed form this round (Limit: once per round)'
+                    : 'Change identity form'}
+                </span>
+              </div>
+            </div>
+            <span
+              className={`font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-comic-black ${
+                canFlip ? 'bg-comic-black text-amber-300' : 'bg-slate-300 text-slate-500'
+              } shrink-0`}
+            >
+              1 / ROUND
+            </span>
+          </button>
         </div>
 
-        {/* Bottom Back / Cancel Action Bar */}
-        <div className="p-3 bg-[#f4ebd9] border-t-2 border-slate-900 flex justify-end">
+        {/* 4. Footer */}
+        <div className="p-3 bg-comic-paper border-t-2 border-comic-black flex justify-end">
           <button
             onClick={onClose}
-            className="bg-slate-900 hover:bg-slate-800 text-white font-comic text-xs px-4 py-2 rounded border-2 border-slate-950 shadow-comic-sm active:translate-y-0.5 font-bold cursor-pointer uppercase flex items-center gap-1.5"
+            className="bg-comic-black hover:bg-slate-800 text-white font-comic text-xs px-4 py-2 rounded-lg border-2 border-comic-black shadow-comic-sm active:translate-y-0.5 font-bold cursor-pointer uppercase flex items-center gap-1.5"
           >
             <X className="w-3.5 h-3.5" />
-            <span>Back / Cancel</span>
+            <span>Cancel</span>
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

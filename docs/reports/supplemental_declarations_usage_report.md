@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-14T11:19:55.354Z`  
+> **Generated:** `2026-09-14T11:34:29.838Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -49,7 +49,7 @@ These **10 cards** have been audited and explicitly verified as `"noSupplemental
 | `01094` | **Rhino** | `villain` | `encounter` | `core_encounter` | VILLAIN: Rhino |
 | `01097a` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | MAIN_SCHEME: The Break-In! |
 | `01097b` | **The Break-In!** | `main_scheme` | `encounter` | `core_encounter` | MAIN_SCHEME: The Break-In! |
-| `01156` | **Usurp The Throne** | `side_scheme` | `encounter` | `core_encounter` | Vanilla card (no printed abilities). |
+| `01156` | **Usurp The Throne** | `side_scheme` | `encounter` | `core_encounter` | No abilities required (Vanilla / Base Stats / Standard Resource) |
 | `01167` | **Vulture** | `minion` | `encounter` | `core_encounter` | Minion: Vulture. Printed Quickstrike keyword is natively handled by engine. |
 
 ---

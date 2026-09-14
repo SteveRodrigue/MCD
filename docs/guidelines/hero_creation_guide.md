@@ -117,11 +117,8 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
       "reviewedBy": "creator",
       "rulesVersion": "v1.8",
       "confidence": 98,
-      "reconstructedText": "INTERRUPT (ATTACK while defending) -> DEAL_DAMAGE (amount: 1)"
-    },
-    "mechanicSteps": [
-      "When Daredevil defends against an attack, deal 1 damage to the attacker."
-    ]
+      "originalText": "Interrupt: When Daredevil defends against an attack, deal 1 damage to the attacker."
+    }
   },
   "custom_001b": {
     "comment": "ALTER-EGO: Matt Murdock. Exhaust to remove 1 threat.",
@@ -150,11 +147,8 @@ The identity consists of two card entries sharing the same base code (`<code>a` 
       "reviewedBy": "creator",
       "rulesVersion": "v1.8",
       "confidence": 98,
-      "reconstructedText": "ALTER_EGO_ACTION: Exhaust -> REMOVE_THREAT (amount: 1)"
-    },
-    "mechanicSteps": [
-      "Exhaust Matt Murdock to remove 1 threat from a scheme."
-    ]
+      "originalText": "Action: Exhaust Matt Murdock -> remove 1 threat from a scheme."
+    }
   }
 }
 ```

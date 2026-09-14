@@ -117,7 +117,6 @@ export function writeSupplementalCard(
     rulesVersion: 'v1.8',
     confidence,
     originalText: originalText || existingCard.audit?.originalText || '',
-    reconstructedText: existingCard.audit?.reconstructedText || undefined,
   };
 
   const updatedEntry: CardEnrichment = {

@@ -184,7 +184,7 @@ export interface CardAuditMetadata {
   reviewedBy?: string;
   rulesVersion?: string;
   confidence?: number;
-  reconstructedText?: string;
+  originalText?: string;
   ambiguityFile?: string;
 }
 
@@ -194,7 +194,6 @@ export interface CardEnrichment {
   comment?: string;
   playRequirements?: PlayRequirements;
   audit?: CardAuditMetadata;
-  mechanicSteps?: string[];
   isLandscape?: boolean;
   attackCost?: number;
   thwartCost?: number;

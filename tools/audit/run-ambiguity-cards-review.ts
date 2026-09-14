@@ -45,7 +45,7 @@ export function reviewAllAmbiguityCards() {
   let isolatedCount = 0;
 
   // Known cards with complete engine implementations
-  const implementedCards: Record<string, { abilities: any[]; reconstructedText: string }> = {
+  const implementedCards: Record<string, { abilities: any[] }> = {
     '01055': {
       abilities: [
         {
@@ -57,7 +57,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'RESOURCE -> Double resources when paying for an Aggression (red) card.',
     },
     '01062': {
       abilities: [
@@ -70,7 +69,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'RESOURCE -> Double resources when paying for a Justice (yellow) card.',
     },
     '01071': {
       abilities: [
@@ -83,8 +81,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText:
-        'ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control.',
     },
     '01072': {
       abilities: [
@@ -97,7 +93,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'RESOURCE -> Double resources when paying for a Leadership (blue) card.',
     },
     '01079': {
       abilities: [
@@ -110,7 +105,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'RESOURCE -> Double resources when paying for a Protection (green) card.',
     },
     '01081': {
       abilities: [
@@ -124,7 +118,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText: 'CONSTANT -> MODIFY_STAT (DEFENSE +1)',
     },
     '01082': {
       abilities: [
@@ -141,8 +134,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText:
-        'HERO_INTERRUPT (Trigger: HERO_DEFENDED_ATTACK) [Cost: Discard this card] -> READY_CHARACTER (target: SELF)',
     },
     '01092': {
       abilities: [
@@ -159,8 +150,6 @@ export function reviewAllAmbiguityCards() {
           },
         },
       ],
-      reconstructedText:
-        'ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1.',
     },
   };
 
@@ -175,7 +164,6 @@ export function reviewAllAmbiguityCards() {
         reviewedBy: 'antigravity',
         rulesVersion: 'v1.8',
         confidence: 98,
-        reconstructedText: imp.reconstructedText,
       };
       delete coreCards[code].audit.ambiguityFile;
     }

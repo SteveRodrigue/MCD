@@ -99,7 +99,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 - **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md).
 - **DEDUCTIVE SCHEMA MODELING:** If a card's mechanics match a documented schema in `docs/specifications/supplemental/`, translate the card strictly using that documented structure. If no documented schema exists or if it is marked 🟡 `ROADMAP`, the card requires specification refinement or engine addition.
-- **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `mechanicSteps` and `comment` are human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
+- **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `comment` is human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 - **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   - **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
   - ❌ _Anti-Patterns (Prohibited):_ `HYDRA_BOMBER_CHOICE`, `NICK_FURY_CHOICE`, `PEPPER_POTTS_RESOURCE`, `BLACK_CAT_SEARCH`.
@@ -119,16 +119,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     "reviewedBy": "antigravity",
     "rulesVersion": "v1.8",
     "confidence": 98,
-    "originalText": "<Exact printed card text from upstream/printed card>",
-    "reconstructedText": "<Proof-of-work: Decompiled text derived 100% from abilities array>"
+    "originalText": "<Exact printed card text from upstream/printed card>"
   },
-  "mechanicSteps": [
-    "Trigger: <Timing & Trigger event>",
-    "Step 1: <Inspection/Cost>",
-    "Step 2: <Filter/Targeting>",
-    "Step 3: <Resolution/State Change>",
-    "Step 4: <Cleanup/Destination>"
-  ],
   "abilities": [
     {
       "id": "<card_name_ability_slug>",
@@ -169,7 +161,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ### Step 5: Bidirectional Round-Trip Validation & Specification-Tied Confidence
 
 - **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, and `steps: [{ effect, params, gate }]` pipeline) and decompile it into natural card text.
-  - **Strict Rule:** Do **NOT** read `comment` or `mechanicSteps` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
+  - **Strict Rule:** Do **NOT** read `comment` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
 - **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
   - Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   - Can the schema express every clause of the printed card text without semantic loss?
@@ -189,7 +181,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   - **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 - **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
 - **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3 or Tier 3 Gate):**
-  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY `comment`, `audit` (with `ambiguityFile` path and `reconstructedText`), and `mechanicSteps`. This prevents the engine from attempting to execute unsupported logic.
+  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY `comment` and `audit` (with `ambiguityFile` path). This prevents the engine from attempting to execute unsupported logic.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md` with clear, exhaustive reasoning detailing:
      - Exact printed text and intended mechanics.
      - Specific lines of code in `src/engine/effects/` or `src/engine/pipeline/` that are missing or incomplete.
@@ -229,14 +221,13 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
    - If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:47"`).
    - If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
    - If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
-2. **Populate `mechanicSteps`:** Ensure `mechanicSteps` is populated in the JSON schema.
-3. **Synchronous Specification Feedback Loop:**
+2. **Synchronous Specification Feedback Loop:**
    - Whenever an engine primitive, trigger, or parameter is implemented or refactored:
      1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
      2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
-4. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
-5. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
-6. **Regenerate Usage Audit & Verification:** **ALWAYS** run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md) with up-to-date integration metrics, sequence telemetry, and pruned ambiguity counts. Run full verification suite: `npm test; npm run typecheck; npm run build`.
+3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
+4. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
+5. **Regenerate Usage Audit & Verification:** **ALWAYS** run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md) with up-to-date integration metrics, sequence telemetry, and pruned ambiguity counts. Run full verification suite: `npm test; npm run typecheck; npm run build`.
 
 ---
 

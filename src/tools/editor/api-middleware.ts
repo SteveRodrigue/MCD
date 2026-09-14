@@ -214,7 +214,7 @@ export class CardSupplementalService {
         }
         if (filters.status === 'missing_audit') {
           const audit = supplemental?.audit;
-          if (audit?.originalText && audit?.reconstructedText) continue;
+          if (audit?.originalText) continue;
         }
       }
 

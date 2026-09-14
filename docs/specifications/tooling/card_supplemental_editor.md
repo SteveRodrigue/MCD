@@ -203,7 +203,7 @@ The Editor is organized into a 3-column split view:
 1. **Form Builder Mode:**
    - Dropdown selectors for `timing` (`TimingTypeSchema`), `trigger` (`TriggerTypeSchema`), and `effect` primitives.
    - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`).
-   - Audit trail metadata fields (`confidence`, `reviewedBy`, `originalText`, `reconstructedText`).
+   - Audit trail metadata fields (`confidence`, `reviewedBy`, `originalText`).
 2. **Raw JSON Mode:**
    - Embedded interactive JSON editor with syntax highlighting and live error underlines.
    - Real-time Zod validation badges indicating exact JSONPath error locations.

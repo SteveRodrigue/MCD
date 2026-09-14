@@ -400,7 +400,7 @@ flowchart TD
 - [x] **3.7 — Execute Migration on `core.json`:** Migrated `core.json` first with reviewed deterministic diffs; active catalog restored.
 - [x] **3.8 — Execute Migration on `core_encounter.json`:** Migrated `core_encounter.json` after the core pack passed declaration validation; active catalog restored.
 - [x] **3.9 — Re-run Zod Validation:** `npm run report:declarations` passed after both writes with zero open ambiguities.
-- [x] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** Regenerated affected `reconstructedText` fields mechanically; `originalText` and audit metadata were preserved.
+- [x] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** Regenerated affected `reconstructedText` fields mechanically; `originalText` and audit metadata were preserved. *(Note: `reconstructedText` subsequently decommissioned by ADR-0059).*
 - [x] **3.11 — Quality Gate:** `npm run typecheck && npm test` passed on 2026-09-13. Full suite: 113 files passed, 822 tests passed, 1 existing test skipped.
 
 **Phase 3 execution status:** Active catalog migration is complete. Repulsor Blast, Hulk, and Explosion are fully re-integrated with active declarations, robust contract tests, and zero remaining quarantined cards.
@@ -473,7 +473,7 @@ flowchart TD
 **Goal:** One last end-to-end pass confirming the entire migration is internally consistent before declaring the taxonomy work complete.
 
 - [x] **8.1 — Full Quality Gate Run:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
-- [x] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across active `src/`, `tests/`, `docs/`, and `tools/` paths to confirm zero remaining references outside historical ADR/report tables. The preserved audit `reconstructedText` for deferred cards 01031 and 01050 is an explicit post-Phase-8 re-integration exception.
+- [x] **8.2 — Grep Sweep for Stray Legacy Names:** Run a repo-wide search for every retired identifier from Sections 1.1–1.3 across active `src/`, `tests/`, `docs/`, and `tools/` paths to confirm zero remaining references outside historical ADR/report tables. *(Note: `reconstructedText` was decommissioned across the entire repo under ADR-0059 / Issue #121).*
 - [x] **8.3 — Manual Playtest Smoke Check:** Launch `npm run dev`, play a short Rhino scenario turn exercising at least one migrated card from each category (a `SEARCH`-based upgrade, a status-inflicting card, a defeated-trigger card) to confirm end-to-end UI behavior.
 - [x] **8.4 — Update `docs/roadmap_and_milestones.md`:** Mark the taxonomy consolidation milestone complete.
 - [x] **8.5 — Close Tracking Issues:** Close the GitHub issue(s) filed for this work with a summary comment referencing ADR-0058 and this report.

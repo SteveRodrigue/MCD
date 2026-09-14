@@ -39,16 +39,6 @@ const TARGET_RENAMES: Record<string, string> = {
   SIDE_SCHEME: 'CHOSEN_SIDE_SCHEME',
 };
 
-const RECONSTRUCTED_RENAMES: Record<string, string> = {
-  ...TRIGGER_RENAMES,
-  ...EFFECT_RENAMES,
-  ADD_THREAT_PER_PLAYER: 'ADD_THREAT (perPlayer: true)',
-  WHEN_REVEALED_THREAT_PER_PLAYER: 'ADD_THREAT (perPlayer: true)',
-  DEAL_DAMAGE_ALL_ENEMIES: 'DEAL_DAMAGE (target: ALL_ENEMIES)',
-  BUFF_ALL_FRIENDLY_CHARACTERS: 'MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS)',
-  SHUFFLE_DISCARD_INTO_DECK: 'SHUFFLE_INTO_DECK',
-};
-
 interface Change {
   path: string;
   before: unknown;
@@ -69,30 +59,6 @@ interface TransformResult {
 
 function renameString(value: unknown, map: Record<string, string>): unknown {
   return typeof value === 'string' ? map[value] || value : value;
-}
-
-function renameText(value: unknown): unknown {
-  if (typeof value !== 'string') return value;
-  let result = value;
-  for (const [legacy, canonical] of Object.entries(RECONSTRUCTED_RENAMES).sort(
-    ([left], [right]) => right.length - left.length,
-  )) {
-    result = result.replace(new RegExp(`\\b${legacy}\\b`, 'g'), canonical);
-  }
-  result = result.replace(
-    /ADD_THREAT \(perPlayer: true\) \(([^)]+)\)/g,
-    'ADD_THREAT ($1, perPlayer: true)',
-  );
-  result = result.replace(
-    /DEAL_DAMAGE \(target: ALL_ENEMIES\) \(([^)]+)\)/g,
-    'DEAL_DAMAGE (target: ALL_ENEMIES, $1)',
-  );
-  result = result.replace(
-    /MODIFY_STAT \(target: ALL_FRIENDLY_CHARACTERS\) \(([^)]+)\)/g,
-    'MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS, $1)',
-  );
-  result = result.replace(/amountPerPlayer: (\d+)/g, 'amount: $1');
-  return result;
 }
 
 function clone(value: any): any {
@@ -322,17 +288,6 @@ function transformAbility(
     );
   }
 
-  if (ability.audit?.reconstructedText) {
-    const renamedText = renameText(ability.audit.reconstructedText);
-    if (renamedText !== ability.audit.reconstructedText) {
-      changes.push({
-        path: `${abilityPath}.audit.reconstructedText`,
-        before: ability.audit.reconstructedText,
-        after: renamedText,
-      });
-      ability.audit.reconstructedText = renamedText;
-    }
-  }
   return ability;
 }
 
@@ -344,17 +299,6 @@ function transformPack(content: any, fileName: string): TransformResult {
 
   for (const [code, card] of Object.entries(cards) as [string, any][]) {
     const cardChangesStart = changes.length;
-    if (card.audit?.reconstructedText) {
-      const renamedText = renameText(card.audit.reconstructedText);
-      if (renamedText !== card.audit.reconstructedText) {
-        changes.push({
-          path: `${fileName}.cards.${code}.audit.reconstructedText`,
-          before: card.audit.reconstructedText,
-          after: renamedText,
-        });
-        card.audit.reconstructedText = renamedText;
-      }
-    }
     if (Array.isArray(card.abilities)) {
       card.abilities = card.abilities.map((ability: any, index: number) =>
         transformAbility(

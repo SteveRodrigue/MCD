@@ -176,4 +176,34 @@ describe('DynamicValueBuilder Interactive UI Component', () => {
       }),
     );
   });
+
+  it('configures DISCARDED_CARDS formula subfields', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <DynamicValueBuilder
+        label="Bonus Damage"
+        value={{
+          from: 'DISCARDED_CARDS',
+          discardAttribute: 'RESOURCE_ICONS',
+          resourceType: 'energy',
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    expect(screen.getByTestId('dynamic-value-discard-attribute-select')).toBeDefined();
+    expect(screen.getByTestId('dynamic-value-resource-type-select')).toBeDefined();
+
+    const attrSelect = screen.getByTestId('dynamic-value-discard-attribute-select');
+    await user.selectOptions(attrSelect, 'COUNT');
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'DISCARDED_CARDS',
+        discardAttribute: 'COUNT',
+      }),
+    );
+  });
 });

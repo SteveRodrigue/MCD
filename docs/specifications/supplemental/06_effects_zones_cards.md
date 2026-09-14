@@ -112,6 +112,34 @@
 
 - **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
 
+#### 🔄 Downstream Resolution: `DISCARDED_CARDS` Dynamic Value Evaluation
+
+Cards that inspect cards discarded in a preceding step (*"for each ... discarded this way"*) resolve dynamically via `amount: { from: "DISCARDED_CARDS" }` (see [**09. Dynamic Formulas**](./09_dynamic_formulas.md)).
+
+```json
+{
+  "effect": "DEAL_DAMAGE",
+  "params": {
+    "amount": 1,
+    "dynamicBonus": {
+      "from": "DISCARDED_CARDS",
+      "discardAttribute": "RESOURCE_ICONS",
+      "resourceType": "energy",
+      "multiplier": 2
+    },
+    "target": "CHOSEN_ENEMY"
+  }
+}
+```
+
+Supported `discardAttribute` inspection modes:
+- `COUNT`: Number of matching cards discarded (default).
+- `RESOURCE_ICONS`: Sum of printed resource icons (filtered by `resourceType`, or all printed icons if omitted).
+- `DIFFERENT_RESOURCES`: Count of distinct resource types (`physical`, `energy`, `mental`, `wild`) with $> 0$ icons.
+- `BOOST_ICONS`: Sum of boost icons across discarded cards.
+- `DIFFERENT_CARD_TYPES`: Count of distinct card types across discarded cards.
+- `PRINTED_COST`: Sum of printed card costs.
+
 ---
 
 ## 3. Search, Split & Zone Manipulations

@@ -1757,7 +1757,16 @@ export function executeStep(
     }
 
     case 'REMOVE_THREAT': {
-      const amount = resolveNumericAmount(step.params?.amount, context, 1, { state, player });
+      let amount = resolveNumericAmount(step.params?.amount, context, 1, { state, player });
+      if (step.params?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+        });
+        amount += bonus;
+      }
       const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
       let targetSchemeName = state.mainScheme.card.name;

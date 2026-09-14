@@ -107,6 +107,13 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         placeholder: 'e.g. 2',
       },
+      {
+        key: 'dynamicBonus',
+        label: 'Dynamic Bonus Damage',
+        type: 'number',
+        allowDynamic: true,
+        description: 'Dynamic bonus calculated from game state or discarded cards',
+      },
     ],
   },
   PREVENT_DAMAGE: {
@@ -224,6 +231,13 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Bonus Threat if Mental Resource Spent',
         type: 'number',
         placeholder: 'e.g. 1',
+      },
+      {
+        key: 'dynamicBonus',
+        label: 'Dynamic Bonus Threat',
+        type: 'number',
+        allowDynamic: true,
+        description: 'Dynamic bonus calculated from game state or discarded cards',
       },
     ],
   },

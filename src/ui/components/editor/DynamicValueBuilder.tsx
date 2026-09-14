@@ -14,13 +14,23 @@ export interface DynamicValueBuilderProps {
 const FROM_SOURCES = [
   'INTERCEPTED_VALUE',
   'PREVIOUS_RESULT',
-  'DISCARDED_COUNT',
-  'DISCARDED_RESOURCE_COUNT',
+  'DISCARDED_CARDS',
   'COUNTERS',
   'STAT_VALUE',
   'ENTITY_COUNT',
   'CARD_ATTRIBUTE',
 ] as const;
+
+const DISCARD_ATTRIBUTE_OPTIONS = [
+  'COUNT',
+  'RESOURCE_ICONS',
+  'DIFFERENT_RESOURCES',
+  'BOOST_ICONS',
+  'DIFFERENT_CARD_TYPES',
+  'PRINTED_COST',
+] as const;
+
+const RESOURCE_TYPE_OPTIONS = ['energy', 'physical', 'mental', 'wild'] as const;
 
 const STAT_OPTIONS = [
   'ATTACK',
@@ -69,6 +79,8 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
     };
     // Prune undefined or default keys to satisfy DynamicValueSourceSchema.strict()
     const cleaned: Record<string, any> = { from: next.from };
+    if (next.discardAttribute) cleaned.discardAttribute = next.discardAttribute;
+    if (next.resourceType) cleaned.resourceType = next.resourceType;
     if (next.stat) cleaned.stat = next.stat;
     if (next.counterType) cleaned.counterType = next.counterType;
     if (next.attribute) cleaned.attribute = next.attribute;
@@ -204,6 +216,103 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
               ))}
             </select>
           </div>
+
+          {/* DISCARDED_CARDS sub-fields */}
+          {sourceValue.from === 'DISCARDED_CARDS' && (
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                    Discard Attribute
+                  </label>
+                  <select
+                    data-testid="dynamic-value-discard-attribute-select"
+                    value={
+                      sourceValue.discardAttribute ||
+                      (sourceValue.resourceType ? 'RESOURCE_ICONS' : 'COUNT')
+                    }
+                    onChange={(e) =>
+                      handleUpdateFormula({
+                        discardAttribute: e.target.value as any,
+                      })
+                    }
+                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  >
+                    {DISCARD_ATTRIBUTE_OPTIONS.map((att) => (
+                      <option key={att} value={att}>
+                        {att}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {(sourceValue.discardAttribute === 'RESOURCE_ICONS' ||
+                  (!sourceValue.discardAttribute && sourceValue.resourceType)) && (
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                      Resource Type
+                    </label>
+                    <select
+                      data-testid="dynamic-value-resource-type-select"
+                      value={sourceValue.resourceType || ''}
+                      onChange={(e) =>
+                        handleUpdateFormula({
+                          resourceType: (e.target.value as any) || undefined,
+                        })
+                      }
+                      className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                    >
+                      <option value="">All Printed Resources</option>
+                      {RESOURCE_TYPE_OPTIONS.map((rt) => (
+                        <option key={rt} value={rt}>
+                          {rt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Collapsible UniversalCardFilter Accordion for discarded cards */}
+              <div
+                data-testid="discard-filter-accordion"
+                className="rounded border border-black bg-white/70 p-2 space-y-2"
+              >
+                <div
+                  onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                  data-testid="toggle-discard-filter-btn"
+                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+                >
+                  <div className="flex items-center gap-1.5">
+                    {isFilterExpanded ? (
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                    )}
+                    <Layers className="w-3.5 h-3.5 text-comic-accent" />
+                    <span className="text-[10px] font-bold uppercase text-black">
+                      Discarded Card Match Filter
+                    </span>
+                  </div>
+                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                    {filterCriteriaCount > 0
+                      ? `${filterCriteriaCount} ${filterCriteriaCount === 1 ? 'criterion' : 'criteria'}`
+                      : 'No criteria configured'}
+                  </span>
+                </div>
+
+                {isFilterExpanded && (
+                  <div className="pt-1 border-t border-gray-300">
+                    <UniversalCardFilterBuilder
+                      filter={sourceValue.filter}
+                      onChange={(newFilter) => handleUpdateFormula({ filter: newFilter })}
+                      isSubBranch={true}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* STAT_VALUE sub-fields */}
           {sourceValue.from === 'STAT_VALUE' && (

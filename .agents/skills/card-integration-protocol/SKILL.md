@@ -41,6 +41,7 @@ Before modifying engine source code, classify the required change into one of th
   - **In Single-Card Mode:** Stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for explicit user approval before touching source code.
   - **In Batch-Mode (Scanning multiple cards / sets):** **Do not halt the batch.** Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning all remaining cards in the set, and present a consolidated report + implementation plan at the end of the batch run.
 - **🎯 Rhino Release Target Inventory (Gate 1 Focus):** Active card integration strictly targets **Core Set Player Cards (101 cards in `data/upstream/pack/core.json`)** and **Rhino Scenario Encounters (34 cards in `data/upstream/pack/core_encounter.json`)**. Expansion packs are deferred to subsequent gates.
+- **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):** NEVER introduce temporary shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or ad-hoc shortcuts. Always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data.
 
 ---
 

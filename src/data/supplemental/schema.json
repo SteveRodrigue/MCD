@@ -542,18 +542,9 @@
               },
               "originalText": {
                 "type": "string"
-              },
-              "reconstructedText": {
-                "type": "string"
               }
             },
             "additionalProperties": false
-          },
-          "mechanicSteps": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           },
           "noSupplementalNeeded": {
             "type": "boolean"

@@ -10,14 +10,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.",
-        "reconstructedText": "INTERRUPT (Trigger: ENEMY_INITIATES_ATTACK [attackerKind: VILLAIN, targetPlayerScope: SELF]) -> Draw 1 card"
+        "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card."
       },
-      "mechanicSteps": [
-        "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
-        "Step 1: Interrupt resolves BEFORE boost cards are dealt or damage is calculated (RR v1.8 p. 12)",
-        "Step 2: Draw 1 card from player draw deck into hand"
-      ],
       "abilities": [
         {
           "id": "spider_sense",
@@ -64,14 +58,8 @@
         "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)",
-        "reconstructedText": "RESOURCE [Limit: once per round] -> Generate 1 [mental] resource"
-      },
-      "mechanicSteps": [
-        "Action: Resource generation during card cost payment or resource window (RESOURCE)",
-        "Requirement: Limit 1 use per round",
-        "Effect: Generates 1 [mental] resource towards active cost payment or resource pool"
-      ]
+        "originalText": "Scientist — <b>Resource</b>: Generate a [mental] resource. (Limit once per round.)"
+      }
     },
     "01002": {
       "comment": "Ally: Forced Response: After you PLAY Black Cat (CARD_PLAYED, not ENTERS_PLAY) → discard top 2 cards, add Mental-resource cards to hand. No consequential attack damage.",
@@ -82,18 +70,9 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: CARD_PLAYED) -> DISCARD (source: DECK, count: 2, filter: { resourceIcons: [\"mental\"] }, matchingDestination: HAND)"
+        "originalText": "<b>Forced Response</b>: After you play Black Cat, discard the top 2 cards of your deck. Add each card with a printed [mental] resource discarded this way to your hand."
       },
       "attackCost": 0,
-      "mechanicSteps": [
-        "Trigger: After you play Black Cat from hand (FORCED_RESPONSE @ CARD_PLAYED — intentional: card text says 'after you play', not 'after enters play')",
-        "Step 1: Inspect top 2 cards from player draw deck",
-        "Step 2: Check each card for printed [mental] resource icons",
-        "Step 3: Discard cards lacking printed [mental] resource",
-        "Step 4: Add remaining matching cards to player hand",
-        "Passive: Takes 0 consequential damage when making basic attack (attackCost: 0)"
-      ],
       "abilities": [
         {
           "id": "black_cat_when_played",
@@ -143,14 +122,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.",
-        "reconstructedText": "INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) [Cost: Discard this card] -> PREVENT_DAMAGE"
-      },
-      "mechanicSteps": [
-        "Trigger: When hero would take damage from an attack (INTERRUPT @ TAKE_ATTACK_DAMAGE)",
-        "Cost: Discard Backflip from hand to discard pile",
-        "Effect: Prevent all attack damage (sets incoming damage to 0)"
-      ]
+        "originalText": "<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage."
+      }
     },
     "01004": {
       "comment": "Hero Event: Cancel When Revealed effects of a treachery card.",
@@ -178,12 +151,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card] -> CANCEL_WHEN_REVEALED"
-      },
-      "mechanicSteps": [
-        "Hero Interrupt: When a treachery card is revealed from the encounter deck, cancel its When Revealed effects."
-      ]
+        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects."
+      }
     },
     "01005": {
       "comment": "Attack Event: Hero Action -> Deal 8 damage to an enemy.",
@@ -209,14 +178,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 8 damage to an enemy.",
-        "reconstructedText": "HERO_ACTION -> Deal 8 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Action: Hero Action (attack)",
-        "Cost: Pay 3 resources and discard Swinging Web Kick",
-        "Effect: Deal 8 damage to chosen enemy (villain or minion)"
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 8 damage to an enemy."
+      }
     },
     "01006": {
       "comment": "Support: Alter-Ego Action -> Exhaust Aunt May to heal 4 damage from Peter Parker.",
@@ -245,14 +208,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Alter-Ego Action</b>: Exhaust Aunt May → heal 4 damage from Peter Parker.",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> Heal 4 damage from SELF"
-      },
-      "mechanicSteps": [
-        "Action: Alter-Ego Action",
-        "Cost: Exhaust Aunt May",
-        "Effect: Heal 4 damage from Peter Parker"
-      ]
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Aunt May → heal 4 damage from Peter Parker."
+      }
     },
     "01007": {
       "comment": "UPGRADE: Spider-Tracer. Attach to a minion. Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme.",
@@ -291,13 +248,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Attach to a minion.\n<b>Forced Interrupt</b>: When attached minion is defeated, remove 3 threat from a scheme.",
-        "reconstructedText": "ACTION -> ATTACH_TO_HOST (target: CHOSEN_MINION); FORCED_INTERRUPT (Trigger: CHARACTER_DEFEATED) -> REMOVE_THREAT (amount: 3, target: CHOSEN_SCHEME)"
-      },
-      "mechanicSteps": [
-        "Action: Attach to a minion when played.",
-        "Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme."
-      ]
+        "originalText": "Attach to a minion.\n<b>Forced Interrupt</b>: When attached minion is defeated, remove 3 threat from a scheme."
+      }
     },
     "01008": {
       "comment": "UPGRADE: Web-Shooter. Enters with 3 counters. Exhaust & spend counter -> generate 1 wild resource.",
@@ -335,13 +287,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Uses (3 web counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Hero Resource</b>: Exhaust Web-Shooter and remove 1 web counter from it → generate a [wild] resource.",
-        "reconstructedText": "HERO_RESOURCE [Cost: Exhaust SELF, Spend 1 web counter] -> GENERATE_RESOURCE (amount: 1, resource: wild)"
-      },
-      "mechanicSteps": [
-        "Enters play with 3 web counters.",
-        "Hero Resource: Exhaust Web-Shooter and remove 1 web counter from it → generate a wild resource."
-      ]
+        "originalText": "Uses (3 web counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Hero Resource</b>: Exhaust Web-Shooter and remove 1 web counter from it → generate a [wild] resource."
+      }
     },
     "01009": {
       "comment": "UPGRADE: Webbed Up. Attach to an enemy. Max 1 per enemy. Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
@@ -383,13 +330,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 60,
-        "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
-        "reconstructedText": "HERO_ACTION -> ATTACH_TO_HOST (target: ENEMY, maxPerHost: 1); FORCED_INTERRUPT (Trigger: ENEMY_INITIATES_ATTACK) -> INTERCEPT_ATTACK (effect: CANCEL_ATTACK_AND_STUN_HOST)"
-      },
-      "mechanicSteps": [
-        "Play Condition: Hero form only. Attach to an enemy. Max 1 per enemy.",
-        "Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy."
-      ]
+        "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy."
+      }
     },
     "01010a": {
       "comment": "ALTER_EGO: Carol Danvers. Action (Rechannel): Exhaust Carol Danvers to heal 1 damage from her (if damaged).",
@@ -420,16 +362,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Rechannel — <b>Action</b>: Spend a [energy] resource and heal 1 damage from Captain Marvel → draw 1 card. (Limit once per round.)",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Pre-check: Health < MaxHealth, Limit: 1/round] -> HEAL_DAMAGE (amount: 1, target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Action: Alter-Ego Action (Rechannel)",
-        "Cost: Exhaust Carol Danvers",
-        "Pre-check: Cannot be used if Carol Danvers is already at maximum health",
-        "Effect: Heal 1 damage from Carol Danvers",
-        "Limit: Once per round"
-      ]
+        "originalText": "Rechannel — <b>Action</b>: Spend a [energy] resource and heal 1 damage from Captain Marvel → draw 1 card. (Limit once per round.)"
+      }
     },
     "01010b": {
       "comment": "Alter-Ego Identity: Commander — Alter-Ego Action: Choose a player -> that player draws 1 card (limit 1/round).",
@@ -456,12 +390,8 @@
         "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Commander — <b>Action</b>: Choose a player to draw 1 card. (Limit once per round.)",
-        "reconstructedText": "ALTER_EGO_ACTION [Limit: once per round] -> Draw 1 card"
-      },
-      "mechanicSteps": [
-        "Alter-Ego Identity ability/recovery for Carol Danvers"
-      ]
+        "originalText": "Commander — <b>Action</b>: Choose a player to draw 1 card. (Limit once per round.)"
+      }
     },
     "01011": {
       "comment": "Ally: Response: After Spider-Woman enters play, confuse the villain.",
@@ -488,12 +418,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Response</b>: After Spider-Woman enters play, confuse the villain.",
-        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> ADD_STATUS (CONFUSED, target: VILLAIN)"
-      },
-      "mechanicSteps": [
-        "Response: After Spider-Woman enters play (played or put into play), confuse the villain."
-      ]
+        "originalText": "<b>Response</b>: After Spider-Woman enters play, confuse the villain."
+      }
     },
     "01012": {
       "comment": "Thwart Event: Hero Action: Remove 2 threat from a scheme. If paid with Energy, remove 2 threat from a different scheme.",
@@ -520,12 +446,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme.",
-        "reconstructedText": "HERO_ACTION -> Remove 2 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (thwart): Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme."
+      }
     },
     "01013": {
       "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy. If paid with Energy, draw 1 card.",
@@ -552,12 +474,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy. If you paid for this card using a [energy] resource, draw 1 card.",
-        "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to an enemy. If you paid for this card using a [energy] resource, draw 1 card."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy. If you paid for this card using a [energy] resource, draw 1 card."
+      }
     },
     "01014": {
       "noSupplementalNeeded": true,
@@ -569,12 +487,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "",
-        "reconstructedText": "Vanilla card (no printed abilities)."
-      },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
-      ]
+        "originalText": ""
+      }
     },
     "01015": {
       "comment": "Support: Alter-Ego Action: Exhaust Alpha Flight Station -> choose and discard a card from hand, then draw 1 card (or 2 cards instead if Carol Danvers).",
@@ -607,12 +521,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Action</b>: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers).",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Discard 1 card from hand] -> Draw 1 card (Carol Danvers: 2 cards)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Action: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers)."
-      ]
+        "originalText": "<b>Action</b>: Exhaust Alpha Flight Station, choose and discard 1 card from your hand → draw 1 card (draw 2 cards instead if you are Carol Danvers)."
+      }
     },
     "01016": {
       "comment": "Upgrade: While in Hero form, Captain Marvel gets +1 DEF (+2 DEF instead if you have the Aerial trait).",
@@ -639,12 +549,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait).",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: DEFENSE, amount: 1, aerialBonus: 1)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
-      ]
+        "originalText": "Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
+      }
     },
     "01017": {
       "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
@@ -685,13 +591,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Captain Marvel gains the [[Aerial]] trait.\n<b>Hero Interrupt</b> (<i>defense</i>): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage.",
-        "reconstructedText": "CONSTANT -> ADD_TRAIT (trait: Aerial); HERO_INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) [Cost: Discard this card] -> PREVENT_DAMAGE (amount: 3)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Captain Marvel gains the [[Aerial]] trait.",
-        "Hero Interrupt (defense): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
-      ]
+        "originalText": "Captain Marvel gains the [[Aerial]] trait.\n<b>Hero Interrupt</b> (<i>defense</i>): When Captain Marvel would take damage, discard Cosmic Flight → prevent 3 of that damage."
+      }
     },
     "01018": {
       "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
@@ -754,12 +655,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here.",
-        "reconstructedText": "ACTION [Cost: Spend X [energy]] -> ADD_COUNTERS (counterType: energy, scaling: PER_RESOURCE_SPENT, multiplier: 1); HERO_ACTION [Cost: Discard this card] -> DEAL_DAMAGE (amount: { from: COUNTERS, counterType: energy, multiplier: 2, clamp: { max: 10 } }, target: CHOSEN_ENEMY)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Max 1 per player.\nAction: Spend X [energy] resources → put X energy counters here.\nHero Action (attack): Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
-      ]
+        "originalText": "Max 1 per player.\n<b>Action</b>: Spend X [energy] resources → put X energy counters here.\n<b>Hero Action</b> <i>(attack)</i>: Discard Energy Channel → deal 2 damage to an enemy (to a maximum of 10) for each energy counter here."
+      }
     },
     "01019a": {
       "comment": "Hero Identity: Forced Response: After changing to this form, deal 15 damage (divided among enemies / 1 to an enemy).",
@@ -786,12 +683,8 @@
         "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 90,
-        "originalText": "\"Do You Even Lift?\" — <b>Response</b>: After you change to this form, deal 2 damage to an enemy.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: FORM_CHANGED) -> Deal 1 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Hero Identity ability/stats for She-Hulk"
-      ]
+        "originalText": "\"Do You Even Lift?\" — <b>Response</b>: After you change to this form, deal 2 damage to an enemy."
+      }
     },
     "01019b": {
       "comment": "Alter-Ego Identity: Alter-Ego Interrupt: When threat would be placed on a scheme, prevent 1 of that threat (limit 1/round).",
@@ -819,12 +712,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)",
-        "reconstructedText": "ALTER_EGO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Limit: once per round] -> PREVENT_DAMAGE (amount: 1)"
-      },
-      "mechanicSteps": [
-        "Alter-Ego Identity ability: When threat would be placed on a scheme, prevent 1 of that threat (Limit once per round)."
-      ]
+        "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)"
+      }
     },
     "01020": {
       "comment": "Ally: Action: Return Hellcat to your hand.",
@@ -849,12 +738,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Action</b>: Return Hellcat to your hand.",
-        "reconstructedText": "ACTION -> RETURN_TO_HAND (target: SELF)"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 2, ATK 1, and health 3"
-      ]
+        "originalText": "<b>Action</b>: Return Hellcat to your hand."
+      }
     },
     "01021": {
       "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
@@ -886,12 +771,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained.",
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amount: { from: STAT_VALUE, stat: SUFFERED_DAMAGE, clamp: { max: 15 } }, target: CHOSEN_ENEMY)"
-      },
-      "mechanicSteps": [
-        "Hero Action (attack): Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal X damage to an enemy (to a maximum of 15). X is the amount of damage you have sustained."
+      }
     },
     "01022": {
       "comment": "EVENT: Ground Stomp. Hero Action (attack): Deal 1 damage to each enemy.",
@@ -917,12 +798,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Deal 1 damage to each enemy.",
-        "reconstructedText": "HERO_ACTION -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
-      },
-      "mechanicSteps": [
-        "Hero Action (attack): Deal 1 damage to each enemy (the villain and each minion in play)."
-      ]
+        "originalText": "<b>Hero Action</b>: Deal 1 damage to each enemy."
+      }
     },
     "01023": {
       "comment": "EVENT: Legal Practice. Alter-Ego Action: Discard up to 5 cards from your hand -> remove 1 threat from a scheme for each card discarded this way.",
@@ -955,14 +832,8 @@
         "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 0,
-        "originalText": "<b>Alter-Ego Action</b> <i>(thwart)</i>: Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way.",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Discard up to 5 cards from hand] -> REMOVE_THREAT (target: MAIN_SCHEME, scaling: PER_DISCARDED_CARD)"
-      },
-      "mechanicSteps": [
-        "Action: Alter-Ego Action",
-        "Cost: Discard up to 5 cards from your hand",
-        "Effect: Remove 1 threat from a scheme for each card discarded this way"
-      ]
+        "originalText": "<b>Alter-Ego Action</b> <i>(thwart)</i>: Choose and discard up to 5 cards from your hand → remove 1 threat from a scheme for each card discarded this way."
+      }
     },
     "01024": {
       "comment": "Event: Hero Response: After you make a basic attack (using your ATK), ready She-Hulk.",
@@ -992,14 +863,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk.",
-        "reconstructedText": "RESPONSE (Trigger: BASIC_ATTACK_PERFORMED) [Cost: Discard this card] -> READY (target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Trigger: Hero Response after you make a basic attack (RESPONSE @ BASIC_ATTACK_PERFORMED)",
-        "Cost: Discard One-Two Punch from hand",
-        "Effect: Ready She-Hulk"
-      ]
+        "originalText": "<b>Response</b>: After you make a basic attack <i>(using your ATK)</i>, ready She-Hulk."
+      }
     },
     "01025": {
       "comment": "Event: Action: Change form. Draw cards up to your new form's printed hand size limit.",
@@ -1030,12 +895,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Action</b>: Change your form <i>(flip your identity card)</i>. Then, draw up to your printed hand size.",
-        "reconstructedText": "ACTION -> SEQUENCE [FLIP_FORM, THEN -> DRAW (limit: PRINTED_HAND_SIZE)]"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Action: Change your form (flip your identity card). Then, draw up to your printed hand size."
-      ]
+        "originalText": "<b>Action</b>: Change your form <i>(flip your identity card)</i>. Then, draw up to your printed hand size."
+      }
     },
     "01026": {
       "comment": "Support: Alter-Ego Action: Exhaust Superhuman Law Division and spend a Mental resource -> remove 2 threat from a scheme.",
@@ -1067,12 +928,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme.",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust, Spend 1 [mental]] -> Remove 2 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Alter-Ego Action: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme."
-      ]
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Superhuman Law Division and spend a [mental] resource → remove 2 threat from a scheme."
+      }
     },
     "01027": {
       "comment": "Upgrade: Hero Action: Exhaust Focused Rage and take 1 damage -> draw 1 card.",
@@ -1101,12 +958,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Action</b>: Exhaust Focused Rage and take 1 damage → draw 1 card.",
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust, Take 1 damage] -> Draw 1 card"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Hero Action: Exhaust Focused Rage and take 1 damage → draw 1 card."
-      ]
+        "originalText": "<b>Hero Action</b>: Exhaust Focused Rage and take 1 damage → draw 1 card."
+      }
     },
     "01028": {
       "comment": "Upgrade: She-Hulk gets +2 ATK. Forced Response: After attacking, stun the target and discard Superhuman Strength.",
@@ -1149,12 +1002,8 @@
         "reviewedBy": "Steve",
         "rulesVersion": "v1.8",
         "confidence": 80,
-        "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 2); FORCED_RESPONSE (Trigger: ATTACK_RESOLVED) [Cost: Discard this card] -> ADD_STATUS (status: STUNNED, target: ATTACK_TARGET)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: She-Hulk gets +2 ATK.\nForced Response: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
-      ]
+        "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."
+      }
     },
     "01029a": {
       "comment": "HERO: Iron Man. Hand size is increased by 1 for each Tech upgrade you control.",
@@ -1188,8 +1037,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum hand size of 7).",
-        "reconstructedText": "CONSTANT -> MODIFY_HAND_SIZE (scaling: PER_MATCHING_CARD, filter: { traits: [\"Tech\"], types: [\"upgrade\"] })"
+        "originalText": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum hand size of 7)."
       }
     },
     "01029b": {
@@ -1255,12 +1103,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Action</b>: Exhaust War Machine and deal 2 damage to him → deal 1 damage to each enemy.",
-        "reconstructedText": "ACTION [Cost: Exhaust War Machine and deal 2 damage to him] -> DEAL_DAMAGE (amount: 1, target: ALL_ENEMIES)"
-      },
-      "mechanicSteps": [
-        "Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy."
-      ]
+        "originalText": "<b>Action</b>: Exhaust War Machine and deal 2 damage to him → deal 1 damage to each enemy."
+      }
     },
     "01031": {
       "comment": "Hero Action (attack): Deal 1 damage to an enemy and discard top 5 cards of your deck. For each printed energy resource discarded this way, deal 2 additional damage to that enemy.",
@@ -1298,12 +1142,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy.",
-        "reconstructedText": "HERO_ACTION (attack) -> DISCARD (source: DECK, count: 5) THEN DEAL_DAMAGE (amount: 1 + 2 * DISCARDED_RESOURCE_COUNT[energy], target: CHOSEN_ENEMY)"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
+      }
     },
     "01032": {
       "comment": "Attack Event: Hero Action: Deal 4 damage to an enemy (8 damage instead if you have Aerial trait).",
@@ -1330,12 +1170,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait).",
-        "reconstructedText": "HERO_ACTION -> Deal 4 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait)."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait)."
+      }
     },
     "01033": {
       "comment": "Support: Resource: Exhaust Pepper Potts -> generate resources equal to printed resources on top card of discard pile.",
@@ -1361,12 +1197,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Resource</b>: Exhaust Pepper Potts → generate the resources of the top card in your discard pile.",
-        "reconstructedText": "RESOURCE [Cost: Exhaust SELF] -> GENERATE_TOP_DISCARD_RESOURCES"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Resource: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."
-      ]
+        "originalText": "<b>Resource</b>: Exhaust Pepper Potts → generate the resources of the top card in your discard pile."
+      }
     },
     "01034": {
       "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player to return 1 Tech upgrade from discard to hand.",
@@ -1405,12 +1237,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Alter-Ego Action</b>: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand.",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> RETRIEVE_TECH_UPGRADE_FROM_DISCARD (trait: Tech, type: upgrade)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Alter-Ego Action: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
-      ]
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
+      }
     },
     "01035": {
       "comment": "UPGRADE: Arc Reactor. Trait: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
@@ -1438,14 +1266,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b>Hero Action</b>: Exhaust Arc Reactor → ready Iron Man.",
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust SELF] -> READY (target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Action: Hero Action",
-        "Cost: Exhaust Arc Reactor",
-        "Effect: Ready Iron Man"
-      ]
+        "originalText": "<b>Hero Action</b>: Exhaust Arc Reactor → ready Iron Man."
+      }
     },
     "01036": {
       "comment": "UPGRADE: Mark V Armor. Trait: Tech. You get +6 hit points.",
@@ -1470,13 +1292,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "You get +6 hit points.",
-        "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 6)"
-      },
-      "mechanicSteps": [
-        "Constant: While in play, increase player's maximum health by 6",
-        "Rule Invariant: Current health increases by 6 when entering play; clamped to new max when leaving play"
-      ]
+        "originalText": "You get +6 hit points."
+      }
     },
     "01037": {
       "comment": "Upgrade: Tech. Hero Action: Exhaust Mark V Helmet -> remove 1 threat from a scheme (remove 1 from each scheme instead if Aerial).",
@@ -1506,12 +1323,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Exhaust Mark V Helmet → remove 1 threat from a scheme (from each scheme instead if you have the [[Aerial]] trait).",
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust] -> Remove 1 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Hero Action (thwart): Exhaust Mark V Helmet → remove 1 threat from a scheme (from each scheme instead if you have the [[Aerial]] trait)."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Exhaust Mark V Helmet → remove 1 threat from a scheme (from each scheme instead if you have the [[Aerial]] trait)."
+      }
     },
     "01038": {
       "comment": "Upgrade: Tech. Hero Action: Exhaust Powered Gauntlets and spend Energy -> deal 1 damage to an enemy (2 damage instead if Aerial).",
@@ -1544,12 +1357,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait).",
-        "reconstructedText": "HERO_ACTION [Cost: Exhaust, Spend 1 [energy]] -> Deal 1 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Hero Action (attack): Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait)."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait)."
+      }
     },
     "01039": {
       "comment": "UPGRADE: Rocket Boots. Trait: Tech. You get +1 hit point. Hero Action: Exhaust Rocket Boots and spend an Energy resource -> Iron Man gains Aerial trait until the end of the phase.",
@@ -1593,14 +1402,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "You get +1 hit point.\n<b>Hero Action</b>: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase.",
-        "reconstructedText": "CONSTANT -> MODIFY_MAX_HEALTH (amount: 1); HERO_ACTION [Cost: Exhaust + Energy] -> GRANT_KEYWORD (keyword: Aerial)"
-      },
-      "mechanicSteps": [
-        "Constant: +1 Maximum Health",
-        "Action: Hero Action [Cost: Exhaust + Energy resource]",
-        "Effect: Gain Aerial keyword until end of phase"
-      ]
+        "originalText": "You get +1 hit point.\n<b>Hero Action</b>: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase."
+      }
     },
     "01040a": {
       "comment": "Hero Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
@@ -1626,12 +1429,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Retaliate 1. <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>",
-        "reconstructedText": "CONSTANT -> GRANT_KEYWORD (keyword: Retaliate, amount: 1)"
-      },
-      "mechanicSteps": [
-        "Hero Identity ability/stats for Black Panther"
-      ]
+        "originalText": "Retaliate 1. <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>"
+      }
     },
     "01040b": {
       "comment": "Alter-Ego Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
@@ -1670,12 +1469,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Foresight — <b>Setup</b>: Search your deck for a [[Black Panther]] upgrade and add it to your hand. Shuffle your deck.",
-        "reconstructedText": "SETUP -> SEARCH (source: PLAYER_DECK, filter: { traits: [\"Black Panther\"], types: [\"upgrade\"] }, selectedDestination: TABLEAU, shuffleAfter: true)"
-      },
-      "mechanicSteps": [
-        "Alter-Ego Identity ability/recovery for T'Challa"
-      ]
+        "originalText": "Foresight — <b>Setup</b>: Search your deck for a [[Black Panther]] upgrade and add it to your hand. Shuffle your deck."
+      }
     },
     "01041": {
       "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
@@ -1712,12 +1507,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Response</b>: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck.",
-        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> SEARCH (source: PLAYER_DECK, filter: { types: [upgrade] }, selectedDestination: HAND, shuffleAfter: true)"
-      },
-      "mechanicSteps": [
-        "Response: After Shuri enters play (played or put into play), search your deck for an upgrade and add it to your hand. Shuffle your deck."
-      ]
+        "originalText": "<b>Response</b>: After Shuri enters play, search your deck for an upgrade and add it to your hand. Shuffle your deck."
+      }
     },
     "01042": {
       "comment": "Event: Alter-Ego Action: Shuffle up to 3 cards from your discard pile into your deck.",
@@ -1744,12 +1535,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Alter-Ego Action</b>: Choose up to 3 different cards in your discard pile and shuffle them into your deck.",
-        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_INTO_DECK (count: 3)"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
-      ]
+        "originalText": "<b>Alter-Ego Action</b>: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
+      }
     },
     "01043a": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
@@ -1782,12 +1569,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
-        "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
-      ]
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>"
+      }
     },
     "01043b": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
@@ -1820,12 +1603,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
-        "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
-      ]
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>"
+      }
     },
     "01043c": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
@@ -1858,12 +1637,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
-        "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
-      ]
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>"
+      }
     },
     "01043d": {
       "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
@@ -1896,12 +1671,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>",
-        "reconstructedText": "HERO_ACTION -> EXECUTE_WAKANDA_FOREVER"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Resolve the \"Special\" ability on each [[Black Panther]] upgrade you control in any order. (Resolving each ability is a step in a sequence.)"
-      ]
+        "originalText": "<b>Hero Action</b>: Resolve the \"<b>Special</b>\" ability on each [[Black Panther]] upgrade you control in any order. <i>(Resolving each ability is a step in a sequence.)</i>"
+      }
     },
     "01044": {
       "noSupplementalNeeded": true,
@@ -1913,12 +1684,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "",
-        "reconstructedText": "Vanilla card (no printed abilities)."
-      },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
-      ]
+        "originalText": ""
+      }
     },
     "01045": {
       "comment": "Support: Alter-Ego Action: Exhaust The Golden City -> draw 2 cards.",
@@ -1946,12 +1713,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Alter-Ego Action</b>: Exhaust The Golden City → draw 2 cards.",
-        "reconstructedText": "ALTER_EGO_ACTION [Cost: Exhaust] -> Draw 2 cards"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Alter-Ego Action: Exhaust The Golden City → draw 2 cards."
-      ]
+        "originalText": "<b>Alter-Ego Action</b>: Exhaust The Golden City → draw 2 cards."
+      }
     },
     "01046": {
       "comment": "Upgrade: Special: Deal 1 damage to each enemy (2 damage if triggered last).",
@@ -1979,12 +1742,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Special</b>: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
-        "reconstructedText": "SPECIAL -> DEAL_DAMAGE (target: ALL_ENEMIES, baseAmount: 1, finisherBonus: 1)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
-      ]
+        "originalText": "<b>Special</b>: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>"
+      }
     },
     "01047": {
       "comment": "Upgrade: Special: Deal 2 damage to an enemy (4 damage if triggered last).",
@@ -2011,12 +1770,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Special</b> <i>(attack)</i>: Deal 2 damage to an enemy (4 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
-        "reconstructedText": "SPECIAL -> Deal 0 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Special (attack): Deal 2 damage to an enemy (4 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
-      ]
+        "originalText": "<b>Special</b> <i>(attack)</i>: Deal 2 damage to an enemy (4 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>"
+      }
     },
     "01048": {
       "comment": "Upgrade: Special: Remove 1 threat from a scheme (2 threat if triggered last).",
@@ -2043,12 +1798,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Special</b> <i>(thwart)</i>: Remove 1 threat from a scheme (2 threat instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
-        "reconstructedText": "SPECIAL -> Remove 0 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Special (thwart): Remove 1 threat from a scheme (2 threat instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
-      ]
+        "originalText": "<b>Special</b> <i>(thwart)</i>: Remove 1 threat from a scheme (2 threat instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>"
+      }
     },
     "01049": {
       "comment": "Upgrade: Special: Move 1 damage from Black Panther to an enemy (move 2 damage if triggered last).",
@@ -2076,12 +1827,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Special</b> <i>(attack)</i>: Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
-        "reconstructedText": "SPECIAL -> TRANSFER_DAMAGE (baseAmount: 1, finisherBonus: 1, from: SELF, to: CHOSEN_ENEMY)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Special (attack): Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
-      ]
+        "originalText": "<b>Special</b> <i>(attack)</i>: Move 1 damage from your hero to an enemy (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>"
+      }
     },
     "01050": {
       "comment": "Ally: Forced Response: After Hulk attacks, discard the top card of your deck and resolve effect based on printed resource icon.",
@@ -2141,13 +1888,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Forced Response</b>: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:\n[physical] - Deal 2 damage to an enemy.\n[energy] - Deal 1 damage to each character.\n[mental] - Discard Hulk.\n[wild] - All of the above.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED [sourceCardCode: 01050]) -> DISCARD (source: DECK, count: 1) THEN IF_RESOURCE_MATCH(physical) DEAL_DAMAGE 2 to CHOSEN_ENEMY THEN IF_RESOURCE_MATCH(energy) DEAL_DAMAGE 1 to ALL_CHARACTERS THEN IF_RESOURCE_MATCH(mental) DISCARD SELF"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 0, ATK 3, and health 5",
-        "Forced Response: After Hulk attacks, discard the top card of your deck. If that card's printed resource has: [physical] - Deal 2 damage to an enemy. [energy] - Deal 1 damage to each character. [mental] - Discard Hulk. [wild] - All of the above."
-      ]
+        "originalText": "<b>Forced Response</b>: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:\n[physical] - Deal 2 damage to an enemy.\n[energy] - Deal 1 damage to each character.\n[mental] - Discard Hulk.\n[wild] - All of the above."
+      }
     },
     "01051": {
       "comment": "Ally: Response: After Tigra attacks and defeats a minion, heal 1 damage from Tigra.",
@@ -2174,12 +1916,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Response</b>: After Tigra attacks and defeats a minion, heal 1 damage from her.",
-        "reconstructedText": "RESPONSE (Trigger: CHARACTER_DEFEATED) -> Heal 1 damage from SELF"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 1, ATK 2, and health 3"
-      ]
+        "originalText": "<b>Response</b>: After Tigra attacks and defeats a minion, heal 1 damage from her."
+      }
     },
     "01052": {
       "comment": "Event: Hero Response: After your hero attacks and defeats an enemy, remove 2 threat from a scheme.",
@@ -2206,12 +1944,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Response</b> <i>(thwart)</i>: After your hero attacks and defeats an enemy, remove 2 threat from a scheme.",
-        "reconstructedText": "RESPONSE (Trigger: DEFEATED) -> Remove 2 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Response (thwart): After your hero attacks and defeats an enemy, remove 2 threat from a scheme."
-      ]
+        "originalText": "<b>Response</b> <i>(thwart)</i>: After your hero attacks and defeats an enemy, remove 2 threat from a scheme."
+      }
     },
     "01053": {
       "comment": "Attack Event: Hero Action: Deal 5 damage to a minion. If paid with Physical resource, gains Overkill.",
@@ -2239,12 +1973,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. <i>(Excess damage from this attack is dealt to the villain.)</i>",
-        "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_MINION"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. (Excess damage from this attack is dealt to the villain.)"
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. <i>(Excess damage from this attack is dealt to the villain.)</i>"
+      }
     },
     "01054": {
       "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy.",
@@ -2270,12 +2000,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy.",
-        "reconstructedText": "HERO_ACTION -> Deal 5 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action (attack): Deal 5 damage to an enemy."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to an enemy."
+      }
     },
     "01055": {
       "comment": "Resource Card: Double generated resources when paying for an Aggression card.",
@@ -2286,12 +2012,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Aggression <i>(red)</i> card.",
-        "reconstructedText": "RESOURCE -> Double resources when paying for an Aggression (red) card."
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Aggression <i>(red)</i> card."
       },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
-      ],
       "abilities": [
         {
           "id": "power_of_aggression",
@@ -2343,12 +2065,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Uses (3 attack counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy.",
-        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 attack counter] -> Deal 2 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Uses (3 attack counters). (Enters play with 3 counters. When those are gone, discard this card)\nAction: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy."
-      ]
+        "originalText": "Uses (3 attack counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Tac Team and remove 1 attack counter from it → deal 2 damage to an enemy."
+      }
     },
     "01057": {
       "comment": "UPGRADE: Combat Training. You get +1 ATK.",
@@ -2375,12 +2093,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
-      },
-      "mechanicSteps": [
-        "Constant: While attached to hero, grants +1 ATK to hero"
-      ]
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
+      }
     },
     "01058": {
       "comment": "Ally: Response: After Daredevil thwarts, deal 1 damage to an enemy.",
@@ -2407,12 +2121,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Response</b>: After Daredevil thwarts, deal 1 damage to an enemy.",
-        "reconstructedText": "RESPONSE (Trigger: THWART_RESOLVED) -> Deal 1 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Response: After Daredevil thwarts, deal 1 damage to an enemy (RESPONSE @ THWART_RESOLVED)"
-      ]
+        "originalText": "<b>Response</b>: After Daredevil thwarts, deal 1 damage to an enemy."
+      }
     },
     "01059": {
       "comment": "ALLY: Jessica Jones. Jessica Jones gets +1 THW for each side scheme in play (to a maximum of +4 THW).",
@@ -2440,12 +2150,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Jessica Jones gets +1 THW for each side scheme in play.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, scaling: PER_SIDE_SCHEME, maxBonus: 4)"
-      },
-      "mechanicSteps": [
-        "Constant: While Jessica Jones is in play, add +1 THW for each active side scheme (clamped to max +4)"
-      ]
+        "originalText": "Jessica Jones gets +1 THW for each side scheme in play."
+      }
     },
     "01060": {
       "comment": "Thwart Event: Hero Action: Remove 3 threat (4 threat if paid with Mental) from a scheme.",
@@ -2472,12 +2178,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 3 threat from a scheme (4 threat instead if you paid for this card using a [mental] resource).",
-        "reconstructedText": "HERO_ACTION -> Remove 3 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Action: Hero Action (thwart). Remove 3 threat from a scheme (4 threat instead if paid with [mental] resource)."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 3 threat from a scheme (4 threat instead if you paid for this card using a [mental] resource)."
+      }
     },
     "01061": {
       "comment": "Justice Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
@@ -2515,14 +2217,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Interrupt</b>: When any amount of threat would be placed on a scheme, you take it as damage instead.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> PREVENT_DAMAGE -> DEAL_DAMAGE (amount: INTERCEPTED_VALUE, target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
-        "Cost: Discard Great Responsibility from hand",
-        "Effect: Consume the intercepted threat event (preventing all impending threat from being placed on the scheme) and deal damage equal to that intercepted threat value to your hero"
-      ]
+        "originalText": "<b>Hero Interrupt</b>: When any amount of threat would be placed on a scheme, you take it as damage instead."
+      }
     },
     "01062": {
       "comment": "Resource Card: Double generated resources when paying for a Justice card.",
@@ -2533,13 +2229,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Justice <i>(yellow)</i> card.",
-        "reconstructedText": "RESOURCE -> Double resources when paying for a Justice (yellow) card."
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Justice <i>(yellow)</i> card."
       },
-      "mechanicSteps": [
-        "Setup: Uses (3 snoop counters). Discard on empty.",
-        "Action: Exhaust Surveillance Team and remove 1 snoop counter -> remove 1 threat from a scheme."
-      ],
       "abilities": [
         {
           "id": "power_of_justice",
@@ -2583,14 +2274,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Max 1 per player.\n<b>Response</b>: After you defeat a minion, exhaust Interrogation Room → remove 1 threat from a scheme.",
-        "reconstructedText": "RESPONSE (Trigger: CHARACTER_DEFEATED) [Cost: Exhaust SELF] -> Remove 1 threat from CHOSEN_SCHEME"
+        "originalText": "Max 1 per player.\n<b>Response</b>: After you defeat a minion, exhaust Interrogation Room → remove 1 threat from a scheme."
       },
-      "mechanicSteps": [
-        "Trigger: Response after you defeat a minion (RESPONSE @ MINION_DEFEATED)",
-        "Cost: Exhaust Interrogation Room",
-        "Effect: Remove 1 threat from a scheme (Limit once per round)."
-      ],
       "maxPerPlayer": 1
     },
     "01064": {
@@ -2629,13 +2314,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Uses (3 snoop counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Surveillance Team and remove 1 snoop counter from it → remove 1 threat from a scheme.",
-        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 snoop counter] -> Remove 1 threat from CHOSEN_SCHEME"
-      },
-      "mechanicSteps": [
-        "Play Condition: Attach to a hero. Max 1 per hero.",
-        "Passive: Attached hero gets +1 THW (CONSTANT ➔ THW_BONUS +1)."
-      ]
+        "originalText": "Uses (3 snoop counters). <i>(Enters play with 3 counters. When those are gone, discard this card)</i>\n<b>Action</b>: Exhaust Surveillance Team and remove 1 snoop counter from it → remove 1 threat from a scheme."
+      }
     },
     "01065": {
       "comment": "UPGRADE: Heroic Intuition. You get +1 THW.",
@@ -2662,12 +2342,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 THW.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1)"
-      },
-      "mechanicSteps": [
-        "Constant: While attached to hero, grants +1 THW to hero"
-      ]
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 THW."
+      }
     },
     "01066": {
       "comment": "Ally: Enters play with 4 arrow counters. Response: After a minion enters play, remove 1 arrow counter -> deal 2 damage to that minion.",
@@ -2705,12 +2381,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Hawkeye enters play with 4 arrow counters on him.\n<b>Response</b>: After a minion enters play, remove 1 arrow counter from Hawkeye → deal 2 damage to that minion.",
-        "reconstructedText": "RESPONSE (Trigger: MINION_ENTERS_PLAY) [Cost: Spend 1 arrow counter] -> Deal 2 damage to TRIGGERING_MINION"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 1, ATK 1, and health 3"
-      ]
+        "originalText": "Hawkeye enters play with 4 arrow counters on him.\n<b>Response</b>: After a minion enters play, remove 1 arrow counter from Hawkeye → deal 2 damage to that minion."
+      }
     },
     "01067": {
       "comment": "ALLY: Maria Hill. Response: After Maria Hill enters play, each player draws 1 card.",
@@ -2737,12 +2409,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Response</b>: After Maria Hill enters play, each player draws 1 card.",
-        "reconstructedText": "RESPONSE (Trigger: ENTERS_PLAY) -> DRAW (count: 1, target: ALL_PLAYERS)"
-      },
-      "mechanicSteps": [
-        "Response: After Maria Hill enters play (played or put into play), each player draws 1 card."
-      ]
+        "originalText": "<b>Response</b>: After Maria Hill enters play, each player draws 1 card."
+      }
     },
     "01068": {
       "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase.",
@@ -2776,12 +2444,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Action</b>: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)",
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> PLAYER_CHOICE (amount: 2, options: [ATK, THW])"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 1, ATK 2, and health 3"
-      ]
+        "originalText": "<b>Action</b>: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)"
+      }
     },
     "01069": {
       "comment": "Event: Action: Ready an ally.",
@@ -2806,12 +2470,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b>Action</b>: Ready an ally.",
-        "reconstructedText": "ACTION -> READY (target: CHOSEN_ALLY)"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Action: Ready an ally."
-      ]
+        "originalText": "<b>Action</b>: Ready an ally."
+      }
     },
     "01070": {
       "comment": "Event: Hero Action: Each friendly character gets +1 ATK and +1 THW until end of phase.",
@@ -2839,12 +2499,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b>: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase.",
-        "reconstructedText": "HERO_ACTION -> MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS, atkBonus: 1, thwBonus: 1, duration: PHASE_END)"
-      },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Hero Action: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
-      ]
+        "originalText": "<b>Hero Action</b>: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
+      }
     },
     "01071": {
       "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
@@ -2855,12 +2511,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Action</b>: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control.",
-        "reconstructedText": "ACTION -> Pay the printed cost of an ally in any player discard pile -> put that ally into play under your control."
+        "originalText": "<b>Action</b>: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
       },
-      "mechanicSteps": [
-        "Event action/interrupt effect: Action: Pay the printed cost of an ally in any player's discard pile → put that ally into play under your control."
-      ],
       "abilities": [
         {
           "id": "make_the_call",
@@ -2893,12 +2545,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Leadership <i>(blue)</i> card.",
-        "reconstructedText": "RESOURCE -> Double resources when paying for a Leadership (blue) card."
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Leadership <i>(blue)</i> card."
       },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
-      ],
       "abilities": [
         {
           "id": "power_of_leadership",
@@ -2938,12 +2586,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Increase your ally limit by 1. <i>(This allows you to control more than 3 allies.)</i>",
-        "reconstructedText": "CONSTANT -> MODIFY_ALLY_LIMIT (amount: 1)"
-      },
-      "mechanicSteps": [
-        "Constant: Increase your maximum ally limit by 1 while The Triskelion is in play."
-      ]
+        "originalText": "Increase your ally limit by 1. <i>(This allows you to control more than 3 allies.)</i>"
+      }
     },
     "01074": {
       "comment": "UPGRADE: Inspired. Attach to an ally. Max 1 per ally. Attached ally gets +1 THW and +1 ATK.",
@@ -2995,13 +2639,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK.",
-        "reconstructedText": "ACTION -> ATTACH_TO_HOST (target: CHOSEN_ALLY, maxPerHost: 1); CONSTANT -> MODIFY_STAT (stat: THWART, amount: 1); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1)"
-      },
-      "mechanicSteps": [
-        "Action: Attach to an ally when played. Max 1 per ally.",
-        "Constant: Attached ally gets +1 THW and +1 ATK."
-      ]
+        "originalText": "Attach to an ally. Max 1 per ally.\nAttached ally gets +1 THW and +1 ATK."
+      }
     },
     "01075": {
       "comment": "Ally: Hero Interrupt: When a treachery card is revealed from encounter deck, exhaust Black Widow and spend 1 Mental resource -> cancel its When Revealed effects and discard it.",
@@ -3031,12 +2670,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Interrupt</b>: When a card is revealed from the encounter deck, exhaust Black Widow and spend a [mental] resource → cancel the effects of that card and discard it. Then, reveal another card from the encounter deck.",
-        "reconstructedText": "INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Exhaust, Spend 1 [mental]] -> CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 2, ATK 1, and health 2"
-      ]
+        "originalText": "<b>Interrupt</b>: When a card is revealed from the encounter deck, exhaust Black Widow and spend a [mental] resource → cancel the effects of that card and discard it. Then, reveal another card from the encounter deck."
+      }
     },
     "01076": {
       "comment": "Ally: Toughness. Luke Cage enters play with a tough status card.",
@@ -3062,12 +2697,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>",
-        "reconstructedText": "SETUP -> Give TOUGH status to SELF"
-      },
-      "mechanicSteps": [
-        "Ally card with THW 1, ATK 2, and health 5"
-      ]
+        "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>"
+      }
     },
     "01077": {
       "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
@@ -3101,14 +2732,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Response</b> <i>(attack)</i>: After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK.",
-        "reconstructedText": "RESPONSE (Trigger: ATTACK_DEFENDED) [Cost: Discard this card] -> DEAL_DAMAGE (amount: { from: STAT_VALUE, stat: ATTACK }, target: ENEMY)"
-      },
-      "mechanicSteps": [
-        "Trigger: Hero Response after hero defends against an enemy attack (RESPONSE @ HERO_DEFENDED_ATTACK)",
-        "Cost: Discard Counter-Punch from hand",
-        "Effect: Deal damage to that enemy equal to your hero's ATK"
-      ]
+        "originalText": "<b>Response</b> <i>(attack)</i>: After your hero defends against an enemy attack, deal damage to that enemy equal to your hero's ATK."
+      }
     },
     "01078": {
       "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
@@ -3143,14 +2768,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects. The villain attacks you instead.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: TREACHERY_REVEALED) [Cost: Discard this card] -> Cancel When Revealed effects, Villain attacks you instead"
-      },
-      "mechanicSteps": [
-        "Trigger: Hero Interrupt when a treachery card is revealed from the encounter deck (HERO_INTERRUPT @ TREACHERY_REVEALED)",
-        "Cost: Discard Get Behind Me! from hand",
-        "Effect: Cancel its When Revealed effects. The villain attacks you instead."
-      ]
+        "originalText": "<b>Hero Interrupt</b>: When a treachery card is revealed from the encounter deck, cancel its \"<b>When Revealed</b>\" effects. The villain attacks you instead."
+      }
     },
     "01079": {
       "comment": "Resource Card: Double generated resources when paying for a Protection card.",
@@ -3161,12 +2780,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Protection <i>(green)</i> card.",
-        "reconstructedText": "RESOURCE -> Double resources when paying for a Protection (green) card."
+        "originalText": "Max 2 per deck.\nDouble the number of resources this card generates while paying for a Protection <i>(green)</i> card."
       },
-      "mechanicSteps": [
-        "Resource generator card (provides resources for cost payment)"
-      ],
       "abilities": [
         {
           "id": "power_of_protection",
@@ -3218,12 +2833,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Uses (3 medical counters). <i>(Enters play with 3 counters. When those are gone, discard this card.)</i>\n<b>Action</b>: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character.",
-        "reconstructedText": "ACTION [Cost: Exhaust SELF, Spend 1 medical counter] -> Heal 2 damage from CHOSEN_CHARACTER"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Uses (3 medical counters). (Enters play with 3 counters. When those are gone, discard this card.)\nAction: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character."
-      ]
+        "originalText": "Uses (3 medical counters). <i>(Enters play with 3 counters. When those are gone, discard this card.)</i>\n<b>Action</b>: Exhaust Med Team and remove 1 medical counter from it → heal 2 damage from a friendly character."
+      }
     },
     "01081": {
       "comment": "Upgrade: Attached hero gets +1 DEF.",
@@ -3250,12 +2861,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (DEFENSE +1)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
-      ]
+        "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 DEF."
+      }
     },
     "01082": {
       "comment": "Upgrade: Hero Interrupt: After your hero defends against an attack, discard Indomitable -> ready your hero.",
@@ -3284,12 +2891,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b>Response</b>: After your hero defends, discard indomitable → ready your hero.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: ATTACK_DEFENDED) [Cost: Discard this card] -> READY (target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Permanent/attached card: Response: After your hero defends, discard indomitable → ready your hero."
-      ]
+        "originalText": "<b>Response</b>: After your hero defends, discard indomitable → ready your hero."
+      }
     },
     "01083": {
       "comment": "Ally: Forced Response: After Mockingbird enters play, stun an enemy.",
@@ -3316,12 +2919,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Response</b>: After Mockingbird enters play, stun an enemy.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> ADD_STATUS (STUNNED, target: CHOSEN_ENEMY)"
-      },
-      "mechanicSteps": [
-        "Forced Response: After Mockingbird enters play (played or put into play), stun an enemy (villain or minion)."
-      ]
+        "originalText": "<b>Response</b>: After Mockingbird enters play, stun an enemy."
+      }
     },
     "01084": {
       "comment": "ALLY: Nick Fury. Forced Response: After Nick Fury enters play, choose 1 of 3 effects. At end of round, discard Nick Fury.",
@@ -3392,14 +2991,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 95,
-        "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ENTERS_PLAY) -> PLAYER_CHOICE (options: [Draw 3 cards, Remove 2 threat, Deal 4 damage]); FORCED_RESPONSE (Trigger: ROUND_ENDED) -> DISCARD (source: SELF)"
-      },
-      "mechanicSteps": [
-        "Ally: THW 2, ATK 2, Health 3.",
-        "Forced Response: After Nick Fury enters play (played or put into play), choose 1: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy.",
-        "Forced Response: At the end of the round, discard Nick Fury if he is still in play."
-      ]
+        "originalText": "<b>Forced Response</b>: After Nick Fury enters play, choose one: remove 2 threat from a scheme, draw 3 cards, or deal 4 damage to an enemy. At the end of the round, if Nick Fury is still in play, discard him."
+      }
     },
     "01085": {
       "comment": "Basic Event: Interrupt (thwart): When threat would be placed on a scheme, reduce the amount of threat placed by 1.",
@@ -3430,14 +3023,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Interrupt</b> <i>(thwart)</i>: When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
-        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> PREVENT_DAMAGE (amount: 1)"
-      },
-      "mechanicSteps": [
-        "Trigger: Interrupt when threat would be placed on a scheme (INTERRUPT @ THREAT_WOULD_BE_PLACED)",
-        "Cost: Discard Emergency from hand",
-        "Effect: Consume 1 of the impending threat placed on the scheme (reducing impending threat by 1)"
-      ]
+        "originalText": "<b>Interrupt</b> <i>(thwart)</i>: When the villain schemes, reduce the amount of threat placed on the scheme by 1."
+      }
     },
     "01086": {
       "comment": "Event: Action: Heal 2 damage from any character.",
@@ -3463,12 +3050,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Action</b>: Heal 2 damage from any character.",
-        "reconstructedText": "ACTION -> Heal 2 damage from CHOSEN_CHARACTER"
-      },
-      "mechanicSteps": [
-        "Action: Action. Heal 2 damage from a character (hero, alter-ego, or ally)."
-      ]
+        "originalText": "<b>Action</b>: Heal 2 damage from any character."
+      }
     },
     "01087": {
       "comment": "Attack Event: Hero Action: Deal 3 damage to an enemy.",
@@ -3494,12 +3077,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 3 damage to an enemy.",
-        "reconstructedText": "HERO_ACTION -> Deal 3 damage to CHOSEN_ENEMY"
-      },
-      "mechanicSteps": [
-        "Action: Hero Action (attack). Deal 3 damage to an enemy."
-      ]
+        "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 3 damage to an enemy."
+      }
     },
     "01088": {
       "noSupplementalNeeded": true,
@@ -3510,12 +3089,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Max 1 per deck.",
-        "reconstructedText": "Passive/Vanilla: Max 1 per deck."
+        "originalText": "Max 1 per deck."
       },
-      "mechanicSteps": [
-        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ],
       "comment": "RESOURCE: Energy"
     },
     "01089": {
@@ -3527,12 +3102,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Max 1 per deck.",
-        "reconstructedText": "Passive/Vanilla: Max 1 per deck."
+        "originalText": "Max 1 per deck."
       },
-      "mechanicSteps": [
-        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ],
       "comment": "RESOURCE: Genius"
     },
     "01090": {
@@ -3544,12 +3115,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Max 1 per deck.",
-        "reconstructedText": "Passive/Vanilla: Max 1 per deck."
+        "originalText": "Max 1 per deck."
       },
-      "mechanicSteps": [
-        "Passive: Standard double resource generator card (yields 2 resources when spent for cost payment)."
-      ],
       "comment": "RESOURCE: Strength"
     },
     "01091": {
@@ -3580,12 +3147,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Avengers Mansion → choose a player. That player draws 1 card.",
-        "reconstructedText": "ACTION [Cost: Exhaust] -> Draw 1 card"
-      },
-      "mechanicSteps": [
-        "Action: Action. Exhaust Avengers Mansion -> choose a player to draw 1 card."
-      ]
+        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Avengers Mansion → choose a player. That player draws 1 card."
+      }
     },
     "01092": {
       "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
@@ -3597,12 +3160,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1.",
-        "reconstructedText": "ACTION [Cost: Exhaust Helicarrier] -> Reduce the resource cost of the next card played by chosen player this phase by 1."
+        "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1."
       },
-      "mechanicSteps": [
-        "Action: Action. Exhaust Helicarrier -> choose a player; reduce the resource cost of the next card they play this phase by 1."
-      ],
       "abilities": [
         {
           "id": "helicarrier_action",
@@ -3651,13 +3210,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Hero Action</b>: Spend a [physical] resource and discard this card → ready your hero.",
-        "reconstructedText": "HERO_ACTION [Cost: Discard this card, Spend 1 [physical]] -> READY (target: SELF_IDENTITY)"
-      },
-      "mechanicSteps": [
-        "Play Condition: Attach to your hero. Max 1 per hero.",
-        "Action: Hero Action. Spend 1 [physical] resource and discard Tenacity -> ready your hero."
-      ]
+        "originalText": "<b>Hero Action</b>: Spend a [physical] resource and discard this card → ready your hero."
+      }
     }
   }
 }

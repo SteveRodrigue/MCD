@@ -11,12 +11,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "",
-        "reconstructedText": "Vanilla card (no printed abilities)."
-      },
-      "mechanicSteps": [
-        "Villain Stage I: Base SCH 1, ATK 3, Health 14 per player (enters play without initial status unless scenario specifies)."
-      ]
+        "originalText": ""
+      }
     },
     "01095": {
       "comment": "VILLAIN: Rhino (Stage II). When Revealed: Search the encounter deck and discard pile for Breakin' & Takin' and reveal it. Shuffle the encounter deck.",
@@ -49,14 +45,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Search the encounter deck and discard pile for the Breakin' & Takin' side scheme and reveal it. Shuffle the encounter deck.",
-        "reconstructedText": "WHEN_REVEALED -> SEARCH_AND_REVEAL_SIDE_SCHEME (target: Breakin' & Takin' [01107], zones: [ENCOUNTER_DECK, ENCOUNTER_DISCARD], shuffle: ENCOUNTER_DECK)"
-      },
-      "mechanicSteps": [
-        "Villain Stage II: Base SCH 1, ATK 4, Health 15 per player.",
-        "Trigger: When revealed (WHEN_REVEALED)",
-        "Effect: Search encounter deck and discard pile for Breakin' & Takin' side scheme (#01107) and reveal it. Shuffle encounter deck."
-      ]
+        "originalText": "<b>When Revealed</b>: Search the encounter deck and discard pile for the Breakin' & Takin' side scheme and reveal it. Shuffle the encounter deck."
+      }
     },
     "01096": {
       "comment": "VILLAIN: Rhino (Stage III). When Revealed: Stun each hero. Rhino gains Tough.",
@@ -96,14 +86,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Toughness. <i>(This character enter play with a tough status card.)</i>\n<b>When Revealed</b>: Stun each hero.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_STATUS (status: STUNNED, target: ALL_HEROES); SETUP -> ADD_STATUS (status: TOUGH, target: SELF)"
-      },
-      "mechanicSteps": [
-        "Villain Stage III: Base SCH 1, ATK 5, Health 16 per player.",
-        "Trigger: When revealed (WHEN_REVEALED)",
-        "Effect: Give Tough status card to Rhino and Stun each hero."
-      ]
+        "originalText": "Toughness. <i>(This character enter play with a tough status card.)</i>\n<b>When Revealed</b>: Stun each hero."
+      }
     },
     "01097a": {
       "noSupplementalNeeded": true,
@@ -115,13 +99,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>Contents</b>: Rhino (I) and Rhino (II). (Rhino (II) and Rhino (III) instead for expert mode.) Rhino and Standard encounter sets. One modular encounter set <i>(recommended: Bomb Scare)</i>.\n<b>Setup</b>: Advance to stage 1B.",
-        "reconstructedText": "Passive/Vanilla: <b>Contents</b>: Rhino (I) and Rhino (II). (Rhino (II) and Rhino (III) instead for expert mode.) Rhino and Standard encounter sets. One modular encounter set <i>(recommended: Bomb Scare)</i>.\n<b>Setup</b>: Advance to stage 1B."
-      },
-      "mechanicSteps": [
-        "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
-        "Escalation: Villain Phase Step 1 places 1 threat per player per round."
-      ]
+        "originalText": "<b>Contents</b>: Rhino (I) and Rhino (II). (Rhino (II) and Rhino (III) instead for expert mode.) Rhino and Standard encounter sets. One modular encounter set <i>(recommended: Bomb Scare)</i>.\n<b>Setup</b>: Advance to stage 1B."
+      }
     },
     "01097b": {
       "noSupplementalNeeded": true,
@@ -133,13 +112,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>If this stage is completed, the players lose the game.</b>",
-        "reconstructedText": "Passive/Vanilla: <b>If this stage is completed, the players lose the game.</b>"
-      },
-      "mechanicSteps": [
-        "Main Scheme 1A/1B: Target threat 7 per player. Starting threat 0.",
-        "Escalation: Villain Phase Step 1 places 1 threat per player per round."
-      ]
+        "originalText": "<b>If this stage is completed, the players lose the game.</b>"
+      }
     },
     "01098": {
       "comment": "ATTACHMENT: Armored Rhino Suit. When any damage would be dealt to Rhino, absorbs damage up to 5 and discards.",
@@ -180,13 +154,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Attach to Rhino.\n<b>Forced Interrupt</b>: When any amount of damage would be dealt to Rhino, place it here instead. Then, if there is at least 5 damage here, discard Armored Rhino Suit.",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); FORCED_INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) -> ATTACHMENT_DAMAGE_SHIELD (mode: PREVENT_ALL_AND_DISCARD, maxAbsorb: 5)"
-      },
-      "mechanicSteps": [
-        "Play Condition: Attach to Rhino.",
-        "Forced Interrupt: When any amount of damage would be dealt to Rhino, absorbs the hit and discards Armored Rhino Suit."
-      ]
+        "originalText": "Attach to Rhino.\n<b>Forced Interrupt</b>: When any amount of damage would be dealt to Rhino, place it here instead. Then, if there is at least 5 damage here, discard Armored Rhino Suit."
+      }
     },
     "01099": {
       "comment": "ATTACHMENT: Charge. Rhino gets +3 ATK and Overkill. Discard after attack resolves.",
@@ -237,13 +206,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Attach to Rhino.\n[star] <b>Forced Interrupt</b>: When Rhino attacks, the attack gains overkill. <i>(Excess damage to an ally from this attack is dealt to that ally's controller.)</i> At the end of this attack, discard Charge.",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 3); CONSTANT -> GRANT_KEYWORD (keyword: OVERKILL)"
-      },
-      "mechanicSteps": [
-        "Play Condition: Attach to Rhino.",
-        "Constant: Rhino gains +3 ATK and Overkill for his next attack. Discard Charge after attack resolves."
-      ]
+        "originalText": "Attach to Rhino.\n[star] <b>Forced Interrupt</b>: When Rhino attacks, the attack gains overkill. <i>(Excess damage to an ally from this attack is dealt to that ally's controller.)</i> At the end of this attack, discard Charge."
+      }
     },
     "01100": {
       "comment": "ATTACHMENT: Enhanced Ivory Horn. Rhino gets +1 ATK. Hero Action: Spend 3 physical resources to discard.",
@@ -299,14 +263,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "Attach to Rhino.\n<b>Hero Action</b>: Spend [physical] [physical] [physical] resources → discard this card",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_TO_HOST (target: VILLAIN); CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); HERO_ACTION [Cost: Spend 3 [physical]] -> DISCARD (source: SELF)"
-      },
-      "mechanicSteps": [
-        "Play Condition: Attach to Rhino.",
-        "Constant: Attached villain gets +1 ATK.",
-        "Hero Action: Spend 3 physical resources to discard Enhanced Ivory Horn."
-      ]
+        "originalText": "Attach to Rhino.\n<b>Hero Action</b>: Spend [physical] [physical] [physical] resources → discard this card"
+      }
     },
     "01101": {
       "comment": "MINION: Hydra Mercenary. Keyword: Guard (Heroes cannot attack the villain while engaged).",
@@ -331,13 +289,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Guard. <i>(While this minion is engaged with you, you cannot attack the villain.)</i>",
-        "reconstructedText": "CONSTANT -> Guard (While engaged, minions prevent attacks against the villain)"
-      },
-      "mechanicSteps": [
-        "Minion: SCH 1, ATK 1, Health 3.",
-        "Keyword: Guard (Heroes engaged with this minion cannot attack the villain)."
-      ]
+        "originalText": "Guard. <i>(While this minion is engaged with you, you cannot attack the villain.)</i>"
+      }
     },
     "01102": {
       "comment": "MINION: Sandman. Enters with Toughness. Forced Response: After Sandman attacks, discard top 2 encounter cards.",
@@ -377,13 +330,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>",
-        "reconstructedText": "SETUP -> Give TOUGH status to SELF; FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> DISCARD (source: ENCOUNTER_DECK, count: 2)"
-      },
-      "mechanicSteps": [
-        "Minion: SCH 2, ATK 2, Health 4. Toughness (enters play with a Tough status card).",
-        "Trigger: Forced Response after Sandman attacks, discard the top 2 cards of the encounter deck."
-      ]
+        "originalText": "Toughness. <i>(This character enters play with a tough status card.)</i>"
+      }
     },
     "01103": {
       "comment": "MINION: Shocker. When Revealed: Deal 1 damage to each hero.",
@@ -410,12 +358,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Deal 1 damage to each hero.",
-        "reconstructedText": "WHEN_REVEALED -> DEAL_DAMAGE (amount: 1, target: ALL_HEROES)"
-      },
-      "mechanicSteps": [
-        "When Revealed: Deal 1 damage to each hero in play."
-      ]
+        "originalText": "<b>When Revealed</b>: Deal 1 damage to each hero."
+      }
     },
     "01104": {
       "comment": "Treachery: When Revealed -> Rhino heals 4 HP. If 0 healed, gains Surge.",
@@ -448,13 +392,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Rhino heals 4 damage. If no damage was healed this way, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [HEAL_DAMAGE (amount: 4, target: VILLAIN), IF_AMOUNT_ZERO -> SURGE]"
-      },
-      "mechanicSteps": [
-        "Treachery: When revealed (WHEN_REVEALED)",
-        "Effect: Heal 4 damage from Rhino (if at full health, this card gains Surge)."
-      ]
+        "originalText": "<b>When Revealed</b>: Rhino heals 4 damage. If no damage was healed this way, this card gains surge."
+      }
     },
     "01105": {
       "comment": "Treachery: When Revealed -> Give Rhino Tough status card. If already Tough, gains Surge.",
@@ -491,13 +430,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Give Rhino a tough status card. If Rhino already has a tough status card, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [ADD_STATUS (status: TOUGH, target: VILLAIN), IF_ALREADY_HAS_STATUS -> SURGE]"
-      },
-      "mechanicSteps": [
-        "Treachery: When revealed (WHEN_REVEALED)",
-        "Effect: Give Rhino a Tough status card (if already tough, this card gains Surge)."
-      ]
+        "originalText": "<b>When Revealed</b>: Give Rhino a tough status card. If Rhino already has a tough status card, this card gains surge."
+      }
     },
     "01106": {
       "comment": "Treachery: When Revealed -> In Hero form, Rhino attacks you. In Alter-Ego, gains Surge.",
@@ -532,13 +466,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: Rhino attacks you. If a character is damaged by this attack, that character is stunned.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE ({\"target\":\"ACTIVE_PLAYER\"})"
-      },
-      "mechanicSteps": [
-        "Treachery: When revealed (WHEN_REVEALED)",
-        "Effect: Rhino attacks the player (if in Alter-Ego form, this card gains Surge)."
-      ]
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: Rhino attacks you. If a character is damaged by this attack, that character is stunned."
+      }
     },
     "01107": {
       "comment": "SIDE_SCHEME: Breakin' & Takin'. Base threat 2. When Revealed: Place 1 threat per player.",
@@ -566,12 +495,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Hazard Icon: Deal +1 encounter card during the villain phase.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: THIS_SIDE_SCHEME, perPlayer: true)"
-      },
-      "mechanicSteps": [
-        "When Revealed: Place an additional 1 threat per player on Breakin' & Takin'."
-      ]
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Hazard Icon: Deal +1 encounter card during the villain phase.)</i>"
+      }
     },
     "01108": {
       "comment": "SIDE_SCHEME: Crowd Control. Crisis icon. When Revealed: Place 1 acceleration token or threat per player.",
@@ -599,14 +524,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<i>(Crisis Icon: While this scheme is in play, you cannot remove threat from the main scheme.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, perPlayer: true)"
-      },
-      "mechanicSteps": [
-        "Side Scheme: 2 Threat per player.",
-        "Keyword Icon: Crisis (Players cannot remove threat from the main scheme).",
-        "When Revealed: Place 1 additional threat here per player."
-      ]
+        "originalText": "<i>(Crisis Icon: While this scheme is in play, you cannot remove threat from the main scheme.)</i>"
+      }
     },
     "01109": {
       "comment": "SIDE_SCHEME: Bomb Scare. Base threat 2. When Revealed: Place 1 threat per player.",
@@ -634,12 +553,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Acceleration Icon: Place +1 threat on the main scheme at the start of the villain phase.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: THIS_SIDE_SCHEME, perPlayer: true)"
-      },
-      "mechanicSteps": [
-        "When Revealed: Place an additional 1 threat per player on Bomb Scare."
-      ]
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Acceleration Icon: Place +1 threat on the main scheme at the start of the villain phase.)</i>"
+      }
     },
     "01110": {
       "comment": "MINION: Hydra Bomber. When Revealed: Choose to take 2 damage or place 1 threat on main scheme.",
@@ -688,13 +603,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Choose to either take 2 damage or place 1 threat on the main scheme.",
-        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [Take 2 damage, Place 1 threat on main scheme])"
-      },
-      "mechanicSteps": [
-        "Minion: SCH 1, ATK 1, Health 2.",
-        "When Revealed: The player must choose to either take 2 damage or place 1 threat on the main scheme."
-      ]
+        "originalText": "<b>When Revealed</b>: Choose to either take 2 damage or place 1 threat on the main scheme."
+      }
     },
     "01111": {
       "comment": "Treachery: When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
@@ -736,13 +646,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: If Bomb Scare is in play, assign X damage among heroes and allies, where X is the amount of threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> IF_CARD_IN_PLAY(01109) DEAL_DAMAGE (amount: THREAT[01109], target: HEROES_AND_ALLIES) THEN IF_CARD_NOT_IN_PLAY(01109) SURGE"
-      },
-      "mechanicSteps": [
-        "When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare.",
-        "If Bomb Scare is not in play, this card gains surge."
-      ]
+        "originalText": "<b>When Revealed</b>: If Bomb Scare is in play, assign X damage among heroes and allies, where X is the amount of threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge."
+      }
     },
     "01112": {
       "comment": "Treachery: When Revealed -> Deal 1 damage to each hero and place 1 threat on main scheme.",
@@ -769,12 +674,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: You are confused. If you are already confused, this card gains surge.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give CONFUSED status to ACTIVE_IDENTITY"
-      },
-      "mechanicSteps": [
-        "Treachery: When revealed: Confuse your identity character."
-      ]
+        "originalText": "<b>When Revealed</b>: You are confused. If you are already confused, this card gains surge."
+      }
     },
     "01155": {
       "comment": "Obligation: Affairs of State",
@@ -800,8 +701,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b><i>Give to the T'Challa player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust T'Challa → remove Affairs of State from the game.\n• Choose and discard a [[Black Panther]] upgrade you control. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": "<b><i>Give to the T'Challa player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust T'Challa → remove Affairs of State from the game.\n• Choose and discard a [[Black Panther]] upgrade you control. Discard this obligation."
       }
     },
     "01156": {
@@ -811,8 +711,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "",
-        "reconstructedText": "Vanilla card (no printed abilities)."
+        "originalText": ""
       }
     },
     "01157": {
@@ -838,8 +737,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "Killmonger cannot take damage from [[Black Panther]] upgrades.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+        "originalText": "Killmonger cannot take damage from [[Black Panther]] upgrades."
       }
     },
     "01158": {
@@ -865,8 +763,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "Surge <i>(After this card resolves, reveal 1 additional encounter card)</i>\n<b>When Revealed</b>: Give the villain and each minion engaged with you a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Heal 2 damage from VILLAIN"
+        "originalText": "Surge <i>(After this card resolves, reveal 1 additional encounter card)</i>\n<b>When Revealed</b>: Give the villain and each minion engaged with you a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
       }
     },
     "01159": {
@@ -892,8 +789,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "<b>When Revealed</b>: Discard the top card of the encounter deck. Then, choose to either deal X damage to your hero or place X threat on the main scheme. X is 1 more than the number of boost icons on the discarded encounter card.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "originalText": "<b>When Revealed</b>: Discard the top card of the encounter deck. Then, choose to either deal X damage to your hero or place X threat on the main scheme. X is 1 more than the number of boost icons on the discarded encounter card."
       }
     },
     "01160": {
@@ -920,8 +816,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b><i>Give to the Jennifer Walters player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Jennifer Walters → remove Legal Work from the game.\n• Give the main scheme 1 acceleration token. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": "<b><i>Give to the Jennifer Walters player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Jennifer Walters → remove Legal Work from the game.\n• Give the main scheme 1 acceleration token. Discard this obligation."
       }
     },
     "01161": {
@@ -950,8 +845,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
       }
     },
     "01162": {
@@ -977,8 +871,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "X is equal to Titania's remaining hit points.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF"
+        "originalText": "X is equal to Titania's remaining hit points."
       }
     },
     "01163": {
@@ -1002,8 +895,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "Attach to the minion with the highest printed hit points. If there are no minions in play, this card gains surge.\nAttached minion gets +3 hit points.",
-        "reconstructedText": "CONSTANT -> Give undefined status to target"
+        "originalText": "Attach to the minion with the highest printed hit points. If there are no minions in play, this card gains surge.\nAttached minion gets +3 hit points."
       }
     },
     "01164": {
@@ -1041,8 +933,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO; BOOST -> GIVE_ADDITIONAL_BOOST_CARD"
+        "originalText": "<b>When Revealed</b>: Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
       }
     },
     "01165": {
@@ -1069,8 +960,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b><i>Give to the Peter Parker player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Peter Parker → remove Eviction Notice from the game.\n• Discard 1 card at random from your hand. This card gains surge. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": "<b><i>Give to the Peter Parker player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Peter Parker → remove Eviction Notice from the game.\n• Discard 1 card at random from your hand. This card gains surge. Discard this obligation."
       }
     },
     "01166": {
@@ -1105,8 +995,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Each player places a random card from their hand facedown here.\n<b>When Defeated</b>: Return each facedown card here to its owner's hand.",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; FORCED_RESPONSE (Trigger: DEFEATED) -> RETURN_TO_HAND"
+        "originalText": "<b>When Revealed</b>: Each player places a random card from their hand facedown here.\n<b>When Defeated</b>: Return each facedown card here to its owner's hand."
       }
     },
     "01167": {
@@ -1117,8 +1006,7 @@
         "reviewedAt": "2026-09-01T13:31:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "Quickstrike. <i>(After this minion engages your hero, it attacks.)</i>",
-        "reconstructedText": "Quickstrike."
+        "originalText": "Quickstrike. <i>(After this minion engages your hero, it attacks.)</i>"
       }
     },
     "01168": {
@@ -1160,8 +1048,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Stun your hero. If Vulture is in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to a friendly character, stun that character.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO; BOOST -> ADD_STATUS (status: STUNNED, target: DEFENDING_CHARACTER)"
+        "originalText": "<b>When Revealed</b>: Stun your hero. If Vulture is in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to a friendly character, stun that character."
       }
     },
     "01169": {
@@ -1187,8 +1074,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "<b>When Revealed</b>: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give CONFUSED status to HERO"
+        "originalText": "<b>When Revealed</b>: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way."
       }
     },
     "01170": {
@@ -1215,8 +1101,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b><i>Give to the Tony Stark player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Tony Stark → remove Business Problems from the game.\n• Exhaust each upgrade you control. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": "<b><i>Give to the Tony Stark player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Tony Stark → remove Business Problems from the game.\n• Exhaust each upgrade you control. Discard this obligation."
       }
     },
     "01171": {
@@ -1245,8 +1130,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
+        "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here."
       }
     },
     "01172": {
@@ -1287,8 +1171,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Retaliate 1 <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give TOUGH status to SELF; CONSTANT -> GRANT_KEYWORD (keyword: Retaliate, amount: 1)"
+        "originalText": "Retaliate 1 <i>(After this character is attacked, deal 1 damage to the attacking character.)</i>"
       }
     },
     "01173": {
@@ -1335,8 +1218,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control.",
-        "reconstructedText": "CONSTANT -> MODIFY_STAT (stat: ATTACK, amount: 1); BOOST -> DISCARD (source: TABLEAU, target: DEFENDING_PLAYER)"
+        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control."
       }
     },
     "01174": {
@@ -1362,8 +1244,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "<b>When Revealed</b>: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "originalText": "<b>When Revealed</b>: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage."
       }
     },
     "01175": {
@@ -1390,8 +1271,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "<b><i>Give to the Carol Danvers player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Carol Danvers → remove Family Emergency from the game.\n• You are stunned. This card gains surge. Discard this obligation.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": "<b><i>Give to the Carol Danvers player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Carol Danvers → remove Family Emergency from the game.\n• You are stunned. This card gains surge. Discard this obligation."
       }
     },
     "01176": {
@@ -1420,8 +1300,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place an additional 1[per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
+        "originalText": "<b>When Revealed</b>: Place an additional 1[per_hero] threat here."
       }
     },
     "01177": {
@@ -1449,8 +1328,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "[star] <b>Forced Response</b>: After Yon-Rogg attacks, place 1 threat on The Psyche-Magnitron.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: MINION_ATTACKED) -> ADD_THREAT (amount: 1, cardCode: 01176)"
+        "originalText": "[star] <b>Forced Response</b>: After Yon-Rogg attacks, place 1 threat on The Psyche-Magnitron."
       }
     },
     "01178": {
@@ -1493,8 +1371,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Surge. <i>(After this card resolves, reveal 1 additional encounter card.)</i>\n<b>When Revealed</b>: Place 1 threat on the main scheme.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, place 1 threat on the main scheme.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: MAIN_SCHEME); BOOST (Trigger: BOOST_STAR_RESOLVED) -> ADD_THREAT (amount: 1, target: MAIN_SCHEME, condition: UNDEFENDED_ATTACK)"
+        "originalText": "Surge. <i>(After this card resolves, reveal 1 additional encounter card.)</i>\n<b>When Revealed</b>: Place 1 threat on the main scheme.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, place 1 threat on the main scheme."
       }
     },
     "01179": {
@@ -1520,8 +1397,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Deal 2 damage to HERO"
+        "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."
       }
     },
     "01186": {
@@ -1546,12 +1422,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: The villain schemes.",
-        "reconstructedText": "WHEN_REVEALED -> VILLAIN_SCHEMES"
-      },
-      "mechanicSteps": [
-        "When Revealed: The villain schemes against you."
-      ]
+        "originalText": "<b>When Revealed</b>: The villain schemes."
+      }
     },
     "01187": {
       "comment": "TREACHERY: Assault. When Revealed: Alter-Ego gains surge. Hero: The villain attacks you.",
@@ -1575,13 +1447,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain attacks you.",
-        "reconstructedText": "WHEN_REVEALED -> VILLAIN_ATTACKS (Alter-Ego: Surge, Hero: Villain attacks you)"
-      },
-      "mechanicSteps": [
-        "When Revealed (Alter-Ego): This card gains surge.",
-        "When Revealed (Hero): The villain attacks you."
-      ]
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain attacks you."
+      }
     },
     "01188": {
       "comment": "Treachery: Caught Off Guard -> Choose and discard an upgrade or support you control.",
@@ -1615,12 +1482,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: TABLEAU, filter: { types: [\"upgrade\", \"support\"] }, fallback: SURGE, target: ACTIVE_PLAYER)"
-      },
-      "mechanicSteps": [
-        "Treachery: When revealed: Discard an upgrade or support you control (if none, gain Surge)."
-      ]
+        "originalText": "<b>When Revealed</b>: Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge."
+      }
     },
     "01189": {
       "comment": "TREACHERY: Gang-Up. When Revealed: Alter-Ego gains surge. Hero: The villain and each minion engaged with you attacks you.",
@@ -1644,13 +1507,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain and each minion engaged with you attacks you.",
-        "reconstructedText": "WHEN_REVEALED -> VILLAIN_AND_ENGAGED_MINIONS_ATTACK"
-      },
-      "mechanicSteps": [
-        "When Revealed (Alter-Ego): This card gains surge.",
-        "When Revealed (Hero): The villain and each minion engaged with you attacks you."
-      ]
+        "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain and each minion engaged with you attacks you."
+      }
     },
     "01190": {
       "comment": "TREACHERY: Shadow of the Past. When Revealed: Put set-aside nemesis minion(s) and side scheme into play. Shuffle remaining nemesis cards into encounter deck. If no nemesis minion enters play, surge.",
@@ -1723,15 +1581,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (types: minion, sets: PLAYER_NEMESIS), PUT_INTO_PLAY (types: side_scheme, sets: PLAYER_NEMESIS), SHUFFLE_INTO_DECK (sets: PLAYER_NEMESIS), IF_FAILED -> SURGE]"
-      },
-      "mechanicSteps": [
-        "When Revealed: Reveal your set-aside nemesis minion and put it into play engaged with you.",
-        "Reveal your set-aside nemesis side scheme and put it into play.",
-        "Shuffle the rest of your set-aside nemesis encounter set into the encounter deck.",
-        "If your nemesis minion does not enter the game this way, this card gains surge."
-      ]
+        "originalText": "<b>When Revealed</b>: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge."
+      }
     },
     "01191": {
       "comment": "TREACHERY: Exhaustion. When Revealed: Choose to exhaust your identity or take 2 damage.",
@@ -1779,12 +1630,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "Surge.\n<b>When Revealed</b>: Exhaust your identity card.",
-        "reconstructedText": "WHEN_REVEALED -> PLAYER_CHOICE (options: [Exhaust identity, Take 2 damage])"
-      },
-      "mechanicSteps": [
-        "When Revealed: The player chooses to either exhaust their identity or take 2 damage."
-      ]
+        "originalText": "Surge.\n<b>When Revealed</b>: Exhaust your identity card."
+      }
     },
     "01192": {
       "comment": "TREACHERY: Masterplan. When Revealed: Place 4 threat on each side scheme. If none, discard until side scheme is found and reveal it.",
@@ -1811,13 +1658,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "<b>When Revealed</b>: Place 4 threat on each side scheme. If there are no side schemes in play, discard cards from the top of the encounter deck until a side scheme is discarded. Reveal that side scheme.",
-        "reconstructedText": "WHEN_REVEALED -> PLACE_THREAT_PER_SIDE_SCHEME (amount: 4, fallback: discard until side scheme and reveal)"
-      },
-      "mechanicSteps": [
-        "When Revealed: Place 4 threat on each side scheme.",
-        "If there are no side schemes in play, discard cards from the top of the encounter deck until a side scheme is discarded. Reveal that side scheme."
-      ]
+        "originalText": "<b>When Revealed</b>: Place 4 threat on each side scheme. If there are no side schemes in play, discard cards from the top of the encounter deck until a side scheme is discarded. Reveal that side scheme."
+      }
     },
     "01193": {
       "comment": "TREACHERY: Under Fire. Surge. When Revealed: Reveal the top card of the encounter deck.",
@@ -1845,13 +1687,8 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
-        "originalText": "Surge.\n<b>When Revealed</b>: Reveal the top card of the encounter deck.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [SURGE, REVEAL_ENCOUNTER_CARD]"
-      },
-      "mechanicSteps": [
-        "Keyword: Surge.",
-        "When Revealed: Reveal the top card of the encounter deck."
-      ]
+        "originalText": "Surge.\n<b>When Revealed</b>: Reveal the top card of the encounter deck."
+      }
     },
     "01194": {
       "comment": "Treachery: Masterplan -> Place 1 threat on main scheme for each side scheme in discard.",
@@ -1875,8 +1712,7 @@
         "reviewedAt": "2026-08-28T09:34",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "originalText": "",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> Give undefined status to MAIN_SCHEME"
+        "originalText": ""
       }
     },
     "01195": {
@@ -1903,8 +1739,7 @@
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
-        "originalText": "",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: WHEN_REVEALED) -> DISCARD (source: SELF)"
+        "originalText": ""
       }
     }
   }

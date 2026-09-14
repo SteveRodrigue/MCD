@@ -17,7 +17,6 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
       "comment": "HERO: Spider-Man. Interrupt: When attacked, draw 1 card.",
       "abilities": [ ... ],
       "audit": { ... },
-      "mechanicSteps": [ ... ],
       "errata": null
     }
   }
@@ -34,7 +33,6 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `abilities`            | `CardAbility[]`    | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                            |
 | `playRequirements`     | `PlayRequirements` | Optional | Card-level form, trait, and control constraints (RR v1.8 p. 16, see [Module 11](./11_play_requirements.md)).     |
 | `audit`                | `CardAuditRecord`  | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                            |
-| `mechanicSteps`        | `string[]`         | Optional | Granular step-by-step translation matching printed text.                                                         |
 | `noSupplementalNeeded` | `boolean`          | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).           |
 | `victoryPoints`        | `number`           | Optional | Numeric value of the printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Paired with `keywords: ["Victory"]`. |
 | `errata`               | `string \| null`   | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                             |
@@ -54,8 +52,7 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
   "reviewedBy": "antigravity",
   "rulesVersion": "v1.8",
   "confidence": 98,
-  "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.",
-  "reconstructedText": "INTERRUPT (Trigger: ENEMY_INITIATES_ATTACK) -> Draw 1 card"
+  "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card."
 }
 ```
 
@@ -68,4 +65,3 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `rulesVersion`      | `string` | `"v1.8"`             | Official Marvel Champions Rules Reference version.                                   |
 | `confidence`        | `number` | `0` to `100`         | Integer rating. Confidence $\ge 95\%$ enables ambiguity pruning (Inbox Zero).        |
 | `originalText`      | `string` | Raw text             | Exact printed rules text from upstream/printed card for self-contained auditability. |
-| `reconstructedText` | `string` | Markdown string      | Decompiled pseudo-code derived 100% from `abilities` to prove round-trip integrity.  |

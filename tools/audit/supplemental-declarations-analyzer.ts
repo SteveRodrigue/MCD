@@ -24,7 +24,6 @@ interface CardAudit {
   confidence?: number;
   reviewedBy?: string;
   originalText?: string;
-  reconstructedText?: string;
   ambiguityFile?: string;
 }
 
@@ -52,7 +51,6 @@ interface SupplementalEntry {
   comment?: string;
   abilities?: CardAbility[];
   audit?: CardAudit;
-  mechanicSteps?: string[];
 }
 
 interface UpstreamCard {
@@ -341,9 +339,7 @@ export function runDeclarationsAudit() {
           faction: upstream ? upstream.faction_code : 'Unknown',
           pack: packName,
           comment: (
-            entry.comment ||
-            entry.audit?.reconstructedText ||
-            'No abilities required (Vanilla / Base Stats / Standard Resource)'
+            entry.comment || 'No abilities required (Vanilla / Base Stats / Standard Resource)'
           )
             .replace(/\r?\n|\r/g, ' ')
             .replace(/\s+/g, ' ')

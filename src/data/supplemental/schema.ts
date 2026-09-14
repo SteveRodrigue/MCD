@@ -23,7 +23,6 @@ export const CardAuditRecordSchema = z
     confidence: z.number().min(0).max(100).optional(),
     ambiguityFile: z.string().optional(),
     originalText: z.string().optional(),
-    reconstructedText: z.string().optional(),
   })
   .strict();
 
@@ -709,7 +708,6 @@ export const CardEnrichmentSchema = z
     abilities: z.array(CardAbilitySchema).optional(),
     playRequirements: PlayRequirementsSchema.optional(),
     audit: CardAuditRecordSchema.optional(),
-    mechanicSteps: z.array(z.string()).optional(),
     noSupplementalNeeded: z.boolean().optional(),
     isLandscape: z.boolean().optional(),
     attackCost: z.number().int().nonnegative().optional(),

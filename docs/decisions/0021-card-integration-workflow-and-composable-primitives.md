@@ -1,11 +1,14 @@
 # [ADR-0021] Standard Card Integration Protocol, Blast-Radius Guardrails, Audit Metadata & Inbox-Zero Ambiguity Tracking
 
-- **Status:** Accepted
+- **Status:** Accepted (Partially superseded by [ADR-0059](0059-decommissioning-reconstructed-text-and-mechanic-steps.md) regarding `reconstructedText` and `mechanicSteps`)
 - **Date:** 2026-08-28
 - **Authors:** MCD Core Team
 - **Deciders:** User & Antigravity
 
 ---
+
+> [!NOTE]
+> **Supersession Note (2026-09-14):** [ADR-0059](0059-decommissioning-reconstructed-text-and-mechanic-steps.md) decommissioned and purged `reconstructedText` and `mechanicSteps` across schemas, pack files, and tooling. `originalText` (exact printed text) and `abilities: [...]` (machine-executable declarative steps) remain the sole authoritative standards.
 
 ## Context & Problem Statement
 

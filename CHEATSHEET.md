@@ -130,7 +130,7 @@ You can use the following prompt templates to invoke specialized skills and work
 
 1. **Ingest Text:** Read exact text from `data/upstream/`.
 2. **Literal Semantic Mapping:** Identify timing, triggers, costs, targets (no guessing).
-3. **Draft Schema:** Define `audit` block (`YYYY-MM-DDTHH:mm`), `mechanicSteps`, and `abilities`.
+3. **Draft Schema:** Define `audit` block (`YYYY-MM-DDTHH:mm`) and `abilities`.
 4. **Consult Ground Truth:** Check `references/mc_rulesreference_v18_compressed.pdf` and MarvelCDB FAQs.
 5. **Round-Trip Test:** Confidence must be $\ge 95\%$ (Max 3 attempts, else log to `docs/ambiguities/`).
 6. **Engine Reuse Check:** Check `src/engine/effects/` & `src/engine/triggers/`.

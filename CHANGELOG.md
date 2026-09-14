@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Declarative Schema & Data Integrity): Decommissioning `reconstructedText` & `mechanicSteps` ([#121](https://github.com/SteveRodrigue/MCD/issues/121), [ADR-0059](docs/decisions/0059-decommissioning-reconstructed-text-and-mechanic-steps.md))**
+  - **Purged Obsolete Fields from Schema:** Removed `reconstructedText` from `CardAuditRecordSchema` and `mechanicSteps` from `CardEnrichmentSchema` in `src/data/supplemental/schema.ts`, and updated `src/engine/models/abilities.ts`. Regenerated `src/data/supplemental/schema.json` via `npm run schema:generate`. Both schemas are `.strict()`, preventing legacy properties from being reintroduced.
+  - **Supplemental Pack Clean Sweep:** Stripped all 127 `mechanicSteps` arrays and 155 `reconstructedText` properties across `src/data/supplemental/pack/core.json` and `src/data/supplemental/pack/core_encounter.json`.
+  - **Tooling & Analyzer Realignment:** Updated `api-middleware.ts` (`missing_audit` filter), `supplemental-declarations-analyzer.ts`, `migrate-declarative-taxonomy.ts`, `card-text-parser.ts`, and `run-ambiguity-cards-review.ts` to remove dependencies on `reconstructedText` and `mechanicSteps`.
+  - **Documentation & Agent Protocols:** Authored [ADR-0059](docs/decisions/0059-decommissioning-reconstructed-text-and-mechanic-steps.md), marked partial supersession in [ADR-0021](docs/decisions/0021-card-integration-workflow-and-composable-primitives.md), and updated `AGENTS.md`, `CHEATSHEET.md`, `.agents/skills/card-integration-protocol/SKILL.md`, `docs/guidelines/`, and `docs/specifications/supplemental/`.
+  - **Strict Contract Tests:** Added negative rejection tests in `tests/data/supplemental-schema.test.ts` asserting strict rejection of `reconstructedText` in `CardAuditRecordSchema` and `mechanicSteps` in `CardEnrichmentSchema`.
+
 - **Refactor & UI (Card Editor Modularization & Live Zod Validation): Phase 6 Editor UI Deconstruction ([ADR-0045](docs/decisions/0045-card-supplemental-editor-tooling.md), [ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - **Modular Component Deconstruction (`src/ui/components/editor/`):** Deconstructed monolithic `AbilityFormBuilder.tsx` (reducing LOC from ~1,968 to 355 lines, an 82% reduction) into 4 focused sub-components:
     - `CardAttributesSection.tsx`: Card-level attributes (developer comment, board limits, confidence slider, attribution, traits, restricted slots, boost cards, victory points, orientation, uses counter lifecycle, structured keywords matrix, vanilla card flag, and play requirements with controlFilter).

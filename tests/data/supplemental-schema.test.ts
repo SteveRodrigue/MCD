@@ -64,7 +64,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         reviewedBy: 'antigravity',
         rulesVersion: 'v1.8',
         confidence: 98,
-        reconstructedText: 'test',
+        originalText: 'test',
       };
       const res = CardAuditRecordSchema.safeParse(invalidAudit);
       expect(res.success).toBe(false);
@@ -78,7 +78,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         reviewedBy: 'antigravity',
         rulesVersion: 'v1.8',
         confidence: 150,
-        reconstructedText: 'test',
+        originalText: 'test',
       };
       const res = CardAuditRecordSchema.safeParse(invalidAudit);
       expect(res.success).toBe(false);
@@ -208,7 +208,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(dups[0].line).toBe(4);
     });
 
-    it('Accepts valid CardAuditRecord with originalText and reconstructedText', () => {
+    it('Accepts valid CardAuditRecord with originalText', () => {
       const validAudit = {
         createdAt: '2026-08-30T15:00',
         updatedAt: '2026-08-30T15:00',
@@ -217,10 +217,34 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         rulesVersion: 'v1.8',
         confidence: 98,
         originalText: 'Spider-Sense — Interrupt: When the villain initiates an attack against you, draw 1 card.',
-        reconstructedText: 'INTERRUPT (ATTACK) -> DRAW_CARDS (count: 1)',
       };
       const res = CardAuditRecordSchema.safeParse(validAudit);
       expect(res.success).toBe(true);
+    });
+
+    it('Strictly rejects decommissioned reconstructedText in CardAuditRecordSchema (ADR-0059)', () => {
+      const legacyAudit = {
+        createdAt: '2026-08-30T15:00',
+        updatedAt: '2026-08-30T15:00',
+        reviewedAt: '2026-08-30T15:00',
+        reviewedBy: 'antigravity',
+        rulesVersion: 'v1.8',
+        confidence: 98,
+        originalText: 'Test card text',
+        reconstructedText: 'INTERRUPT (ATTACK) -> DRAW',
+      };
+      const res = CardAuditRecordSchema.safeParse(legacyAudit);
+      expect(res.success).toBe(false);
+    });
+
+    it('Strictly rejects decommissioned mechanicSteps in CardEnrichmentSchema (ADR-0059)', () => {
+      const legacyCard = {
+        comment: 'Test card',
+        mechanicSteps: ['Step 1: Test step'],
+        abilities: [],
+      };
+      const res = CardEnrichmentSchema.safeParse(legacyCard);
+      expect(res.success).toBe(false);
     });
 
     it('Verifies that all audited cards across supplemental pack files include originalText', () => {

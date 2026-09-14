@@ -58,7 +58,10 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - All card abilities must be composed of universal, reusable effect primitives in `src/engine/effects/index.ts` parameterized purely via `src/data/supplemental/`. If a capability is missing, implement it as a generic, reusable primitive.
 6. **🎯 Rhino Release Scope Boundary Invariant:**
    - Every feature, card integration, or improvement must strictly target the **Core Set Player cards (101 cards)** or the **Rhino Encounter sets (Rhino I/II/III, Standard, Expert, Bomb Scare, 5 Nemesis Sets - 34 cards)**.
-   - Any expansion card (e.g. *Captain America*, *Thor*, *Klaw*, *Ultron*) or advanced expansion mechanic (Player Side Schemes, 3-sided identities, campaign auxiliary decks) must be deferred to subsequent release gates (Gate 2/3/4). Localized technical debt or refactoring is explicitly accepted to deliver the Rhino vertical slice rapidly.
+   - Any expansion card (e.g. *Captain America*, *Thor*, *Klaw*, *Ultron*) or advanced expansion mechanic (Player Side Schemes, 3-sided identities, campaign auxiliary decks) must be deferred to subsequent release gates (Gate 2/3/4).
+7. **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):**
+   - **NEVER** introduce or carry forward legacy shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or temporary shortcuts unless explicitly approved by the user or absolutely necessary.
+   - We are at the early stage of the project: always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data over legacy compatibility layers.
 
 ---
 

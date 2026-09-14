@@ -61,6 +61,31 @@ export function evaluateDynamicAmount(
       baseValue = context.previousResult?.value ?? 0;
       break;
     }
+    case 'DISCARDED_RESOURCE_COUNT': {
+      const resType = (amountParam as any).resourceType;
+      const discarded: CardInstance[] =
+        context.previousResult?.discardedCards || context.discardedCards || [];
+      let count = 0;
+      for (const inst of discarded) {
+        if (!inst?.card) continue;
+        const res = inst.card.resources;
+        const raw = inst.card.raw as any;
+        if (resType) {
+          const val = res?.[resType as keyof typeof res] ?? raw?.[`resource_${resType}`] ?? 0;
+          count += typeof val === 'number' ? val : 0;
+        } else {
+          const totalVal =
+            res?.total ??
+            (raw?.resource_physical || 0) +
+              (raw?.resource_energy || 0) +
+              (raw?.resource_mental || 0) +
+              (raw?.resource_wild || 0);
+          count += typeof totalVal === 'number' ? totalVal : 0;
+        }
+      }
+      baseValue = count;
+      break;
+    }
     case 'COUNTERS': {
       const cType = counterType || 'energy';
       if (
@@ -115,7 +140,15 @@ export function evaluateDynamicAmount(
         }
       } else if (stat === 'THREAT') {
         if (state) {
-          if (options.targetInstanceId) {
+          const targetCardCode =
+            (amountParam as any).targetCardCode ||
+            (target as any)?.code ||
+            (filter as any)?.code ||
+            (filter as any)?.codes?.[0];
+          if (targetCardCode) {
+            const sideScheme = state.sideSchemes?.find((s: any) => s.card?.code === targetCardCode);
+            baseValue = sideScheme ? sideScheme.threat : 0;
+          } else if (options.targetInstanceId) {
             const sideScheme = state.sideSchemes?.find(
               (s: any) =>
                 s.instanceId === options.targetInstanceId || s.id === options.targetInstanceId,

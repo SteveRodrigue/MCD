@@ -153,14 +153,12 @@ export function step2_dispatchInitiationTriggers(
   targetPlayerId: string,
   acceptOptionalTriggers?: boolean,
 ): TriggerDispatchResult {
-  if (attackerType === 'VILLAIN') {
-    return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
-      targetPlayerId,
-      attackerType,
-      acceptOptionalTriggers,
-    });
-  }
-  return { state, hasPendingPrompt: false };
+  return dispatchTrigger(state, 'ENEMY_INITIATES_ATTACK', {
+    targetPlayerId,
+    attackerType,
+    attackerKind: attackerType,
+    acceptOptionalTriggers,
+  });
 }
 
 /**

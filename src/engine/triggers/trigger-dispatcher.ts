@@ -239,9 +239,6 @@ export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[])
       if (s.effect === 'HEAL_DAMAGE') return `HEAL_DAMAGE (${s.params?.amount ?? 1})`;
       if (s.effect === 'ADD_STATUS') return `ADD_STATUS (${s.params?.status})`;
       if (s.effect === 'PREVENT_DAMAGE') return `PREVENT_DAMAGE (${s.params?.amount ?? 'ALL'})`;
-      if (s.effect === 'CONSUME_INTERCEPTED_EVENT') {
-        return `CONSUME_INTERCEPTED_EVENT (${s.params?.amount ?? 'ALL'})`;
-      }
       return displayEffectName(s.effect);
     })
     .join(', ');
@@ -577,8 +574,7 @@ export function dispatchTrigger(
           if (ability.cost?.discardSelf !== false) {
             player.discard.push(interruptCard);
           }
-          const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
-          const firstStep = ability.steps?.[0];
+          const hasConsume = ability.steps?.some((s) => s.effect === 'PREVENT_DAMAGE');
           if (hasConsume) {
             const effCtx = {
               playerId: player.id,
@@ -592,16 +588,6 @@ export function dispatchTrigger(
             if (currentDamage === 0) {
               isPrevented = true;
             }
-          } else if (firstStep?.effect === 'PREVENT_DAMAGE') {
-            currentDamage = 0;
-            isPrevented = true;
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              key: `card.${interruptCard.card.code}.preventedDamage`,
-              params: { player: player.name },
-              onomatopoeia: 'DEFENSE! (0 DAMAGE)',
-            });
           }
         } else {
           const cardName = interruptCard.card.name;
@@ -691,7 +677,7 @@ export function dispatchTrigger(
           if (ability.cost?.discardSelf !== false) {
             p.discard.push(interruptCard);
           }
-          const hasConsume = ability.steps?.some((s) => s.effect === 'CONSUME_INTERCEPTED_EVENT');
+          const hasConsume = ability.steps?.some((s) => s.effect === 'PREVENT_DAMAGE');
           const threatStep =
             ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
 

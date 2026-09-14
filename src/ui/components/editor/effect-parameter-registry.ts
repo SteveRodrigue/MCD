@@ -108,28 +108,9 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  DEAL_DAMAGE_ALL_ENEMIES: {
-    effect: 'DEAL_DAMAGE_ALL_ENEMIES',
-    description: 'Deal damage simultaneously to the Villain and all engaged Minions.',
-    parameters: [
-      {
-        key: 'baseAmount',
-        label: 'Base Damage Amount',
-        type: 'number',
-        defaultValue: 1,
-        placeholder: '1',
-      },
-      {
-        key: 'finisherBonus',
-        label: 'Finisher Bonus',
-        type: 'number',
-        placeholder: 'e.g. 1',
-      },
-    ],
-  },
   PREVENT_DAMAGE: {
     effect: 'PREVENT_DAMAGE',
-    description: 'Prevent incoming attack or effect damage.',
+    description: 'Prevent incoming attack or effect damage, or consume intercepted damage/threat.',
     parameters: [
       {
         key: 'amount',
@@ -143,19 +124,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
-      },
-    ],
-  },
-  CONSUME_INTERCEPTED_EVENT: {
-    effect: 'CONSUME_INTERCEPTED_EVENT',
-    description: 'Consume or nullify impending intercepted event (threat, damage, defeat).',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Consumed Amount',
-        type: 'number',
-        defaultValue: 1,
-        placeholder: 'Leave blank to consume all',
       },
     ],
   },
@@ -270,24 +238,10 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         placeholder: '1',
       },
       {
-        key: 'target',
-        label: 'Target Scheme',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'MAIN_SCHEME',
-      },
-    ],
-  },
-  ADD_THREAT_PER_PLAYER: {
-    effect: 'ADD_THREAT_PER_PLAYER',
-    description: 'Place threat scaled by total active player count.',
-    parameters: [
-      {
-        key: 'amountPerPlayer',
-        label: 'Threat Per Player',
-        type: 'number',
-        defaultValue: 1,
-        placeholder: '1',
+        key: 'perPlayer',
+        label: 'Scale Per Player',
+        type: 'boolean',
+        defaultValue: false,
       },
       {
         key: 'target',
@@ -379,32 +333,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  ADD_COUNTER: {
-    effect: 'ADD_COUNTER',
-    description: 'Add a counter token to target card.',
-    parameters: [
-      {
-        key: 'counterType',
-        label: 'Counter Type',
-        type: 'text',
-        placeholder: 'e.g. all-purpose, charge',
-        defaultValue: 'all-purpose',
-      },
-      {
-        key: 'amount',
-        label: 'Counter Amount',
-        type: 'number',
-        defaultValue: 1,
-      },
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
   ADD_COUNTERS: {
     effect: 'ADD_COUNTERS',
     description: 'Add multiple counter tokens to target card.',
@@ -421,31 +349,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Counter Amount',
         type: 'number',
         allowDynamic: true,
-        defaultValue: 1,
-      },
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'SELF',
-      },
-    ],
-  },
-  REMOVE_COUNTER: {
-    effect: 'REMOVE_COUNTER',
-    description: 'Remove counter token from target card.',
-    parameters: [
-      {
-        key: 'counterType',
-        label: 'Counter Type',
-        type: 'text',
-        placeholder: 'e.g. all-purpose, charge',
-      },
-      {
-        key: 'amount',
-        label: 'Amount Removed',
-        type: 'number',
         defaultValue: 1,
       },
       {
@@ -572,43 +475,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
-      },
-    ],
-  },
-  BOOST_STAT_CHOICE: {
-    effect: 'BOOST_STAT_CHOICE',
-    description: 'Prompt player to choose which stat to temporarily boost.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Boost Amount',
-        type: 'number',
-        defaultValue: 1,
-      },
-    ],
-  },
-  BUFF_ALL_FRIENDLY_CHARACTERS: {
-    effect: 'BUFF_ALL_FRIENDLY_CHARACTERS',
-    description: 'Buff ATK/THW across all friendly characters in play (Lead from the Front).',
-    parameters: [
-      {
-        key: 'atkBonus',
-        label: 'ATK Bonus',
-        type: 'number',
-        placeholder: '1',
-      },
-      {
-        key: 'thwBonus',
-        label: 'THW Bonus',
-        type: 'number',
-        placeholder: '1',
-      },
-      {
-        key: 'duration',
-        label: 'Duration',
-        type: 'select',
-        options: DURATION_OPTIONS,
-        defaultValue: 'UNTIL_END_OF_PHASE',
       },
     ],
   },
@@ -898,14 +764,9 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Place card underneath host card.',
     parameters: [],
   },
-  RETURN_FACEDOWN_CARDS_TO_OWNERS: {
-    effect: 'RETURN_FACEDOWN_CARDS_TO_OWNERS',
-    description: 'Return facedown cards under host back to owner hands.',
-    parameters: [],
-  },
   RETURN_TO_HAND: {
     effect: 'RETURN_TO_HAND',
-    description: 'Return target card in play back to its owner hand.',
+    description: 'Return target card in play or attached facedown cards back to owner hand.',
     parameters: [
       {
         key: 'target',
@@ -1056,10 +917,24 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Put minion into play engaged with target player.',
     parameters: [],
   },
-  SHUFFLE_DISCARD_INTO_DECK: {
-    effect: 'SHUFFLE_DISCARD_INTO_DECK',
-    description: 'Shuffle cards from discard pile back into draw deck.',
+  SHUFFLE_INTO_DECK: {
+    effect: 'SHUFFLE_INTO_DECK',
+    description: 'Shuffle cards from a designated zone into a target deck.',
     parameters: [
+      {
+        key: 'from',
+        label: 'Source Zone',
+        type: 'select',
+        options: ['SET_ASIDE', 'DISCARD', 'HAND'],
+        defaultValue: 'SET_ASIDE',
+      },
+      {
+        key: 'toDeck',
+        label: 'Destination Deck',
+        type: 'select',
+        options: ['ENCOUNTER_DECK', 'PLAYER_DECK'],
+        defaultValue: 'ENCOUNTER_DECK',
+      },
       {
         key: 'count',
         label: 'Card Count',
@@ -1067,11 +942,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         placeholder: 'e.g. 3',
       },
     ],
-  },
-  SHUFFLE_INTO_DECK: {
-    effect: 'SHUFFLE_INTO_DECK',
-    description: 'Shuffle card into deck.',
-    parameters: [],
   },
 
   // 12. Villain & Encounter Deck Actions
@@ -1109,11 +979,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   SURGE: {
     effect: 'SURGE',
     description: 'Resolve Surge keyword: deal and reveal an additional encounter card.',
-    parameters: [],
-  },
-  TRIGGER_SURGE: {
-    effect: 'TRIGGER_SURGE',
-    description: 'Trigger Surge keyword conditionally.',
     parameters: [],
   },
   REVEAL_ENCOUNTER_CARD: {

@@ -446,4 +446,62 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     const cardParsed = CardEnrichmentSchema.safeParse(fullCard);
     expect(cardParsed.success).toBe(true);
   });
+
+  describe('Real-Time Live Zod Validation', () => {
+    it('displays compliant status badge when card passes schema', () => {
+      render(
+        <AbilityFormBuilder
+          supplemental={{
+            comment: 'Valid Card',
+            abilities: [
+              {
+                id: 'valid_ab',
+                timing: 'ACTION',
+                steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 3 } }],
+              },
+            ],
+          }}
+          onChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByTestId('live-validation-status')).toBeDefined();
+      expect(screen.getByText(/SCHEMA COMPLIANT/i)).toBeDefined();
+    });
+
+    it('displays issue count and toggles details when card fails schema validation', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <AbilityFormBuilder
+          supplemental={{
+            // Invalid maxPerPlayer (must be integer >= 1)
+            maxPerPlayer: -5,
+            abilities: [
+              {
+                id: 'broken_ab',
+                timing: 'INVALID_TIMING' as any,
+                steps: [],
+              },
+            ],
+          }}
+          onChange={vi.fn()}
+        />,
+      );
+
+      const statusEl = screen.getByTestId('live-validation-status');
+      expect(statusEl).toBeDefined();
+      expect(screen.getByText(/ISSUES? DETECTED/i)).toBeDefined();
+
+      // Show details
+      const toggleBtn = screen.getByTestId('toggle-validation-issues-btn');
+      await user.click(toggleBtn);
+
+      expect(screen.getByTestId('validation-issues-list')).toBeDefined();
+
+      // Ability invalid badge
+      expect(screen.getByTestId('ability-invalid-badge-0')).toBeDefined();
+      expect(screen.getByTestId('ability-errors-0')).toBeDefined();
+    });
+  });
 });

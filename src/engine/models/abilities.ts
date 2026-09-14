@@ -74,7 +74,6 @@ export type EffectType =
   | 'DRAW'
   | 'DEAL_DAMAGE'
   | 'PREVENT_DAMAGE'
-  | 'CONSUME_INTERCEPTED_EVENT'
   | 'HEAL_DAMAGE'
   | 'GENERATE_RESOURCE'
   | 'REMOVE_THREAT'
@@ -127,7 +126,9 @@ export type ConditionGate =
   | 'IF_FAILED'
   | 'IF_ALREADY_HAS_STATUS'
   | 'IF_RESOURCE_MATCH'
-  | 'IF_CONDITION_MET';
+  | 'IF_CONDITION_MET'
+  | 'IF_CARD_IN_PLAY'
+  | 'IF_CARD_NOT_IN_PLAY';
 
 export interface StepResolutionResult {
   success: boolean;
@@ -136,6 +137,7 @@ export interface StepResolutionResult {
   selectedCardInstanceIds?: string[];
   targetId?: string;
   conditionMet?: boolean;
+  discardedCards?: import('./state').CardInstance[];
 }
 
 export interface SequenceExecutionContext {

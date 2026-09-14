@@ -5,13 +5,13 @@
       "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-28T08:53",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-13T21:42",
+        "reviewedAt": "2026-09-13T21:42",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Spider-Sense — <b>Interrupt</b>: When the villain initiates an attack against you, draw 1 card.",
-        "reconstructedText": "INTERRUPT (Trigger: ENEMY_INITIATES_ATTACK) -> Draw 1 card"
+        "reconstructedText": "INTERRUPT (Trigger: ENEMY_INITIATES_ATTACK [attackerKind: VILLAIN, targetPlayerScope: SELF]) -> Draw 1 card"
       },
       "mechanicSteps": [
         "Trigger: Villain initiates an attack against this hero (INTERRUPT @ VILLAIN_INITIATES_ATTACK)",
@@ -23,6 +23,10 @@
           "id": "spider_sense",
           "timing": "INTERRUPT",
           "trigger": "ENEMY_INITIATES_ATTACK",
+          "triggerFilter": {
+            "attackerKind": "VILLAIN",
+            "targetPlayerScope": "SELF"
+          },
           "steps": [
             {
               "effect": "DRAW",
@@ -127,20 +131,20 @@
           "steps": [
             {
               "id": "prevent_all_damage",
-              "effect": "CONSUME_INTERCEPTED_EVENT"
+              "effect": "PREVENT_DAMAGE"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-08T19:50:00Z",
-        "reviewedAt": "2026-09-08T19:50:00Z",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Interrupt</b> <i>(defense)</i>: When you would take any amount of damage from an attack, prevent all of that damage.",
-        "reconstructedText": "INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT"
+        "reconstructedText": "INTERRUPT (Trigger: DAMAGE_WOULD_BE_TAKEN) [Cost: Discard this card] -> PREVENT_DAMAGE"
       },
       "mechanicSteps": [
         "Trigger: When hero would take damage from an attack (INTERRUPT @ TAKE_ATTACK_DAMAGE)",
@@ -800,7 +804,7 @@
           "steps": [
             {
               "id": "prevent_threat",
-              "effect": "CONSUME_INTERCEPTED_EVENT",
+              "effect": "PREVENT_DAMAGE",
               "params": {
                 "amount": 1
               }
@@ -810,13 +814,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-08T20:25:00Z",
-        "reviewedAt": "2026-09-08T20:25:00Z",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "\"I Object!\" — <b>Interrupt</b>: When threat would be placed on a scheme, prevent 1 of that threat. (Limit once per round.)",
-        "reconstructedText": "ALTER_EGO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Limit: once per round] -> CONSUME_INTERCEPTED_EVENT (amount: 1)"
+        "reconstructedText": "ALTER_EGO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Limit: once per round] -> PREVENT_DAMAGE (amount: 1)"
       },
       "mechanicSteps": [
         "Alter-Ego Identity ability: When threat would be placed on a scheme, prevent 1 of that threat (Limit once per round)."
@@ -1259,17 +1263,43 @@
       ]
     },
     "01031": {
-      "comment": "BLOCKED -- Repulsor Blast supplemental ability withheld pending discarded-energy counting capability. See GitHub issue #112. Attack Event: Hero Action: Deal 1 damage to an enemy. Discard top 5 cards of deck -> deal 2 additional damage per Energy icon discarded.",
+      "comment": "Hero Action (attack): Deal 1 damage to an enemy and discard top 5 cards of your deck. For each printed energy resource discarded this way, deal 2 additional damage to that enemy.",
+      "abilities": [
+        {
+          "id": "repulsor_blast",
+          "timing": "HERO_ACTION",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "params": {
+                "source": "DECK",
+                "count": 5
+              }
+            },
+            {
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "amount": 1,
+                "dynamicBonus": {
+                  "from": "DISCARDED_RESOURCE_COUNT",
+                  "resourceType": "energy",
+                  "multiplier": 2
+                },
+                "target": "CHOSEN_ENEMY"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T21:42",
+        "reviewedAt": "2026-09-13T21:42",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/112",
+        "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy.",
-        "reconstructedText": "HERO_ACTION -> REPULSOR_BLAST (discardCount: 5, target: CHOSEN_ENEMY)"
+        "reconstructedText": "HERO_ACTION (attack) -> DISCARD (source: DECK, count: 5) THEN DEAL_DAMAGE (amount: 1 + 2 * DISCARDED_RESOURCE_COUNT[energy], target: CHOSEN_ENEMY)"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action (attack): Deal 1 damage to an enemy and discard the top 5 cards of your deck. For each printed [energy] resource discarded this way, deal 2 additional damage to that enemy."
@@ -1697,8 +1727,10 @@
           "timing": "ALTER_EGO_ACTION",
           "steps": [
             {
-              "effect": "SHUFFLE_DISCARD_INTO_DECK",
+              "effect": "SHUFFLE_INTO_DECK",
               "params": {
+                "from": "DISCARD",
+                "toDeck": "PLAYER_DECK",
                 "count": 3
               }
             }
@@ -1707,13 +1739,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>Alter-Ego Action</b>: Choose up to 3 different cards in your discard pile and shuffle them into your deck.",
-        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_DISCARD_INTO_DECK (count: 3)"
+        "reconstructedText": "ALTER_EGO_ACTION -> SHUFFLE_INTO_DECK (count: 3)"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Alter-Ego Action: Choose up to 3 different cards in your discard pile and shuffle them into your deck."
@@ -1929,10 +1961,12 @@
           "timing": "SPECIAL",
           "steps": [
             {
-              "effect": "DEAL_DAMAGE_ALL_ENEMIES",
+              "effect": "DEAL_DAMAGE",
               "params": {
                 "baseAmount": 1,
-                "finisherBonus": 1
+                "finisherBonus": 1,
+                "target": "ALL_ENEMIES",
+                "amount": 1
               }
             }
           ]
@@ -1940,13 +1974,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>Special</b>: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n<i>(Play the \"Wakanda Forever!\" event to use this ability.)</i>",
-        "reconstructedText": "SPECIAL -> DEAL_DAMAGE_ALL_ENEMIES (baseAmount: 1, finisherBonus: 1)"
+        "reconstructedText": "SPECIAL -> DEAL_DAMAGE (target: ALL_ENEMIES, baseAmount: 1, finisherBonus: 1)"
       },
       "mechanicSteps": [
         "Permanent/attached card: Special: Choose a player. Deal 1 damage to the villain and to each enemy engaged with that player (2 damage instead if this is the final step of this sequence).\n(Play the \"Wakanda Forever!\" event to use this ability.)"
@@ -2050,17 +2084,65 @@
       ]
     },
     "01050": {
-      "comment": "BLOCKED -- Hulk supplemental ability withheld pending printed-resource branching capability. See GitHub issue #113. Ally: Forced Response: After Hulk attacks, discard top card of your deck and resolve damage based on resource icon.",
+      "comment": "Ally: Forced Response: After Hulk attacks, discard the top card of your deck and resolve effect based on printed resource icon.",
+      "abilities": [
+        {
+          "id": "hulk_smash_response",
+          "timing": "FORCED_RESPONSE",
+          "trigger": "ATTACK_RESOLVED",
+          "triggerFilter": {
+            "sourceCardCode": "01050"
+          },
+          "steps": [
+            {
+              "id": "hulk_discard_step",
+              "effect": "DISCARD",
+              "params": {
+                "source": "DECK",
+                "count": 1
+              }
+            },
+            {
+              "id": "hulk_physical_step",
+              "gate": "IF_RESOURCE_MATCH",
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "resource": "physical",
+                "amount": 2,
+                "target": "CHOSEN_ENEMY"
+              }
+            },
+            {
+              "id": "hulk_energy_step",
+              "gate": "IF_RESOURCE_MATCH",
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "resource": "energy",
+                "amount": 1,
+                "target": "ALL_CHARACTERS"
+              }
+            },
+            {
+              "id": "hulk_mental_step",
+              "gate": "IF_RESOURCE_MATCH",
+              "effect": "DISCARD",
+              "params": {
+                "resource": "mental",
+                "source": "SELF"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:20",
-        "reviewedAt": "2026-08-31T13:20",
+        "updatedAt": "2026-09-13T21:42",
+        "reviewedAt": "2026-09-13T21:42",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
-        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/113",
         "originalText": "<b>Forced Response</b>: After Hulk attacks, discard the top card of your deck. If that card's printed resource has:\n[physical] - Deal 2 damage to an enemy.\n[energy] - Deal 1 damage to each character.\n[mental] - Discard Hulk.\n[wild] - All of the above.",
-        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK) -> HULK_DISCARD_RESOLUTION"
+        "reconstructedText": "FORCED_RESPONSE (Trigger: ATTACK_RESOLVED [sourceCardCode: 01050]) -> DISCARD (source: DECK, count: 1) THEN IF_RESOURCE_MATCH(physical) DEAL_DAMAGE 2 to CHOSEN_ENEMY THEN IF_RESOURCE_MATCH(energy) DEAL_DAMAGE 1 to ALL_CHARACTERS THEN IF_RESOURCE_MATCH(mental) DISCARD SELF"
       },
       "mechanicSteps": [
         "Ally card with THW 0, ATK 3, and health 5",
@@ -2411,7 +2493,7 @@
           "steps": [
             {
               "id": "consume_threat",
-              "effect": "CONSUME_INTERCEPTED_EVENT"
+              "effect": "PREVENT_DAMAGE"
             },
             {
               "id": "take_damage",
@@ -2428,13 +2510,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-08T19:50:00Z",
-        "reviewedAt": "2026-09-08T19:50:00Z",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Hero Interrupt</b>: When any amount of threat would be placed on a scheme, you take it as damage instead.",
-        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT -> DEAL_DAMAGE (amount: INTERCEPTED_VALUE, target: SELF_IDENTITY)"
+        "reconstructedText": "HERO_INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> PREVENT_DAMAGE -> DEAL_DAMAGE (amount: INTERCEPTED_VALUE, target: SELF_IDENTITY)"
       },
       "mechanicSteps": [
         "Trigger: Hero Interrupt when threat would be placed on a scheme (HERO_INTERRUPT @ THREAT_WOULD_BE_PLACED)",
@@ -2675,7 +2757,7 @@
           },
           "steps": [
             {
-              "effect": "BOOST_STAT_CHOICE",
+              "effect": "PLAYER_CHOICE",
               "params": {
                 "amount": 2,
                 "options": [
@@ -2689,13 +2771,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>Action</b>: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)",
-        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> BOOST_STAT_CHOICE (amount: 2, options: [ATK, THW])"
+        "reconstructedText": "ACTION [Cost: Spend 1 [energy]] -> PLAYER_CHOICE (amount: 2, options: [ATK, THW])"
       },
       "mechanicSteps": [
         "Ally card with THW 1, ATK 2, and health 3"
@@ -2739,11 +2821,12 @@
           "timing": "HERO_ACTION",
           "steps": [
             {
-              "effect": "BUFF_ALL_FRIENDLY_CHARACTERS",
+              "effect": "MODIFY_STAT",
               "params": {
                 "atkBonus": 1,
                 "thwBonus": 1,
-                "duration": "PHASE_END"
+                "duration": "PHASE_END",
+                "target": "ALL_FRIENDLY_CHARACTERS"
               }
             }
           ]
@@ -2751,13 +2834,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>Hero Action</b>: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase.",
-        "reconstructedText": "HERO_ACTION -> BUFF_ALL_FRIENDLY_CHARACTERS (atkBonus: 1, thwBonus: 1, duration: PHASE_END)"
+        "reconstructedText": "HERO_ACTION -> MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS, atkBonus: 1, thwBonus: 1, duration: PHASE_END)"
       },
       "mechanicSteps": [
         "Event action/interrupt effect: Hero Action: Choose a player. Each character that player controls gets +1 THW and +1 ATK until the end of the phase."
@@ -3332,7 +3415,7 @@
           "steps": [
             {
               "id": "reduce_threat",
-              "effect": "CONSUME_INTERCEPTED_EVENT",
+              "effect": "PREVENT_DAMAGE",
               "params": {
                 "amount": 1
               }
@@ -3342,13 +3425,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-08T19:50:00Z",
-        "reviewedAt": "2026-09-08T19:50:00Z",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>Interrupt</b> <i>(thwart)</i>: When the villain schemes, reduce the amount of threat placed on the scheme by 1.",
-        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> CONSUME_INTERCEPTED_EVENT (amount: 1)"
+        "reconstructedText": "INTERRUPT (Trigger: THREAT_WOULD_BE_PLACED) [Cost: Discard this card] -> PREVENT_DAMAGE (amount: 1)"
       },
       "mechanicSteps": [
         "Trigger: Interrupt when threat would be placed on a scheme (INTERRUPT @ THREAT_WOULD_BE_PLACED)",

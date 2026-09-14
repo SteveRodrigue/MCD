@@ -66,6 +66,8 @@ export interface EffectExecutionContext {
   remainingInterceptedValue?: number;
   choice?: string;
   isAttack?: boolean;
+  discardedCards?: CardInstance[];
+  assignments?: Record<string, number>;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
   triggerChain?: TriggerCallNode[];
 }
@@ -109,6 +111,7 @@ export interface EffectResult {
   selectedCardInstanceIds?: string[];
   targetId?: string;
   conditionMet?: boolean;
+  discardedCards?: CardInstance[];
 }
 
 /**
@@ -303,8 +306,77 @@ export function shouldExecuteStep(
   }
 
   if (gate === 'IF_RESOURCE_MATCH') {
-    const reqAspect = (step.params?.aspect as string) || (step.params?.resource as string);
-    return !!context.resourcesSpent?.includes(reqAspect);
+    const reqAspect = (
+      (step.params?.aspect as string) ||
+      (step.params?.resource as string) ||
+      ''
+    ).toLowerCase();
+
+    // 1. Check resources spent (cost payment)
+    if (
+      context.resourcesSpent?.some(
+        (r) => r.toLowerCase() === reqAspect || r.toLowerCase() === 'wild',
+      )
+    ) {
+      return true;
+    }
+
+    // 2. Check discarded cards in context or previousResult
+    const discarded: CardInstance[] = context.discardedCards || prevResult?.discardedCards || [];
+    if (discarded.length > 0) {
+      return discarded.some((inst) => {
+        if (!inst?.card) return false;
+        const res = inst.card.resources;
+        const raw = inst.card.raw as any;
+        const wildCount = res?.wild ?? raw?.resource_wild ?? 0;
+        if (wildCount > 0) return true;
+        const matchCount =
+          res?.[reqAspect as keyof typeof res] ?? raw?.[`resource_${reqAspect}`] ?? 0;
+        return typeof matchCount === 'number' && matchCount > 0;
+      });
+    }
+
+    return false;
+  }
+
+  if (gate === 'IF_CARD_IN_PLAY') {
+    const cardCode = (step.params?.cardCode as string) || (step.params?.code as string);
+    if (cardCode) {
+      const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
+      const inVillainAttachments = state.villain?.attachments?.some(
+        (a) => a.card?.code === cardCode,
+      );
+      const inPlayerZones = state.players?.some((p) =>
+        [
+          ...(p.tableau || []),
+          ...(p.allies || []),
+          ...(p.engagedMinions || []),
+          ...(p.attachments || []),
+        ].some((c) => c.card?.code === cardCode),
+      );
+      return Boolean(inSideSchemes || inVillainAttachments || inPlayerZones);
+    }
+    return false;
+  }
+
+  if (gate === 'IF_CARD_NOT_IN_PLAY') {
+    const cardCode = (step.params?.cardCode as string) || (step.params?.code as string);
+    if (cardCode) {
+      const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
+      const inVillainAttachments = state.villain?.attachments?.some(
+        (a) => a.card?.code === cardCode,
+      );
+      const inPlayerZones = state.players?.some((p) =>
+        [
+          ...(p.tableau || []),
+          ...(p.allies || []),
+          ...(p.engagedMinions || []),
+          ...(p.attachments || []),
+        ].some((c) => c.card?.code === cardCode),
+      );
+      return !inSideSchemes && !inVillainAttachments && !inPlayerZones;
+    }
+    return true;
   }
 
   if (gate === 'IF_CONDITION_MET') {
@@ -338,6 +410,13 @@ export function executeSequence(
       stepResultsMap,
     );
     if (!shouldRun) {
+      if (step.id) {
+        stepResultsMap.set(step.id, {
+          success: false,
+          mutatedState: false,
+          conditionMet: false,
+        });
+      }
       continue;
     }
 
@@ -352,6 +431,10 @@ export function executeSequence(
 
     const res = executeStep(currentState, step, stepContext);
     currentState = res.state;
+
+    if (res.discardedCards) {
+      context.discardedCards = res.discardedCards;
+    }
 
     // Propagate mutated context fields back to sequence context
     if (stepContext.remainingInterceptedValue !== undefined) {
@@ -374,7 +457,8 @@ export function executeSequence(
       mutatedState: stepMutated,
       value: res.value,
       conditionMet: res.conditionMet,
-      targetId: res.selectedCardInstanceIds?.[0],
+      targetId: res.selectedCardInstanceIds?.[0] || res.targetId,
+      discardedCards: res.discardedCards ?? prevResult?.discardedCards,
     };
 
     if (step.id) {
@@ -539,6 +623,7 @@ export function executeDiscard(
   // 2. DISCARD FROM PLAYER DECK
   if (source === 'DECK') {
     let discardedCount = 0;
+    const discardedCards: CardInstance[] = [];
     const matchingDestination = step.params?.matchingDestination as string | undefined;
     for (let i = 0; i < count; i++) {
       const card = drawPlayerCard(state, player.id);
@@ -550,9 +635,11 @@ export function executeDiscard(
             player.tableau.push(card);
           } else {
             player.discard.push(card);
+            discardedCards.push(card);
           }
         } else {
           player.discard.push(card);
+          discardedCards.push(card);
         }
         discardedCount++;
         dispatchTrigger(state, 'CARD_DISCARDED', {
@@ -567,6 +654,7 @@ export function executeDiscard(
       success: true,
       mutatedState: discardedCount > 0,
       value: discardedCount,
+      discardedCards,
       onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
     };
   }
@@ -650,6 +738,7 @@ export function executeDiscard(
         state,
         success: true,
         mutatedState: true,
+        discardedCards: [cardInst],
         onomatopoeia: `${cardInst.card.name.toUpperCase()} DISCARDED!`,
       };
     }
@@ -893,7 +982,213 @@ export function executeStep(
         sourceCardInstance: context.sourceCardInstance,
         targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
       });
+      if (step.params?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+        });
+        amount += bonus;
+      }
       const targetParam = step.params?.target as string | undefined;
+
+      if (targetParam === 'ALL_CHARACTERS') {
+        // 1. Damage to Villain
+        const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+        if (villainToughIdx !== -1) {
+          state.villain.statusCards.splice(villainToughIdx, 1);
+        } else {
+          state.villain.health = Math.max(0, state.villain.health - amount);
+          if (state.villain.health <= 0) {
+            state = handleVillainDefeat(state, state.villain.instanceId);
+          }
+        }
+
+        // 2. Damage to Minions
+        for (const p of state.players) {
+          for (let i = p.engagedMinions.length - 1; i >= 0; i--) {
+            const minion = p.engagedMinions[i];
+            const minionToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+            if (minionToughIdx !== -1) {
+              minion.statusCards!.splice(minionToughIdx, 1);
+            } else {
+              const currentDmg = minion.tokens?.damage || 0;
+              const newDmg = currentDmg + amount;
+              const minionHp = (minion.card as MinionCard).health || 1;
+              if (newDmg >= minionHp) {
+                processHostDefeated(state, minion, { player: p });
+                p.engagedMinions.splice(i, 1);
+                moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+              } else {
+                minion.tokens = { ...minion.tokens, damage: newDmg };
+              }
+            }
+          }
+        }
+
+        // 3. Damage to Heroes
+        for (const p of state.players) {
+          const heroToughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
+          if (heroToughIdx !== -1) {
+            p.statusCards.splice(heroToughIdx, 1);
+          } else {
+            p.health = Math.max(0, p.health - amount);
+            if (p.health <= 0) state.winner = 'VILLAIN';
+          }
+        }
+
+        // 4. Damage to Allies
+        for (const p of state.players) {
+          for (let i = p.allies.length - 1; i >= 0; i--) {
+            const ally = p.allies[i];
+            const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
+            if (allyToughIdx !== -1) {
+              ally.statusCards!.splice(allyToughIdx, 1);
+            } else {
+              const currentDmg = ally.tokens?.damage || 0;
+              const newDmg = currentDmg + amount;
+              const allyHp = (ally.card as any).health || 1;
+              if (newDmg >= allyHp) {
+                p.allies.splice(i, 1);
+                processHostDefeated(state, ally, { player: p });
+                dispatchTrigger(state, 'CHARACTER_DEFEATED', {
+                  targetPlayerId: p.id,
+                  targetInstanceId: ally.instanceId,
+                  targetType: 'ally',
+                });
+                const owner =
+                  (ally.ownerId ? state.players.find((pl) => pl.id === ally.ownerId) : undefined) ||
+                  p;
+                owner.discard.push(ally);
+              } else {
+                ally.tokens = { ...ally.tokens, damage: newDmg };
+              }
+            }
+          }
+        }
+
+        const onomatopoeia = `WHAM! ${amount} DAMAGE TO ALL CHARACTERS!`;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: { player: player.name, target: 'all_characters', amount },
+          onomatopoeia,
+        });
+
+        return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
+      }
+
+      if (targetParam === 'HEROES_AND_ALLIES') {
+        if (context.assignments && typeof context.assignments === 'object') {
+          for (const [id, dmg] of Object.entries(context.assignments as Record<string, number>)) {
+            const ally = player.allies.find((a) => a.instanceId === id);
+            if (ally) {
+              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
+              if (allyToughIdx !== -1) {
+                ally.statusCards!.splice(allyToughIdx, 1);
+              } else {
+                const currentDmg = ally.tokens?.damage || 0;
+                const newDmg = currentDmg + dmg;
+                const allyHp = (ally.card as any).health || 1;
+                if (newDmg >= allyHp) {
+                  const idx = player.allies.indexOf(ally);
+                  player.allies.splice(idx, 1);
+                  processHostDefeated(state, ally, { player });
+                  dispatchTrigger(state, 'CHARACTER_DEFEATED', {
+                    targetPlayerId: player.id,
+                    targetInstanceId: ally.instanceId,
+                    targetType: 'ally',
+                  });
+                  const owner =
+                    (ally.ownerId
+                      ? state.players.find((pl) => pl.id === ally.ownerId)
+                      : undefined) || player;
+                  owner.discard.push(ally);
+                } else {
+                  ally.tokens = { ...ally.tokens, damage: newDmg };
+                }
+              }
+            } else {
+              const p = state.players.find((pl) => pl.id === id) || player;
+              const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
+              if (toughIdx !== -1) {
+                p.statusCards.splice(toughIdx, 1);
+              } else {
+                p.health = Math.max(0, p.health - dmg);
+                if (p.health <= 0) state.winner = 'VILLAIN';
+              }
+            }
+          }
+        } else if (context.targetInstanceId) {
+          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
+          if (ally) {
+            const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
+            if (allyToughIdx !== -1) {
+              ally.statusCards!.splice(allyToughIdx, 1);
+            } else {
+              const currentDmg = ally.tokens?.damage || 0;
+              const newDmg = currentDmg + amount;
+              const allyHp = (ally.card as any).health || 1;
+              if (newDmg >= allyHp) {
+                const idx = player.allies.indexOf(ally);
+                player.allies.splice(idx, 1);
+                processHostDefeated(state, ally, { player });
+                dispatchTrigger(state, 'CHARACTER_DEFEATED', {
+                  targetPlayerId: player.id,
+                  targetInstanceId: ally.instanceId,
+                  targetType: 'ally',
+                });
+                const owner =
+                  (ally.ownerId ? state.players.find((pl) => pl.id === ally.ownerId) : undefined) ||
+                  player;
+                owner.discard.push(ally);
+              } else {
+                ally.tokens = { ...ally.tokens, damage: newDmg };
+              }
+            }
+          } else {
+            const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+            if (toughIdx !== -1) {
+              player.statusCards.splice(toughIdx, 1);
+            } else {
+              player.health = Math.max(0, player.health - amount);
+              if (player.health <= 0) state.winner = 'VILLAIN';
+            }
+          }
+        } else {
+          // Default: Hero takes the assigned damage
+          const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+          if (toughIdx !== -1) {
+            player.statusCards.splice(toughIdx, 1);
+          } else {
+            player.health = Math.max(0, player.health - amount);
+            if (player.health <= 0) state.winner = 'VILLAIN';
+          }
+        }
+
+        const onomatopoeia = `EXPLOSION! ${amount} DAMAGE ASSIGNED!`;
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'card.effect.dealDamage',
+          params: { player: player.name, target: 'heroes_and_allies', amount },
+          onomatopoeia,
+        });
+
+        return {
+          state,
+          success: true,
+          mutatedState: amount > 0,
+          value: amount,
+          onomatopoeia,
+        };
+      }
 
       if (targetParam === 'ALL_ENEMIES') {
         // Deal damage to villain
@@ -1370,22 +1665,72 @@ export function executeStep(
     }
 
     case 'PREVENT_DAMAGE': {
-      const amount = (step.params?.amount as number) || (step.params?.preventAll ? 999 : 3);
-      const onomatopoeia = `PREVENTED ${amount} DAMAGE!`;
+      const currentVal =
+        context.remainingInterceptedValue ??
+        context.interceptedValue ??
+        context.threatAmount ??
+        context.damageAmount ??
+        0;
+
+      const hasInterceptContext =
+        context.remainingInterceptedValue !== undefined ||
+        context.interceptedValue !== undefined ||
+        context.threatAmount !== undefined ||
+        context.damageAmount !== undefined;
+
+      const amountToPrevent =
+        step.params?.amount !== undefined
+          ? step.params.amount === 'ALL' || step.params.preventAll
+            ? currentVal
+            : resolveNumericAmount(step.params.amount, context, currentVal)
+          : hasInterceptContext
+            ? currentVal
+            : step.params?.preventAll
+              ? 999
+              : 3;
+
+      const consumed = hasInterceptContext
+        ? Math.min(currentVal, amountToPrevent)
+        : amountToPrevent;
+      const remaining = hasInterceptContext ? Math.max(0, currentVal - consumed) : 0;
+
+      if (hasInterceptContext) {
+        context.remainingInterceptedValue = remaining;
+        if (context.threatAmount !== undefined) {
+          context.threatAmount = remaining;
+        }
+        if (context.damageAmount !== undefined) {
+          context.damageAmount = remaining;
+        }
+      }
+
+      const onomatopoeia =
+        context.threatAmount !== undefined ? 'EVENT INTERCEPTED!' : `PREVENTED ${consumed} DAMAGE!`;
+
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: 'combat.damage.prevented',
-        params: { player: player.name, amount },
+        category: 'ability',
+        key:
+          context.threatAmount !== undefined
+            ? 'card.effect.consumeInterceptedEvent'
+            : 'combat.damage.prevented',
+        params: {
+          player: player.name,
+          amount: consumed,
+          consumed,
+          remaining,
+        },
         onomatopoeia,
       });
+
       return {
         state,
         success: true,
-        mutatedState: true,
-        value: amount,
+        mutatedState: consumed > 0,
+        value: consumed,
         onomatopoeia,
       };
     }
@@ -1789,119 +2134,6 @@ export function executeStep(
       }
     }
 
-    case 'ADD_THREAT_PER_PLAYER': {
-      const amountPerPlayer = (step.params?.amount as number) || 1;
-      const totalToAdd = amountPerPlayer * state.players.length;
-      const target = (step.params?.target as string) || 'THIS_SIDE_SCHEME';
-      const cardCode =
-        (step.params?.cardCode as string) ||
-        (target !== 'THIS_SIDE_SCHEME' && target !== 'MAIN_SCHEME' && /^\d{5}$/.test(target)
-          ? target
-          : undefined);
-
-      if (cardCode) {
-        const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
-        if (sideScheme) {
-          sideScheme.threat = (sideScheme.threat || 0) + totalToAdd;
-          const onomatopoeia = `SIDE SCHEME +${totalToAdd} THREAT!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.addThreat',
-            params: {
-              target: sideScheme.card?.name || 'Side Scheme',
-              cardCode,
-              amount: totalToAdd,
-              currentThreat: sideScheme.threat,
-            },
-            onomatopoeia,
-          });
-          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
-        }
-
-        if (state.mainScheme?.card?.code === cardCode) {
-          state.mainScheme.threat = (state.mainScheme.threat || 0) + totalToAdd;
-          const onomatopoeia = `MAIN SCHEME +${totalToAdd} THREAT!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.addThreat',
-            params: {
-              target: state.mainScheme.card?.name || 'Main Scheme',
-              cardCode,
-              amount: totalToAdd,
-              currentThreat: state.mainScheme.threat,
-            },
-            onomatopoeia,
-          });
-          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
-        }
-
-        // Targeted scheme is not in play: effect fizzles per RR v1.8 p. 29
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'scheme.threat.target_missing',
-          params: { cardCode, amount: totalToAdd },
-        });
-        return {
-          state,
-          success: true,
-          mutatedState: false,
-          value: 0,
-        };
-      }
-
-      if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
-        const scheme = state.sideSchemes.find(
-          (s) =>
-            s.instanceId === context.sourceCardInstance!.instanceId ||
-            s.card.code === context.sourceCardInstance!.card.code,
-        );
-        if (scheme) {
-          scheme.threat += totalToAdd;
-          const onomatopoeia = `SIDE SCHEME +${totalToAdd} THREAT!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.addThreat',
-            params: {
-              target: scheme.card.name,
-              amount: totalToAdd,
-              currentThreat: scheme.threat,
-            },
-            onomatopoeia,
-          });
-          return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
-        }
-      }
-
-      state.mainScheme.threat += totalToAdd;
-      const onomatopoeia = `MAIN SCHEME +${totalToAdd} THREAT!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.addThreat',
-        params: {
-          target: state.mainScheme.card.name,
-          amount: totalToAdd,
-          currentThreat: state.mainScheme.threat,
-        },
-        onomatopoeia,
-      });
-      return { state, success: true, mutatedState: totalToAdd > 0, onomatopoeia };
-    }
-
     case 'ATTACH_TO_HOST': {
       const targetHost = step.params?.target as string;
       const sourceCard = context.sourceCardInstance;
@@ -1962,7 +2194,36 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'PLACED UNDER CARD!' };
     }
 
-    case 'MODIFY_STAT':
+    case 'MODIFY_STAT': {
+      if (
+        step.params?.target === 'ALL_FRIENDLY_CHARACTERS' ||
+        step.params?.atkBonus !== undefined ||
+        step.params?.thwBonus !== undefined
+      ) {
+        const atkBonus =
+          (step.params?.atkBonus as number) ||
+          (step.params?.stat === 'ATK' ? (step.params?.amount as number) : 0) ||
+          0;
+        const thwBonus =
+          (step.params?.thwBonus as number) ||
+          (step.params?.stat === 'THW' ? (step.params?.amount as number) : 0) ||
+          0;
+        for (const a of player.allies) {
+          if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
+          (a.tokens as any).atkBonus = ((a.tokens as any).atkBonus || 0) + atkBonus;
+          (a.tokens as any).thwBonus = ((a.tokens as any).thwBonus || 0) + thwBonus;
+        }
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ALL CHARACTERS!`,
+        };
+      }
+      // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
+      return { state, success: true };
+    }
+
     case 'GRANT_KEYWORD':
     case 'ATTACHMENT_DAMAGE_SHIELD':
     case 'INTERCEPT_ATTACK':
@@ -2108,47 +2369,6 @@ export function executeStep(
         state,
         success: true,
         onomatopoeia: 'GET BEHIND ME! VILLAIN ATTACKS!',
-      };
-    }
-
-    case 'CONSUME_INTERCEPTED_EVENT': {
-      const currentVal =
-        context.remainingInterceptedValue ??
-        context.interceptedValue ??
-        context.threatAmount ??
-        context.damageAmount ??
-        0;
-      const amountToConsume =
-        step.params?.amount !== undefined
-          ? Math.min(currentVal, resolveNumericAmount(step.params.amount, context, currentVal))
-          : currentVal;
-
-      const remaining = Math.max(0, currentVal - amountToConsume);
-      context.remainingInterceptedValue = remaining;
-      if (context.threatAmount !== undefined) {
-        context.threatAmount = remaining;
-      }
-      if (context.damageAmount !== undefined) {
-        context.damageAmount = remaining;
-      }
-
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'ability',
-        key: 'card.effect.consumeInterceptedEvent',
-        params: { player: player.name, consumed: amountToConsume, remaining },
-        onomatopoeia: 'EVENT INTERCEPTED!',
-      });
-
-      return {
-        state,
-        success: true,
-        mutatedState: amountToConsume > 0,
-        value: amountToConsume,
-        onomatopoeia: 'EVENT INTERCEPTED!',
       };
     }
 
@@ -2322,7 +2542,45 @@ export function executeStep(
     }
 
     case 'PLAYER_CHOICE': {
-      const options = (step.params?.options as any[]) || [];
+      if (context.choice || step.params?.stat) {
+        const amount = (step.params?.amount as number) || 2;
+        const chosenStat = (context.choice as string) || (step.params?.stat as string) || 'ATK';
+        if (context.sourceCardInstance) {
+          if (!context.sourceCardInstance.tokens) {
+            context.sourceCardInstance.tokens = {
+              damage: 0,
+              threat: 0,
+              counters: 0,
+            };
+          }
+          if (chosenStat === 'THW' || chosenStat === 'THWART') {
+            (context.sourceCardInstance.tokens as any).thwBonus =
+              ((context.sourceCardInstance.tokens as any).thwBonus || 0) + amount;
+          } else {
+            (context.sourceCardInstance.tokens as any).atkBonus =
+              ((context.sourceCardInstance.tokens as any).atkBonus || 0) + amount;
+          }
+        }
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          value: amount,
+          onomatopoeia: `+${amount} ${chosenStat}!`,
+        };
+      }
+
+      let options = (step.params?.options as any[]) || [];
+      if (options.length > 0 && typeof options[0] === 'string') {
+        const amt = (step.params?.amount as number) || 2;
+        options = options.map((opt: string) => ({
+          id: opt,
+          label: `+${amt} ${opt}`,
+          description: `Boost ${opt} by ${amt}`,
+          effect: 'PLAYER_CHOICE',
+          params: { stat: opt, amount: amt },
+        }));
+      }
       const title =
         (step.params?.title as string) ||
         (step.params?.promptTitle as string) ||
@@ -2594,9 +2852,14 @@ export function executeStep(
     }
 
     case 'SHUFFLE_INTO_DECK': {
-      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
-      const toDeck = (step.params?.toDeck as string) || 'ENCOUNTER_DECK';
+      const fromZone =
+        (step.params?.from as string) ||
+        (step.params?.count !== undefined ? 'DISCARD' : 'SET_ASIDE');
+      const toDeck =
+        (step.params?.toDeck as string) ||
+        (step.params?.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
       const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
+      const count = step.params?.count as number | undefined;
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
@@ -2606,9 +2869,13 @@ export function executeStep(
         sourceList = player.hand || [];
       }
 
-      const matches = sourceList.filter((c) =>
-        matchesCardFilter(c.card, filter, { player, state }),
-      );
+      let matches = filter
+        ? sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }))
+        : [...sourceList];
+
+      if (count !== undefined && matches.length > count) {
+        matches = matches.slice(0, count);
+      }
 
       if (matches.length === 0) {
         return {
@@ -2697,7 +2964,7 @@ export function executeStep(
           },
           {
             id: 'step_4_fallback_surge',
-            effect: 'TRIGGER_SURGE',
+            effect: 'SURGE',
             gate: 'IF_FAILED',
           },
         ],
@@ -2731,7 +2998,6 @@ export function executeStep(
       };
     }
 
-    case 'TRIGGER_SURGE':
     case 'SURGE': {
       const surgeCard = drawEncounterCard(state);
       if (surgeCard) {
@@ -2784,7 +3050,14 @@ export function executeStep(
     }
 
     case 'ADD_THREAT': {
-      const amount = (step.params?.amount as number) || 1;
+      const baseAmount = resolveNumericAmount(
+        step.params?.amount ?? step.params?.amountPerPlayer,
+        context,
+        1,
+        { state, player },
+      );
+      const isPerPlayer = !!(step.params?.perPlayer || step.params?.amountPerPlayer);
+      const amount = isPerPlayer ? baseAmount * state.players.length : baseAmount;
       const target = (step.params?.target as string) || 'MAIN_SCHEME';
 
       if (target === 'ALL_SIDE_SCHEMES') {
@@ -2968,7 +3241,7 @@ export function executeStep(
         }
       }
 
-      if (target === 'THIS_SIDE_SCHEME' && context.sourceCardInstance) {
+      if ((target === 'THIS_SIDE_SCHEME' || target === 'SELF') && context.sourceCardInstance) {
         const sideScheme = (state.sideSchemes || []).find(
           (s) =>
             s.instanceId === context.sourceCardInstance!.instanceId ||
@@ -3037,7 +3310,6 @@ export function executeStep(
     }
 
     case 'ADD_COUNTERS':
-    case 'ADD_COUNTER':
     case 'MODIFY_COUNTER': {
       const targetParam = (step.params?.target as string) || 'SELF';
       const counterType = (step.params?.counterType as string) || 'all_purpose';
@@ -3071,8 +3343,7 @@ export function executeStep(
     }
 
     case 'SPEND_COUNTERS':
-    case 'REMOVE_COUNTERS':
-    case 'REMOVE_COUNTER': {
+    case 'REMOVE_COUNTERS': {
       const targetParam = (step.params?.target as string) || 'SELF';
       const counterType = (step.params?.counterType as string) || 'all_purpose';
       let amount = (step.params?.amount as number) || 1;
@@ -3170,6 +3441,23 @@ export function executeStep(
     }
 
     case 'RETURN_TO_HAND': {
+      if (
+        context.sourceCardInstance?.attachments &&
+        context.sourceCardInstance.attachments.length > 0
+      ) {
+        for (const card of context.sourceCardInstance.attachments) {
+          const ownerId = (card as any).ownerId;
+          const owner = state.players.find((p) => p.id === ownerId) || player;
+          owner.hand.push(card);
+        }
+        context.sourceCardInstance.attachments = [];
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: 'CARDS RETURNED TO HANDS!',
+        };
+      }
       if (context.sourceCardInstance) {
         const allyIdx = player.allies.indexOf(context.sourceCardInstance);
         if (allyIdx !== -1) {
@@ -3426,20 +3714,6 @@ export function executeStep(
       };
     }
 
-    case 'SHUFFLE_DISCARD_INTO_DECK': {
-      const count = (step.params?.count as number) || 3;
-      const toShuffle = player.discard.splice(0, count);
-      player.deck.push(...toShuffle);
-      player.deck = [...player.deck].sort(() => Math.random() - 0.5);
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: toShuffle.length,
-        onomatopoeia: `SHUFFLED ${toShuffle.length} CARDS INTO DECK!`,
-      };
-    }
-
     case 'TRIGGER_WAKANDA_UPGRADES':
     case 'EXECUTE_WAKANDA_FOREVER':
     case 'EXECUTE_SPECIAL': {
@@ -3455,21 +3729,6 @@ export function executeStep(
       return handler.execute(state, context, step.params);
     }
 
-    case 'DEAL_DAMAGE_ALL_ENEMIES': {
-      const baseAmt = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
-      dealDirectDamage(state, 'VILLAIN', baseAmt);
-      for (const m of player.engagedMinions) {
-        dealDirectDamage(state, { type: 'MINION', instanceId: m.instanceId }, baseAmt);
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: baseAmt,
-        onomatopoeia: `ALL ENEMIES HIT FOR ${baseAmt}!`,
-      };
-    }
-
     case 'TRANSFER_DAMAGE': {
       const amount = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
@@ -3480,50 +3739,6 @@ export function executeStep(
         mutatedState: true,
         value: amount,
         onomatopoeia: `TRANSFERRED ${amount} DAMAGE!`,
-      };
-    }
-
-    case 'BOOST_STAT_CHOICE': {
-      const amount = (step.params?.amount as number) || 2;
-      const chosenStat = (context.choice as string) || (step.params?.stat as string) || 'ATK';
-      if (context.sourceCardInstance) {
-        if (!context.sourceCardInstance.tokens) {
-          context.sourceCardInstance.tokens = {
-            damage: 0,
-            threat: 0,
-            counters: 0,
-          };
-        }
-        if (chosenStat === 'THW' || chosenStat === 'THWART') {
-          (context.sourceCardInstance.tokens as any).thwBonus =
-            ((context.sourceCardInstance.tokens as any).thwBonus || 0) + amount;
-        } else {
-          (context.sourceCardInstance.tokens as any).atkBonus =
-            ((context.sourceCardInstance.tokens as any).atkBonus || 0) + amount;
-        }
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: amount,
-        onomatopoeia: `+${amount} ${chosenStat}!`,
-      };
-    }
-
-    case 'BUFF_ALL_FRIENDLY_CHARACTERS': {
-      const atkBonus = (step.params?.atkBonus as number) || 1;
-      const thwBonus = (step.params?.thwBonus as number) || 1;
-      for (const a of player.allies) {
-        if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
-        (a.tokens as any).atkBonus = ((a.tokens as any).atkBonus || 0) + atkBonus;
-        (a.tokens as any).thwBonus = ((a.tokens as any).thwBonus || 0) + thwBonus;
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ALL CHARACTERS!`,
       };
     }
 
@@ -3560,23 +3775,6 @@ export function executeStep(
         success: true,
         mutatedState: true,
         onomatopoeia: 'CARDS ATTACHED FACEDOWN!',
-      };
-    }
-
-    case 'RETURN_FACEDOWN_CARDS_TO_OWNERS': {
-      if (context.sourceCardInstance && context.sourceCardInstance.attachments) {
-        for (const card of context.sourceCardInstance.attachments) {
-          const ownerId = (card as any).ownerId;
-          const owner = state.players.find((p) => p.id === ownerId) || player;
-          owner.hand.push(card);
-        }
-        context.sourceCardInstance.attachments = [];
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        onomatopoeia: 'CARDS RETURNED TO HANDS!',
       };
     }
 

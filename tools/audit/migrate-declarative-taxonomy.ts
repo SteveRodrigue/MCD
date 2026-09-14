@@ -27,15 +27,26 @@ const EFFECT_RENAMES: Record<string, string> = {
   DRAW_CARDS: 'DRAW',
   PLAY_CARD_FROM_ZONE: 'PLAY_FROM_ZONE',
   SEARCH_AND_SELECT: 'SEARCH',
+  TRIGGER_SURGE: 'SURGE',
+  CONSUME_INTERCEPTED_EVENT: 'PREVENT_DAMAGE',
+  BOOST_STAT_CHOICE: 'PLAYER_CHOICE',
+  RETURN_FACEDOWN_CARDS_TO_OWNERS: 'RETURN_TO_HAND',
+  ADD_COUNTER: 'ADD_COUNTERS',
+  REMOVE_COUNTER: 'REMOVE_COUNTERS',
 };
 
 const TARGET_RENAMES: Record<string, string> = {
   SIDE_SCHEME: 'CHOSEN_SIDE_SCHEME',
 };
 
-const RECONSTRUCTED_RENAMES = {
+const RECONSTRUCTED_RENAMES: Record<string, string> = {
   ...TRIGGER_RENAMES,
   ...EFFECT_RENAMES,
+  ADD_THREAT_PER_PLAYER: 'ADD_THREAT (perPlayer: true)',
+  WHEN_REVEALED_THREAT_PER_PLAYER: 'ADD_THREAT (perPlayer: true)',
+  DEAL_DAMAGE_ALL_ENEMIES: 'DEAL_DAMAGE (target: ALL_ENEMIES)',
+  BUFF_ALL_FRIENDLY_CHARACTERS: 'MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS)',
+  SHUFFLE_DISCARD_INTO_DECK: 'SHUFFLE_INTO_DECK',
 };
 
 interface Change {
@@ -66,8 +77,21 @@ function renameText(value: unknown): unknown {
   for (const [legacy, canonical] of Object.entries(RECONSTRUCTED_RENAMES).sort(
     ([left], [right]) => right.length - left.length,
   )) {
-    result = result.replaceAll(legacy, canonical);
+    result = result.replace(new RegExp(`\\b${legacy}\\b`, 'g'), canonical);
   }
+  result = result.replace(
+    /ADD_THREAT \(perPlayer: true\) \(([^)]+)\)/g,
+    'ADD_THREAT ($1, perPlayer: true)',
+  );
+  result = result.replace(
+    /DEAL_DAMAGE \(target: ALL_ENEMIES\) \(([^)]+)\)/g,
+    'DEAL_DAMAGE (target: ALL_ENEMIES, $1)',
+  );
+  result = result.replace(
+    /MODIFY_STAT \(target: ALL_FRIENDLY_CHARACTERS\) \(([^)]+)\)/g,
+    'MODIFY_STAT (target: ALL_FRIENDLY_CHARACTERS, $1)',
+  );
+  result = result.replace(/amountPerPlayer: (\d+)/g, 'amount: $1');
   return result;
 }
 
@@ -118,7 +142,7 @@ function transformSpecialStep(
   step: Record<string, any>,
   stepPath: string,
   changes: Change[],
-  blockers: Blocker[],
+  _blockers: Blocker[],
 ): Record<string, any> | Record<string, any>[] {
   const effect = step.effect;
   if (effect === 'FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE') {
@@ -127,7 +151,7 @@ function transformSpecialStep(
       effect: 'FORM_BRANCH',
       params: {
         heroSteps: [makeStep('VILLAIN_ATTACKS')],
-        alterEgoSteps: [makeStep('TRIGGER_SURGE')],
+        alterEgoSteps: [makeStep('SURGE')],
       },
     };
     changes.push({ path: `${stepPath}.effect`, before: effect, after: 'FORM_BRANCH' });
@@ -139,14 +163,61 @@ function transformSpecialStep(
     return transformed;
   }
 
-  if (effect === 'EXPLOSION') {
-    blockers.push({
-      path: stepPath,
-      effect,
-      reason:
-        'Bomb Scare threat-dependent damage and no-Bomb-Scare surge semantics are not represented by the current composable schema.',
-    });
-    return step;
+  if (effect === 'ADD_THREAT_PER_PLAYER') {
+    const params: Record<string, any> = { ...(step.params || {}) };
+    const amount = params.amount ?? params.amountPerPlayer ?? 1;
+    delete params.amountPerPlayer;
+    params.amount = amount;
+    params.perPlayer = true;
+    changes.push({ path: `${stepPath}.effect`, before: effect, after: 'ADD_THREAT' });
+    changes.push({ path: `${stepPath}.params`, before: step.params || {}, after: params });
+    return {
+      ...step,
+      effect: 'ADD_THREAT',
+      params,
+    };
+  }
+
+  if (effect === 'DEAL_DAMAGE_ALL_ENEMIES') {
+    const params: Record<string, any> = { ...(step.params || {}) };
+    params.target = 'ALL_ENEMIES';
+    if (params.baseAmount !== undefined && params.amount === undefined) {
+      params.amount = params.baseAmount;
+    }
+    changes.push({ path: `${stepPath}.effect`, before: effect, after: 'DEAL_DAMAGE' });
+    changes.push({ path: `${stepPath}.params`, before: step.params || {}, after: params });
+    return {
+      ...step,
+      effect: 'DEAL_DAMAGE',
+      params,
+    };
+  }
+
+  if (effect === 'BUFF_ALL_FRIENDLY_CHARACTERS') {
+    const params: Record<string, any> = { ...(step.params || {}) };
+    params.target = 'ALL_FRIENDLY_CHARACTERS';
+    changes.push({ path: `${stepPath}.effect`, before: effect, after: 'MODIFY_STAT' });
+    changes.push({ path: `${stepPath}.params`, before: step.params || {}, after: params });
+    return {
+      ...step,
+      effect: 'MODIFY_STAT',
+      params,
+    };
+  }
+
+  if (effect === 'SHUFFLE_DISCARD_INTO_DECK') {
+    const params: Record<string, any> = {
+      from: 'DISCARD',
+      toDeck: 'PLAYER_DECK',
+      ...(step.params || {}),
+    };
+    changes.push({ path: `${stepPath}.effect`, before: effect, after: 'SHUFFLE_INTO_DECK' });
+    changes.push({ path: `${stepPath}.params`, before: step.params || {}, after: params });
+    return {
+      ...step,
+      effect: 'SHUFFLE_INTO_DECK',
+      params,
+    };
   }
 
   if (effect === 'RETRIEVE_CARD_FROM_DISCARD' || effect === 'RETRIEVE_TECH_UPGRADE_FROM_DISCARD') {
@@ -178,23 +249,6 @@ function transformSpecialStep(
         autoSelectIfUnambiguous: true,
       },
     };
-  }
-
-  if (effect === 'HULK_DISCARD_RESOLUTION') {
-    blockers.push({
-      path: stepPath,
-      effect,
-      reason: 'Resource-icon branching requires a schema/engine capability not present in Phase 2.',
-    });
-  }
-
-  if (effect === 'REPULSOR_BLAST' || effect === 'REPULSOR_BLAST_DAMAGE') {
-    blockers.push({
-      path: stepPath,
-      effect,
-      reason:
-        'Discarded-energy-count evaluation requires a schema/engine capability not present in Phase 2.',
-    });
   }
 
   return step;
@@ -289,6 +343,7 @@ function transformPack(content: any, fileName: string): TransformResult {
   const blockers: Blocker[] = [];
 
   for (const [code, card] of Object.entries(cards) as [string, any][]) {
+    const cardChangesStart = changes.length;
     if (card.audit?.reconstructedText) {
       const renamedText = renameText(card.audit.reconstructedText);
       if (renamedText !== card.audit.reconstructedText) {
@@ -300,10 +355,25 @@ function transformPack(content: any, fileName: string): TransformResult {
         card.audit.reconstructedText = renamedText;
       }
     }
-    if (!Array.isArray(card.abilities)) continue;
-    card.abilities = card.abilities.map((ability: any, index: number) =>
-      transformAbility(ability, `${fileName}.cards.${code}.abilities[${index}]`, changes, blockers),
-    );
+    if (Array.isArray(card.abilities)) {
+      card.abilities = card.abilities.map((ability: any, index: number) =>
+        transformAbility(
+          ability,
+          `${fileName}.cards.${code}.abilities[${index}]`,
+          changes,
+          blockers,
+        ),
+      );
+    }
+    if (changes.length > cardChangesStart) {
+      card.audit = {
+        ...(card.audit || {}),
+        updatedAt: '2026-09-13T22:00:00Z',
+        reviewedAt: '2026-09-13T22:00:00Z',
+        reviewedBy: 'antigravity',
+        rulesVersion: 'v1.8',
+      };
+    }
   }
 
   return { value: output, changes, blockers };

@@ -126,10 +126,11 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
   });
 
-  it('01111 Explosion: remains quarantined until conditional resolution is implemented', () => {
+  it('01111 Explosion: has active conditional When Revealed abilities', () => {
     const explosionCard = cardCatalog.getCard('01111')!;
-    expect(explosionCard.enrichment?.abilities).toBeUndefined();
-    expect(explosionCard.enrichment?.audit?.ambiguityFile).toContain('/issues/114');
+    expect(explosionCard.enrichment?.abilities).toBeDefined();
+    expect(explosionCard.enrichment?.abilities?.length).toBeGreaterThan(0);
+    expect(explosionCard.enrichment?.abilities?.[0].timing).toBe('WHEN_REVEALED');
   });
 
   it('01192 Masterplan: Places 4 threat on each side scheme, or searches encounter deck for one', () => {

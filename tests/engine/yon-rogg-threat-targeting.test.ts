@@ -223,7 +223,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
     expect(res.state.mainScheme.threat).toBe(2);
   });
 
-  it('supports direct ADD_THREAT_PER_PLAYER primitive targeting a side scheme by cardCode', () => {
+  it('supports direct ADD_THREAT primitive with perPlayer: true targeting a side scheme by cardCode', () => {
     const psycheMagnitronCard = catalog.getCard('01176')!;
     const psycheScheme: SideSchemeState = {
       instanceId: 'side_scheme_psyche',
@@ -237,9 +237,10 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       timing: 'WHEN_REVEALED' as const,
       steps: [
         {
-          effect: 'ADD_THREAT_PER_PLAYER' as const,
+          effect: 'ADD_THREAT' as const,
           params: {
             amount: 2,
+            perPlayer: true,
             cardCode: '01176',
           },
         },

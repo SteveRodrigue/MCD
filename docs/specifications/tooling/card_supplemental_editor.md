@@ -176,27 +176,33 @@ The Supplemental Editor UI adheres strictly to the **1960s Comic Pop-Art Theme**
 
 ### 4.1. Workspace Layout
 
-The Editor is organized into a 3-column split view:
+The Editor is organized into a 3-column split view with responsive real estate controls:
 
 ```
-+-----------------------------------------------------------------------------------------------+
-| TOP BAR: [MCD Card Supplemental Reviewer] | Filter Presets | [Save Card (Ctrl+S)] [Hot Reload]|
-+------------------------------------+--------------------------+-------------------------------+
-| LEFT: FILTER & CARD LIST           | CENTER: INSPECTOR        | RIGHT: SUPPLEMENTAL BUILDER   |
-| - Pack: [Core Set          v]      | [CardView Visual Preview]| [Form View] | [Raw JSON View] |
-| - Set:  [All Sets          v]      |                          |                               |
-| - Faction: [All Factions   v]      | ------------------------ | Abilities Tree:               |
-| - Search: [spider...       ]       | Printed Text:            | [+] Add Ability               |
-| ---------------------------------- | "Interrupt: When..."     | ├─ Timing: [HERO_INTERRUPT v] |
-| Cards (101):                       |                          | ├─ Trigger: [ENEMY_INIT...]   |
-| > 01001a Spider-Man        [100%]  | Upstream Zzorba Meta:    | ├─ Cost: [Exhaust: Yes]       |
-|   01001b Peter Parker      [100%]  | - Traits: Avenger        | └─ Steps (1):                 |
-|   01002  Spider-Tracer     [100%]  | - Type: Hero             |    └─ Primitive: [DRAW]       |
-|   01003  Web-Shooter       [100%]  | - Hand Size: 5           |       Params: { amount: 1 }   |
-|   01004  Backflip          [100%]  | - HP: 10                 |                               |
-|                                    |                          | Live Zod Diagnostics: (0 err) |
-+------------------------------------+--------------------------+-------------------------------+
++---------------------------------------------------------------------------------------------------+
+| TOP BAR: [MCD Card Supplemental Reviewer] [Sidebar Toggle] | Presets | [Save Card] [Hot Reload]    |
++------------------------------------+--------------------------+-----------------------------------+
+| LEFT: FILTER & CARD LIST (320-384px| CENTER: INSPECTOR (320px)| RIGHT: SUPPLEMENTAL BUILDER       |
+| (Collapsible: reclaim 100% width)  | (Fitted Card Width)      | (Flex-1: fills remaining width)   |
+| - Pack: [Core Set          v]      | [CardView Visual Preview]| [Form View] | [Raw JSON View]     |
+| - Set:  [All Sets          v]      |                          |                                   |
+| - Faction: [All Factions   v]      | ------------------------ | Abilities Tree:                   |
+| - Search: [spider...       ]       | Printed Text:            | [+] Add Ability (High-Contrast)   |
+| ---------------------------------- | "Interrupt: When..."     | ├─ Timing: [HERO_INTERRUPT v]     |
+| Cards (101):                       |                          | ├─ Trigger: [ENEMY_INIT...]       |
+| > 01001a Spider-Man        [100%]  | Upstream Zzorba Meta     | ├─ Cost: [Exhaust: Yes]           |
+|   01001b Peter Parker      [100%]  | (2-Column Grid):         | └─ Steps (1):                     |
+|   01002  Spider-Tracer     [100%]  | - Traits: Avenger        |    └─ Primitive: [DRAW]           |
+|   01003  Web-Shooter       [100%]  | - Type: Hero             |       Params: { amount: 1 }       |
+|   01004  Backflip          [100%]  | - Hand Size: 5           |                                   |
+|                                    | - HP: 10                 | Live Zod Diagnostics: (0 err)     |
++------------------------------------+--------------------------+-----------------------------------+
 ```
+
+- **Collapsible Column 1:** Can be toggled open/closed via header or sidebar divider controls, expanding the inspection and rules editing view across the full display.
+- **Natural-Width Column 2:** Constrained to natural card width (`w-full md:w-[320px] lg:w-[340px] shrink-0 border-r-4 border-black`), displaying Upstream Zzorba Properties in a clean 2-column grid (`grid-cols-2`).
+- **Expanded Column 3:** Occupies all remaining screen real estate (`flex-1 w-full overflow-y-auto`), allowing comfortable editing of multi-step ability pipelines, nested universal card filters, and dynamic value builders.
+- **Design System Palette & Contrast:** Uses canonical Comic Blue (`#0284C7` / `comic.accent`) for buttons, active chips, and mode selectors with high-contrast white text, solid black borders, and Ben-Day box shadows (`shadow-comic-xs`, `shadow-comic-md`, `shadow-comic-pop`).
 
 ### 4.2. Dual-Mode Supplemental Builder (Form vs. Raw JSON)
 

@@ -212,7 +212,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
             className={`flex items-center gap-1 font-bold px-2.5 py-1 border-2 border-black rounded shadow-comic-xs transition-transform ${
               supplemental.noSupplementalNeeded
                 ? 'bg-gray-200 text-gray-400 border-gray-400 cursor-not-allowed'
-                : 'bg-comic-accent hover:bg-blue-700 text-white cursor-pointer active:scale-95'
+                : 'bg-comic-accent hover:bg-sky-700 text-white font-bold cursor-pointer active:scale-95'
             }`}
             title={
               supplemental.noSupplementalNeeded

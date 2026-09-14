@@ -14,7 +14,7 @@ import {
 import { CardFilterToolbar } from './CardFilterToolbar';
 import { CardGalleryList } from './CardGalleryList';
 import { DualCardInspector } from './DualCardInspector';
-import { ArrowLeft, BookOpen, RefreshCw } from 'lucide-react';
+import { ArrowLeft, BookOpen, PanelLeftClose, PanelLeftOpen, RefreshCw } from 'lucide-react';
 
 interface SupplementalEditorScreenProps {
   initialCode?: string;
@@ -51,6 +51,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
   const [cardDetails, setCardDetails] = useState<CardDetailsResponse | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   // 1. Fetch metadata on mount
   useEffect(() => {
@@ -166,6 +167,23 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
+            data-testid="toggle-sidebar-btn"
+            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+            className="flex items-center gap-1.5 text-xs font-bold bg-white hover:bg-gray-100 text-black px-2.5 py-1.5 border-2 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-3.5 h-3.5" />
+            ) : (
+              <PanelLeftClose className="w-3.5 h-3.5" />
+            )}
+            <span className="hidden sm:inline">
+              {isSidebarCollapsed ? 'Show List' : 'Hide List'}
+            </span>
+          </button>
+
+          <button
             onClick={() => {
               loadCards();
               if (selectedCode) {
@@ -198,8 +216,28 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
       {/* MAIN WORKSPACE SPLIT (Left: Card Gallery List, Right: Dual Inspector) */}
       <div className="relative z-10 flex-1 flex flex-col md:flex-row overflow-hidden border-t-2 border-black">
+        {/* Edge toggle when collapsed */}
+        {isSidebarCollapsed && (
+          <button
+            type="button"
+            data-testid="toggle-sidebar-edge-btn"
+            onClick={() => setIsSidebarCollapsed(false)}
+            className="absolute left-0 top-3 z-30 bg-comic-yellow hover:bg-yellow-400 text-black p-1.5 border-2 border-l-0 border-black shadow-comic-xs cursor-pointer active:scale-95 transition-transform"
+            title="Expand Sidebar"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
+
         {/* LEFT PANE: Card List */}
-        <div className="w-full md:w-80 lg:w-96 border-r-4 border-black h-48 md:h-auto overflow-hidden flex flex-col shrink-0 bg-white">
+        <div
+          data-testid="card-gallery-pane"
+          className={`${
+            isSidebarCollapsed
+              ? 'hidden'
+              : 'w-full md:w-80 lg:w-96 border-r-4 border-black h-48 md:h-auto overflow-hidden flex flex-col shrink-0 bg-white'
+          }`}
+        >
           <CardGalleryList
             cards={cards}
             selectedCode={selectedCode}

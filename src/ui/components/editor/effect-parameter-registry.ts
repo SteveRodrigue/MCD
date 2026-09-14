@@ -7,7 +7,7 @@ import {
 export interface ParameterDescriptor {
   key: string;
   label: string;
-  type: 'number' | 'text' | 'select' | 'boolean' | 'card-filter' | 'json';
+  type: 'number' | 'text' | 'select' | 'multi-select' | 'boolean' | 'card-filter' | 'json';
   allowDynamic?: boolean;
   allowAll?: boolean;
   options?: readonly string[];
@@ -52,6 +52,7 @@ export const SELECTED_DESTINATION_OPTIONS = [
   'DECK_TOP',
   'DISCARD',
   'ATTACH_TO_TARGET',
+  'REVEAL',
 ] as const;
 export const UNSELECTED_DESTINATION_OPTIONS = [
   'DISCARD',
@@ -1098,20 +1099,31 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     effect: 'SEARCH',
     description: 'Canonical alias for searching and selecting cards.',
     parameters: [
-      { key: 'source', label: 'Source Zone', type: 'select', options: SEARCH_SOURCE_OPTIONS },
+      {
+        key: 'source',
+        label: 'Source Zone',
+        type: 'multi-select',
+        options: SEARCH_SOURCE_OPTIONS,
+        defaultValue: ['PLAYER_DECK'],
+      },
       {
         key: 'lookCount',
         label: 'Look Count',
         type: 'number',
         allowDynamic: true,
+        allowAll: true,
         placeholder: 'e.g. 5',
+        description: 'Number of cards to look at (0 or ALL = search entire pile, 1+ = top X cards)',
       },
       {
         key: 'takeCount',
         label: 'Take Count',
         type: 'number',
         allowDynamic: true,
+        allowAll: true,
         defaultValue: 1,
+        description:
+          'Number of matching cards to take (0 or ALL = take all matching cards, 1+ = take up to X cards)',
       },
       {
         key: 'filter',

@@ -135,6 +135,7 @@ _Objective: Build an industrial-grade, capability-driven rules engine with compl
   - Supports targeted search and specific card picking (`unselectedDestination: null`, `shuffleAfter: true`, RR v1.8 p. 26).
   - Retrofitted Tony Stark (_Futurist_ `01029b`) to declarative schema.
   - Deprecated and removed obsolete `SEARCH_DECK_FOR_CARD` primitive in favor of canonical `SEARCH_AND_SELECT` with direct Card Editor parameter support ([Issue #39](https://github.com/SteveRodrigue/MCD/issues/39)).
+  - **Multi-Zone Search & 0/'ALL' Pool ([#115](https://github.com/SteveRodrigue/MCD/issues/115)) ✅ (Completed):** Extended `SEARCH` to support multiple source zones (`SearchZone[]`), unified `0` and `'ALL'` semantics (`lookCount` 0 = entire pile, `takeCount` 0 = all matches without prompt), voluntary player search "Pass" option vs mandatory forced encounter resolution, encounter card reveal routing (`REVEAL`), non-negative validation (`min={0}`), and multi-select chip picker in the Card Editor. Retrofitted Rhino Stage II (`01095`).
 - [x] **Restricted Card Keyword Limit Engine (RR v1.8 p. 25 / [ADR-0018](decisions/0018-declarative-state-modifiers-and-dynamic-board-limits.md) / [Issue #30](https://github.com/SteveRodrigue/MCD/issues/30)) ✅ (Completed):**
   - Implemented dynamic restricted limit calculator (`getPlayerRestrictedLimit`, base 2).
   - Supported heavy item weights ("Counts as 2 restricted cards", e.g. _Bazooka_, _Nightcrawler's Blades_).

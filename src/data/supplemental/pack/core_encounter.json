@@ -25,12 +25,12 @@
             {
               "effect": "SEARCH",
               "params": {
-                "source": "ENCOUNTER_DECK",
+                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
                 "filter": {
                   "targetCardCode": "01107"
                 },
                 "takeCount": 1,
-                "selectedDestination": "TABLEAU",
+                "selectedDestination": "REVEAL",
                 "shuffleAfter": true,
                 "autoSelectIfUnambiguous": true
               }
@@ -40,8 +40,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:18",
-        "reviewedAt": "2026-08-28T13:18",
+        "updatedAt": "2026-09-14T09:40",
+        "reviewedAt": "2026-09-14T09:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

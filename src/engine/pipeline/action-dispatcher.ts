@@ -35,7 +35,11 @@ import {
 } from './legality-checker';
 import { executeAbilityCost, checkAndDiscardZeroCounterCard } from './cost-engine';
 import { executeEffect, moveDefeatedCardToPile, processHostDefeated } from '../effects';
-import { continueVillainPhase, executeMinionAttackAgainstPlayer } from './villain-phase';
+import {
+  continueVillainPhase,
+  executeMinionAttackAgainstPlayer,
+  resolveActiveEncounterCardAfterInterrupt,
+} from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
 import {
@@ -167,10 +171,46 @@ export function routeCardInstances(
     return;
   }
 
+  if (destination === 'REVEAL') {
+    for (const card of cards) {
+      resolveActiveEncounterCardAfterInterrupt(state, card, player, false);
+    }
+    return;
+  }
+
   if (destination === 'HAND') {
     player.hand.push(...cards);
   } else if (destination === 'TABLEAU') {
-    player.tableau.push(...cards);
+    for (const card of cards) {
+      if (card.card.type === CardType.SIDE_SCHEME) {
+        const sideSchemeCard = card.card as SideSchemeCard;
+        const baseThreat =
+          sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+        state.sideSchemes.push({
+          instanceId: card.instanceId,
+          card: sideSchemeCard,
+          threat: baseThreat,
+        });
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          key: 'encounter.reveal.sideScheme',
+          params: { sideScheme: card.card.name, threat: baseThreat },
+          onomatopoeia: 'SIDE SCHEME!',
+        });
+        const abilities = card.card.enrichment?.abilities || [];
+        for (const ability of abilities) {
+          if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
+            executeEffect(state, ability, {
+              playerId: player.id,
+              sourceCardInstance: card,
+            });
+          }
+        }
+      } else {
+        player.tableau.push(card);
+      }
+    }
   } else if (destination === 'DISCARD') {
     if (sourceZone.startsWith('ENCOUNTER')) {
       state.encounterDiscard.push(...cards);
@@ -2080,6 +2120,11 @@ export function dispatchAction(
         const lookedCards: CardInstance[] = params?.lookedCards || [];
         const chosenInstanceId: string = action.selectedOptionId;
         const sourceZone: string = params?.sourceZone || 'PLAYER_DECK';
+        const sourceZones: string[] = Array.isArray(params?.sourceZones)
+          ? params.sourceZones
+          : params?.sourceZone
+            ? [params.sourceZone]
+            : ['PLAYER_DECK'];
         const selectedDestination: string = params?.selectedDestination || 'HAND';
         const unselectedDestination: string | null | undefined = params?.unselectedDestination;
         const shuffleAfter: boolean = !!params?.shuffleAfter;
@@ -2102,9 +2147,10 @@ export function dispatchAction(
             );
           }
           if (shuffleAfter) {
-            if (sourceZone === 'ENCOUNTER_DECK') {
+            if (sourceZones.includes('ENCOUNTER_DECK')) {
               poppedState.encounterDeck.sort(() => Math.random() - 0.5);
-            } else if (sourceZone === 'PLAYER_DECK') {
+            }
+            if (sourceZones.includes('PLAYER_DECK')) {
               targetPlayer.deck.sort(() => Math.random() - 0.5);
             }
           }
@@ -2126,22 +2172,28 @@ export function dispatchAction(
 
         // Selected Option
         let chosenCard: CardInstance | undefined;
+        let chosenCardZone = sourceZone;
         let unchosenCards: CardInstance[] = [];
 
         if (isLookCountSpliced) {
           chosenCard = lookedCards.find((c) => c.instanceId === chosenInstanceId);
           unchosenCards = lookedCards.filter((c) => c.instanceId !== chosenInstanceId);
         } else {
-          // Full search across pile: find and splice chosen card from source zone
-          let pile: CardInstance[] = targetPlayer.deck;
-          if (sourceZone === 'PLAYER_DISCARD') pile = targetPlayer.discard;
-          else if (sourceZone === 'PLAYER_HAND') pile = targetPlayer.hand;
-          else if (sourceZone === 'ENCOUNTER_DECK') pile = poppedState.encounterDeck;
-          else if (sourceZone === 'ENCOUNTER_DISCARD') pile = poppedState.encounterDiscard;
+          // Full search across pile: find and splice chosen card from source zones
+          const searchZones = [sourceZone, ...sourceZones.filter((z) => z !== sourceZone)];
+          for (const zone of searchZones) {
+            let pile: CardInstance[] = targetPlayer.deck;
+            if (zone === 'PLAYER_DISCARD') pile = targetPlayer.discard;
+            else if (zone === 'PLAYER_HAND') pile = targetPlayer.hand;
+            else if (zone === 'ENCOUNTER_DECK') pile = poppedState.encounterDeck;
+            else if (zone === 'ENCOUNTER_DISCARD') pile = poppedState.encounterDiscard;
 
-          const matchIdx = pile.findIndex((c) => c.instanceId === chosenInstanceId);
-          if (matchIdx !== -1) {
-            chosenCard = pile.splice(matchIdx, 1)[0];
+            const matchIdx = pile.findIndex((c) => c.instanceId === chosenInstanceId);
+            if (matchIdx !== -1) {
+              chosenCard = pile.splice(matchIdx, 1)[0];
+              chosenCardZone = zone;
+              break;
+            }
           }
         }
 
@@ -2151,7 +2203,7 @@ export function dispatchAction(
             targetPlayer,
             [chosenCard],
             selectedDestination,
-            sourceZone,
+            chosenCardZone,
           );
         }
 
@@ -2166,9 +2218,10 @@ export function dispatchAction(
         }
 
         if (shuffleAfter) {
-          if (sourceZone === 'ENCOUNTER_DECK') {
+          if (sourceZones.includes('ENCOUNTER_DECK')) {
             poppedState.encounterDeck.sort(() => Math.random() - 0.5);
-          } else if (sourceZone === 'PLAYER_DECK') {
+          }
+          if (sourceZones.includes('PLAYER_DECK')) {
             targetPlayer.deck.sort(() => Math.random() - 0.5);
           }
         }

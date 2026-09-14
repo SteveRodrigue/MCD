@@ -100,10 +100,13 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     );
 
     expect(effectRes.success).toBe(true);
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
-    // Only 1 option presented: instTech (the other 2 non-Tech cards are filtered out)
-    expect(effectRes.state.pendingDecisionPrompt?.options.length).toBe(1);
-    expect(effectRes.state.pendingDecisionPrompt?.options[0].id).toBe(instTech.instanceId);
+    // instTech is presented alongside Pass option on voluntary action (Issue #115)
+    expect(
+      effectRes.state.pendingDecisionPrompt?.options.some((o) => o.id === instTech.instanceId),
+    ).toBe(true);
+    expect(effectRes.state.pendingDecisionPrompt?.options.some((o) => o.id === 'pass_search')).toBe(
+      true,
+    );
 
     // Player selects the Tech card
     const resolveRes = dispatchAction(effectRes.state, {

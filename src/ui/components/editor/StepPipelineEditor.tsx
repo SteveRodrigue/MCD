@@ -322,6 +322,54 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                       );
                     }
 
+                    if (param.type === 'multi-select') {
+                      const selectedValues: string[] = Array.isArray(val)
+                        ? val
+                        : val
+                          ? [val]
+                          : param.defaultValue || [];
+                      return (
+                        <div key={param.key} className="col-span-full">
+                          <label
+                            className="block text-[9px] uppercase font-bold text-gray-500 mb-1"
+                            title={param.description}
+                          >
+                            {param.label}
+                          </label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {param.options?.map((opt) => {
+                              const isActive = selectedValues.includes(opt);
+                              return (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  data-testid={`step-param-${param.key}-${opt}-${abilityIndex}-${sIdx}`}
+                                  onClick={() => {
+                                    const next = isActive
+                                      ? selectedValues.filter((v) => v !== opt)
+                                      : [...selectedValues, opt];
+                                    handleUpdateStep(sIdx, {
+                                      params: {
+                                        ...params,
+                                        [param.key]: next.length > 0 ? next : undefined,
+                                      },
+                                    });
+                                  }}
+                                  className={`px-2 py-0.5 text-[10px] font-bold rounded border border-black transition-all ${
+                                    isActive
+                                      ? 'bg-comic-accent text-white shadow-comic-xs'
+                                      : 'bg-gray-100 text-black hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {opt}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    }
+
                     if (param.type === 'select') {
                       return (
                         <div key={param.key}>
@@ -366,14 +414,18 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                           </label>
                           <input
                             type="number"
+                            min={0}
                             data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
                             value={val !== undefined ? val : ''}
                             onChange={(e) => {
-                              const num = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                              const num =
+                                e.target.value !== ''
+                                  ? Math.max(0, parseInt(e.target.value, 10) || 0)
+                                  : undefined;
                               handleUpdateStep(sIdx, {
                                 params: {
                                   ...params,
-                                  [param.key]: isNaN(num as number) ? undefined : num,
+                                  [param.key]: num,
                                 },
                               });
                             }}

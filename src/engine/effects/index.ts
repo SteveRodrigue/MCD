@@ -22,7 +22,9 @@ import {
   executeVillainAttackAgainstPlayer,
   executeVillainSchemeAgainstPlayer,
   executeMinionAttackAgainstPlayer,
+  resolveActiveEncounterCardAfterInterrupt,
 } from '../pipeline/villain-phase';
+import type { SearchZone } from '../../data/supplemental/schema';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
@@ -70,6 +72,8 @@ export interface EffectExecutionContext {
   assignments?: Record<string, number>;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
   triggerChain?: TriggerCallNode[];
+  /** Host ability context for timing, trigger, and cost evaluation */
+  ability?: CardAbility;
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -514,6 +518,9 @@ export function executeEffect(
     Array.isArray(abilityOrStep.steps) &&
     abilityOrStep.steps.length > 0
   ) {
+    if ((abilityOrStep as CardAbility).timing) {
+      context.ability = abilityOrStep as CardAbility;
+    }
     return executeSequence(state, abilityOrStep.steps, context);
   }
 
@@ -522,6 +529,9 @@ export function executeEffect(
     Array.isArray((abilityOrStep as any).sequence) &&
     (abilityOrStep as any).sequence.length > 0
   ) {
+    if ((abilityOrStep as CardAbility).timing) {
+      context.ability = abilityOrStep as CardAbility;
+    }
     return executeSequence(state, (abilityOrStep as any).sequence, context);
   }
 
@@ -3495,9 +3505,37 @@ export function executeStep(
     }
 
     case 'SEARCH': {
-      const sourceZone = (step.params?.source as string) || 'PLAYER_DECK';
-      const lookCount = step.params?.lookCount as number | undefined;
-      const takeCount = (step.params?.takeCount as number) || 1;
+      const rawSource = step.params?.source;
+      const sourceZones: SearchZone[] = (
+        Array.isArray(rawSource) ? rawSource : [rawSource || 'PLAYER_DECK']
+      ) as SearchZone[];
+
+      let resolvedLookCount: number | 'ALL' | undefined = undefined;
+      if (step.params?.lookCount === 'ALL') {
+        resolvedLookCount = 'ALL';
+      } else if (step.params?.lookCount !== undefined) {
+        resolvedLookCount = resolveNumericAmount(step.params.lookCount, context, 0, {
+          state,
+          player,
+        });
+      }
+      const isFullSearch =
+        resolvedLookCount === undefined || resolvedLookCount === 'ALL' || resolvedLookCount === 0;
+      const isLookCountSpliced =
+        !isFullSearch && typeof resolvedLookCount === 'number' && resolvedLookCount > 0;
+
+      let resolvedTakeCount: number | 'ALL' = 1;
+      if (step.params?.takeCount === 'ALL') {
+        resolvedTakeCount = 'ALL';
+      } else if (step.params?.takeCount !== undefined) {
+        resolvedTakeCount = resolveNumericAmount(step.params.takeCount, context, 1, {
+          state,
+          player,
+        });
+      }
+      const isTakeAll = resolvedTakeCount === 'ALL' || resolvedTakeCount === 0;
+      const countToTake = isTakeAll ? 0 : Math.max(1, resolvedTakeCount as number);
+
       const filter =
         (step.params?.filter || step.filter) ??
         (step.params?.targetCardCode ||
@@ -3518,61 +3556,232 @@ export function executeStep(
       const shuffleAfter =
         step.params?.shuffleAfter !== undefined
           ? (step.params.shuffleAfter as boolean)
-          : lookCount === undefined;
-      const isVoluntary = (step.params?.isVoluntary as boolean) || false;
+          : isFullSearch;
+
+      const timing = context.ability?.timing;
+      const trigger = context.ability?.trigger;
+      const isAction =
+        timing === 'ACTION' || timing === 'HERO_ACTION' || timing === 'ALTER_EGO_ACTION';
+      const isForced =
+        timing === 'WHEN_REVEALED' ||
+        timing === 'FORCED_RESPONSE' ||
+        timing === 'FORCED_INTERRUPT' ||
+        trigger === 'WHEN_REVEALED';
+
+      let isVoluntary = false;
+      if (isForced) {
+        isVoluntary = false;
+      } else if (step.params?.isVoluntary !== undefined) {
+        isVoluntary = Boolean(step.params.isVoluntary);
+      } else if (isAction) {
+        isVoluntary = true;
+      }
+
       const promptTitle =
         (step.params?.promptTitle as string) ||
         (context.sourceCardInstance
           ? `${context.sourceCardInstance.card.name}: Choose card(s)`
           : 'Search & Select: Choose card(s)');
 
-      let pile: CardInstance[] = [];
-      let isDeck = false;
+      const cardOriginMap = new Map<string, SearchZone>();
+      const getZonePile = (zone: SearchZone): { pile: CardInstance[]; isDeck: boolean } => {
+        switch (zone) {
+          case 'PLAYER_DISCARD':
+            return { pile: player.discard, isDeck: false };
+          case 'PLAYER_HAND':
+            return { pile: player.hand, isDeck: false };
+          case 'ENCOUNTER_DECK':
+            return { pile: state.encounterDeck, isDeck: true };
+          case 'ENCOUNTER_DISCARD':
+            return { pile: state.encounterDiscard, isDeck: false };
+          case 'PLAYER_DECK':
+          default:
+            return { pile: player.deck, isDeck: true };
+        }
+      };
 
-      if (sourceZone === 'PLAYER_DISCARD') {
-        pile = player.discard;
-      } else if (sourceZone === 'PLAYER_HAND') {
-        pile = player.hand;
-      } else if (sourceZone === 'ENCOUNTER_DECK') {
-        pile = state.encounterDeck;
-        isDeck = true;
-      } else if (sourceZone === 'ENCOUNTER_DISCARD') {
-        pile = state.encounterDiscard;
-      } else {
-        // PLAYER_DECK
-        pile = player.deck;
-        isDeck = true;
-      }
+      const shuffleSearchedDecks = () => {
+        if (sourceZones.includes('ENCOUNTER_DECK')) {
+          state.encounterDeck.sort(() => Math.random() - 0.5);
+        }
+        if (sourceZones.includes('PLAYER_DECK')) {
+          player.deck.sort(() => Math.random() - 0.5);
+        }
+      };
 
       // Determine candidate pool
       let lookedCards: CardInstance[] = [];
-      const isLookCountSpliced = typeof lookCount === 'number' && lookCount > 0;
       if (isLookCountSpliced) {
-        lookedCards = pile.splice(0, Math.min(lookCount!, pile.length));
+        let remainingToLook = resolvedLookCount as number;
+        for (const zone of sourceZones) {
+          if (remainingToLook <= 0) break;
+          const { pile } = getZonePile(zone);
+          const sliceCount = Math.min(remainingToLook, pile.length);
+          const spliced = pile.splice(0, sliceCount);
+          for (const card of spliced) {
+            cardOriginMap.set(card.instanceId, zone);
+          }
+          lookedCards.push(...spliced);
+          remainingToLook -= sliceCount;
+        }
       } else {
-        lookedCards = [...pile];
+        for (const zone of sourceZones) {
+          const { pile } = getZonePile(zone);
+          for (const card of pile) {
+            cardOriginMap.set(card.instanceId, zone);
+            lookedCards.push(card);
+          }
+        }
       }
+
+      const routeCards = (cards: CardInstance[], destination: string | null | undefined) => {
+        if (cards.length === 0) return;
+        if (!destination || destination === 'LEAVE_IN_PLACE') {
+          for (const card of cards) {
+            const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+            if (origin === 'PLAYER_DISCARD') player.discard.push(card);
+            else if (origin === 'PLAYER_HAND') player.hand.push(card);
+            else if (origin === 'ENCOUNTER_DECK') state.encounterDeck.unshift(card);
+            else if (origin === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(card);
+            else player.deck.unshift(card);
+          }
+          return;
+        }
+
+        if (destination === 'REVEAL') {
+          for (const card of cards) {
+            resolveActiveEncounterCardAfterInterrupt(state, card, player, false);
+          }
+        } else if (destination === 'TABLEAU') {
+          for (const card of cards) {
+            if (card.card.type === CardType.SIDE_SCHEME) {
+              const sideSchemeCard = card.card as SideSchemeCard;
+              const baseThreat =
+                sideSchemeCard.baseThreat *
+                (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+              state.sideSchemes.push({
+                instanceId: card.instanceId,
+                card: sideSchemeCard,
+                threat: baseThreat,
+              });
+              state.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                key: 'encounter.reveal.sideScheme',
+                params: { sideScheme: card.card.name, threat: baseThreat },
+                onomatopoeia: 'SIDE SCHEME!',
+              });
+              const abilities = card.card.enrichment?.abilities || [];
+              for (const ability of abilities) {
+                if (ability.trigger === 'WHEN_REVEALED' || ability.timing === 'WHEN_REVEALED') {
+                  executeEffect(state, ability, {
+                    playerId: player.id,
+                    sourceCardInstance: card,
+                  });
+                }
+              }
+            } else {
+              player.tableau.push(card);
+            }
+          }
+        } else if (destination === 'HAND') {
+          player.hand.push(...cards);
+        } else if (destination === 'DISCARD') {
+          for (const card of cards) {
+            const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+            if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+              state.encounterDiscard.push(card);
+            } else {
+              player.discard.push(card);
+            }
+          }
+        } else if (destination === 'DECK_TOP') {
+          for (const card of cards) {
+            const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+            if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+              state.encounterDeck.unshift(card);
+            } else {
+              player.deck.unshift(card);
+            }
+          }
+        } else if (destination === 'DECK_BOTTOM') {
+          for (const card of cards) {
+            const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+            if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+              state.encounterDeck.push(card);
+            } else {
+              player.deck.push(card);
+            }
+          }
+        } else if (destination === 'DECK_SHUFFLE') {
+          for (const card of cards) {
+            const origin = cardOriginMap.get(card.instanceId) || sourceZones[0];
+            if (origin.startsWith('ENCOUNTER') || card.card.faction === 'encounter') {
+              state.encounterDeck.push(card);
+              state.encounterDeck.sort(() => Math.random() - 0.5);
+            } else {
+              player.deck.push(card);
+              player.deck.sort(() => Math.random() - 0.5);
+            }
+          }
+        }
+      };
 
       // Filter matching candidate cards
       const matchingCandidates = lookedCards.filter((c) => matchCardFilter(c.card, filter, player));
 
       if (matchingCandidates.length === 0) {
-        // Return looked cards to source if they were spliced
         if (isLookCountSpliced) {
           if (unselectedDestination === 'DISCARD') {
-            player.discard.push(...lookedCards);
+            routeCards(lookedCards, 'DISCARD');
           } else {
-            pile.unshift(...lookedCards);
+            routeCards(lookedCards, 'LEAVE_IN_PLACE');
           }
         }
-        if (shuffleAfter && isDeck) {
-          pile.sort(() => Math.random() - 0.5);
+        if (shuffleAfter) {
+          shuffleSearchedDecks();
         }
         return {
           state,
           success: true,
           mutatedState: false,
           onomatopoeia: 'NO MATCHING TARGET FOUND',
+        };
+      }
+
+      const effectiveTakeCount = isTakeAll ? matchingCandidates.length : countToTake;
+      const shouldAutoSelect =
+        isTakeAll ||
+        (!step.params?.isVoluntary &&
+          step.params?.autoSelectIfUnambiguous !== false &&
+          matchingCandidates.length <= effectiveTakeCount);
+
+      if (shouldAutoSelect) {
+        const selectedCards = matchingCandidates.slice(0, effectiveTakeCount);
+        const selectedIds = new Set(selectedCards.map((card) => card.instanceId));
+        const unselectedCards = lookedCards.filter((card) => !selectedIds.has(card.instanceId));
+
+        if (!isLookCountSpliced) {
+          for (const selectedCard of selectedCards) {
+            const zone = cardOriginMap.get(selectedCard.instanceId) || sourceZones[0];
+            const { pile } = getZonePile(zone);
+            const selectedIndex = pile.findIndex(
+              (card) => card.instanceId === selectedCard.instanceId,
+            );
+            if (selectedIndex !== -1) pile.splice(selectedIndex, 1);
+          }
+        }
+
+        routeCards(selectedCards, selectedDestination);
+        if (isLookCountSpliced) routeCards(unselectedCards, unselectedDestination);
+        if (shuffleAfter) shuffleSearchedDecks();
+
+        return {
+          state,
+          success: true,
+          mutatedState: selectedCards.length > 0,
+          selectedCardInstanceIds: selectedCards.map((card) => card.instanceId),
+          onomatopoeia: `SEARCHED ${selectedCards.length} CARD(S)!`,
         };
       }
 
@@ -3585,10 +3794,11 @@ export function executeStep(
           chosenInstanceId: c.instanceId,
           lookedCards,
           lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
-          sourceZone,
+          sourceZone: cardOriginMap.get(c.instanceId) || sourceZones[0],
+          sourceZones,
           selectedDestination,
           unselectedDestination,
-          shuffleAfter: shuffleAfter && isDeck,
+          shuffleAfter: shuffleAfter && sourceZones.some((z) => z.includes('DECK')),
           isLookCountSpliced,
         },
       }));
@@ -3602,70 +3812,20 @@ export function executeStep(
           params: {
             lookedCards,
             lookedCardInstanceIds: lookedCards.map((l) => l.instanceId),
-            sourceZone,
+            sourceZone: sourceZones[0],
+            sourceZones,
             unselectedDestination,
-            shuffleAfter: shuffleAfter && isDeck,
+            shuffleAfter: shuffleAfter && sourceZones.some((z) => z.includes('DECK')),
             isLookCountSpliced,
           },
         });
-      }
-
-      if (
-        step.effect === 'SEARCH' &&
-        step.params?.autoSelectIfUnambiguous !== false &&
-        !isVoluntary &&
-        !isLookCountSpliced
-      ) {
-        const selectedCards = matchingCandidates.slice(0, takeCount);
-        const selectedIds = new Set(selectedCards.map((card) => card.instanceId));
-        const unselectedCards = lookedCards.filter((card) => !selectedIds.has(card.instanceId));
-
-        if (!isLookCountSpliced) {
-          for (const selectedCard of selectedCards) {
-            const selectedIndex = pile.findIndex(
-              (card) => card.instanceId === selectedCard.instanceId,
-            );
-            if (selectedIndex !== -1) pile.splice(selectedIndex, 1);
-          }
-        }
-
-        const routeCards = (cards: CardInstance[], destination: string | null | undefined) => {
-          if (cards.length === 0) return;
-          if (!destination || destination === 'LEAVE_IN_PLACE') {
-            if (sourceZone === 'PLAYER_DISCARD') player.discard.push(...cards);
-            else if (sourceZone === 'PLAYER_HAND') player.hand.push(...cards);
-            else if (sourceZone === 'ENCOUNTER_DECK') state.encounterDeck.unshift(...cards);
-            else if (sourceZone === 'ENCOUNTER_DISCARD') state.encounterDiscard.push(...cards);
-            else player.deck.unshift(...cards);
-          } else if (destination === 'HAND') player.hand.push(...cards);
-          else if (destination === 'TABLEAU') player.tableau.push(...cards);
-          else if (destination === 'DISCARD') {
-            if (sourceZone.startsWith('ENCOUNTER')) state.encounterDiscard.push(...cards);
-            else player.discard.push(...cards);
-          } else if (destination === 'DECK_TOP') {
-            if (sourceZone === 'ENCOUNTER_DECK') state.encounterDeck.unshift(...cards);
-            else player.deck.unshift(...cards);
-          }
-        };
-
-        routeCards(selectedCards, selectedDestination);
-        if (isLookCountSpliced) routeCards(unselectedCards, unselectedDestination);
-        if (shuffleAfter && isDeck) pile.sort(() => Math.random() - 0.5);
-
-        return {
-          state,
-          success: true,
-          mutatedState: selectedCards.length > 0,
-          selectedCardInstanceIds: selectedCards.map((card) => card.instanceId),
-          onomatopoeia: `SEARCHED ${selectedCards.length} CARD(S)!`,
-        };
       }
 
       const prompt: PendingDecisionPrompt = {
         promptId: `prompt_search_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         playerId: context.playerId,
         title: promptTitle,
-        description: `Select up to ${takeCount} card(s):`,
+        description: `Select up to ${effectiveTakeCount} card(s):`,
         sourceCardName: context.sourceCardInstance?.card.name || 'Search & Select',
         options,
         isVoluntary,

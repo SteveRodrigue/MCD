@@ -123,18 +123,18 @@
 
 #### Parameters
 
-| Parameter                 | Type                  | Required | Default                                 | Description                                                                                                                                                                     |
-| :------------------------ | :-------------------- | :------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `source`                  | `enum`                | No       | `"PLAYER_DECK"`                         | Source zone (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`).                                                                  |
-| `lookCount`               | `number`              | No       | `undefined`                             | Number of top cards to look at. If omitted/undefined, searches the entire source zone.                                                                                          |
-| `takeCount`               | `number`              | No       | `1`                                     | Maximum number of matching cards the player may select.                                                                                                                         |
-| `filter`                  | `UniversalCardFilter` | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
-| `selectedDestination`     | `enum`                | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`).                                                                     |
-| `unselectedDestination`   | `enum`                | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                      |
-| `shuffleAfter`            | `boolean`             | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the deck after search completion.                                                                                                                            |
-| `autoSelectIfUnambiguous` | `boolean`             | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when matching candidate count $\le$ `takeCount`.                                                                  |
-| `isVoluntary`             | `boolean`             | No       | `false`                                 | When `true`, player may choose fewer than `takeCount` cards or decline.                                                                                                         |
-| `promptTitle`             | `string`              | No       | Contextual                              | Custom user-facing dialog title displayed in the decision prompt modal.                                                                                                         |
+| Parameter                 | Type                                    | Required | Default                                 | Description                                                                                                                                                                     |
+| :------------------------ | :-------------------------------------- | :------- | :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `source`                  | `SearchZone \| SearchZone[]`            | No       | `"PLAYER_DECK"`                         | Source zone(s) to search (`"PLAYER_DECK"`, `"PLAYER_DISCARD"`, `"ENCOUNTER_DECK"`, `"ENCOUNTER_DISCARD"`, `"PLAYER_HAND"`). Can be an array (e.g. `["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`). |
+| `lookCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `undefined`                             | Number of top cards to look at. If `0`, `"ALL"`, or omitted (`undefined`), searches the **entire source zone/pile**. If `1+`, slices top $X$ cards. Cannot be negative.      |
+| `takeCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `1`                                     | Number of matching cards to select. If `0` or `"ALL"`, takes **all matching cards** without a prompt. If `1+`, takes up to $X$ cards with selection prompt if choices exist. |
+| `filter`                  | `UniversalCardFilter`                   | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
+| `selectedDestination`     | `enum`                                  | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`, `"REVEAL"`).                                                         |
+| `unselectedDestination`   | `enum`                                  | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                      |
+| `shuffleAfter`            | `boolean`                               | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the searched deck(s) after search completion. Automatically shuffles all decks included in `source`.                                                        |
+| `autoSelectIfUnambiguous` | `boolean`                               | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when matching candidate count $\le$ `takeCount`.                                                                  |
+| `isVoluntary`             | `boolean`                               | No       | `false`                                 | When `true` or when triggered from a player action, player may pass and choose not to take any cards (`"Pass / Do not select"`).                                                |
+| `promptTitle`             | `string`                                | No       | Contextual                              | Custom user-facing dialog title displayed in the decision prompt modal.                                                                                                         |
 
 #### Example 1: Look & Split (Tony Stark Futurist `01029b`)
 
@@ -171,6 +171,24 @@
     "selectedDestination": "HAND",
     "shuffleAfter": true,
     "promptTitle": "Foresight: Search deck for a Black Panther upgrade"
+  }
+}
+```
+
+#### Example 3: Multi-Zone Search & Encounter Reveal (Rhino Stage II `01095`)
+
+```json
+{
+  "effect": "SEARCH",
+  "params": {
+    "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+    "filter": {
+      "targetCardCode": "01107"
+    },
+    "takeCount": 1,
+    "selectedDestination": "REVEAL",
+    "shuffleAfter": true,
+    "autoSelectIfUnambiguous": true
   }
 }
 ```

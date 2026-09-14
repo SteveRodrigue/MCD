@@ -162,9 +162,10 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
         <div>
           <input
             type="number"
+            min={0}
             data-testid="dynamic-value-number-input"
             value={numValue}
-            onChange={(e) => onChange(parseInt(e.target.value, 10) || 0)}
+            onChange={(e) => onChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
             className="w-full rounded border border-black bg-white px-2.5 py-1 text-xs text-black font-bold focus:ring-1 focus:ring-black"
           />
         </div>

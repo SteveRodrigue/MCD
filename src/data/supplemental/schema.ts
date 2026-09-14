@@ -556,18 +556,33 @@ export const DecisionPromptOptionSchema = z.object({
 });
 
 /**
+ * Search Zone Schema
+ */
+export const SearchZoneSchema = z.enum([
+  'PLAYER_DECK',
+  'ENCOUNTER_DECK',
+  'PLAYER_DISCARD',
+  'ENCOUNTER_DISCARD',
+  'PLAYER_HAND',
+]);
+
+export type SearchZone = z.infer<typeof SearchZoneSchema>;
+
+/**
  * Search & Select Destination Routing Params Schema (RR v1.8 p. 19, 26, ADR-0030, ADR-0032, ADR-0046)
  */
 export const SearchAndSelectParamsSchema = z
   .object({
-    source: z
-      .enum(['PLAYER_DECK', 'ENCOUNTER_DECK', 'PLAYER_DISCARD', 'ENCOUNTER_DISCARD', 'PLAYER_HAND'])
-      .default('PLAYER_DECK'),
-    lookCount: z.union([z.number(), DynamicValueSourceSchema]).optional(),
-    takeCount: z.union([z.number(), DynamicValueSourceSchema]).default(1),
+    source: z.union([SearchZoneSchema, z.array(SearchZoneSchema).min(1)]).default('PLAYER_DECK'),
+    lookCount: z
+      .union([z.number().int().nonnegative(), z.literal('ALL'), DynamicValueSourceSchema])
+      .optional(),
+    takeCount: z
+      .union([z.number().int().nonnegative(), z.literal('ALL'), DynamicValueSourceSchema])
+      .default(1),
     filter: UniversalCardFilterSchema.optional(),
     selectedDestination: z
-      .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET'])
+      .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET', 'REVEAL'])
       .default('HAND'),
     unselectedDestination: z
       .enum(['DISCARD', 'DECK_BOTTOM', 'DECK_SHUFFLE', 'DECK_TOP', 'LEAVE_IN_PLACE'])
@@ -575,7 +590,7 @@ export const SearchAndSelectParamsSchema = z
       .optional(),
     shuffleAfter: z.boolean().optional(),
     isVoluntary: z.boolean().optional(),
-      autoSelectIfUnambiguous: z.boolean().optional(),
+    autoSelectIfUnambiguous: z.boolean().optional(),
     promptTitle: z.string().optional(),
   })
   .strict();

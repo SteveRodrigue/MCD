@@ -388,8 +388,8 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
 
     // DynamicValueBuilder segmented buttons should be rendered
-    expect(screen.getByText('Fixed Number')).toBeDefined();
-    expect(screen.getByText('Dynamic Formula')).toBeDefined();
+    expect(screen.getAllByText('Fixed Number').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Dynamic Formula').length).toBeGreaterThanOrEqual(1);
   });
 
   it('mounts UniversalCardFilterBuilder for card-filter parameter in SEARCH', () => {

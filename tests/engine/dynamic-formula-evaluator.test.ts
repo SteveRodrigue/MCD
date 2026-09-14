@@ -103,14 +103,10 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
       expect(evaluateDynamicAmount({ from: 'INTERCEPTED_VALUE' }, { damageAmount: 2 })).toBe(2);
     });
 
-    it('resolves PREVIOUS_RESULT and DISCARDED_COUNT from execution context', () => {
+    it('resolves PREVIOUS_RESULT from execution context', () => {
       expect(
         evaluateDynamicAmount({ from: 'PREVIOUS_RESULT' }, { previousResult: { value: 6 } as any }),
       ).toBe(6);
-
-      expect(
-        evaluateDynamicAmount({ from: 'DISCARDED_COUNT' }, { previousResult: { value: 5 } as any }),
-      ).toBe(5);
     });
   });
 

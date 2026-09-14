@@ -56,34 +56,107 @@ export function evaluateDynamicAmount(
       baseValue = context.interceptedValue ?? context.threatAmount ?? context.damageAmount ?? 0;
       break;
     }
-    case 'PREVIOUS_RESULT':
-    case 'DISCARDED_COUNT': {
+    case 'PREVIOUS_RESULT': {
       baseValue = context.previousResult?.value ?? 0;
       break;
     }
-    case 'DISCARDED_RESOURCE_COUNT': {
-      const resType = (amountParam as any).resourceType;
+    case 'DISCARDED_CARDS': {
       const discarded: CardInstance[] =
         context.previousResult?.discardedCards || context.discardedCards || [];
-      let count = 0;
-      for (const inst of discarded) {
-        if (!inst?.card) continue;
-        const res = inst.card.resources;
-        const raw = inst.card.raw as any;
-        if (resType) {
-          const val = res?.[resType as keyof typeof res] ?? raw?.[`resource_${resType}`] ?? 0;
-          count += typeof val === 'number' ? val : 0;
-        } else {
-          const totalVal =
-            res?.total ??
-            (raw?.resource_physical || 0) +
-              (raw?.resource_energy || 0) +
-              (raw?.resource_mental || 0) +
-              (raw?.resource_wild || 0);
-          count += typeof totalVal === 'number' ? totalVal : 0;
+      const cards = filter
+        ? discarded.filter(
+            (inst) => inst?.card && matchesCardFilter(inst.card, filter, { player, state }),
+          )
+        : discarded;
+
+      const discardAttribute =
+        (amountParam as any).discardAttribute ||
+        ((amountParam as any).resourceType ? 'RESOURCE_ICONS' : 'COUNT');
+
+      switch (discardAttribute) {
+        case 'COUNT': {
+          baseValue = cards.length;
+          break;
         }
+        case 'RESOURCE_ICONS': {
+          const resType = (amountParam as any).resourceType;
+          let count = 0;
+          for (const inst of cards) {
+            if (!inst?.card) continue;
+            const res = inst.card.resources;
+            const raw = inst.card.raw as any;
+            if (resType) {
+              const val = res?.[resType as keyof typeof res] ?? raw?.[`resource_${resType}`] ?? 0;
+              count += typeof val === 'number' ? val : 0;
+            } else {
+              const totalVal =
+                res?.total ??
+                (raw?.resource_physical || 0) +
+                  (raw?.resource_energy || 0) +
+                  (raw?.resource_mental || 0) +
+                  (raw?.resource_wild || 0);
+              count += typeof totalVal === 'number' ? totalVal : 0;
+            }
+          }
+          baseValue = count;
+          break;
+        }
+        case 'DIFFERENT_RESOURCES': {
+          const distinctTypes = new Set<string>();
+          for (const inst of cards) {
+            if (!inst?.card) continue;
+            const res = inst.card.resources;
+            const raw = inst.card.raw as any;
+            const resourceKeys = ['physical', 'energy', 'mental', 'wild'] as const;
+            for (const rk of resourceKeys) {
+              const val = res?.[rk] ?? raw?.[`resource_${rk}`] ?? 0;
+              if (typeof val === 'number' && val > 0) {
+                distinctTypes.add(rk);
+              }
+            }
+          }
+          baseValue = distinctTypes.size;
+          break;
+        }
+        case 'BOOST_ICONS': {
+          let totalBoost = 0;
+          for (const inst of cards) {
+            if (!inst?.card) continue;
+            const boostVal =
+              (inst.card as any).boostIcons ??
+              (inst.card as any).boost ??
+              (inst.card.raw as any)?.boost ??
+              0;
+            totalBoost += typeof boostVal === 'number' ? boostVal : 0;
+          }
+          baseValue = totalBoost;
+          break;
+        }
+        case 'DIFFERENT_CARD_TYPES': {
+          const distinctTypes = new Set<string>();
+          for (const inst of cards) {
+            if (!inst?.card) continue;
+            const cardType = inst.card.type || (inst.card.raw as any)?.type_code;
+            if (cardType) {
+              distinctTypes.add(cardType);
+            }
+          }
+          baseValue = distinctTypes.size;
+          break;
+        }
+        case 'PRINTED_COST': {
+          let totalCost = 0;
+          for (const inst of cards) {
+            if (!inst?.card) continue;
+            const costVal = inst.card.cost ?? (inst.card.raw as any)?.cost ?? 0;
+            totalCost += typeof costVal === 'number' ? costVal : 0;
+          }
+          baseValue = totalCost;
+          break;
+        }
+        default:
+          baseValue = cards.length;
       }
-      baseValue = count;
       break;
     }
     case 'COUNTERS': {

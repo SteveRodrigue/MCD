@@ -1125,7 +1125,8 @@
               "params": {
                 "amount": 1,
                 "dynamicBonus": {
-                  "from": "DISCARDED_RESOURCE_COUNT",
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "RESOURCE_ICONS",
                   "resourceType": "energy",
                   "multiplier": 2
                 },
@@ -1137,8 +1138,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T21:42",
-        "reviewedAt": "2026-09-13T21:42",
+        "updatedAt": "2026-09-14T11:45:00Z",
+        "reviewedAt": "2026-09-14T11:45:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

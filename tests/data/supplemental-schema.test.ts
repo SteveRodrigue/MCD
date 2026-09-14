@@ -732,7 +732,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         const sources = [
           'INTERCEPTED_VALUE',
           'PREVIOUS_RESULT',
-          'DISCARDED_COUNT',
+          'DISCARDED_CARDS',
           'ENTITY_COUNT',
           'STAT_VALUE',
         ] as const;
@@ -745,6 +745,12 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           });
           expect(res.success, `Expected from: ${from} to pass validation`).toBe(true);
         }
+
+        // Zero Tech Debt: Legacy tokens must fail validation
+        expect(DynamicValueSourceSchema.safeParse({ from: 'DISCARDED_COUNT' }).success).toBe(false);
+        expect(
+          DynamicValueSourceSchema.safeParse({ from: 'DISCARDED_RESOURCE_COUNT' }).success,
+        ).toBe(false);
       });
 
       it('Accepts UniversalCardFilter and stat property inside DynamicValueSource', () => {

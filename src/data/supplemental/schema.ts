@@ -396,7 +396,22 @@ export type TriggerFilter = z.infer<typeof TriggerFilterSchema>;
 export const FilterSchema = UniversalCardFilterSchema;
 
 /**
- * Dynamic Value Source Schema (ADR-0049, ADR-0052)
+ * Discard Inspection Attribute Schema (Issue #117)
+ * Attributes to inspect when calculating dynamic values from discarded cards.
+ */
+export const DiscardInspectionAttributeSchema = z.enum([
+  'COUNT',
+  'RESOURCE_ICONS',
+  'DIFFERENT_RESOURCES',
+  'BOOST_ICONS',
+  'DIFFERENT_CARD_TYPES',
+  'PRINTED_COST',
+]);
+
+export type DiscardInspectionAttribute = z.infer<typeof DiscardInspectionAttributeSchema>;
+
+/**
+ * Dynamic Value Source Schema (ADR-0049, ADR-0052, Issue #117)
  * Declarative value resolution for composable effect amounts, counters, and scalers.
  */
 export const DynamicValueSourceSchema = z
@@ -404,13 +419,13 @@ export const DynamicValueSourceSchema = z
     from: z.enum([
       'INTERCEPTED_VALUE',
       'PREVIOUS_RESULT',
-      'DISCARDED_COUNT',
-      'DISCARDED_RESOURCE_COUNT',
+      'DISCARDED_CARDS',
       'ENTITY_COUNT',
       'STAT_VALUE',
       'COUNTERS',
       'CARD_ATTRIBUTE',
     ]),
+    discardAttribute: DiscardInspectionAttributeSchema.optional(),
     resourceType: ResourceTypeSchema.optional(),
     targetCardCode: z.string().optional(),
     stat: z

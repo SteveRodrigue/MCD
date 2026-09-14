@@ -286,4 +286,174 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     // Daggers (1 dmg) + Claws Finisher (4 dmg) = 5 total damage to villain
     expect(dispatchRes.state.villain.health).toBe(initialHp - 5);
   });
+
+  it('6. Permutation Finisher: Vibranium Suit as final upgrade transfers 2 damage (Finisher)', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Black Panther',
+          hero: blackPantherHero,
+          alterEgo: tchallaAlterEgo,
+          deckCards: [cardCatalog.getCard('01044')!],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    player.currentForm = 'hero';
+    player.activeFormCard = blackPantherHero;
+    player.health = 5; // damaged hero (max 11)
+    const initialVillainHp = state.villain.health;
+
+    const pantherClaws = createCardInstance(cardCatalog.getCard('01047')!);
+    const vibraniumSuit = createCardInstance(cardCatalog.getCard('01049')!);
+    player.tableau = [pantherClaws, vibraniumSuit];
+
+    // Order: 1. Panther Claws (2 damage base), 2. Vibranium Suit (1 base + 1 finisher = 2 damage transferred)
+    const wakandaForever = createCardInstance(cardCatalog.getCard('01043a')!);
+    const result = executeEffect(
+      state,
+      {
+        id: 'wf_test',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            effect: 'EXECUTE_WAKANDA_FOREVER',
+            params: {
+              sequenceOrder: [pantherClaws.instanceId, vibraniumSuit.instanceId],
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', sourceCardInstance: wakandaForever },
+    );
+
+    expect(result.success).toBe(true);
+    // Panther Claws base damage = 2, Vibranium Suit finisher = 2 damage moved to villain
+    // Total villain damage = 4
+    expect(result.state.villain.health).toBe(initialVillainHp - 4);
+    // Hero healed 2: 5 -> 7
+    expect(result.state.players[0].health).toBe(7);
+  });
+
+  it('7. Robustness: DEAL_DAMAGE, REMOVE_THREAT, and TRANSFER_DAMAGE resolve baseAmount and evaluate finisherBonus based on isFinalStep', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Black Panther',
+          hero: blackPantherHero,
+          alterEgo: tchallaAlterEgo,
+          deckCards: [cardCatalog.getCard('01044')!],
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    player.currentForm = 'hero';
+    player.health = 5;
+    state.mainScheme.threat = 6;
+    const initialVillainHp = state.villain.health;
+
+    // A. Non-final step with legacy baseAmount: should NOT receive finisherBonus
+    const dealResNonFinal = executeEffect(
+      state,
+      {
+        id: 'legacy_deal_dmg',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            effect: 'DEAL_DAMAGE',
+            params: {
+              baseAmount: 2,
+              finisherBonus: 2,
+              target: 'CHOSEN_ENEMY',
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', isFinalStep: false },
+    );
+    expect(dealResNonFinal.success).toBe(true);
+    expect(state.villain.health).toBe(initialVillainHp - 2);
+
+    // B. Final step with legacy baseAmount: SHOULD receive finisherBonus
+    const dealResFinal = executeEffect(
+      state,
+      {
+        id: 'legacy_deal_dmg_final',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            effect: 'DEAL_DAMAGE',
+            params: {
+              baseAmount: 2,
+              finisherBonus: 2,
+              target: 'CHOSEN_ENEMY',
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', isFinalStep: true },
+    );
+    expect(dealResFinal.success).toBe(true);
+    expect(state.villain.health).toBe(initialVillainHp - 2 - 4); // 2 + 4 = 6 total damage
+
+    // C. REMOVE_THREAT with legacy baseAmount and finisherBonus
+    const thwResFinal = executeEffect(
+      state,
+      {
+        id: 'legacy_remove_threat_final',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            effect: 'REMOVE_THREAT',
+            params: {
+              baseAmount: 1,
+              finisherBonus: 1,
+              target: 'MAIN_SCHEME',
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', isFinalStep: true },
+    );
+    expect(thwResFinal.success).toBe(true);
+    expect(state.mainScheme.threat).toBe(6 - 2); // 1 base + 1 finisher = 2 threat removed
+
+    // D. TRANSFER_DAMAGE with legacy baseAmount and finisherBonus
+    const transferResFinal = executeEffect(
+      state,
+      {
+        id: 'legacy_transfer_final',
+        timing: 'HERO_ACTION',
+        steps: [
+          {
+            effect: 'TRANSFER_DAMAGE',
+            params: {
+              baseAmount: 1,
+              finisherBonus: 1,
+            },
+          },
+        ],
+      },
+      { playerId: 'p1', isFinalStep: true },
+    );
+    expect(transferResFinal.success).toBe(true);
+    // Hero healed 2: 5 -> 7
+    expect(player.health).toBe(7);
+    // Villain took 2 damage: initialVillainHp - 6 - 2 = initialVillainHp - 8
+    expect(state.villain.health).toBe(initialVillainHp - 8);
+  });
 });

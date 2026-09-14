@@ -180,10 +180,16 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Move damage from one character to another.',
     parameters: [
       {
-        key: 'baseAmount',
+        key: 'amount',
         label: 'Amount',
         type: 'number',
         defaultValue: 1,
+      },
+      {
+        key: 'finisherBonus',
+        label: 'Finisher Bonus Damage',
+        type: 'number',
+        placeholder: 'e.g. 1',
       },
       {
         key: 'from',
@@ -229,6 +235,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       {
         key: 'bonusWithMental',
         label: 'Bonus Threat if Mental Resource Spent',
+        type: 'number',
+        placeholder: 'e.g. 1',
+      },
+      {
+        key: 'finisherBonus',
+        label: 'Finisher Bonus Threat',
         type: 'number',
         placeholder: 'e.g. 1',
       },

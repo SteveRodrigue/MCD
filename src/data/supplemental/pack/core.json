@@ -1727,10 +1727,9 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "baseAmount": 1,
+                "amount": 1,
                 "finisherBonus": 1,
-                "target": "ALL_ENEMIES",
-                "amount": 1
+                "target": "ALL_ENEMIES"
               }
             }
           ]
@@ -1738,8 +1737,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T17:16:00Z",
+        "reviewedAt": "2026-09-14T17:16:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1756,7 +1755,7 @@
             {
               "effect": "DEAL_DAMAGE",
               "params": {
-                "baseAmount": 2,
+                "amount": 2,
                 "finisherBonus": 2,
                 "target": "CHOSEN_ENEMY"
               }
@@ -1766,8 +1765,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T17:16:00Z",
+        "reviewedAt": "2026-09-14T17:16:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1784,7 +1783,7 @@
             {
               "effect": "REMOVE_THREAT",
               "params": {
-                "baseAmount": 1,
+                "amount": 1,
                 "finisherBonus": 1,
                 "target": "CHOSEN_SCHEME"
               }
@@ -1794,8 +1793,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T17:16:00Z",
+        "reviewedAt": "2026-09-14T17:16:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1812,7 +1811,7 @@
             {
               "effect": "TRANSFER_DAMAGE",
               "params": {
-                "baseAmount": 1,
+                "amount": 1,
                 "finisherBonus": 1,
                 "from": "SELF",
                 "to": "CHOSEN_ENEMY"
@@ -1823,8 +1822,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-14T17:16:00Z",
+        "reviewedAt": "2026-09-14T17:16:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

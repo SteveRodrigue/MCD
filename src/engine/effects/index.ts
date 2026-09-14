@@ -68,6 +68,7 @@ export interface EffectExecutionContext {
   remainingInterceptedValue?: number;
   choice?: string;
   isAttack?: boolean;
+  isFinalStep?: boolean;
   discardedCards?: CardInstance[];
   assignments?: Record<string, number>;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
@@ -986,12 +987,17 @@ export function executeStep(
     }
 
     case 'DEAL_DAMAGE': {
-      let amount = resolveNumericAmount(step.params?.amount, context, 0, {
-        state,
-        player,
-        sourceCardInstance: context.sourceCardInstance,
-        targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
-      });
+      let amount = resolveNumericAmount(
+        step.params?.amount ?? step.params?.baseAmount,
+        context,
+        0,
+        {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+        },
+      );
       if (step.params?.dynamicBonus) {
         const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
           state,
@@ -1000,6 +1006,9 @@ export function executeStep(
           targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
         });
         amount += bonus;
+      }
+      if (context.isFinalStep && step.params?.finisherBonus) {
+        amount += (step.params.finisherBonus as number) || 0;
       }
       const targetParam = step.params?.target as string | undefined;
 
@@ -1757,7 +1766,12 @@ export function executeStep(
     }
 
     case 'REMOVE_THREAT': {
-      let amount = resolveNumericAmount(step.params?.amount, context, 1, { state, player });
+      let amount = resolveNumericAmount(
+        step.params?.amount ?? step.params?.baseAmount,
+        context,
+        1,
+        { state, player },
+      );
       if (step.params?.dynamicBonus) {
         const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
           state,
@@ -1766,6 +1780,9 @@ export function executeStep(
           targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
         });
         amount += bonus;
+      }
+      if (context.isFinalStep && step.params?.finisherBonus) {
+        amount += (step.params.finisherBonus as number) || 0;
       }
       const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
@@ -3899,9 +3916,51 @@ export function executeStep(
     }
 
     case 'TRANSFER_DAMAGE': {
-      const amount = (step.params?.baseAmount as number) || (step.params?.amount as number) || 1;
+      let amount = resolveNumericAmount(
+        step.params?.amount ?? step.params?.baseAmount,
+        context,
+        1,
+        {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+        },
+      );
+      if (step.params?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+        });
+        amount += bonus;
+      }
+      if (context.isFinalStep && step.params?.finisherBonus) {
+        amount += (step.params.finisherBonus as number) || 0;
+      }
+
+      const targetEnemyId = (step.params?.targetInstanceId as string) || context.targetInstanceId;
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
-      dealDirectDamage(state, 'VILLAIN', amount);
+      if (
+        targetEnemyId &&
+        targetEnemyId !== 'villain' &&
+        targetEnemyId !== state.villain.instanceId
+      ) {
+        let targetMinion: CardInstance | undefined;
+        for (const p of state.players) {
+          targetMinion = p.engagedMinions.find((m) => m.instanceId === targetEnemyId);
+          if (targetMinion) break;
+        }
+        if (targetMinion) {
+          dealDirectDamage(state, { type: 'MINION', instanceId: targetMinion.instanceId }, amount);
+        } else {
+          dealDirectDamage(state, 'VILLAIN', amount);
+        }
+      } else {
+        dealDirectDamage(state, 'VILLAIN', amount);
+      }
+
       return {
         state,
         success: true,
@@ -4170,6 +4229,31 @@ export function dealDirectDamage(
     }
     state.villain.health = Math.max(0, state.villain.health - amount);
     return { damageDealt: amount, absorbedByTough: false };
+  }
+
+  if (typeof target === 'object' && target.type === 'MINION') {
+    for (const p of state.players) {
+      const minionIdx = p.engagedMinions.findIndex((m) => m.instanceId === target.instanceId);
+      if (minionIdx !== -1) {
+        const minion = p.engagedMinions[minionIdx];
+        const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          minion.statusCards!.splice(toughIdx, 1);
+          return { damageDealt: 0, absorbedByTough: true };
+        }
+        const currentDmg = minion.tokens?.damage || 0;
+        const newDmg = currentDmg + amount;
+        const minionHp = (minion.card as MinionCard).health || 1;
+        if (newDmg >= minionHp) {
+          processHostDefeated(state, minion, { player: p });
+          p.engagedMinions.splice(minionIdx, 1);
+          moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+        } else {
+          minion.tokens = { ...minion.tokens, damage: newDmg };
+        }
+        return { damageDealt: amount, absorbedByTough: false };
+      }
+    }
   }
 
   return { damageDealt: amount, absorbedByTough: false };

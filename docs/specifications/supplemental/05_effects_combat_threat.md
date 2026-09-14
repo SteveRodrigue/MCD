@@ -22,14 +22,15 @@
 }
 ```
 
-| Parameter          | Type             | Required                    | Default          | Description                                       |
-| :----------------- | :--------------- | :-------------------------- | :--------------- | :------------------------------------------------ |
-| `amount`           | `number`         | Yes (or `amountCalculated`) | -                | Base damage value.                                |
-| `amountCalculated` | `string`         | No                          | -                | Dynamic formula token (e.g. `"SUFFERED_DAMAGE"`). |
-| `target`           | `TargetSelector` | Yes                         | `"CHOSEN_ENEMY"` | Target recipient.                                 |
-| `overkill`         | `boolean`        | No                          | `false`          | Excess minion damage spills over to Villain.      |
-| `piercing`         | `boolean`        | No                          | `false`          | Discards Tough status card before dealing damage. |
-| `ranged`           | `boolean`        | No                          | `false`          | Ignores Retaliate keywords on the target.         |
+| Parameter          | Type             | Required                    | Default          | Description                                                                              |
+| :----------------- | :--------------- | :-------------------------- | :--------------- | :--------------------------------------------------------------------------------------- |
+| `amount`           | `number`         | Yes (or `amountCalculated`) | -                | Base damage value.                                                                       |
+| `amountCalculated` | `string`         | No                          | -                | Dynamic formula token (e.g. `"SUFFERED_DAMAGE"`).                                        |
+| `target`           | `TargetSelector` | Yes                         | `"CHOSEN_ENEMY"` | Target recipient.                                                                        |
+| `overkill`         | `boolean`        | No                          | `false`          | Excess minion damage spills over to Villain.                                             |
+| `piercing`         | `boolean`        | No                          | `false`          | Discards Tough status card before dealing damage.                                        |
+| `ranged`           | `boolean`        | No                          | `false`          | Ignores Retaliate keywords on the target.                                                |
+| `finisherBonus`    | `number`         | No                          | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 
 ---
 
@@ -73,6 +74,33 @@
 
 ---
 
+### `TRANSFER_DAMAGE`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Moves / transfers damage from one character (e.g. hero) to an enemy (Villain or engaged minion). Heals the source and deals direct damage to the target.
+
+```json
+{
+  "effect": "TRANSFER_DAMAGE",
+  "params": {
+    "amount": 1,
+    "finisherBonus": 1,
+    "from": "SELF",
+    "to": "CHOSEN_ENEMY"
+  }
+}
+```
+
+| Parameter       | Type                           | Required | Default          | Description                                                                                 |
+| :-------------- | :----------------------------- | :------- | :--------------- | :------------------------------------------------------------------------------------------ |
+| `amount`        | `number \| DynamicValueSource` | Yes      | `1`              | Base damage amount moved.                                                                   |
+| `finisherBonus` | `number`                       | No       | -                | Bonus damage transferred when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
+| `dynamicBonus`  | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount.                                                       |
+| `from`          | `TargetSelector`               | No       | `"SELF"`         | Source character from which damage is healed.                                               |
+| `to`            | `TargetSelector`               | No       | `"CHOSEN_ENEMY"` | Destination enemy receiving direct damage.                                                  |
+
+---
+
 ## 2. Threat & Scheme Primitives
 
 ### `REMOVE_THREAT`
@@ -89,6 +117,15 @@
   }
 }
 ```
+
+| Parameter          | Type                           | Required | Default         | Description                                                                                 |
+| :----------------- | :----------------------------- | :------- | :-------------- | :------------------------------------------------------------------------------------------ |
+| `amount`           | `number \| DynamicValueSource` | Yes      | `1`             | Base threat amount removed.                                                                 |
+| `target`           | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                         |
+| `finisherBonus`    | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
+| `dynamicBonus`     | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                       |
+| `aerialAllSchemes` | `boolean`                      | No       | `false`         | Removes threat from all active schemes if character has Aerial.                             |
+| `crisisIgnore`     | `boolean`                      | No       | `false`         | Removes threat from Main Scheme even if Crisis icon is active.                              |
 
 ---
 

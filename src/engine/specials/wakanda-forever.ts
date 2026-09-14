@@ -1,8 +1,9 @@
 import { GameState, CardInstance } from '../models';
-import { EffectExecutionContext, EffectResult } from '../effects';
+import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import { cardCatalog } from '../../data/importer/card-loader';
 
 export const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
 
@@ -33,6 +34,21 @@ export function resolveSingleWakandaUpgrade(
 ): void {
   const player = state.players.find((p) => p.id === playerId) || state.players[0];
   const code = upgrade.card.code;
+
+  const specialAbility =
+    upgrade.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
+    cardCatalog
+      .getCard(upgrade.card.code)
+      ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL');
+  if (specialAbility && specialAbility.steps?.length) {
+    executeSequence(state, specialAbility.steps, {
+      playerId: player.id,
+      sourceCardInstance: upgrade,
+      targetInstanceId: targetEnemyId || targetSchemeId,
+      isFinalStep,
+    });
+    return;
+  }
 
   if (code === '01046') {
     // 1. Energy Daggers: 1 damage to villain + engaged minions (2 if final)

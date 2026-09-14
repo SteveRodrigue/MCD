@@ -79,9 +79,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const abilities = isEventCard ? cardToPlay.card.enrichment?.abilities || [] : [];
       const hasAttack = abilities.some((a) =>
         (a.steps || []).some((s) =>
-          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
-            s.effect,
-          ),
+          ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
         ),
       );
       const hasThwart = abilities.some((a) =>
@@ -295,9 +293,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     isEventCard &&
     abilities.some((a) =>
       (a.steps || []).some((s) =>
-        ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
-          s.effect,
-        ),
+        ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
       ),
     );
   const isThwart =

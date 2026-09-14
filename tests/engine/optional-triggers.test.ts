@@ -163,7 +163,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const prompt = gameState.pendingDecisionPrompt;
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Backflip?');
-      expect(prompt?.description).toBe('DAMAGE_WOULD_BE_TAKEN -> CONSUME_INTERCEPTED_EVENT (ALL)');
+      expect(prompt?.description).toBe('DAMAGE_WOULD_BE_TAKEN -> PREVENT_DAMAGE (ALL)');
 
       // Select 'Yes'
       const yesOption = prompt!.options.find((o) => o.label === 'Yes')!;

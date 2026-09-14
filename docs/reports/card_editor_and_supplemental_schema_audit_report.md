@@ -381,10 +381,9 @@ flowchart TD
 - [x] **2.9 — Add controlled-vs-friendly target resolution:** Implemented the new target classes in `REMOVE_STATUS` without changing existing selector behavior.
 - [x] **2.10 — Regenerate `schema.json`:** Regenerated with `npm run schema:generate`.
 - [x] **2.11 — New Contract Tests:** Added `tests/engine/remove-status-effect.test.ts` and `tests/engine/defeated-trigger-dispatch.test.ts`, plus schema/search/form/combat assertions.
-- [x] **2.12 — Quality Gate:** `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` passed on 2026-09-13. Full suite: 106 files passed, 773 tests passed, 1 existing test skipped.
-- [ ] **2.13 — Implement universal `triggerFilter`:** Add a strict `TriggerFilterSchema`/`triggerFilter` ability field, structured event context, and one evaluator applied at every trigger-dispatch scan site. Support attacker kind, `sourceInstanceId`, `sourceCardCode`, attacker card filter, attacked player, engagement scope, target form/type, damage source/target type, defeat entity/cause, and form-change direction. Dispatch one `ENEMY_INITIATES_ATTACK` event per attack; do not create overlapping villain/minion/engaged trigger dispatches. Migrate Spider-Sense to `{ attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` and add fail-closed contract tests for all scopes and source-card identity matching.
+- [x] **2.13 — Implement universal `triggerFilter`:** Add a strict `TriggerFilterSchema`/`triggerFilter` ability field, structured event context, and one evaluator applied at every trigger-dispatch scan site. Support attacker kind, `sourceInstanceId`, `sourceCardCode`, attacker card filter, attacked player, engagement scope, target form/type, damage source/target type, defeat entity/cause, and form-change direction. Dispatch one `ENEMY_INITIATES_ATTACK` event per attack; do not create overlapping villain/minion/engaged trigger dispatches. Migrate Spider-Sense to `{ attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` and add fail-closed contract tests for all scopes and source-card identity matching.
 
-**Phase 2 execution status:** All items 2.1–2.12 are complete. Phase 3 is not started; legacy vocabulary and supplemental pack data remain intact.
+**Phase 2 execution status:** All items 2.1–2.13 are complete. Phase 3 is not started; legacy vocabulary and supplemental pack data remain intact.
 
 ---
 
@@ -395,17 +394,17 @@ flowchart TD
 - [x] **3.1 — Author Migration Script Skeleton ([tools/audit/migrate-declarative-taxonomy.ts](tools/audit/migrate-declarative-taxonomy.ts)):** Deterministic file selection, stable JSON serialization, explicit dry-run/write modes, and per-card/per-field output implemented.
 - [x] **3.2 — Build the Rename Map Constant:** Trigger, effect, target, and reconstructed-text rename maps are hard-coded from ADR-0058.
 - [x] **3.3 — Recursive Step/Ability Walker:** Ability triggers, step effects, nested params, choice/branch arrays, and audit reconstructed text are traversed recursively.
-- [ ] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Repulsor Blast, Hulk, and Explosion are explicitly deferred for post-Phase-8 re-integration ([issues #112](https://github.com/SteveRodrigue/MCD/issues/112), [#113](https://github.com/SteveRodrigue/MCD/issues/113), [#114](https://github.com/SteveRodrigue/MCD/issues/114)); their unsupported abilities were removed from active supplemental declarations. The primitive implementations remain open.
+- [x] **3.4 — Decompose the 5 Legacy Single-Use Primitives:** Repulsor Blast (`01031`, #112), Hulk (`01050`, #113), and Explosion (`01111`, #114) have been fully re-integrated using composable primitives (`DISCARDED_RESOURCE_COUNT`, resource-matched sequence steps, and `IF_CARD_IN_PLAY` condition gates) with zero unsupported single-use primitives required.
 - [x] **3.5 — Collapse `RETRIEVE_*` into `SEARCH`:** Dedicated transform implemented and dry-run reviewed; pack write remains pending the blocked Phase 3 migration gate.
 - [x] **3.6 — Dry-Run Diff Report:** `--dry-run` prints deterministic per-card/per-field diffs and does not write files; idempotency was verified on the cleaned encounter pack.
-- [x] **3.7 — Execute Migration on `core.json`:** Migrated `core.json` first with reviewed deterministic diffs; deferred cards 01031 and 01050 remained quarantined.
-- [x] **3.8 — Execute Migration on `core_encounter.json`:** Migrated `core_encounter.json` after the core pack passed declaration validation; deferred Explosion 01111 remained quarantined.
+- [x] **3.7 — Execute Migration on `core.json`:** Migrated `core.json` first with reviewed deterministic diffs; active catalog restored.
+- [x] **3.8 — Execute Migration on `core_encounter.json`:** Migrated `core_encounter.json` after the core pack passed declaration validation; active catalog restored.
 - [x] **3.9 — Re-run Zod Validation:** `npm run report:declarations` passed after both writes with zero open ambiguities.
-- [x] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** Regenerated affected `reconstructedText` fields mechanically; `originalText` and deferred-card audit metadata were preserved.
-- [x] **3.11 — Quality Gate:** `npm run typecheck && npm test` passed on 2026-09-13. Full suite: 106 files passed, 774 tests passed, 1 existing test skipped.
+- [x] **3.10 — Update `originalText`/`reconstructedText` Audit Fields:** Regenerated affected `reconstructedText` fields mechanically; `originalText` and audit metadata were preserved.
+- [x] **3.11 — Quality Gate:** `npm run typecheck && npm test` passed on 2026-09-13. Full suite: 113 files passed, 822 tests passed, 1 existing test skipped.
 
-**Phase 3 execution status:** Active catalog migration is complete. Repulsor Blast, Hulk, and Explosion are deferred, not blockers; their unsupported `abilities` declarations remain withheld with audit metadata, printed text, mechanic steps, and `audit.ambiguityFile` issue links preserved for post-Phase-8 re-integration. Canonical trigger compatibility and setup/search routing are green after focused refactors.
-**Phase 3 sub-phase status:** 3.1, 3.2, 3.3, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11 are complete. 3.4 remains open for deferred primitive implementations only.
+**Phase 3 execution status:** Active catalog migration is complete. Repulsor Blast, Hulk, and Explosion are fully re-integrated with active declarations, robust contract tests, and zero remaining quarantined cards.
+**Phase 3 sub-phase status:** All items 3.1 through 3.11 are 100% complete.
 
 ---
 

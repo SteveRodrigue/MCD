@@ -794,6 +794,9 @@ export function dispatchAction(
         targetPlayerId: player.id,
         targetType: action.targetType,
         targetInstanceId: action.targetInstanceId,
+        sourceInstanceId: action.allyInstanceId,
+        sourceCardCode: ally.card.code,
+        attackerCard: ally,
       });
 
       const onomatopoeia = 'ALLY ATTACK!';
@@ -1285,9 +1288,7 @@ export function dispatchAction(
       const abilities = playedCardInstance.card.enrichment?.abilities || [];
       const isAttackEffect = abilities.some((a) =>
         (a.steps || []).some((s) =>
-          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES', 'REPULSOR_BLAST', 'EXPLOSION'].includes(
-            s.effect,
-          ),
+          ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
         ),
       );
       const isThwartEffect = abilities.some((a) =>
@@ -2307,16 +2308,11 @@ export function dispatchAction(
             activePrompt?.options.find((o) => o.id === action.selectedOptionId)?.params as any
           )?.ability;
           const preventStep = optAbility?.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
-          const consumeStep = optAbility?.steps?.find(
-            (s: any) => s.effect === 'CONSUME_INTERCEPTED_EVENT',
-          );
-          if (consumeStep) {
-            preventedDamage =
-              consumeStep.params?.amount !== undefined
-                ? Number(consumeStep.params.amount)
-                : (attackCtx.pendingDamage ?? 0);
-          } else if (preventStep) {
-            const isAll = preventStep.params?.amount === 'ALL' || preventStep.params?.preventAll;
+          if (preventStep) {
+            const isAll =
+              preventStep.params?.amount === 'ALL' ||
+              preventStep.params?.preventAll ||
+              preventStep.params?.amount === undefined;
             preventedDamage = isAll
               ? (attackCtx.pendingDamage ?? 0)
               : Number(preventStep.params?.amount || 0);

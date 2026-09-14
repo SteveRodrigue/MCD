@@ -185,15 +185,15 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
       expect((card01006.abilities[0].cost as any).exhaust).toBeUndefined();
     });
 
-    it('guards against regression in AbilityFormBuilder.tsx and DualCardInspector.tsx binding to cost.exhaust', () => {
-      const formBuilderPath = path.resolve(
+    it('guards against regression in AbilityCostSection.tsx and DualCardInspector.tsx binding to cost.exhaust', () => {
+      const costSectionPath = path.resolve(
         __dirname,
-        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+        '../../src/ui/components/editor/AbilityCostSection.tsx',
       );
-      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
-      expect(formBuilderCode).not.toContain('cost.exhaust)');
-      expect(formBuilderCode).not.toContain('exhaust: e.target.checked');
-      expect(formBuilderCode).toContain('cost.exhaustSelf');
+      const costSectionCode = fs.readFileSync(costSectionPath, 'utf8');
+      expect(costSectionCode).not.toContain('cost.exhaust)');
+      expect(costSectionCode).not.toContain('exhaust: e.target.checked');
+      expect(costSectionCode).toContain('cost.exhaustSelf');
 
       const dualInspectorPath = path.resolve(
         __dirname,
@@ -205,15 +205,15 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
   });
 
   describe('Conditional Gate Sequencing in Step Editor (#75)', () => {
-    it('verifies that in AbilityFormBuilder.tsx, the Conditional Gate selector appears before the Effect Primitive selector', () => {
-      const formBuilderPath = path.resolve(
+    it('verifies that in StepPipelineEditor.tsx, the Conditional Gate selector appears before the Effect Primitive selector', () => {
+      const stepEditorPath = path.resolve(
         __dirname,
-        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+        '../../src/ui/components/editor/StepPipelineEditor.tsx',
       );
-      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
+      const stepEditorCode = fs.readFileSync(stepEditorPath, 'utf8');
 
-      const gateIndex = formBuilderCode.indexOf('Conditional Gate');
-      const effectIndex = formBuilderCode.indexOf('Effect Primitive');
+      const gateIndex = stepEditorCode.indexOf('Conditional Gate');
+      const effectIndex = stepEditorCode.indexOf('Effect Primitive');
 
       expect(gateIndex).toBeGreaterThan(-1);
       expect(effectIndex).toBeGreaterThan(-1);
@@ -222,16 +222,22 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
   });
 
   describe('Universal EXHAUST and READY Card Editor Support (#65)', () => {
-    it('verifies that AbilityFormBuilder.tsx imports EffectTypeSchema providing canonical EXHAUST and READY to the selector', () => {
-      const formBuilderPath = path.resolve(
+    it('verifies that StepPipelineEditor.tsx imports EffectTypeSchema providing canonical EXHAUST and READY to the selector', () => {
+      const stepEditorPath = path.resolve(
         __dirname,
-        '../../src/ui/components/editor/AbilityFormBuilder.tsx',
+        '../../src/ui/components/editor/StepPipelineEditor.tsx',
       );
-      const formBuilderCode = fs.readFileSync(formBuilderPath, 'utf8');
+      const stepEditorCode = fs.readFileSync(stepEditorPath, 'utf8');
 
-      expect(formBuilderCode).toContain('EffectTypeSchema.options.map');
-      expect(formBuilderCode).toContain('getEffectDescriptor');
-      expect(formBuilderCode).toContain('Exhaust Host Card');
+      expect(stepEditorCode).toContain('EffectTypeSchema.options.map');
+      expect(stepEditorCode).toContain('getEffectDescriptor');
+
+      const costSectionPath = path.resolve(
+        __dirname,
+        '../../src/ui/components/editor/AbilityCostSection.tsx',
+      );
+      const costSectionCode = fs.readFileSync(costSectionPath, 'utf8');
+      expect(costSectionCode).toContain('Exhaust Host Card');
     });
   });
 });

@@ -12,11 +12,7 @@ describe('CardPaymentModal Targeting Invariants (Issue #94)', () => {
     const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
     const isAttack =
       isEventCard &&
-      abilities.some((a: any) =>
-        (a.steps || []).some((s: any) =>
-          ['DEAL_DAMAGE', 'DEAL_DAMAGE_ALL_ENEMIES'].includes(s.effect),
-        ),
-      );
+      abilities.some((a: any) => (a.steps || []).some((s: any) => s.effect === 'DEAL_DAMAGE'));
     const isThwart =
       isEventCard &&
       abilities.some((a: any) => (a.steps || []).some((s: any) => s.effect === 'REMOVE_THREAT'));

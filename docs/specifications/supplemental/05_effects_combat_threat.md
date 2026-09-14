@@ -40,7 +40,7 @@
 
 > [!NOTE]
 > No `case "DEAL_DAMAGE_SPLIT"` exists in `src/engine/effects/index.ts` and no card declares it.
-> Use `DEAL_DAMAGE_ALL_ENEMIES` for undivided area damage.
+> Use `DEAL_DAMAGE` with `target: "ALL_ENEMIES"` for undivided area damage.
 
 ```json
 {
@@ -112,62 +112,63 @@
 
 ---
 
-### `ADD_THREAT_PER_PLAYER`
-
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L1752`](../../../src/engine/effects/index.ts#L1752))
-- **Description:** Adds `amount` × (number of players) threat. Supports targeting by `cardCode`, `target` (`THIS_SIDE_SCHEME`, `MAIN_SCHEME`), or defaulting to the source side scheme. Fizzles per RR v1.8 p. 29 if the targeted card is not in play.
-
-```json
-{
-  "effect": "ADD_THREAT_PER_PLAYER",
-  "params": {
-    "amount": 1,
-    "target": "THIS_SIDE_SCHEME"
-  }
-}
-```
-
----
-
-### `PLACE_THREAT_PER_SIDE_SCHEME`
-
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (_Masterplan_ `01192`)
-- **Description:** Places X threat on each active side scheme; if none exist, mills encounter deck until a side scheme is found and puts it into play.
-
-```json
-{
-  "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
-  "params": {
-    "amount": 4
-  }
-}
-```
-
----
-
-### `CONSUME_INTERCEPTED_EVENT`
-
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
-- **Description:** Consumes a scalar amount (or all if `amount` is omitted) of an active intercepted event (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`) within an `INTERRUPT` window. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount` across sequential ability execution steps.
-
-```json
-{
-  "effect": "CONSUME_INTERCEPTED_EVENT",
-  "params": {
-    "amount": 1
-  }
-}
-```
-
-| Parameter | Type                                          | Required | Default | Description                                                                                  |
-| :-------- | :-------------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------- |
-| `amount`  | `number \| { from: "INTERCEPTED_VALUE", ...}` | No       | `All`   | Amount of incoming event value to consume. If omitted, consumes all remaining value to zero. |
-
----
-
-## 3. Dynamic Value Sources & Numeric Amount Resolution
-
-The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, and `CONSUME_INTERCEPTED_EVENT`:
+### `ADD_THREAT` (with `perPlayer: true`)
+ 
+ - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+ - **Description:** Adds `amount` (or `amountPerPlayer`) × (number of players) threat when `perPlayer: true`. Supports targeting by `cardCode`, `target` (`THIS_SIDE_SCHEME`, `MAIN_SCHEME`, `SELF`), or defaulting to the source side scheme. Fizzles per RR v1.8 p. 29 if the targeted card is not in play.
+ 
+ ```json
+ {
+   "effect": "ADD_THREAT",
+   "params": {
+     "amount": 1,
+     "perPlayer": true,
+     "target": "THIS_SIDE_SCHEME"
+   }
+ }
+ ```
+ 
+ ---
+ 
+ ### `PLACE_THREAT_PER_SIDE_SCHEME`
+ 
+ - **Status:** 🟢 `IMPLEMENTED (v1.0)` (_Masterplan_ `01192`)
+ - **Description:** Places X threat on each active side scheme; if none exist, mills encounter deck until a side scheme is found and puts it into play.
+ 
+ ```json
+ {
+   "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
+   "params": {
+     "amount": 4
+   }
+ }
+ ```
+ 
+ ---
+ 
+ ### `PREVENT_DAMAGE` (Interception & Prevention)
+ 
+ - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+ - **Description:** Consumes / prevents incoming damage (or threat) within an `INTERRUPT` window (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`). Prevents `amount` or all incoming value if `amount` is omitted. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount`.
+ 
+ ```json
+ {
+   "effect": "PREVENT_DAMAGE",
+   "params": {
+     "amount": 1
+   }
+ }
+ ```
+ 
+ | Parameter | Type                                          | Required | Default | Description                                                                                  |
+ | :-------- | :-------------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------- |
+ | `amount`  | `number \| { from: "INTERCEPTED_VALUE", ...}` | No       | `All`   | Amount of incoming event value to consume. If omitted, consumes all remaining value to zero. |
+ 
+ ---
+ 
+ ## 3. Dynamic Value Sources & Numeric Amount Resolution
+ 
+ The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, and `PREVENT_DAMAGE`:
 
 ```json
 {

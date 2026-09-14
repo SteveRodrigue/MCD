@@ -830,7 +830,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'consume_threat',
-                effect: 'CONSUME_INTERCEPTED_EVENT',
+                effect: 'PREVENT_DAMAGE',
               },
               {
                 id: 'take_damage',
@@ -859,7 +859,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'reduce_threat',
-                effect: 'CONSUME_INTERCEPTED_EVENT',
+                effect: 'PREVENT_DAMAGE',
                 params: {
                   amount: 1,
                 },
@@ -878,7 +878,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'prevent_threat',
-                effect: 'CONSUME_INTERCEPTED_EVENT',
+                effect: 'PREVENT_DAMAGE',
                 params: {
                   amount: 1,
                 },
@@ -989,6 +989,26 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             ],
           };
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
+        });
+
+        it('Rejects retired effect types pruned in declarative taxonomy consolidation', () => {
+          const retiredEffects = [
+            'ADD_THREAT_PER_PLAYER',
+            'CONSUME_INTERCEPTED_EVENT',
+            'TRIGGER_SURGE',
+            'DEAL_DAMAGE_ALL_ENEMIES',
+            'BUFF_ALL_FRIENDLY_CHARACTERS',
+            'BOOST_STAT_CHOICE',
+            'SHUFFLE_DISCARD_INTO_DECK',
+            'RETURN_FACEDOWN_CARDS_TO_OWNERS',
+            'ADD_COUNTER',
+            'REMOVE_COUNTER',
+          ];
+
+          for (const effect of retiredEffects) {
+            const result = EffectTypeSchema.safeParse(effect);
+            expect(result.success).toBe(false);
+          }
         });
       });
     });

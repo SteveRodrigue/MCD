@@ -11,7 +11,7 @@
 
 - `"ALWAYS"` _(Default)_: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".
 - `"THEN"` / `"IF_PREVIOUS_SUCCESS"`: Executes Step $N$ only if Step $N-1$ mutated the game state (RR v1.8 p. 24 "Then").
-- `"IF_AMOUNT_ZERO"` / `"IF_ZERO_HEALED"`: Executes Step $N$ (e.g. `TRIGGER_SURGE`) if Step $N-1$ caused 0 state mutation (e.g. at full health).
+- `"IF_AMOUNT_ZERO"` / `"IF_ZERO_HEALED"`: Executes Step $N$ (e.g. `SURGE`) if Step $N-1$ caused 0 state mutation (e.g. at full health).
 - `"IF_ALREADY_HAS_STATUS"`: Executes Step $N$ if the target already has the status card before applying.
 - `"IF_FAILED"`: Executes Step $N$ if Step $N-1$ could not resolve.
 - `"IF_RESOURCE_MATCH"`: Evaluates whether a required resource type was spent during action payment.

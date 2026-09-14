@@ -142,7 +142,6 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       let target: string = 'CHOSEN_ENEMY';
       let effect: any = 'DEAL_DAMAGE';
       if (targetStr.includes('each enemy')) {
-        effect = 'DEAL_DAMAGE_ALL_ENEMIES';
         target = 'ALL_ENEMIES';
       } else if (targetStr.includes('villain')) {
         target = 'VILLAIN';

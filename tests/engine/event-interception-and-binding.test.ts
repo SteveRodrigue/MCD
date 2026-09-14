@@ -12,7 +12,7 @@ import { resolveNumericAmount } from '@engine/effects';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
-describe('Universal CONSUME_INTERCEPTED_EVENT and Scalar Value Binding (ADR-0049 & Issue #90)', () => {
+describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issue #90)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
   let gameState: ReturnType<typeof setupGame>;
 

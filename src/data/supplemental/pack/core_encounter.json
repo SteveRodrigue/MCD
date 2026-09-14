@@ -435,7 +435,7 @@
             },
             {
               "id": "hard_to_keep_down_surge_step",
-              "effect": "TRIGGER_SURGE",
+              "effect": "SURGE",
               "gate": "IF_AMOUNT_ZERO"
             }
           ]
@@ -443,13 +443,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T04:10",
-        "reviewedAt": "2026-08-31T04:10",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Rhino heals 4 damage. If no damage was healed this way, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [HEAL_DAMAGE (amount: 4, target: VILLAIN), IF_AMOUNT_ZERO -> TRIGGER_SURGE]"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [HEAL_DAMAGE (amount: 4, target: VILLAIN), IF_AMOUNT_ZERO -> SURGE]"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -474,7 +474,7 @@
             },
             {
               "id": "im_tough_surge_step",
-              "effect": "TRIGGER_SURGE",
+              "effect": "SURGE",
               "gate": "IF_ALREADY_HAS_STATUS",
               "params": {
                 "status": "TOUGH",
@@ -486,13 +486,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T04:10",
-        "reviewedAt": "2026-08-31T04:10",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Give Rhino a tough status card. If Rhino already has a tough status card, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [ADD_STATUS (status: TOUGH, target: VILLAIN), IF_ALREADY_HAS_STATUS -> TRIGGER_SURGE]"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [ADD_STATUS (status: TOUGH, target: VILLAIN), IF_ALREADY_HAS_STATUS -> SURGE]"
       },
       "mechanicSteps": [
         "Treachery: When revealed (WHEN_REVEALED)",
@@ -517,7 +517,7 @@
                 ],
                 "alterEgoSteps": [
                   {
-                    "effect": "TRIGGER_SURGE"
+                    "effect": "SURGE"
                   }
                 ]
               }
@@ -527,8 +527,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -549,10 +549,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
                 "target": "THIS_SIDE_SCHEME",
-                "amount": 1
+                "amount": 1,
+                "perPlayer": true
               }
             }
           ]
@@ -560,13 +561,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Hazard Icon: Deal +1 encounter card during the villain phase.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amount: 1, target: THIS_SIDE_SCHEME)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: THIS_SIDE_SCHEME, perPlayer: true)"
       },
       "mechanicSteps": [
         "When Revealed: Place an additional 1 threat per player on Breakin' & Takin'."
@@ -581,10 +582,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
                 "amount": 1,
-                "target": "THIS_SIDE_SCHEME"
+                "target": "THIS_SIDE_SCHEME",
+                "perPlayer": true
               }
             }
           ]
@@ -592,13 +594,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<i>(Crisis Icon: While this scheme is in play, you cannot remove threat from the main scheme.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> WHEN_REVEALED_THREAT_PER_PLAYER (amountPerPlayer: 1)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, perPlayer: true)"
       },
       "mechanicSteps": [
         "Side Scheme: 2 Threat per player.",
@@ -615,10 +617,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
                 "target": "THIS_SIDE_SCHEME",
-                "amount": 1
+                "amount": 1,
+                "perPlayer": true
               }
             }
           ]
@@ -626,13 +629,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.\n<i>(Acceleration Icon: Place +1 threat on the main scheme at the start of the villain phase.)</i>",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amount: 1, target: THIS_SIDE_SCHEME)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: THIS_SIDE_SCHEME, perPlayer: true)"
       },
       "mechanicSteps": [
         "When Revealed: Place an additional 1 threat per player on Bomb Scare."
@@ -694,17 +697,47 @@
       ]
     },
     "01111": {
-      "comment": "BLOCKED -- Explosion supplemental ability withheld pending Bomb Scare conditional resolution capability. See GitHub issue #114. TREACHERY: Explosion. When Revealed: If Bomb Scare is in play, deal X damage where X is threat on Bomb Scare. Otherwise surge.",
+      "comment": "Treachery: When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
+      "abilities": [
+        {
+          "id": "explosion_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "step_1_assign_threat_damage",
+              "gate": "IF_CARD_IN_PLAY",
+              "effect": "DEAL_DAMAGE",
+              "params": {
+                "cardCode": "01109",
+                "amount": {
+                  "from": "STAT_VALUE",
+                  "stat": "THREAT",
+                  "targetCardCode": "01109"
+                },
+                "target": "HEROES_AND_ALLIES"
+              }
+            },
+            {
+              "id": "step_2_fallback_surge",
+              "gate": "IF_CARD_NOT_IN_PLAY",
+              "effect": "SURGE",
+              "params": {
+                "cardCode": "01109"
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-09-13T21:42",
+        "reviewedAt": "2026-09-13T21:42",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
-        "ambiguityFile": "https://github.com/SteveRodrigue/MCD/issues/114",
+        "confidence": 100,
         "originalText": "<b>When Revealed</b>: If Bomb Scare is in play, assign X damage among heroes and allies, where X is the amount of threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> EXPLOSION (If Bomb Scare in play, deal threat damage; otherwise surge)"
+        "reconstructedText": "WHEN_REVEALED -> IF_CARD_IN_PLAY(01109) DEAL_DAMAGE (amount: THREAT[01109], target: HEROES_AND_ALLIES) THEN IF_CARD_NOT_IN_PLAY(01109) SURGE"
       },
       "mechanicSteps": [
         "When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare.",
@@ -900,10 +933,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
-                "amountPerPlayer": 1,
-                "target": "SELF"
+                "target": "SELF",
+                "amount": 1,
+                "perPlayer": true
               }
             }
           ]
@@ -911,13 +945,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:52",
-        "reviewedAt": "2026-08-31T03:52",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
       }
     },
     "01162": {
@@ -1058,7 +1092,7 @@
           "trigger": "DEFEATED",
           "steps": [
             {
-              "effect": "RETURN_FACEDOWN_CARDS_TO_OWNERS",
+              "effect": "RETURN_TO_HAND",
               "params": {}
             }
           ]
@@ -1066,13 +1100,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T14:20",
-        "reviewedAt": "2026-08-31T14:20",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Each player places a random card from their hand facedown here.\n<b>When Defeated</b>: Return each facedown card here to its owner's hand.",
-        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; FORCED_RESPONSE (Trigger: DEFEATED) -> RETURN_FACEDOWN_CARDS_TO_OWNERS"
+        "reconstructedText": "WHEN_REVEALED -> ATTACH_FACEDOWN_CARDS_FROM_HAND; FORCED_RESPONSE (Trigger: DEFEATED) -> RETURN_TO_HAND"
       }
     },
     "01167": {
@@ -1194,10 +1228,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
-                "amountPerPlayer": 1,
-                "target": "SELF"
+                "target": "SELF",
+                "amount": 1,
+                "perPlayer": true
               }
             }
           ]
@@ -1205,13 +1240,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:52",
-        "reviewedAt": "2026-08-31T03:52",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Place an additional 1 [per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
       }
     },
     "01172": {
@@ -1368,10 +1403,11 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "ADD_THREAT_PER_PLAYER",
+              "effect": "ADD_THREAT",
               "params": {
-                "amountPerPlayer": 1,
-                "target": "SELF"
+                "target": "SELF",
+                "amount": 1,
+                "perPlayer": true
               }
             }
           ]
@@ -1379,13 +1415,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:52",
-        "reviewedAt": "2026-08-31T03:52",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Place an additional 1[per_hero] threat here.",
-        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT_PER_PLAYER (amountPerPlayer: 1, target: SELF)"
+        "reconstructedText": "WHEN_REVEALED -> ADD_THREAT (amount: 1, target: SELF, perPlayer: true)"
       }
     },
     "01177": {
@@ -1671,7 +1707,7 @@
             },
             {
               "id": "step_4_fallback_surge",
-              "effect": "TRIGGER_SURGE",
+              "effect": "SURGE",
               "gate": "IF_FAILED",
               "params": {
                 "targetStepId": "step_1_spawn_nemesis_minion"
@@ -1682,13 +1718,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T12:28:00Z",
-        "reviewedAt": "2026-09-06T12:28:00Z",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "<b>When Revealed</b>: Reveal your set-aside nemesis minion and put it into play engaged with you. Reveal your set-aside nemesis side scheme and put it into play. Shuffle the rest of your set-aside nemesis encounter set into the encounter deck. If your nemesis minion does not enter the game this way, this card gains surge.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (types: minion, sets: PLAYER_NEMESIS), PUT_INTO_PLAY (types: side_scheme, sets: PLAYER_NEMESIS), SHUFFLE_INTO_DECK (sets: PLAYER_NEMESIS), IF_FAILED -> TRIGGER_SURGE]"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [PUT_INTO_PLAY (types: minion, sets: PLAYER_NEMESIS), PUT_INTO_PLAY (types: side_scheme, sets: PLAYER_NEMESIS), SHUFFLE_INTO_DECK (sets: PLAYER_NEMESIS), IF_FAILED -> SURGE]"
       },
       "mechanicSteps": [
         "When Revealed: Reveal your set-aside nemesis minion and put it into play engaged with you.",
@@ -1793,7 +1829,7 @@
           "steps": [
             {
               "id": "under_fire_surge",
-              "effect": "TRIGGER_SURGE"
+              "effect": "SURGE"
             },
             {
               "id": "under_fire_reveal",
@@ -1804,13 +1840,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T04:10",
-        "reviewedAt": "2026-08-31T04:10",
+        "updatedAt": "2026-09-13T22:00:00Z",
+        "reviewedAt": "2026-09-13T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "Surge.\n<b>When Revealed</b>: Reveal the top card of the encounter deck.",
-        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [TRIGGER_SURGE, REVEAL_ENCOUNTER_CARD]"
+        "reconstructedText": "WHEN_REVEALED -> SEQUENCE [SURGE, REVEAL_ENCOUNTER_CARD]"
       },
       "mechanicSteps": [
         "Keyword: Surge.",

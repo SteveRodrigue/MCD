@@ -222,7 +222,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   return (
     <div className="flex-1 flex flex-col md:flex-row h-full overflow-hidden bg-comic-paper">
       {/* LEFT / CENTER COLUMN: Card Visual Preview & Printed Text */}
-      <div className="w-full md:w-1/2 p-4 md:p-6 overflow-y-auto border-r-4 border-black flex flex-col items-center gap-4 bg-[#fbf9f4]">
+      <div className="w-full md:w-[320px] lg:w-[340px] shrink-0 p-4 md:p-6 overflow-y-auto border-r-4 border-black flex flex-col items-center gap-4 bg-[#fbf9f4]">
         {/* Card View Visual Preview (ADR-0012 Unconstrained Z-Axis Elevation) */}
         <div className="flex flex-col items-center relative z-30 overflow-visible">
           <div className="shadow-comic-lg border-2 border-black rounded-lg bg-black p-1 overflow-visible">
@@ -260,7 +260,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
             <span>UPSTREAM ZZORBA PROPERTIES</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-sans">
+          <div className="grid grid-cols-2 gap-2 text-xs font-sans">
             <div className="bg-comic-paper p-1.5 border border-black rounded">
               <span className="text-[10px] uppercase font-bold text-gray-500 block">Type</span>
               <span className="font-bold capitalize">{upstream.type_code || 'N/A'}</span>
@@ -346,7 +346,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
       </div>
 
       {/* RIGHT COLUMN: Declarative Supplemental Reviewer & Editor */}
-      <div className="w-full md:w-1/2 p-4 md:p-6 overflow-y-auto flex flex-col gap-4 bg-comic-paper">
+      <div className="flex-1 w-full p-4 md:p-6 overflow-y-auto flex flex-col gap-4 bg-comic-paper">
         {/* Header Strip with Code, Save Button & Tab Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-comic-panel border-3 border-black p-3 shadow-comic-sm">
           <div>

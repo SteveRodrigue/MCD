@@ -184,6 +184,7 @@ _Objective: Equip developers and card authors with an integrated visual editor a
   - Left pane: Card gallery with status badges (100% Verified, Partial/Draft, Schema Error, Missing).
   - Center pane: Visual inspector rendering card art via `CardView` alongside raw upstream attributes and printed card text.
   - Deep-linking URL synchronization (`/editor?code=01001a`).
+  - **Editor Contrast & Ergonomics ([#116](https://github.com/SteveRodrigue/MCD/issues/116)) ✅ (Completed):** Resolved white-on-white text fallbacks and missing pop-art drop shadows across editor controls via complete design system tokens in `tailwind.config.js`; added collapsible sidebar (Column 1), natural card-width inspector (Column 2) with 2-column Zzorba properties, and full-width expandable rules editor (`flex-1` Column 3).
 - [x] **Step 3: Visual Declarative Ability Builder & Live Schema Diagnostics ([Issue #63](https://github.com/SteveRodrigue/MCD/issues/63)) ✅ (Completed):**
   - Form builder mode for ability timing, event triggers, costs, limits, and steps with dynamic primitive parameter fields.
   - 100% 1:1 parameter parity across all 104 effect primitives via `EFFECT_PARAMETER_REGISTRY` (`effect-parameter-registry.ts`), eliminating ad-hoc inputs and ensuring every engine primitive parameter (`count`, `lookCount`, `status`, `resource`, etc.) is visually editable and verified.

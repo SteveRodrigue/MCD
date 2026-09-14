@@ -8,10 +8,13 @@ export default {
           yellow: '#FFDE00',
           red: '#ED1D24',
           blue: '#0284C7',
+          accent: '#0284C7',
           green: '#16A34A',
           darkBlue: '#0F172A',
+          dark: '#0F172A',
           black: '#111111',
           paper: '#FBF8EE',
+          panel: '#FFFFFF',
           burst: '#FF3B30',
         },
         resource: {
@@ -27,9 +30,13 @@ export default {
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
+        'comic-xs': '1px 1px 0px 0px #111111',
         'comic-sm': '2px 2px 0px 0px #111111',
+        'comic-md': '3px 3px 0px 0px #111111',
         comic: '4px 4px 0px 0px #111111',
+        'comic-pop': '4px 4px 0px 0px #111111',
         'comic-lg': '8px 8px 0px 0px #111111',
+        'comic-xl': '12px 12px 0px 0px #111111',
       },
       borderWidth: {
         comic: '3px',

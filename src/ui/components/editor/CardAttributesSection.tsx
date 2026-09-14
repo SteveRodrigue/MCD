@@ -442,7 +442,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
                     onClick={toggleKeyword}
                     className={`rounded border border-black px-2 py-0.5 text-[11px] font-bold transition-transform active:scale-95 ${
                       isActive
-                        ? 'bg-comic-accent text-white shadow-comic-xs'
+                        ? 'bg-comic-accent text-white shadow-comic-xs font-bold'
                         : 'bg-white text-gray-700 hover:bg-yellow-50'
                     }`}
                   >

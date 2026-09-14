@@ -90,3 +90,4 @@ Option 2 delivers visual cohesion across all player interactions while respectin
 
 - _Risk:_ Visual noise if halftone dot textures or drop shadows are too heavy.
 - _Mitigation:_ Keep halftone overlays subtle (`opacity-10`), use crisp `bg-comic-paper` backgrounds with dark text (`text-slate-950` / `text-comic-black`), and maintain standard font hierarchy.
+- _Design System Tokens (Tailwind Alignment):_ All canonical tokens (`comic.accent` `#0284C7`, `comic.dark` `#0F172A`, `comic.panel` `#FFFFFF`, and `shadow-comic-xs/md/pop/xl`) are codified directly in `tailwind.config.js` to ensure consistent contrast and prevent unstyled fallbacks across dialogs and developer tooling.

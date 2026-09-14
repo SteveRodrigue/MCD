@@ -246,7 +246,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
                 onClick={() => handleArrayToggle('types', type)}
                 className={`px-1.5 py-0.5 rounded border border-black text-[10px] font-bold transition-transform cursor-pointer ${
                   isSelected
-                    ? 'bg-comic-accent text-white shadow-comic-xs scale-105'
+                    ? 'bg-comic-accent text-white shadow-comic-xs scale-105 font-bold'
                     : 'bg-white text-gray-800 hover:bg-gray-100'
                 }`}
               >

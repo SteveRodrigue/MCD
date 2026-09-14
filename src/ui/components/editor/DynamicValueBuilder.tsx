@@ -115,10 +115,10 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            data-testid="mode-fixed-number-btn"
+            data-testid="mode-fixed"
             className={`px-2 py-0.5 rounded border border-black text-[10px] font-bold transition-transform active:scale-95 ${
               currentMode === 'number'
-                ? 'bg-comic-accent text-white shadow-comic-xs'
+                ? 'bg-comic-accent text-white shadow-comic-xs font-bold'
                 : 'bg-white text-gray-700 hover:bg-yellow-50'
             }`}
             onClick={() => handleSetMode('number')}

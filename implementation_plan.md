@@ -8,16 +8,18 @@
 
 ## 1. Rules Reference (RR v1.8) & Specification Analysis
 
-The Card Supplemental Editor is the developer & authoring interface for declaring card enrichment metadata (`CardEnrichmentSchema`) across all 170+ Marvel Champions cards. To achieve 100% declarative authoring without resorting to raw JSON editing, the visual editor must support the complete declarative grammar:
+The Card Supplemental Editor is the developer & authoring interface for declaring card enrichment metadata (`CardEnrichmentSchema`) across all 170+ Marvel Champions cards. To achieve 100% declarative authoring without requiring raw JSON editing, the visual editor must support the complete declarative grammar:
 
 1. **Universal Card Filter (RR v1.8 p. 19, 26, ADR-0046):**
    - Evaluating atomic criteria: `codes`, `names`, `types`, `traits`, `aspects`, `sets`, `isUnique`, `isIdentitySpecific`, `isExhausted`, `cost` comparison (`min`, `max`, `equals`), `resourceIcons`, `hasKeyword`, and `hasStatus`.
-   - Composable boolean grouping: `all` (AND), `any` (OR), `none` (NOT) branches.
-2. **Dynamic Values & Formulas (ADR-0049, ADR-0052):**
-   - Static numeric constants vs. dynamic formulas (`from: 'STAT_VALUE' | 'COUNTERS' | 'ENTITY_COUNT' | 'DISCARDED_COUNT' | 'INTERCEPTED_VALUE' | 'PREVIOUS_RESULT' | 'CARD_ATTRIBUTE'`).
-   - Dynamic parameters: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp: { min, max }`.
+   - Composable boolean grouping: `all` (AND), `any` (OR), `none` (NOT) branches with 1-level visual nesting.
+   - **Eager Output Sanitization (Gap 3C.1):** Pruning empty arrays (`[]`), blank strings, and `undefined` keys so serialized filters strictly satisfy `UniversalCardFilterSchema.strict()` and keep the Live JSON editor valid.
+2. **Dynamic Values & Multi-Modal Quantities (ADR-0049, ADR-0052):**
+   - Multi-modal support via a **3-Way Segmented Switcher (Gap 3A.1)**: Fixed numbers, `'ALL'` literal (for `DISCARD`, `REMOVE_COUNTERS`), and dynamic formulas (`from: 'STAT_VALUE' | 'COUNTERS' | 'ENTITY_COUNT' | 'DISCARDED_COUNT' | 'INTERCEPTED_VALUE' | 'PREVIOUS_RESULT' | 'CARD_ATTRIBUTE'`).
+   - Dynamic formula parameters: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp: { min, max }`, `target: TargetSelector`.
+   - **Collapsible Filter Accordion for `ENTITY_COUNT` (Gap 3B.2):** Expandable `<UniversalCardFilterBuilder>` inside `DynamicValueBuilder` showing criteria summary badges to prevent excessive visual nesting.
 3. **Card-Level Attributes & Uses (RR v1.8 p. 30 'Uses', ADR-0054, ADR-0057):**
-   - Structured keywords matrix: `Guard`, `Overkill`, `Ranged`, `Toughness`, `Crisis`, `Hazard`, `Acceleration`, `Quickstrike`, `Retaliate` (+ numeric amount).
+   - Structured keywords matrix: `Guard`, `Overkill`, `Ranged`, `Toughness`, `Crisis`, `Hazard`, `Acceleration`, `Quickstrike`, `Retaliate` (+ numeric amount input).
    - "Uses" counters lifecycle: `count`, `type` / `counterType`, `max`, `discardOnEmpty`.
    - Numeric metadata: `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`, `traits`.
 4. **Trigger Filters (ADR-0058):**
@@ -29,55 +31,93 @@ The Card Supplemental Editor is the developer & authoring interface for declarin
    - Counter payments: `spendCounters` (`counterType`, `amount`, `target: SELF | IDENTITY`).
    - Card discarding: `discardCard` (`count`, `maxCount`, `from: HAND | DECK | PLAY`).
 6. **Multi-Step Resolution Pipelines (ADR-0030, ADR-0058):**
-   - Step sequencing: Reordering controls (Move Up / Move Down).
+   - Step sequencing: Reordering controls (Move Up `↑` / Move Down `↓`).
    - Step gates: `gate` (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_FAILED`).
    - Step milestone conditions: `condition` (`TARGET_DEFEATED`, `SCHEME_EMPTY`, `STATUS_APPLIED`, `RESOURCE_KICKER_MET`).
    - Step-level `filter` and `id`.
 
 ---
 
-## 2. Comprehensive Gap Analysis of Built vs. Integrated Editor Features
+## 2. Comprehensive Gap Analysis & Resolved Technical Decisions
 
-Here is the exact audit of what exists in code vs. what is actually integrated into the live editor:
-
-| Feature / Sub-System                     | Existing Scaffolded Code                                                                         | Current Integration Status in Editor                                                  | Missing Integration / Gaps                                                                                                                                                                                                                                                                                                                                                                  |
-| :--------------------------------------- | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **1. Universal Card Filter**             | `src/ui/components/editor/UniversalCardFilterBuilder.tsx` exists                                 | ❌ **NOT Integrated** (Hardcoded 3-textbox fallback used in `AbilityFormBuilder.tsx`) | • Component is never imported in `AbilityFormBuilder.tsx`.<br>• Component itself lacks `cost` range, `resourceIcons`, `keywords`, `statuses`, `isUnique`, `isExhausted`, and `all`/`any`/`none` groups.<br>• `SEARCH` in `effect-parameter-registry.ts` is missing `filter` parameter.<br>• `playRequirements.controlFilter` and `triggerFilter.attackerCardFilter` do not use the builder. |
-| **2. Dynamic Value Builder**             | `src/ui/components/editor/DynamicValueBuilder.tsx` exists                                        | ❌ **NOT Integrated**                                                                 | • Component is never imported or rendered in `AbilityFormBuilder.tsx`.<br>• All numeric effect parameters only render `<input type="number">` without dynamic toggle.                                                                                                                                                                                                                       |
-| **3. Card Attributes (Uses & Keywords)** | Zod schema in `schema.ts` (`CardUsesSchema`, `StructuredKeywordSchema`, `restrictedSlots`, etc.) | ❌ **NOT Integrated**                                                                 | • `AbilityFormBuilder.tsx` only renders `comment`, `maxPerPlayer`, `confidence`, `reviewedBy`, and `noSupplementalNeeded`.<br>• Zero UI for `uses` (`count`, `type`, `max`, `discardOnEmpty`).<br>• Zero UI for `keywords` chip matrix.<br>• Zero UI for `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`.                             |
-| **4. Trigger Filter Builder**            | Zod schema in `schema.ts` (`TriggerFilterSchema`)                                                | ❌ **NOT Integrated**                                                                 | • `AbilityFormBuilder.tsx` only has a flat trigger dropdown.<br>• Zero UI for configuring `triggerFilter` (`attackerKind`, `targetPlayerScope`, `damageSourceType`, `defeatByAttack`, etc.).                                                                                                                                                                                                |
-| **5. Ability Cost Specification**        | Zod schema in `schema.ts` (`AbilityCostSchema`)                                                  | ⚠️ **Partially Implemented (20%)**                                                    | • Only has checkboxes for `exhaustSelf`, `discardSelf`, and `damageSelf`.<br>• Missing `resources` / `resourceCost` picker.<br>• Missing `spendCounters` sub-form.<br>• Missing `discardCard` sub-form.<br>• Missing `damageHero` input.                                                                                                                                                    |
-| **6. Multi-Step Sequencing & Gates**     | Zod schema in `schema.ts` (`AbilityStepSchema`, `StepConditionSchema`)                           | ⚠️ **Partially Implemented (30%)**                                                    | • Has basic `gate` dropdown and effect selector.<br>• Missing Step Reordering buttons (Move Up / Move Down).<br>• Missing `condition` (milestone condition) dropdown.<br>• Missing step-level `filter` builder.                                                                                                                                                                             |
-| **7. Parameter Registry Completeness**   | `effect-parameter-registry.ts`                                                                   | ⚠️ **Mostly Complete (95%)**                                                          | • Missing `filter` parameter descriptor on `SEARCH`.<br>• Missing `type: 'dynamic-number'` or dynamic capability descriptor on scalable parameters.                                                                                                                                                                                                                                         |
+| Gap Item | Root Cause / Status | Resolved Architectural Decision |
+| :--- | :--- | :--- |
+| **Gap 1: Component Test Environment** | `vitest` runs in pure `node` environment without DOM simulation. | **Option B (Happy-DOM):** Install `happy-dom`, `@testing-library/react`, and `@testing-library/user-event`. Scoped exclusively to `tests/ui/**/*.test.tsx` via Vitest `environmentMatchGlobs`. Headless engine tests remain in pure Node for maximum speed. |
+| **Gap 2: Parameter Registry Typing** | Registry numeric parameters lacked dynamic capability flags. | **`allowDynamic?: boolean` and `allowAll?: boolean`**: Orthogonal modifier flags on `ParameterDescriptor` with base `type: 'number'`. Avoids enum explosion, preserves backward compatibility, and supports `'ALL'`. |
+| **Gap 3A: Value Mode Switcher** | `DynamicValueBuilder` only had binary Fixed/Formula toggle without `'ALL'`. | **3-Way Segmented Switcher (3A.1):** Top pill bar displaying `[ Fixed Number ]`, `[ Entire Pool ("ALL") ]` (when `allowAll: true`), and `[ Dynamic Formula ]`. Zero ambiguous intermediate states. |
+| **Gap 3B: `ENTITY_COUNT` Filter** | `DynamicValueSource` filter editing was unhandled. | **Collapsible Filter Accordion (3B.2):** Expandable accordion with a summary badge (e.g. `Filter: 2 criteria configured`) hosting `<UniversalCardFilterBuilder>` inside `DynamicValueBuilder`. |
+| **Gap 3C: Strict Schema Sanitation** | `UniversalCardFilterSchema.strict()` rejects empty arrays and blank strings. | **Eager Component-Level Sanitation (3C.1):** `UniversalCardFilterBuilder` cleans empty arrays, blank strings, and undefined keys before emitting `onChange`, emitting `undefined` when empty. |
+| **Styling Consistency** | Existing builders used dark mode gray styling. | **Comic Pop-Art Design System:** All new/upgraded builders restyled to `bg-comic-paper`, `border-black`, `shadow-comic-xs`, bold typography, and uppercase tag labels. |
 
 ---
 
 ## 3. Proposed Changes (File-by-File)
 
-### 📁 `src/ui/components/editor/UniversalCardFilterBuilder.tsx` [MODIFY]
+### 📁 `package.json` [MODIFY]
+- Add devDependencies for UI component testing:
+  - `happy-dom`: High-performance DOM simulation environment.
+  - `@testing-library/react`: Standard React component test runner.
+  - `@testing-library/user-event`: User interaction simulation.
 
+### 📁 `vitest.config.ts` [MODIFY]
+- Configure targeted DOM environment for UI component tests:
+  ```typescript
+  test: {
+    globals: true,
+    environment: 'node', // Preserves ultra-fast pure Node environment for engine/rules tests
+    environmentMatchGlobs: [
+      ['tests/ui/**/*.test.tsx', 'happy-dom'], // Targeted DOM environment for React UI tests only
+    ],
+  }
+  ```
+
+### 📁 `src/ui/components/editor/effect-parameter-registry.ts` [MODIFY]
+- Extend `ParameterDescriptor` interface:
+  ```typescript
+  export interface ParameterDescriptor {
+    key: string;
+    label: string;
+    type: 'number' | 'text' | 'select' | 'boolean' | 'card-filter' | 'json';
+    allowDynamic?: boolean;  // Enables <DynamicValueBuilder> formula mode
+    allowAll?: boolean;      // Enables 'ALL' choice (e.g. for DISCARD, REMOVE_COUNTERS)
+    options?: readonly string[];
+    placeholder?: string;
+    defaultValue?: any;
+    description?: string;
+  }
+  ```
+- Add `filter` parameter descriptor to `SEARCH` effect (`type: 'card-filter'`).
+- Flag dynamic-capable parameters (`allowDynamic: true`):
+  - `DEAL_DAMAGE`: `amount`
+  - `REMOVE_THREAT`: `amount`
+  - `HEAL_DAMAGE`: `amount`
+  - `DRAW`: `count`
+  - `DISCARD`: `count` (`allowAll: true`)
+  - `SEARCH`: `lookCount`, `takeCount`
+  - `ADD_COUNTERS`: `amount`
+  - `REMOVE_COUNTERS`: `amount` (`allowAll: true`)
+  - `SPEND_COUNTERS`: `amount`
+
+### 📁 `src/ui/components/editor/UniversalCardFilterBuilder.tsx` [MODIFY]
+- Restyle to Comic Pop-Art theme (`bg-comic-paper`, `border-black`, `text-black`, `font-bold`).
 - Expand UI to support all `CardCriteria` fields:
   - **Identity & Codes:** `codes` input, `names` input, `isUnique` toggle, `isIdentitySpecific` toggle, `isExhausted` toggle.
   - **Classification:** `types` chip matrix, `traits` tag input, `aspects` chip matrix, `sets` input.
   - **Comparison & Resources:** `cost` range controls (`min`, `max`, `equals`), `resourceIcons` multi-select chips (`physical`, `energy`, `mental`, `wild`).
   - **Status & Keywords:** `hasKeyword` dropdown, `hasStatus` multi-select chips (`STUNNED`, `CONFUSED`, `TOUGH`).
-  - **Boolean Combinators (Level 1):** Add toggle to add/manage `all`, `any`, `none` sub-filter branches.
-- Provide clean styling matching Comic Pop-Art theme.
+  - **Boolean Combinators (Level 1):** Add UI controls to add and configure `all`, `any`, and `none` sub-filter branches.
+- Implement **Eager Output Sanitization (3C.1)**: Strip empty arrays, blank strings, and `undefined` keys before emitting `onChange`, emitting `undefined` if no criteria remain.
 
 ### 📁 `src/ui/components/editor/DynamicValueBuilder.tsx` [MODIFY]
-
-- Ensure full alignment with `DynamicValueSourceSchema`:
+- Restyle to Comic Pop-Art theme.
+- Implement **3-Way Segmented Switcher (3A.1)**:
+  - `[ Fixed Number ]` `[ Entire Pool ("ALL") ]` (when `allowAll: true`) `[ Dynamic Formula ]`.
+- Implement full `DynamicValueSourceSchema` fields:
   - `from` selector: `STAT_VALUE`, `COUNTERS`, `ENTITY_COUNT`, `DISCARDED_COUNT`, `INTERCEPTED_VALUE`, `PREVIOUS_RESULT`, `CARD_ATTRIBUTE`.
-  - Conditional parameter sub-fields: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp.min`, `clamp.max`, `target`.
-- Support seamless toggle between a fixed number and dynamic formula.
-
-### 📁 `src/ui/components/editor/effect-parameter-registry.ts` [MODIFY]
-
-- Add `filter` parameter to `SEARCH` effect descriptor (`type: 'card-filter'`).
-- Support `dynamic-number` or mark numeric parameters supporting `DynamicValueSource` (`amount`, `count`, `bonusDamage`, `threatAmount`).
+  - Conditional sub-fields: `stat`, `counterType`, `attribute`, `multiplier`, `offset`, `clamp.min`, `clamp.max`, `target`.
+  - Implement **Collapsible Filter Accordion (3B.2)**: When `from === 'ENTITY_COUNT'`, render a collapsible accordion hosting `<UniversalCardFilterBuilder>` for `sourceValue.filter`.
 
 ### 📁 `src/ui/components/editor/AbilityFormBuilder.tsx` [MODIFY]
-
 1. **Import & Wire Sub-Builders:**
    - Import `<UniversalCardFilterBuilder>` and `<DynamicValueBuilder>`.
 2. **Upgrade Card-Level Attributes Accordion:**
@@ -86,7 +126,7 @@ Here is the exact audit of what exists in code vs. what is actually integrated i
    - **Card Properties:** `restrictedSlots`, `additionalBoostCards`, `victoryPoints`, `attackCost`, `thwartCost`, `isLandscape`.
    - **Play Requirements:** Use `<UniversalCardFilterBuilder>` for `controlFilter`.
 3. **Add Trigger Filter Section:**
-   - When an ability has a `trigger` (e.g. `ENEMY_INITIATES_ATTACK`, `DEFEATED`, etc.), show a collapsible **Trigger Filter (Scope & Target)** sub-form (`attackerKind`, `targetPlayerScope`, `damageSourceType`, `defeatByAttack`, etc.).
+   - When an ability has an event trigger (e.g. `ENEMY_INITIATES_ATTACK`, `DEFEATED`, etc.), render a collapsible **Trigger Filter (Scope & Target)** sub-form (`attackerKind`, `targetPlayerScope`, `damageSourceType`, `defeatByAttack`, etc.).
 4. **Upgrade Ability Cost Section:**
    - Add Resource Cost picker (`physical`, `energy`, `mental`, `wild` counts).
    - Add `spendCounters` sub-form (`amount`, `counterType`, `target: SELF | IDENTITY`).
@@ -96,24 +136,28 @@ Here is the exact audit of what exists in code vs. what is actually integrated i
    - Add step reordering buttons (Move Up `↑`, Move Down `↓`).
    - Add `condition` dropdown (`StepConditionSchema.options`).
    - Replace old inline card-filter textboxes with `<UniversalCardFilterBuilder>`.
-   - Replace numeric effect parameters with `<DynamicValueBuilder>`.
+   - For parameters with `allowDynamic: true`, render `<DynamicValueBuilder>` with `allowAll={param.allowAll}`.
 
 ### 📁 `tests/ui/AbilityFormBuilder.test.tsx` [NEW]
-
-- Visual & interaction tests for `AbilityFormBuilder`:
-  - Renders card-level uses & keywords and updates state.
+- Interactive React component tests using `happy-dom` and `@testing-library/react`:
+  - Renders card-level uses & keywords and updates parent state via `onChange`.
   - Renders trigger filter when trigger selected and updates state.
-  - Mounts `UniversalCardFilterBuilder` for card-filter parameters and round-trips filter criteria.
-  - Mounts `DynamicValueBuilder` for numeric parameters and switches to formula mode.
-  - Allows step reordering (moving Step 2 up to Step 1).
+  - Mounts `UniversalCardFilterBuilder` for card-filter parameters and updates filter criteria.
+  - Mounts `DynamicValueBuilder` for numeric parameters with `allowDynamic: true` and switches between fixed number, formula, and 'ALL'.
+  - Handles step reordering (moving Step 2 up to Step 1).
 
-### 📁 `tests/ui/UniversalCardFilterBuilder.test.ts` & `DynamicValueBuilder.test.ts` [MODIFY]
+### 📁 `tests/ui/UniversalCardFilterBuilder.test.tsx` [MODIFY / CONVERT]
+- Convert to `.tsx` and verify interactive filter criteria toggling, cost ranges, resource icon chips, and empty-property sanitization.
 
-- Update unit tests to verify extended criteria rendering and state changes.
+### 📁 `tests/ui/DynamicValueBuilder.test.tsx` [MODIFY / CONVERT]
+- Convert to `.tsx` and verify 3-way mode switching, formula source selection, collapsible entity-count filter, and sub-field updates.
+
+### 📁 `tests/ui/effect-parameter-registry.test.ts` [MODIFY]
+- Verify `allowDynamic` and `allowAll` flags on applicable effect parameters.
+- Verify `filter` parameter presence on `SEARCH`.
 
 ### 📁 `docs/reports/card_editor_and_supplemental_schema_audit_report.md` [MODIFY]
-
-- Update Section 4 and Phase 6 status accurately based on real implementation verification.
+- Synchronize Phase 6 task descriptions with the verified implementation.
 
 ---
 
@@ -121,40 +165,42 @@ Here is the exact audit of what exists in code vs. what is actually integrated i
 
 1. **Round-Trip Form Editing:**
    - Build an ability with `SEARCH` + `filter: { traits: ['Tech'], types: ['upgrade'], cost: { max: 3 } }` via UI $\to$ outputs canonical Zod-valid JSON $\to$ re-loading into UI accurately populates all chips and inputs.
-2. **Dynamic Value Round-Trip:**
-   - Configure `amount: { from: 'STAT_VALUE', stat: 'ATTACK', multiplier: 2 }` via UI $\to$ outputs valid `DynamicValueSource` $\to$ switching back to fixed number resets to numeric value.
+2. **Dynamic Value Round-Trip & Mode Switching:**
+   - Switch mode to Formula $\to$ configure `amount: { from: 'STAT_VALUE', stat: 'ATTACK', multiplier: 2 }` via UI $\to$ outputs valid `DynamicValueSource` $\to$ switch mode to 'ALL' $\to$ outputs `'ALL'` $\to$ switch mode to Fixed Number $\to$ outputs integer.
 3. **Card-Level Uses & Keywords Round-Trip:**
    - Configure `uses: { count: 3, type: 'charge', discardOnEmpty: true }` and `keywords: ['Guard', { keyword: 'Retaliate', amount: 1 }]` $\to$ valid `CardEnrichmentSchema`.
 4. **Trigger Filter Round-Trip:**
    - Configure `trigger: 'ENEMY_INITIATES_ATTACK'`, `triggerFilter: { attackerKind: 'VILLAIN', targetPlayerScope: 'SELF' }` $\to$ valid `CardAbilitySchema`.
 5. **Step Sequencing & Conditions:**
    - Add 3 steps $\to$ reorder step 3 to step 2 $\to$ add `gate: 'IF_PREVIOUS_SUCCESS'` and `condition: 'TARGET_DEFEATED'` $\to$ valid `AbilityStepSchema`.
-6. **Full Suite Quality Gate:**
+6. **Zero Regression Full Suite Quality Gate:**
    - `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`.
 
 ---
 
-## 5. Open Questions & Design Decisions
+## 5. Open Questions & Design Decisions (All Resolved)
 
-> [!IMPORTANT]
-> **Pop-Art Visual Consistency:** All new builder sub-forms will adopt the project's Comic Pop-Art style (`bg-comic-paper`, `border-black`, `shadow-comic-xs`, bold typography, uppercase label tags) to maintain cohesive aesthetics across the Editor suite.
-
-> [!NOTE]
-> **Nesting Depth for Filter Combinators:** In this phase, `all`, `any`, and `none` groups will support 1 level of nesting depth within the visual UI. Deeper arbitrary recursion can be configured via the Raw JSON Editor tab if ever needed.
+* **DOM Test Runner:** `happy-dom` selected and isolated via `vitest.config.ts` `environmentMatchGlobs`.
+* **Dynamic Parameter Schema:** `allowDynamic?: boolean` and `allowAll?: boolean` flags selected on `type: 'number'`.
+* **Value Mode Switcher:** 3-Way Segmented Switcher (`Fixed Number` / `'ALL'` / `Dynamic Formula`) selected.
+* **`ENTITY_COUNT` Filter:** Collapsible accordion with criteria count badge selected.
+* **Schema Sanitation:** Eager component-level output sanitation on `onChange` selected.
+* **Aesthetics:** Pop-Art comic design system (`bg-comic-paper`, `border-black`, `shadow-comic-xs`) selected across all sub-builders.
 
 ---
 
 ## 6. Execution Order
 
-1. **Sub-Phase 6.1:** Upgrade `<UniversalCardFilterBuilder>` component with full `CardCriteria` fields, chip selectors, range inputs, and Level 1 combinators.
-2. **Sub-Phase 6.2:** Upgrade `<DynamicValueBuilder>` with all `from` sources and parameters.
-3. **Sub-Phase 6.3:** Update `effect-parameter-registry.ts` to include `filter` on `SEARCH` and dynamic parameter tags.
-4. **Sub-Phase 6.4:** Expand `AbilityFormBuilder.tsx` with:
+1. **Sub-Phase 6.1:** Install `happy-dom`, `@testing-library/react`, `@testing-library/user-event` and configure `vitest.config.ts` with `environmentMatchGlobs`.
+2. **Sub-Phase 6.2:** Upgrade `effect-parameter-registry.ts` (`allowDynamic`, `allowAll`, `filter` on `SEARCH`).
+3. **Sub-Phase 6.3:** Upgrade `<UniversalCardFilterBuilder>` with full `CardCriteria` fields, chip selectors, range inputs, Level 1 combinators, Pop-Art styling, and eager schema sanitization.
+4. **Sub-Phase 6.4:** Upgrade `<DynamicValueBuilder>` with 3-way mode switcher, all `from` sources, conditional parameters, collapsible accordion filter for `ENTITY_COUNT`, and Pop-Art styling.
+5. **Sub-Phase 6.5:** Expand `AbilityFormBuilder.tsx`:
    - Uses & Structured Keywords sub-forms.
    - Numeric metadata inputs (`restrictedSlots`, `victoryPoints`, etc.).
    - Full Ability Cost sub-form (`resources`, `spendCounters`, `discardCard`, `damageHero`).
    - Trigger Filter sub-form.
    - Step reordering controls and `condition` selector.
-   - Integrated `<UniversalCardFilterBuilder>` and `<DynamicValueBuilder>`.
-5. **Sub-Phase 6.5:** Add comprehensive component & integration tests in `tests/ui/`.
-6. **Sub-Phase 6.6:** Run the full quality gate (`format:check`, `lint`, `typecheck`, `test`, `build`, `report:declarations`) and update documentation/reports.
+   - Integrate `<UniversalCardFilterBuilder>` and `<DynamicValueBuilder>`.
+6. **Sub-Phase 6.6:** Author component and interaction tests (`tests/ui/AbilityFormBuilder.test.tsx`, `tests/ui/UniversalCardFilterBuilder.test.tsx`, `tests/ui/DynamicValueBuilder.test.tsx`, and registry tests).
+7. **Sub-Phase 6.7:** Run the full quality gate (`format:check`, `lint`, `typecheck`, `test`, `build`, `report:declarations`) and update documentation/reports.

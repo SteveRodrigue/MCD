@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node', // Pure headless environment for rules testing
+    environmentMatchGlobs: [['tests/ui/**/*.test.tsx', 'happy-dom']],
     include: ['tests/**/*.{test,spec}.{ts,tsx}', 'src/**/*.{test,spec}.{ts,tsx}'],
   },
   resolve: {

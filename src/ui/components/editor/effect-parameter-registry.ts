@@ -8,6 +8,8 @@ export interface ParameterDescriptor {
   key: string;
   label: string;
   type: 'number' | 'text' | 'select' | 'boolean' | 'card-filter' | 'json';
+  allowDynamic?: boolean;
+  allowAll?: boolean;
   options?: readonly string[];
   placeholder?: string;
   defaultValue?: any;
@@ -74,6 +76,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Damage Amount',
         type: 'number',
+        allowDynamic: true,
         placeholder: 'e.g. 3',
         description: 'Fixed damage value',
       },
@@ -164,6 +167,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Heal Amount',
         type: 'number',
+        allowDynamic: true,
         defaultValue: 1,
         placeholder: '1',
       },
@@ -229,6 +233,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Threat Amount',
         type: 'number',
+        allowDynamic: true,
         defaultValue: 1,
         placeholder: '1',
       },
@@ -415,6 +420,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Counter Amount',
         type: 'number',
+        allowDynamic: true,
         defaultValue: 1,
       },
       {
@@ -465,6 +471,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Amount Removed',
         type: 'number',
+        allowDynamic: true,
+        allowAll: true,
         defaultValue: 1,
       },
       {
@@ -508,6 +516,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'amount',
         label: 'Amount Spent',
         type: 'number',
+        allowDynamic: true,
         defaultValue: 1,
       },
       {
@@ -815,6 +824,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'count',
         label: 'Card Count',
         type: 'number',
+        allowDynamic: true,
+        allowAll: true,
         defaultValue: 1,
         placeholder: '1',
       },
@@ -1198,7 +1209,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     effect: 'DRAW',
     description: 'Canonical alias for drawing cards.',
     parameters: [
-      { key: 'count', label: 'Card Count', type: 'number', defaultValue: 1 },
+      { key: 'count', label: 'Card Count', type: 'number', allowDynamic: true, defaultValue: 1 },
       {
         key: 'limit',
         label: 'Hand Size Limit',
@@ -1223,7 +1234,38 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Canonical alias for searching and selecting cards.',
     parameters: [
       { key: 'source', label: 'Source Zone', type: 'select', options: SEARCH_SOURCE_OPTIONS },
-      { key: 'takeCount', label: 'Take Count', type: 'number', defaultValue: 1 },
+      {
+        key: 'lookCount',
+        label: 'Look Count',
+        type: 'number',
+        allowDynamic: true,
+        placeholder: 'e.g. 5',
+      },
+      {
+        key: 'takeCount',
+        label: 'Take Count',
+        type: 'number',
+        allowDynamic: true,
+        defaultValue: 1,
+      },
+      {
+        key: 'filter',
+        label: 'Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter for eligible cards',
+      },
+      {
+        key: 'selectedDestination',
+        label: 'Selected Destination',
+        type: 'select',
+        options: SELECTED_DESTINATION_OPTIONS,
+      },
+      {
+        key: 'unselectedDestination',
+        label: 'Unselected Destination',
+        type: 'select',
+        options: UNSELECTED_DESTINATION_OPTIONS,
+      },
       {
         key: 'autoSelectIfUnambiguous',
         label: 'Auto-select Unambiguous Results',

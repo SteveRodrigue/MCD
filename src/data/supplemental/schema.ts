@@ -265,6 +265,7 @@ export type EffectType = z.infer<typeof EffectTypeSchema>;
  * Resource Types
  */
 export const ResourceTypeSchema = z.enum(['physical', 'energy', 'mental', 'wild']);
+export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 
 export const CardTypeSchema = z.enum([
   'hero',
@@ -283,6 +284,7 @@ export const CardTypeSchema = z.enum([
   'obligation',
   'environment',
 ]);
+export type CardType = z.infer<typeof CardTypeSchema>;
 
 export const AspectSchema = z.enum([
   'aggression',
@@ -292,6 +294,7 @@ export const AspectSchema = z.enum([
   'basic',
   'encounter',
 ]);
+export type Aspect = z.infer<typeof AspectSchema>;
 
 export const KeywordSchema = z.enum([
   'Guard',
@@ -304,6 +307,7 @@ export const KeywordSchema = z.enum([
   'Hazard',
   'Acceleration',
 ]);
+export type Keyword = z.infer<typeof KeywordSchema>;
 
 /**
  * Structured parameterized keyword declaration (ADR-0054).
@@ -318,6 +322,7 @@ export const StructuredKeywordSchema = z
 export const KeywordEntrySchema = z.union([z.string(), StructuredKeywordSchema]);
 
 export const CharacterStatusSchema = z.enum(['STUNNED', 'CONFUSED', 'TOUGH']);
+export type CharacterStatus = z.infer<typeof CharacterStatusSchema>;
 
 /**
  * Comparison criteria for numeric properties (cost, atk, hp, etc.)

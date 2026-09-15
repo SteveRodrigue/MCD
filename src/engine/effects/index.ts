@@ -2658,6 +2658,8 @@ export function executeStep(
         title,
         description,
         sourceCardName,
+        sourceCardCode: context.sourceCardInstance?.card.code,
+        triggerSourceCard: context.sourceCardInstance?.card,
         options,
         isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,
       });

@@ -10,8 +10,10 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
+import { cardCatalog } from '../../../data/importer/card-loader';
 import { CardView } from '../cards/CardView';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
 
 interface DecisionPromptModalProps {
@@ -42,6 +44,31 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
   const isForced = !prompt.isVoluntary;
   const hasTriggerProvenance =
     Boolean(prompt.triggerSourceName) && prompt.triggerSourceName !== prompt.sourceCardName;
+
+  const triggerCard =
+    prompt.triggerSourceCard ||
+    (prompt.triggerSourceCode ? cardCatalog.getCard(prompt.triggerSourceCode) : undefined) ||
+    prompt.revealedCards?.[0]?.card;
+
+  const showTriggerCardShowcase =
+    Boolean(triggerCard) &&
+    (triggerCard!.code !== prompt.sourceCardCode || Boolean(prompt.triggerSourceCode)) &&
+    (!prompt.revealedCards ||
+      prompt.revealedCards.length <= 1 ||
+      Boolean(prompt.triggerSourceCard || prompt.triggerSourceCode));
+
+  const isEncounterCard =
+    triggerCard &&
+    (triggerCard.type === 'treachery' ||
+      triggerCard.type === 'minion' ||
+      triggerCard.type === 'attachment' ||
+      triggerCard.type === 'side_scheme' ||
+      triggerCard.type === 'main_scheme' ||
+      triggerCard.type === 'villain' ||
+      triggerCard.type === 'environment' ||
+      triggerCard.type === 'obligation');
+
+  const headerBadgeLabel = isEncounterCard ? 'TRIGGERING ENCOUNTER CARD' : 'TRIGGERING CARD';
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
@@ -104,6 +131,13 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
 
             {hasTriggerProvenance ? (
               <div className="flex items-center gap-1.5 flex-wrap">
+                {prompt.triggerSourceCode && (
+                  <CardArtThumbnail
+                    cardCode={prompt.triggerSourceCode}
+                    cardName={prompt.triggerSourceName}
+                    size="sm"
+                  />
+                )}
                 <span className="text-[10px] font-black uppercase bg-slate-200 px-2 py-0.5 rounded border border-comic-black text-slate-700">
                   TRIGGER: {prompt.triggerSourceName}
                 </span>
@@ -143,6 +177,41 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               </p>
             )}
           </div>
+
+          {/* Triggering Card Showcase */}
+          {showTriggerCardShowcase && triggerCard && (
+            <div className="bg-amber-50/90 border-2 border-comic-black rounded-xl p-3 shadow-comic-sm space-y-2">
+              <div className="flex items-center justify-between border-b border-comic-black/20 pb-1.5">
+                <span className="text-[10px] font-comic font-black uppercase bg-comic-red text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                  {headerBadgeLabel}
+                </span>
+                <span className="text-[10px] font-mono font-bold uppercase bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded border border-comic-black/40">
+                  {triggerCard.type}
+                </span>
+              </div>
+
+              <div className="flex items-start gap-3 pt-0.5">
+                <div className="shrink-0">
+                  <CardView card={triggerCard} size="sm" enableHoverZoom={true} />
+                </div>
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <h4 className="font-comic font-black text-sm uppercase text-comic-black truncate">
+                    {triggerCard.name}
+                  </h4>
+                  {triggerCard.traits && triggerCard.traits.length > 0 && (
+                    <p className="text-[10px] font-bold text-slate-600 italic">
+                      {triggerCard.traits.join('. ')}.
+                    </p>
+                  )}
+                  {triggerCard.text && (
+                    <div className="text-xs text-slate-800 bg-white/90 border border-comic-black/30 rounded-lg p-2 max-h-28 overflow-y-auto">
+                      <FormattedCardText text={triggerCard.text} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Visual Scryed/Revealed Cards Gallery */}
           {prompt.revealedCards && prompt.revealedCards.length > 0 && (

@@ -387,6 +387,9 @@ export function dispatchTrigger(
           triggerSourceCode:
             context.encounterCardInstance?.card?.code ||
             (context.targetType === 'villain' ? state.villain.card.code : undefined),
+          triggerSourceCard:
+            context.encounterCardInstance?.card ||
+            (context.targetType === 'villain' ? state.villain.card : undefined),
           triggerType: ability.timing,
           isVoluntary: true,
           options: [
@@ -519,6 +522,9 @@ export function dispatchTrigger(
               triggerSourceCode:
                 context.encounterCardInstance?.card?.code ||
                 (context.targetType === 'villain' ? state.villain.card.code : undefined),
+              triggerSourceCard:
+                context.encounterCardInstance?.card ||
+                (context.targetType === 'villain' ? state.villain.card : undefined),
               triggerType: ability.timing,
               isVoluntary: true,
               options: [
@@ -607,6 +613,9 @@ export function dispatchTrigger(
             triggerSourceCode:
               context.encounterCardInstance?.card?.code ||
               (context.targetType === 'villain' ? state.villain.card.code : undefined),
+            triggerSourceCard:
+              context.encounterCardInstance?.card ||
+              (context.targetType === 'villain' ? state.villain.card : undefined),
             triggerType: ability.timing,
             isVoluntary: true,
             options: [
@@ -717,6 +726,7 @@ export function dispatchTrigger(
             triggerSourceName:
               context.encounterCardInstance?.card?.name || 'Main Scheme / Threat Placement',
             triggerSourceCode: context.encounterCardInstance?.card?.code,
+            triggerSourceCard: context.encounterCardInstance?.card,
             triggerType: ability.timing,
             isVoluntary: true,
             options: [
@@ -807,6 +817,7 @@ export function dispatchTrigger(
             triggerSourceName:
               context.encounterCardInstance?.card?.name || 'Treachery / Encounter Card',
             triggerSourceCode: context.encounterCardInstance?.card?.code,
+            triggerSourceCard: context.encounterCardInstance?.card,
             triggerType: ability.timing,
             isVoluntary: true,
             options: [

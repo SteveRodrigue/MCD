@@ -217,7 +217,7 @@ describe('Sub-Milestone 2D-1: Table Invariants — Restricted Keyword & Global U
               steps: [
                 {
                   effect: 'RESTRICTED_LIMIT_BONUS',
-                  params: { amount: 1 },
+                  effectParams: { amount: 1 },
                 },
               ],
             },

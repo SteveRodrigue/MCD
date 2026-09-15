@@ -410,7 +410,14 @@
                           "REMOVE_STATUS"
                         ]
                       },
-                      "params": {
+                      "gateParams": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {}
+                      },
+                      "effectParams": {
                         "type": "object",
                         "propertyNames": {
                           "type": "string"

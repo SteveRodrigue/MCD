@@ -80,7 +80,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               lookCount: 3,
               filter: {
@@ -190,7 +190,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               lookCount: 3,
               filter: {
@@ -278,7 +278,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               filter: {
                 targetCardCode: 'cap_shield',
@@ -358,7 +358,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               filter: {
                 trait: 'Black Panther',
@@ -438,7 +438,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'ENCOUNTER_DECK',
               filter: {
                 trait: 'Masters of Evil',
@@ -524,7 +524,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               lookCount: 3,
               takeCount: 1,
@@ -598,7 +598,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               filter: { trait: 'Tech' },
               takeCount: 1,

@@ -117,7 +117,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'EXECUTE_WAKANDA_FOREVER',
-            params: {
+            effectParams: {
               sequenceOrder: [
                 energyDaggers.instanceId,
                 tacticalGenius.instanceId,
@@ -184,7 +184,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'EXECUTE_WAKANDA_FOREVER',
-            params: {
+            effectParams: {
               sequenceOrder: [pantherClaws.instanceId, tacticalGenius.instanceId],
             },
           },
@@ -325,7 +325,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'EXECUTE_WAKANDA_FOREVER',
-            params: {
+            effectParams: {
               sequenceOrder: [pantherClaws.instanceId, vibraniumSuit.instanceId],
             },
           },
@@ -375,7 +375,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'DEAL_DAMAGE',
-            params: {
+            effectParams: {
               baseAmount: 2,
               finisherBonus: 2,
               target: 'CHOSEN_ENEMY',
@@ -397,7 +397,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'DEAL_DAMAGE',
-            params: {
+            effectParams: {
               baseAmount: 2,
               finisherBonus: 2,
               target: 'CHOSEN_ENEMY',
@@ -419,7 +419,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'REMOVE_THREAT',
-            params: {
+            effectParams: {
               baseAmount: 1,
               finisherBonus: 1,
               target: 'MAIN_SCHEME',
@@ -441,7 +441,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
         steps: [
           {
             effect: 'TRANSFER_DAMAGE',
-            params: {
+            effectParams: {
               baseAmount: 1,
               finisherBonus: 1,
             },

@@ -57,7 +57,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
 
           const isMatchingPowerOf =
-            (aspectDoubleStep && aspectDoubleStep.params?.aspect === cardFaction) ||
+            (aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === cardFaction) ||
             (hCard.card.name.toLowerCase().startsWith('the power of') &&
               hCard.card.faction === cardFaction);
 
@@ -144,8 +144,8 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         if (ab.timing === 'HERO_RESOURCE' && player.currentForm !== 'hero') continue;
         if (ab.timing === 'ALTER_EGO_RESOURCE' && player.currentForm !== 'alter_ego') continue;
 
-        const resType = (genStep?.params?.resource as string) || 'resource';
-        const amount = Number(genStep?.params?.amount) || 1;
+        const resType = (genStep?.effectParams?.resource as string) || 'resource';
+        const amount = Number(genStep?.effectParams?.amount) || 1;
         list.push({
           id: 'identity_ability',
           name: `${player.activeFormCard.name} (${ab.id.replace(/_/g, ' ').toUpperCase()})`,
@@ -231,7 +231,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         ?.flatMap((a) => a.steps || [])
         .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
 
-      const isDoubled = aspectDoubleStep && aspectDoubleStep.params?.aspect === card?.faction;
+      const isDoubled = aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card?.faction;
       const multiplier = isDoubled ? 2 : 1;
 
       const res = hCard.card.resources;
@@ -510,7 +510,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                     ?.flatMap((a) => a.steps || [])
                     .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
                   const isDoubled =
-                    aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction;
+                    aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card.faction;
 
                   return (
                     <button

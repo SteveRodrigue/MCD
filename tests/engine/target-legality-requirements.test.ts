@@ -339,7 +339,7 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
       steps: [
         {
           effect: 'DEAL_DAMAGE',
-          params: {
+          effectParams: {
             amount: 4,
             target: 'VILLAIN',
           },

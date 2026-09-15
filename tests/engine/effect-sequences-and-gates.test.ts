@@ -107,12 +107,12 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
         {
           id: 'step_1',
           effect: 'HEAL_DAMAGE',
-          params: { amount: 3, target: 'SELF' },
+          effectParams: { amount: 3, target: 'SELF' },
         },
         {
           id: 'step_2',
           effect: 'DRAW',
-          params: { count: 2 },
+          effectParams: { count: 2 },
         },
       ],
     };
@@ -134,13 +134,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'remove_threat_step',
             effect: 'REMOVE_THREAT',
-            params: { amount: 2, target: 'MAIN_SCHEME' },
+            effectParams: { amount: 2, target: 'MAIN_SCHEME' },
           },
           {
             id: 'draw_card_step',
             effect: 'DRAW',
             gate: 'THEN' as const,
-            params: { count: 1 },
+            effectParams: { count: 1 },
           },
         ],
       };
@@ -162,13 +162,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'remove_threat_step',
             effect: 'REMOVE_THREAT',
-            params: { amount: 2, target: 'MAIN_SCHEME' },
+            effectParams: { amount: 2, target: 'MAIN_SCHEME' },
           },
           {
             id: 'draw_card_step',
             effect: 'DRAW',
             gate: 'THEN' as const,
-            params: { count: 1 },
+            effectParams: { count: 1 },
           },
         ],
       };
@@ -193,7 +193,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'heal_step',
             effect: 'HEAL_DAMAGE',
-            params: { amount: 4, target: 'VILLAIN' },
+            effectParams: { amount: 4, target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
@@ -221,7 +221,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'heal_step',
             effect: 'HEAL_DAMAGE',
-            params: { amount: 4, target: 'VILLAIN' },
+            effectParams: { amount: 4, target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
@@ -250,13 +250,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'status_step',
             effect: 'ADD_STATUS',
-            params: { status: 'TOUGH', target: 'VILLAIN' },
+            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_ALREADY_HAS_STATUS' as const,
-            params: { status: 'TOUGH', target: 'VILLAIN' },
+            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
           },
         ],
       };
@@ -278,13 +278,13 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'status_step',
             effect: 'ADD_STATUS',
-            params: { status: 'TOUGH', target: 'VILLAIN' },
+            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
           },
           {
             id: 'surge_step',
             effect: 'SURGE',
             gate: 'IF_ALREADY_HAS_STATUS' as const,
-            params: { status: 'TOUGH', target: 'VILLAIN' },
+            effectParams: { status: 'TOUGH', target: 'VILLAIN' },
           },
         ],
       };
@@ -313,7 +313,7 @@ describe('Declarative Effect Sequences & Conditional Gates Engine (RR v1.8 p. 2,
           {
             id: 'draw_step',
             effect: 'DRAW',
-            params: {
+            effectParams: {
               limit: 'PRINTED_HAND_SIZE',
             },
             gate: 'THEN' as const,

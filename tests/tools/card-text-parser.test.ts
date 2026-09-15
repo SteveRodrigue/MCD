@@ -34,7 +34,7 @@ describe('Card Text Parser', () => {
       expect(ability.limit).toBe('ONCE_PER_ROUND');
       expect(ability.steps[0]).toEqual({
         effect: 'GENERATE_RESOURCE',
-        params: {
+        effectParams: {
           resource: 'mental',
           amount: 1,
         },
@@ -59,7 +59,7 @@ describe('Card Text Parser', () => {
       expect(ability.trigger).toBe('ENEMY_INITIATES_ATTACK');
       expect(ability.steps[0]).toEqual({
         effect: 'DRAW',
-        params: { count: 1 },
+        effectParams: { count: 1 },
       });
 
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
@@ -76,7 +76,7 @@ describe('Card Text Parser', () => {
       expect(ability.timing).toBe('HERO_ACTION');
       expect(ability.steps[0]).toEqual({
         effect: 'DEAL_DAMAGE',
-        params: {
+        effectParams: {
           amount: 8,
           target: 'CHOSEN_ENEMY',
         },
@@ -100,7 +100,7 @@ describe('Card Text Parser', () => {
       expect(ability.cost).toEqual({ discardSelf: true });
       expect(ability.steps[0]).toEqual({
         effect: 'PREVENT_DAMAGE',
-        params: { amount: 'ALL' },
+        effectParams: { amount: 'ALL' },
       });
 
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
@@ -118,7 +118,7 @@ describe('Card Text Parser', () => {
       expect(ability.cost).toEqual({ exhaustSelf: true });
       expect(ability.steps[0]).toEqual({
         effect: 'HEAL_DAMAGE',
-        params: {
+        effectParams: {
           amount: 4,
           target: 'SELF_IDENTITY',
         },
@@ -150,7 +150,7 @@ describe('Card Text Parser', () => {
       });
       expect(ability.steps[0]).toEqual({
         effect: 'GENERATE_RESOURCE',
-        params: {
+        effectParams: {
           resource: 'wild',
           amount: 1,
         },
@@ -178,7 +178,7 @@ describe('Card Text Parser', () => {
       });
       expect(ability.steps[0]).toEqual({
         effect: 'DRAW',
-        params: {
+        effectParams: {
           count: 1,
           carolBonus: 1,
         },
@@ -200,7 +200,7 @@ describe('Card Text Parser', () => {
       });
       expect(ability.steps[0]).toEqual({
         effect: 'DRAW',
-        params: { count: 1 },
+        effectParams: { count: 1 },
       });
 
       expect(() => CardEnrichmentSchema.parse(result.enrichment)).not.toThrow();
@@ -220,7 +220,7 @@ describe('Card Text Parser', () => {
       });
       expect(ability.steps[0]).toEqual({
         effect: 'REMOVE_THREAT',
-        params: {
+        effectParams: {
           amount: 2,
           target: 'CHOSEN_SCHEME',
         },

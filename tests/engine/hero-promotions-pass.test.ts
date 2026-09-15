@@ -73,7 +73,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       // Add 3 energy counters
       executeEffect(
         state,
-        { effect: 'ADD_COUNTERS', params: { amount: 3 } },
+        { effect: 'ADD_COUNTERS', effectParams: { amount: 3 } },
         { playerId: 'p1', sourceCardInstance: channel },
       );
       expect(channel.tokens?.counters).toBe(3);
@@ -120,7 +120,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       state.villain.statusCards = [];
       executeEffect(
         state,
-        { effect: 'ADD_STATUS', params: { status: 'STUNNED', target: 'ATTACK_TARGET' } },
+        { effect: 'ADD_STATUS', effectParams: { status: 'STUNNED', target: 'ATTACK_TARGET' } },
         { playerId: 'p1', targetType: 'villain' },
       );
       expect(state.villain.statusCards).toContain(StatusCard.STUNNED);
@@ -154,7 +154,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
         state,
         {
           effect: 'SEARCH',
-          params: {
+          effectParams: {
             source: 'PLAYER_DISCARD',
             filter: { trait: 'Tech', type: 'upgrade' },
             selectedDestination: 'HAND',
@@ -184,7 +184,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
         state,
         {
           effect: 'SEARCH',
-          params: {
+          effectParams: {
             source: 'PLAYER_DECK',
             trait: 'Black Panther',
             type: 'upgrade',
@@ -224,7 +224,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
 
       const result = executeEffect(
         state,
-        { effect: 'SHUFFLE_INTO_DECK', params: { count: 3 } },
+        { effect: 'SHUFFLE_INTO_DECK', effectParams: { count: 3 } },
         { playerId: 'p1' },
       );
       expect(result.success).toBe(true);
@@ -252,7 +252,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
         state,
         {
           effect: 'EXECUTE_WAKANDA_FOREVER',
-          params: { sequenceOrder: [daggers.instanceId, suit.instanceId, claws.instanceId] },
+          effectParams: { sequenceOrder: [daggers.instanceId, suit.instanceId, claws.instanceId] },
         },
         { playerId: 'p1' },
       );

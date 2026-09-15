@@ -46,7 +46,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'HAND',
           mode: 'RANDOM',
           count: 2,
@@ -72,7 +72,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'HAND',
           count: 1,
         },
@@ -99,7 +99,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'DECK',
           count: 2,
         },
@@ -121,7 +121,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'ENCOUNTER_DECK',
           count: 2,
         },
@@ -151,7 +151,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'TABLEAU',
           filter: {
             cardTypes: ['upgrade', 'support'],
@@ -179,7 +179,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'TABLEAU',
           filter: {
             cardTypes: ['upgrade', 'support'],
@@ -212,7 +212,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'SELF',
         },
       },
@@ -234,7 +234,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'HOST',
         },
       },
@@ -255,7 +255,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'CARDS_UNDER_HOST',
           target: 'VILLAIN',
         },
@@ -284,7 +284,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
       state,
       {
         effect: 'DISCARD',
-        params: {
+        effectParams: {
           source: 'DECK',
           count: 2,
           filter: {

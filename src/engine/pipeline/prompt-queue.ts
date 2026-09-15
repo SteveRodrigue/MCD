@@ -230,6 +230,7 @@ export function resolveDecisionPrompt(
       damageAmount: optContext?.damageAmount,
       interceptedValue:
         optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
+      resourcesSpent: optContext?.resourcesSpent,
     });
 
     if (
@@ -290,7 +291,7 @@ export function resolveDecisionPrompt(
         : [
             {
               effect: selectedOption!.effect || 'RESOLVED',
-              params: selectedOption!.params || {},
+              effectParams: selectedOption!.params || {},
             },
           ],
   };

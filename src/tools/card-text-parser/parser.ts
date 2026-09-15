@@ -314,7 +314,7 @@ function parseAbilityLine(line: string): ParsedAbilityResult | null {
     // Unknown effect primitive
     steps.push({
       effect: 'MODIFY_STAT', // Safe fallback placeholder
-      params: { unparsed: effectPart },
+      effectParams: { unparsed: effectPart },
     });
   }
 

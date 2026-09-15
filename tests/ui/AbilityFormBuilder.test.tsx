@@ -154,7 +154,7 @@ describe('AbilityFormBuilder Trigger Filter & Scope', () => {
               id: 'retaliation',
               timing: 'RESPONSE',
               trigger: 'ENEMY_INITIATES_ATTACK',
-              steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 1 } }],
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
             },
           ],
         }}
@@ -216,7 +216,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
             {
               id: 'repulsor_blast',
               timing: 'ACTION',
-              steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 1 } }],
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
             },
           ],
         }}
@@ -302,8 +302,8 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
               id: 'multi_step',
               timing: 'ACTION',
               steps: [
-                { effect: 'DEAL_DAMAGE', params: { amount: 3 } },
-                { effect: 'DRAW', params: { count: 2 } },
+                { effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } },
+                { effect: 'DRAW', effectParams: { count: 2 } },
               ],
             },
           ],
@@ -341,7 +341,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
             {
               id: 'conditional_step',
               timing: 'ACTION',
-              steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 4 } }],
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 4 } }],
             },
           ],
         }}
@@ -379,7 +379,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
             {
               id: 'test_dynamic_param',
               timing: 'ACTION',
-              steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 3 } }],
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } }],
             },
           ],
         }}
@@ -400,7 +400,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
             {
               id: 'test_filter_param',
               timing: 'ACTION',
-              steps: [{ effect: 'SEARCH', params: { takeCount: 1 } }],
+              steps: [{ effect: 'SEARCH', effectParams: { takeCount: 1 } }],
             },
           ],
         }}
@@ -425,7 +425,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       steps: [
         {
           effect: 'DEAL_DAMAGE' as const,
-          params: { amount: 4 },
+          effectParams: { amount: 4 },
           condition: 'TARGET_DEFEATED' as const,
         },
       ],
@@ -457,7 +457,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
               {
                 id: 'valid_ab',
                 timing: 'ACTION',
-                steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 3 } }],
+                steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } }],
               },
             ],
           }}

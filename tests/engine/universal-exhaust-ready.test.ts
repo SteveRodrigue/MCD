@@ -46,7 +46,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'SELF_IDENTITY' } },
+        { effect: 'EXHAUST', effectParams: { target: 'SELF_IDENTITY' } },
         { playerId: 'p1' },
       );
 
@@ -63,7 +63,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'CHOSEN_ALLY' } },
+        { effect: 'EXHAUST', effectParams: { target: 'CHOSEN_ALLY' } },
         { playerId: 'p1', targetType: 'ally', targetInstanceId: ally.instanceId },
       );
 
@@ -81,7 +81,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'ALL_ALLIES' } },
+        { effect: 'EXHAUST', effectParams: { target: 'ALL_ALLIES' } },
         { playerId: 'p1' },
       );
 
@@ -95,7 +95,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'VILLAIN' } },
+        { effect: 'EXHAUST', effectParams: { target: 'VILLAIN' } },
         { playerId: 'p1' },
       );
 
@@ -111,7 +111,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'ALL_MINIONS' } },
+        { effect: 'EXHAUST', effectParams: { target: 'ALL_MINIONS' } },
         { playerId: 'p1' },
       );
 
@@ -127,7 +127,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'EXHAUST', params: { target: 'SELF' } },
+        { effect: 'EXHAUST', effectParams: { target: 'SELF' } },
         { playerId: 'p1', sourceCardId: upgrade.instanceId },
       );
 
@@ -144,7 +144,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'SELF_IDENTITY' } },
+        { effect: 'READY', effectParams: { target: 'SELF_IDENTITY' } },
         { playerId: 'p1' },
       );
 
@@ -161,7 +161,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'CHOSEN_ALLY' } },
+        { effect: 'READY', effectParams: { target: 'CHOSEN_ALLY' } },
         { playerId: 'p1', targetType: 'ally', targetInstanceId: ally.instanceId },
       );
 
@@ -179,7 +179,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'ALL_ALLIES' } },
+        { effect: 'READY', effectParams: { target: 'ALL_ALLIES' } },
         { playerId: 'p1' },
       );
 
@@ -197,7 +197,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'ALL_CHARACTERS' } },
+        { effect: 'READY', effectParams: { target: 'ALL_CHARACTERS' } },
         { playerId: 'p1' },
       );
 
@@ -215,7 +215,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'SELF' } },
+        { effect: 'READY', effectParams: { target: 'SELF' } },
         { playerId: 'p1', sourceCardId: upgrade.instanceId },
       );
 
@@ -230,7 +230,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'SELF' } },
+        { effect: 'READY', effectParams: { target: 'SELF' } },
         { playerId: 'p1' },
       );
 

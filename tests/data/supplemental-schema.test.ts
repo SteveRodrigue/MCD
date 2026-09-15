@@ -134,7 +134,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'step_1',
                 effect: 'DEAL_DAMAGE',
-                params: { amount: 3 },
+                effectParams: { amount: 3 },
                 gate: 'ALWAYS',
               },
             ],
@@ -267,7 +267,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     it('Rejects speculative or unhandled effect names in AbilityStepSchema', () => {
       const invalidStep = {
         effect: 'UNIMPLEMENTED_SPECULATIVE_EFFECT',
-        params: {},
+        effectParams: {},
       };
       const result = AbilityStepSchema.safeParse(invalidStep);
       expect(result.success).toBe(false);
@@ -276,7 +276,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     it('Accepts valid codebase-grounded effect names in AbilityStepSchema', () => {
       const validStep = {
         effect: 'DEAL_DAMAGE',
-        params: { amount: 3, target: 'VILLAIN' },
+        effectParams: { amount: 3, target: 'VILLAIN' },
       };
       const result = AbilityStepSchema.safeParse(validStep);
       expect(result.success).toBe(true);
@@ -297,7 +297,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
       for (const effect of obsoleteEffects) {
         expect(
-          AbilityStepSchema.safeParse({ effect, params: {} }).success,
+          AbilityStepSchema.safeParse({ effect, effectParams: {} }).success,
           `Expected ${effect} to be rejected by AbilityStepSchema`,
         ).toBe(false);
       }
@@ -312,7 +312,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
       for (const effect of obsoleteEffects) {
         expect(
-          AbilityStepSchema.safeParse({ effect, params: {} }).success,
+          AbilityStepSchema.safeParse({ effect, effectParams: {} }).success,
           `Expected ${effect} to be rejected by AbilityStepSchema`,
         ).toBe(false);
       }
@@ -322,7 +322,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(
         AbilityStepSchema.safeParse({
           effect: 'SEARCH',
-          params: {
+          effectParams: {
             source: 'PLAYER_DECK',
             lookCount: 3,
             takeCount: 1,
@@ -336,7 +336,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(
         AbilityStepSchema.safeParse({
           effect: 'SEARCH',
-          params: {
+          effectParams: {
             source: 'PLAYER_DECK',
             targetCardCode: '01046',
             trait: 'Black Panther',
@@ -353,7 +353,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(
         AbilityStepSchema.safeParse({
           effect: 'DISCARD',
-          params: {
+          effectParams: {
             source: 'TABLEAU',
             filter: { cardTypes: ['upgrade', 'support'] },
             fallback: 'SURGE',
@@ -364,7 +364,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(
         AbilityStepSchema.safeParse({
           effect: 'DISCARD',
-          params: {
+          effectParams: {
             source: 'HAND',
             mode: 'RANDOM',
             count: 2,
@@ -416,7 +416,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           {
             id: 'web_shooter_resource',
             timing: 'RESOURCE',
-            steps: [{ effect: 'GENERATE_RESOURCE', params: { resource: 'wild', amount: 1 } }],
+            steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { resource: 'wild', amount: 1 } }],
           },
         ],
       };
@@ -451,7 +451,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       const abilityWithUnknownKey = {
         id: 'test_ability',
         timing: 'ACTION',
-        steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 1 } }],
+        steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
         unsupportedTag: true,
       };
       const res = CardAbilitySchema.safeParse(abilityWithUnknownKey);
@@ -464,7 +464,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         timing: 'INTERRUPT',
         trigger: 'DAMAGE_WOULD_BE_TAKEN',
         zone: 'HAND',
-        steps: [{ effect: 'PREVENT_DAMAGE', params: { amount: 'ALL' } }],
+        steps: [{ effect: 'PREVENT_DAMAGE', effectParams: { amount: 'ALL' } }],
       };
       const res = CardAbilitySchema.safeParse(validHandAbility);
       expect(res.success).toBe(true);
@@ -703,7 +703,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           CardAbilitySchema.safeParse({
             id: `target_${target.toLowerCase()}`,
             timing: 'ACTION',
-            steps: [{ effect: 'DRAW', params: { target } }],
+            steps: [{ effect: 'DRAW', effectParams: { target } }],
           }).success,
           `Expected target ${target} to parse`,
         ).toBe(true);
@@ -716,7 +716,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           id: 'legacy_trigger_compatibility',
           timing: 'ACTION',
           trigger: 'VILLAIN_INITIATES_ATTACK',
-          steps: [{ effect: 'DRAW', params: { count: 1 } }],
+          steps: [{ effect: 'DRAW', effectParams: { count: 1 } }],
         }).success,
       ).toBe(false);
     });
@@ -810,7 +810,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           id: 'step_2',
           effect: 'DRAW',
           gate: 'IF_CONDITION_MET',
-          params: {
+          effectParams: {
             targetStepId: 'step_1',
             count: 1,
           },
@@ -865,7 +865,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'take_damage',
                 effect: 'DEAL_DAMAGE',
-                params: {
+                effectParams: {
                   target: 'SELF_IDENTITY',
                   amount: {
                     from: 'INTERCEPTED_VALUE',
@@ -890,7 +890,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'reduce_threat',
                 effect: 'PREVENT_DAMAGE',
-                params: {
+                effectParams: {
                   amount: 1,
                 },
               },
@@ -909,7 +909,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'prevent_threat',
                 effect: 'PREVENT_DAMAGE',
-                params: {
+                effectParams: {
                   amount: 1,
                 },
               },
@@ -929,7 +929,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'deal_damage_step',
                 effect: 'DEAL_DAMAGE',
-                params: {
+                effectParams: {
                   target: 'CHOSEN_ENEMY',
                   amount: {
                     from: 'STAT_VALUE',
@@ -955,7 +955,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                 id: 'damage_step',
                 effect: 'DEAL_DAMAGE',
                 condition: 'RESOURCE_KICKER_MET',
-                params: {
+                effectParams: {
                   amount: 5,
                   target: 'CHOSEN_ENEMY',
                   kickerResource: 'energy',
@@ -965,7 +965,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                 id: 'bonus_draw_step',
                 effect: 'DRAW',
                 gate: 'IF_CONDITION_MET',
-                params: {
+                effectParams: {
                   targetStepId: 'damage_step',
                   count: 1,
                 },
@@ -987,7 +987,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
                 id: 'strike_step',
                 effect: 'DEAL_DAMAGE',
                 condition: 'RESOURCE_KICKER_MET',
-                params: {
+                effectParams: {
                   amount: 5,
                   target: 'CHOSEN_MINION',
                   kickerResource: 'physical',
@@ -1011,7 +1011,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'split_personality_draw',
                 effect: 'DRAW',
-                params: {
+                effectParams: {
                   limit: 'PRINTED_HAND_SIZE',
                 },
                 gate: 'THEN',

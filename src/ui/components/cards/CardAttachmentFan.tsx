@@ -115,7 +115,9 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
               const modifier = att.card.enrichment?.abilities?.find((a) =>
                 a.steps?.some((s) => s.effect === 'MODIFY_STAT'),
               );
-              const statParam = modifier?.steps?.find((s) => s.effect === 'MODIFY_STAT')?.params;
+              const statParam = modifier?.steps?.find(
+                (s) => s.effect === 'MODIFY_STAT',
+              )?.effectParams;
               const hasAction = att.card.enrichment?.abilities?.some(
                 (a) =>
                   a.timing === 'HERO_ACTION' ||

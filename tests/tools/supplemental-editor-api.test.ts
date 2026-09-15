@@ -174,7 +174,7 @@ describe('CardSupplementalService & Editor API Middleware', () => {
               steps: [
                 {
                   effect: 'DRAW',
-                  params: { amount: 1 },
+                  effectParams: { amount: 1 },
                 },
               ],
             },

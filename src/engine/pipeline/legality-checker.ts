@@ -20,6 +20,7 @@ import {
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit } from './stat-calculator';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -390,7 +391,7 @@ export function getPlayerRestrictedLimit(state: GameState, playerId: string): nu
     for (const ab of abilities) {
       const limitStep = ab.steps?.find((s) => s.effect === 'RESTRICTED_LIMIT_BONUS');
       if (ab.timing === 'CONSTANT' && limitStep) {
-        bonus += Number(limitStep.params?.amount) || 1;
+        bonus += Number(getStepEffectParams(limitStep).amount) || 1;
       }
     }
   }
@@ -591,7 +592,8 @@ export function evaluateMinionTargetRequirement(
 
   for (const ab of abilities) {
     for (const step of ab.steps || []) {
-      const target = step.params?.target;
+      const stepParams = getStepEffectParams(step);
+      const target = stepParams.target;
       if (
         step.effect === 'ATTACH_TO_HOST' &&
         (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS')
@@ -646,14 +648,15 @@ export function evaluateAllyTargetRequirement(
 
   for (const ab of abilities) {
     for (const step of ab.steps || []) {
-      const target = step.params?.target;
+      const stepParams = getStepEffectParams(step);
+      const target = stepParams.target;
       if (
         step.effect === 'ATTACH_TO_HOST' &&
         (target === 'CHOSEN_ALLY' || target === 'ALLY' || target === 'ALL_ALLIES')
       ) {
         requiresAlly = true;
-        if (step.params?.maxPerHost !== undefined) {
-          maxPerHost = Number(step.params.maxPerHost);
+        if (stepParams.maxPerHost !== undefined) {
+          maxPerHost = Number(stepParams.maxPerHost);
         }
       }
     }
@@ -775,8 +778,9 @@ export function evaluateSchemeTargetRequirement(
     const steps = ab.steps || [];
     const threatStep = steps.find((s) => s.effect === 'REMOVE_THREAT');
     if (threatStep) {
-      const targetParam = (threatStep.params?.target as string) || 'CHOSEN_SCHEME';
-      const targetInstId = threatStep.params?.targetInstanceId as string | undefined;
+      const stepParams = getStepEffectParams(threatStep);
+      const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
+      const targetInstId = stepParams.targetInstanceId as string | undefined;
       if (!hasEligibleThreatRemovalTarget(state, player.id, targetParam, targetInstId)) {
         return {
           allowed: false,
@@ -861,10 +865,11 @@ export function canInitiateAbility(
 
   // 5. Target & Potential to Change Game State (RR v1.8 p. 15-16, 29, 30)
   for (const step of ability.steps || []) {
+    const stepParams = getStepEffectParams(step);
     // 5A. Threat Removal / Thwart
     if (step.effect === 'REMOVE_THREAT') {
-      const targetParam = (step.params?.target as string) || 'CHOSEN_SCHEME';
-      const targetInstId = (step.params?.targetInstanceId as string) || options?.targetInstanceId;
+      const targetParam = (stepParams.target as string) || 'CHOSEN_SCHEME';
+      const targetInstId = (stepParams.targetInstanceId as string) || options?.targetInstanceId;
       if (!hasEligibleThreatRemovalTarget(state, playerId, targetParam, targetInstId)) {
         return {
           allowed: false,
@@ -874,8 +879,8 @@ export function canInitiateAbility(
     }
 
     // 5B. Attack / Enemy Target Damage
-    if (step.effect === 'ATTACK' || (step.effect === 'DEAL_DAMAGE' && step.params?.target)) {
-      const target = (step.params?.target as string) || 'CHOSEN_ENEMY';
+    if (step.effect === 'ATTACK' || (step.effect === 'DEAL_DAMAGE' && stepParams.target)) {
+      const target = (stepParams.target as string) || 'CHOSEN_ENEMY';
       const allMinions = state.players.flatMap((p) => p.engagedMinions || []);
       const hasGuard = player.engagedMinions.some((m) => hasKeyword(m.card, Keyword.GUARD));
 
@@ -1235,7 +1240,7 @@ export function canPlayCard(
       const aspectDoubleStep = pCard.card.enrichment?.abilities
         ?.flatMap((a) => a.steps || [])
         .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-      if (aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction) {
+      if (aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === card.faction) {
         generatedResources += 2;
       } else {
         generatedResources += pCard.card.resources.total || 1;
@@ -1269,7 +1274,8 @@ export function canPlayCard(
             };
           }
           const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-          generatedResources += Number(genStep?.params?.amount) || 1;
+          generatedResources +=
+            Number(genStep ? getStepEffectParams(genStep).amount : undefined) || 1;
         }
         continue;
       }
@@ -1462,7 +1468,8 @@ export function evaluateCardPlayability(
     const aspectDoubleStep = other.card.enrichment?.abilities
       ?.flatMap((a) => a.steps || [])
       .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-    const multiplier = aspectDoubleStep && aspectDoubleStep.params?.aspect === card.faction ? 2 : 1;
+    const multiplier =
+      aspectDoubleStep && getStepEffectParams(aspectDoubleStep).aspect === card.faction ? 2 : 1;
     maxPotentialResources += (other.card.resources.total || 1) * multiplier;
   }
 
@@ -1476,7 +1483,7 @@ export function evaluateCardPlayability(
         ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
       if (!isUsedRound && !isUsedPhase) {
         const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-        maxPotentialResources += Number(genStep?.params?.amount) || 1;
+        maxPotentialResources += genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
       }
     }
   }

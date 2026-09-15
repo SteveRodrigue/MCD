@@ -25,6 +25,7 @@ import {
   resolveActiveEncounterCardAfterInterrupt,
 } from '../pipeline/villain-phase';
 import type { SearchZone } from '../../data/supplemental/schema';
+import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
@@ -274,7 +275,8 @@ export function shouldExecuteStep(
 ): boolean {
   if (!gate || gate === 'ALWAYS') return true;
 
-  const targetStepId = step.params?.targetStepId as string | undefined;
+  const gateParams = getStepGateParams(step);
+  const targetStepId = gateParams.targetStepId as string | undefined;
   const evaluatedResult =
     targetStepId && stepResultsMap?.has(targetStepId)
       ? stepResultsMap.get(targetStepId)
@@ -302,8 +304,8 @@ export function shouldExecuteStep(
     if (evaluatedResult && evaluatedResult.conditionMet !== undefined) {
       return evaluatedResult.conditionMet;
     }
-    const statusParam = (step.params?.status as StatusCard) || StatusCard.TOUGH;
-    const targetParam = (step.params?.target as string) || 'VILLAIN';
+    const statusParam = (gateParams.status as StatusCard) || StatusCard.TOUGH;
+    const targetParam = (gateParams.target as string) || 'VILLAIN';
     if (targetParam === 'VILLAIN') {
       return state.villain.statusCards.includes(statusParam as StatusCard);
     }
@@ -311,22 +313,27 @@ export function shouldExecuteStep(
   }
 
   if (gate === 'IF_RESOURCE_MATCH') {
-    const reqAspect = (
-      (step.params?.aspect as string) ||
-      (step.params?.resource as string) ||
-      ''
-    ).toLowerCase();
+    const reqAspect = (((gateParams.resource || gateParams.aspect) as string) || '').toLowerCase();
+    const requiredCount = (gateParams.count as number) || (gateParams.amount as number) || 1;
+    const requirePrinted = Boolean(gateParams.printedResource);
+    const requireOnly = Boolean(gateParams.only);
 
-    // 1. Check resources spent (cost payment)
-    if (
-      context.resourcesSpent?.some(
-        (r) => r.toLowerCase() === reqAspect || r.toLowerCase() === 'wild',
-      )
-    ) {
-      return true;
+    if (context.resourcesSpent && context.resourcesSpent.length > 0) {
+      const spent = context.resourcesSpent;
+      const matchingCount = spent.filter((r) => {
+        const lower = r.toLowerCase();
+        return requirePrinted ? lower === reqAspect : lower === reqAspect || lower === 'wild';
+      }).length;
+      const passesOnly =
+        !requireOnly ||
+        spent.every((r) => {
+          const lower = r.toLowerCase();
+          return requirePrinted ? lower === reqAspect : lower === reqAspect || lower === 'wild';
+        });
+      return matchingCount >= requiredCount && passesOnly;
     }
 
-    // 2. Check discarded cards in context or previousResult
+    // 2. Check discarded cards in context or previousResult (e.g. Hulk 01050)
     const discarded: CardInstance[] = context.discardedCards || prevResult?.discardedCards || [];
     if (discarded.length > 0) {
       return discarded.some((inst) => {
@@ -334,7 +341,7 @@ export function shouldExecuteStep(
         const res = inst.card.resources;
         const raw = inst.card.raw as any;
         const wildCount = res?.wild ?? raw?.resource_wild ?? 0;
-        if (wildCount > 0) return true;
+        if (!requirePrinted && wildCount > 0) return true;
         const matchCount =
           res?.[reqAspect as keyof typeof res] ?? raw?.[`resource_${reqAspect}`] ?? 0;
         return typeof matchCount === 'number' && matchCount > 0;
@@ -345,7 +352,7 @@ export function shouldExecuteStep(
   }
 
   if (gate === 'IF_CARD_IN_PLAY') {
-    const cardCode = (step.params?.cardCode as string) || (step.params?.code as string);
+    const cardCode = (gateParams.cardCode as string) || (gateParams.code as string);
     if (cardCode) {
       const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
       const inVillainAttachments = state.villain?.attachments?.some(
@@ -365,7 +372,7 @@ export function shouldExecuteStep(
   }
 
   if (gate === 'IF_CARD_NOT_IN_PLAY') {
-    const cardCode = (step.params?.cardCode as string) || (step.params?.code as string);
+    const cardCode = (gateParams.cardCode as string) || (gateParams.code as string);
     if (cardCode) {
       const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
       const inVillainAttachments = state.villain?.attachments?.some(
@@ -425,16 +432,24 @@ export function executeSequence(
       continue;
     }
 
+    const effectParams = getStepEffectParams(step);
+    const gateParams = getStepGateParams(step);
+    const normalizedStep: AbilityStep = {
+      ...step,
+      effectParams,
+      gateParams,
+    };
+
     const stepContext: EffectExecutionContext = {
       ...context,
       previousResult: prevResult,
       targetInstanceId:
-        step.params?.target === 'PREVIOUS_TARGET'
+        effectParams.target === 'PREVIOUS_TARGET'
           ? (prevResult?.targetId ?? context.targetInstanceId)
           : context.targetInstanceId,
     };
 
-    const res = executeStep(currentState, step, stepContext);
+    const res = executeStep(currentState, normalizedStep, stepContext);
     currentState = res.state;
 
     if (res.discardedCards) {
@@ -555,20 +570,21 @@ export function executeDiscard(
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
-  const source = (step.params?.source as string) || 'HAND';
-  const rawCount = step.params?.count;
+  const params = getStepEffectParams(step);
+  const source = (params.source as string) || 'HAND';
+  const rawCount = params.count;
   const isCountAll = rawCount === 'ALL';
   const count = typeof rawCount === 'number' ? rawCount : 1;
   const mode =
-    (step.params?.mode as string) ||
+    (params.mode as string) ||
     (source === 'DECK' || source === 'ENCOUNTER_DECK' ? 'TOP' : 'CHOSEN');
-  const fallback = step.params?.fallback as string | undefined;
-  const filter = (step.params?.filter || step.filter) as any;
+  const fallback = params.fallback as string | undefined;
+  const filter = (params.filter || step.filter) as any;
 
   // 1. DISCARD FROM HAND
   if (source === 'HAND') {
     const targetPlayer =
-      (step.params?.target as string) === 'CHOSEN_PLAYER' && context.targetPlayerId
+      (params.target as string) === 'CHOSEN_PLAYER' && context.targetPlayerId
         ? state.players.find((p) => p.id === context.targetPlayerId) || player
         : player;
 
@@ -635,7 +651,7 @@ export function executeDiscard(
   if (source === 'DECK') {
     let discardedCount = 0;
     const discardedCards: CardInstance[] = [];
-    const matchingDestination = step.params?.matchingDestination as string | undefined;
+    const matchingDestination = params.matchingDestination as string | undefined;
     for (let i = 0; i < count; i++) {
       const card = drawPlayerCard(state, player.id);
       if (card) {
@@ -793,7 +809,7 @@ export function executeDiscard(
 
   // 7. DISCARD CARDS UNDER HOST
   if (source === 'CARDS_UNDER_HOST') {
-    const targetHost = (step.params?.target as string) || 'VILLAIN';
+    const targetHost = (params.target as string) || 'VILLAIN';
     let cardsToDiscard: CardInstance[] = [];
 
     if (targetHost === 'VILLAIN') {
@@ -835,19 +851,25 @@ export function executeStep(
   const player = state.players.find((p) => p.id === context.playerId);
   if (!player) return { state, success: false, error: 'Player not found' };
 
+  step = {
+    ...step,
+    effectParams: getStepEffectParams(step),
+    gateParams: getStepGateParams(step),
+  };
+
   switch (step.effect) {
     case 'DISCARD':
     case 'DISCARD_CARDS': {
       return executeDiscard(state, step, context);
     }
     case 'DRAW': {
-      const rawCount = step.params?.count;
+      const rawCount = step.effectParams?.count;
       const count = rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
-      const limit = step.params?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
-      const targetParam = step.params?.target as string | undefined;
+      const limit = step.effectParams?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
+      const targetParam = step.effectParams?.target as string | undefined;
       const targetPlayerId =
-        (step.params?.targetPlayerId as string) ||
-        (step.params?.playerId as string) ||
+        (step.effectParams?.targetPlayerId as string) ||
+        (step.effectParams?.playerId as string) ||
         (context.targetInstanceId && state.players.some((p) => p.id === context.targetInstanceId)
           ? context.targetInstanceId
           : undefined);
@@ -988,29 +1010,31 @@ export function executeStep(
 
     case 'DEAL_DAMAGE': {
       let amount = resolveNumericAmount(
-        step.params?.amount ?? step.params?.baseAmount,
+        step.effectParams?.amount ?? step.effectParams?.baseAmount,
         context,
         0,
         {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
         },
       );
-      if (step.params?.dynamicBonus) {
-        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+      if (step.effectParams?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
         });
         amount += bonus;
       }
-      if (context.isFinalStep && step.params?.finisherBonus) {
-        amount += (step.params.finisherBonus as number) || 0;
+      if (context.isFinalStep && step.effectParams?.finisherBonus) {
+        amount += (step.effectParams.finisherBonus as number) || 0;
       }
-      const targetParam = step.params?.target as string | undefined;
+      const targetParam = step.effectParams?.target as string | undefined;
 
       if (targetParam === 'ALL_CHARACTERS') {
         // 1. Damage to Villain
@@ -1372,9 +1396,10 @@ export function executeStep(
 
       // 1. If targetInstanceId is specified, check engaged minions first
       const targetMinionId =
-        step.params?.target === 'TRIGGERING_MINION' || step.params?.target === 'TRIGGERING_ENEMY'
-          ? context.targetInstanceId || (step.params?.targetInstanceId as string)
-          : (step.params?.targetInstanceId as string) || context.targetInstanceId;
+        step.effectParams?.target === 'TRIGGERING_MINION' ||
+        step.effectParams?.target === 'TRIGGERING_ENEMY'
+          ? context.targetInstanceId || (step.effectParams?.targetInstanceId as string)
+          : (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
 
       if (targetMinionId) {
         for (const p of state.players) {
@@ -1414,8 +1439,8 @@ export function executeStep(
 
               // Overkill routing to villain if attack has Overkill
               const isOverkill = Boolean(
-                step.params?.overkill ||
-                step.params?.keyword === 'Overkill' ||
+                step.effectParams?.overkill ||
+                step.effectParams?.keyword === 'Overkill' ||
                 (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
                 (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
               );
@@ -1606,7 +1631,7 @@ export function executeStep(
       });
 
       // Retaliate check if villain survives an attack (RR v1.8 p. 24, ADR-0054)
-      const isAttack = Boolean(step.params?.isAttack || context.isAttack);
+      const isAttack = Boolean(step.effectParams?.isAttack || context.isAttack);
       if (isAttack && state.villain.health > 0) {
         const villainRetaliate = getEffectiveRetaliate(state.villain, state);
         if (villainRetaliate > 0) {
@@ -1636,8 +1661,8 @@ export function executeStep(
     }
 
     case 'HEAL_DAMAGE': {
-      const amount = resolveNumericAmount(step.params?.amount, context, 0, { state, player });
-      const target = (step.params?.target as string) || 'SELF';
+      const amount = resolveNumericAmount(step.effectParams?.amount, context, 0, { state, player });
+      const target = (step.effectParams?.target as string) || 'SELF';
       let healed = 0;
 
       if (target === 'VILLAIN') {
@@ -1698,13 +1723,13 @@ export function executeStep(
         context.damageAmount !== undefined;
 
       const amountToPrevent =
-        step.params?.amount !== undefined
-          ? step.params.amount === 'ALL' || step.params.preventAll
+        step.effectParams?.amount !== undefined
+          ? step.effectParams.amount === 'ALL' || step.effectParams.preventAll
             ? currentVal
-            : resolveNumericAmount(step.params.amount, context, currentVal)
+            : resolveNumericAmount(step.effectParams.amount, context, currentVal)
           : hasInterceptContext
             ? currentVal
-            : step.params?.preventAll
+            : step.effectParams?.preventAll
               ? 999
               : 3;
 
@@ -1755,8 +1780,8 @@ export function executeStep(
     }
 
     case 'GENERATE_RESOURCE': {
-      const resourceType = (step.params?.resource as string) || 'wild';
-      const amount = (step.params?.amount as number) || 1;
+      const resourceType = (step.effectParams?.resource as string) || 'wild';
+      const amount = (step.effectParams?.amount as number) || 1;
 
       return {
         state,
@@ -1767,24 +1792,25 @@ export function executeStep(
 
     case 'REMOVE_THREAT': {
       let amount = resolveNumericAmount(
-        step.params?.amount ?? step.params?.baseAmount,
+        step.effectParams?.amount ?? step.effectParams?.baseAmount,
         context,
         1,
         { state, player },
       );
-      if (step.params?.dynamicBonus) {
-        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+      if (step.effectParams?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
         });
         amount += bonus;
       }
-      if (context.isFinalStep && step.params?.finisherBonus) {
-        amount += (step.params.finisherBonus as number) || 0;
+      if (context.isFinalStep && step.effectParams?.finisherBonus) {
+        amount += (step.effectParams.finisherBonus as number) || 0;
       }
-      const targetParam = (step.params?.target as string) || 'MAIN_SCHEME';
+      const targetParam = (step.effectParams?.target as string) || 'MAIN_SCHEME';
       let removed = 0;
       let targetSchemeName = state.mainScheme.card.name;
       let remainingThreat = state.mainScheme.threat;
@@ -1792,7 +1818,7 @@ export function executeStep(
       if (targetParam === 'CHOSEN_SCHEME') {
         const sideSchemes = state.sideSchemes || [];
         const explicitTargetId =
-          (step.params?.targetInstanceId as string) || context.targetInstanceId;
+          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
 
         if (explicitTargetId) {
           if (
@@ -1865,7 +1891,8 @@ export function executeStep(
         targetSchemeName = state.mainScheme.card.name;
         remainingThreat = state.mainScheme.threat;
       } else if (targetParam === 'SIDE_SCHEME' || context.targetInstanceId) {
-        const targetId = (step.params?.targetInstanceId as string) || context.targetInstanceId;
+        const targetId =
+          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
         const sideScheme = (state.sideSchemes || []).find((s) => s.instanceId === targetId);
         if (sideScheme) {
           const current = sideScheme.threat || 0;
@@ -1925,14 +1952,14 @@ export function executeStep(
 
     case 'ADD_STATUS': {
       let status: StatusCard = StatusCard.STUNNED;
-      const statusParam = step.params?.status;
+      const statusParam = step.effectParams?.status;
       if (statusParam === 'TOUGH' || statusParam === StatusCard.TOUGH) status = StatusCard.TOUGH;
       if (statusParam === 'CONFUSED' || statusParam === StatusCard.CONFUSED)
         status = StatusCard.CONFUSED;
       if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED)
         status = StatusCard.STUNNED;
 
-      const target = (step.params?.target as string) || 'VILLAIN';
+      const target = (step.effectParams?.target as string) || 'VILLAIN';
       let mutatedState = false;
       let alreadyHadStatus = false;
       let isImmune = false;
@@ -2039,7 +2066,7 @@ export function executeStep(
     }
 
     case 'REMOVE_STATUS': {
-      const requestedStatus = String(step.params?.status || 'ALL');
+      const requestedStatus = String(step.effectParams?.status || 'ALL');
       const normalizedStatus =
         requestedStatus === 'STUNNED'
           ? StatusCard.STUNNED
@@ -2052,7 +2079,7 @@ export function executeStep(
         normalizedStatus === 'ALL'
           ? [StatusCard.STUNNED, StatusCard.CONFUSED, StatusCard.TOUGH]
           : [normalizedStatus as StatusCard];
-      const target = String(step.params?.target || 'VILLAIN');
+      const target = String(step.effectParams?.target || 'VILLAIN');
       const targetPlayer =
         state.players.find((candidate) => candidate.id === context.targetPlayerId) || player;
       const targets: any[] = [];
@@ -2141,7 +2168,7 @@ export function executeStep(
 
     case 'HEAL_DAMAGE_WITH_SURGE': {
       // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
-      const amount = (step.params?.amount as number) || 4;
+      const amount = (step.effectParams?.amount as number) || 4;
       const healed = Math.min(state.villain.maxHealth - state.villain.health, amount);
       if (healed > 0) {
         state.villain.health += healed;
@@ -2171,7 +2198,7 @@ export function executeStep(
     }
 
     case 'ATTACH_TO_HOST': {
-      const targetHost = step.params?.target as string;
+      const targetHost = step.effectParams?.target as string;
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
 
@@ -2192,7 +2219,7 @@ export function executeStep(
     }
 
     case 'PLACE_CARD_UNDER_HOST': {
-      const targetHost = (step.params?.target as string) || 'SELF';
+      const targetHost = (step.effectParams?.target as string) || 'SELF';
       const sourceCard = context.sourceCardInstance;
       if (!sourceCard) return { state, success: true };
 
@@ -2232,17 +2259,17 @@ export function executeStep(
 
     case 'MODIFY_STAT': {
       if (
-        step.params?.target === 'ALL_FRIENDLY_CHARACTERS' ||
-        step.params?.atkBonus !== undefined ||
-        step.params?.thwBonus !== undefined
+        step.effectParams?.target === 'ALL_FRIENDLY_CHARACTERS' ||
+        step.effectParams?.atkBonus !== undefined ||
+        step.effectParams?.thwBonus !== undefined
       ) {
         const atkBonus =
-          (step.params?.atkBonus as number) ||
-          (step.params?.stat === 'ATK' ? (step.params?.amount as number) : 0) ||
+          (step.effectParams?.atkBonus as number) ||
+          (step.effectParams?.stat === 'ATK' ? (step.effectParams?.amount as number) : 0) ||
           0;
         const thwBonus =
-          (step.params?.thwBonus as number) ||
-          (step.params?.stat === 'THW' ? (step.params?.amount as number) : 0) ||
+          (step.effectParams?.thwBonus as number) ||
+          (step.effectParams?.stat === 'THW' ? (step.effectParams?.amount as number) : 0) ||
           0;
         for (const a of player.allies) {
           if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
@@ -2269,7 +2296,7 @@ export function executeStep(
     }
 
     case 'READY': {
-      const targetParam = (step.params?.target as string) || 'SELF_IDENTITY';
+      const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let readyTargetName = player.name;
 
       if (targetParam === 'SELF') {
@@ -2409,7 +2436,7 @@ export function executeStep(
     }
 
     case 'EXHAUST': {
-      const targetParam = (step.params?.target as string) || 'SELF_IDENTITY';
+      const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;
 
       if (targetParam === 'SELF') {
@@ -2578,9 +2605,10 @@ export function executeStep(
     }
 
     case 'PLAYER_CHOICE': {
-      if (context.choice || step.params?.stat) {
-        const amount = (step.params?.amount as number) || 2;
-        const chosenStat = (context.choice as string) || (step.params?.stat as string) || 'ATK';
+      if (context.choice || step.effectParams?.stat) {
+        const amount = (step.effectParams?.amount as number) || 2;
+        const chosenStat =
+          (context.choice as string) || (step.effectParams?.stat as string) || 'ATK';
         if (context.sourceCardInstance) {
           if (!context.sourceCardInstance.tokens) {
             context.sourceCardInstance.tokens = {
@@ -2606,9 +2634,9 @@ export function executeStep(
         };
       }
 
-      let options = (step.params?.options as any[]) || [];
+      let options = (step.effectParams?.options as any[]) || [];
       if (options.length > 0 && typeof options[0] === 'string') {
-        const amt = (step.params?.amount as number) || 2;
+        const amt = (step.effectParams?.amount as number) || 2;
         options = options.map((opt: string) => ({
           id: opt,
           label: `+${amt} ${opt}`,
@@ -2618,10 +2646,10 @@ export function executeStep(
         }));
       }
       const title =
-        (step.params?.title as string) ||
-        (step.params?.promptTitle as string) ||
+        (step.effectParams?.title as string) ||
+        (step.effectParams?.promptTitle as string) ||
         'Choose an Option';
-      const description = (step.params?.description as string) || '';
+      const description = (step.effectParams?.description as string) || '';
       const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
       const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
       state = enqueueDecisionPrompt(state, {
@@ -2631,7 +2659,7 @@ export function executeStep(
         description,
         sourceCardName,
         options,
-        isVoluntary: (step.params?.isVoluntary as boolean) ?? false,
+        isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,
       });
 
       state.log.push({
@@ -2650,9 +2678,9 @@ export function executeStep(
 
     case 'DECLARE_DEFENDER': {
       const defenderType =
-        (step.params?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
-      const allyInstanceId = step.params?.allyInstanceId as string | undefined;
-      const playerId = context.playerId || (step.params?.playerId as string) || player.id;
+        (step.effectParams?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
+      const allyInstanceId = step.effectParams?.allyInstanceId as string | undefined;
+      const playerId = context.playerId || (step.effectParams?.playerId as string) || player.id;
       const resState = resolveDefenderDeclaration(state, {
         type: defenderType,
         playerId,
@@ -2719,7 +2747,9 @@ export function executeStep(
 
     case 'FORM_BRANCH': {
       const branchSteps =
-        player.currentForm === 'hero' ? step.params?.heroSteps : step.params?.alterEgoSteps;
+        player.currentForm === 'hero'
+          ? step.effectParams?.heroSteps
+          : step.effectParams?.alterEgoSteps;
       if (!Array.isArray(branchSteps) || branchSteps.length === 0) {
         return { state, success: true, mutatedState: false, onomatopoeia: 'FORM BRANCH EMPTY' };
       }
@@ -2755,9 +2785,9 @@ export function executeStep(
     }
 
     case 'PUT_INTO_PLAY': {
-      const fromZone = (step.params?.from as string) || 'SET_ASIDE';
-      const toZone = (step.params?.to as string) || 'ENGAGED_WITH_PLAYER';
-      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
+      const fromZone = (step.effectParams?.from as string) || 'SET_ASIDE';
+      const toZone = (step.effectParams?.to as string) || 'ENGAGED_WITH_PLAYER';
+      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
 
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
@@ -2771,7 +2801,7 @@ export function executeStep(
       }
 
       const matches =
-        step.params?.target === 'SELF' && context.sourceCardInstance
+        step.effectParams?.target === 'SELF' && context.sourceCardInstance
           ? [context.sourceCardInstance]
           : sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }));
 
@@ -2889,13 +2919,13 @@ export function executeStep(
 
     case 'SHUFFLE_INTO_DECK': {
       const fromZone =
-        (step.params?.from as string) ||
-        (step.params?.count !== undefined ? 'DISCARD' : 'SET_ASIDE');
+        (step.effectParams?.from as string) ||
+        (step.effectParams?.count !== undefined ? 'DISCARD' : 'SET_ASIDE');
       const toDeck =
-        (step.params?.toDeck as string) ||
-        (step.params?.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
-      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
-      const count = step.params?.count as number | undefined;
+        (step.effectParams?.toDeck as string) ||
+        (step.effectParams?.count !== undefined ? 'PLAYER_DECK' : 'ENCOUNTER_DECK');
+      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
+      const count = step.effectParams?.count as number | undefined;
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
@@ -2974,7 +3004,7 @@ export function executeStep(
           {
             id: 'step_1_spawn_nemesis_minion',
             effect: 'PUT_INTO_PLAY',
-            params: {
+            effectParams: {
               from: 'SET_ASIDE',
               to: 'ENGAGED_WITH_PLAYER',
               filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
@@ -2983,7 +3013,7 @@ export function executeStep(
           {
             id: 'step_2_spawn_nemesis_scheme',
             effect: 'PUT_INTO_PLAY',
-            params: {
+            effectParams: {
               from: 'SET_ASIDE',
               to: 'SIDE_SCHEMES',
               filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
@@ -2992,7 +3022,7 @@ export function executeStep(
           {
             id: 'step_3_shuffle_remaining_cards',
             effect: 'SHUFFLE_INTO_DECK',
-            params: {
+            effectParams: {
               from: 'SET_ASIDE',
               toDeck: 'ENCOUNTER_DECK',
               filter: { set: 'PLAYER_NEMESIS' },
@@ -3087,14 +3117,14 @@ export function executeStep(
 
     case 'ADD_THREAT': {
       const baseAmount = resolveNumericAmount(
-        step.params?.amount ?? step.params?.amountPerPlayer,
+        step.effectParams?.amount ?? step.effectParams?.amountPerPlayer,
         context,
         1,
         { state, player },
       );
-      const isPerPlayer = !!(step.params?.perPlayer || step.params?.amountPerPlayer);
+      const isPerPlayer = !!(step.effectParams?.perPlayer || step.effectParams?.amountPerPlayer);
       const amount = isPerPlayer ? baseAmount * state.players.length : baseAmount;
-      const target = (step.params?.target as string) || 'MAIN_SCHEME';
+      const target = (step.effectParams?.target as string) || 'MAIN_SCHEME';
 
       if (target === 'ALL_SIDE_SCHEMES') {
         if (state.sideSchemes.length > 0) {
@@ -3139,12 +3169,12 @@ export function executeStep(
         }
       }
       const cardCode =
-        (step.params?.cardCode as string) ||
+        (step.effectParams?.cardCode as string) ||
         (target !== 'MAIN_SCHEME' && target !== 'THIS_SIDE_SCHEME' && /^\d{5}$/.test(target)
           ? target
           : undefined);
       const targetInstanceId =
-        (step.params?.targetInstanceId as string) ||
+        (step.effectParams?.targetInstanceId as string) ||
         (target.startsWith('scheme_') || target.startsWith('side_') ? target : undefined) ||
         context.targetInstanceId;
 
@@ -3347,9 +3377,9 @@ export function executeStep(
 
     case 'ADD_COUNTERS':
     case 'MODIFY_COUNTER': {
-      const targetParam = (step.params?.target as string) || 'SELF';
-      const counterType = (step.params?.counterType as string) || 'all_purpose';
-      let amount = (step.params?.amount as number) || 1;
+      const targetParam = (step.effectParams?.target as string) || 'SELF';
+      const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
+      let amount = (step.effectParams?.amount as number) || 1;
       if (typeof amount !== 'number') amount = 1;
 
       if (targetParam === 'IDENTITY') {
@@ -3380,9 +3410,9 @@ export function executeStep(
 
     case 'SPEND_COUNTERS':
     case 'REMOVE_COUNTERS': {
-      const targetParam = (step.params?.target as string) || 'SELF';
-      const counterType = (step.params?.counterType as string) || 'all_purpose';
-      let amount = (step.params?.amount as number) || 1;
+      const targetParam = (step.effectParams?.target as string) || 'SELF';
+      const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
+      let amount = (step.effectParams?.amount as number) || 1;
       if (typeof amount !== 'number') amount = 1;
 
       if (targetParam === 'IDENTITY') {
@@ -3416,10 +3446,10 @@ export function executeStep(
     }
 
     case 'REMOVE_COUNTERS_MATCHING_FILTER': {
-      const targetZone = (step.params?.targetZone as string) || 'TABLEAU';
-      const traitFilter = step.params?.traitFilter as string | undefined;
-      const counterType = step.params?.counterType as string | undefined;
-      const amountParam = step.params?.amount;
+      const targetZone = (step.effectParams?.targetZone as string) || 'TABLEAU';
+      const traitFilter = step.effectParams?.traitFilter as string | undefined;
+      const counterType = step.effectParams?.counterType as string | undefined;
+      const amountParam = step.effectParams?.amount;
 
       let targetCards: CardInstance[] = [];
       if (targetZone === 'TABLEAU' || targetZone === 'ALL_CONTROLLED') {
@@ -3531,16 +3561,16 @@ export function executeStep(
     }
 
     case 'SEARCH': {
-      const rawSource = step.params?.source;
+      const rawSource = step.effectParams?.source;
       const sourceZones: SearchZone[] = (
         Array.isArray(rawSource) ? rawSource : [rawSource || 'PLAYER_DECK']
       ) as SearchZone[];
 
       let resolvedLookCount: number | 'ALL' | undefined = undefined;
-      if (step.params?.lookCount === 'ALL') {
+      if (step.effectParams?.lookCount === 'ALL') {
         resolvedLookCount = 'ALL';
-      } else if (step.params?.lookCount !== undefined) {
-        resolvedLookCount = resolveNumericAmount(step.params.lookCount, context, 0, {
+      } else if (step.effectParams?.lookCount !== undefined) {
+        resolvedLookCount = resolveNumericAmount(step.effectParams.lookCount, context, 0, {
           state,
           player,
         });
@@ -3551,10 +3581,10 @@ export function executeStep(
         !isFullSearch && typeof resolvedLookCount === 'number' && resolvedLookCount > 0;
 
       let resolvedTakeCount: number | 'ALL' = 1;
-      if (step.params?.takeCount === 'ALL') {
+      if (step.effectParams?.takeCount === 'ALL') {
         resolvedTakeCount = 'ALL';
-      } else if (step.params?.takeCount !== undefined) {
-        resolvedTakeCount = resolveNumericAmount(step.params.takeCount, context, 1, {
+      } else if (step.effectParams?.takeCount !== undefined) {
+        resolvedTakeCount = resolveNumericAmount(step.effectParams.takeCount, context, 1, {
           state,
           player,
         });
@@ -3563,25 +3593,29 @@ export function executeStep(
       const countToTake = isTakeAll ? 0 : Math.max(1, resolvedTakeCount as number);
 
       const filter =
-        (step.params?.filter || step.filter) ??
-        (step.params?.targetCardCode ||
-        step.params?.targetCardName ||
-        step.params?.trait ||
-        step.params?.type ||
-        step.params?.type_code ||
-        step.params?.cardType
+        (step.effectParams?.filter || step.filter) ??
+        (step.effectParams?.targetCardCode ||
+        step.effectParams?.targetCardName ||
+        step.effectParams?.trait ||
+        step.effectParams?.type ||
+        step.effectParams?.type_code ||
+        step.effectParams?.cardType
           ? {
-              targetCardCode: step.params?.targetCardCode,
-              targetCardName: step.params?.targetCardName,
-              trait: step.params?.trait,
-              type: step.params?.type || step.params?.type_code || step.params?.cardType,
+              targetCardCode: step.effectParams?.targetCardCode,
+              targetCardName: step.effectParams?.targetCardName,
+              trait: step.effectParams?.trait,
+              type:
+                step.effectParams?.type ||
+                step.effectParams?.type_code ||
+                step.effectParams?.cardType,
             }
           : undefined);
-      const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
-      const unselectedDestination = step.params?.unselectedDestination as string | null | undefined;
+      const selectedDestination = (step.effectParams?.selectedDestination as string) || 'HAND';
+      const unselectedDestination = step.effectParams?.unselectedDestination as
+        string | null | undefined;
       const shuffleAfter =
-        step.params?.shuffleAfter !== undefined
-          ? (step.params.shuffleAfter as boolean)
+        step.effectParams?.shuffleAfter !== undefined
+          ? (step.effectParams.shuffleAfter as boolean)
           : isFullSearch;
 
       const timing = context.ability?.timing;
@@ -3597,14 +3631,14 @@ export function executeStep(
       let isVoluntary = false;
       if (isForced) {
         isVoluntary = false;
-      } else if (step.params?.isVoluntary !== undefined) {
-        isVoluntary = Boolean(step.params.isVoluntary);
+      } else if (step.effectParams?.isVoluntary !== undefined) {
+        isVoluntary = Boolean(step.effectParams.isVoluntary);
       } else if (isAction) {
         isVoluntary = true;
       }
 
       const promptTitle =
-        (step.params?.promptTitle as string) ||
+        (step.effectParams?.promptTitle as string) ||
         (context.sourceCardInstance
           ? `${context.sourceCardInstance.card.name}: Choose card(s)`
           : 'Search & Select: Choose card(s)');
@@ -3778,8 +3812,8 @@ export function executeStep(
       const effectiveTakeCount = isTakeAll ? matchingCandidates.length : countToTake;
       const shouldAutoSelect =
         isTakeAll ||
-        (!step.params?.isVoluntary &&
-          step.params?.autoSelectIfUnambiguous !== false &&
+        (!step.effectParams?.isVoluntary &&
+          step.effectParams?.autoSelectIfUnambiguous !== false &&
           matchingCandidates.length <= effectiveTakeCount);
 
       if (shouldAutoSelect) {
@@ -3866,9 +3900,11 @@ export function executeStep(
     }
 
     case 'SEARCH_AND_PLAY_UPGRADE': {
-      const traitFilter = step.params?.trait as string | undefined;
+      const traitFilter = step.effectParams?.trait as string | undefined;
       const typeFilter =
-        (step.params?.type as string) || (step.params?.type_code as string) || 'upgrade';
+        (step.effectParams?.type as string) ||
+        (step.effectParams?.type_code as string) ||
+        'upgrade';
 
       const matchIdx = player.deck.findIndex((c) => {
         const typeMatch =
@@ -3903,7 +3939,7 @@ export function executeStep(
     case 'TRIGGER_WAKANDA_UPGRADES':
     case 'EXECUTE_WAKANDA_FOREVER':
     case 'EXECUTE_SPECIAL': {
-      const specialId = (step.params?.specialId as string) || 'WAKANDA_FOREVER';
+      const specialId = (step.effectParams?.specialId as string) || 'WAKANDA_FOREVER';
       const handler = getSpecialHandler(specialId);
       if (!handler) {
         return {
@@ -3912,35 +3948,38 @@ export function executeStep(
           error: `Special handler not found for ${specialId}`,
         };
       }
-      return handler.execute(state, context, step.params);
+      return handler.execute(state, context, step.effectParams);
     }
 
     case 'TRANSFER_DAMAGE': {
       let amount = resolveNumericAmount(
-        step.params?.amount ?? step.params?.baseAmount,
+        step.effectParams?.amount ?? step.effectParams?.baseAmount,
         context,
         1,
         {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
         },
       );
-      if (step.params?.dynamicBonus) {
-        const bonus = resolveNumericAmount(step.params.dynamicBonus as any, context, 0, {
+      if (step.effectParams?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
           state,
           player,
           sourceCardInstance: context.sourceCardInstance,
-          targetInstanceId: (step.params?.targetInstanceId as string) || context.targetInstanceId,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
         });
         amount += bonus;
       }
-      if (context.isFinalStep && step.params?.finisherBonus) {
-        amount += (step.params.finisherBonus as number) || 0;
+      if (context.isFinalStep && step.effectParams?.finisherBonus) {
+        amount += (step.effectParams.finisherBonus as number) || 0;
       }
 
-      const targetEnemyId = (step.params?.targetInstanceId as string) || context.targetInstanceId;
+      const targetEnemyId =
+        (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
       if (
         targetEnemyId &&
@@ -4007,7 +4046,7 @@ export function executeStep(
     }
 
     case 'REDUCE_NEXT_CARD_COST': {
-      const amount = (step.params?.amount as number) || 1;
+      const amount = (step.effectParams?.amount as number) || 1;
       player.costReductions = (player.costReductions || 0) + amount;
       return {
         state,
@@ -4018,14 +4057,14 @@ export function executeStep(
     }
 
     case 'PLAY_FROM_ZONE': {
-      const source = (step.params?.source as string) || 'PLAYER_DISCARD';
-      const filter = (step.params?.filter || step.filter) as Record<string, any> | undefined;
-      const costMode = (step.params?.costMode as string) || 'PRINTED_COST';
-      const costReduction = (step.params?.costReduction as number) || 0;
-      const destination = (step.params?.destination as string) || 'TABLEAU';
-      const control = (step.params?.control as string) || 'SELF';
+      const source = (step.effectParams?.source as string) || 'PLAYER_DISCARD';
+      const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
+      const costMode = (step.effectParams?.costMode as string) || 'PRINTED_COST';
+      const costReduction = (step.effectParams?.costReduction as number) || 0;
+      const destination = (step.effectParams?.destination as string) || 'TABLEAU';
+      const control = (step.effectParams?.control as string) || 'SELF';
       const promptTitle =
-        (step.params?.promptTitle as string) ||
+        (step.effectParams?.promptTitle as string) ||
         (context.sourceCardInstance
           ? `${context.sourceCardInstance.card.name}: Choose a card to play`
           : 'Choose a card to play:');

@@ -226,7 +226,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       steps: [
         {
           effect: 'DEAL_DAMAGE',
-          params: { amount: 3, target: 'CHOSEN_MINION' },
+          effectParams: { amount: 3, target: 'CHOSEN_MINION' },
         },
       ],
     };
@@ -254,7 +254,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       id: 'test_character_defeated',
       timing: 'FORCED_INTERRUPT',
       trigger: 'CHARACTER_DEFEATED',
-      steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3, target: 'CHOSEN_SCHEME' } }],
+      steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 3, target: 'CHOSEN_SCHEME' } }],
     };
     expect(CardAbilitySchema.safeParse(validAbility).success).toBe(true);
 
@@ -263,7 +263,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       id: 'test_deprecated_trigger',
       timing: 'FORCED_INTERRUPT',
       trigger: 'HOST_DEFEATED',
-      steps: [{ effect: 'REMOVE_THREAT', params: { amount: 3 } }],
+      steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 3 } }],
     };
     expect(CardAbilitySchema.safeParse(deprecatedAbility).success).toBe(false);
   });
@@ -417,7 +417,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
           {
             id: 'test_tablewide',
             timing: 'ACTION' as const,
-            steps: [{ effect: 'DEAL_DAMAGE' as const, params: { target: 'CHOSEN_MINION' } }],
+            steps: [{ effect: 'DEAL_DAMAGE' as const, effectParams: { target: 'CHOSEN_MINION' } }],
           },
         ],
       },
@@ -432,7 +432,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
             id: 'test_local',
             timing: 'ACTION' as const,
             steps: [
-              { effect: 'DEAL_DAMAGE' as const, params: { target: 'CHOSEN_ENGAGED_MINION' } },
+              { effect: 'DEAL_DAMAGE' as const, effectParams: { target: 'CHOSEN_ENGAGED_MINION' } },
             ],
           },
         ],

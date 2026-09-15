@@ -10,6 +10,7 @@ import {
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -186,9 +187,10 @@ export function canPayAbilityCost(
 
   // 7. RR v1.8 p. 3 Zero-State Invariant for COUNTERS (e.g. Energy Channel 01019)
   for (const step of ability.steps || []) {
+    const stepParams = getStepEffectParams(step);
     const amountObj =
-      typeof step.params?.amount === 'object' && step.params?.amount !== null
-        ? (step.params.amount as Record<string, any>)
+      typeof stepParams.amount === 'object' && stepParams.amount !== null
+        ? (stepParams.amount as Record<string, any>)
         : null;
     if (amountObj?.from === 'COUNTERS') {
       const counterType = (amountObj.counterType as string) || 'energy';
@@ -205,7 +207,8 @@ export function canPayAbilityCost(
 
   // 8. Target existence validation for abilities requiring minions (RR v1.8 p. 19, 28)
   for (const step of ability.steps || []) {
-    const target = step.params?.target;
+    const stepParams = getStepEffectParams(step);
+    const target = stepParams.target;
     if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
       const totalMinions = _state.players.reduce(
         (acc, p) => acc + (p.engagedMinions?.length || 0),

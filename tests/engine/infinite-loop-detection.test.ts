@@ -77,7 +77,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
             steps: [
               {
                 effect: 'DEAL_DAMAGE',
-                params: { amount: 1, target: 'SELF' },
+                effectParams: { amount: 1, target: 'SELF' },
               },
             ],
           },
@@ -137,7 +137,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
             steps: [
               {
                 effect: 'DEAL_DAMAGE',
-                params: { amount: 1, target: 'SELF' },
+                effectParams: { amount: 1, target: 'SELF' },
               },
             ],
           },
@@ -161,7 +161,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
             steps: [
               {
                 effect: 'DISCARD_CARDS',
-                params: { count: 1 },
+                effectParams: { count: 1 },
               },
             ],
           },
@@ -213,7 +213,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
               steps: [
                 {
                   effect: 'DISCARD_CARDS',
-                  params: { count: 1 },
+                  effectParams: { count: 1 },
                 },
               ],
             },
@@ -263,7 +263,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
             steps: [
               {
                 effect: 'HEAL_DAMAGE',
-                params: { amount: 1 },
+                effectParams: { amount: 1 },
               },
             ],
           },
@@ -287,7 +287,7 @@ describe('Infinite Trigger Loop Detection & Prevention Guardrails (ADR-0053, Iss
             steps: [
               {
                 effect: 'ADD_STATUS',
-                params: { status: 'TOUGH' },
+                effectParams: { status: 'TOUGH' },
               },
             ],
           },

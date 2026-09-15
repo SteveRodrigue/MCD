@@ -172,7 +172,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       steps: [
         {
           effect: 'ADD_THREAT' as const,
-          params: {
+          effectParams: {
             amount: 3,
             cardCode: '01176',
           },
@@ -204,7 +204,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       steps: [
         {
           effect: 'ADD_THREAT' as const,
-          params: {
+          effectParams: {
             amount: 2,
             targetInstanceId: psycheScheme.instanceId,
           },
@@ -238,7 +238,7 @@ describe('Yon-Rogg (01177) Scheme Targeting and ADD_THREAT Primitive (Issue #106
       steps: [
         {
           effect: 'ADD_THREAT' as const,
-          params: {
+          effectParams: {
             amount: 2,
             perPlayer: true,
             cardCode: '01176',

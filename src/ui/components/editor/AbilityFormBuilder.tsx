@@ -71,7 +71,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
       steps: [
         {
           effect: 'DEAL_DAMAGE',
-          params: { amount: 3 },
+          effectParams: { amount: 3 },
         },
       ],
     };

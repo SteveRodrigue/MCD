@@ -71,7 +71,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         steps: [
           {
             effect: 'DEAL_DAMAGE' as const,
-            params: {
+            effectParams: {
               amount: {
                 from: 'STAT_VALUE',
                 stat: 'SUFFERED_DAMAGE',
@@ -103,7 +103,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
               {
                 id: 'boost_hp',
                 timing: 'CONSTANT',
-                steps: [{ effect: 'MODIFY_MAX_HEALTH', params: { amount: 5 } }],
+                steps: [{ effect: 'MODIFY_MAX_HEALTH', effectParams: { amount: 5 } }],
               },
             ],
           },
@@ -119,7 +119,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         steps: [
           {
             effect: 'DEAL_DAMAGE' as const,
-            params: {
+            effectParams: {
               amount: {
                 from: 'STAT_VALUE',
                 stat: 'SUFFERED_DAMAGE',
@@ -151,7 +151,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
               {
                 id: 'boost_hp',
                 timing: 'CONSTANT',
-                steps: [{ effect: 'MODIFY_MAX_HEALTH', params: { amount: 5 } }],
+                steps: [{ effect: 'MODIFY_MAX_HEALTH', effectParams: { amount: 5 } }],
               },
             ],
           },
@@ -167,7 +167,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         steps: [
           {
             effect: 'DEAL_DAMAGE' as const,
-            params: {
+            effectParams: {
               amount: {
                 from: 'STAT_VALUE',
                 stat: 'SUFFERED_DAMAGE',
@@ -195,7 +195,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         steps: [
           {
             effect: 'DEAL_DAMAGE' as const,
-            params: {
+            effectParams: {
               amount: {
                 from: 'STAT_VALUE',
                 stat: 'SUFFERED_DAMAGE',
@@ -228,7 +228,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
         steps: [
           {
             effect: 'DEAL_DAMAGE' as const,
-            params: {
+            effectParams: {
               amount: {
                 from: 'STAT_VALUE',
                 stat: 'SUFFERED_DAMAGE',

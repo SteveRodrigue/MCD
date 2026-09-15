@@ -123,7 +123,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
             steps: [
               {
                 effect: 'CANCEL_WHEN_REVEALED',
-                params: {},
+                effectParams: {},
               },
             ],
           },

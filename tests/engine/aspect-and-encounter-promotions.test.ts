@@ -51,7 +51,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
       // Boost ATK by +2
       executeEffect(
         state,
-        { effect: 'PLAYER_CHOICE', params: { amount: 2, options: ['ATK', 'THW'] } },
+        { effect: 'PLAYER_CHOICE', effectParams: { amount: 2, options: ['ATK', 'THW'] } },
         { playerId: 'p1', sourceCardInstance: vision, choice: 'ATK' },
       );
 
@@ -68,7 +68,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'CHOSEN_ALLY' } },
+        { effect: 'READY', effectParams: { target: 'CHOSEN_ALLY' } },
         { playerId: 'p1', targetType: 'ally', targetInstanceId: vision.instanceId },
       );
 
@@ -85,7 +85,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
         state,
         {
           effect: 'MODIFY_STAT',
-          params: { target: 'ALL_FRIENDLY_CHARACTERS', atkBonus: 1, thwBonus: 1 },
+          effectParams: { target: 'ALL_FRIENDLY_CHARACTERS', atkBonus: 1, thwBonus: 1 },
         },
         { playerId: 'p1' },
       );
@@ -119,7 +119,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
 
       const result = executeEffect(
         state,
-        { effect: 'READY', params: { target: 'SELF' } },
+        { effect: 'READY', effectParams: { target: 'SELF' } },
         { playerId: 'p1' },
       );
 

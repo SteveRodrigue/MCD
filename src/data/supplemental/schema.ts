@@ -644,10 +644,19 @@ export type PlayCardFromZoneParams = z.infer<typeof PlayCardFromZoneParamsSchema
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
-  params?: Record<string, any>;
+  gateParams?: Record<string, any>;
+  effectParams?: Record<string, any>;
   gate?: z.infer<typeof ConditionGateSchema>;
   filter?: z.infer<typeof FilterSchema>;
   condition?: StepCondition;
+}
+
+export function getStepEffectParams(step: { effectParams?: Record<string, any> }): Record<string, any> {
+  return step.effectParams ?? {};
+}
+
+export function getStepGateParams(step: { gateParams?: Record<string, any> }): Record<string, any> {
+  return step.gateParams ?? {};
 }
 
 /**
@@ -657,7 +666,8 @@ export const AbilityStepSchema = z
   .object({
     id: z.string().optional(),
     effect: EffectTypeSchema,
-    params: z.record(z.string(), z.any()).optional(),
+    gateParams: z.record(z.string(), z.any()).optional(),
+    effectParams: z.record(z.string(), z.any()).optional(),
     gate: ConditionGateSchema.optional(),
     filter: FilterSchema.optional(),
     condition: StepConditionSchema.optional(),

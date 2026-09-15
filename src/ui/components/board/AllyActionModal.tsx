@@ -286,8 +286,8 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
                       <span className="text-xs text-slate-600 block mt-0.5">
                         {alreadyUsed
                           ? 'Already used this round'
-                          : ab.steps?.[0]?.params?.description
-                            ? String(ab.steps[0].params.description)
+                          : ab.steps?.[0]?.effectParams?.description
+                            ? String(ab.steps[0].effectParams.description)
                             : `Trigger ${ally.card.name}'s special ability`}
                       </span>
                     </div>

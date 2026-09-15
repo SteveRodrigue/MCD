@@ -1202,12 +1202,37 @@ export function dispatchAction(
         }
       }
 
-      // 1. Discard Payment Cards from Hand
+      // 1. Discard Payment Cards from Hand & Collect Spent Resources
+      const resourcesSpent: string[] = [];
       for (const pId of action.paymentCardInstanceIds) {
         const pIndex = player.hand.findIndex((c) => c.instanceId === pId);
         if (pIndex !== -1) {
           const [discarded] = player.hand.splice(pIndex, 1);
           player.discard.push(discarded);
+
+          // Check aspect doubling cards (e.g. The Power of Leadership / Justice / Aggression / Protection)
+          const aspectDoubleStep = discarded.card.enrichment?.abilities
+            ?.flatMap((a) => a.steps || [])
+            .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+          const isDoubled = Boolean(
+            aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === targetCard.card.faction,
+          );
+          const multiplier = isDoubled ? 2 : 1;
+
+          const res = discarded.card.resources;
+          let added = false;
+          for (const type of ['physical', 'energy', 'mental', 'wild'] as const) {
+            const count = (res?.[type] || 0) * multiplier;
+            for (let i = 0; i < count; i++) {
+              resourcesSpent.push(type);
+              added = true;
+            }
+          }
+          if (!added) {
+            for (let i = 0; i < multiplier; i++) {
+              resourcesSpent.push('wild');
+            }
+          }
         }
       }
 
@@ -1222,6 +1247,13 @@ export function dispatchAction(
               a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
           );
           if (idAbility) {
+            const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+            const resType = (genStep?.effectParams?.resource as string) || 'wild';
+            const amount = Number(genStep?.effectParams?.amount) || 1;
+            for (let i = 0; i < amount; i++) {
+              resourcesSpent.push(resType);
+            }
+
             if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
             player.usedAbilitiesThisRound[idAbility.id] =
               (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
@@ -1259,11 +1291,22 @@ export function dispatchAction(
               a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
           );
           if (tableAbility) {
+            const genStep = tableAbility.steps?.find(
+              (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
+            );
+            const resType = (genStep?.effectParams?.resource as string) || 'wild';
+            const amount = Number(genStep?.effectParams?.amount) || 1;
+            for (let i = 0; i < amount; i++) {
+              resourcesSpent.push(resType);
+            }
+
             const key = `${gCard.instanceId}_${tableAbility.id}`;
             if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
             player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
             if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
             player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
+          } else {
+            resourcesSpent.push('wild');
           }
 
           // Generic counter decrement and discardOnEmpty handling (ADR-0018, ADR-0057)
@@ -1376,7 +1419,7 @@ export function dispatchAction(
         );
         if (attachAbility) {
           const attachStep = attachAbility.steps.find((s) => s.effect === 'ATTACH_TO_HOST');
-          const targetHost = (attachStep?.params?.target as string) || 'VILLAIN';
+          const targetHost = (attachStep?.effectParams?.target as string) || 'VILLAIN';
           (playedCardInstance as any).ownerId = action.playerId;
 
           // If target is CHOSEN_MINION / MINION and no targetInstanceId was supplied
@@ -1436,8 +1479,8 @@ export function dispatchAction(
             !action.targetInstanceId
           ) {
             const maxPerHost =
-              attachStep?.params?.maxPerHost !== undefined
-                ? Number(attachStep.params.maxPerHost)
+              attachStep?.effectParams?.maxPerHost !== undefined
+                ? Number(attachStep.effectParams.maxPerHost)
                 : undefined;
 
             const allAllies: { ally: CardInstance; player: PlayerState }[] = [];
@@ -1507,12 +1550,12 @@ export function dispatchAction(
           const matchingStep = ability.steps?.find(
             (s) =>
               s.effect === 'MODIFY_MAX_HEALTH' ||
-              (s.effect === 'MODIFY_STAT' && s.params?.stat === 'HEALTH'),
+              (s.effect === 'MODIFY_STAT' && s.effectParams?.stat === 'HEALTH'),
           );
           if (ability.timing === 'CONSTANT' && matchingStep) {
             const hpBonus =
-              (matchingStep.params?.amount as number) ||
-              (matchingStep.params?.healthBonus as number) ||
+              (matchingStep.effectParams?.amount as number) ||
+              (matchingStep.effectParams?.healthBonus as number) ||
               0;
             if (hpBonus > 0) {
               player.health += hpBonus;
@@ -1520,17 +1563,30 @@ export function dispatchAction(
             }
           }
         }
+
+        dispatchTrigger(nextState, 'CARD_PLAYED', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
+        });
+        dispatchTrigger(nextState, 'ENTERS_PLAY', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
+        });
       } else if (cardType === CardType.ALLY) {
         player.allies.push(playedCardInstance);
         // Dispatch CARD_PLAYED trigger (ally was played — cost paid or waived per ADR-0047)
         dispatchTrigger(nextState, 'CARD_PLAYED', {
           targetPlayerId: action.playerId,
           sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
         });
         // Dispatch ENTERS_PLAY trigger (ally has entered an in-play zone — per RR v1.8 p.11)
         dispatchTrigger(nextState, 'ENTERS_PLAY', {
           targetPlayerId: action.playerId,
           sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
         });
       } else if (cardType === CardType.EVENT) {
         // Execute declarative event abilities
@@ -1540,9 +1596,15 @@ export function dispatchAction(
             targetType,
             targetInstanceId: action.targetInstanceId,
             sourceCardInstance: playedCardInstance,
+            resourcesSpent,
           });
         }
         player.discard.push(playedCardInstance);
+        dispatchTrigger(nextState, 'CARD_PLAYED', {
+          targetPlayerId: action.playerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
+        });
       } else if (cardType === CardType.PLAYER_SIDE_SCHEME) {
         // Player Side Schemes enter the shared scheme area alongside encounter Side Schemes
         // (RR v1.8 p. 26, ADR-0034), scaled by player count like any other scheme.
@@ -1563,11 +1625,13 @@ export function dispatchAction(
         dispatchTrigger(nextState, 'CARD_PLAYED', {
           targetPlayerId: action.playerId,
           sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
         });
         // Dispatch ENTERS_PLAY trigger (side scheme has entered the shared scheme area — per RR v1.8 p.11)
         dispatchTrigger(nextState, 'ENTERS_PLAY', {
           targetPlayerId: action.playerId,
           sourceInstanceId: playedCardInstance.instanceId,
+          resourcesSpent,
         });
 
         nextState.log.push({
@@ -1691,7 +1755,9 @@ export function dispatchAction(
 
       // Dynamic parameter scaling (e.g. Legal Practice 01023: Remove 1 threat per discarded card)
       let effectiveAbility = ability;
-      const scalingStep = ability.steps?.find((s) => s.params?.scaling === 'PER_DISCARDED_CARD');
+      const scalingStep = ability.steps?.find(
+        (s) => s.effectParams?.scaling === 'PER_DISCARDED_CARD',
+      );
       if (scalingStep) {
         effectiveAbility = {
           ...ability,
@@ -1699,9 +1765,9 @@ export function dispatchAction(
             s === scalingStep
               ? {
                   ...s,
-                  params: {
-                    ...s.params,
-                    amount: discardedCount * ((s.params?.multiplier as number) || 1),
+                  effectParams: {
+                    ...s.effectParams,
+                    amount: discardedCount * ((s.effectParams?.multiplier as number) || 1),
                   },
                 }
               : s,
@@ -1711,7 +1777,7 @@ export function dispatchAction(
 
       // Dynamic parameter scaling per resource spent (e.g. Energy Channel 01018: Add 1 counter per energy spent)
       const resourceScalingStep = ability.steps?.find(
-        (s) => s.params?.scaling === 'PER_RESOURCE_SPENT',
+        (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
       );
       if (resourceScalingStep) {
         effectiveAbility = {
@@ -1720,9 +1786,9 @@ export function dispatchAction(
             s === resourceScalingStep
               ? {
                   ...s,
-                  params: {
-                    ...s.params,
-                    amount: resourcesPaid * ((s.params?.multiplier as number) || 1),
+                  effectParams: {
+                    ...s.effectParams,
+                    amount: resourcesPaid * ((s.effectParams?.multiplier as number) || 1),
                   },
                 }
               : s,
@@ -1846,7 +1912,7 @@ export function dispatchAction(
               s.effect === 'DISCARD_ATTACHMENT' ||
               s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
               (s.effect === 'DISCARD' &&
-                (s.params?.source === 'SELF' || s.params?.source === 'HOST')),
+                (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
           ) || Boolean(ab.cost?.discardSelf),
       );
 
@@ -2363,12 +2429,12 @@ export function dispatchAction(
           const preventStep = optAbility?.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
           if (preventStep) {
             const isAll =
-              preventStep.params?.amount === 'ALL' ||
-              preventStep.params?.preventAll ||
-              preventStep.params?.amount === undefined;
+              preventStep.effectParams?.amount === 'ALL' ||
+              preventStep.effectParams?.preventAll ||
+              preventStep.effectParams?.amount === undefined;
             preventedDamage = isAll
               ? (attackCtx.pendingDamage ?? 0)
-              : Number(preventStep.params?.amount || 0);
+              : Number(preventStep.effectParams?.amount || 0);
           }
         }
         resultingState = finishAttackDamageAndPostResolution(

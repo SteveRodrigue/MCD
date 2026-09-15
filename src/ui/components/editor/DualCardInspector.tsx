@@ -621,7 +621,11 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                                 Resolution Steps ({ab.steps.length})
                               </span>
                               {ab.steps.map((st: any, sIdx: number) => {
-                                const hasParams = st.params && Object.keys(st.params).length > 0;
+                                const hasGateParams =
+                                  st.gateParams && Object.keys(st.gateParams).length > 0;
+                                const effParams = st.effectParams;
+                                const hasEffectParams =
+                                  effParams && Object.keys(effParams).length > 0;
                                 return (
                                   <div
                                     key={sIdx}
@@ -643,10 +647,25 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                                         </span>
                                       )}
                                     </div>
-                                    {hasParams && (
-                                      <pre className="p-1.5 bg-gray-50 border border-gray-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-48">
-                                        {JSON.stringify(st.params, null, 2)}
-                                      </pre>
+                                    {hasGateParams && (
+                                      <div className="mt-1">
+                                        <span className="text-[9px] font-bold uppercase text-yellow-800 block mb-0.5">
+                                          Gate Parameters:
+                                        </span>
+                                        <pre className="p-1.5 bg-yellow-50/50 border border-yellow-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-32">
+                                          {JSON.stringify(st.gateParams, null, 2)}
+                                        </pre>
+                                      </div>
+                                    )}
+                                    {hasEffectParams && (
+                                      <div className="mt-1">
+                                        <span className="text-[9px] font-bold uppercase text-gray-500 block mb-0.5">
+                                          Effect Parameters:
+                                        </span>
+                                        <pre className="p-1.5 bg-gray-50 border border-gray-300 rounded text-[11px] font-mono text-gray-800 whitespace-pre-wrap break-words overflow-x-auto max-h-48">
+                                          {JSON.stringify(st.effectParams, null, 2)}
+                                        </pre>
+                                      </div>
                                     )}
                                   </div>
                                 );

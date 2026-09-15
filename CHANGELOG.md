@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Engine): Decision Prompt Triggering Card Preview & When Revealed Cancellation ([#104](https://github.com/SteveRodrigue/MCD/issues/104))**
+  - **Informed Choice Invariant:** Resolved blind decision defect where interrupt prompts to cancel "When Revealed" effects (e.g. Enhanced Spider-Sense interrupting False Alarm) omitted the encounter card being evaluated.
+  - **Trigger Source Card Attachment:** Extended `PendingDecisionPrompt` with `triggerSourceCard?: NormalizedCard` and populated triggering encounter, villain, or host cards across `trigger-dispatcher.ts` (identity abilities, in-play cards, hand damage, hand threat, and `WHEN_REVEALED`/`TREACHERY_REVEALED` interrupts), `combat-pipeline.ts` (`declareDefender`), and `effects/index.ts` (`PLAYER_CHOICE`).
+  - **Pop-Art Card Showcase & Provenance Thumbnails:** Upgraded `DecisionPromptModal.tsx` to render a dedicated Pop-Art showcase with `<CardView card={triggerCard} size="sm" enableHoverZoom={true} />`, card type badge, traits, and formatted card text box (`FormattedCardText`), as well as card thumbnail in the provenance banner, with defensive fallback to `cardCatalog.getCard(prompt.triggerSourceCode)`.
+  - **Automated Regression Test Suite:** Authored `tests/engine/decision-prompt-card-preview.test.ts` verifying `triggerSourceCard` attachment on encounter reveals and player choices, and `tests/ui/DecisionPromptModal.test.tsx` verifying card showcase rendering, provenance thumbnails, and option selection.
+
 - **Security & Tooling (Dependencies & Testing): Upgrade Vitest to v4.1.11 ([GHSA-82fw-gwwq-j7x9](https://github.com/advisories/GHSA-82fw-gwwq-j7x9))**
   - **Vulnerability Remediation:** Resolved GitHub Dependabot alerts #6 (`@vitest/mocker`) and #7 (`vitest`) for CVE-2026-84373 (Path Traversal / Arbitrary File Read via redirect mock) by upgrading `vitest` from `^3.2.7` to `^4.1.11` in `package.json` and `package-lock.json`.
   - **Vitest Config Modernization:** Migrated `vitest.config.ts` from deprecated and removed `environmentMatchGlobs` to Vitest 4 `test.projects` architecture with isolated `engine` (Node) and `ui` (`happy-dom`) projects, ensuring clean DOM isolation and automatic test cleanup.

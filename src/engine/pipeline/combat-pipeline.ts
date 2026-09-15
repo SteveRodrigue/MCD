@@ -308,6 +308,14 @@ export function step3_openDefenderDeclarationPrompt(
     title: `Enemy Attack: ${attackerName} (Base ATK: ${attackContext.baseAttack})`,
     description: 'Declare a defender before boost cards are dealt or revealed.',
     sourceCardName: attackerName,
+    sourceCardCode:
+      attackContext.attackerType === 'VILLAIN'
+        ? state.villain.card.code
+        : attackContext.attackerCard?.card.code,
+    triggerSourceCard:
+      attackContext.attackerType === 'VILLAIN'
+        ? state.villain.card
+        : attackContext.attackerCard?.card,
     options,
   });
 

@@ -216,6 +216,7 @@ export interface PendingDecisionPrompt {
   sourceCardCode?: string;
   triggerSourceName?: string;
   triggerSourceCode?: string;
+  triggerSourceCard?: NormalizedCard;
   triggerType?: string;
   options: DecisionPromptOption[];
   revealedCards?: RevealedCardDisplay[];

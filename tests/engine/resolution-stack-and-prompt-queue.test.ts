@@ -167,7 +167,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
         sourceCardCode: '01001a',
         playerId: 'p1',
         stepIndex: 0,
-        steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 3 } }],
+        steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 3 } }],
       });
 
       expect(peekExecutionFrame(state)?.id).toBe('frame_action_1');
@@ -180,7 +180,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
         sourceCardCode: '01085',
         playerId: 'p1',
         stepIndex: 0,
-        steps: [{ effect: 'REMOVE_THREAT', params: { amount: 1 } }],
+        steps: [{ effect: 'REMOVE_THREAT', effectParams: { amount: 1 } }],
       });
 
       expect(state.executionStack?.length).toBe(2);

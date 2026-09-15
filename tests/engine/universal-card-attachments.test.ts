@@ -50,7 +50,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'attach_villain',
           timing: 'WHEN_REVEALED',
-          steps: [{ effect: 'ATTACH_TO_HOST', params: { target: 'VILLAIN' } }],
+          steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'VILLAIN' } }],
         },
         { playerId: 'p1', sourceCardInstance: rhinoSuit },
       );
@@ -66,7 +66,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'attach_identity',
           timing: 'WHEN_REVEALED',
-          steps: [{ effect: 'ATTACH_TO_HOST', params: { target: 'HERO' } }],
+          steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'HERO' } }],
         },
         { playerId: 'p1', sourceCardInstance: caughtInWeb },
       );
@@ -84,7 +84,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'attach_ally',
           timing: 'ACTION',
-          steps: [{ effect: 'ATTACH_TO_HOST', params: { target: 'CHOSEN_ALLY' } }],
+          steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'CHOSEN_ALLY' } }],
         },
         { playerId: 'p1', sourceCardInstance: honoraryAvenger, targetInstanceId: ally.instanceId },
       );
@@ -103,7 +103,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'attach_minion',
           timing: 'ACTION',
-          steps: [{ effect: 'ATTACH_TO_HOST', params: { target: 'CHOSEN_MINION' } }],
+          steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'CHOSEN_MINION' } }],
         },
         { playerId: 'p1', sourceCardInstance: webbedUp, targetInstanceId: minion.instanceId },
       );
@@ -122,7 +122,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'attach_scheme',
           timing: 'WHEN_REVEALED',
-          steps: [{ effect: 'ATTACH_TO_HOST', params: { target: 'MAIN_SCHEME' } }],
+          steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'MAIN_SCHEME' } }],
         },
         { playerId: 'p1', sourceCardInstance: schemeAttachment },
       );
@@ -204,7 +204,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
         {
           id: 'place_under',
           timing: 'WHEN_REVEALED',
-          steps: [{ effect: 'PLACE_CARD_UNDER_HOST', params: { target: 'VILLAIN' } }],
+          steps: [{ effect: 'PLACE_CARD_UNDER_HOST', effectParams: { target: 'VILLAIN' } }],
         },
         { playerId: 'p1', sourceCardInstance: droneCard },
       );

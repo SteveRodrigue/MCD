@@ -60,7 +60,7 @@ describe('Promoted Core Player Cards', () => {
       steps: [
         {
           effect: 'DEAL_DAMAGE',
-          params: {
+          effectParams: {
             amount: 1,
             target: 'ALL_ENEMIES',
           },
@@ -89,7 +89,7 @@ describe('Promoted Core Player Cards', () => {
       steps: [
         {
           effect: 'DRAW',
-          params: {
+          effectParams: {
             count: 1,
             target: 'ALL_PLAYERS',
           },
@@ -149,7 +149,7 @@ describe('Promoted Core Player Cards', () => {
               steps: [
                 {
                   effect: 'ALLY_LIMIT_BONUS',
-                  params: { amount: 1 },
+                  effectParams: { amount: 1 },
                 },
               ],
             },

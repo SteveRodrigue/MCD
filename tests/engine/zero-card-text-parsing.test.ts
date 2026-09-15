@@ -233,7 +233,7 @@ describe('Zero Card Text Parsing Contract (ADR-0019)', () => {
             {
               id: 'gen_1',
               timing: 'HERO_RESOURCE',
-              steps: [{ effect: 'GENERATE_RESOURCE', params: { type: 'wild' } }],
+              steps: [{ effect: 'GENERATE_RESOURCE', effectParams: { type: 'wild' } }],
             },
           ],
         } as any,

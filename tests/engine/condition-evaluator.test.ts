@@ -104,7 +104,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           id: 'remove_threat_step',
           effect: 'REMOVE_THREAT' as const,
           condition: 'SCHEME_EMPTY' as const,
-          params: {
+          effectParams: {
             target: 'MAIN_SCHEME',
             amount: 2,
           },
@@ -113,8 +113,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           id: 'draw_card_if_empty',
           effect: 'DRAW' as const,
           gate: 'IF_CONDITION_MET' as const,
-          params: {
+          gateParams: {
             targetStepId: 'remove_threat_step',
+          },
+          effectParams: {
             count: 1,
           },
         },
@@ -165,7 +167,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
           {
             effect: 'REMOVE_THREAT' as const,
             condition: 'SCHEME_EMPTY' as const,
-            params: {
+            effectParams: {
               target: 'SIDE_SCHEME',
               targetInstanceId: 'ss1',
               amount: 1,
@@ -213,7 +215,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'deal_dmg',
             effect: 'DEAL_DAMAGE' as const,
             condition: 'EXCESS_DAMAGE_DEALT' as const,
-            params: {
+            effectParams: {
               amount: 5,
               target: 'MINION',
             },
@@ -222,8 +224,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'draw_on_excess',
             effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
-            params: {
+            gateParams: {
               targetStepId: 'deal_dmg',
+            },
+            effectParams: {
               count: 1,
             },
           },
@@ -250,7 +254,7 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'deal_dmg',
             effect: 'DEAL_DAMAGE' as const,
             condition: 'EXCESS_DAMAGE_DEALT' as const,
-            params: {
+            effectParams: {
               amount: 2,
               target: 'MINION',
             },
@@ -259,8 +263,10 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'draw_on_excess',
             effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
-            params: {
+            gateParams: {
               targetStepId: 'deal_dmg',
+            },
+            effectParams: {
               count: 1,
             },
           },
@@ -303,13 +309,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'attack',
             effect: 'DEAL_DAMAGE' as const,
             condition: 'TARGET_DEFEATED' as const,
-            params: { amount: 2, target: 'MINION' },
+            effectParams: { amount: 2, target: 'MINION' },
           },
           {
             id: 'remove_threat_step',
             effect: 'REMOVE_THREAT' as const,
             gate: 'IF_CONDITION_MET' as const,
-            params: { amount: 1, target: 'MAIN_SCHEME' },
+            effectParams: { amount: 1, target: 'MAIN_SCHEME' },
           },
         ],
       };
@@ -337,13 +343,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'heal_step',
             effect: 'HEAL_DAMAGE' as const,
             condition: 'FULLY_HEALED' as const,
-            params: { amount: 2, target: 'SELF' },
+            effectParams: { amount: 2, target: 'SELF' },
           },
           {
             id: 'draw_if_full',
             effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
-            params: { count: 1 },
+            effectParams: { count: 1 },
           },
         ],
       };
@@ -367,13 +373,13 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
             id: 'apply_status',
             effect: 'ADD_STATUS' as const,
             condition: 'STATUS_APPLIED' as const,
-            params: { status: 'STUNNED', target: 'VILLAIN' },
+            effectParams: { status: 'STUNNED', target: 'VILLAIN' },
           },
           {
             id: 'draw_on_applied',
             effect: 'DRAW' as const,
             gate: 'IF_CONDITION_MET' as const,
-            params: { count: 1 },
+            effectParams: { count: 1 },
           },
         ],
       };

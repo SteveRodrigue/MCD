@@ -9,6 +9,7 @@ import {
 } from '../models';
 import { matchesCardFilter } from '../filters/card-filter';
 import { parseKeywordItem } from '../models/keyword';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 export interface EffectiveVillainStats {
   attack: number;
@@ -47,12 +48,13 @@ export function getEffectiveVillainStats(
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
-            if (step.params?.stat === 'SCHEME') scheme += (step.params.amount as number) || 0;
+            if (stepParams.stat === 'ATTACK') attack += (stepParams.amount as number) || 0;
+            if (stepParams.stat === 'SCHEME') scheme += (stepParams.amount as number) || 0;
           }
-          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
-            keywords.push(step.params.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
+            keywords.push(stepParams.keyword as string);
           }
         }
       }
@@ -81,21 +83,22 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
+        const stepParams = getStepEffectParams(step);
         if (step.effect === 'MODIFY_STAT') {
-          if (step.params?.stat === 'THWART') {
-            if (step.params.scaling === 'PER_SIDE_SCHEME') {
+          if (stepParams.stat === 'THWART') {
+            if (stepParams.scaling === 'PER_SIDE_SCHEME') {
               const sideSchemeCount = (state.sideSchemes || []).length;
-              const maxBonus = (step.params.maxBonus as number) || 4;
+              const maxBonus = (stepParams.maxBonus as number) || 4;
               thwart += Math.min(
                 maxBonus,
-                sideSchemeCount * ((step.params.multiplier as number) || 1),
+                sideSchemeCount * ((stepParams.multiplier as number) || 1),
               );
-            } else if (step.params.amount) {
-              thwart += (step.params.amount as number) || 0;
+            } else if (stepParams.amount) {
+              thwart += (stepParams.amount as number) || 0;
             }
           }
-          if (step.params?.stat === 'ATTACK') {
-            attack += (step.params.amount as number) || 0;
+          if (stepParams.stat === 'ATTACK') {
+            attack += (stepParams.amount as number) || 0;
           }
         }
       }
@@ -108,12 +111,13 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            if (step.params?.stat === 'THWART') thwart += (step.params.amount as number) || 0;
-            if (step.params?.stat === 'ATTACK') attack += (step.params.amount as number) || 0;
+            if (stepParams.stat === 'THWART') thwart += (stepParams.amount as number) || 0;
+            if (stepParams.stat === 'ATTACK') attack += (stepParams.amount as number) || 0;
           }
-          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
-            keywords.push(step.params.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
+            keywords.push(stepParams.keyword as string);
           }
         }
       }
@@ -152,7 +156,9 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
       (t) =>
         t.card.code === '01017' ||
         (t.card.enrichment?.abilities || []).some((a) =>
-          a.steps?.some((s) => s.effect === 'ADD_TRAIT' && s.params?.trait === 'Aerial'),
+          a.steps?.some(
+            (s) => s.effect === 'ADD_TRAIT' && getStepEffectParams(s).trait === 'Aerial',
+          ),
         ),
     ),
   );
@@ -163,26 +169,27 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            const aerialBonus = (step.params?.aerialBonus as number) || 0;
+            const aerialBonus = (stepParams.aerialBonus as number) || 0;
             const extra = hasAerial ? aerialBonus : 0;
 
-            if (step.params?.stat === 'THWART')
-              thwart += ((step.params.amount as number) || 0) + extra;
-            if (step.params?.stat === 'ATTACK')
-              attack += ((step.params.amount as number) || 0) + extra;
-            if (step.params?.stat === 'DEFENSE') {
+            if (stepParams.stat === 'THWART')
+              thwart += ((stepParams.amount as number) || 0) + extra;
+            if (stepParams.stat === 'ATTACK')
+              attack += ((stepParams.amount as number) || 0) + extra;
+            if (stepParams.stat === 'DEFENSE') {
               if (item.card.code === '01016') {
                 defense += hasAerial ? 2 : 1;
               } else {
-                defense += ((step.params.amount as number) || 0) + extra;
+                defense += ((stepParams.amount as number) || 0) + extra;
               }
             }
-            if (step.params?.stat === 'RECOVER' || step.params?.stat === 'RECOVERY')
-              recovery += ((step.params.amount as number) || 0) + extra;
+            if (stepParams.stat === 'RECOVER' || stepParams.stat === 'RECOVERY')
+              recovery += ((stepParams.amount as number) || 0) + extra;
           }
-          if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
-            keywords.push(step.params.keyword as string);
+          if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
+            keywords.push(stepParams.keyword as string);
           }
         }
       }
@@ -223,16 +230,17 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_HAND_SIZE') {
-            if (step.params?.scaling === 'PER_MATCHING_CARD') {
+            if (stepParams.scaling === 'PER_MATCHING_CARD') {
               // Count matching cards in player's tableau using universal card filter (ADR-0046)
-              const filter = step.params?.filter || step.filter;
+              const filter = stepParams.filter || step.filter;
               const matches = (player.tableau || []).filter((tableauItem) =>
                 matchesCardFilter(tableauItem.card, filter, { player, state: _state }),
               ).length;
-              bonus += matches * ((step.params?.multiplier as number) || 1);
-            } else if (step.params?.amount) {
-              bonus += (step.params.amount as number) || 0;
+              bonus += matches * ((stepParams.multiplier as number) || 1);
+            } else if (stepParams.amount) {
+              bonus += (stepParams.amount as number) || 0;
             }
           }
         }
@@ -258,13 +266,14 @@ export function getEffectiveMaxHealth(player: PlayerState, _state?: GameState): 
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_MAX_HEALTH') {
-            bonus += (step.params?.amount as number) || (step.params?.healthBonus as number) || 0;
+            bonus += (stepParams.amount as number) || (stepParams.healthBonus as number) || 0;
           } else if (
             step.effect === 'MODIFY_STAT' &&
-            (step.params?.stat === 'HEALTH' || step.params?.stat === 'MAX_HEALTH')
+            (stepParams.stat === 'HEALTH' || stepParams.stat === 'MAX_HEALTH')
           ) {
-            bonus += (step.params?.amount as number) || 0;
+            bonus += (stepParams.amount as number) || 0;
           }
         }
       }
@@ -289,8 +298,9 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') {
-            bonus += Number(step.params?.amount) || 1;
+            bonus += Number(stepParams.amount) || 1;
           }
         }
       }
@@ -306,11 +316,12 @@ export function getEffectiveAllyLimit(player: PlayerState, state?: GameState): n
         for (const ab of abilities) {
           if (ab.timing === 'CONSTANT') {
             for (const step of ab.steps || []) {
+              const stepParams = getStepEffectParams(step);
               if (
                 (step.effect === 'ALLY_LIMIT_BONUS' || step.effect === 'MODIFY_ALLY_LIMIT') &&
-                step.params?.target === 'ALL_PLAYERS'
+                stepParams.target === 'ALL_PLAYERS'
               ) {
-                bonus += Number(step.params?.amount) || 1;
+                bonus += Number(stepParams.amount) || 1;
               }
             }
           }
@@ -359,10 +370,11 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
   for (const ab of selfAbilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
+        const stepParams = getStepEffectParams(step);
         if (step.effect === 'GRANT_KEYWORD') {
           const parsed = parseKeywordItem({
-            keyword: step.params?.keyword,
-            amount: step.params?.amount,
+            keyword: stepParams.keyword,
+            amount: stepParams.amount,
           });
           if (parsed && parsed.name.toLowerCase() === 'retaliate') {
             selfAbilitiesRetaliate += parsed.amount;
@@ -388,10 +400,11 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
     for (const ab of attAbilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'GRANT_KEYWORD') {
             const parsed = parseKeywordItem({
-              keyword: step.params?.keyword,
-              amount: step.params?.amount,
+              keyword: stepParams.keyword,
+              amount: stepParams.amount,
             });
             if (parsed && parsed.name.toLowerCase() === 'retaliate') {
               retaliateTotal += parsed.amount;
@@ -415,10 +428,11 @@ export function getEffectiveRetaliate(entity: any, _state?: GameState): number {
       for (const ab of itemAbilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
+            const stepParams = getStepEffectParams(step);
             if (step.effect === 'GRANT_KEYWORD') {
               const parsed = parseKeywordItem({
-                keyword: step.params?.keyword,
-                amount: step.params?.amount,
+                keyword: stepParams.keyword,
+                amount: stepParams.amount,
               });
               if (parsed && parsed.name.toLowerCase() === 'retaliate') {
                 retaliateTotal += parsed.amount;
@@ -476,13 +490,14 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
           if (step.effect === 'GRANT_KEYWORD') {
             const parsed = parseKeywordItem({
-              keyword: step.params?.keyword,
-              amount: step.params?.amount,
+              keyword: stepParams.keyword,
+              amount: stepParams.amount,
             });
             if (parsed && parsed.name.toLowerCase() === kw) return true;
-            const granted = String(step.params?.keyword || '')
+            const granted = String(stepParams.keyword || '')
               .toLowerCase()
               .trim();
             if (granted === kw || granted.startsWith(kw + ' ')) return true;
@@ -499,13 +514,14 @@ export function hasEntityKeyword(entity: any, targetKeyword: string): boolean {
       for (const ab of abilities) {
         if (ab.timing === 'CONSTANT') {
           for (const step of ab.steps || []) {
+            const stepParams = getStepEffectParams(step);
             if (step.effect === 'GRANT_KEYWORD') {
               const parsed = parseKeywordItem({
-                keyword: step.params?.keyword,
-                amount: step.params?.amount,
+                keyword: stepParams.keyword,
+                amount: stepParams.amount,
               });
               if (parsed && parsed.name.toLowerCase() === kw) return true;
-              const granted = String(step.params?.keyword || '')
+              const granted = String(stepParams.keyword || '')
                 .toLowerCase()
                 .trim();
               if (granted === kw || granted.startsWith(kw + ' ')) return true;

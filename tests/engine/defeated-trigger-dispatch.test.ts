@@ -33,13 +33,13 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
           id: 'canonical_defeat_counter',
           timing: 'FORCED_RESPONSE',
           trigger: 'DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', params: { target: 'IDENTITY', amount: 1 } }],
+          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
         },
         {
           id: 'canonical_character_defeat_counter',
           timing: 'FORCED_RESPONSE',
           trigger: 'CHARACTER_DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', params: { target: 'IDENTITY', amount: 1 } }],
+          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
         },
       ],
     };
@@ -68,7 +68,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
           id: 'canonical_scheme_defeat_counter',
           timing: 'FORCED_RESPONSE',
           trigger: 'SCHEME_DEFEATED',
-          steps: [{ effect: 'ADD_COUNTERS', params: { target: 'IDENTITY', amount: 1 } }],
+          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
         },
       ],
     };
@@ -96,7 +96,7 @@ describe('Canonical defeat trigger dispatch (ADR-0058)', () => {
             attackerKind: 'VILLAIN',
             targetPlayerScope: 'SELF',
           },
-          steps: [{ effect: 'ADD_COUNTERS', params: { target: 'IDENTITY', amount: 1 } }],
+          steps: [{ effect: 'ADD_COUNTERS', effectParams: { target: 'IDENTITY', amount: 1 } }],
         },
       ],
     };

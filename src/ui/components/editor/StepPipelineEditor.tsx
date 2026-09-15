@@ -27,7 +27,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
   const handleAddStep = () => {
     const newStep = {
       effect: 'DRAW_CARDS',
-      params: { count: 1 },
+      effectParams: { count: 1 },
     };
     onChange([...steps, newStep]);
   };
@@ -87,7 +87,8 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
 
       <div className="space-y-2">
         {steps.map((step: any, sIdx: number) => {
-          const params = step.params || {};
+          const effectParams = step.effectParams ?? {};
+          const gateParams = step.gateParams ?? {};
           const descriptor = getEffectDescriptor(step.effect || 'DEAL_DAMAGE');
           const errorsForStep = stepErrors[sIdx] || [];
 
@@ -95,19 +96,41 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
             const newDesc = getEffectDescriptor(newEffect);
             const newParams: Record<string, any> = {};
             for (const p of newDesc.parameters) {
-              if (params[p.key] !== undefined) {
-                newParams[p.key] = params[p.key];
-              } else if (p.key === 'count' && params.amount !== undefined) {
-                newParams.count = params.amount;
-              } else if (p.key === 'amount' && params.count !== undefined) {
-                newParams.amount = params.count;
+              if (effectParams[p.key] !== undefined) {
+                newParams[p.key] = effectParams[p.key];
+              } else if (p.key === 'count' && effectParams.amount !== undefined) {
+                newParams.count = effectParams.amount;
+              } else if (p.key === 'amount' && effectParams.count !== undefined) {
+                newParams.amount = effectParams.count;
               } else if (p.defaultValue !== undefined) {
                 newParams[p.key] = p.defaultValue;
               }
             }
+            const cleanParams = Object.keys(newParams).length > 0 ? newParams : undefined;
             handleUpdateStep(sIdx, {
               effect: newEffect,
-              params: Object.keys(newParams).length > 0 ? newParams : undefined,
+              effectParams: cleanParams,
+            });
+          };
+
+          const updateEffectParam = (key: string, val: any) => {
+            const nextParams = { ...effectParams, [key]: val };
+            if (val === undefined || val === '') {
+              delete nextParams[key];
+            }
+            const cleanParams = Object.keys(nextParams).length > 0 ? nextParams : undefined;
+            handleUpdateStep(sIdx, {
+              effectParams: cleanParams,
+            });
+          };
+
+          const updateGateParam = (key: string, val: any) => {
+            const nextParams = { ...gateParams, [key]: val };
+            if (val === undefined || val === '') {
+              delete nextParams[key];
+            }
+            handleUpdateStep(sIdx, {
+              gateParams: Object.keys(nextParams).length > 0 ? nextParams : undefined,
             });
           };
 
@@ -225,6 +248,152 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               </div>
 
+              {/* Parameterized Gate Subpanels */}
+              {step.gate === 'IF_RESOURCE_MATCH' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Resource Match Gate Parameters
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                        Resource
+                      </label>
+                      <select
+                        data-testid={`gate-param-resource-${abilityIndex}-${sIdx}`}
+                        value={gateParams.resource || 'energy'}
+                        onChange={(e) => updateGateParam('resource', e.target.value)}
+                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                      >
+                        <option value="physical">physical</option>
+                        <option value="energy">energy</option>
+                        <option value="mental">mental</option>
+                        <option value="wild">wild</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                        Count
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        data-testid={`gate-param-count-${abilityIndex}-${sIdx}`}
+                        value={gateParams.count !== undefined ? gateParams.count : 1}
+                        onChange={(e) =>
+                          updateGateParam(
+                            'count',
+                            e.target.value !== '' ? parseInt(e.target.value, 10) : undefined,
+                          )
+                        }
+                        className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                      />
+                    </div>
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3">
+                      <input
+                        type="checkbox"
+                        data-testid={`gate-param-printed-${abilityIndex}-${sIdx}`}
+                        checked={Boolean(gateParams.printedResource)}
+                        onChange={(e) =>
+                          updateGateParam('printedResource', e.target.checked || undefined)
+                        }
+                        className="accent-black"
+                      />
+                      <span>Printed Only</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer pt-3">
+                      <input
+                        type="checkbox"
+                        data-testid={`gate-param-only-${abilityIndex}-${sIdx}`}
+                        checked={Boolean(gateParams.only)}
+                        onChange={(e) => updateGateParam('only', e.target.checked || undefined)}
+                        className="accent-black"
+                      />
+                      <span>Only Match</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {step.gate === 'IF_ALREADY_HAS_STATUS' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Status Gate Parameters
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                        Status
+                      </label>
+                      <select
+                        data-testid={`gate-param-status-${abilityIndex}-${sIdx}`}
+                        value={gateParams.status || 'TOUGH'}
+                        onChange={(e) => updateGateParam('status', e.target.value)}
+                        className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                      >
+                        <option value="TOUGH">TOUGH</option>
+                        <option value="STUNNED">STUNNED</option>
+                        <option value="CONFUSED">CONFUSED</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                        Target
+                      </label>
+                      <input
+                        type="text"
+                        data-testid={`gate-param-target-${abilityIndex}-${sIdx}`}
+                        value={gateParams.target || 'VILLAIN'}
+                        onChange={(e) => updateGateParam('target', e.target.value)}
+                        className="w-full bg-white border border-black p-1 text-xs rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(step.gate === 'IF_CARD_IN_PLAY' || step.gate === 'IF_CARD_NOT_IN_PLAY') && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Card Gate Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Card Code
+                    </label>
+                    <input
+                      type="text"
+                      data-testid={`gate-param-cardCode-${abilityIndex}-${sIdx}`}
+                      value={gateParams.cardCode || ''}
+                      onChange={(e) => updateGateParam('cardCode', e.target.value)}
+                      placeholder="e.g. 01109"
+                      className="w-full bg-white border border-black p-1 text-xs rounded"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {step.gate === 'IF_FAILED' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Failed Gate Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Target Step ID
+                    </label>
+                    <input
+                      type="text"
+                      data-testid={`gate-param-targetStepId-${abilityIndex}-${sIdx}`}
+                      value={gateParams.targetStepId || ''}
+                      onChange={(e) => updateGateParam('targetStepId', e.target.value)}
+                      placeholder="e.g. step_1_spawn_nemesis_minion"
+                      className="w-full bg-white border border-black p-1 text-xs rounded"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Effect Primitive Selector & Description */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -253,7 +422,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
               {descriptor.parameters.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
                   {descriptor.parameters.map((param) => {
-                    const val = params[param.key];
+                    const val = effectParams[param.key];
 
                     if (param.type === 'card-filter') {
                       return (
@@ -261,14 +430,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                           <UniversalCardFilterBuilder
                             label={`${param.label} (Filter)`}
                             filter={val}
-                            onChange={(newFilter) =>
-                              handleUpdateStep(sIdx, {
-                                params: {
-                                  ...params,
-                                  [param.key]: newFilter,
-                                },
-                              })
-                            }
+                            onChange={(newFilter) => updateEffectParam(param.key, newFilter)}
                             isSubBranch={true}
                           />
                         </div>
@@ -283,14 +445,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                             value={val}
                             allowAll={param.allowAll}
                             description={param.description}
-                            onChange={(newVal) =>
-                              handleUpdateStep(sIdx, {
-                                params: {
-                                  ...params,
-                                  [param.key]: newVal,
-                                },
-                              })
-                            }
+                            onChange={(newVal) => updateEffectParam(param.key, newVal)}
                           />
                         </div>
                       );
@@ -307,14 +462,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                             type="checkbox"
                             data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
                             checked={Boolean(val)}
-                            onChange={(e) =>
-                              handleUpdateStep(sIdx, {
-                                params: {
-                                  ...params,
-                                  [param.key]: e.target.checked,
-                                },
-                              })
-                            }
+                            onChange={(e) => updateEffectParam(param.key, e.target.checked)}
                             className="accent-black"
                           />
                           <span>{param.label}</span>
@@ -348,12 +496,10 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                                     const next = isActive
                                       ? selectedValues.filter((v) => v !== opt)
                                       : [...selectedValues, opt];
-                                    handleUpdateStep(sIdx, {
-                                      params: {
-                                        ...params,
-                                        [param.key]: next.length > 0 ? next : undefined,
-                                      },
-                                    });
+                                    updateEffectParam(
+                                      param.key,
+                                      next.length > 0 ? next : undefined,
+                                    );
                                   }}
                                   className={`px-2 py-0.5 text-[10px] font-bold rounded border border-black transition-all ${
                                     isActive
@@ -383,12 +529,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                             data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
                             value={val !== undefined ? val : ''}
                             onChange={(e) =>
-                              handleUpdateStep(sIdx, {
-                                params: {
-                                  ...params,
-                                  [param.key]: e.target.value || undefined,
-                                },
-                              })
+                              updateEffectParam(param.key, e.target.value || undefined)
                             }
                             className="w-full bg-white border border-black p-1 text-[11px] font-mono"
                           >
@@ -422,12 +563,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                                 e.target.value !== ''
                                   ? Math.max(0, parseInt(e.target.value, 10) || 0)
                                   : undefined;
-                              handleUpdateStep(sIdx, {
-                                params: {
-                                  ...params,
-                                  [param.key]: num,
-                                },
-                              });
+                              updateEffectParam(param.key, num);
                             }}
                             placeholder={param.placeholder || '0'}
                             className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
@@ -450,12 +586,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                           data-testid={`step-param-${param.key}-${abilityIndex}-${sIdx}`}
                           value={val || ''}
                           onChange={(e) =>
-                            handleUpdateStep(sIdx, {
-                              params: {
-                                ...params,
-                                [param.key]: e.target.value || undefined,
-                              },
-                            })
+                            updateEffectParam(param.key, e.target.value || undefined)
                           }
                           placeholder={param.placeholder || ''}
                           className="w-full bg-white border border-black p-1 text-xs rounded"

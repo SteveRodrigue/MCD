@@ -160,7 +160,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         steps: [
           {
             effect: 'DEAL_DAMAGE' as any,
-            params: {
+            effectParams: {
               amount: 2,
               target: 'minion',
             },

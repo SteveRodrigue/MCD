@@ -123,7 +123,7 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
               const canTrigger = isPlayerTurn && !alreadyUsed && abilityCheck.allowed;
 
               const description =
-                ab.steps?.[0]?.params?.description || `Trigger ${ab.id.replace(/_/g, ' ')}`;
+                ab.steps?.[0]?.effectParams?.description || `Trigger ${ab.id.replace(/_/g, ' ')}`;
 
               return (
                 <button

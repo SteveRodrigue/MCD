@@ -12,7 +12,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     const initialSteps = [
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DECK'],
         },
       },
@@ -39,7 +39,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     expect(handleChange).toHaveBeenCalledWith([
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DECK', 'ENCOUNTER_DISCARD'],
         },
       },
@@ -53,7 +53,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     const initialSteps = [
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DECK', 'ENCOUNTER_DISCARD'],
         },
       },
@@ -67,7 +67,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     expect(handleChange).toHaveBeenCalledWith([
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DISCARD'],
         },
       },
@@ -79,7 +79,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     const initialSteps = [
       {
         effect: 'MODIFY_RESTRICTED_LIMIT',
-        params: {
+        effectParams: {
           amount: 1,
         },
       },
@@ -95,7 +95,7 @@ describe('SearchParameterEditor UI Tests (Issue #115)', () => {
     expect(handleChange).toHaveBeenCalledWith([
       {
         effect: 'MODIFY_RESTRICTED_LIMIT',
-        params: {
+        effectParams: {
           amount: 0,
         },
       },

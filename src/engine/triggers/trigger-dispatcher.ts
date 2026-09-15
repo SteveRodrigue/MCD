@@ -132,6 +132,7 @@ export interface TriggerContext {
   status?: string;
   acceptOptionalTriggers?: boolean;
   encounterCardInstance?: any;
+  resourcesSpent?: string[];
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   triggerDepth?: number;
@@ -232,13 +233,14 @@ export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[])
   const stepDescriptions = (steps || [])
     .map((s) => {
       if (s.effect === 'DRAW_CARDS' || s.effect === 'DRAW') {
-        return `${displayEffectName(s.effect)} (${s.params?.count ?? 1})`;
+        return `${displayEffectName(s.effect)} (${s.effectParams?.count ?? 1})`;
       }
-      if (s.effect === 'DEAL_DAMAGE') return `DEAL_DAMAGE (${s.params?.amount ?? 1})`;
-      if (s.effect === 'REMOVE_THREAT') return `REMOVE_THREAT (${s.params?.amount ?? 1})`;
-      if (s.effect === 'HEAL_DAMAGE') return `HEAL_DAMAGE (${s.params?.amount ?? 1})`;
-      if (s.effect === 'ADD_STATUS') return `ADD_STATUS (${s.params?.status})`;
-      if (s.effect === 'PREVENT_DAMAGE') return `PREVENT_DAMAGE (${s.params?.amount ?? 'ALL'})`;
+      if (s.effect === 'DEAL_DAMAGE') return `DEAL_DAMAGE (${s.effectParams?.amount ?? 1})`;
+      if (s.effect === 'REMOVE_THREAT') return `REMOVE_THREAT (${s.effectParams?.amount ?? 1})`;
+      if (s.effect === 'HEAL_DAMAGE') return `HEAL_DAMAGE (${s.effectParams?.amount ?? 1})`;
+      if (s.effect === 'ADD_STATUS') return `ADD_STATUS (${s.effectParams?.status})`;
+      if (s.effect === 'PREVENT_DAMAGE')
+        return `PREVENT_DAMAGE (${s.effectParams?.amount ?? 'ALL'})`;
       return displayEffectName(s.effect);
     })
     .join(', ');
@@ -482,6 +484,7 @@ export function dispatchTrigger(
               sourceCardInstance: cardInst,
               targetType: context.targetType as any,
               targetInstanceId: context.targetInstanceId,
+              resourcesSpent: context.resourcesSpent,
               triggerChain: nextChain,
             });
           } else {
@@ -692,7 +695,7 @@ export function dispatchTrigger(
             executeEffect(state, ability, effCtx);
             currentThreat = effCtx.threatAmount ?? 0;
           } else if (threatStep?.effect === 'REMOVE_THREAT') {
-            const reduction = Number(threatStep.params?.amount ?? 1);
+            const reduction = Number(threatStep.effectParams?.amount ?? 1);
             currentThreat = Math.max(0, currentThreat - reduction);
             state.log.push({
               id: `log_${Date.now()}`,

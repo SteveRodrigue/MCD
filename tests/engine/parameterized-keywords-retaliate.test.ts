@@ -124,7 +124,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
               steps: [
                 {
                   effect: 'GRANT_KEYWORD',
-                  params: {
+                  effectParams: {
                     keyword: 'Retaliate',
                     amount: 1,
                   },
@@ -164,7 +164,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
                 steps: [
                   {
                     effect: 'GRANT_KEYWORD',
-                    params: {
+                    effectParams: {
                       keyword: 'Retaliate',
                       amount: 1,
                     },
@@ -197,7 +197,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
                 steps: [
                   {
                     effect: 'GRANT_KEYWORD',
-                    params: {
+                    effectParams: {
                       keyword: 'Retaliate',
                       amount: 1,
                     },
@@ -253,7 +253,9 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
               {
                 id: 'spikes',
                 timing: 'CONSTANT',
-                steps: [{ effect: 'GRANT_KEYWORD', params: { keyword: 'Retaliate', amount: 1 } }],
+                steps: [
+                  { effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } },
+                ],
               },
             ],
           },
@@ -369,7 +371,9 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
               {
                 id: 'cb_retaliate',
                 timing: 'CONSTANT',
-                steps: [{ effect: 'GRANT_KEYWORD', params: { keyword: 'Retaliate', amount: 1 } }],
+                steps: [
+                  { effect: 'GRANT_KEYWORD', effectParams: { keyword: 'Retaliate', amount: 1 } },
+                ],
               },
             ],
           },

@@ -18,6 +18,7 @@ import { cardCatalog } from '../../data/importer/card-loader';
 import { ScenarioRegistry } from '../scenarios';
 import { matchesCardFilter } from '../filters/card-filter';
 import { createCardInstance, resetInstanceCounter } from './card-instance';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 export { createCardInstance, resetInstanceCounter };
 
@@ -314,9 +315,10 @@ export function step14_resolveCharacterSetupAbilities(
       for (const ability of setupAbilities) {
         for (const step of ability.steps || []) {
           if (step.effect === 'SEARCH' || step.effect === 'SEARCH_AND_SELECT') {
-            const filter = (step.params?.filter || {}) as Record<string, any>;
-            const selectedDestination = (step.params?.selectedDestination as string) || 'HAND';
-            const shuffleAfter = step.params?.shuffleAfter !== false;
+            const stepParams = getStepEffectParams(step);
+            const filter = (stepParams.filter || {}) as Record<string, any>;
+            const selectedDestination = (stepParams.selectedDestination as string) || 'HAND';
+            const shuffleAfter = stepParams.shuffleAfter !== false;
 
             // Find matching candidate cards in player.deck
             let candidateIndices: number[] = [];

@@ -87,7 +87,7 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
             steps: [
               {
                 effect: 'SEARCH' as const,
-                params: {
+                effectParams: {
                   source: 'PLAYER_DECK',
                   filter: { traits: ['Black Panther'], types: ['upgrade'] },
                   selectedDestination: 'TABLEAU',

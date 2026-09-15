@@ -30,7 +30,7 @@ describe('Player Side Schemes, Victory Display & Auxiliary Scenario Decks (ADR-0
           id: 'test_pss_when_defeated',
           timing: 'FORCED_RESPONSE',
           trigger: 'DEFEATED',
-          steps: [{ effect: 'DRAW', params: { count: 1, target: 'SELF' } }],
+          steps: [{ effect: 'DRAW', effectParams: { count: 1, target: 'SELF' } }],
         },
       ],
     } as any,

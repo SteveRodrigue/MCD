@@ -30,7 +30,9 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
       {
         id: 'remove_stun',
         timing: 'ACTION',
-        steps: [{ effect: 'REMOVE_STATUS', params: { status: 'STUNNED', target: 'VILLAIN' } }],
+        steps: [
+          { effect: 'REMOVE_STATUS', effectParams: { status: 'STUNNED', target: 'VILLAIN' } },
+        ],
       },
       { playerId: 'p1' },
     );
@@ -65,7 +67,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
       {
         id: 'remove_all_statuses',
         timing: 'ACTION',
-        steps: [{ effect: 'REMOVE_STATUS', params: { status: 'ALL', target: 'VILLAIN' } }],
+        steps: [{ effect: 'REMOVE_STATUS', effectParams: { status: 'ALL', target: 'VILLAIN' } }],
       },
       { playerId: 'p1' },
     );
@@ -78,7 +80,7 @@ describe('REMOVE_STATUS additive effect (ADR-0058, RR v1.8 p. 28)', () => {
       {
         id: 'remove_missing_status',
         timing: 'ACTION',
-        steps: [{ effect: 'REMOVE_STATUS', params: { status: 'TOUGH', target: 'VILLAIN' } }],
+        steps: [{ effect: 'REMOVE_STATUS', effectParams: { status: 'TOUGH', target: 'VILLAIN' } }],
       },
       { playerId: 'p1' },
     );

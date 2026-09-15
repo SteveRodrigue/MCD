@@ -24,8 +24,11 @@
           "steps": [
             {
               "effect": "SEARCH",
-              "params": {
-                "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
+              "effectParams": {
+                "source": [
+                  "ENCOUNTER_DECK",
+                  "ENCOUNTER_DISCARD"
+                ],
                 "filter": {
                   "targetCardCode": "01107"
                 },
@@ -40,8 +43,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T09:40",
-        "reviewedAt": "2026-09-14T09:40",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -58,7 +61,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "STUNNED",
                 "target": "ALL_HEROES"
               }
@@ -71,7 +74,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "SELF"
               }
@@ -81,8 +84,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:18",
-        "reviewedAt": "2026-08-28T13:18",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -125,7 +128,7 @@
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
-              "params": {
+              "effectParams": {
                 "target": "VILLAIN"
               }
             }
@@ -138,7 +141,7 @@
           "steps": [
             {
               "effect": "ATTACHMENT_DAMAGE_SHIELD",
-              "params": {
+              "effectParams": {
                 "mode": "PREVENT_ALL_AND_DISCARD",
                 "maxAbsorb": 5,
                 "target": "ATTACHED_VILLAIN"
@@ -149,8 +152,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -167,7 +170,7 @@
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
-              "params": {
+              "effectParams": {
                 "target": "VILLAIN"
               }
             }
@@ -179,7 +182,7 @@
           "steps": [
             {
               "effect": "MODIFY_STAT",
-              "params": {
+              "effectParams": {
                 "stat": "ATTACK",
                 "amount": 3
               }
@@ -192,7 +195,7 @@
           "steps": [
             {
               "effect": "GRANT_KEYWORD",
-              "params": {
+              "effectParams": {
                 "keyword": "OVERKILL"
               }
             }
@@ -201,8 +204,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T13:36",
-        "reviewedAt": "2026-08-28T13:36",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -219,7 +222,7 @@
           "steps": [
             {
               "effect": "ATTACH_TO_HOST",
-              "params": {
+              "effectParams": {
                 "target": "VILLAIN"
               }
             }
@@ -231,7 +234,7 @@
           "steps": [
             {
               "effect": "MODIFY_STAT",
-              "params": {
+              "effectParams": {
                 "stat": "ATTACK",
                 "amount": 1
               }
@@ -249,7 +252,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -258,8 +261,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T10:45:00Z",
-        "reviewedAt": "2026-09-13T10:45:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -275,7 +278,7 @@
           "steps": [
             {
               "effect": "GRANT_KEYWORD",
-              "params": {
+              "effectParams": {
                 "keyword": "GUARD"
               }
             }
@@ -284,8 +287,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -301,7 +304,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "SELF"
               }
@@ -315,7 +318,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "ENCOUNTER_DECK",
                 "count": 2
               }
@@ -325,8 +328,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -343,7 +346,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "target": "ALL_HEROES",
                 "amount": 1
               }
@@ -353,8 +356,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -372,7 +375,7 @@
             {
               "id": "hard_to_keep_down_heal_step",
               "effect": "HEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 4,
                 "target": "VILLAIN"
               }
@@ -387,8 +390,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -406,7 +409,7 @@
             {
               "id": "im_tough_status_step",
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "VILLAIN"
               }
@@ -415,7 +418,7 @@
               "id": "im_tough_surge_step",
               "effect": "SURGE",
               "gate": "IF_ALREADY_HAS_STATUS",
-              "params": {
+              "gateParams": {
                 "status": "TOUGH",
                 "target": "VILLAIN"
               }
@@ -425,8 +428,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -443,7 +446,7 @@
           "steps": [
             {
               "effect": "FORM_BRANCH",
-              "params": {
+              "effectParams": {
                 "heroSteps": [
                   {
                     "effect": "VILLAIN_ATTACKS"
@@ -461,8 +464,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -479,7 +482,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "target": "THIS_SIDE_SCHEME",
                 "amount": 1,
                 "perPlayer": true
@@ -490,8 +493,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -508,7 +511,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "amount": 1,
                 "target": "THIS_SIDE_SCHEME",
                 "perPlayer": true
@@ -519,8 +522,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -537,7 +540,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "target": "THIS_SIDE_SCHEME",
                 "amount": 1,
                 "perPlayer": true
@@ -548,8 +551,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -566,7 +569,7 @@
           "steps": [
             {
               "effect": "PLAYER_CHOICE",
-              "params": {
+              "effectParams": {
                 "title": "Hydra Bomber Attack",
                 "description": "Choose an effect to resolve for Hydra Bomber's When Revealed trigger:",
                 "options": [
@@ -598,8 +601,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:04",
-        "reviewedAt": "2026-08-28T14:04",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -617,9 +620,11 @@
             {
               "id": "step_1_assign_threat_damage",
               "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "01109"
+              },
               "effect": "DEAL_DAMAGE",
-              "params": {
-                "cardCode": "01109",
+              "effectParams": {
                 "amount": {
                   "from": "STAT_VALUE",
                   "stat": "THREAT",
@@ -631,18 +636,18 @@
             {
               "id": "step_2_fallback_surge",
               "gate": "IF_CARD_NOT_IN_PLAY",
-              "effect": "SURGE",
-              "params": {
+              "gateParams": {
                 "cardCode": "01109"
-              }
+              },
+              "effect": "SURGE"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T21:42",
-        "reviewedAt": "2026-09-13T21:42",
+        "updatedAt": "2026-09-14T18:00",
+        "reviewedAt": "2026-09-14T18:00",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -659,7 +664,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "CONFUSED",
                 "target": "ACTIVE_IDENTITY"
               }
@@ -669,8 +674,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T12:46",
-        "reviewedAt": "2026-08-28T12:46",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -687,7 +692,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -696,8 +701,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -724,7 +729,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "SELF"
               }
@@ -733,8 +738,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "Killmonger cannot take damage from [[Black Panther]] upgrades."
@@ -750,7 +755,7 @@
           "steps": [
             {
               "effect": "HEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "VILLAIN"
               }
@@ -759,8 +764,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "Surge <i>(After this card resolves, reveal 1 additional encounter card)</i>\n<b>When Revealed</b>: Give the villain and each minion engaged with you a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
@@ -776,7 +781,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "HERO"
               }
@@ -785,8 +790,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "<b>When Revealed</b>: Discard the top card of the encounter deck. Then, choose to either deal X damage to your hero or place X threat on the main scheme. X is 1 more than the number of boost icons on the discarded encounter card."
@@ -802,7 +807,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -811,8 +816,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -829,7 +834,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "target": "SELF",
                 "amount": 1,
                 "perPlayer": true
@@ -840,8 +845,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -858,7 +863,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "SELF"
               }
@@ -867,8 +872,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "X is equal to Titania's remaining hit points."
@@ -883,7 +888,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "bonusAttack": 1
               }
             }
@@ -891,8 +896,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "Attach to the minion with the highest printed hit points. If there are no minions in play, this card gains surge.\nAttached minion gets +3 hit points."
@@ -908,7 +913,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "HERO"
               }
@@ -928,8 +933,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -946,7 +951,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -955,8 +960,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -972,7 +977,7 @@
           "steps": [
             {
               "effect": "ATTACH_FACEDOWN_CARDS_FROM_HAND",
-              "params": {}
+              "effectParams": {}
             }
           ]
         },
@@ -983,15 +988,15 @@
           "steps": [
             {
               "effect": "RETURN_TO_HAND",
-              "params": {}
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1019,7 +1024,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "HERO"
               }
@@ -1033,7 +1038,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "STUNNED",
                 "target": "DEFENDING_CHARACTER"
               }
@@ -1043,8 +1048,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T13:08",
-        "reviewedAt": "2026-08-31T13:08",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1061,7 +1066,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "CONFUSED",
                 "target": "HERO"
               }
@@ -1070,8 +1075,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "<b>When Revealed</b>: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way."
@@ -1087,7 +1092,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -1096,8 +1101,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -1114,7 +1119,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "target": "SELF",
                 "amount": 1,
                 "perPlayer": true
@@ -1125,8 +1130,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1143,7 +1148,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "status": "TOUGH",
                 "target": "SELF"
               }
@@ -1156,7 +1161,7 @@
           "steps": [
             {
               "effect": "GRANT_KEYWORD",
-              "params": {
+              "effectParams": {
                 "keyword": "Retaliate",
                 "amount": 1
               }
@@ -1166,8 +1171,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-28T09:34",
-        "updatedAt": "2026-09-12T22:25:00Z",
-        "reviewedAt": "2026-09-12T22:25:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1183,7 +1188,7 @@
           "steps": [
             {
               "effect": "MODIFY_STAT",
-              "params": {
+              "effectParams": {
                 "stat": "ATTACK",
                 "amount": 1
               }
@@ -1197,7 +1202,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "TABLEAU",
                 "filter": {
                   "types": [
@@ -1213,8 +1218,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T12:28:00Z",
-        "reviewedAt": "2026-09-06T12:28:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1231,7 +1236,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "HERO"
               }
@@ -1240,8 +1245,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "<b>When Revealed</b>: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage."
@@ -1257,7 +1262,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -1266,8 +1271,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -1284,7 +1289,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "target": "SELF",
                 "amount": 1,
                 "perPlayer": true
@@ -1295,8 +1300,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1313,7 +1318,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "amount": 1,
                 "cardCode": "01176"
               }
@@ -1323,8 +1328,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-28T09:34",
-        "updatedAt": "2026-09-13T11:17",
-        "reviewedAt": "2026-09-13T11:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1341,7 +1346,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "amount": 1,
                 "target": "MAIN_SCHEME"
               }
@@ -1355,7 +1360,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "amount": 1,
                 "target": "MAIN_SCHEME",
                 "condition": "UNDEFENDED_ATTACK"
@@ -1366,8 +1371,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-31T03:52",
-        "reviewedAt": "2026-08-31T03:52",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1384,7 +1389,7 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "params": {
+              "effectParams": {
                 "amount": 2,
                 "target": "HERO"
               }
@@ -1393,8 +1398,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."
@@ -1410,15 +1415,15 @@
           "steps": [
             {
               "effect": "VILLAIN_SCHEMES",
-              "params": {}
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1435,15 +1440,15 @@
           "steps": [
             {
               "effect": "VILLAIN_ATTACKS",
-              "params": {}
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1460,7 +1465,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "TABLEAU",
                 "filter": {
                   "types": [
@@ -1477,8 +1482,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T12:28:00Z",
-        "reviewedAt": "2026-09-06T12:28:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1495,15 +1500,15 @@
           "steps": [
             {
               "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
-              "params": {}
+              "effectParams": {}
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1521,7 +1526,7 @@
             {
               "id": "step_1_spawn_nemesis_minion",
               "effect": "PUT_INTO_PLAY",
-              "params": {
+              "effectParams": {
                 "from": "SET_ASIDE",
                 "to": "ENGAGED_WITH_PLAYER",
                 "filter": {
@@ -1537,7 +1542,7 @@
             {
               "id": "step_2_spawn_nemesis_scheme",
               "effect": "PUT_INTO_PLAY",
-              "params": {
+              "effectParams": {
                 "from": "SET_ASIDE",
                 "to": "SIDE_SCHEMES",
                 "filter": {
@@ -1553,7 +1558,7 @@
             {
               "id": "step_3_shuffle_remaining_cards",
               "effect": "SHUFFLE_INTO_DECK",
-              "params": {
+              "effectParams": {
                 "from": "SET_ASIDE",
                 "toDeck": "ENCOUNTER_DECK",
                 "filter": {
@@ -1567,7 +1572,7 @@
               "id": "step_4_fallback_surge",
               "effect": "SURGE",
               "gate": "IF_FAILED",
-              "params": {
+              "gateParams": {
                 "targetStepId": "step_1_spawn_nemesis_minion"
               }
             }
@@ -1576,8 +1581,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1594,7 +1599,7 @@
           "steps": [
             {
               "effect": "PLAYER_CHOICE",
-              "params": {
+              "effectParams": {
                 "title": "Exhaustion Treachery",
                 "description": "Choose to either exhaust your identity or take 2 damage:",
                 "options": [
@@ -1625,8 +1630,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-06T10:05:00Z",
-        "reviewedAt": "2026-09-06T10:05:00Z",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,
@@ -1643,7 +1648,7 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
-              "params": {
+              "effectParams": {
                 "amount": 4,
                 "target": "ALL_SIDE_SCHEMES"
               }
@@ -1653,8 +1658,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-08-28T14:40",
-        "reviewedAt": "2026-08-28T14:40",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1700,7 +1705,7 @@
           "steps": [
             {
               "effect": "ADD_STATUS",
-              "params": {
+              "effectParams": {
                 "target": "MAIN_SCHEME"
               }
             }
@@ -1708,8 +1713,8 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-08-28T09:34",
-        "reviewedAt": "2026-08-28T09:34",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "originalText": ""
@@ -1725,7 +1730,7 @@
           "steps": [
             {
               "effect": "DISCARD",
-              "params": {
+              "effectParams": {
                 "source": "SELF"
               }
             }
@@ -1734,8 +1739,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-05T23:17",
-        "reviewedAt": "2026-09-05T23:17",
+        "updatedAt": "2026-09-14T18:37:00Z",
+        "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 50,

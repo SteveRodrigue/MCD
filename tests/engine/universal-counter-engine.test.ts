@@ -64,7 +64,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'SPEND_COUNTERS',
-            params: {
+            effectParams: {
               target: 'SELF',
               counterType: 'web',
               amount: 1,
@@ -87,7 +87,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'ADD_COUNTERS',
-            params: {
+            effectParams: {
               target: 'SELF',
               counterType: 'web',
               amount: 2,
@@ -149,7 +149,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'SPEND_COUNTERS',
-            params: {
+            effectParams: {
               target: 'SELF',
               counterType: 'web',
               amount: 1,
@@ -197,7 +197,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'ADD_COUNTERS',
-            params: {
+            effectParams: {
               target: 'IDENTITY',
               counterType: 'growth',
               amount: 2,
@@ -220,7 +220,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'SPEND_COUNTERS',
-            params: {
+            effectParams: {
               target: 'IDENTITY',
               counterType: 'growth',
               amount: 3,
@@ -275,7 +275,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
           amount: 1,
         },
       },
-      steps: [{ effect: 'DEAL_DAMAGE', params: { amount: 2, target: 'CHOSEN_ENEMY' } }],
+      steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 2, target: 'CHOSEN_ENEMY' } }],
     };
 
     // 1. Check Allowed with 2 counters
@@ -345,7 +345,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'DEAL_DAMAGE',
-            params: {
+            effectParams: {
               target: 'VILLAIN',
               amount: {
                 from: 'COUNTERS',
@@ -425,7 +425,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'REMOVE_COUNTERS_MATCHING_FILTER',
-            params: {
+            effectParams: {
               targetZone: 'TABLEAU',
               traitFilter: 'Spell',
               counterType: 'invocation',
@@ -489,7 +489,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
         steps: [
           {
             effect: 'PUT_INTO_PLAY',
-            params: {
+            effectParams: {
               target: 'SELF',
             },
           },

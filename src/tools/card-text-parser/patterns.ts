@@ -149,7 +149,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect,
-          params: { amount, target },
+          effectParams: { amount, target },
         },
       ];
     },
@@ -164,7 +164,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect: 'REMOVE_THREAT',
-          params: { amount, target },
+          effectParams: { amount, target },
         },
       ];
     },
@@ -174,18 +174,18 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     regex: /draw (\d+) cards?(?: \(draw (\d+) cards? instead if you are ([A-Za-z0-9 '-]+)\))?/i,
     handler: (m) => {
       const count = parseInt(m[1], 10);
-      const params: Record<string, any> = { count };
+      const effectParams: Record<string, any> = { count };
       if (m[2] && m[3]) {
         const bonusTotal = parseInt(m[2], 10);
         const heroName = m[3].toLowerCase();
         if (heroName.includes('carol')) {
-          params.carolBonus = bonusTotal - count;
+          effectParams.carolBonus = bonusTotal - count;
         }
       }
       return [
         {
           effect: 'DRAW',
-          params,
+          effectParams,
         },
       ];
     },
@@ -196,7 +196,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: (m) => [
       {
         effect: 'DRAW',
-        params: {
+        effectParams: {
           count: parseInt(m[1], 10),
           target: 'CHOSEN_PLAYER',
         },
@@ -220,7 +220,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect: 'HEAL_DAMAGE',
-          params: { amount, target },
+          effectParams: { amount, target },
         },
       ];
     },
@@ -234,7 +234,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect: 'GENERATE_RESOURCE',
-          params: { resource, amount },
+          effectParams: { resource, amount },
         },
       ];
     },
@@ -245,7 +245,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: () => [
       {
         effect: 'PREVENT_DAMAGE',
-        params: { amount: 'ALL' },
+        effectParams: { amount: 'ALL' },
       },
     ],
   },
@@ -254,7 +254,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: (m) => [
       {
         effect: 'PREVENT_DAMAGE',
-        params: { amount: parseInt(m[1], 10) },
+        effectParams: { amount: parseInt(m[1], 10) },
       },
     ],
   },
@@ -264,7 +264,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: () => [
       {
         effect: 'CANCEL_WHEN_REVEALED',
-        params: {},
+        effectParams: {},
       },
     ],
   },
@@ -279,7 +279,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect: 'ADD_STATUS',
-          params: { status: 'STUNNED', target },
+          effectParams: { status: 'STUNNED', target },
         },
       ];
     },
@@ -290,7 +290,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: () => [
       {
         effect: 'READY',
-        params: { target: 'SELF_IDENTITY' },
+        effectParams: { target: 'SELF_IDENTITY' },
       },
     ],
   },
@@ -302,7 +302,7 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       return [
         {
           effect: 'ATTACH_TO_HOST',
-          params: { target },
+          effectParams: { target },
         },
       ];
     },

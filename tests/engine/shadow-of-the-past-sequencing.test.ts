@@ -145,7 +145,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_1_spawn_nemesis_minion',
           effect: 'PUT_INTO_PLAY',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             to: 'ENGAGED_WITH_PLAYER',
             filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
@@ -154,7 +154,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_2_spawn_nemesis_scheme',
           effect: 'PUT_INTO_PLAY',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             to: 'SIDE_SCHEMES',
             filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
@@ -163,7 +163,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_3_shuffle_remaining_cards',
           effect: 'SHUFFLE_INTO_DECK',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             toDeck: 'ENCOUNTER_DECK',
             filter: { set: 'PLAYER_NEMESIS' },
@@ -173,7 +173,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           id: 'step_4_fallback_surge',
           effect: 'SURGE',
           gate: 'IF_FAILED' as const,
-          params: {
+          gateParams: {
             targetStepId: 'step_1_spawn_nemesis_minion',
           },
         },
@@ -226,7 +226,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_1_spawn_nemesis_minion',
           effect: 'PUT_INTO_PLAY',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             to: 'ENGAGED_WITH_PLAYER',
             filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
@@ -235,7 +235,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_2_spawn_nemesis_scheme',
           effect: 'PUT_INTO_PLAY',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             to: 'SIDE_SCHEMES',
             filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
@@ -244,7 +244,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
         {
           id: 'step_3_shuffle_remaining_cards',
           effect: 'SHUFFLE_INTO_DECK',
-          params: {
+          effectParams: {
             from: 'SET_ASIDE',
             toDeck: 'ENCOUNTER_DECK',
             filter: { set: 'PLAYER_NEMESIS' },
@@ -254,7 +254,7 @@ describe('Shadow of the Past (01190) Sequencing & Generic Zone Primitives (ADR-0
           id: 'step_4_fallback_surge',
           effect: 'SURGE',
           gate: 'IF_FAILED' as const,
-          params: {
+          gateParams: {
             targetStepId: 'step_1_spawn_nemesis_minion',
           },
         },

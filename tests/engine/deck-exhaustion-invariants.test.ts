@@ -60,7 +60,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
         state,
         {
           effect: 'DRAW',
-          params: { count: 2 },
+          effectParams: { count: 2 },
         },
         { playerId: 'p1' },
       );
@@ -191,7 +191,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
         state,
         {
           effect: 'DISCARD',
-          params: { source: 'DECK', count: 3 },
+          effectParams: { source: 'DECK', count: 3 },
         },
         { playerId: 'p1' },
       );
@@ -217,7 +217,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
         state,
         {
           effect: 'DISCARD',
-          params: {
+          effectParams: {
             source: 'DECK',
             count: 2,
             filter: { resource: 'mental' },
@@ -246,7 +246,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
         state,
         {
           effect: 'DISCARD',
-          params: { source: 'DECK', count: 1 },
+          effectParams: { source: 'DECK', count: 1 },
         },
         { playerId: 'p1' },
       );
@@ -273,7 +273,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
         state,
         {
           effect: 'DRAW',
-          params: { limit: 'HAND_SIZE' },
+          effectParams: { limit: 'HAND_SIZE' },
         },
         { playerId: 'p1' },
       );

@@ -227,8 +227,8 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             id: `action_id_ability_${ab.id}`,
             category: 'identity',
             headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
-            subtext: ab.steps?.[0]?.params?.description
-              ? String(ab.steps[0].params.description)
+            subtext: ab.steps?.[0]?.effectParams?.description
+              ? String(ab.steps[0].effectParams.description)
               : `Trigger ${player.activeFormCard.name}'s special ability`,
             action: {
               type: 'USE_CARD_ABILITY',
@@ -296,8 +296,8 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,
               category: 'board',
               headline: `Activate ${tableauItem.card.name}`,
-              subtext: ab.steps?.[0]?.params?.description
-                ? String(ab.steps[0].params.description)
+              subtext: ab.steps?.[0]?.effectParams?.description
+                ? String(ab.steps[0].effectParams.description)
                 : `Trigger ${tableauItem.card.name} (${ab.id})`,
               action: {
                 type: 'USE_CARD_ABILITY',
@@ -454,7 +454,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               s.effect === 'DISCARD_ATTACHMENT' ||
               s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
               (s.effect === 'DISCARD' &&
-                (s.params?.source === 'SELF' || s.params?.source === 'HOST')),
+                (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
           ) || Boolean(ab.cost?.discardSelf);
 
         if (isDiscardAbility) {

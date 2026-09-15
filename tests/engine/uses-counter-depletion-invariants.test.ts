@@ -314,7 +314,7 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
               steps: [
                 {
                   effect: 'DEAL_DAMAGE',
-                  params: {
+                  effectParams: {
                     amount: 1,
                     target: 'VILLAIN',
                   },

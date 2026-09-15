@@ -4,17 +4,31 @@
 
 ## 1. Unified Action Step Sequencing (`steps: []`) & Conditional Gates
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028, ADR-0030 / _Split Personality_ `01025`, _Hard to Keep Down_ `01104`, _I'm Tough_ `01105`, _Under Fire_ `01193`)
-- **Description:** Decomposes all card abilities into an ordered execution pipeline of discrete, reusable atomic `AbilityStep` primitives, with optional conditional gating (`gate: ...`) and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0028, ADR-0030, ADR-0060 / _Split Personality_ `01025`, _Hard to Keep Down_ `01104`, _I'm Tough_ `01105`, _Photonic Blast_ `01013`, _Hulk_ `01050`, _Under Fire_ `01193`)
+- **Description:** Decomposes all card abilities into an ordered execution pipeline of discrete, reusable atomic `AbilityStep` primitives, with optional conditional gating (`gate: ...`), separated gate parameters (`gateParams: { ... }`), effect execution parameters (`effectParams: { ... }`), and contextual data-flow passing (`target: "PREVIOUS_TARGET"`).
+
+### Parameter Separation (`gateParams` vs `effectParams`, ADR-0060)
+
+Under **ADR-0060**, parameters configuring conditional step gates and parameters configuring effect execution are decoupled:
+- `gateParams`: Key-value map configuring the conditional gate check (e.g. required kicker resource, card code check, status check).
+- `effectParams`: Key-value map configuring the effect primitive execution (e.g. damage amount, target selector, draw count).
+- `params`: Retained for backward-compatible schema ingestion. Engine pipelines query parameters via `getStepEffectParams(step)` and `getStepGateParams(step)`, which read dedicated parameter objects first and fall back to `params`.
 
 ### Conditional Gates:
 
 - `"ALWAYS"` _(Default)_: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".
 - `"THEN"` / `"IF_PREVIOUS_SUCCESS"`: Executes Step $N$ only if Step $N-1$ mutated the game state (RR v1.8 p. 24 "Then").
 - `"IF_AMOUNT_ZERO"` / `"IF_ZERO_HEALED"`: Executes Step $N$ (e.g. `SURGE`) if Step $N-1$ caused 0 state mutation (e.g. at full health).
-- `"IF_ALREADY_HAS_STATUS"`: Executes Step $N$ if the target already has the status card before applying.
-- `"IF_FAILED"`: Executes Step $N$ if Step $N-1$ could not resolve.
-- `"IF_RESOURCE_MATCH"`: Evaluates whether a required resource type was spent during action payment.
+- `"IF_ALREADY_HAS_STATUS"`: Executes Step $N$ if the target already has the status card before applying (`gateParams: { status, target }`).
+- `"IF_CARD_IN_PLAY"`: Executes Step $N$ if the specified card is in play (`gateParams: { cardCode }`).
+- `"IF_CARD_NOT_IN_PLAY"`: Executes Step $N$ if the specified card is not in play (`gateParams: { cardCode }`).
+- `"IF_FAILED"`: Executes Step $N$ if Step $N-1$ (or `gateParams.targetStepId`) could not resolve.
+- `"IF_RESOURCE_MATCH"`: Evaluates whether resources spent during action payment (`context.resourcesSpent`) or discarded cards (`context.discardedCards`) match required criteria:
+  - `resource`: Required resource type (`"energy" | "physical" | "mental" | "wild"`). Wild resources always count toward the match.
+  - `count` (or `requiredCount`): Number of matching resources required (default: `1`).
+  - `aspect` (or `reqAspect`): Required aspect if checking aspect resources.
+  - `printedResource` (or `requirePrinted`): When `true`, inspects printed resources on discarded cards (e.g. Hulk `01050`) rather than generated payment resources.
+  - `only` (or `requireOnly`): When `true`, requires 100% of spent resources to match the specified resource type.
 - `"IF_CONDITION_MET"` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md)): Executes Step $N$ only if the explicitly monitored condition (`condition` in Step $N-1$ or targeted by `targetStepId`) evaluated to `true`.
 
 ### Explicit Condition Contracts (`StepConditionSchema`)
@@ -36,7 +50,37 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 | **Threshold**      | `COUNTER_THRESHOLD_MET`    | Target upgrade/support has reached or exceeded counter count.          | _Energy Channel_ (`01018`)                                 |
 | **Threshold**      | `ZONE_EMPTY`               | Evaluated zone (e.g. hand, discard) contains 0 cards.                  | Zone check                                                 |
 
-### Example: Clear the Area Pattern (_Clear the Area_ `04049` / _Photonic Blast_ `01013`)
+### Example: Resource Payment Kicker Pattern (_Photonic Blast_ `01013`)
+
+```json
+{
+  "steps": [
+    {
+      "id": "photonic_blast_damage",
+      "effect": "DEAL_DAMAGE",
+      "effectParams": {
+        "amount": 5,
+        "target": "CHOSEN_ENEMY"
+      }
+    },
+    {
+      "id": "photonic_blast_draw",
+      "effect": "DRAW",
+      "gate": "IF_RESOURCE_MATCH",
+      "gateParams": {
+        "resource": "energy",
+        "count": 1
+      },
+      "effectParams": {
+        "count": 1,
+        "target": "SELF_IDENTITY"
+      }
+    }
+  ]
+}
+```
+
+### Example: Clear the Area Pattern (_Clear the Area_ `04049`)
 
 ```json
 {
@@ -45,7 +89,7 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
       "id": "remove_threat_step",
       "effect": "REMOVE_THREAT",
       "condition": "SCHEME_EMPTY",
-      "params": {
+      "effectParams": {
         "target": "CHOSEN_SCHEME",
         "amount": 2
       }
@@ -54,8 +98,10 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
       "id": "draw_if_cleared",
       "effect": "DRAW",
       "gate": "IF_CONDITION_MET",
-      "params": {
-        "targetStepId": "remove_threat_step",
+      "gateParams": {
+        "targetStepId": "remove_threat_step"
+      },
+      "effectParams": {
         "count": 1
       }
     }

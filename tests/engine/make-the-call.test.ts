@@ -149,7 +149,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
           steps: [
             {
               effect: 'PLAY_FROM_ZONE',
-              params: {
+              effectParams: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
                 costMode: 'PRINTED_COST',
@@ -209,7 +209,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
           steps: [
             {
               effect: 'PLAY_FROM_ZONE',
-              params: {
+              effectParams: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
                 costMode: 'PRINTED_COST',
@@ -268,7 +268,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
           steps: [
             {
               effect: 'PLAY_FROM_ZONE',
-              params: {
+              effectParams: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
                 costMode: 'PRINTED_COST',
@@ -413,7 +413,7 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
           steps: [
             {
               effect: 'PLAY_FROM_ZONE',
-              params: {
+              effectParams: {
                 source: 'ANY_PLAYER_DISCARD',
                 filter: { types: ['ally'] },
                 costMode: 'PRINTED_COST',

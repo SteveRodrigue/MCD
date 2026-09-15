@@ -2,6 +2,7 @@ import { NormalizedCard } from './card';
 import { CardInstance } from './state';
 import { Keyword } from './enums';
 import { parseKeywordItem } from './keyword';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 /**
  * Checks whether a card or card instance possesses a given Keyword (ADR-0019, ADR-0054).
@@ -50,10 +51,11 @@ export function hasKeyword(
   for (const ab of abilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
+        const stepParams = getStepEffectParams(step);
+        if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
           const parsed = parseKeywordItem({
-            keyword: step.params.keyword,
-            amount: step.params.amount,
+            keyword: stepParams.keyword,
+            amount: stepParams.amount,
           });
           if (parsed && parsed.name.toLowerCase() === kwStr) {
             return true;
@@ -114,10 +116,11 @@ export function getKeywordValue(
   for (const ab of abilities) {
     if (ab.timing === 'CONSTANT') {
       for (const step of ab.steps || []) {
-        if (step.effect === 'GRANT_KEYWORD' && step.params?.keyword) {
+        const stepParams = getStepEffectParams(step);
+        if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
           const parsed = parseKeywordItem({
-            keyword: step.params.keyword,
-            amount: step.params.amount,
+            keyword: stepParams.keyword,
+            amount: stepParams.amount,
           });
           if (parsed && parsed.name.toLowerCase() === kwStr) {
             total = (total || 0) + parsed.amount;

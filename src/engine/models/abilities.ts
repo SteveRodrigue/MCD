@@ -151,7 +151,8 @@ export interface SequenceExecutionContext {
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
-  params?: Record<string, unknown>;
+  gateParams?: Record<string, unknown>;
+  effectParams?: Record<string, unknown>;
   gate?: ConditionGate;
   filter?: Record<string, unknown>;
   condition?: StepCondition;

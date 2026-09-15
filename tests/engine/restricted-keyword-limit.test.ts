@@ -281,7 +281,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
             steps: [
               {
                 effect: 'RESTRICTED_LIMIT_BONUS',
-                params: { amount: 1 },
+                effectParams: { amount: 1 },
               },
             ],
           },

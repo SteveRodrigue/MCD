@@ -48,7 +48,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DECK', 'ENCOUNTER_DISCARD'],
           filter: { targetCardCode: '01107' },
           takeCount: 1,
@@ -95,7 +95,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: ['ENCOUNTER_DECK', 'ENCOUNTER_DISCARD'],
           filter: { targetCardCode: '01107' },
           takeCount: 1,
@@ -191,7 +191,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: 'PLAYER_DECK',
           lookCount: 3,
           filter: { trait: 'Tech' },
@@ -211,7 +211,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: 'PLAYER_DECK',
           lookCount: 0,
           filter: { trait: 'Tech' },
@@ -259,7 +259,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: 'PLAYER_DISCARD',
           lookCount: 0,
           takeCount: 0,
@@ -282,7 +282,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
       state,
       {
         effect: 'SEARCH',
-        params: {
+        effectParams: {
           source: 'PLAYER_DISCARD',
           lookCount: 'ALL',
           takeCount: 'ALL',
@@ -332,7 +332,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               takeCount: 1,
               filter: { trait: 'Tech' },
@@ -359,7 +359,7 @@ describe('SEARCH Multi-Zone, ALL / 0 Pool & Non-Negative Validation (Issue #115)
         steps: [
           {
             effect: 'SEARCH',
-            params: {
+            effectParams: {
               source: 'PLAYER_DECK',
               takeCount: 1,
               filter: { trait: 'Tech' },

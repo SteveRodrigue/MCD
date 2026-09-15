@@ -8,7 +8,7 @@ describe('DualCardInspector Resolution Steps Nice JSON Formatting (Issue #79)', 
 
   it('DualCardInspector renders resolution steps parameters using formatted nice JSON', () => {
     // Must use 2-space indented JSON stringify to avoid single-line unformatted blob
-    expect(fileContent).toContain('JSON.stringify(st.params, null, 2)');
+    expect(fileContent).toContain('JSON.stringify(st.effectParams, null, 2)');
   });
 
   it('DualCardInspector prevents overflow with pre-wrap and break-words styling', () => {
@@ -19,6 +19,6 @@ describe('DualCardInspector Resolution Steps Nice JSON Formatting (Issue #79)', 
 
   it('DualCardInspector eliminates raw single-line unformatted step parameter strings', () => {
     // Must NOT contain the old unformatted single-line stringify in resolution steps
-    expect(fileContent).not.toContain('{JSON.stringify(st.params)}');
+    expect(fileContent).not.toContain('{JSON.stringify(st.effectParams)}');
   });
 });

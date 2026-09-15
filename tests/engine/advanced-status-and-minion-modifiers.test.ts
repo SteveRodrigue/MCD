@@ -60,7 +60,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
           steps: [
             {
               effect: 'ADD_STATUS',
-              params: {
+              effectParams: {
                 status: StatusCard.STUNNED,
                 target: 'MINION',
               },
@@ -82,7 +82,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
           steps: [
             {
               effect: 'ADD_STATUS',
-              params: {
+              effectParams: {
                 status: StatusCard.CONFUSED,
                 target: 'MINION',
               },

@@ -36,7 +36,7 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
           ab.steps?.some(
             (s) =>
               s.effect === 'DISCARD_SELF' ||
-              (s.effect === 'DISCARD' && s.params?.source === 'SELF'),
+              (s.effect === 'DISCARD' && s.effectParams?.source === 'SELF'),
           ),
       );
     });

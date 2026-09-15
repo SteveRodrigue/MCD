@@ -858,7 +858,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
         const step = {
           effect: 'DRAW' as const,
-          params: {
+          effectParams: {
             limit: 'PRINTED_HAND_SIZE' as const,
           },
         };
@@ -885,7 +885,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
 
         const step = {
           effect: 'DRAW' as const,
-          params: {
+          effectParams: {
             count: 2,
             limit: 'PRINTED_HAND_SIZE' as const,
           },

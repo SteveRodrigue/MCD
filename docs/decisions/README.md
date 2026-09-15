@@ -53,6 +53,7 @@ graph TD
     ADR21 -->|Partially superseded by| ADR59["ADR-0059: Decommissioning reconstructedText & mechanicSteps"]
     ADR29 --> ADR30
     ADR30 --> ADR55["ADR-0055: Universal Ability Resource Payment"]
+    ADR30 --> ADR60["ADR-0060: Gate and Effect Parameter Separation & Resource Kicker Tracking"]
 ```
 
 ### 3. Combat & Resolution Stack
@@ -199,6 +200,7 @@ graph TD
 | [ADR-0057](0057-universal-uses-counter-depletion-and-discard-lifecycle-architecture.md)           | 2026-09-13 | Universal Uses (X) Counter Depletion and Discard Lifecycle Architecture              | **Accepted**                                                                                                 | Centralize `checkAndDiscardZeroCounterCard` in `cost-engine.ts`, auto-execute upon counter exhaustion, cascade attachments/tucked cards, and protect non-discard cards (Hawkeye).                                                                                                               |
 | [ADR-0058](0058-declarative-schema-taxonomy-and-primitive-consolidation.md)                       | 2026-09-13 | Declarative Schema Taxonomy and Primitive Consolidation                              | **Accepted**                                                                                                 | Establish one canonical trigger, effect, and target-selector vocabulary with additive compatibility aliases, deterministic data migration, and phased legacy cleanup (Refs #111).                                                                                                               |
 | [ADR-0059](0059-decommissioning-reconstructed-text-and-mechanic-steps.md)                          | 2026-09-14 | Decommissioning Reconstructed Text and Mechanic Steps                                | **Accepted**                                                                                                 | Purge obsolete `reconstructedText` and `mechanicSteps` across schemas, packs, and tooling to establish `originalText` and `abilities: [...]` as sole sources of truth (Fixes #121).                                                                                                             |
+| [ADR-0060](0060-gate-and-effect-params-separation.md)                                              | 2026-09-14 | Gate and Effect Parameter Separation & Resource Kicker Tracking                     | **Accepted**                                                                                                 | Separate gate-controlling parameters into gateParams and action parameters into effectParams on AbilityStep; track resourcesSpent during PLAY_CARD and route into IF_RESOURCE_MATCH for universal resource kicker resolution (Fixes #107). |
 
 ---
 

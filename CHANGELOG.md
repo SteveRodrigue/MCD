@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Security & Tooling (Dependencies & Testing): Upgrade Vitest to v4.1.11 ([GHSA-82fw-gwwq-j7x9](https://github.com/advisories/GHSA-82fw-gwwq-j7x9))**
+  - **Vulnerability Remediation:** Resolved GitHub Dependabot alerts #6 (`@vitest/mocker`) and #7 (`vitest`) for CVE-2026-84373 (Path Traversal / Arbitrary File Read via redirect mock) by upgrading `vitest` from `^3.2.7` to `^4.1.11` in `package.json` and `package-lock.json`.
+  - **Vitest Config Modernization:** Migrated `vitest.config.ts` from deprecated and removed `environmentMatchGlobs` to Vitest 4 `test.projects` architecture with isolated `engine` (Node) and `ui` (`happy-dom`) projects, ensuring clean DOM isolation and automatic test cleanup.
+
 - **Feature & Refactor (Engine, Supplemental Data & Card Editor): Gate and Effect Parameter Separation & Resource Kicker Tracking ([#107](https://github.com/SteveRodrigue/MCD/issues/107), [ADR-0060](docs/decisions/0060-gate-and-effect-params-separation.md))**
   - **Schema & Type System Decoupling:** Separated `gateParams?: Record<string, any>` and `effectParams?: Record<string, any>` on `AbilityStep` interface and `AbilityStepSchema` in `src/data/supplemental/schema.ts` and `src/engine/models/abilities.ts`, keeping `params?: Record<string, any>` for backward-compatible ingestion. Exported universal parameter accessors `getStepEffectParams(step)` and `getStepGateParams(step)`. Regenerated `src/data/supplemental/schema.json` (`npm run schema:generate`).
   - **Spent Payment Resource Tracking & Dispatch:** Added `resourcesSpent?: string[]` to `TriggerContext` and `EffectExecutionContext`. Updated `action-dispatcher.ts` on `PLAY_CARD` to track all paid resources (inspecting payment cards, aspect resource doublers, and generator abilities) and route `resourcesSpent` into `executeEffect` and downstream triggers (`CARD_PLAYED`, `ENTERS_PLAY`).

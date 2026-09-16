@@ -224,3 +224,79 @@
 - **`from: "INTERCEPTED_VALUE"`**: Binds the scalar quantity captured from the trigger interception context (`threatAmount`, `damageAmount`, or `interceptedValue`).
 - **`multiplier`**: Optional scalar multiplier (defaults to `1`).
 - **`offset`**: Optional integer offset (e.g., `-1`, `+2`) to support modifier formulas (defaults to `0`).
+
+---
+
+## 4. Temporary Stat Modifier Auras (`MODIFY_STAT`)
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0062 / _Vision_ `01068` / _Lead from the Front_ `01070`)
+- **Description:** Pushes a typed `ActiveStatModifier` entry onto `CardInstance.activeStatModifiers` (ally-targeted) or `PlayerState.activeStatModifiers` (hero / all-friendly-characters). The modifier is aggregated at stat-calculation time by `getEffectiveAllyStats` and `getEffectiveHeroStats`, and is automatically expired at the relevant phase or round transition.
+
+### Targets
+
+| `target` value             | Effect                                                                                           |
+| :------------------------- | :----------------------------------------------------------------------------------------------- |
+| `"SELF"`                   | Applies to the triggering card instance (typically the ally that activated the ability).         |
+| `"ALL_FRIENDLY_CHARACTERS"`| Applies to the triggering player's hero identity AND all allied characters simultaneously.       |
+| `"TRIGGERING_HERO"`        | Applies to the triggering player's hero identity.                                                |
+| `"CHOSEN_ALLY"`            | Applies to a player-chosen ally (currently routes via `SELF` resolution).                        |
+
+### Parameters
+
+| Parameter    | Type                                   | Required | Default   | Description                                              |
+| :----------- | :------------------------------------- | :------- | :-------- | :------------------------------------------------------- |
+| `stat`       | `"ATK" \| "THW" \| "DEF" \| "REC"`    | Yes      | `"ATK"`   | The stat to modify.                                       |
+| `amount`     | `number`                               | Yes      | `1`       | The additive bonus amount.                               |
+| `duration`   | `"PHASE" \| "ROUND"`                   | Yes      | `"PHASE"` | Expiry window per RR v1.8 timing boundaries.             |
+| `target`     | `TargetSelector`                       | Yes      | `"SELF"`  | Who receives the modifier.                               |
+| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATK"` when used with `ALL_FRIENDLY_CHARACTERS`. |
+| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THW"` when used with `ALL_FRIENDLY_CHARACTERS`. |
+
+### Expiry Pipeline
+
+| Duration  | Expiry Trigger                                                                         |
+| :-------- | :------------------------------------------------------------------------------------- |
+| `"PHASE"` | Cleared at the start of each new player phase (`player-phase.ts`) and at villain phase start (`villain-phase.ts`). |
+| `"ROUND"` | Cleared at round upkeep (`round-upkeep.ts`).                                          |
+
+### Example: Vision `01068` — PLAYER_CHOICE → MODIFY_STAT
+
+```json
+{
+  "effect": "PLAYER_CHOICE",
+  "effectParams": {
+    "title": "Vision: Density Manipulation",
+    "description": "Choose THW or ATK to boost by +2 until the end of the phase:",
+    "options": [
+      {
+        "id": "boost_thw",
+        "label": "+2 THW",
+        "description": "Vision gets +2 THW until the end of the phase.",
+        "effect": "MODIFY_STAT",
+        "params": { "stat": "THW", "amount": 2, "duration": "PHASE", "target": "SELF" }
+      },
+      {
+        "id": "boost_atk",
+        "label": "+2 ATK",
+        "description": "Vision gets +2 ATK until the end of the phase.",
+        "effect": "MODIFY_STAT",
+        "params": { "stat": "ATK", "amount": 2, "duration": "PHASE", "target": "SELF" }
+      }
+    ]
+  }
+}
+```
+
+### Example: Lead from the Front `01070` — ALL_FRIENDLY_CHARACTERS buff
+
+```json
+{
+  "effect": "MODIFY_STAT",
+  "effectParams": {
+    "target": "ALL_FRIENDLY_CHARACTERS",
+    "atkBonus": 1,
+    "thwBonus": 1,
+    "duration": "PHASE"
+  }
+}
+```

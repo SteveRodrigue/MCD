@@ -6,6 +6,7 @@ import {
   getEffectiveAllyLimit,
   getEffectiveHandSize,
   getEffectiveVillainStats,
+  getEffectiveAllyStats,
 } from '../../src/engine/pipeline/stat-calculator';
 
 describe('UI Dynamic Board Stats Display Contract (Issue #103)', () => {
@@ -142,6 +143,38 @@ describe('UI Dynamic Board Stats Display Contract (Issue #103)', () => {
 
       const buffedStats = getEffectiveVillainStats(state, villain);
       expect(buffedStats.attack).toBe(baseAtk + 1);
+    });
+  });
+
+  describe('HeroZone & AllyActionModal: Dynamic Ally ATK & THW with Stat Modifiers (Issue #119)', () => {
+    it('calculates ally stat bonuses when ally has activeStatModifiers', () => {
+      const visionCard = cardCatalog.getCard('01068')!;
+      const visionInst = {
+        instanceId: 'vision_test_1',
+        card: visionCard,
+        exhausted: false,
+        activeStatModifiers: [
+          {
+            stat: 'THW' as const,
+            amount: 2,
+            duration: 'PHASE' as const,
+            sourceCardName: 'Vision',
+          },
+        ],
+      };
+
+      const baseThw = (visionCard as any).thwart ?? 1;
+      const baseAtk = (visionCard as any).attack ?? 2;
+
+      const stats = getEffectiveAllyStats(state, visionInst);
+
+      const thwBonus = stats.thwart - baseThw;
+      const atkBonus = stats.attack - baseAtk;
+
+      expect(stats.thwart).toBe(3);
+      expect(stats.attack).toBe(2);
+      expect(thwBonus).toBe(2);
+      expect(atkBonus).toBe(0);
     });
   });
 });

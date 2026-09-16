@@ -281,6 +281,17 @@ export function resolveDecisionPrompt(
     };
   }
 
+  // Look up source card instance if prompt originated from a specific in-play card
+  const promptCardInst = prompt.sourceCardInstanceId
+    ? player?.allies.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+      player?.tableau.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+      player?.attachments?.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+      player?.hand.find((c) => c.instanceId === prompt.sourceCardInstanceId)
+    : prompt.sourceCardCode
+      ? player?.allies.find((c) => c.card.code === prompt.sourceCardCode) ||
+        player?.tableau.find((c) => c.card.code === prompt.sourceCardCode)
+      : undefined;
+
   // Synthesize and execute ability
   const syntheticAbility: CardAbility = {
     id: `${prompt.promptId}_${selectedOption!.id}`,
@@ -298,6 +309,8 @@ export function resolveDecisionPrompt(
 
   const effectRes = executeEffect(nextState, syntheticAbility, {
     playerId,
+    sourceCardInstance: promptCardInst,
+    sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
   });
 
   return {

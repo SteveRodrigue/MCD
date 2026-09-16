@@ -2431,11 +2431,12 @@
       }
     },
     "01068": {
-      "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase.",
+      "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase. (Limit once per round.)",
       "abilities": [
         {
           "id": "vision_boost",
           "timing": "ACTION",
+          "limit": "ONCE_PER_ROUND",
           "cost": {
             "resourceCost": {
               "energy": 1
@@ -2445,10 +2446,33 @@
             {
               "effect": "PLAYER_CHOICE",
               "effectParams": {
-                "amount": 2,
+                "title": "Vision: Density Manipulation",
+                "description": "Choose THW or ATK to boost by +2 until the end of the phase:",
                 "options": [
-                  "ATK",
-                  "THW"
+                  {
+                    "id": "boost_thw",
+                    "label": "+2 THW",
+                    "description": "Vision gets +2 THW until the end of the phase.",
+                    "effect": "MODIFY_STAT",
+                    "params": {
+                      "stat": "THW",
+                      "amount": 2,
+                      "duration": "PHASE",
+                      "target": "SELF"
+                    }
+                  },
+                  {
+                    "id": "boost_atk",
+                    "label": "+2 ATK",
+                    "description": "Vision gets +2 ATK until the end of the phase.",
+                    "effect": "MODIFY_STAT",
+                    "params": {
+                      "stat": "ATK",
+                      "amount": 2,
+                      "duration": "PHASE",
+                      "target": "SELF"
+                    }
+                  }
                 ]
               }
             }
@@ -2457,11 +2481,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-15T20:47:00Z",
+        "reviewedAt": "2026-09-15T20:47:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Action</b>: Spend a [energy] resource → choose THW or ATK. Until the end of the phase, Vision gets +2 to the chosen power. (Limit once per round.)"
       }
     },

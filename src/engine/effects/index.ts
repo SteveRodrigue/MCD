@@ -2259,24 +2259,77 @@ export function executeStep(
     }
 
     case 'MODIFY_STAT': {
+      const stepParams = getStepEffectParams(step);
+      const targetParam =
+        (stepParams.target as string) || (step.effectParams?.target as string) || 'SELF';
+      const duration =
+        (stepParams.duration as 'PHASE' | 'ROUND') ||
+        (step.effectParams?.duration as 'PHASE' | 'ROUND') ||
+        'PHASE';
+      const sourceCardName =
+        context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Stat Modifier';
+      const sourceCardCode = context.sourceCardInstance?.card.code;
+
       if (
-        step.effectParams?.target === 'ALL_FRIENDLY_CHARACTERS' ||
-        step.effectParams?.atkBonus !== undefined ||
-        step.effectParams?.thwBonus !== undefined
+        targetParam === 'ALL_FRIENDLY_CHARACTERS' ||
+        stepParams.atkBonus !== undefined ||
+        stepParams.thwBonus !== undefined
       ) {
         const atkBonus =
+          (stepParams.atkBonus as number) ||
           (step.effectParams?.atkBonus as number) ||
-          (step.effectParams?.stat === 'ATK' ? (step.effectParams?.amount as number) : 0) ||
+          (stepParams.stat === 'ATK' ? (stepParams.amount as number) : 0) ||
           0;
         const thwBonus =
+          (stepParams.thwBonus as number) ||
           (step.effectParams?.thwBonus as number) ||
-          (step.effectParams?.stat === 'THW' ? (step.effectParams?.amount as number) : 0) ||
+          (stepParams.stat === 'THW' ? (stepParams.amount as number) : 0) ||
           0;
-        for (const a of player.allies) {
-          if (!a.tokens) a.tokens = { damage: 0, threat: 0, counters: 0 };
-          (a.tokens as any).atkBonus = ((a.tokens as any).atkBonus || 0) + atkBonus;
-          (a.tokens as any).thwBonus = ((a.tokens as any).thwBonus || 0) + thwBonus;
+
+        // Apply to player identity (Hero/Alter-Ego is a friendly character)
+        if (!player.activeStatModifiers) player.activeStatModifiers = [];
+        if (atkBonus) {
+          player.activeStatModifiers.push({
+            stat: 'ATK',
+            amount: atkBonus,
+            duration,
+            sourceCardName,
+            sourceCardCode,
+          });
         }
+        if (thwBonus) {
+          player.activeStatModifiers.push({
+            stat: 'THW',
+            amount: thwBonus,
+            duration,
+            sourceCardName,
+            sourceCardCode,
+          });
+        }
+
+        // Apply to all allies
+        for (const a of player.allies) {
+          if (!a.activeStatModifiers) a.activeStatModifiers = [];
+          if (atkBonus) {
+            a.activeStatModifiers.push({
+              stat: 'ATK',
+              amount: atkBonus,
+              duration,
+              sourceCardName,
+              sourceCardCode,
+            });
+          }
+          if (thwBonus) {
+            a.activeStatModifiers.push({
+              stat: 'THW',
+              amount: thwBonus,
+              duration,
+              sourceCardName,
+              sourceCardCode,
+            });
+          }
+        }
+
         return {
           state,
           success: true,
@@ -2284,6 +2337,64 @@ export function executeStep(
           onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ALL CHARACTERS!`,
         };
       }
+
+      if (
+        targetParam === 'SELF' ||
+        targetParam === 'TRIGGERING_HERO' ||
+        targetParam === 'CHOSEN_CHARACTER' ||
+        targetParam === 'CHOSEN_ALLY'
+      ) {
+        const stat = (stepParams.stat as any) || (step.effectParams?.stat as any) || 'ATK';
+        const amount = (stepParams.amount as number) || (step.effectParams?.amount as number) || 1;
+
+        // Resolve target card instance
+        let targetCard = context.sourceCardInstance;
+        if (!targetCard && context.sourceCardId) {
+          targetCard =
+            player.allies.find(
+              (a) => a.instanceId === context.sourceCardId || a.card.code === context.sourceCardId,
+            ) ||
+            player.tableau.find(
+              (t) => t.instanceId === context.sourceCardId || t.card.code === context.sourceCardId,
+            );
+        }
+
+        if (targetCard) {
+          if (!targetCard.activeStatModifiers) targetCard.activeStatModifiers = [];
+          targetCard.activeStatModifiers.push({
+            stat,
+            amount,
+            duration,
+            sourceCardName,
+            sourceCardCode,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: `+${amount} ${stat}!`,
+          };
+        } else {
+          // If target is player/hero identity
+          if (!player.activeStatModifiers) player.activeStatModifiers = [];
+          player.activeStatModifiers.push({
+            stat,
+            amount,
+            duration,
+            sourceCardName,
+            sourceCardCode,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: `+${amount} ${stat}!`,
+          };
+        }
+      }
+
       // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
       return { state, success: true };
     }
@@ -2610,29 +2721,19 @@ export function executeStep(
         const amount = (step.effectParams?.amount as number) || 2;
         const chosenStat =
           (context.choice as string) || (step.effectParams?.stat as string) || 'ATK';
-        if (context.sourceCardInstance) {
-          if (!context.sourceCardInstance.tokens) {
-            context.sourceCardInstance.tokens = {
-              damage: 0,
-              threat: 0,
-              counters: 0,
-            };
-          }
-          if (chosenStat === 'THW' || chosenStat === 'THWART') {
-            (context.sourceCardInstance.tokens as any).thwBonus =
-              ((context.sourceCardInstance.tokens as any).thwBonus || 0) + amount;
-          } else {
-            (context.sourceCardInstance.tokens as any).atkBonus =
-              ((context.sourceCardInstance.tokens as any).atkBonus || 0) + amount;
-          }
-        }
-        return {
+        return executeEffect(
           state,
-          success: true,
-          mutatedState: true,
-          value: amount,
-          onomatopoeia: `+${amount} ${chosenStat}!`,
-        };
+          {
+            effect: 'MODIFY_STAT',
+            effectParams: {
+              stat: chosenStat,
+              amount,
+              duration: 'PHASE',
+              target: 'SELF',
+            },
+          },
+          context,
+        );
       }
 
       let options = (step.effectParams?.options as any[]) || [];
@@ -2641,9 +2742,9 @@ export function executeStep(
         options = options.map((opt: string) => ({
           id: opt,
           label: `+${amt} ${opt}`,
-          description: `Boost ${opt} by ${amt}`,
-          effect: 'PLAYER_CHOICE',
-          params: { stat: opt, amount: amt },
+          description: `Boost ${opt} by ${amt} until end of phase`,
+          effect: 'MODIFY_STAT',
+          params: { stat: opt, amount: amt, duration: 'PHASE', target: 'SELF' },
         }));
       }
       const title =
@@ -2660,6 +2761,7 @@ export function executeStep(
         description,
         sourceCardName,
         sourceCardCode: context.sourceCardInstance?.card.code,
+        sourceCardInstanceId: context.sourceCardInstance?.instanceId,
         triggerSourceCard: context.sourceCardInstance?.card,
         options,
         isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,

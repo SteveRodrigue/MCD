@@ -18,6 +18,18 @@ export function startPlayerPhase(state: GameState): GameState {
       (r) => r.duration !== 'PHASE',
     );
     player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
+      (m) => m.duration !== 'PHASE',
+    );
+    for (const ally of player.allies) {
+      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'PHASE',
+      );
+      if (ally.tokens) {
+        delete (ally.tokens as any).thwBonus;
+        delete (ally.tokens as any).atkBonus;
+      }
+    }
   }
 
   state.log.push({
@@ -44,12 +56,24 @@ export function startPlayerPhase(state: GameState): GameState {
  * 2. Transitions state.phase to VILLAIN_PHASE.
  */
 export function endPlayerPhase(state: GameState): GameState {
-  // Expire phase cost reductions
+  // Expire phase cost reductions and phase stat modifiers
   for (const player of state.players) {
     player.activeCostReductions = (player.activeCostReductions || []).filter(
       (r) => r.duration !== 'PHASE',
     );
     player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
+      (m) => m.duration !== 'PHASE',
+    );
+    for (const ally of player.allies) {
+      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'PHASE',
+      );
+      if (ally.tokens) {
+        delete (ally.tokens as any).thwBonus;
+        delete (ally.tokens as any).atkBonus;
+      }
+    }
   }
 
   state.log.push({

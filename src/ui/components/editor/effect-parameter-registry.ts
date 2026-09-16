@@ -38,7 +38,12 @@ export const KEYWORD_OPTIONS = [
   'Acceleration',
   'Toughness',
 ] as const;
-export const DURATION_OPTIONS = ['UNTIL_END_OF_PHASE', 'UNTIL_END_OF_ROUND'] as const;
+export const DURATION_OPTIONS = [
+  'PHASE',
+  'ROUND',
+  'UNTIL_END_OF_PHASE',
+  'UNTIL_END_OF_ROUND',
+] as const;
 export const SEARCH_SOURCE_OPTIONS = [
   'PLAYER_DECK',
   'ENCOUNTER_DECK',
@@ -495,6 +500,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Duration',
         type: 'select',
         options: DURATION_OPTIONS,
+        defaultValue: 'PHASE',
       },
       {
         key: 'target',
@@ -1108,7 +1114,17 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   PLAYER_CHOICE: {
     effect: 'PLAYER_CHOICE',
     description: 'Prompt player to choose between multiple options.',
-    parameters: [],
+    parameters: [
+      { key: 'title', label: 'Prompt Title', type: 'text', placeholder: 'e.g. Choose an Option' },
+      {
+        key: 'description',
+        label: 'Prompt Description',
+        type: 'text',
+        placeholder: 'e.g. Choose one of the following:',
+      },
+      { key: 'options', label: 'Choice Options', type: 'json' },
+      { key: 'isVoluntary', label: 'Voluntary Choice', type: 'boolean', defaultValue: false },
+    ],
   },
   DRAW: {
     effect: 'DRAW',

@@ -67,6 +67,14 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
       (r) => r.duration !== 'ROUND',
     );
     player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
+      (m) => m.duration !== 'ROUND',
+    );
+    for (const ally of player.allies) {
+      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'ROUND',
+      );
+    }
   }
 
   // 5. Increment Round Number

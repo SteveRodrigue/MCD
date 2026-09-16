@@ -848,7 +848,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'duration',
         label: 'Duration',
         type: 'select',
-        options: ['PHASE', 'ROUND'] as const,
+        options: ['PHASE', 'ROUND', 'TURN'] as const,
         defaultValue: 'PHASE',
       },
       {
@@ -857,6 +857,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
+      },
+      {
+        key: 'cardFilter',
+        label: 'Eligible Card Filter',
+        type: 'card-filter',
+        description: 'Universal card filter for eligible cards (e.g. aspect, card type, trait)',
       },
     ],
   },

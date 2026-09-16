@@ -179,4 +179,26 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(unknown.parameters).toEqual([]);
     expect(unknown.description).toContain('CUSTOM_PRIMITIVE_UNKNOWN');
   });
+
+  it('REDUCE_NEXT_CARD_COST exposes amount, duration, target, and cardFilter with ADR-0061 options', () => {
+    const desc = getEffectDescriptor('REDUCE_NEXT_CARD_COST');
+    expect(desc.effect).toBe('REDUCE_NEXT_CARD_COST');
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('amount');
+    expect(paramKeys).toContain('duration');
+    expect(paramKeys).toContain('target');
+    expect(paramKeys).toContain('cardFilter');
+
+    const durationParam = desc.parameters.find((p) => p.key === 'duration');
+    expect(durationParam?.options).toEqual(['PHASE', 'ROUND', 'TURN']);
+    expect(durationParam?.defaultValue).toBe('PHASE');
+
+    const filterParam = desc.parameters.find((p) => p.key === 'cardFilter');
+    expect(filterParam?.type).toBe('card-filter');
+
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+    expect(targetParam?.type).toBe('select');
+    expect(targetParam?.defaultValue).toBe('SELF');
+  });
 });

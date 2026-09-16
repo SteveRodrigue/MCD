@@ -201,4 +201,31 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(targetParam?.type).toBe('select');
     expect(targetParam?.defaultValue).toBe('SELF');
   });
+
+  it('MODIFY_STAT exposes stat, amount, duration (PHASE/ROUND), and target', () => {
+    const desc = getEffectDescriptor('MODIFY_STAT');
+    expect(desc.effect).toBe('MODIFY_STAT');
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('stat');
+    expect(paramKeys).toContain('amount');
+    expect(paramKeys).toContain('duration');
+    expect(paramKeys).toContain('target');
+
+    const durationParam = desc.parameters.find((p) => p.key === 'duration');
+    expect(durationParam?.options).toContain('PHASE');
+    expect(durationParam?.options).toContain('ROUND');
+    expect(durationParam?.defaultValue).toBe('PHASE');
+  });
+
+  it('PLAYER_CHOICE exposes title, description, options, and isVoluntary', () => {
+    const desc = getEffectDescriptor('PLAYER_CHOICE');
+    expect(desc.effect).toBe('PLAYER_CHOICE');
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('title');
+    expect(paramKeys).toContain('description');
+    expect(paramKeys).toContain('options');
+    expect(paramKeys).toContain('isVoluntary');
+  });
 });

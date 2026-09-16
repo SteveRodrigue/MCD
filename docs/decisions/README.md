@@ -114,6 +114,8 @@ graph TD
         ADR40["ADR-0040: Card Conservation & Atomic Zone Transfer"]
         ADR41["ADR-0041: Cost Arrow Enforcement & Self-Damage Costs"]
         ADR61["ADR-0061: Declarative Next-Card Cost Reduction Aura"]
+        ADR62["ADR-0062: Declarative Temporary Stat Modifier Auras"]
+        ADR61 --> ADR62
     end
     subgraph DevTooling["Developer Tooling & Data Quality"]
         ADR42["ADR-0042: Local-First Problem Reporting & Deferred GitHub Filing"]
@@ -203,6 +205,7 @@ graph TD
 | [ADR-0059](0059-decommissioning-reconstructed-text-and-mechanic-steps.md)                          | 2026-09-14 | Decommissioning Reconstructed Text and Mechanic Steps                                | **Accepted**                                                                                                 | Purge obsolete `reconstructedText` and `mechanicSteps` across schemas, packs, and tooling to establish `originalText` and `abilities: [...]` as sole sources of truth (Fixes #121).                                                                                                             |
 | [ADR-0060](0060-gate-and-effect-params-separation.md)                                              | 2026-09-14 | Gate and Effect Parameter Separation & Resource Kicker Tracking                     | **Accepted**                                                                                                 | Separate gate-controlling parameters into gateParams and action parameters into effectParams on AbilityStep; track resourcesSpent during PLAY_CARD and route into IF_RESOURCE_MATCH for universal resource kicker resolution (Fixes #107). |
 | [ADR-0061](0061-declarative-next-card-cost-reduction-aura.md)                                      | 2026-09-15 | Declarative Next-Card Cost Reduction Aura Architecture                               | **Accepted**                                                                                                 | Model transient next-card cost reductions via typed `activeCostReductions` on `PlayerState`, centralized `getEffectiveCardCost()`, phase cleanup, and comic pop-art warning/discount badges (Fixes #46). |
+| [ADR-0062](0062-declarative-temporary-stat-modifier-auras.md)                                      | 2026-09-16 | Declarative Temporary Stat Modifier Auras                                            | **Accepted**                                                                                                 | Model phase/round-duration stat buffs via typed `ActiveStatModifier[]` on `CardInstance` and `PlayerState`, universal `MODIFY_STAT` primitive with `target`/`duration`, automatic expiry in phase pipelines, and ally stat bonus display in HeroZone and AllyActionModal (Closes #119). |
 
 ---
 

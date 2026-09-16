@@ -27,6 +27,7 @@ export interface CardInstance {
   attachments?: CardInstance[];
   cardsUnderneath?: CardInstance[]; // Out-of-play cards placed/tucked under this card (RR v1.8 p. 6)
   ownerId?: string; // Player ID of card owner for cross-player control / attachments (RR v1.8 p. 11)
+  activeStatModifiers?: ActiveStatModifier[]; // Temporary stat modifiers (e.g. Vision 01068)
 }
 
 export type IdentityFormType = 'hero' | 'alter_ego';
@@ -67,8 +68,19 @@ export interface PlayerState {
   /** Tracks active cost reductions applied to the next played card (e.g. Helicarrier) */
   costReductions?: number;
   activeCostReductions?: ActiveCostReduction[];
+  /** Active temporary stat modifier auras (e.g. Lead from the Front 01070) */
+  activeStatModifiers?: ActiveStatModifier[];
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
+}
+
+export interface ActiveStatModifier {
+  id?: string;
+  stat: 'THW' | 'ATK' | 'DEF' | 'REC' | 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVER' | 'RECOVERY';
+  amount: number;
+  duration: 'PHASE' | 'ROUND';
+  sourceCardName?: string;
+  sourceCardCode?: string;
 }
 
 export interface ActiveCostReduction {
@@ -225,6 +237,7 @@ export interface PendingDecisionPrompt {
   description: string;
   sourceCardName: string;
   sourceCardCode?: string;
+  sourceCardInstanceId?: string;
   triggerSourceName?: string;
   triggerSourceCode?: string;
   triggerSourceCard?: NormalizedCard;

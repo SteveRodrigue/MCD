@@ -43,6 +43,11 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
       gameState.players[gameState.activePlayerIndex]?.id === player.id
     : true;
 
+  const baseAtk = (allyCard as any).attack ?? 0;
+  const baseThw = (allyCard as any).thwart ?? 0;
+  const atkBonus = allyStats.attack - baseAtk;
+  const thwBonus = allyStats.thwart - baseThw;
+
   const currentDamage = ally.tokens?.damage || 0;
   const maxHealth = allyCard.health || 2;
   const currentHealth = Math.max(0, maxHealth - currentDamage);
@@ -122,11 +127,25 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
             )}
           </div>
           <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
-            <span className="bg-comic-red text-white px-1.5 py-0.5 rounded border border-comic-black">
-              {allyStats.attack} ATK
+            <span
+              className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
+                atkBonus > 0 ? 'bg-comic-red ring-2 ring-rose-400 font-black' : 'bg-comic-red'
+              }`}
+            >
+              <span>{allyStats.attack} ATK</span>
+              {atkBonus > 0 && (
+                <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{atkBonus})</span>
+              )}
             </span>
-            <span className="bg-sky-500 text-white px-1.5 py-0.5 rounded border border-comic-black">
-              {allyStats.thwart} THW
+            <span
+              className={`text-white px-1.5 py-0.5 rounded border border-comic-black flex items-center gap-0.5 ${
+                thwBonus > 0 ? 'bg-sky-500 ring-2 ring-sky-300 font-black' : 'bg-sky-500'
+              }`}
+            >
+              <span>{allyStats.thwart} THW</span>
+              {thwBonus > 0 && (
+                <span className="text-yellow-300 ml-0.5 text-[9px] font-black">(+{thwBonus})</span>
+              )}
             </span>
           </div>
         </div>

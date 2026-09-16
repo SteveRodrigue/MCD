@@ -220,7 +220,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
   - [x] **[Issue #53](https://github.com/SteveRodrigue/MCD/issues/53):** `feat(tooling): Card text parsing and declarative mapping analyzer tool` ([ADR-0044](decisions/0044-card-text-parsing-and-declarative-mapping-analyzer.md)).
   - [x] **[Issue #66](https://github.com/SteveRodrigue/MCD/issues/66):** `feat(engine): Unify fragmented DISCARD_* primitives into universal DISCARD with source, filter, and until-condition`.
   - [x] **[Issue #25](https://github.com/SteveRodrigue/MCD/issues/25):** `feat(engine): PLAY_CARD_FROM_ZONE primitive for Make the Call (01071)` ([ADR-0047](decisions/0047-playing-cards-from-non-hand-zones.md)).
-  - [ ] **[Issue #24](https://github.com/SteveRodrigue/MCD/issues/24):** `feat(engine): until-end-of-phase temporary stat duration (Vision 01068)`.
+  - [x] **[Issue #24](https://github.com/SteveRodrigue/MCD/issues/24) / [Issue #119](https://github.com/SteveRodrigue/MCD/issues/119):** `feat(engine): Declarative Temporary Stat Modifier Auras — MODIFY_STAT, ActiveStatModifier, phase/round expiry, Vision 01068 PLAYER_CHOICE, ally stat bonus UI` ([ADR-0062](decisions/0062-declarative-temporary-stat-modifier-auras.md)) ✅ (Completed)
   - [ ] **[Issue #23](https://github.com/SteveRodrigue/MCD/issues/23):** `feat(engine): Cross-player attachments & ownership (Combat Training 01057)`.
   - [x] **[Issue #26](https://github.com/SteveRodrigue/MCD/issues/26):** `feat(engine): Cancel When Revealed + induce Villain attack (Get Behind Me! 01078)`.
   - [x] **[Issue #105](https://github.com/SteveRodrigue/MCD/issues/105):** `[BUG]: Hawkeye ally Response trigger does not prompt when minion enters play` ✅ (Completed)

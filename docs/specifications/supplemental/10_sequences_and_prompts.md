@@ -113,35 +113,48 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 
 ## 2. Interactive Decision Prompts (`PLAYER_CHOICE`)
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`DecisionPromptModal.tsx`](../../../src/ui/components/board/DecisionPromptModal.tsx) / _Nick Fury_ `01084` / _Hydra Bomber_ `01110` / _Exhaustion_ `01191`)
-- **Description:** Renders a Pop-Art comic decision modal, blocking state execution until the player resolves their choice.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`DecisionPromptModal.tsx`](../../../src/ui/components/board/DecisionPromptModal.tsx) / _Nick Fury_ `01084` / _Hydra Bomber_ `01110` / _Exhaustion_ `01191` / _Vision_ `01068`)
+- **Description:** Renders a Pop-Art comic decision modal, blocking state execution until the player resolves their choice. When a `PLAYER_CHOICE` prompt originates from an in-play ally or tableau card, the `sourceCardInstanceId` field on `PendingDecisionPrompt` is forwarded into `executeEffect` so that `MODIFY_STAT` with `target: "SELF"` resolves correctly against the ability-triggering card instance.
 
 ```json
 {
   "effect": "PLAYER_CHOICE",
-  "params": {
-    "promptTitle": "Nick Fury's Orders",
-    "promptMessage": "Choose 1 of the following options:",
+  "effectParams": {
+    "title": "Vision: Density Manipulation",
+    "description": "Choose THW or ATK to boost by +2 until the end of the phase:",
     "options": [
       {
-        "id": "opt_remove_threat",
-        "label": "Remove 2 threat from a scheme",
-        "effect": "REMOVE_THREAT",
-        "params": { "amount": 2, "target": "MAIN_SCHEME" }
+        "id": "boost_thw",
+        "label": "+2 THW",
+        "description": "Vision gets +2 THW until the end of the phase.",
+        "effect": "MODIFY_STAT",
+        "params": { "stat": "THW", "amount": 2, "duration": "PHASE", "target": "SELF" }
       },
       {
-        "id": "opt_draw",
-        "label": "Draw 3 cards",
-        "effect": "DRAW",
-        "params": { "count": 3, "target": "SELF_IDENTITY" }
-      },
-      {
-        "id": "opt_deal_damage",
-        "label": "Deal 4 damage to an enemy",
-        "effect": "DEAL_DAMAGE",
-        "params": { "amount": 4, "target": "CHOSEN_ENEMY" }
+        "id": "boost_atk",
+        "label": "+2 ATK",
+        "description": "Vision gets +2 ATK until the end of the phase.",
+        "effect": "MODIFY_STAT",
+        "params": { "stat": "ATK", "amount": 2, "duration": "PHASE", "target": "SELF" }
       }
     ]
   }
+}
+```
+
+> [!NOTE]
+> The `promptId` field on `PendingDecisionPrompt` is **not** used by `resolveDecisionPrompt` for disambiguation — the resolver always pops the head of the `pendingDecisionQueue`. The `promptId` is retained in the queue for log tracing.
+
+### `sourceCardInstanceId` Binding (ADR-0062)
+
+When `PLAYER_CHOICE` is executed from a `USE_CARD_ABILITY` action on an in-play ally, `executeEffect` attaches `context.sourceCardInstance` to the prompt via `sourceCardInstanceId`. When the prompt is resolved via `resolveDecisionPrompt`, `prompt-queue.ts` looks up the ally by instanceId in `player.allies` and `player.tableau` and forwards it as `sourceCardInstance` into the synthetic ability execution. This guarantees that `target: "SELF"` in a `MODIFY_STAT` option correctly pushes the modifier onto the triggering ally's `activeStatModifiers`.
+
+```json
+// PendingDecisionPrompt fields relevant to source binding:
+{
+  "promptId": "...",
+  "sourceCardName": "Vision",
+  "sourceCardCode": "01068",
+  "sourceCardInstanceId": "<runtime instanceId>"
 }
 ```

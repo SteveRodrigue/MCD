@@ -124,10 +124,10 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
     }
   }
 
-  // Add token/temporary stat bonuses (e.g. Vision 01068 or Lead from the Front 01070)
-  if (ally.tokens) {
-    thwart += (ally.tokens as any).thwBonus || 0;
-    attack += (ally.tokens as any).atkBonus || 0;
+  // Add active temporary stat modifiers on this ally (e.g. Vision 01068, Lead from the Front 01070)
+  for (const mod of ally.activeStatModifiers || []) {
+    if (mod.stat === 'THW' || mod.stat === 'THWART') thwart += mod.amount;
+    if (mod.stat === 'ATK' || mod.stat === 'ATTACK') attack += mod.amount;
   }
 
   return {
@@ -194,6 +194,15 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
         }
       }
     }
+  }
+
+  // Add active temporary stat modifiers on the player (e.g. Lead from the Front 01070)
+  for (const mod of player.activeStatModifiers || []) {
+    if (mod.stat === 'THW' || mod.stat === 'THWART') thwart += mod.amount;
+    if (mod.stat === 'ATK' || mod.stat === 'ATTACK') attack += mod.amount;
+    if (mod.stat === 'DEF' || mod.stat === 'DEFENSE') defense += mod.amount;
+    if (mod.stat === 'REC' || mod.stat === 'RECOVER' || mod.stat === 'RECOVERY')
+      recovery += mod.amount;
   }
 
   return {

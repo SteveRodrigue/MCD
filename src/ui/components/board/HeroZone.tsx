@@ -576,12 +576,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           {player.allies.length > 0 ? (
             <div className="flex flex-wrap gap-3 items-start pt-1">
               {player.allies.map((ally) => {
+                const allyCard = ally.card as any;
+                const baseAtk = allyCard.attack ?? 0;
+                const baseThw = allyCard.thwart ?? 0;
                 const allyStats = gameState
                   ? getEffectiveAllyStats(gameState, ally)
                   : {
-                      attack: (ally.card as any).attack ?? 1,
-                      thwart: (ally.card as any).thwart ?? 1,
+                      attack: baseAtk || 1,
+                      thwart: baseThw || 1,
                     };
+                const atkBonus = allyStats.attack - baseAtk;
+                const thwBonus = allyStats.thwart - baseThw;
+
                 const canAct = isPlayerTurn && !ally.exhausted;
                 const canThw =
                   canAct &&
@@ -604,23 +610,68 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       <button
                         onClick={() => handleInitiateAttack('ally', ally.instanceId)}
                         disabled={!canAct}
-                        className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
-                        title={canAct ? `Attack for ${allyStats.attack} damage` : 'Ally exhausted'}
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-comic-red hover:bg-red-700 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
+                        title={
+                          canAct
+                            ? `Attack for ${allyStats.attack} damage${atkBonus > 0 ? ` (+${atkBonus} bonus)` : ''}`
+                            : 'Ally exhausted'
+                        }
                       >
-                        ⚔️ {allyStats.attack}
+                        <span>⚔️ {allyStats.attack}</span>
+                        {atkBonus > 0 && (
+                          <span className="text-yellow-300 text-[9px] font-black">
+                            (+{atkBonus})
+                          </span>
+                        )}
                       </button>
                       <button
                         onClick={() => handleInitiateThwart('ally', ally.instanceId)}
                         disabled={!canThw}
-                        className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
+                        className="px-1.5 py-0.5 font-comic text-[10px] bg-sky-500 hover:bg-sky-600 text-white rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2 flex items-center gap-0.5"
                         title={
                           canThw
-                            ? `Thwart scheme for ${allyStats.thwart} threat`
+                            ? `Thwart scheme for ${allyStats.thwart} threat${thwBonus > 0 ? ` (+${thwBonus} bonus)` : ''}`
                             : 'No threat on schemes or ally exhausted'
                         }
                       >
-                        🛡️ {allyStats.thwart}
+                        <span>🛡️ {allyStats.thwart}</span>
+                        {thwBonus > 0 && (
+                          <span className="text-yellow-300 text-[9px] font-black">
+                            (+{thwBonus})
+                          </span>
+                        )}
                       </button>
+                    </div>
+
+                    {/* Pop-Art Ally Stat Bonus Strip (Matching Hero stat display) */}
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/95 border border-comic-black rounded shadow-comic-xs text-[9px] font-comic font-bold mb-1 z-30">
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-slate-500 uppercase text-[8px]">THW</span>
+                        <span
+                          className={`flex items-center ${
+                            thwBonus > 0 ? 'text-emerald-600 font-black' : 'text-slate-900'
+                          }`}
+                        >
+                          {allyStats.thwart}
+                          {thwBonus > 0 && (
+                            <span className="text-[8px] text-emerald-600 ml-0.5">+{thwBonus}</span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="h-3 w-px bg-slate-300" />
+                      <div className="flex items-center gap-0.5">
+                        <span className="text-slate-500 uppercase text-[8px]">ATK</span>
+                        <span
+                          className={`flex items-center ${
+                            atkBonus > 0 ? 'text-comic-red font-black' : 'text-slate-900'
+                          }`}
+                        >
+                          {allyStats.attack}
+                          {atkBonus > 0 && (
+                            <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
+                          )}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Dedicated Host Card & Attachment Anchor Container (Coordinates align with top of host card) */}

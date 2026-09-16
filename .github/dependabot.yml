@@ -5,8 +5,9 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
-    cooldown: 7  # Wait for a release to be 1 week old before updating it.
+    cooldown:
+      default: 7

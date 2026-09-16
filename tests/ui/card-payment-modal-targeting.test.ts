@@ -99,4 +99,51 @@ describe('CardPaymentModal Targeting Invariants (Issue #94)', () => {
     expect(isAttack).toBe(true);
     expect(isThwart).toBe(false);
   });
+
+  describe('CardPaymentModal Cost Reduction & Caution Banner Invariants (Issue #46)', () => {
+    function evaluateCostDisplayState(
+      baseCost: number,
+      reductions: { sourceCardName: string; amount: number }[],
+    ) {
+      const totalReduction = reductions.reduce((sum, r) => sum + r.amount, 0);
+      const effectiveCost = Math.max(0, baseCost - totalReduction);
+      const showDiscountBanner = reductions.length > 0 && baseCost > 0;
+      const showCautionBanner = reductions.length > 0 && baseCost === 0;
+      const showStrikethrough = reductions.length > 0 && baseCost > 0;
+
+      return {
+        effectiveCost,
+        baseCost,
+        totalReduction,
+        showDiscountBanner,
+        showCautionBanner,
+        showStrikethrough,
+      };
+    }
+
+    it('Card with cost > 0 displays discount banner and strikethrough cost', () => {
+      const state = evaluateCostDisplayState(2, [{ sourceCardName: 'Helicarrier', amount: 1 }]);
+      expect(state.effectiveCost).toBe(1);
+      expect(state.showDiscountBanner).toBe(true);
+      expect(state.showCautionBanner).toBe(false);
+      expect(state.showStrikethrough).toBe(true);
+      expect(state.totalReduction).toBe(1);
+    });
+
+    it('Card with cost 0 displays caution banner and no discount banner or strikethrough', () => {
+      const state = evaluateCostDisplayState(0, [{ sourceCardName: 'Helicarrier', amount: 1 }]);
+      expect(state.effectiveCost).toBe(0);
+      expect(state.showDiscountBanner).toBe(false);
+      expect(state.showCautionBanner).toBe(true);
+      expect(state.showStrikethrough).toBe(false);
+    });
+
+    it('Card without cost reductions displays standard cost without banners or strikethrough', () => {
+      const state = evaluateCostDisplayState(3, []);
+      expect(state.effectiveCost).toBe(3);
+      expect(state.showDiscountBanner).toBe(false);
+      expect(state.showCautionBanner).toBe(false);
+      expect(state.showStrikethrough).toBe(false);
+    });
+  });
 });

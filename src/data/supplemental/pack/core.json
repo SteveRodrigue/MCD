@@ -3173,11 +3173,11 @@
       "maxPerPlayer": 1,
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-15T18:04:00Z",
+        "reviewedAt": "2026-09-15T18:04:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Max 1 per player.\n<b>Action</b>: Exhaust Helicarrier → choose a player. Reduce the resource cost of the next card that player plays this phase by 1."
       },
       "abilities": [
@@ -3192,7 +3192,8 @@
               "effect": "REDUCE_NEXT_CARD_COST",
               "effectParams": {
                 "amount": 1,
-                "target": "CHOSEN_PLAYER"
+                "target": "CHOSEN_PLAYER",
+                "duration": "PHASE"
               }
             }
           ]

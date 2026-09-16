@@ -17,6 +17,7 @@ import {
   isAbilityPlayableInForm,
   canPayAbilityCost,
   AbilityPaymentOptions,
+  getEffectiveCardCost,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit } from './stat-calculator';
@@ -1083,7 +1084,7 @@ export function canPlayCard(
 
   const card = targetCardInstance.card;
   const cardInstanceId = targetCardInstance.instanceId;
-  let cost = card.cost ?? 0;
+  const { effectiveCost: cost } = getEffectiveCardCost(state, player, targetCardInstance);
 
   // Universal Play Requirements (RR v1.8 p. 16)
   const reqCheck = evaluatePlayRequirements(state, player, card);
@@ -1518,7 +1519,7 @@ export function evaluateCardPlayability(
     }
   }
 
-  const cost = card.cost ?? 0;
+  const { effectiveCost: cost } = getEffectiveCardCost(state, player, cardInstance);
   if (cost > 0 && maxPotentialResources < cost) {
     reasons.push(`Cannot afford cost (Need ${cost}, max available ${maxPotentialResources})`);
   }

@@ -15,7 +15,7 @@ import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
 } from './stat-calculator';
-import { isResourceAbility, canPayAbilityCost } from './cost-engine';
+import { isResourceAbility, canPayAbilityCost, getEffectiveCardCost } from './cost-engine';
 
 export interface LegalActionItem {
   id: string;
@@ -248,21 +248,27 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     for (const cardInst of player.hand) {
       const playability = evaluateCardPlayability(state, playerId, cardInst);
       if (playability.isPlayable) {
-        const cost = cardInst.card.cost ?? 0;
+        const { effectiveCost, baseCost, reductions } = getEffectiveCardCost(
+          state,
+          player,
+          cardInst,
+        );
+        const costBadge =
+          reductions.length > 0 ? `Cost ${effectiveCost} (${baseCost})` : `Cost ${effectiveCost}`;
         handCardActions.push({
           id: `action_play_hand_${cardInst.instanceId}`,
           category: 'hand',
           headline: `Play ${cardInst.card.name}`,
-          subtext: `${cardInst.card.type.toUpperCase()} • Cost: ${cost} • ${cardInst.card.faction?.toUpperCase() || 'NEUTRAL'}`,
+          subtext: `${cardInst.card.type.toUpperCase()} • ${costBadge} • ${cardInst.card.faction?.toUpperCase() || 'NEUTRAL'}`,
           action: {
             type: 'PLAY_CARD',
             playerId: player.id,
             cardInstanceId: cardInst.instanceId,
             paymentCardInstanceIds: [],
           },
-          badge: `Cost ${cost}`,
+          badge: costBadge,
           iconType: 'card',
-          requiresModal: cost > 0 ? 'payment' : undefined,
+          requiresModal: effectiveCost > 0 ? 'payment' : undefined,
           targetCardInstance: cardInst,
           cardCode: cardInst.card.code,
         });

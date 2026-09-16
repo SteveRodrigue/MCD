@@ -104,7 +104,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 
 ### `GENERATE_RESOURCE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / _Web-Shooter_ `01008`, _Helicarrier_ `01092`)
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / _Web-Shooter_ `01008`)
 - **Description:** Contributes resources to the active payment window. `resource` defaults to `"wild"` and `amount` defaults to `1`.
 
 ```json
@@ -113,6 +113,27 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   "params": {
     "resource": "wild",
     "amount": 1
+  }
+}
+```
+
+---
+
+### `REDUCE_NEXT_CARD_COST`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#46](https://github.com/SteveRodrigue/MCD/issues/46), [ADR-0061](../../decisions/0061-declarative-next-card-cost-reduction-aura.md) / _Helicarrier_ `01092`)
+- **Description:** Applies a temporary cost reduction aura to the next qualifying card played by the targeted player during the specified `duration` (`"PHASE"` or `"ROUND"`). Under RR v1.8, applies to the next card played (including 0-cost cards, which consume the reduction), and stacks additively with other cost modifiers.
+- **Parameters:**
+  - `amount`: number (default: 1) — Resource cost reduction.
+  - `duration`: `"PHASE" | "ROUND"` (default: `"PHASE"`) — Lifecycle expiration window.
+  - `cardFilter`: optional `UniversalCardFilter` — Predicate filter for qualifying cards.
+
+```json
+{
+  "effect": "REDUCE_NEXT_CARD_COST",
+  "params": {
+    "amount": 1,
+    "duration": "PHASE"
   }
 }
 ```

@@ -618,9 +618,13 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   const nextState: GameState = JSON.parse(JSON.stringify(state));
   nextState.phase = GamePhase.VILLAIN_PHASE;
 
-  // Reset phase-level ability limits for all players during Villain Phase
+  // Reset phase-level ability limits and expire phase cost reductions for all players during Villain Phase
   for (const player of nextState.players) {
     player.usedAbilitiesThisPhase = {};
+    player.activeCostReductions = (player.activeCostReductions || []).filter(
+      (r) => r.duration !== 'PHASE',
+    );
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
   }
 
   nextState.log.push({

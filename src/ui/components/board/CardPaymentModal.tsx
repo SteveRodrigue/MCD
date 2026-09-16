@@ -1,9 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Shield, Swords, Zap } from 'lucide-react';
+import { X, Sparkles, Shield, Swords, Zap, AlertTriangle } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
-import { isResourceAbility, isAbilityPlayableInForm } from '../../../engine/pipeline/cost-engine';
+import {
+  isResourceAbility,
+  isAbilityPlayableInForm,
+  getEffectiveCardCost,
+} from '../../../engine/pipeline/cost-engine';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 
@@ -43,7 +47,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     if (cardToPlay) {
       // Auto-select "The Power of [Aspect]" matching resource cards as a QoL improvement
       const autoSelectedHandIds: string[] = [];
-      const cardCost = cardToPlay.card.cost ?? 0;
+      const cardCost = getEffectiveCardCost(gameState, player, cardToPlay).effectiveCost;
       const cardFaction = cardToPlay.card.faction;
 
       if (cardCost > 0 && cardFaction) {
@@ -94,7 +98,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         setSelectedTargetId(undefined);
       }
     }
-  }, [cardToPlay, player.hand, gameState.villain.card.code, gameState.mainScheme.card.code]);
+  }, [cardToPlay, player, gameState]);
 
   // Keyboard shortcut: Esc to close
   useEffect(() => {
@@ -108,7 +112,28 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   }, [isOpen, onClose]);
 
   const card = cardToPlay?.card;
-  const cost = abilityCost ? abilityCost.amount : (card?.cost ?? 0);
+
+  const { effectiveCost, baseCost, reductions, totalReduction } = useMemo(() => {
+    if (abilityCost) {
+      return {
+        effectiveCost: abilityCost.amount,
+        baseCost: abilityCost.amount,
+        reductions: [],
+        totalReduction: 0,
+      };
+    }
+    if (cardToPlay) {
+      return getEffectiveCardCost(gameState, player, cardToPlay);
+    }
+    return {
+      effectiveCost: 0,
+      baseCost: 0,
+      reductions: [],
+      totalReduction: 0,
+    };
+  }, [abilityCost, cardToPlay, gameState, player]);
+
+  const cost = effectiveCost;
 
   // Available hand payment cards (all hand cards except the card being played if played from hand)
   const availableHandCards = abilityCost
@@ -429,13 +454,46 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 Required Cost
               </span>
               <div className="flex items-center space-x-1">
-                <span className="text-3xl font-black text-comic-red">{cost}</span>
+                {reductions.length > 0 && baseCost > 0 && (
+                  <span className="line-through text-comic-black/40 text-lg mr-1.5 font-bold">
+                    {baseCost}
+                  </span>
+                )}
+                <span
+                  className={`text-3xl font-black ${
+                    reductions.length > 0 ? 'text-comic-green' : 'text-comic-red'
+                  }`}
+                >
+                  {cost}
+                </span>
                 <span className="text-xs font-bold uppercase text-comic-black">
                   {abilityCost?.resourceType ? abilityCost.resourceType : 'Res'}
                 </span>
               </div>
             </div>
           </div>
+
+          {/* Active Cost Reduction Banner */}
+          {reductions.length > 0 && baseCost > 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-comic-yellow/20 border-2 border-comic-yellow rounded-md text-xs font-bold text-comic-black shadow-comic-sm">
+              <Sparkles className="w-4 h-4 text-comic-yellow shrink-0" />
+              <span>
+                Cost reduced by {totalReduction} from{' '}
+                {reductions.map((r) => r.sourceCardName).join(', ')}
+              </span>
+            </div>
+          )}
+
+          {/* 0-Cost Card Consumption Caution Banner */}
+          {reductions.length > 0 && baseCost === 0 && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-comic-red/10 border-2 border-comic-red rounded-md text-xs font-black text-comic-red shadow-comic-sm">
+              <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
+              <span>
+                Caution: Playing this 0-cost card will consume your active cost reduction (
+                {reductions.map((r) => r.sourceCardName).join(', ')}: -{totalReduction})!
+              </span>
+            </div>
+          )}
 
           {/* Payment Progress Bar */}
           <div className="space-y-2">

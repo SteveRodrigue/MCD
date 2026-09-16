@@ -15,6 +15,7 @@ import {
   PlayerState,
   Keyword,
   hasKeyword,
+  ActiveCostReduction,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -4048,13 +4049,108 @@ export function executeStep(
     }
 
     case 'REDUCE_NEXT_CARD_COST': {
-      const amount = (step.effectParams?.amount as number) || 1;
-      player.costReductions = (player.costReductions || 0) + amount;
+      const stepParams = getStepEffectParams(step);
+      const amount = (stepParams.amount as number) || (step.effectParams?.amount as number) || 1;
+      const targetParam =
+        (stepParams.target as string) || (step.effectParams?.target as string) || 'CHOSEN_PLAYER';
+      const duration = (stepParams.duration as 'PHASE' | 'ROUND' | 'TURN') || 'PHASE';
+      const cardFilter = stepParams.cardFilter || (stepParams.filter as any) || step.filter;
+      const targetPlayerId = (context.targetPlayerId || stepParams.targetPlayerId) as
+        string | undefined;
+
+      // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
+      if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {
+        const sourceCardName =
+          context.sourceCardInstance?.card.name || player.activeFormCard?.name || 'Helicarrier';
+        const promptId = `prompt_${Date.now()}_choose_cost_reduction_player`;
+        state = enqueueDecisionPrompt(state, {
+          promptId,
+          playerId: player.id,
+          title: 'Choose a Player',
+          description: `Choose a player to reduce the resource cost of the next card they play this phase by ${amount}:`,
+          sourceCardName,
+          options: state.players.map((p) => ({
+            id: `reduce_cost_${p.id}`,
+            label: `${p.name} (${p.hero?.name || 'Hero'})`,
+            description: `Give -${amount} cost reduction to ${p.name}`,
+            effect: 'REDUCE_NEXT_CARD_COST',
+            params: {
+              amount,
+              duration,
+              cardFilter,
+              targetPlayerId: p.id,
+              target: 'CHOSEN_PLAYER',
+            },
+          })),
+        });
+
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'ability',
+          key: 'decision.prompt.opened',
+          params: { player: player.name, promptId, source: sourceCardName },
+          onomatopoeia: 'CHOOSE PLAYER!',
+        });
+
+        return {
+          state,
+          success: true,
+          onomatopoeia: 'CHOOSE PLAYER!',
+        };
+      }
+
+      // Determine recipient player
+      let targetPlayer = player;
+      if (targetPlayerId) {
+        const found = state.players.find((p) => p.id === targetPlayerId);
+        if (found) targetPlayer = found;
+      }
+
+      const sourceCardName = context.sourceCardInstance?.card.name || 'Helicarrier';
+      const sourceCardCode = context.sourceCardInstance?.card.code;
+
+      const reduction: ActiveCostReduction = {
+        id: `cost_red_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        sourceCardName,
+        sourceCardCode,
+        amount,
+        duration,
+        cardFilter,
+        appliesTo: 'NEXT_CARD',
+      };
+
+      if (!targetPlayer.activeCostReductions) {
+        targetPlayer.activeCostReductions = [];
+      }
+      targetPlayer.activeCostReductions.push(reduction);
+      targetPlayer.costReductions = targetPlayer.activeCostReductions.reduce(
+        (sum, r) => sum + r.amount,
+        0,
+      );
+
+      state.log.push({
+        id: `log_${Date.now()}_cost_red`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'cost.reduced',
+        params: {
+          player: targetPlayer.name,
+          source: sourceCardName,
+          amount,
+        },
+        onomatopoeia: `${sourceCardName.toUpperCase()} DISCOUNT! -${amount} COST`,
+      });
+
       return {
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: `COST REDUCED BY ${amount}!`,
+        onomatopoeia: `${sourceCardName.toUpperCase()} DISCOUNT! -${amount} COST`,
       };
     }
 

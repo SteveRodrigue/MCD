@@ -6,11 +6,14 @@ import {
   AbilityTiming,
   Keyword,
   hasKeyword,
+  NormalizedCard,
+  ActiveCostReduction,
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { matchesCardFilter } from '../filters/card-filter';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -572,4 +575,50 @@ export function checkAndDiscardZeroCounterCard(
   }
 
   return false;
+}
+
+/**
+ * Returns all active cost reduction auras currently on the player that apply to the specified card.
+ */
+export function getApplicableCostReductions(
+  player: PlayerState,
+  cardOrInstance: CardInstance | NormalizedCard,
+  state?: GameState,
+): ActiveCostReduction[] {
+  const reductions = player.activeCostReductions || [];
+  if (reductions.length === 0) return [];
+
+  const rawCard = 'card' in cardOrInstance ? cardOrInstance.card : cardOrInstance;
+
+  return reductions.filter((r) => {
+    if (!r.cardFilter) return true;
+    return matchesCardFilter(rawCard, r.cardFilter, { player, state });
+  });
+}
+
+/**
+ * Calculates the effective resource cost of a card, accounting for all applicable active cost reductions.
+ */
+export function getEffectiveCardCost(
+  state: GameState,
+  player: PlayerState,
+  cardOrInstance: CardInstance | NormalizedCard,
+): {
+  effectiveCost: number;
+  baseCost: number;
+  reductions: ActiveCostReduction[];
+  totalReduction: number;
+} {
+  const rawCard = 'card' in cardOrInstance ? cardOrInstance.card : cardOrInstance;
+  const baseCost = rawCard.cost ?? 0;
+  const reductions = getApplicableCostReductions(player, cardOrInstance, state);
+  const totalReduction = reductions.reduce((sum, r) => sum + r.amount, 0);
+  const effectiveCost = Math.max(0, baseCost - totalReduction);
+
+  return {
+    effectiveCost,
+    baseCost,
+    reductions,
+    totalReduction,
+  };
 }

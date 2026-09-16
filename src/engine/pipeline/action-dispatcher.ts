@@ -33,7 +33,11 @@ import {
   getPlayerRestrictedLimit,
   canInitiateAbility,
 } from './legality-checker';
-import { executeAbilityCost, checkAndDiscardZeroCounterCard } from './cost-engine';
+import {
+  executeAbilityCost,
+  checkAndDiscardZeroCounterCard,
+  getApplicableCostReductions,
+} from './cost-engine';
 import { executeEffect, moveDefeatedCardToPile, processHostDefeated } from '../effects';
 import {
   continueVillainPhase,
@@ -1643,6 +1647,38 @@ export function dispatchAction(
           params: { sideScheme: playedCardInstance.card.name, threat: baseThreat },
           onomatopoeia: 'SIDE SCHEME!',
         });
+      }
+
+      // Consume applicable active cost reductions (RR v1.8 p. 7, 17, Issue #46)
+      const applicableReductions = getApplicableCostReductions(
+        player,
+        playedCardInstance,
+        nextState,
+      );
+      if (applicableReductions.length > 0) {
+        const consumedIds = new Set(applicableReductions.map((r) => r.id));
+        player.activeCostReductions = (player.activeCostReductions || []).filter(
+          (r) => !consumedIds.has(r.id),
+        );
+        player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+
+        for (const r of applicableReductions) {
+          nextState.log.push({
+            id: `log_${Date.now()}_cost_consumed`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'ability',
+            key: 'cost.reduction.consumed',
+            params: {
+              player: player.name,
+              source: r.sourceCardName,
+              card: playedCardInstance.card.name,
+              amount: r.amount,
+            },
+            onomatopoeia: `${r.sourceCardName.toUpperCase()} DISCOUNT APPLIED!`,
+          });
+        }
       }
 
       return { state: nextState, result: { success: true, onomatopoeia } };

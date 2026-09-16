@@ -63,6 +63,10 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
     player.formChangedThisRound = false;
     player.recoveryUsedThisRound = false;
     player.usedAbilitiesThisRound = {};
+    player.activeCostReductions = (player.activeCostReductions || []).filter(
+      (r) => r.duration !== 'ROUND',
+    );
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
   }
 
   // 5. Increment Round Number

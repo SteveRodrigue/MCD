@@ -11,9 +11,13 @@ export function startPlayerPhase(state: GameState): GameState {
   state.phase = GamePhase.PLAYER_PHASE;
   delete state.villainPhaseStep;
 
-  // Reset phase-level ability limits for all players
+  // Reset phase-level ability limits and expire phase cost reductions for all players
   for (const player of state.players) {
     player.usedAbilitiesThisPhase = {};
+    player.activeCostReductions = (player.activeCostReductions || []).filter(
+      (r) => r.duration !== 'PHASE',
+    );
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
   }
 
   state.log.push({
@@ -40,6 +44,14 @@ export function startPlayerPhase(state: GameState): GameState {
  * 2. Transitions state.phase to VILLAIN_PHASE.
  */
 export function endPlayerPhase(state: GameState): GameState {
+  // Expire phase cost reductions
+  for (const player of state.players) {
+    player.activeCostReductions = (player.activeCostReductions || []).filter(
+      (r) => r.duration !== 'PHASE',
+    );
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+  }
+
   state.log.push({
     id: `log_${Date.now()}`,
     timestamp: Date.now(),

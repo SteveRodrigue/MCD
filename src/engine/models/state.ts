@@ -66,8 +66,19 @@ export interface PlayerState {
   usedAbilitiesThisPhase?: Record<string, number>;
   /** Tracks active cost reductions applied to the next played card (e.g. Helicarrier) */
   costReductions?: number;
+  activeCostReductions?: ActiveCostReduction[];
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
+}
+
+export interface ActiveCostReduction {
+  id: string;
+  sourceCardName: string;
+  sourceCardCode?: string;
+  amount: number;
+  cardFilter?: any;
+  duration: 'PHASE' | 'ROUND' | 'TURN';
+  appliesTo: 'NEXT_CARD';
 }
 
 export type DifficultyMode = 'SKIRMISH' | 'STANDARD' | 'EXPERT';

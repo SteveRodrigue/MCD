@@ -845,6 +845,13 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 1,
       },
       {
+        key: 'duration',
+        label: 'Duration',
+        type: 'select',
+        options: ['PHASE', 'ROUND'] as const,
+        defaultValue: 'PHASE',
+      },
+      {
         key: 'target',
         label: 'Target Player',
         type: 'select',

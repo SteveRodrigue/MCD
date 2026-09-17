@@ -51,7 +51,21 @@ sequenceDiagram
 When the user clicks "Proceed" or approves:
 
 1. View `<appDataDir>\brain\<conversation-id>/implementation_plan.md`.
-2. Extract the file list (`[NEW]`, `[MODIFY]`, `[DELETE]`), exact edits, and the verification test commands.
+2. Extract only the explicit file list (`[NEW]`, `[MODIFY]`, `[DELETE]`), edits, acceptance criteria, and verification commands. Do **not** infer omitted behavior, expand scope, choose between alternatives, or reinterpret requirements from surrounding repository context.
+3. Run the ambiguity gate before delegating. Treat the plan as ambiguous when any required behavior, file-level change, acceptance criterion, verification command, dependency, migration choice, or conflict with the current worktree is unspecified or admits more than one reasonable interpretation.
+4. When ambiguity exists, halt execution. Present a concise user-facing validation request with exactly these headings:
+
+```markdown
+### Why This Is Blocking
+
+<the specific decision or missing information that prevents faithful execution>
+
+### What I Need From You
+
+<the concrete choice, confirmation, or plan revision required>
+```
+
+Do not invoke a subagent, edit files, or continue implementation until the user resolves the ambiguity. A prior approval authorizes only the plan's unambiguous, explicitly stated work; it does not authorize interpretation. 5. Delegate only after every ambiguity is resolved explicitly by the user or by a revised plan that removes it.
 
 ### Step 2: Spawn Worker Subagent (`invoke_subagent`)
 
@@ -64,14 +78,15 @@ invoke_subagent({
       TypeName: 'self',
       Role: 'Plan Implementation Worker',
       Model: 'flash',
-      Prompt: `Execute the approved implementation plan:
+      Prompt: `Execute the approved implementation plan exactly as written:
 1. Apply the file modifications specified in the implementation plan:
    - Target files and changes from the plan.
 2. Run the automated verification commands:
    - npm test -- <relevant_tests>
    - npm run typecheck
    - npm run lint
-3. Conclude with a concise diff summary and verification pass/fail status. Avoid meta-analysis or multi-step retrospectives.`,
+    3. Do not infer missing requirements, select between plausible designs, expand scope, or modify files not explicitly authorized by the plan. If ambiguity, a conflict, or a missing decision is discovered, stop before editing the affected work and report the precise blocker using "Why This Is Blocking" and "What I Need From You" headings.
+    4. Conclude with a concise diff summary and verification pass/fail status. Avoid meta-analysis or multi-step retrospectives.`,
     },
   ],
 });
@@ -101,5 +116,6 @@ Upon receiving the subagent's completion message:
 
 ## 🛑 Circuit Breaker & Guardrails
 
+- **Plan Fidelity:** User approval is not permission to interpret an ambiguous plan. Stop and request validation using the required **Why This Is Blocking** / **What I Need From You** format before any delegation or edit that depends on an unstated decision.
 - **Subagent Errors:** If the worker subagent reports unexpected compile errors or broken test contracts that cannot be resolved in 2 iterations, the primary agent resumes control, inspects the failure, and prompts the user with an actionable diagnosis.
 - **Merge Conflicts:** If files specified in the plan have drifted significantly, halt and inform the user before attempting unguided structural refactoring.

@@ -180,8 +180,18 @@ flowchart TD
 - **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing:
   1. **Rules Reference & Spec Analysis:** Exact citations from RR v1.8, timing priority, and active ADRs.
   2. **Proposed Changes:** File-by-file breakdown (`[NEW]`, `[MODIFY]`) across engine pipelines, effect primitives, and supplemental data.
-  3. **Verification Plan:** Planned unit/acceptance tests covering happy path and edge cases.
-  4. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
+  3. **UI and Card Editor Impact:** Explicitly state the impact and required files. If neither surface is affected, include exactly:
+
+     ```markdown
+     ## UI and Card Editor
+
+     No change required.
+     ```
+
+     If either surface is affected, list the affected components, specifications, validation/persistence paths, and required UI/Card Editor tests. Never leave this section implied or omit it because the change appears engine-only.
+
+  4. **Verification Plan:** Complete test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Every planned code path must have a corresponding test or an explicit rationale for why an existing test is sufficient.
+  5. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
 - **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. You MUST NOT proceed to writing code or modifying files until the user explicitly reviews and approves the implementation plan.
 - **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and delegates execution only for the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
 
@@ -191,6 +201,8 @@ flowchart TD
 
 - **Golden Rule:** NEVER implement a feature before writing comprehensive, contract-defining tests demonstrating all intended behaviors and edge cases.
 - Create a dedicated test file in `tests/engine/`, `tests/ui/`, or `tests/scenarios/` (e.g. `tests/engine/feature-name.test.ts`).
+- The implementation plan must identify every required test file and case before implementation. This includes Card Editor tests whenever the UI or editor is affected: schema/form round-trips, control visibility and choices, validation diagnostics, persistence payloads, and reload behavior as applicable.
+- If the UI and Card Editor are unaffected, preserve the explicit plan statement `UI and Card Editor / No change required.` and add the focused evidence supporting that conclusion (for example, engine/data-only file scope and unchanged editor contract).
 - Write unit and integration tests covering:
   - **Happy Path:** Standard execution and expected state transitions.
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
@@ -256,6 +268,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) synchronized.
 8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, search supplemental data, retrofit affected cards, update audit timestamps, and run `npm run report:declarations`.
 9. **Check Legacy/Orphan Cleanup:** Search for superseded identifiers, stale editor descriptors, unused exports, duplicate implementations, orphaned tests, and dead branches. Remove only confirmed obsolete code, verify zero remaining references, and raise any uncertain deletion for explicit user validation.
+10. **Check Test Completeness:** Confirm every changed behavior has a test, including Card Editor round-trip, validation, persistence, and UI interaction tests whenever those surfaces are affected. Confirm the explicit unaffected statement and evidence when they are not.
 
 ---
 

@@ -514,16 +514,16 @@
       }
     },
     "01015": {
-      "comment": "Support: Alter-Ego Action: Exhaust Alpha Flight Station -> choose and discard a card from hand, then draw 1 card (or 2 cards instead if Carol Danvers).",
       "abilities": [
         {
           "id": "alpha_flight_station",
-          "timing": "ALTER_EGO_ACTION",
+          "timing": "ACTION",
           "cost": {
             "exhaustSelf": true,
             "discardCard": {
+              "count": 1,
               "from": "HAND",
-              "count": 1
+              "mode": "CHOSEN"
             }
           },
           "steps": [
@@ -547,8 +547,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T20:25:00Z",
-        "reviewedAt": "2026-09-16T20:25:00Z",
+        "updatedAt": "2026-09-17T19:58:01Z",
+        "reviewedAt": "2026-09-17T19:58:01Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

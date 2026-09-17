@@ -8,6 +8,8 @@ import {
   isAbilityPlayableInForm,
   getEffectiveCardCost,
 } from '../../../engine/pipeline/cost-engine';
+import { matchesCardFilter } from '../../../engine/filters/card-filter';
+import type { UniversalCardFilter } from '../../../data/supplemental/schema';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 
@@ -16,9 +18,11 @@ interface CardPaymentModalProps {
   onClose: () => void;
   cardToPlay: CardInstance | null;
   abilityCost?: {
-    amount: number;
+    amount?: number;
     resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
     title?: string;
+    discardCount?: number;
+    discardFilter?: UniversalCardFilter;
   };
   player: PlayerState;
   gameState: GameState;
@@ -26,6 +30,7 @@ interface CardPaymentModalProps {
     paymentHandCardIds: string[],
     generatorCardIds: string[],
     targetInstanceId?: string,
+    selectedDiscardCardIds?: string[],
   ) => void;
 }
 
@@ -40,6 +45,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 }) => {
   const [selectedHandCardIds, setSelectedHandCardIds] = useState<string[]>([]);
   const [selectedGeneratorIds, setSelectedGeneratorIds] = useState<string[]>([]);
+  const [selectedDiscardCardIds, setSelectedDiscardCardIds] = useState<string[]>([]);
   const [selectedTargetId, setSelectedTargetId] = useState<string | undefined>(undefined);
 
   // Reset selections whenever a new card is selected, auto-selecting matching "The Power of..." cards
@@ -74,6 +80,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
       setSelectedHandCardIds(autoSelectedHandIds);
       setSelectedGeneratorIds([]);
+      setSelectedDiscardCardIds([]);
 
       // Default target: villain for attacks, main scheme for thwarts
       // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
@@ -115,9 +122,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
   const { effectiveCost, baseCost, reductions, totalReduction } = useMemo(() => {
     if (abilityCost) {
+      const amt = abilityCost.amount || 0;
       return {
-        effectiveCost: abilityCost.amount,
-        baseCost: abilityCost.amount,
+        effectiveCost: amt,
+        baseCost: amt,
         reductions: [],
         totalReduction: 0,
       };
@@ -293,7 +301,8 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     card?.faction,
   ]);
 
-  const isCostCovered = useMemo(() => {
+  const isResourceCostCovered = useMemo(() => {
+    if (cost <= 0) return true;
     if (abilityCost?.resourceType) {
       const matching =
         abilityCost.resourceType === 'physical'
@@ -307,6 +316,23 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     }
     return totalGenerated >= cost;
   }, [abilityCost, resourceBreakdown, totalGenerated, cost]);
+
+  const isDiscardCostCovered = useMemo(() => {
+    if (!abilityCost?.discardCount || abilityCost.discardCount <= 0) return true;
+    return selectedDiscardCardIds.length === abilityCost.discardCount;
+  }, [abilityCost?.discardCount, selectedDiscardCardIds.length]);
+
+  const isCostCovered = isResourceCostCovered && isDiscardCostCovered;
+
+  const availableDiscardCards = useMemo(() => {
+    if (!abilityCost?.discardCount || abilityCost.discardCount <= 0) return [];
+    return player.hand.filter((c) => {
+      if (abilityCost.discardFilter) {
+        return matchesCardFilter(c.card, abilityCost.discardFilter, { player, state: gameState });
+      }
+      return true;
+    });
+  }, [abilityCost?.discardCount, abilityCost?.discardFilter, player, gameState]);
 
   // Potential Targets (Enemies or Schemes)
   // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
@@ -383,9 +409,27 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   if (!isOpen || !cardToPlay || !card) return null;
 
   const toggleHandCard = (instanceId: string) => {
+    if (selectedDiscardCardIds.includes(instanceId)) return;
     setSelectedHandCardIds((prev) =>
       prev.includes(instanceId) ? prev.filter((id) => id !== instanceId) : [...prev, instanceId],
     );
+  };
+
+  const toggleDiscardCard = (instanceId: string) => {
+    if (selectedHandCardIds.includes(instanceId)) return;
+    const required = abilityCost?.discardCount || 1;
+    setSelectedDiscardCardIds((prev) => {
+      if (prev.includes(instanceId)) {
+        return prev.filter((id) => id !== instanceId);
+      }
+      if (prev.length >= required) {
+        if (required === 1) {
+          return [instanceId];
+        }
+        return prev;
+      }
+      return [...prev, instanceId];
+    });
   };
 
   const toggleGenerator = (instanceId: string) => {
@@ -396,7 +440,12 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
   const handleConfirm = () => {
     if (!isCostCovered) return;
-    onConfirmPlay(selectedHandCardIds, selectedGeneratorIds, selectedTargetId);
+    onConfirmPlay(
+      selectedHandCardIds,
+      selectedGeneratorIds,
+      selectedTargetId,
+      selectedDiscardCardIds,
+    );
     onClose();
   };
 
@@ -454,21 +503,31 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                 Required Cost
               </span>
               <div className="flex items-center space-x-1">
-                {reductions.length > 0 && baseCost > 0 && (
-                  <span className="line-through text-comic-black/40 text-lg mr-1.5 font-bold">
-                    {baseCost}
+                {cost > 0 ? (
+                  <>
+                    {reductions.length > 0 && baseCost > 0 && (
+                      <span className="line-through text-comic-black/40 text-lg mr-1.5 font-bold">
+                        {baseCost}
+                      </span>
+                    )}
+                    <span
+                      className={`text-3xl font-black ${
+                        reductions.length > 0 ? 'text-comic-green' : 'text-comic-red'
+                      }`}
+                    >
+                      {cost}
+                    </span>
+                    <span className="text-xs font-bold uppercase text-comic-black">
+                      {abilityCost?.resourceType ? abilityCost.resourceType : 'Res'}
+                    </span>
+                  </>
+                ) : abilityCost?.discardCount ? (
+                  <span className="text-sm font-black uppercase px-2.5 py-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+                    Discard {abilityCost.discardCount}
                   </span>
+                ) : (
+                  <span className="text-3xl font-black text-comic-green">0</span>
                 )}
-                <span
-                  className={`text-3xl font-black ${
-                    reductions.length > 0 ? 'text-comic-green' : 'text-comic-red'
-                  }`}
-                >
-                  {cost}
-                </span>
-                <span className="text-xs font-bold uppercase text-comic-black">
-                  {abilityCost?.resourceType ? abilityCost.resourceType : 'Res'}
-                </span>
               </div>
             </div>
           </div>
@@ -495,61 +554,138 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             </div>
           )}
 
+          {/* Discard Hand Cards as Cost Section */}
+          {abilityCost?.discardCount && abilityCost.discardCount > 0 && (
+            <div className="space-y-3 p-4 bg-comic-red/5 border-2 border-comic-red/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-black uppercase text-comic-black tracking-wider flex items-center space-x-1.5">
+                  <AlertTriangle className="w-4 h-4 text-comic-red" />
+                  <span>
+                    Choose {abilityCost.discardCount} Card{abilityCost.discardCount > 1 ? 's' : ''}{' '}
+                    to Discard as Cost:
+                  </span>
+                </h3>
+                <span
+                  className={`text-xs font-black px-2 py-0.5 rounded border border-comic-black ${
+                    selectedDiscardCardIds.length === abilityCost.discardCount
+                      ? 'bg-comic-green text-white'
+                      : 'bg-comic-paper text-comic-black'
+                  }`}
+                >
+                  Selected: {selectedDiscardCardIds.length} / {abilityCost.discardCount}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {availableDiscardCards.map((hCard) => {
+                  const isSelected = selectedDiscardCardIds.includes(hCard.instanceId);
+                  const isUsedForPayment = selectedHandCardIds.includes(hCard.instanceId);
+
+                  return (
+                    <button
+                      key={hCard.instanceId}
+                      type="button"
+                      disabled={isUsedForPayment}
+                      onClick={() => toggleDiscardCard(hCard.instanceId)}
+                      className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
+                        isUsedForPayment
+                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
+                          : isSelected
+                            ? 'bg-comic-red/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
+                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 pr-2 min-w-0">
+                        <CardArtThumbnail
+                          cardCode={hCard.card.code}
+                          cardName={hCard.card.name}
+                          size="sm"
+                        />
+                        <div className="space-y-0.5 min-w-0">
+                          <div className="text-xs font-black text-comic-black truncate">
+                            {hCard.card.name}
+                          </div>
+                          <div className="text-[10px] font-bold text-comic-black/60 uppercase truncate">
+                            {hCard.card.type} • {hCard.card.faction}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0">
+                        <span
+                          className={`text-xs font-black px-2 py-0.5 rounded border border-comic-black ${
+                            isSelected
+                              ? 'bg-comic-red text-white'
+                              : 'bg-comic-paper text-comic-black'
+                          }`}
+                        >
+                          {isSelected ? 'DISCARD' : 'SELECT'}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Payment Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-comic-black tracking-wide">
-                Resources Committed:
-              </span>
-              <span
-                className={`text-sm font-black uppercase ${
-                  isCostCovered ? 'text-comic-green' : 'text-comic-red'
-                }`}
-              >
-                {totalGenerated} / {cost}{' '}
-                {isCostCovered ? '✓ (Ready)' : `(Need ${cost - totalGenerated} more)`}
-              </span>
-            </div>
+          {cost > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-comic-black tracking-wide">
+                  Resources Committed:
+                </span>
+                <span
+                  className={`text-sm font-black uppercase ${
+                    isCostCovered ? 'text-comic-green' : 'text-comic-red'
+                  }`}
+                >
+                  {totalGenerated} / {cost}{' '}
+                  {isCostCovered ? '✓ (Ready)' : `(Need ${cost - totalGenerated} more)`}
+                </span>
+              </div>
 
-            {/* Visual Meter Bar */}
-            <div className="w-full h-4 bg-comic-paper border-2 border-comic-black rounded-full overflow-hidden flex">
-              <div
-                className={`h-full transition-all duration-300 ${
-                  isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
-                }`}
-                style={{
-                  width: `${Math.min(100, cost === 0 ? 100 : (totalGenerated / cost) * 100)}%`,
-                }}
-              />
-            </div>
+              {/* Visual Meter Bar */}
+              <div className="w-full h-4 bg-comic-paper border-2 border-comic-black rounded-full overflow-hidden flex">
+                <div
+                  className={`h-full transition-all duration-300 ${
+                    isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
+                  }`}
+                  style={{
+                    width: `${Math.min(100, cost === 0 ? 100 : (totalGenerated / cost) * 100)}%`,
+                  }}
+                />
+              </div>
 
-            {/* Resource Affinity Pills */}
-            <div className="flex flex-wrap gap-2 pt-1 text-xs font-bold text-comic-black">
-              {resourceBreakdown.energyCount > 0 && (
-                <span className="px-2 py-0.5 bg-amber-100 border border-amber-400 rounded-full flex items-center space-x-1">
-                  <span>⚡</span> <span>{resourceBreakdown.energyCount} Energy</span>
-                </span>
-              )}
-              {resourceBreakdown.mentalCount > 0 && (
-                <span className="px-2 py-0.5 bg-blue-100 border border-blue-400 rounded-full flex items-center space-x-1">
-                  <span>🧠</span> <span>{resourceBreakdown.mentalCount} Mental</span>
-                </span>
-              )}
-              {resourceBreakdown.physicalCount > 0 && (
-                <span className="px-2 py-0.5 bg-red-100 border border-red-400 rounded-full flex items-center space-x-1">
-                  <span>👊</span> <span>{resourceBreakdown.physicalCount} Physical</span>
-                </span>
-              )}
-              {resourceBreakdown.wildCount > 0 && (
-                <span className="px-2 py-0.5 bg-purple-100 border border-purple-400 rounded-full flex items-center space-x-1">
-                  <span>⭐</span> <span>{resourceBreakdown.wildCount} Wild</span>
-                </span>
-              )}
+              {/* Resource Affinity Pills */}
+              <div className="flex flex-wrap gap-2 pt-1 text-xs font-bold text-comic-black">
+                {resourceBreakdown.energyCount > 0 && (
+                  <span className="px-2 py-0.5 bg-amber-100 border border-amber-400 rounded-full flex items-center space-x-1">
+                    <span>⚡</span> <span>{resourceBreakdown.energyCount} Energy</span>
+                  </span>
+                )}
+                {resourceBreakdown.mentalCount > 0 && (
+                  <span className="px-2 py-0.5 bg-blue-100 border border-blue-400 rounded-full flex items-center space-x-1">
+                    <span>🧠</span> <span>{resourceBreakdown.mentalCount} Mental</span>
+                  </span>
+                )}
+                {resourceBreakdown.physicalCount > 0 && (
+                  <span className="px-2 py-0.5 bg-red-100 border border-red-400 rounded-full flex items-center space-x-1">
+                    <span>👊</span> <span>{resourceBreakdown.physicalCount} Physical</span>
+                  </span>
+                )}
+                {resourceBreakdown.wildCount > 0 && (
+                  <span className="px-2 py-0.5 bg-purple-100 border border-purple-400 rounded-full flex items-center space-x-1">
+                    <span>⭐</span> <span>{resourceBreakdown.wildCount} Wild</span>
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Hand Cards Selection */}
-          {availableHandCards.length > 0 && (
+          {availableHandCards.length > 0 && cost > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-black uppercase text-comic-black tracking-wider flex items-center space-x-1.5">
@@ -563,6 +699,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {availableHandCards.map((hCard) => {
                   const isSelected = selectedHandCardIds.includes(hCard.instanceId);
+                  const isUsedForDiscardCost = selectedDiscardCardIds.includes(hCard.instanceId);
                   const res = hCard.card.resources;
                   const aspectDoubleStep = hCard.card.enrichment?.abilities
                     ?.flatMap((a) => a.steps || [])
@@ -574,11 +711,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                     <button
                       key={hCard.instanceId}
                       type="button"
+                      disabled={isUsedForDiscardCost}
                       onClick={() => toggleHandCard(hCard.instanceId)}
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isSelected
-                          ? 'bg-comic-yellow/30 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
-                          : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
+                        isUsedForDiscardCost
+                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
+                          : isSelected
+                            ? 'bg-comic-yellow/30 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
+                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 pr-2 min-w-0">
@@ -617,7 +757,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           )}
 
           {/* Generators & Cost Reducers */}
-          {availableGenerators.length > 0 && (
+          {availableGenerators.length > 0 && cost > 0 && (
             <div className="space-y-3 pt-2">
               <h3 className="text-xs font-black uppercase text-comic-black tracking-wider">
                 Identity & Table Resource Generators:

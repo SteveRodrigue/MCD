@@ -22,6 +22,7 @@ import {
   hasKeyword,
   CardAbility,
 } from '../../../engine/models';
+import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { IdentityActionModal } from './IdentityActionModal';
@@ -48,6 +49,7 @@ interface HeroZoneProps {
   isMultiHero?: boolean;
   onFocus?: () => void;
   onDispatchAction?: (action: GameAction) => void;
+  onInitiateAction?: (item: LegalActionItem) => void;
 }
 
 export const HeroZone: React.FC<HeroZoneProps> = ({
@@ -58,6 +60,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   isMultiHero = false,
   onFocus,
   onDispatchAction,
+  onInitiateAction,
 }) => {
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
 
@@ -214,6 +217,34 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   };
 
   const handleSelectTableauAbility = (ability: CardAbility, cardInst: CardInstance) => {
+    const hasPaymentCost =
+      ability.cost?.resourceCost ||
+      (ability.cost?.discardCard && ability.cost.discardCard.from === 'HAND');
+
+    if (hasPaymentCost && onInitiateAction) {
+      onInitiateAction({
+        id: `action_tableau_${cardInst.instanceId}_${ability.id}`,
+        category: 'board',
+        headline: `Activate ${cardInst.card.name}`,
+        subtext: ability.steps?.[0]?.effectParams?.description
+          ? String(ability.steps[0].effectParams.description)
+          : `Trigger ${cardInst.card.name} (${ability.id})`,
+        action: {
+          type: 'USE_CARD_ABILITY',
+          playerId: player.id,
+          cardInstanceId: cardInst.instanceId,
+          abilityId: ability.id,
+        },
+        badge: 'ACTION',
+        iconType: 'ability',
+        requiresModal: 'payment',
+        targetCardInstance: cardInst,
+        cardCode: cardInst.card.code,
+      });
+      setSelectedTableauCardForModal(null);
+      return;
+    }
+
     if (!onDispatchAction) return;
     onDispatchAction({
       type: 'USE_CARD_ABILITY',
@@ -221,6 +252,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       cardInstanceId: cardInst.instanceId,
       abilityId: ability.id,
     });
+    setSelectedTableauCardForModal(null);
   };
 
   return (
@@ -744,17 +776,43 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                           ? '💥 BLAST'
                           : '⚡ USE';
 
+                      const hasPaymentCost =
+                        ab.cost?.resourceCost ||
+                        (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
+
                       return (
                         <button
                           key={ab.id}
-                          onClick={() =>
+                          onClick={() => {
+                            if (hasPaymentCost && onInitiateAction) {
+                              onInitiateAction({
+                                id: `action_tableau_${cardInst.instanceId}_${ab.id}`,
+                                category: 'board',
+                                headline: `Activate ${cardInst.card.name}`,
+                                subtext: ab.steps?.[0]?.effectParams?.description
+                                  ? String(ab.steps[0].effectParams.description)
+                                  : `Trigger ${cardInst.card.name} (${ab.id})`,
+                                action: {
+                                  type: 'USE_CARD_ABILITY',
+                                  playerId: player.id,
+                                  cardInstanceId: cardInst.instanceId,
+                                  abilityId: ab.id,
+                                },
+                                badge: 'ACTION',
+                                iconType: 'ability',
+                                requiresModal: 'payment',
+                                targetCardInstance: cardInst,
+                                cardCode: cardInst.card.code,
+                              });
+                              return;
+                            }
                             onDispatchAction?.({
                               type: 'USE_CARD_ABILITY',
                               playerId: player.id,
                               cardInstanceId: cardInst.instanceId,
                               abilityId: ab.id,
-                            })
-                          }
+                            });
+                          }}
                           disabled={!canUse}
                           className="w-full font-comic text-[10px] bg-amber-300 hover:bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded border border-comic-black font-bold shadow-comic-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all active:translate-y-0.2"
                           title={

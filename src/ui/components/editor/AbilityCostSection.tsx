@@ -311,7 +311,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             </button>
           </div>
           {currentCost.discardCard && (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5">
               <div>
                 <label className="block text-[8px] uppercase font-bold text-gray-500">Count</label>
                 <input
@@ -351,6 +351,25 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                   <option value="HAND">HAND</option>
                   <option value="DECK">DECK</option>
                   <option value="PLAY">PLAY</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[8px] uppercase font-bold text-gray-500">Mode</label>
+                <select
+                  data-testid={`cost-discard-card-mode-${abilityIndex}`}
+                  value={currentCost.discardCard.mode || 'CHOSEN'}
+                  onChange={(e) => {
+                    handleCostUpdate({
+                      discardCard: {
+                        ...currentCost.discardCard,
+                        mode: e.target.value as 'CHOSEN' | 'RANDOM',
+                      },
+                    });
+                  }}
+                  className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                >
+                  <option value="CHOSEN">CHOSEN</option>
+                  <option value="RANDOM">RANDOM</option>
                 </select>
               </div>
             </div>

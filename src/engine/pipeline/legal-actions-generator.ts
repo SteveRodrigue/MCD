@@ -223,6 +223,11 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
         const costCheck = canInitiateAbility(state, player.id, ab, undefined, {});
         if (costCheck.allowed) {
+          let badge = formatTimingBadge(ab.timing);
+          if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+            const count = ab.cost.discardCard.count || 1;
+            badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
+          }
           identityActions.push({
             id: `action_id_ability_${ab.id}`,
             category: 'identity',
@@ -236,8 +241,17 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               cardInstanceId: player.activeFormCard.code,
               abilityId: ab.id,
             },
-            badge: formatTimingBadge(ab.timing),
+            badge,
             iconType: 'ability',
+            requiresModal:
+              ab.cost?.resourceCost || (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+                ? 'payment'
+                : undefined,
+            targetCardInstance: {
+              instanceId: player.activeFormCard.code,
+              card: player.activeFormCard,
+              exhausted: player.exhausted,
+            } as CardInstance,
             cardCode: player.activeFormCard.code,
           });
         }
@@ -298,6 +312,11 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
 
           const costCheck = canInitiateAbility(state, player.id, ab, tableauItem, {});
           if (costCheck.allowed) {
+            let badge = formatTimingBadge(ab.timing);
+            if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+              const count = ab.cost.discardCard.count || 1;
+              badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
+            }
             boardActions.push({
               id: `action_tableau_${tableauItem.instanceId}_${ab.id}`,
               category: 'board',
@@ -311,9 +330,13 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
                 cardInstanceId: tableauItem.instanceId,
                 abilityId: ab.id,
               },
-              badge: formatTimingBadge(ab.timing),
+              badge,
               iconType: 'ability',
-              requiresModal: ab.cost?.resourceCost ? 'payment' : undefined,
+              requiresModal:
+                ab.cost?.resourceCost ||
+                (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+                  ? 'payment'
+                  : undefined,
               targetCardInstance: tableauItem,
               cardCode: tableauItem.card.code,
             });
@@ -487,6 +510,9 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             badge = requiredType
               ? `${requiredAmount} ${requiredType.toUpperCase()}`
               : `${requiredAmount} RESOURCES`;
+          } else if (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND') {
+            const count = ab.cost.discardCard.count || 1;
+            badge = `DISCARD ${count} CARD${count > 1 ? 'S' : ''}`;
           }
 
           boardActions.push({
@@ -502,7 +528,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             },
             badge,
             iconType: 'ability',
-            requiresModal: ab.cost?.resourceCost ? 'payment' : undefined,
+            requiresModal:
+              ab.cost?.resourceCost || (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+                ? 'payment'
+                : undefined,
             targetCardInstance: attachment,
             cardCode: attachment.card.code,
           });

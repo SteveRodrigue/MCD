@@ -126,8 +126,45 @@ export function canPayAbilityCost(
       if (!maxCount && player.hand.length < requiredCount) {
         return {
           allowed: false,
-          reason: `Insufficient cards in hand (Requires ${requiredCount} cards, has ${player.hand.length}).`,
+          reason: 'Insufficient cards in hand to discard as cost.',
         };
+      }
+      if (cost.discardCard.filter) {
+        const matchingCount = player.hand.filter((c) =>
+          matchesCardFilter(c.card, cost.discardCard!.filter, { player, state: _state }),
+        ).length;
+        if (matchingCount < requiredCount) {
+          return {
+            allowed: false,
+            reason: 'No cards in hand matching required discard filter.',
+          };
+        }
+      }
+      if (_options?.discardCardInstanceIds) {
+        for (const id of _options.discardCardInstanceIds) {
+          const cardInst = player.hand.find((c) => c.instanceId === id);
+          if (!cardInst) {
+            return {
+              allowed: false,
+              reason: `Selected discard card ${id} not found in hand.`,
+            };
+          }
+          if (
+            cost.discardCard.filter &&
+            !matchesCardFilter(cardInst.card, cost.discardCard.filter, { player, state: _state })
+          ) {
+            return {
+              allowed: false,
+              reason: `Selected discard card ${cardInst.card.name} does not match the required filter.`,
+            };
+          }
+        }
+        if (!maxCount && _options.discardCardInstanceIds.length < requiredCount) {
+          return {
+            allowed: false,
+            reason: `Insufficient cards selected to discard as cost (Requires ${requiredCount}, selected ${_options.discardCardInstanceIds.length}).`,
+          };
+        }
       }
     }
   }
@@ -345,6 +382,15 @@ export function executeAbilityCost(
             player.discard.push(discarded);
             discardedCount++;
           }
+        }
+      } else if (cost.discardCard.mode === 'RANDOM') {
+        const count = cost.discardCard.count || 1;
+        const countToDiscard = Math.min(player.hand.length, count);
+        for (let i = 0; i < countToDiscard; i++) {
+          const randIdx = Math.floor(Math.random() * player.hand.length);
+          const [discarded] = player.hand.splice(randIdx, 1);
+          player.discard.push(discarded);
+          discardedCount++;
         }
       } else if (maxCount) {
         // Discard all available hand cards up to maxCount

@@ -303,6 +303,16 @@
                             "DECK",
                             "PLAY"
                           ]
+                        },
+                        "filter": {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "CHOSEN",
+                            "RANDOM"
+                          ]
                         }
                       },
                       "required": [

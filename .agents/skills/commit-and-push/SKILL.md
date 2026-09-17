@@ -5,7 +5,7 @@ description: >-
   runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
   automatically selects proper Conventional Commits categories and scopes, generates
   concise imperative descriptions if not provided, executes commits natively without shell
-  wrappers, pushes cleanly to remote, and logs execution in logs/skills/. Trigger whenever
+  wrappers, and pushes cleanly to remote. Trigger whenever
   committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
 ---
 
@@ -57,28 +57,34 @@ flowchart TD
 Before committing, run the project's quality verification pipeline:
 
 1. **Prettier Format Check:**
+
    ```sh
    npm run format:check
    ```
-   *Auto-Recovery:* If formatting issues are found, automatically run `npm run format` and stage the re-formatted files (`git add .`).
+
+   _Auto-Recovery:_ If formatting issues are found, automatically run `npm run format` and stage the re-formatted files (`git add .`).
 
 2. **ESLint Static Analysis:**
+
    ```sh
    npm run lint
    ```
-   *Requirement:* Must exit with 0 errors and 0 warnings (`--max-warnings 0`).
+
+   _Requirement:_ Must exit with 0 errors and 0 warnings (`--max-warnings 0`).
 
 3. **TypeScript Typecheck:**
+
    ```sh
    npm run typecheck
    ```
-   *Requirement:* Must compile cleanly with 0 TypeScript diagnostics (`tsc --noEmit`).
+
+   _Requirement:_ Must compile cleanly with 0 TypeScript diagnostics (`tsc --noEmit`).
 
 4. **Automated Test Suite (Zero Skipped Tests Invariant):**
    ```sh
    npm test
    ```
-   *Requirement:* All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). Any skipped test (`it.skip`, `describe.skip`, `test.skip`, `it.todo`) is tech debt and strictly blocks commit and push until resolved or pruned. Tests must strictly pass or fail: no lingering code, no lingering problems.
+   _Requirement:_ All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). Any skipped test (`it.skip`, `describe.skip`, `test.skip`, `it.todo`) is tech debt and strictly blocks commit and push until resolved or pruned. Tests must strictly pass or fail: no lingering code, no lingering problems.
 
 ---
 
@@ -88,46 +94,51 @@ Select the appropriate Conventional Commits category and scope based on the modi
 
 ### Category Table
 
-| Category | Usage & Criteria | Example Scenarios |
-| :--- | :--- | :--- |
-| `feat` | New capability, effect primitive, mechanic, UI component, or rule | Adding `SUFFERED_DAMAGE`, new card ability, form toggle |
-| `fix` | Correcting a defect, rule violation, wrong target, or regression | Fixing cost calculation, card timing, missing status check |
-| `test` | Adding, updating, or fixing tests without source code change | Adding contract tests, fixing test flakiness, determinism |
-| `docs` | Documentation updates, specifications, ADRs, report updates | Updating roadmap, README, rules references, ADR records |
-| `refactor` | Code reorganization or optimization with zero functional change | Extracting helper functions, renaming internal variables |
-| `style` | Code style, Prettier formatting, semicolon adjustments | Formatting files, fixing trailing spaces |
-| `chore` | Maintenance tasks, dependencies, git hooks, build configs | Updating `.githooks`, `package.json`, Vite config |
+| Category   | Usage & Criteria                                                  | Example Scenarios                                          |
+| :--------- | :---------------------------------------------------------------- | :--------------------------------------------------------- |
+| `feat`     | New capability, effect primitive, mechanic, UI component, or rule | Adding `SUFFERED_DAMAGE`, new card ability, form toggle    |
+| `fix`      | Correcting a defect, rule violation, wrong target, or regression  | Fixing cost calculation, card timing, missing status check |
+| `test`     | Adding, updating, or fixing tests without source code change      | Adding contract tests, fixing test flakiness, determinism  |
+| `docs`     | Documentation updates, specifications, ADRs, report updates       | Updating roadmap, README, rules references, ADR records    |
+| `refactor` | Code reorganization or optimization with zero functional change   | Extracting helper functions, renaming internal variables   |
+| `style`    | Code style, Prettier formatting, semicolon adjustments            | Formatting files, fixing trailing spaces                   |
+| `chore`    | Maintenance tasks, dependencies, git hooks, build configs         | Updating `.githooks`, `package.json`, Vite config          |
 
 ### Scope Matrix
 
-| Subsystem Modified | Recommended Scope |
-| :--- | :--- |
-| `src/engine/` (State, actions, combat, triggers, phases) | `(engine)` |
-| `src/ui/` (Components, views, modals, layouts, styles) | `(ui)` |
-| `src/data/supplemental/` (Pack JSONs, card declarations) | `(data)` |
-| `src/data/importer/` (Card loader, normalization, i18n) | `(importer)` |
-| `src/tools/` or `tools/` (Analyzers, CLI tools, scripts) | `(tooling)` |
-| `docs/` (Specs, guides, ADRs, roadmaps, reports) | `(docs)` |
-| `.githooks/` or `.github/` (Hooks, workflows, CI) | `(hooks)` or `(ci)` |
-| Test files in `tests/` across subsystems | `(tests)` or matching subsystem scope |
+| Subsystem Modified                                       | Recommended Scope                     |
+| :------------------------------------------------------- | :------------------------------------ |
+| `src/engine/` (State, actions, combat, triggers, phases) | `(engine)`                            |
+| `src/ui/` (Components, views, modals, layouts, styles)   | `(ui)`                                |
+| `src/data/supplemental/` (Pack JSONs, card declarations) | `(data)`                              |
+| `src/data/importer/` (Card loader, normalization, i18n)  | `(importer)`                          |
+| `src/tools/` or `tools/` (Analyzers, CLI tools, scripts) | `(tooling)`                           |
+| `docs/` (Specs, guides, ADRs, roadmaps, reports)         | `(docs)`                              |
+| `.githooks/` or `.github/` (Hooks, workflows, CI)        | `(hooks)` or `(ci)`                   |
+| Test files in `tests/` across subsystems                 | `(tests)` or matching subsystem scope |
 
 ---
 
 ## ✍️ Step 5: Formulate Concise Commit Message
 
 ### 1. If Description Was Provided by User:
+
 - Normalize into Conventional Commits: `<category>(<scope>): <Description in imperative mood>`
 - Check if an open GitHub issue relates to the task; append `(Fixes #X)` or `(Closes #X)` if applicable.
 
 ### 2. If Description Was NOT Provided by User:
+
 Analyze the staged git diff and synthesize a concise, informative title adhering to these rules:
+
 - **Imperative Mood:** Use "Add", "Fix", "Implement", "Update" (never "Added", "Fixing", "Updated").
 - **Length Constraint:** Header must be $\le 72$ characters.
 - **Accurate Scope:** Reference the primary subsystem or card code (e.g. `fix(data): Update Gamma Slam target to CHOSEN_ENEMY`).
 - **Detailed Body (Optional):** For multi-file changes, include a bulleted summary of key changes below the header.
 
 ### 3. Propose to User (or Confirm):
+
 When running interactively, present the formulated message:
+
 ```text
 Proposed Commit:
   category: <category>
@@ -145,7 +156,7 @@ Execute the commit command natively:
 git commit -m "<category>(<scope>): <description>"
 ```
 
-*Note:* The pre-commit hook in `.githooks/pre-commit` will automatically execute `format:check`, `lint`, and `typecheck`. Verify that it passes with code 0.
+_Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute `format:check`, `lint`, and `typecheck`. Verify that it passes with code 0.
 
 ---
 
@@ -159,8 +170,3 @@ git commit -m "<category>(<scope>): <description>"
 3. Run `git status` to verify:
    - Working tree is clean (`nothing to commit, working tree clean`).
    - Branch is up to date with remote (`Your branch is up to date with 'origin/main'`).
-4. Append timestamped execution log to `logs/skills/commit_and_push_{YYYY-MM-DD}.log`:
-   ```text
-   YYYY-MM-DDTHH:mm:ss.sssZ [COMMIT] <commit_hash> - <commit_message>
-   YYYY-MM-DDTHH:mm:ss.sssZ [PUSH] Pushed to origin/main successfully. Working tree clean.
-   ```

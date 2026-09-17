@@ -12,18 +12,9 @@ const SUPPLEMENTAL_ENCOUNTER = path.join(
   'src/data/supplemental/pack/core_encounter.json',
 );
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
-const LOG_FILE = path.join(
-  ROOT_DIR,
-  `logs/skills/card_integration_${new Date().toISOString().split('T')[0]}.log`,
-);
 
 function appendLog(level: 'INFO' | 'WARN', message: string) {
-  const ts = new Date().toISOString();
-  const line = `${ts} [${level}] ${message}\n`;
-  if (!fs.existsSync(path.dirname(LOG_FILE))) {
-    fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
-  }
-  fs.appendFileSync(LOG_FILE, line, 'utf-8');
+  console.log(`[${level}] ${message}`);
 }
 
 export function reviewAllAmbiguityCards() {

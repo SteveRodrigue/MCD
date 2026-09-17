@@ -23,25 +23,7 @@ This skill governs any change to the _vocabulary_ of the declarative supplementa
 
 ---
 
-## 📝 Execution Logging Requirement (`logs/skills/`)
-
-Append timestamped progress entries in real time (never batched) to `logs/skills/schema_taxonomy_migration_{YYYY-MM-DD}.log`:
-
-```text
-YYYY-MM-DDTHH:mm:ss.sssZ [PHASE0] Pre-flight checklist item <N> confirmed: <summary>
-YYYY-MM-DDTHH:mm:ss.sssZ [ADR] ADR-<XXXX> drafted & registered in docs/decisions/README.md
-YYYY-MM-DDTHH:mm:ss.sssZ [ADDITIVE] New canonical name <NEW> added as alias of <OLD> in schema.ts (0 regressions)
-YYYY-MM-DDTHH:mm:ss.sssZ [MIGRATE] pack/<file>.json: <N> abilities rewritten <OLD> -> <NEW> (dry-run reviewed)
-YYYY-MM-DDTHH:mm:ss.sssZ [CLEANUP] Removed legacy alias <OLD> from schema.ts, effects/index.ts, models/abilities.ts
-YYYY-MM-DDTHH:mm:ss.sssZ [TESTS] <N> test files realigned to canonical names; suite green
-YYYY-MM-DDTHH:mm:ss.sssZ [EDITOR] Card Editor component <name> updated/added for new primitive shape
-YYYY-MM-DDTHH:mm:ss.sssZ [DOCS] Spec chapter <NN> synced; CHANGELOG.md updated
-YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Full quality gate green; roadmap updated; issue #<NUM> closed
-```
-
----
-
-## 🚦 The Sequencing Invariant (Never Violate)
+## The Sequencing Invariant (Never Violate)
 
 Data migrates **before** code is deleted. Concretely: **update code (additive) → test the new code → rewrite supplemental data → retest against the new data → remove old code → retest again.** Old and new names must be simultaneously valid for the entire window between "first supplemental file rewritten" and "last legacy `case`/enum member deleted" — there must never be a commit where a card fails to parse because its trigger/effect name was renamed out from under it before the rewrite landed. This is why Phase 2 (additive) always precedes Phase 3 (migrate data), which always precedes Phase 4 (cleanup).
 

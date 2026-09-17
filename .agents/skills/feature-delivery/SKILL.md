@@ -6,7 +6,7 @@ description: >-
   declarative primitives, scenario plugins, UI components, and roadmap milestone tasks.
   Enforces mandatory Rules Reference (RR v1.8) audits, strict >=95% confidence thresholds,
   GitHub RFC Peer Review circuit breakers, ADR & Zod schema alignment, BDD acceptance
-  tests first, composable modular architecture, logging in logs/skills/, execution of the
+  tests first, composable modular architecture, execution of the
   mandatory 7-point post-task protocol, roadmap milestone updates, and auto-closing Git commits (Closes #XX).
   Trigger whenever building a new feature or prefixed with 'feature-delivery:'.
 ---
@@ -19,25 +19,7 @@ This skill guides the agent through an authoritative, rules-verified, specificat
 
 ---
 
-## 📝 Execution Logging Requirement (`logs/skills/`)
-
-Whenever a feature delivery begins (triggered explicitly via `feature-delivery: <description>` or through conversational roadmap execution), append timestamped progress entries to `logs/skills/feature_delivery_{YYYY-MM-DD}.log`:
-
-```text
-YYYY-MM-DDTHH:mm:ss.sssZ [SCOPE] Feature scoped: "<title>" (Milestone: <Phase/Milestone>, Subsystem: <Engine|UI|Data|Setup>)
-YYYY-MM-DDTHH:mm:ss.sssZ [ISSUE] Linked/Created GitHub Issue #<NUM>: "<title>" (<URL>)
-YYYY-MM-DDTHH:mm:ss.sssZ [RULES_AUDIT] Audited RR v1.8 (Section: "<section>"), Confidence: <XX>% (Threshold: >=95%)
-YYYY-MM-DDTHH:mm:ss.sssZ [ADR] Aligned with ADR-<XXXX> and validated Zod schema in src/data/supplemental/schema.ts
-YYYY-MM-DDTHH:mm:ss.sssZ [SPEC_TEST] Added acceptance/contract tests in tests/<subsystem>/<feature>.test.ts (BDD Red)
-YYYY-MM-DDTHH:mm:ss.sssZ [BUILD] Implemented modular capability in src/<path> (Green)
-YYYY-MM-DDTHH:mm:ss.sssZ [VERIFY] Full suite passing (258+ tests, 0 typecheck errors, clean build, declarations valid)
-YYYY-MM-DDTHH:mm:ss.sssZ [AUDIT] Completed 7-point post-task protocol & updated roadmap_and_milestones.md
-YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Pushed commit "feat(...): ... (Closes #<NUM>)" & verified issue closed
-```
-
----
-
-## 🚦 Architectural Pre-Conditions & Rules Authority
+## Architectural Pre-Conditions & Rules Authority
 
 Before writing any implementation code or tests for a new feature, verify the following four architectural prerequisites:
 
@@ -113,7 +95,7 @@ If the rules interpretation, timing trigger sequence, or card interactions are a
    ```bash
    gh issue edit <NUM> --add-label "needs-review,status:blocked-by-rfc"
    ```
-4. **Log Ambiguity:** Append `[AMBIGUITY_RFC]` entry in `logs/skills/feature_delivery_{YYYY-MM-DD}.log`. If card-specific, create or update a 1-file report in `docs/ambiguities/`.
+4. **Log Ambiguity:** If card-specific, create or update a 1-file report in `docs/ambiguities/`.
 5. **End Turn Safely:** Report the RFC link to the user and pause until alignment is reached.
 
 ---

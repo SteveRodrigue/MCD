@@ -6,7 +6,7 @@ description: >-
   and resolving bugs across the engine, UI, and data layers. Inspects real-time table
   state snapshots in logs/gamestates/, opens tracked GitHub issues, enforces failing
   regression test creation first, blast-radius guardrails, zero-regression full-suite
-  verification, logging in logs/skills/, execution of the mandatory 7-point post-task
+  verification, execution of the mandatory 7-point post-task
   protocol, and auto-closing Git commits (Fixes #XX). Trigger whenever a bug is reported
   or prefixed with 'bug-fix:'.
 ---
@@ -19,23 +19,7 @@ This skill guides the agent through an authoritative, test-first, and issue-trac
 
 ---
 
-## 📝 Execution Logging Requirement (`logs/skills/`)
-
-Whenever a bug fix begins (triggered explicitly via `bug-fix: <description>` or through conversational bug reporting), append timestamped progress entries to `logs/skills/bug_fix_{YYYY-MM-DD}.log`:
-
-```text
-YYYY-MM-DDTHH:mm:ss.sssZ [TRIAGE] Bug reported: "<description>" (Subsystem: <Engine|UI|Data|Assets>)
-YYYY-MM-DDTHH:mm:ss.sssZ [ISSUE] Opened GitHub Issue #<NUM>: "<title>" (<URL>)
-YYYY-MM-DDTHH:mm:ss.sssZ [REPRO] Added failing regression test in tests/<subsystem>/<test_file>.test.ts
-YYYY-MM-DDTHH:mm:ss.sssZ [FIX] Applied surgical fix in src/<path> (Blast-Radius Tier: <1|2|3>)
-YYYY-MM-DDTHH:mm:ss.sssZ [VERIFY] All test suites passing (258+ tests, 0 typecheck errors, clean build)
-YYYY-MM-DDTHH:mm:ss.sssZ [AUDIT] Completed 7-point post-task protocol & updated documentation
-YYYY-MM-DDTHH:mm:ss.sssZ [CLOSE] Pushed commit "fix(...): ... (Fixes #<NUM>)" & verified issue closed
-```
-
----
-
-## 🚦 Blast-Radius Refactor Guardrails (3-Tier Classification)
+## Blast-Radius Refactor Guardrails (3-Tier Classification)
 
 Before modifying any source code, classify the required bug fix into one of three tiers:
 
@@ -92,8 +76,9 @@ flowchart TD
 ---
 
 ### Step 1C: Rhino Release Scope Check 🎯
-* Verify whether the reported bug affects **Gate 1: The Rhino Release** (Core Set Player cards or Rhino/Standard/Expert/Bomb Scare/Nemesis encounter cards).
-* If the defect affects an expansion card outside the Rhino Release boundary (e.g. *Klaw*, *Ultron*, *Thor*), tag the issue with `deferred:post-rhino` and prioritize active Rhino blockers.
+
+- Verify whether the reported bug affects **Gate 1: The Rhino Release** (Core Set Player cards or Rhino/Standard/Expert/Bomb Scare/Nemesis encounter cards).
+- If the defect affects an expansion card outside the Rhino Release boundary (e.g. _Klaw_, _Ultron_, _Thor_), tag the issue with `deferred:post-rhino` and prioritize active Rhino blockers.
 
 ---
 
@@ -122,7 +107,7 @@ gh issue create \
 ```
 
 - **Extract Issue Number:** Capture the created issue number `#<NUM>` for subsequent commit and log cross-references.
-- **Graceful Fallback:** If `gh` CLI is unauthenticated or offline, log the issue details in `logs/skills/` and proceed without blocking execution.
+- **Graceful Fallback:** If `gh` CLI is unauthenticated or offline, note the issue details in the implementation plan and proceed without blocking execution.
 
 ---
 

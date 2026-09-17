@@ -1155,7 +1155,7 @@ export function executeStep(
         return { state, success: true, mutatedState: amount > 0, value: amount, onomatopoeia };
       }
 
-      if (targetParam === 'HEROES_AND_ALLIES') {
+      if (targetParam === 'ALL_HEROES_AND_ALLIES') {
         if (context.assignments && typeof context.assignments === 'object') {
           for (const [id, dmg] of Object.entries(context.assignments as Record<string, number>)) {
             if (dmg <= 0) continue;
@@ -1274,7 +1274,7 @@ export function executeStep(
           round: state.roundNumber,
           phase: state.phase,
           key: 'card.effect.dealDamage',
-          params: { player: player.name, target: 'heroes_and_allies', amount },
+          params: { player: player.name, target: 'all_heroes_and_allies', amount },
           onomatopoeia,
         });
 
@@ -1397,7 +1397,7 @@ export function executeStep(
       }
 
       if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {
-        for (const p of state.players) {
+        for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
           const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
           if (toughIdx !== -1) {
             p.statusCards.splice(toughIdx, 1);
@@ -2118,9 +2118,12 @@ export function executeStep(
         } else {
           applyStatusToEntity(state.villain);
         }
+      } else if (target === 'ALL_HEROES') {
+        for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
+          applyStatusToEntity(p);
+        }
       } else if (
         target === 'HERO' ||
-        target === 'ALL_HEROES' ||
         target === 'DEFENDING_CHARACTER' ||
         target === 'DEFENDING_PLAYER' ||
         target === 'PLAYER' ||

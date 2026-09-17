@@ -54,6 +54,7 @@ graph TD
     ADR48["ADR-0048: Timing vs Trigger Disambiguation"] --> ADR58
     ADR49["ADR-0049: Value Transformers & Event Interception"] --> ADR58
     ADR58 --> ADR63["ADR-0063: Damage & Threat Interception Separation"]
+    ADR58 --> ADR64["ADR-0064: Canonical Target Scopes & Distribution Modal"]
 ```
 
 ### 5. In-Play Trigger Lifecycle
@@ -132,6 +133,7 @@ graph TD
 | [ADR-0061](0061-declarative-next-card-cost-reduction-aura.md)                                     | 2026-09-15 | Declarative Next-Card Cost Reduction Aura Architecture                               | **Accepted**                                                                                                     | Model transient next-card cost reductions via typed `activeCostReductions` on `PlayerState`, centralized `getEffectiveCardCost()`, phase cleanup, and comic pop-art warning/discount badges (Fixes #46).                                                                                        |
 | [ADR-0062](0062-declarative-temporary-stat-modifier-auras.md)                                     | 2026-09-16 | Declarative Temporary Stat Modifier Auras                                            | **Accepted**                                                                                                     | Model phase/round-duration stat buffs via typed `ActiveStatModifier[]` on `CardInstance` and `PlayerState`, universal `MODIFY_STAT` primitive with `target`/`duration`, automatic expiry in phase pipelines, and ally stat bonus display in HeroZone and AllyActionModal (Closes #119).         |
 | [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)                          | 2026-09-16 | Deconflate Damage and Threat Interception Primitives                                 | **Accepted**                                                                                                     | Establish strict domain separation between character damage prevention (`PREVENT_DAMAGE`) and scheme threat interception (`PREVENT_THREAT`), eliminating overloaded semantics and internal engine branching (Fixes #120, #123).                                                                 |
+| [ADR-0064](0064-canonical-target-scopes-and-interactive-distribution-modal.md)                    | 2026-09-17 | Canonical Target Scopes, Form Invariants & Interactive Distribution Modal System     | **Accepted**                                                                                                     | Define canonical orthogonal target scopes (eliminating ALL_IDENTITIES, adding ALL_HEROES_AND_ALLIES), enforce strict Alter-Ego form immunity on hero targeting, and introduce an interactive distribution modal with board capacity limits.                                                    |
 
 ---
 

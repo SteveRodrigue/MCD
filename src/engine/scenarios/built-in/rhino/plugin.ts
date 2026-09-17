@@ -359,7 +359,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       activeVillain.statusCards.push(StatusCard.TOUGH);
     }
 
-    for (const player of state.players) {
+    for (const player of state.players.filter((pl) => pl.currentForm === 'hero')) {
       if (!player.statusCards.includes(StatusCard.STUNNED)) {
         player.statusCards.push(StatusCard.STUNNED);
       }

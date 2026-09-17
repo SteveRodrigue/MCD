@@ -93,6 +93,7 @@ describe('Scenario Plugin & Difficulty Modes (Rules Reference v1.8 p. 28)', () =
 
   it('Expert Mode: Starts on Stage II, defeating Stage II advances to Stage III (with Tough + Stun All Heroes), and defeating Stage III wins', () => {
     const state = createGame('EXPERT');
+    state.players[0].currentForm = 'hero';
     expect(state.difficulty).toBe('EXPERT');
     expect(state.villain.card.code).toBe('01095'); // Starts on Stage II
     expect(state.villain.health).toBe(15);

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { EffectTypeSchema } from '../../src/data/supplemental/schema';
 import {
   EFFECT_PARAMETER_REGISTRY,
+  TARGET_OPTIONS,
   getEffectDescriptor,
 } from '../../src/ui/components/editor/effect-parameter-registry';
 
@@ -254,5 +255,9 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     const desc = getEffectDescriptor('PREVENT_DAMAGE');
     expect(desc.effect).toBe('PREVENT_DAMAGE');
     expect(desc.description).toBe('Prevent incoming attack or effect damage to a character.');
+  });
+
+  it('exposes ALL_HEROES_AND_ALLIES in TARGET_OPTIONS for editor dropdowns', () => {
+    expect(TARGET_OPTIONS).toContain('ALL_HEROES_AND_ALLIES');
   });
 });

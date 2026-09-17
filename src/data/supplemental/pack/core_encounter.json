@@ -630,7 +630,7 @@
                   "stat": "THREAT",
                   "targetCardCode": "01109"
                 },
-                "target": "HEROES_AND_ALLIES"
+                "target": "ALL_HEROES_AND_ALLIES"
               }
             },
             {
@@ -646,8 +646,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:00",
-        "reviewedAt": "2026-09-14T18:00",
+        "updatedAt": "2026-09-17T11:51:00Z",
+        "reviewedAt": "2026-09-17T11:51:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

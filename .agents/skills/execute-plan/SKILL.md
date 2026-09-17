@@ -51,8 +51,12 @@ sequenceDiagram
 When the user clicks "Proceed" or approves:
 
 1. View `<appDataDir>\brain\<conversation-id>/implementation_plan.md`.
-2. Extract only the explicit file list (`[NEW]`, `[MODIFY]`, `[DELETE]`), edits, acceptance criteria, and verification commands. Do **not** infer omitted behavior, expand scope, choose between alternatives, or reinterpret requirements from surrounding repository context.
+2. Extract only the explicit file list (`[NEW]`, `[MODIFY]`, `[DELETE]`), edits, UI/Card Editor impact statement, test inventory, acceptance criteria, and verification commands. Do **not** infer omitted behavior, expand scope, choose between alternatives, or reinterpret requirements from surrounding repository context.
 3. Run the ambiguity gate before delegating. Treat the plan as ambiguous when any required behavior, file-level change, acceptance criterion, verification command, dependency, migration choice, or conflict with the current worktree is unspecified or admits more than one reasonable interpretation.
+
+- The plan is also blocked if it lacks an explicit `UI and Card Editor` section. It must either list the affected UI/Card Editor files and tests, or state `No change required.` with supporting evidence.
+- The plan is also blocked if its test inventory omits a changed behavior or lacks Card Editor tests for an affected editor surface.
+
 4. When ambiguity exists, halt execution. Present a concise user-facing validation request with exactly these headings:
 
 ```markdown

@@ -6,7 +6,7 @@ export function resetInstanceCounter(): void {
   instanceCounter = 0;
 }
 
-export function createCardInstance(card: NormalizedCard): CardInstance {
+export function createCardInstance(card: NormalizedCard, ownerId?: string): CardInstance {
   if (!card.enrichment && card.code.startsWith('unscanned_')) {
     throw new Error(`Supplemental data is missing for card ${card.code} (${card.name})`);
   }
@@ -34,5 +34,6 @@ export function createCardInstance(card: NormalizedCard): CardInstance {
     counters: initialCounters,
     statusCards: [],
     attachments: [],
+    ownerId,
   };
 }

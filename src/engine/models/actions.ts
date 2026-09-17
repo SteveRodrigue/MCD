@@ -77,6 +77,7 @@ export interface PlayCardAction {
   sourceZone?:
     'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED';
   targetOwnerPlayerId?: string; // When playing a card from another player's discard (e.g. Make the Call)
+  targetPlayerId?: string; // When playing a card under another player's control (RR v1.8 p. 23)
 }
 
 export interface UseCardAbilityAction {

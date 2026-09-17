@@ -1102,6 +1102,7 @@ export function dispatchAction(
         action.generatorInstanceIds,
         sourceZone,
         action.targetOwnerPlayerId,
+        action.targetPlayerId,
       );
       if (!check.allowed) {
         return { state, result: { success: false, error: check.reason } };
@@ -1545,9 +1546,84 @@ export function dispatchAction(
           } else {
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
           }
+        } else if (playedCardInstance.card.enrichment?.playUnderAnyPlayerControl) {
+          if (action.targetPlayerId) {
+            const targetPlayer = getPlayer(nextState, action.targetPlayerId);
+            if (!targetPlayer) {
+              return {
+                state,
+                result: {
+                  success: false,
+                  error: `Target player ${action.targetPlayerId} not found`,
+                },
+              };
+            }
+            playedCardInstance.ownerId = action.playerId;
+            targetPlayer.tableau.push(playedCardInstance);
+          } else if (nextState.players.length === 1) {
+            playedCardInstance.ownerId = player.id;
+            player.tableau.push(playedCardInstance);
+          } else {
+            const options: DecisionPromptOption[] = nextState.players.map((p) => {
+              const count = p.tableau.filter(
+                (c) =>
+                  c.card.code === playedCardInstance.card.code ||
+                  c.card.name.toLowerCase().trim() ===
+                    playedCardInstance.card.name.toLowerCase().trim(),
+              ).length;
+              if (
+                playedCardInstance.card.maxPerPlayer !== undefined &&
+                count >= playedCardInstance.card.maxPerPlayer
+              ) {
+                return {
+                  id: p.id,
+                  label: p.name,
+                  effect: 'PLAY_UNDER_PLAYER_CONTROL',
+                  params: {
+                    targetPlayerId: p.id,
+                    playedCardInstance,
+                    ownerId: action.playerId,
+                  },
+                  disabled: true,
+                  disabledReason: `Max ${playedCardInstance.card.maxPerPlayer} per player limit reached for ${p.name}`,
+                };
+              }
+              return {
+                id: p.id,
+                label: p.name,
+                effect: 'PLAY_UNDER_PLAYER_CONTROL',
+                params: {
+                  targetPlayerId: p.id,
+                  playedCardInstance,
+                  ownerId: action.playerId,
+                },
+              };
+            });
+
+            const prompt: PendingDecisionPrompt = {
+              promptId: `prompt_choose_player_${Date.now()}`,
+              playerId: action.playerId,
+              title: 'Choose Player Control',
+              description: `Choose which player takes control of ${playedCardInstance.card.name}:`,
+              sourceCardName: playedCardInstance.card.name,
+              options,
+              isVoluntary: false,
+            };
+
+            const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+            return {
+              state: enqueuedState,
+              result: { success: true, onomatopoeia: 'CHOOSE HERO!' },
+            };
+          }
         } else {
           player.tableau.push(playedCardInstance);
         }
+
+        const controllingPlayer =
+          action.targetPlayerId && playedCardInstance.card.enrichment?.playUnderAnyPlayerControl
+            ? getPlayer(nextState, action.targetPlayerId) || player
+            : player;
 
         // Apply immediate max health expansion (RR v1.8 p. 11: Current HP increases by same amount)
         for (const ability of abilities) {
@@ -1562,8 +1638,8 @@ export function dispatchAction(
               (matchingStep.effectParams?.healthBonus as number) ||
               0;
             if (hpBonus > 0) {
-              player.health += hpBonus;
-              player.maxHealth = getEffectiveMaxHealth(player, nextState);
+              controllingPlayer.health += hpBonus;
+              controllingPlayer.maxHealth = getEffectiveMaxHealth(controllingPlayer, nextState);
             }
           }
         }
@@ -1574,7 +1650,7 @@ export function dispatchAction(
           resourcesSpent,
         });
         dispatchTrigger(nextState, 'ENTERS_PLAY', {
-          targetPlayerId: action.playerId,
+          targetPlayerId: controllingPlayer.id,
           sourceInstanceId: playedCardInstance.instanceId,
           resourcesSpent,
         });
@@ -2397,6 +2473,84 @@ export function dispatchAction(
         });
 
         return { state: poppedState, result: { success: true, onomatopoeia: 'ATTACHED!' } };
+      }
+
+      if (
+        activePrompt &&
+        activePrompt.options.some((o) => o.effect === 'PLAY_UNDER_PLAYER_CONTROL')
+      ) {
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        if (!selectedOption) {
+          return { state: nextState, result: { success: false, error: 'Option not found' } };
+        }
+
+        if (selectedOption.disabled) {
+          return {
+            state: nextState,
+            result: {
+              success: false,
+              error: selectedOption.disabledReason || 'Option is disabled',
+            },
+          };
+        }
+
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const params = selectedOption.params as any;
+        const targetPlayerId = params?.targetPlayerId as string;
+        const playedCardInstance = params?.playedCardInstance as CardInstance;
+        const ownerId = (params?.ownerId as string) || action.playerId;
+
+        const targetPlayer = getPlayer(poppedState, targetPlayerId) || player;
+        playedCardInstance.ownerId = ownerId;
+        targetPlayer.tableau.push(playedCardInstance);
+
+        const onomatopoeia = 'PLAYED UNDER CONTROL!';
+        poppedState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: poppedState.roundNumber,
+          phase: poppedState.phase,
+          category: 'ability',
+          actor: { name: player.name, type: player.currentForm },
+          key: 'card.playUnderControl.resolved',
+          params: {
+            player: player.name,
+            card: playedCardInstance.card.name,
+            targetPlayer: targetPlayer.name,
+          },
+          onomatopoeia,
+        });
+
+        // Apply immediate max health expansion if needed
+        const cardAbilities = playedCardInstance.card.enrichment?.abilities || [];
+        for (const ability of cardAbilities) {
+          const matchingStep = ability.steps?.find(
+            (s) =>
+              s.effect === 'MODIFY_MAX_HEALTH' ||
+              (s.effect === 'MODIFY_STAT' && s.effectParams?.stat === 'HEALTH'),
+          );
+          if (ability.timing === 'CONSTANT' && matchingStep) {
+            const hpBonus =
+              (matchingStep.effectParams?.amount as number) ||
+              (matchingStep.effectParams?.healthBonus as number) ||
+              0;
+            if (hpBonus > 0) {
+              targetPlayer.health += hpBonus;
+              targetPlayer.maxHealth = getEffectiveMaxHealth(targetPlayer, poppedState);
+            }
+          }
+        }
+
+        dispatchTrigger(poppedState, 'CARD_PLAYED', {
+          targetPlayerId: ownerId,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
+        dispatchTrigger(poppedState, 'ENTERS_PLAY', {
+          targetPlayerId: targetPlayer.id,
+          sourceInstanceId: playedCardInstance.instanceId,
+        });
+
+        return { state: poppedState, result: { success: true, onomatopoeia } };
       }
 
       if (

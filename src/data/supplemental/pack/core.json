@@ -2139,6 +2139,7 @@
     "01057": {
       "comment": "UPGRADE: Combat Training. You get +1 ATK.",
       "maxPerPlayer": 1,
+      "playUnderAnyPlayerControl": true,
       "abilities": [
         {
           "id": "combat_training_atk",
@@ -2156,11 +2157,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-17T18:20:00Z",
+        "reviewedAt": "2026-09-17T18:20:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 ATK."
       }
     },
@@ -2388,6 +2389,7 @@
     "01065": {
       "comment": "UPGRADE: Heroic Intuition. You get +1 THW.",
       "maxPerPlayer": 1,
+      "playUnderAnyPlayerControl": true,
       "abilities": [
         {
           "id": "heroic_intuition_thw",
@@ -2405,11 +2407,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-17T18:20:00Z",
+        "reviewedAt": "2026-09-17T18:20:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Play under any player's control. Max 1 per player.\nYour hero gets +1 THW."
       }
     },
@@ -2931,6 +2933,7 @@
     "01081": {
       "comment": "Upgrade: Attached hero gets +1 DEF.",
       "maxPerPlayer": 1,
+      "playUnderAnyPlayerControl": true,
       "abilities": [
         {
           "id": "armored_vest_def",
@@ -2948,8 +2951,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-17T18:20:00Z",
+        "reviewedAt": "2026-09-17T18:20:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

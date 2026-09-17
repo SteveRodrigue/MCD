@@ -169,6 +169,8 @@ export interface DecisionPromptOption {
   description?: string;
   effect: string;
   params?: Record<string, unknown>;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 export interface RevealedCardDisplay {

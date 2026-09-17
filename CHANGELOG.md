@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine & UI): Cross-Player Attachments & Persistent Card Ownership Invariants ([Issue #23](https://github.com/SteveRodrigue/MCD/issues/23) / [ADR-0068](docs/decisions/0068-cross-player-attachments-and-card-ownership-invariants.md))**
+  - **Schema & Supplemental Data Layer:**
+    - Added `playUnderAnyPlayerControl: z.boolean().optional()` to `CardEnrichmentSchema` in `src/data/supplemental/schema.ts` and `CardEnrichment` interface in `src/engine/models/abilities.ts`.
+    - Regenerated canonical JSON schema `src/data/supplemental/schema.json` via `npm run schema:generate`.
+    - Retrofitted `01057` (Combat Training), `01065` (Heroic Intuition), and `01081` (Armored Vest) in `src/data/supplemental/pack/core.json` with `"playUnderAnyPlayerControl": true` and updated audit metadata (`2026-09-17T18:20:00Z`).
+  - **Decision Prompt & UI Modal Enhancements:**
+    - Extended `DecisionPromptOption` in `src/engine/models/state.ts` with `disabled?: boolean;` and `disabledReason?: string;`.
+    - Enhanced `DecisionPromptModal.tsx` to render disabled options with muted styling (`opacity-50 cursor-not-allowed bg-slate-100 text-slate-500 pointer-events-none ring-1 ring-slate-300`), warning badges (`⚠️ ${option.disabledReason}`), and non-interactive click guards.
+  - **Headless Rules Engine:**
+    - Updated `createCardInstance` in `src/engine/state/card-instance.ts` to accept optional `ownerId?: string` and stamp it onto instances.
+    - Updated `setupGame()` in `src/engine/state/game-setup.ts` to stamp player cards with `ownerId: pConfig.id` from initial deck creation.
+    - Added `targetPlayerId?: string;` to `PlayCardAction` in `src/engine/models/actions.ts`.
+    - Enhanced `canPlayCard()` in `src/engine/pipeline/legality-checker.ts` to validate `maxPerPlayer` constraints across target players and reject upfront if all players at the table have reached the printed limit.
+    - Updated `PLAY_CARD` and `RESOLVE_DECISION_PROMPT` in `src/engine/pipeline/action-dispatcher.ts` to enqueue `PendingDecisionPrompt` in multiplayer, gray out players at `maxPerPlayer`, transfer cards to the chosen player's tableau, and set persistent `ownerId`.
+    - Introduced and exported `discardCardInstance(state, card, fallbackPlayerId)` in `src/engine/effects/index.ts` to atomically cascade host attachments/tucked cards, remove instances across all zones, route player cards strictly to `card.ownerId`'s discard pile per RR v1.8 p. 23, and dispatch `CARD_DISCARDED`.
+    - Refactored tableau discard call sites in `src/engine/effects/index.ts` to route through `discardCardInstance`.
+  - **Contract & Acceptance Tests:**
+    - Created `tests/engine/cross-player-attachments-and-ownership.test.ts` covering 6 core test scenarios: multiplayer modal option evaluation with grayed-out limits, global max-per-player upfront rejection, play under another player's control with stat calculation isolation, persistent ownership discard routing to owner's discard pile, cross-player host attachment discard on ally defeat (Inspired on Daredevil), and solo play automatic placement with card conservation validation.
+
 - **Fix (Engine & UI): First-Class Declarative Heal Ability Cost Primitive & Card Editor UI Support ([Issue #124](https://github.com/SteveRodrigue/MCD/issues/124) / [ADR-0065](docs/decisions/0065-first-class-heal-ability-cost-primitive.md))**
   - **Schema & Supplemental Data:**
     - Replaced legacy string `costCheck` with first-class `heal: { amount: number, target?: 'SELF' | 'TARGET' }` in `AbilityCostSchema` (`src/data/supplemental/schema.ts`).

@@ -601,6 +601,9 @@
           "maxPerPlayer": {
             "type": "number"
           },
+          "playUnderAnyPlayerControl": {
+            "type": "boolean"
+          },
           "uses": {
             "type": "object",
             "properties": {

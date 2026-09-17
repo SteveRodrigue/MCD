@@ -362,5 +362,35 @@ describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
       expect(state2.players[1].allies).not.toContain(mariaHillInst);
       expect(state2.players[1].discard).toContain(mariaHillInst);
     });
+
+    it('enqueues interactive DISTRIBUTE_POINTS prompt when interactivePrompt is true (ADR-0064)', () => {
+      const state2 = createTwoPlayerState();
+      const explosionCard = cardCatalog.getCard('01111')!;
+      const explosionInst = createCardInstance(explosionCard);
+      const ability = explosionCard.enrichment!.abilities![0];
+
+      const bombScareCard = cardCatalog.getCard('01109')!;
+      state2.sideSchemes = [
+        {
+          instanceId: 'bomb-scare-inst',
+          card: bombScareCard as any,
+          threat: 3,
+        },
+      ];
+
+      const result = executeEffect(state2, ability, {
+        playerId: 'p1',
+        sourceCardInstance: explosionInst,
+        interactivePrompt: true,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(result.state.pendingDecisionPrompt?.kind).toBe('DISTRIBUTE_POINTS');
+      expect(result.state.pendingDecisionPrompt?.distributionConfig?.effectiveBudget).toBe(3);
+      expect(result.state.pendingDecisionPrompt?.distributionConfig?.allocationDomain).toBe(
+        'DAMAGE',
+      );
+    });
   });
 });

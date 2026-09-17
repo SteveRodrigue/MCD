@@ -15,6 +15,7 @@ import { CardView } from '../cards/CardView';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { WakandaForeverModal } from './WakandaForeverModal';
+import { DistributeAmountModal } from './DistributeAmountModal';
 
 interface DecisionPromptModalProps {
   prompt?: PendingDecisionPrompt;
@@ -37,6 +38,17 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
         onExecuteSequence={(sequenceOrder) => {
           onSelectOption(sequenceOrder[0] || 'wf_execute', { sequenceOrder });
         }}
+      />
+    );
+  }
+
+  // Delegate interactive point distribution to specialized modal (ADR-0064)
+  if (prompt.kind === 'DISTRIBUTE_POINTS' || prompt.distributionConfig) {
+    return (
+      <DistributeAmountModal
+        prompt={prompt}
+        onConfirm={(assignments) => onSelectOption('confirm_distribution', { assignments })}
+        onCancel={prompt.distributionConfig?.canCancel ? () => onSelectOption('cancel') : undefined}
       />
     );
   }

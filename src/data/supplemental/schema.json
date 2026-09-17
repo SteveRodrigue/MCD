@@ -361,6 +361,7 @@
                           "DEAL_DAMAGE",
                           "DECLARE_DEFENDER",
                           "DISCARD",
+                          "DISTRIBUTE_AMOUNT",
                           "DOUBLE_RESOURCE_FOR_ASPECT",
                           "EXECUTE_SPECIAL",
                           "EXECUTE_WAKANDA_FOREVER",

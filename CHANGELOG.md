@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature & UI (Interactive Distribution Modal & Pipeline): Interactive Point Distribution System & Shortfall Guardrails ([ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
+  - **Engine Models & Pipeline:**
+    - Extended `PendingDecisionPrompt` with `kind: 'DISTRIBUTE_POINTS'` and `DistributionPromptConfig`.
+    - Added `TargetAllocationItem` and `DistributionPromptConfig` models to `src/engine/models/state.ts`.
+    - Extended `ResolveDecisionPromptAction` with `assignments?: Record<string, number>` in `src/engine/models/actions.ts`.
+    - Added `enqueueDistributionPrompt` in `src/engine/pipeline/prompt-queue.ts` with dynamic board capacity ceiling ($\text{EffectiveBudget} = \min(\text{NominalBudget}, \sum \text{Capacities})$), automatic prompt bypassing when effective budget is 0, and dynamic `shortfallNotice`.
+    - Added `DISTRIBUTE_AMOUNT` primitive handler in `src/engine/effects/index.ts` with target compilation, capacity limits, ineligibility reasons, and headless fallback.
+    - Updated `RESOLVE_DECISION_PROMPT` in `src/engine/pipeline/action-dispatcher.ts` to process point assignments across characters and schemes for all domains (`DAMAGE`, `THREAT_REMOVAL`, `HEAL`, `COUNTERS`, `EXHAUST`).
+  - **1960s Comic Pop-Art UI Presentation:**
+    - Authored `src/ui/components/board/DistributeAmountModal.tsx` featuring Ben-Day dots, comic borders, player swimlanes, stepper controls (`[-]`, `[+]`, `[MAX]`), budget tracker (`POINTS TO ASSIGN: X / Y`), shortfall alerts, and explicit ineligibility badges.
+    - Integrated `DecisionPromptModal.tsx` to delegate `kind === 'DISTRIBUTE_POINTS'` prompts directly to `DistributeAmountModal`.
+  - **Editor & Tooling:**
+    - Registered `DISTRIBUTE_AMOUNT` in `EFFECT_PARAMETER_REGISTRY` (`src/ui/components/editor/effect-parameter-registry.ts`).
+    - Documented `DISTRIBUTE_AMOUNT` in `docs/specifications/tooling/card_supplemental_editor.md`.
+  - **Testing & Verification:**
+    - Authored `tests/ui/DistributeAmountModal.test.tsx` (7 acceptance tests).
+    - Added distribution prompt resolution and auto-bypass tests in `tests/engine/decision-prompts.test.ts`.
+    - Added interactive prompt enqueuing test in `tests/engine/explosion-bomb-scare.test.ts`.
+    - Added registry validation test in `tests/ui/effect-parameter-registry.test.ts`.
+
 - **Feature & Engine (Target Scopes & Form Invariants): Canonical Target Scopes, Form Gating & ADR-0064 ([ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
   - **Schema & Specifications Alignment:**
     - Registered `'ALL_HEROES_AND_ALLIES'` in `TargetSelectorSchema` (`src/data/supplemental/schema.ts`) and regenerated `src/data/supplemental/schema.json`.

@@ -1,6 +1,7 @@
 import {
   GameState,
   PendingDecisionPrompt,
+  DistributionPromptConfig,
   ExecutionFrame,
   ActionResult,
   CardAbility,
@@ -33,6 +34,84 @@ export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionP
 
   state.pendingDecisionPrompt = queue[0];
   return state;
+}
+
+/**
+ * Enqueue an interactive distribution prompt with dynamic capacity ceiling and shortfall notice (ADR-0064).
+ */
+export function enqueueDistributionPrompt(
+  state: GameState,
+  promptOrConfig:
+    | PendingDecisionPrompt
+    | (DistributionPromptConfig & {
+        promptId?: string;
+        playerId?: string;
+        title?: string;
+        description?: string;
+        sourceCardName?: string;
+      }),
+): GameState {
+  let prompt: PendingDecisionPrompt;
+  let config: DistributionPromptConfig;
+
+  if ('targets' in promptOrConfig && !('options' in promptOrConfig)) {
+    config = promptOrConfig;
+    prompt = {
+      promptId:
+        promptOrConfig.promptId ||
+        `prompt_dist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      playerId: promptOrConfig.playerId || state.players[0]?.id || '',
+      title: promptOrConfig.title || `Distribute ${config.budgetLabel || 'Points'}`,
+      description: promptOrConfig.description || `Assign points across eligible targets:`,
+      sourceCardName: promptOrConfig.sourceCardName || 'Game Effect',
+      kind: 'DISTRIBUTE_POINTS',
+      distributionConfig: config,
+      options: [
+        {
+          id: 'confirm_distribution',
+          label: 'Confirm Assignment',
+          effect: 'DISTRIBUTE_POINTS',
+        },
+      ],
+    };
+  } else {
+    prompt = promptOrConfig as PendingDecisionPrompt;
+    prompt.kind = 'DISTRIBUTE_POINTS';
+    if (!prompt.distributionConfig) {
+      return enqueueDecisionPrompt(state, prompt);
+    }
+    config = prompt.distributionConfig;
+  }
+
+  // 1. Calculate total capacity across eligible targets
+  const eligibleTargets = config.targets.filter((t) => t.isEligible !== false);
+  const totalCapacity = eligibleTargets.reduce((sum, t) => sum + (t.allocationCap ?? 0), 0);
+
+  // 2. Dynamic budget ceiling
+  const effectiveBudget = Math.min(config.totalBudget, totalCapacity);
+  config.effectiveBudget = effectiveBudget;
+
+  // 3. If effectiveBudget === 0, auto-bypass prompt and return state
+  if (effectiveBudget === 0) {
+    return state;
+  }
+
+  // 4. If capacity < totalBudget, set shortfallNotice
+  if (totalCapacity < config.totalBudget && !config.shortfallNotice) {
+    config.shortfallNotice = `Only ${totalCapacity} available capacity across targets (reduced from ${config.totalBudget}).`;
+  }
+
+  if (!prompt.options || prompt.options.length === 0) {
+    prompt.options = [
+      {
+        id: 'confirm_distribution',
+        label: 'Confirm Assignment',
+        effect: 'DISTRIBUTE_POINTS',
+      },
+    ];
+  }
+
+  return enqueueDecisionPrompt(state, prompt);
 }
 
 /**

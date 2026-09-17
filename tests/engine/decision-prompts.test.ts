@@ -239,4 +239,93 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     expect(resolveRes.state.players[1].hand.length).toBe(1);
     expect(resolveRes.state.players[0].tableau[0].exhausted).toBe(true);
   });
+
+  it('DISTRIBUTE_POINTS prompt resolves damage assignments across multiple targets (ADR-0064)', () => {
+    // Add ally to player 1
+    const catCard = cardCatalog.getCard('01002') || cardCatalog.getCard('01005')!;
+    const allyInst = createCardInstance(catCard);
+    (allyInst.card as any).health = 3;
+    state.players[0].allies.push(allyInst);
+
+    const initialHeroHp = state.players[0].health;
+
+    // Enqueue distribution prompt
+    const enqueuedState = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'pass',
+    }).state;
+
+    // Direct effect test with DISTRIBUTE_AMOUNT and interactive prompt
+    const ability = {
+      id: 'test_explosion',
+      timing: 'WHEN_REVEALED' as const,
+      steps: [
+        {
+          effect: 'DISTRIBUTE_AMOUNT' as const,
+          effectParams: {
+            budget: 3,
+            allocationDomain: 'DAMAGE' as const,
+            targetScope: 'ALL_HEROES_AND_ALLIES',
+            capRule: 'REMAINING_HP',
+          },
+        },
+      ],
+    };
+
+    // Interactive prompt execution
+    const promptRes = executeEffect(enqueuedState, ability, {
+      playerId: 'p1',
+      interactivePrompt: true,
+    });
+
+    expect(promptRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(promptRes.state.pendingDecisionPrompt?.kind).toBe('DISTRIBUTE_POINTS');
+    expect(promptRes.state.pendingDecisionPrompt?.distributionConfig?.effectiveBudget).toBe(3);
+
+    // Resolve with assignments: 2 damage to Hero, 1 damage to Ally
+    const resolveAction = dispatchAction(promptRes.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'confirm_distribution',
+      assignments: {
+        p1: 2,
+        [allyInst.instanceId]: 1,
+      },
+    });
+
+    expect(resolveAction.result.success).toBe(true);
+    expect(resolveAction.state.pendingDecisionPrompt).toBeUndefined();
+    expect(resolveAction.state.players[0].health).toBe(initialHeroHp - 2);
+    expect(resolveAction.state.players[0].allies[0].tokens?.damage).toBe(1);
+  });
+
+  it('DISTRIBUTE_POINTS auto-bypasses prompt when effectiveBudget is 0 (ADR-0064)', () => {
+    // Threat removal when main scheme has 0 threat and no side schemes
+    state.mainScheme.threat = 0;
+    state.sideSchemes = [];
+
+    const ability = {
+      id: 'test_threat_dist',
+      timing: 'ACTION' as const,
+      steps: [
+        {
+          effect: 'DISTRIBUTE_AMOUNT' as const,
+          effectParams: {
+            budget: 4,
+            allocationDomain: 'THREAT_REMOVAL' as const,
+            targetScope: 'ALL_SCHEMES',
+          },
+        },
+      ],
+    };
+
+    const res = executeEffect(state, ability, {
+      playerId: 'p1',
+      interactivePrompt: true,
+    });
+
+    // Auto-bypasses prompt because total capacity is 0
+    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+  });
 });

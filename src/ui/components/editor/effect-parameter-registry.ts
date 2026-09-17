@@ -115,6 +115,54 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
+  DISTRIBUTE_AMOUNT: {
+    effect: 'DISTRIBUTE_AMOUNT',
+    description:
+      'Distribute a pool of damage, threat removal, heal, or counters across multiple eligible targets (ADR-0064).',
+    parameters: [
+      {
+        key: 'budget',
+        label: 'Budget Amount',
+        type: 'number',
+        allowDynamic: true,
+        defaultValue: 1,
+        placeholder: 'e.g. 4',
+        description: 'Total points to allocate across targets',
+      },
+      {
+        key: 'allocationDomain',
+        label: 'Allocation Domain',
+        type: 'select',
+        options: ['DAMAGE', 'THREAT_REMOVAL', 'HEAL', 'COUNTERS', 'EXHAUST'] as const,
+        defaultValue: 'DAMAGE',
+        description: 'Domain of effect being distributed',
+      },
+      {
+        key: 'targetScope',
+        label: 'Target Scope',
+        type: 'select',
+        options: TARGET_OPTIONS,
+        defaultValue: 'ALL_HEROES_AND_ALLIES',
+        description: 'Set of targets eligible for point allocation',
+      },
+      {
+        key: 'capRule',
+        label: 'Cap Rule',
+        type: 'select',
+        options: ['REMAINING_HP', 'SUFFERED_DAMAGE', 'CURRENT_THREAT', 'NONE'] as const,
+        defaultValue: 'NONE',
+        description: 'Maximum points assignable to a single target',
+      },
+      {
+        key: 'allowPartialIfCapacityLow',
+        label: 'Allow Partial / Shortfall',
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          'Allow allocation if total target capacity is less than budget (e.g. fewer threat on schemes)',
+      },
+    ],
+  },
   PREVENT_DAMAGE: {
     effect: 'PREVENT_DAMAGE',
     description: 'Prevent incoming attack or effect damage to a character.',

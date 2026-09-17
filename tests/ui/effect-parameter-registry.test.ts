@@ -260,4 +260,33 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
   it('exposes ALL_HEROES_AND_ALLIES in TARGET_OPTIONS for editor dropdowns', () => {
     expect(TARGET_OPTIONS).toContain('ALL_HEROES_AND_ALLIES');
   });
+
+  it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain, targetScope, capRule, and allowPartialIfCapacityLow', () => {
+    const desc = getEffectDescriptor('DISTRIBUTE_AMOUNT');
+    expect(desc.effect).toBe('DISTRIBUTE_AMOUNT');
+    expect(desc.description).toContain('Distribute a pool of damage');
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('budget');
+    expect(paramKeys).toContain('allocationDomain');
+    expect(paramKeys).toContain('targetScope');
+    expect(paramKeys).toContain('capRule');
+    expect(paramKeys).toContain('allowPartialIfCapacityLow');
+
+    const budgetParam = desc.parameters.find((p) => p.key === 'budget');
+    expect(budgetParam?.type).toBe('number');
+    expect(budgetParam?.allowDynamic).toBe(true);
+
+    const domainParam = desc.parameters.find((p) => p.key === 'allocationDomain');
+    expect(domainParam?.type).toBe('select');
+    expect(domainParam?.defaultValue).toBe('DAMAGE');
+
+    const scopeParam = desc.parameters.find((p) => p.key === 'targetScope');
+    expect(scopeParam?.type).toBe('select');
+    expect(scopeParam?.defaultValue).toBe('ALL_HEROES_AND_ALLIES');
+
+    const capParam = desc.parameters.find((p) => p.key === 'capRule');
+    expect(capParam?.type).toBe('select');
+    expect(capParam?.defaultValue).toBe('NONE');
+  });
 });

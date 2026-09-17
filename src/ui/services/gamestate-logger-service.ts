@@ -43,3 +43,16 @@ export async function logGameStateSnapshot(
     // Gracefully ignore network errors when running standalone
   }
 }
+
+export function getLatestGameStateSnapshot(): GameState | null {
+  try {
+    const saved = sessionStorage.getItem('mcd_latest_gamestate');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.state || parsed;
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  return null;
+}

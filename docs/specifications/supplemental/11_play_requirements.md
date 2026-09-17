@@ -87,7 +87,7 @@ export const PlayRequirementsSchema = z
   "abilities": [
     {
       "timing": "HERO_ACTION",
-      "steps": [{ "effect": "ATTACH_TO_HOST", "target": "CHOSEN_ENEMY" }]
+      "steps": [{ "effect": "ATTACH_TO_HOST", "effectParams": { "target": "CHOSEN_ENEMY" } }]
     }
   ]
 }

@@ -193,7 +193,7 @@ The Editor is organized into a 3-column split view with responsive real estate c
 | > 01001a Spider-Man        [100%]  | Upstream Zzorba Meta     | ├─ Cost: [Exhaust: Yes]           |
 |   01001b Peter Parker      [100%]  | (2-Column Grid):         | └─ Steps (1):                     |
 |   01002  Spider-Tracer     [100%]  | - Traits: Avenger        |    └─ Primitive: [DRAW]           |
-|   01003  Web-Shooter       [100%]  | - Type: Hero             |       Params: { amount: 1 }       |
+|   01003  Web-Shooter       [100%]  | - Type: Hero             |       EffectParams: { count: 1 }  |
 |   01004  Backflip          [100%]  | - Hand Size: 5           |                                   |
 |                                    | - HP: 10                 | Live Zod Diagnostics: (0 err)     |
 +------------------------------------+--------------------------+-----------------------------------+

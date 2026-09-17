@@ -1,4 +1,4 @@
-# 06. Status Conditions, Card Orientation & Resource Economy Primitives
+# 07. Status Conditions, Card Orientation & Resource Economy Primitives
 
 ---
 
@@ -12,7 +12,7 @@
 ```json
 {
   "effect": "ADD_STATUS",
-  "params": {
+  "effectParams": {
     "status": "STUNNED",
     "target": "CHOSEN_ENEMY"
   }
@@ -21,10 +21,10 @@
 
 ---
 
-### `Toughness` (keyword)
+### `Toughness` (Keyword, not an effect primitive)
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)`
-- **Description:** Passive keyword ensuring a character enters play with a `TOUGH` status card. Declared via the `hasKeyword` filter vocabulary, not as an effect primitive.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (RR v1.8 p. 29)
+- **Description:** Toughness is a passive entry keyword, NOT an effect primitive. When a character with printed Toughness enters play, the engine automatically grants a `TOUGH` status card. Declared in card metadata under `keywords: ["Toughness"]`.
 
 ---
 
@@ -49,7 +49,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ```json
 {
   "effect": "EXHAUST",
-  "params": {
+  "effectParams": {
     "target": "SELF_IDENTITY"
   }
 }
@@ -73,7 +73,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ```json
 {
   "effect": "READY",
-  "params": {
+  "effectParams": {
     "target": "CHOSEN_ALLY"
   }
 }
@@ -110,7 +110,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ```json
 {
   "effect": "GENERATE_RESOURCE",
-  "params": {
+  "effectParams": {
     "resource": "wild",
     "amount": 1
   }
@@ -131,7 +131,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ```json
 {
   "effect": "REDUCE_NEXT_CARD_COST",
-  "params": {
+  "effectParams": {
     "amount": 1,
     "duration": "PHASE"
   }
@@ -149,8 +149,65 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
 ```json
 {
   "effect": "DOUBLE_RESOURCE_FOR_ASPECT",
-  "params": {
+  "effectParams": {
     "aspect": "aggression"
+  }
+}
+```
+
+---
+
+## 4. Counter Economy Primitives
+
+### `ADD_COUNTERS`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / _Energy Channel_ `01018`)
+- **Description:** Adds counters (e.g. charge, energy, web counters) to the host card or target entity.
+
+```json
+{
+  "effect": "ADD_COUNTERS",
+  "effectParams": {
+    "counterType": "energy",
+    "amount": 1,
+    "target": "SELF"
+  }
+}
+```
+
+---
+
+### `REMOVE_COUNTERS`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Removes counters from the host card or target entity.
+
+```json
+{
+  "effect": "REMOVE_COUNTERS",
+  "effectParams": {
+    "counterType": "energy",
+    "amount": 1,
+    "target": "SELF"
+  }
+}
+```
+
+---
+
+### `SPEND_COUNTERS`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Spends / decrements counters from the host card or target entity as part of an effect pipeline, with optional discard on empty.
+
+```json
+{
+  "effect": "SPEND_COUNTERS",
+  "effectParams": {
+    "counterType": "web",
+    "amount": 1,
+    "target": "SELF",
+    "discardWhenEmpty": true
   }
 }
 ```

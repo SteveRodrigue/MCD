@@ -1,4 +1,4 @@
-# 07. Villain Extra Activations, Nemesis & Attachments
+# 08. Villain Extra Activations, Nemesis & Attachments
 
 ---
 
@@ -11,7 +11,7 @@
 ```json
 {
   "effect": "VILLAIN_SCHEMES",
-  "params": {}
+  "effectParams": {}
 }
 ```
 
@@ -24,7 +24,7 @@
 ```json
 {
   "effect": "VILLAIN_ATTACKS",
-  "params": {
+  "effectParams": {
     "alterEgoSurge": true
   }
 }
@@ -40,20 +40,62 @@
 
 ## 2. Nemesis Spawning Pipeline
 
-### `SPAWN_NEMESIS`
-* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L792`](../../../src/engine/effects/index.ts#L792) / *Shadow of the Past* `01190`)
-* **Description:**
-  1. Identifies the resolving hero's canonical nemesis set code (`heroSetCode_nemesis`).
-  2. Extracts all matching cards from `player.setAsideCards`.
-  3. Puts all nemesis minions into play engaged with the hero (triggering Quickstrike/Toughness).
-  4. Puts the nemesis side scheme into play with scaled base threat.
-  5. Shuffles remaining nemesis cards into `state.encounterDeck`.
-  6. If no nemesis minion is in set-aside pool, gains Surge.
+Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a composable 4-step pipeline using canonical zone manipulation primitives.
+
+### Canonical Nemesis Pipeline (*Shadow of the Past* `01190`)
+
+1. **Step 1 (`PUT_INTO_PLAY`):** Transfers the player's set-aside nemesis minion into play engaged with the hero.
+2. **Step 2 (`PUT_INTO_PLAY`):** Transfers the player's set-aside nemesis side scheme into play in the side schemes area.
+3. **Step 3 (`SHUFFLE_INTO_DECK`):** Shuffles all remaining set-aside cards matching the player's nemesis set into the encounter deck.
+4. **Step 4 (`SURGE`):** If Step 1 failed to put a nemesis minion into play (e.g. minion is already in play or defeated), the card surges via `gate: "IF_FAILED"`.
 
 ```json
 {
-  "effect": "SPAWN_NEMESIS",
-  "params": {}
+  "steps": [
+    {
+      "id": "step_1_spawn_nemesis_minion",
+      "effect": "PUT_INTO_PLAY",
+      "effectParams": {
+        "from": "SET_ASIDE",
+        "to": "ENGAGED_WITH_PLAYER",
+        "filter": {
+          "types": ["minion"],
+          "sets": ["PLAYER_NEMESIS"]
+        }
+      }
+    },
+    {
+      "id": "step_2_spawn_nemesis_scheme",
+      "effect": "PUT_INTO_PLAY",
+      "effectParams": {
+        "from": "SET_ASIDE",
+        "to": "SIDE_SCHEMES",
+        "filter": {
+          "types": ["side_scheme"],
+          "sets": ["PLAYER_NEMESIS"]
+        }
+      }
+    },
+    {
+      "id": "step_3_shuffle_remaining_cards",
+      "effect": "SHUFFLE_INTO_DECK",
+      "effectParams": {
+        "from": "SET_ASIDE",
+        "toDeck": "ENCOUNTER_DECK",
+        "filter": {
+          "sets": ["PLAYER_NEMESIS"]
+        }
+      }
+    },
+    {
+      "id": "step_4_fallback_surge",
+      "effect": "SURGE",
+      "gate": "IF_FAILED",
+      "gateParams": {
+        "targetStepId": "step_1_spawn_nemesis_minion"
+      }
+    }
+  ]
 }
 ```
 
@@ -68,7 +110,7 @@
 ```json
 {
   "effect": "ATTACH_TO_HOST",
-  "params": {
+  "effectParams": {
     "target": "VILLAIN",
     "intercept": "ATTACK",
     "onIntercept": "DISCARD_AND_STUN"
@@ -87,7 +129,7 @@
 ```json
 {
   "effect": "CANCEL_WHEN_REVEALED",
-  "params": {}
+  "effectParams": {}
 }
 ```
 

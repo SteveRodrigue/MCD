@@ -1,4 +1,4 @@
-# 04. Combat, Damage & Threat Effect Primitives
+# 05. Combat, Damage & Threat Effect Primitives
 
 ---
 
@@ -12,7 +12,7 @@
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "amount": 8,
     "target": "CHOSEN_ENEMY",
     "overkill": true,
@@ -34,43 +34,29 @@
 
 ---
 
-### `DEAL_DAMAGE_SPLIT`
+### `GRANT_KEYWORD`
 
-- **Status:** 🟡 `ROADMAP / SPECIFIED`
-- **Description:** Divides a pool of damage among multiple eligible targets.
-
-> [!NOTE]
-> No `case "DEAL_DAMAGE_SPLIT"` exists in `src/engine/effects/index.ts` and no card declares it.
-> Use `DEAL_DAMAGE` with `target: "ALL_ENEMIES"` for undivided area damage.
-
-```json
-{
-  "effect": "DEAL_DAMAGE_SPLIT",
-  "params": {
-    "totalDamage": 4,
-    "target": "ALL_ENEMIES"
-  }
-}
-```
-
----
-
-### `RETALIATE` / `QUICKSTRIKE`
-
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0054](../../decisions/0054-parameterized-keyword-stacking-and-retaliate-value-accumulation-engine.md))
-- **Description:**
-  - **Retaliate:** Deals X damage back to attacker after receiving an attack (RR v1.8 p. 24). Values from multiple active instances (base card, attachments, upgrades) are added together.
-  - **Quickstrike:** Minion attacks immediately upon engaging hero in Hero form.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts), ADR-0054)
+- **Description:** Dynamically grants a keyword (such as Retaliate, Overkill, Piercing, Ranged) to a target character (identity, ally, minion). Under ADR-0054, parameterized keywords like Retaliate stack additively across multiple active instances and temporary grants.
 
 ```json
 {
   "effect": "GRANT_KEYWORD",
-  "params": {
+  "effectParams": {
     "keyword": "Retaliate",
-    "amount": 1
+    "amount": 1,
+    "duration": "PHASE",
+    "target": "SELF"
   }
 }
 ```
+
+| Parameter  | Type                 | Required | Default   | Description                                                                                    |
+| :--------- | :------------------- | :------- | :-------- | :--------------------------------------------------------------------------------------------- |
+| `keyword`  | `string`             | Yes      | -         | The keyword name being granted (e.g. `"Retaliate"`, `"Overkill"`, `"Piercing"`).                |
+| `amount`   | `number`             | No       | -         | Numeric magnitude for parameterized keywords (e.g. `1` for Retaliate 1). Stacked per ADR-0054. |
+| `duration` | `"PHASE" \| "ROUND"` | No       | `"PHASE"` | Lifecycle window for temporary keyword grant.                                                  |
+| `target`   | `TargetSelector`     | No       | `"SELF"`  | Target character receiving the keyword.                                                        |
 
 ---
 
@@ -82,7 +68,7 @@
 ```json
 {
   "effect": "TRANSFER_DAMAGE",
-  "params": {
+  "effectParams": {
     "amount": 1,
     "finisherBonus": 1,
     "from": "SELF",
@@ -111,7 +97,7 @@
 ```json
 {
   "effect": "REMOVE_THREAT",
-  "params": {
+  "effectParams": {
     "amount": 3,
     "target": "MAIN_SCHEME"
   }
@@ -140,7 +126,7 @@
 ```json
 {
   "effect": "ADD_THREAT",
-  "params": {
+  "effectParams": {
     "amount": 1,
     "cardCode": "01176"
   }
@@ -157,26 +143,10 @@
  ```json
  {
    "effect": "ADD_THREAT",
-   "params": {
+   "effectParams": {
      "amount": 1,
      "perPlayer": true,
      "target": "THIS_SIDE_SCHEME"
-   }
- }
- ```
- 
- ---
- 
- ### `PLACE_THREAT_PER_SIDE_SCHEME`
- 
- - **Status:** 🟢 `IMPLEMENTED (v1.0)` (_Masterplan_ `01192`)
- - **Description:** Places X threat on each active side scheme; if none exist, mills encounter deck until a side scheme is found and puts it into play.
- 
- ```json
- {
-   "effect": "PLACE_THREAT_PER_SIDE_SCHEME",
-   "params": {
-     "amount": 4
    }
  }
  ```
@@ -191,7 +161,7 @@
  ```json
  {
    "effect": "PREVENT_DAMAGE",
-   "params": {
+   "effectParams": {
      "amount": 1
    }
  }
@@ -210,7 +180,7 @@
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "amount": {
       "from": "INTERCEPTED_VALUE",
       "multiplier": 1,

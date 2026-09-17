@@ -3131,47 +3131,6 @@ export function executeStep(
       };
     }
 
-    case 'SPAWN_NEMESIS': {
-      return executeSequence(
-        state,
-        [
-          {
-            id: 'step_1_spawn_nemesis_minion',
-            effect: 'PUT_INTO_PLAY',
-            effectParams: {
-              from: 'SET_ASIDE',
-              to: 'ENGAGED_WITH_PLAYER',
-              filter: { type: 'minion', set: 'PLAYER_NEMESIS' },
-            },
-          },
-          {
-            id: 'step_2_spawn_nemesis_scheme',
-            effect: 'PUT_INTO_PLAY',
-            effectParams: {
-              from: 'SET_ASIDE',
-              to: 'SIDE_SCHEMES',
-              filter: { type: 'side_scheme', set: 'PLAYER_NEMESIS' },
-            },
-          },
-          {
-            id: 'step_3_shuffle_remaining_cards',
-            effect: 'SHUFFLE_INTO_DECK',
-            effectParams: {
-              from: 'SET_ASIDE',
-              toDeck: 'ENCOUNTER_DECK',
-              filter: { set: 'PLAYER_NEMESIS' },
-            },
-          },
-          {
-            id: 'step_4_fallback_surge',
-            effect: 'SURGE',
-            gate: 'IF_FAILED',
-          },
-        ],
-        context,
-      );
-    }
-
     case 'FLIP_FORM':
     case 'CHANGE_FORM': {
       const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);

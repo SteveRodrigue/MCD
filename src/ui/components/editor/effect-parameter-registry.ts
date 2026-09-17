@@ -1053,11 +1053,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Spawn minion engaged with target player.',
     parameters: [],
   },
-  SPAWN_NEMESIS: {
-    effect: 'SPAWN_NEMESIS',
-    description: 'Spawn Nemesis minion and side scheme (Shadow of the Past).',
-    parameters: [],
-  },
 
   // 13. Cancellation & Interrupts
   CANCEL_TREACHERY_AND_VILLAIN_ATTACKS: {

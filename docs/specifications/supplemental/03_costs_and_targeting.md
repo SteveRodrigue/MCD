@@ -15,9 +15,10 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
   "exhaustSelf": true,
   "resources": ["energy", "physical"],
   "damageHero": 1,
-  "spendTokens": {
-    "type": "charge",
-    "count": 2
+  "spendCounters": {
+    "amount": 1,
+    "counterType": "web",
+    "target": "SELF"
   }
 }
 ```
@@ -28,9 +29,11 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | :-------------- | :--------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
 | `exhaustSelf`   | `boolean`                          | `true`                                                  | Card must be currently ready and exhausts upon activation.                                 |
 | `exhaustCard`   | `TargetSelector`                   | `"SELF_IDENTITY"`                                       | A specific target card must exhaust (e.g. exhaust your hero).                              |
+| `discardSelf`   | `boolean`                          | `true`                                                  | Card instance is discarded to owner's discard pile as a cost.                               |
+| `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
+| `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
 | `resources`     | `ResourceType[]`                   | `["energy", "mental"]`                                  | Specific printed resource types required (`'physical'`, `'energy'`, `'mental'`, `'wild'`). |
 | `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic resource payment or typed resource mapping.                                        |
-| `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `discardCard`   | `object`                           | `{"count": 1, "from": "HAND"}`                          | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`.                                    |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `costCheck`     | `string`                           | `"CURRENT_HEALTH < MAX_HEALTH"`                         | Validation rule ensuring the action produces a legal state mutation.                       |

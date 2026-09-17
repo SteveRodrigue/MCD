@@ -26,7 +26,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
 }) => {
   const handleAddStep = () => {
     const newStep = {
-      effect: 'DRAW_CARDS',
+      effect: 'DRAW',
       effectParams: { count: 1 },
     };
     onChange([...steps, newStep]);

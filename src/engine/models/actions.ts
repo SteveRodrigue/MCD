@@ -87,6 +87,7 @@ export interface UseCardAbilityAction {
   paymentCardInstanceIds?: string[];
   generatorInstanceIds?: string[];
   targetInstanceId?: string;
+  discardCardInstanceIds?: string[];
 }
 
 /**

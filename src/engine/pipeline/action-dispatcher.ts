@@ -1759,9 +1759,28 @@ export function dispatchAction(
         }
       }
 
+      if (
+        ability.cost?.discardCard?.from === 'HAND' &&
+        ability.cost.discardCard.mode !== 'RANDOM'
+      ) {
+        const requiredCount = ability.cost.discardCard.count || 1;
+        if (
+          !action.discardCardInstanceIds ||
+          action.discardCardInstanceIds.length < requiredCount
+        ) {
+          return {
+            state,
+            result: {
+              success: false,
+              error: 'Discard cards must be selected from hand to satisfy the discard cost.',
+            },
+          };
+        }
+      }
+
       // Ability initiation & target validity check (RR v1.8 p. 15-16, 29, 30; Issue #101)
       const initCheck = canInitiateAbility(nextState, action.playerId, ability, targetCardInst, {
-        discardCardInstanceIds: (action as any).discardCardInstanceIds,
+        discardCardInstanceIds: action.discardCardInstanceIds,
         paymentCardInstanceIds: action.paymentCardInstanceIds,
         generatorInstanceIds: action.generatorInstanceIds,
         targetInstanceId: action.targetInstanceId,
@@ -1777,7 +1796,7 @@ export function dispatchAction(
         ability,
         targetCardInst,
         {
-          discardCardInstanceIds: (action as any).discardCardInstanceIds,
+          discardCardInstanceIds: action.discardCardInstanceIds,
           paymentCardInstanceIds: action.paymentCardInstanceIds,
           generatorInstanceIds: action.generatorInstanceIds,
           targetInstanceId: action.targetInstanceId,

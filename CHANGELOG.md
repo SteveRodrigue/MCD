@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Engine & UI (Hand Discard Ability Cost & Alpha Flight Station): Hand Card Discard Ability Cost & Interactive Modal ([Issue #45](https://github.com/SteveRodrigue/MCD/issues/45) / ADR-0055)**
+  - **Schema & Supplemental Data:**
+    - Extended `AbilityCostSchema.discardCard` in `src/data/supplemental/schema.ts` with `filter?: UniversalCardFilterSchema.optional()` and `mode?: z.enum(['CHOSEN', 'RANDOM']).optional()`.
+    - Regenerated canonical `src/data/supplemental/schema.json`.
+    - Updated Alpha Flight Station (`01015`) in `src/data/supplemental/pack/core.json` with `mode: "CHOSEN"` and updated audit metadata (`2026-09-17T13:20:00Z`).
+  - **Headless Engine & Pipelines:**
+    - Added `discardCardInstanceIds?: string[];` to `UseCardAbilityAction` in `src/engine/models/actions.ts`.
+    - Updated `canPayAbilityCost` and `executeAbilityCost` in `src/engine/pipeline/cost-engine.ts` to enforce empty-hand rejection, count thresholds, `UniversalCardFilter` matching, explicit chosen card selection, and random discard fallback.
+    - Updated `USE_CARD_ABILITY` in `src/engine/pipeline/action-dispatcher.ts` to validate hand card selection for non-random discard costs and route `discardCardInstanceIds` through initiation and execution.
+    - Updated `legal-actions-generator.ts` to flag `requiresModal: 'payment'` and format dynamic discard badges (`DISCARD 1 CARD`) on tableau, attachment, and identity actions.
+  - **1960s Comic Pop-Art UI Presentation:**
+    - Enhanced `CardPaymentModal.tsx` to support ability discard costs with selectable card grid, mutual exclusivity between discard cost and resource payment, clear selection progress indicator, and cancel/confirm controls.
+    - Wired `GameBoard.tsx` and `HeroZone.tsx` to route abilities requiring hand card discard through `CardPaymentModal`.
+    - Extended `AbilityCostSection.tsx` with `mode` selector for card supplemental editor.
+  - **Contract Tests:**
+    - Authored `tests/engine/ability-discard-cost.test.ts` (8 contract tests covering empty-hand illegality, Hero & Alter-Ego legality, chosen card discard & Carol Danvers dynamic bonus draw, missing selection rejection, and filtered discard costs).
+
 - **Standards & Testing (Zero Skipped Tests Invariant): Establish Zero Skipped Tests Invariant & Resolve-At-Source Policy**
   - **Zero Skipped Tests Invariant:** Formalized Principle 7 in `AGENTS.md`, Section 6.4 in `docs/coding_guidelines.md`, and all development skills (`bug-fix`, `feature-delivery`, `commit-and-push`, `card-integration-protocol`, `execute-plan`).
   - **Strict Binary Outcomes:** Tests must strictly pass or fail (`passed: N, failed: 0, skipped: 0`). Forbids `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions to mask or defer failing tests.

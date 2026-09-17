@@ -486,6 +486,8 @@ export const AbilityCostSchema = z
         count: z.number().optional(),
         maxCount: z.number().optional(),
         from: z.enum(['HAND', 'DECK', 'PLAY']),
+        filter: UniversalCardFilterSchema.optional(),
+        mode: z.enum(['CHOSEN', 'RANDOM']).optional(),
       })
       .strict()
       .optional(),

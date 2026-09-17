@@ -192,6 +192,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                       isMultiHero={true}
                       onFocus={() => handleSelectSeat(idx)}
                       onDispatchAction={onDispatchAction}
+                      onInitiateAction={handleSelectNewspaperAction}
                     />
 
                     {/* Hero Hand Tray */}
@@ -225,6 +226,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               isFocused={true}
               isMultiHero={false}
               onDispatchAction={onDispatchAction}
+              onInitiateAction={handleSelectNewspaperAction}
             />
             <PlayerHandTray
               hand={singlePlayer.hand}
@@ -277,21 +279,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                   const ab = paymentModalCard.card.enrichment?.abilities?.find(
                     (a) => a.id === (pendingPaymentAction.action as any).abilityId,
                   );
-                  if (ab?.cost?.resourceCost) {
-                    const reqType =
-                      typeof ab.cost.resourceCost === 'object'
-                        ? (Object.keys(ab.cost.resourceCost)[0] as any)
-                        : undefined;
-                    const amount =
-                      typeof ab.cost.resourceCost === 'number'
-                        ? ab.cost.resourceCost
-                        : reqType
-                          ? ab.cost.resourceCost[reqType] || 1
-                          : 1;
+                  if (!ab?.cost) return undefined;
+                  const reqType =
+                    ab.cost.resourceCost && typeof ab.cost.resourceCost === 'object'
+                      ? (Object.keys(ab.cost.resourceCost)[0] as any)
+                      : undefined;
+                  const amount =
+                    typeof ab.cost.resourceCost === 'number'
+                      ? ab.cost.resourceCost
+                      : reqType && typeof ab.cost.resourceCost === 'object'
+                        ? (ab.cost.resourceCost as any)[reqType] || 1
+                        : 0;
+                  const discardCount =
+                    ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
+                  const discardFilter = ab.cost.discardCard?.filter;
+                  if (amount > 0 || discardCount > 0) {
                     return {
                       amount,
                       resourceType: reqType,
                       title: pendingPaymentAction.headline,
+                      discardCount,
+                      discardFilter,
                     };
                   }
                   return undefined;
@@ -308,6 +316,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
             paymentHandCardIds: string[],
             generatorCardIds: string[],
             targetInstanceId?: string,
+            selectedDiscardCardIds?: string[],
           ) => {
             if (onDispatchAction) {
               if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
@@ -316,6 +325,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                   paymentCardInstanceIds: paymentHandCardIds,
                   generatorInstanceIds: generatorCardIds,
                   targetInstanceId,
+                  discardCardInstanceIds: selectedDiscardCardIds,
                 });
               } else {
                 onDispatchAction({

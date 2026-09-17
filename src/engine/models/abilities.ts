@@ -3,6 +3,7 @@ import type {
   PlayRequirements,
   StepCondition,
   TriggerFilter,
+  UniversalCardFilter,
 } from '../../data/supplemental/schema';
 export type {
   StepCondition,
@@ -110,7 +111,13 @@ export interface AbilityCost {
   };
   resourceCost?: number | Record<string, number>;
   resources?: string[];
-  discardCard?: { count?: number; maxCount?: number; from: 'HAND' | 'DECK' | 'PLAY' };
+  discardCard?: {
+    count?: number;
+    maxCount?: number;
+    from: 'HAND' | 'DECK' | 'PLAY';
+    filter?: UniversalCardFilter;
+    mode?: 'CHOSEN' | 'RANDOM';
+  };
   discardFromHand?: number;
   damageHero?: number;
   damageSelf?: number;

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature & Engine (Explosion Treachery & Multiplayer Damage Assignment): Support Multiplayer Damage Distribution across Heroes and Allies ([#114](https://github.com/SteveRodrigue/MCD/issues/114))**
+  - **Headless Engine Hardening:**
+    - Broadened `target: 'HEROES_AND_ALLIES'` damage distribution in `src/engine/effects/index.ts` to locate allies and their respective controlling players across all players in `state.players` for both `context.assignments` and `context.targetInstanceId`.
+    - Enforced Tough status card absorption and prevention across both heroes and allies belonging to active or inactive players.
+    - Ensured defeated allies owned by any player are cleanly removed from their controller's `allies` array, dispatch `CHARACTER_DEFEATED` with `targetPlayerId: allyController.id`, and route to the owner's discard pile.
+  - **Comprehensive Acceptance & Contract Tests:**
+    - Added dedicated test suite in `tests/engine/explosion-bomb-scare.test.ts` covering:
+      - 2 heroes and no allies: damage divided between heroes.
+      - 2 heroes with active hero controlling 1 ally: all 3 characters receive damage.
+      - 2 heroes with inactive hero controlling 2 allies: all 4 characters receive damage.
+      - Inactive player ally Tough prevention and lethal ally defeat with owner discard and trigger dispatch.
+      - Direct single-target assignment via `targetInstanceId` on inactive player's ally.
+
+
 - **Feature & Engine (Threat Interception & Damage Deconflation): Deconflate Damage and Threat Interception Primitives — PREVENT_THREAT ([#120](https://github.com/SteveRodrigue/MCD/issues/120), [#123](https://github.com/SteveRodrigue/MCD/issues/123), [ADR-0063](docs/decisions/0063-deconflate-damage-and-threat-interception-primitives.md))**
   - **Schema & Types:** Added `'PREVENT_THREAT'` to `EffectTypeSchema` in `src/data/supplemental/schema.ts` and `EffectType` union in `src/engine/models/abilities.ts`. Regenerated `src/data/supplemental/schema.json`.
   - **Headless Engine Deconflation:**

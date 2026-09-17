@@ -1158,8 +1158,20 @@ export function executeStep(
       if (targetParam === 'HEROES_AND_ALLIES') {
         if (context.assignments && typeof context.assignments === 'object') {
           for (const [id, dmg] of Object.entries(context.assignments as Record<string, number>)) {
-            const ally = player.allies.find((a) => a.instanceId === id);
-            if (ally) {
+            if (dmg <= 0) continue;
+
+            let ally: CardInstance | undefined;
+            let allyController: PlayerState | undefined;
+            for (const p of state.players) {
+              const found = p.allies.find((a) => a.instanceId === id);
+              if (found) {
+                ally = found;
+                allyController = p;
+                break;
+              }
+            }
+
+            if (ally && allyController) {
               const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
               if (allyToughIdx !== -1) {
                 ally.statusCards!.splice(allyToughIdx, 1);
@@ -1168,18 +1180,18 @@ export function executeStep(
                 const newDmg = currentDmg + dmg;
                 const allyHp = (ally.card as any).health || 1;
                 if (newDmg >= allyHp) {
-                  const idx = player.allies.indexOf(ally);
-                  player.allies.splice(idx, 1);
-                  processHostDefeated(state, ally, { player });
+                  const idx = allyController.allies.indexOf(ally);
+                  allyController.allies.splice(idx, 1);
+                  processHostDefeated(state, ally, { player: allyController });
                   dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                    targetPlayerId: player.id,
+                    targetPlayerId: allyController.id,
                     targetInstanceId: ally.instanceId,
                     targetType: 'ally',
                   });
                   const owner =
                     (ally.ownerId
                       ? state.players.find((pl) => pl.id === ally.ownerId)
-                      : undefined) || player;
+                      : undefined) || allyController;
                   owner.discard.push(ally);
                 } else {
                   ally.tokens = { ...ally.tokens, damage: newDmg };
@@ -1197,8 +1209,18 @@ export function executeStep(
             }
           }
         } else if (context.targetInstanceId) {
-          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
-          if (ally) {
+          let ally: CardInstance | undefined;
+          let allyController: PlayerState | undefined;
+          for (const p of state.players) {
+            const found = p.allies.find((a) => a.instanceId === context.targetInstanceId);
+            if (found) {
+              ally = found;
+              allyController = p;
+              break;
+            }
+          }
+
+          if (ally && allyController) {
             const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
             if (allyToughIdx !== -1) {
               ally.statusCards!.splice(allyToughIdx, 1);
@@ -1207,29 +1229,31 @@ export function executeStep(
               const newDmg = currentDmg + amount;
               const allyHp = (ally.card as any).health || 1;
               if (newDmg >= allyHp) {
-                const idx = player.allies.indexOf(ally);
-                player.allies.splice(idx, 1);
-                processHostDefeated(state, ally, { player });
+                const idx = allyController.allies.indexOf(ally);
+                allyController.allies.splice(idx, 1);
+                processHostDefeated(state, ally, { player: allyController });
                 dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                  targetPlayerId: player.id,
+                  targetPlayerId: allyController.id,
                   targetInstanceId: ally.instanceId,
                   targetType: 'ally',
                 });
                 const owner =
                   (ally.ownerId ? state.players.find((pl) => pl.id === ally.ownerId) : undefined) ||
-                  player;
+                  allyController;
                 owner.discard.push(ally);
               } else {
                 ally.tokens = { ...ally.tokens, damage: newDmg };
               }
             }
           } else {
-            const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+            const targetPlayer =
+              state.players.find((pl) => pl.id === context.targetInstanceId) || player;
+            const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
             if (toughIdx !== -1) {
-              player.statusCards.splice(toughIdx, 1);
+              targetPlayer.statusCards.splice(toughIdx, 1);
             } else {
-              player.health = Math.max(0, player.health - amount);
-              if (player.health <= 0) state.winner = 'VILLAIN';
+              targetPlayer.health = Math.max(0, targetPlayer.health - amount);
+              if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
             }
           }
         } else {

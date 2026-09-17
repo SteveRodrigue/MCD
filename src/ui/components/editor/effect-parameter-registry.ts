@@ -101,12 +101,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Excess damage routes to Villain (RR v1.8 p. 22)',
       },
       {
-        key: 'aerialBonus',
-        label: 'Aerial Bonus Damage',
-        type: 'number',
-        placeholder: 'e.g. 1',
-      },
-      {
         key: 'finisherBonus',
         label: 'Finisher Bonus Damage',
         type: 'number',
@@ -195,6 +189,13 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Finisher Bonus Damage',
         type: 'number',
         placeholder: 'e.g. 1',
+      },
+      {
+        key: 'dynamicBonus',
+        label: 'Dynamic Bonus Damage',
+        type: 'number',
+        allowDynamic: true,
+        description: 'Dynamic bonus calculated from game state or discarded cards',
       },
       {
         key: 'from',
@@ -1138,6 +1139,13 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         options: ['PRINTED_HAND_SIZE', 'HAND_SIZE'],
       },
       { key: 'target', label: 'Target Player', type: 'select', options: TARGET_OPTIONS },
+      {
+        key: 'dynamicBonus',
+        label: 'Dynamic Bonus Cards',
+        type: 'number',
+        allowDynamic: true,
+        description: 'Dynamic bonus card draw calculated from identity, traits, or game state',
+      },
     ],
   },
   FORM_BRANCH: {

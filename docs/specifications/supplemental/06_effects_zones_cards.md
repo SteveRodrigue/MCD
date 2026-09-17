@@ -34,6 +34,7 @@
 | `limit`          | `"HAND_SIZE" \| "PRINTED_HAND_SIZE"` | No       | Upper boundary constraint. When set without `count`, draws until hand reaches limit. When set with `count`, draws up to `count` without exceeding limit. |
 | `target`         | `TargetSelector`                     | No       | Target player selector (`ACTIVE_PLAYER`, `CHOSEN_PLAYER`, `ALL_PLAYERS`, etc.). Defaults to triggering player.                                           |
 | `targetPlayerId` | `string`                             | No       | Explicit target player identifier.                                                                                                                       |
+| `dynamicBonus`   | `number \| DynamicValueSource`       | No       | Dynamic bonus card draw calculated from identity, traits, or game state (e.g. *Alpha Flight Station* `01015`).                                            |
 
 ---
 

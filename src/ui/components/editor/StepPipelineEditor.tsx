@@ -373,22 +373,45 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
-              {step.gate === 'IF_FAILED' && (
+              {(step.gate === 'IF_FAILED' || step.gate === 'IF_CONDITION_MET') && (
                 <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
                   <span className="text-[9px] uppercase font-bold text-yellow-800 block">
-                    Failed Gate Parameters
+                    {step.gate === 'IF_FAILED'
+                      ? 'Failed Gate Parameters'
+                      : 'Condition Met Gate Parameters'}
                   </span>
                   <div>
                     <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                      Target Step ID
+                      Target Step ID (Optional - defaults to preceding step)
                     </label>
                     <input
                       type="text"
                       data-testid={`gate-param-targetStepId-${abilityIndex}-${sIdx}`}
                       value={gateParams.targetStepId || ''}
                       onChange={(e) => updateGateParam('targetStepId', e.target.value)}
-                      placeholder="e.g. step_1_spawn_nemesis_minion"
+                      placeholder="e.g. step_1_remove_threat"
                       className="w-full bg-white border border-black p-1 text-xs rounded"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {step.condition === 'TARGET_TRAIT_MATCH' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Trait Condition Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Required Trait
+                    </label>
+                    <input
+                      type="text"
+                      data-testid={`gate-param-trait-${abilityIndex}-${sIdx}`}
+                      value={gateParams.trait || ''}
+                      onChange={(e) => updateGateParam('trait', e.target.value)}
+                      placeholder="e.g. Aerial"
+                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
                     />
                   </div>
                 </div>

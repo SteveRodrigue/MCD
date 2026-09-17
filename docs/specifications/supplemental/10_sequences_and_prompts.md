@@ -109,6 +109,35 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 }
 ```
 
+### Example: Trait Matching Gate Pattern (_Crisis Interdiction_ `01012`)
+
+```json
+{
+  "steps": [
+    {
+      "id": "crisis_interdiction_base",
+      "effect": "REMOVE_THREAT",
+      "effectParams": {
+        "amount": 2,
+        "target": "CHOSEN_SCHEME"
+      }
+    },
+    {
+      "id": "crisis_interdiction_aerial_bonus",
+      "condition": "TARGET_TRAIT_MATCH",
+      "gate": "IF_CONDITION_MET",
+      "gateParams": {
+        "trait": "Aerial"
+      },
+      "effectParams": {
+        "amount": 2,
+        "target": "CHOSEN_SCHEME"
+      }
+    }
+  ]
+}
+```
+
 ---
 
 ## 2. Interactive Decision Prompts (`PLAYER_CHOICE`)

@@ -34,6 +34,8 @@ Ad-hoc string tokens (`amountFormula`) are completely retired in favor of this s
 | `INTERCEPTED_VALUE`   | Scalar quantity captured from trigger window (`threatAmount`, `damageAmount`, or `interceptedValue`).                                         | `THREAT_WOULD_BE_PLACED`, `DAMAGE_WOULD_BE_TAKEN`, `DAMAGE_WOULD_BE_DEALT` | _Great Responsibility_ (`01061`), _Emergency_ (`01085`)                     |
 | `PREVIOUS_RESULT`     | The numeric `value` returned by the preceding ability step (`previousResult.value`).                                                          | Sequential steps (`steps: []`)                                             | Multi-step chains converting one count to another                           |
 | `DISCARDED_CARDS`     | Inspects cards discarded in preceding step (`previousResult.discardedCards` or `discardedCards`) via `discardAttribute` (`COUNT`, `RESOURCE_ICONS`, `DIFFERENT_RESOURCES`, `BOOST_ICONS`, `DIFFERENT_CARD_TYPES`, `PRINTED_COST`) and optional `filter`. | Discard steps / attrition / milling                                        | _Legal Practice_ (`01023`), _Repulsor Blast_ (`01031`)                      |
+| `HAS_TRAIT`           | Checks if active player identity or in-play cards possess the specified trait in `filter.traits` (1 if true, 0 if false). Multiplied by `multiplier`.       | Trait conditional scaling / bonuses (e.g. `[[AERIAL]]`)                     | _Supersonic Punch_ (`01032`), _Powered Gauntlets_ (`01038`)                 |
+| `HAS_IDENTITY`        | Checks if player's active form card matches `filter.codes` or criteria (1 if true, 0 if false). Multiplied by `multiplier`.                                  | Alter-Ego / Hero identity specific bonuses                                  | _Alpha Flight Station_ (`01015`)                                           |
 
 ---
 
@@ -122,6 +124,44 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
     "target": "SELF_IDENTITY",
     "amount": {
       "from": "INTERCEPTED_VALUE"
+    }
+  }
+}
+```
+
+### E. Trait Check Bonus Damage (_Supersonic Punch_ `01032`)
+
+```json
+{
+  "effect": "DEAL_DAMAGE",
+  "effectParams": {
+    "target": "CHOSEN_ENEMY",
+    "amount": 4,
+    "dynamicBonus": {
+      "from": "HAS_TRAIT",
+      "filter": {
+        "traits": ["Aerial"]
+      },
+      "multiplier": 4
+    }
+  }
+}
+```
+
+### F. Identity Check Bonus Draw (_Alpha Flight Station_ `01015`)
+
+```json
+{
+  "effect": "DRAW",
+  "effectParams": {
+    "target": "ACTIVE_PLAYER",
+    "count": 1,
+    "dynamicBonus": {
+      "from": "HAS_IDENTITY",
+      "filter": {
+        "codes": ["01010b"]
+      },
+      "multiplier": 1
     }
   }
 }

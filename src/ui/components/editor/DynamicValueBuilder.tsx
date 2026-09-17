@@ -19,6 +19,8 @@ const FROM_SOURCES = [
   'STAT_VALUE',
   'ENTITY_COUNT',
   'CARD_ATTRIBUTE',
+  'HAS_TRAIT',
+  'HAS_IDENTITY',
 ] as const;
 
 const DISCARD_ATTRIBUTE_OPTIONS = [
@@ -460,8 +462,10 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
             </div>
           )}
 
-          {/* ENTITY_COUNT sub-fields: Collapsible UniversalCardFilter Accordion */}
-          {sourceValue.from === 'ENTITY_COUNT' && (
+          {/* ENTITY_COUNT, HAS_TRAIT, HAS_IDENTITY sub-fields: Collapsible UniversalCardFilter Accordion */}
+          {(sourceValue.from === 'ENTITY_COUNT' ||
+            sourceValue.from === 'HAS_TRAIT' ||
+            sourceValue.from === 'HAS_IDENTITY') && (
             <div
               data-testid="entity-count-filter-accordion"
               className="rounded border border-black bg-white/70 p-2 space-y-2"

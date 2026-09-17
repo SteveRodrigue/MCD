@@ -180,7 +180,13 @@ describe('Card Text Parser', () => {
         effect: 'DRAW',
         effectParams: {
           count: 1,
-          carolBonus: 1,
+          dynamicBonus: {
+            from: 'HAS_IDENTITY',
+            filter: {
+              names: ['Carol Danvers'],
+            },
+            multiplier: 1,
+          },
         },
       });
 

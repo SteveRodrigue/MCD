@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix & Refactor (Engine, Supplemental Data & Schema): Declarative Conditional Modifiers & Ad-hoc Bonus Parameter Elimination ([#67](https://github.com/SteveRodrigue/MCD/issues/67))**
+  - **Dynamic Value Sources (`HAS_TRAIT`, `HAS_IDENTITY`):** Extended `DynamicValueSourceSchema` with `'HAS_TRAIT'` and `'HAS_IDENTITY'` in `src/data/supplemental/schema.ts`, evaluated via `evaluateDynamicAmount` in `src/engine/effects/dynamic-formula-evaluator.ts`.
+  - **Universal Trait Resolution:** Exported `hasPlayerTrait(player, trait)` in `src/engine/pipeline/stat-calculator.ts` checking active form traits, hero/alter-ego traits, and in-play tableau `CONSTANT` `ADD_TRAIT` upgrades (removing hardcoded card hacks).
+  - **Dynamic Bonus on DRAW:** Wired `dynamicBonus` evaluation in the `DRAW` effect handler (`src/engine/effects/index.ts`), enabling atomic count calculations prior to draw loops.
+  - **Generic Step Gating:** Added `TARGET_TRAIT_MATCH` evaluation under `IF_CONDITION_MET` step gates in both `stat-calculator.ts` (for `CONSTANT` abilities) and `shouldExecuteStep` in `effects/index.ts`.
+  - **Ad-Hoc Parameter Elimination:** Purged all dead and non-declarative parameters (`carolBonus`, `aerialBonus`, `bonusEnergyThwart`) across the engine, card-text-parser, and supplemental data.
+  - **Card Supplemental Retrofits:**
+    - **Alpha Flight Station (`01015`):** Uses `dynamicBonus` with `from: 'HAS_IDENTITY'` and `filter: { codes: ['01010b'] }` for Carol Danvers.
+    - **Captain Marvel's Helmet (`01016`):** Decomposed into 2 clean `CONSTANT` steps (+1 DEF baseline, +1 DEF gated on `TARGET_TRAIT_MATCH: Aerial`).
+    - **Supersonic Punch (`01032`) & Powered Gauntlets (`01038`):** Uses `dynamicBonus` with `from: 'HAS_TRAIT'` and `filter: { traits: ['Aerial'] }`.
+    - **Crisis Interdiction (`01012`):** Decomposed into 2 sequential steps (step 2 gated on `TARGET_TRAIT_MATCH: Aerial`).
+  - **Editor & Test Suite:** Added `HAS_TRAIT` and `HAS_IDENTITY` to `DynamicValueBuilder.tsx` and removed `aerialBonus` descriptor from `effect-parameter-registry.ts`. Added comprehensive acceptance test suite `tests/engine/condition-based-modifiers.test.ts` (12 tests) and updated `tests/tools/card-text-parser.test.ts`.
+
 - **Feature & Engine (Temporary Stat Modifiers, Vision 01068 & Ally UI): Declarative Temporary Stat Modifier Auras ([#119](https://github.com/SteveRodrigue/MCD/issues/119), [ADR-0062](docs/decisions/0062-declarative-temporary-stat-modifier-auras.md))**
   - **`ActiveStatModifier` Type (`state.ts`):** Introduced typed `ActiveStatModifier { stat, amount, duration: 'PHASE' | 'ROUND', sourceCardName, sourceCardCode }` and added `activeStatModifiers?: ActiveStatModifier[]` to both `CardInstance` (ally/tableau-specific auras) and `PlayerState` (hero-wide auras like Lead from the Front). Added `sourceCardInstanceId?: string` to `PendingDecisionPrompt` for source-card-aware prompt resolution.
   - **Universal `MODIFY_STAT` Primitive:** Replaced the ad-hoc Vision-specific `tokens.atkBonus`/`thwBonus` hack in `effects/index.ts` with a fully declarative handler supporting `target: 'SELF'` (pushes modifier onto triggering ally's `activeStatModifiers`), `target: 'ALL_FRIENDLY_CHARACTERS'` (pushes ATK/THW modifier onto player identity AND all allies simultaneously), `duration: 'PHASE' | 'ROUND'`, and `stat: 'ATK' | 'THW' | 'DEF' | 'REC'`.

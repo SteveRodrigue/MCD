@@ -22,15 +22,15 @@
 }
 ```
 
-| Parameter          | Type             | Required                    | Default          | Description                                                                              |
-| :----------------- | :--------------- | :-------------------------- | :--------------- | :--------------------------------------------------------------------------------------- |
-| `amount`           | `number`         | Yes (or `amountCalculated`) | -                | Base damage value.                                                                       |
-| `amountCalculated` | `string`         | No                          | -                | Dynamic formula token (e.g. `"SUFFERED_DAMAGE"`).                                        |
-| `target`           | `TargetSelector` | Yes                         | `"CHOSEN_ENEMY"` | Target recipient.                                                                        |
-| `overkill`         | `boolean`        | No                          | `false`          | Excess minion damage spills over to Villain.                                             |
-| `piercing`         | `boolean`        | No                          | `false`          | Discards Tough status card before dealing damage.                                        |
-| `ranged`           | `boolean`        | No                          | `false`          | Ignores Retaliate keywords on the target.                                                |
-| `finisherBonus`    | `number`         | No                          | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
+| Parameter          | Type                           | Required | Default          | Description                                                                              |
+| :----------------- | :----------------------------- | :------- | :--------------- | :--------------------------------------------------------------------------------------- |
+| `amount`           | `number \| DynamicValueSource` | Yes      | -                | Base damage value (flat integer or dynamic formula).                                     |
+| `target`           | `TargetSelector`               | Yes      | `"CHOSEN_ENEMY"` | Target recipient.                                                                        |
+| `overkill`         | `boolean`                      | No       | `false`          | Excess minion damage spills over to Villain.                                             |
+| `piercing`         | `boolean`                      | No       | `false`          | Discards Tough status card before dealing damage.                                        |
+| `ranged`           | `boolean`                      | No       | `false`          | Ignores Retaliate keywords on the target.                                                |
+| `finisherBonus`    | `number`                       | No       | -                | Bonus damage when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
+| `dynamicBonus`     | `number \| DynamicValueSource` | No       | -                | Dynamic bonus damage added to amount (e.g. *Supersonic Punch* `01032`).                  |
 
 ---
 

@@ -38,6 +38,7 @@ describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
     const explosionCard = cardCatalog.getCard('01111')!;
     const explosionInst = createCardInstance(explosionCard);
     const ability = explosionCard.enrichment!.abilities![0];
+    expect(ability.steps[0].effectParams?.target).toBe('ALL_HEROES_AND_ALLIES');
 
     // Put Bomb Scare into play with 3 threat
     const bombScareCard = cardCatalog.getCard('01109')!;

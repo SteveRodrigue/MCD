@@ -51,6 +51,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'ACTIVE_PLAYER'`               | The player currently taking a turn in Player Phase.                                                                   | `state.players[state.activePlayerIndex]`                |
 | `'ALL_PLAYERS'`                 | Every player currently in the game session.                                                                           | Iterates all players.                                   |
 | `'ALL_HEROES'`                  | Every hero identity currently in play.                                                                                | Iterates all heroes.                                    |
+| `'ALL_HEROES_AND_ALLIES'`        | All identities strictly in Hero form plus all allies across all players.                                              | Batch hero and ally target.                             |
 | `'TRIGGERING_HERO'`             | Hero identity that initiated or suffered the trigger event.                                                           | Context hero reference.                                 |
 | `'CHOSEN_PLAYER'`               | Prompt user to choose 1 player.                                                                                       | Decision prompt modal.                                  |
 | `'VILLAIN'`                     | The active Villain stage (`getActiveVillain(state)`).                                                                 | Direct villain reference.                               |
@@ -80,6 +81,30 @@ Defines which game entity is chosen or affected by the ability:
 | `'PREVIOUS_SELECTED_CARD'`      | Re-uses card instance selected in immediate preceding search step.                                                    | Search result card.                                     |
 | `'TRIGGERING_MINION'`           | The specific minion that triggered the event (e.g. minion entering play for Hawkeye `01066`).                         | Direct minion reference via `context.targetInstanceId`. |
 | `'TRIGGERING_ENEMY'`            | The specific enemy that triggered the event.                                                                          | Direct enemy reference via `context.targetInstanceId`.  |
+
+### Orthogonal Collective Target Scopes (Rules Authority & Form Invariants)
+
+Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 19 ("Player"), and p. 20 ("Status"):
+
+| Target Selector | Affects Heroes? | Affects Alter-Egos? | Affects Allies? | Canonical Meaning & Card Text Equivalent |
+| :--- | :---: | :---: | :---: | :--- |
+| **`ALL_HEROES`** | ✅ Yes | ❌ **No** | ❌ No | Identities strictly in **Hero** form (*"each hero"*, *"heroes"*). |
+| **`ALL_PLAYERS`** | ✅ Yes | ✅ **Yes** | ❌ No | Every player / identity regardless of form (*"each player"*, *"players"*). |
+| **`ALL_HEROES_AND_ALLIES`** | ✅ Yes | ❌ **No** | ✅ Yes | Identities strictly in **Hero** form + all allies (*"heroes and allies"*). |
+| **`ALL_FRIENDLY_CHARACTERS`** | ✅ Yes | ✅ **Yes** | ✅ Yes | All player identities (any form) + all allies (*"characters you/players control"*). |
+| **`ALL_ALLIES`** | ❌ No | ❌ No | ✅ Yes | All allies in play (*"each ally"*, *"all allies"*). |
+| **`ALL_ENEMIES`** | ❌ No | ❌ No | ❌ No | The villain + all minions in play (*"all enemies"*). |
+| **`ALL_CHARACTERS`** | ✅ Yes | ✅ **Yes** | ✅ Yes (+ Enemies) | Every character on the board (*"all characters"*). |
+
+#### Rules Evidence & Operational Invariants
+1. **Zero Duplicate Invariant:** `ALL_IDENTITIES` is completely excluded from the schema. `ALL_PLAYERS` is the sole canonical selector for targeting every player at the table.
+2. **Dual-Domain Execution for `ALL_PLAYERS` (RR v1.8 p. 11 & p. 20):**
+   - For player-state effects (`DRAW`, `DISCARD`, `ALLY_LIMIT_BONUS`, `MODIFY_HAND_SIZE`): Operates on player hands, decks, or board counters.
+   - For physical character effects (`DEAL_DAMAGE`, `HEAL_DAMAGE`, `ADD_STATUS`): Operates directly on each player's identity (in whichever form they currently are).
+3. **Strict Form Gating on `HERO` and `ALL_HEROES`:**
+   - Any ability targeting `HERO` or `ALL_HEROES` strictly filters `player.currentForm === 'hero'`. Alter-Egos are immune.
+4. **Consistency in Collective Naming:**
+   - All collective/plural selectors strictly carry the **`ALL_`** prefix (e.g. `ALL_HEROES_AND_ALLIES`).
 
 ---
 

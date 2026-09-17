@@ -318,6 +318,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
     });
 
     it('triggers Shocker (01103) When Revealed ability to deal 1 damage to each hero in Step 5', () => {
+      gameState.players[0].currentForm = 'hero';
       const shockerCard = catalog.getCard('01103')!;
       const shockerInstance = createCardInstance(shockerCard);
       gameState.players[0].dealtEncounterCards = [shockerInstance];

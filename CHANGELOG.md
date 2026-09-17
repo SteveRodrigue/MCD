@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature & Engine (Target Scopes & Form Invariants): Canonical Target Scopes, Form Gating & ADR-0064 ([ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
+  - **Schema & Specifications Alignment:**
+    - Registered `'ALL_HEROES_AND_ALLIES'` in `TargetSelectorSchema` (`src/data/supplemental/schema.ts`) and regenerated `src/data/supplemental/schema.json`.
+    - Documented the authoritative Orthogonal Collective Target Scopes Table in `docs/specifications/supplemental/03_costs_and_targeting.md` per RR v1.8 p. 11, 13, 14, 19, and 20.
+    - Updated *Explosion* (`01111`) in `src/data/supplemental/pack/core_encounter.json` to canonical `"target": "ALL_HEROES_AND_ALLIES"`.
+  - **Headless Engine Invariant Enforcement:**
+    - Updated `DEAL_DAMAGE` in `src/engine/effects/index.ts` to recognize `ALL_HEROES_AND_ALLIES`.
+    - Enforced strict Hero-form invariant on `ALL_HEROES` in `DEAL_DAMAGE`: filters `state.players.filter(pl => pl.currentForm === 'hero')`, ensuring Alter-Egos are completely immune to hero-targeted damage (*Shocker* `01103`).
+    - Decoupled `ALL_HEROES` in `ADD_STATUS` from single-target active player resolution, iterating across all players currently in Hero form and immunizing Alter-Egos (*Rhino Stage III* `01096`).
+    - Aligned `RhinoScenarioPlugin.resolveStageIIIWhenRevealed` to filter players in Hero form.
+  - **Acceptance & Contract Test Suite:**
+    - Authored `tests/engine/target-scopes-and-form-invariants.test.ts` (4 contract tests covering Shocker hero damage vs alter-ego immunity, 2-player selective hero damage, Rhino Stage III multiplayer hero stuns with alter-ego immunity, and Explosion `ALL_HEROES_AND_ALLIES` distribution).
+    - Updated `tests/engine/explosion-bomb-scare.test.ts` to assert `ALL_HEROES_AND_ALLIES`.
+    - Updated `tests/ui/effect-parameter-registry.test.ts` asserting `TARGET_OPTIONS` includes `ALL_HEROES_AND_ALLIES`.
+
 - **Feature & Engine (Explosion Treachery & Multiplayer Damage Assignment): Support Multiplayer Damage Distribution across Heroes and Allies ([#114](https://github.com/SteveRodrigue/MCD/issues/114))**
   - **Headless Engine Hardening:**
     - Broadened `target: 'HEROES_AND_ALLIES'` damage distribution in `src/engine/effects/index.ts` to locate allies and their respective controlling players across all players in `state.players` for both `context.assignments` and `context.targetInstanceId`.

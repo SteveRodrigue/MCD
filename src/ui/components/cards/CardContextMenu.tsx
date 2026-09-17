@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { NormalizedCard } from '../../../engine/models';
-import { ExternalLink, Copy, Check, Info, X } from 'lucide-react';
+import { ExternalLink, Copy, Check, Info, X, Bug } from 'lucide-react';
+import { ReportProblemModal } from '../board/ReportProblemModal';
 
 interface CardContextMenuProps {
   card: NormalizedCard;
@@ -15,6 +16,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
   const [copied, setCopied] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
   const [showRawModal, setShowRawModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Close when clicking outside
   useEffect(() => {
@@ -42,7 +44,7 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
 
   // Adjust position to stay on screen
   const menuWidth = 240;
-  const menuHeight = 160;
+  const menuHeight = 200;
   const adjustedX = Math.min(position.x, window.innerWidth - menuWidth - 10);
   const adjustedY = Math.min(position.y, window.innerHeight - menuHeight - 10);
 
@@ -74,72 +76,84 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
 
   return createPortal(
     <>
-      <div
-        ref={menuRef}
-        style={{
-          left: `${Math.max(10, adjustedX)}px`,
-          top: `${Math.max(10, adjustedY)}px`,
-        }}
-        className="fixed z-[9999] w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
-        onClick={(e) => e.stopPropagation()}
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        {/* Header Strip */}
-        <div className="bg-comic-panel border-b-2 border-black px-3 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-mono text-[10px] font-bold bg-black text-white px-1.5 py-0.2 rounded">
-              {card.code}
-            </span>
-            <span className="font-bangers text-sm text-black truncate tracking-wide">
-              {card.name}
-            </span>
+      {!showReportModal && (
+        <div
+          ref={menuRef}
+          style={{
+            left: `${Math.max(10, adjustedX)}px`,
+            top: `${Math.max(10, adjustedY)}px`,
+          }}
+          className="fixed z-[9999] w-60 bg-white border-3 border-black shadow-comic-lg rounded-md overflow-hidden font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+          onClick={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          {/* Header Strip */}
+          <div className="bg-comic-panel border-b-2 border-black px-3 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-mono text-[10px] font-bold bg-black text-white px-1.5 py-0.2 rounded">
+                {card.code}
+              </span>
+              <span className="font-bangers text-sm text-black truncate tracking-wide">
+                {card.name}
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-black cursor-pointer p-0.5"
+              title="Close"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-black cursor-pointer p-0.5"
-            title="Close"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+
+          {/* Menu Items */}
+          <div className="p-1.5 space-y-1 text-xs">
+            {/* 1. Open in Supplemental Editor */}
+            <button
+              type="button"
+              onClick={handleOpenEditor}
+              className="w-full flex items-center gap-2 px-2.5 py-2 font-comic font-bold text-black hover:bg-comic-yellow rounded text-left transition-colors cursor-pointer"
+            >
+              <ExternalLink className="w-4 h-4 text-comic-accent shrink-0" />
+              <span>Open in Supplemental Editor</span>
+            </button>
+
+            {/* 2. Copy Card Code */}
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-green-700 shrink-0" />
+              ) : (
+                <Copy className="w-4 h-4 text-gray-500 shrink-0" />
+              )}
+              <span>{copied ? 'Code Copied!' : 'Copy Card Code'}</span>
+            </button>
+
+            {/* 3. Inspect Raw Attributes Modal */}
+            <button
+              type="button"
+              onClick={() => setShowRawModal(true)}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
+            >
+              <Info className="w-4 h-4 text-gray-500 shrink-0" />
+              <span>Inspect Attributes</span>
+            </button>
+
+            {/* 4. Create Issue for Card */}
+            <button
+              type="button"
+              onClick={() => setShowReportModal(true)}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-rose-50 rounded text-left transition-colors cursor-pointer"
+            >
+              <Bug className="w-4 h-4 text-comic-red shrink-0" />
+              <span>Create issue for this card</span>
+            </button>
+          </div>
         </div>
-
-        {/* Menu Items */}
-        <div className="p-1.5 space-y-1 text-xs">
-          {/* 1. Open in Supplemental Editor */}
-          <button
-            type="button"
-            onClick={handleOpenEditor}
-            className="w-full flex items-center gap-2 px-2.5 py-2 font-comic font-bold text-black hover:bg-comic-yellow rounded text-left transition-colors cursor-pointer"
-          >
-            <ExternalLink className="w-4 h-4 text-comic-accent shrink-0" />
-            <span>Open in Supplemental Editor</span>
-          </button>
-
-          {/* 2. Copy Card Code */}
-          <button
-            type="button"
-            onClick={handleCopyCode}
-            className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-green-700 shrink-0" />
-            ) : (
-              <Copy className="w-4 h-4 text-gray-500 shrink-0" />
-            )}
-            <span>{copied ? 'Code Copied!' : 'Copy Card Code'}</span>
-          </button>
-
-          {/* 3. Inspect Raw Attributes Modal */}
-          <button
-            type="button"
-            onClick={() => setShowRawModal(true)}
-            className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-gray-100 rounded text-left transition-colors cursor-pointer"
-          >
-            <Info className="w-4 h-4 text-gray-500 shrink-0" />
-            <span>Inspect Attributes</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Raw Attributes Quick Modal */}
       {showRawModal && (
@@ -194,6 +208,17 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
             </div>
           </div>
         </div>
+      )}
+
+      {showReportModal && (
+        <ReportProblemModal
+          isOpen={showReportModal}
+          onClose={() => {
+            setShowReportModal(false);
+            onClose();
+          }}
+          initialDescription={`Card: ${card.name} (${(card as any).id || card.code})\n\n`}
+        />
       )}
     </>,
     document.body,

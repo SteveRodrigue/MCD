@@ -9,7 +9,7 @@ export interface ProblemReportPayload {
   title: string;
   description: string;
   labels: string[];
-  gameState: GameState;
+  gameState?: GameState | null;
   timestamp: number;
 }
 
@@ -18,7 +18,7 @@ export interface SubmitProblemReportInput {
   priority: ProblemReportPriority;
   title: string;
   description: string;
-  gameState: GameState;
+  gameState?: GameState | null;
 }
 
 const GITHUB_REPO_URL = 'https://github.com/SteveRodrigue/MCD';
@@ -68,7 +68,7 @@ export async function submitProblemReport(
     title: input.title,
     description: input.description,
     labels: mapReportToLabels(input.type, input.priority),
-    gameState: input.gameState,
+    gameState: input.gameState ?? undefined,
     timestamp: Date.now(),
   };
 

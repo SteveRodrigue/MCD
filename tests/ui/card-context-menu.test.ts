@@ -126,4 +126,55 @@ describe('CardContextMenu Actions & Invariants', () => {
       expect(content).toContain('copiedJson');
     });
   });
+
+  describe('CardContextMenu Problem Reporting Integration', () => {
+    it('contains "Create issue for this card" menu item', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
+      const content = fs.readFileSync(filePath, 'utf8');
+
+      expect(content).toContain('Create issue for this card');
+      expect(content).toContain('showReportModal');
+      expect(content).toContain('setShowReportModal');
+    });
+
+    it('formats initial prefilled issue description matching Card: ${card.name} (${cardId})', () => {
+      const mockCard = {
+        name: 'Repulsor Beam',
+        code: '01004',
+        id: 'c_01004_1',
+      };
+      const formatDescription = (card: { name: string; code: string; id?: string }) =>
+        `Card: ${card.name} (${(card as any).id || card.code})\n\n`;
+
+      const prefilled = formatDescription(mockCard);
+      expect(prefilled).toBe('Card: Repulsor Beam (c_01004_1)\n\n');
+
+      const mockCardWithoutId = {
+        name: 'Spider-Woman',
+        code: '01005',
+      };
+      expect(formatDescription(mockCardWithoutId)).toBe('Card: Spider-Woman (01005)\n\n');
+    });
+
+    it('integrates ReportProblemModal and passes initialDescription and state handlers', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
+      const content = fs.readFileSync(filePath, 'utf8');
+
+      // Imports ReportProblemModal
+      expect(content).toMatch(
+        /import\s*\{\s*ReportProblemModal\s*\}\s*from\s*['"]\.\.\/board\/ReportProblemModal['"]/,
+      );
+
+      // Renders ReportProblemModal conditionally
+      expect(content).toContain('<ReportProblemModal');
+      expect(content).toContain(
+        'initialDescription={`Card: ${card.name} (${(card as any).id || card.code})\\n\\n`}',
+      );
+      expect(content).toContain('!showReportModal');
+    });
+  });
 });

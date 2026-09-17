@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bug, X, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { GameState } from '../../../engine/models';
+import { getLatestGameStateSnapshot } from '../../services/gamestate-logger-service';
 import {
   ProblemReportPriority,
   ProblemReportType,
@@ -12,7 +13,8 @@ import {
 interface ReportProblemModalProps {
   isOpen: boolean;
   onClose: () => void;
-  gameState: GameState;
+  gameState?: GameState | null;
+  initialDescription?: string;
 }
 
 const REPORT_TYPES: { value: ProblemReportType; label: string }[] = [
@@ -32,18 +34,29 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   isOpen,
   onClose,
   gameState,
+  initialDescription = '',
 }) => {
   const [type, setType] = useState<ProblemReportType>('bug');
   const [priority, setPriority] = useState<ProblemReportPriority>('P2-medium');
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(initialDescription || '');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
+
+  const activeGameState = gameState || getLatestGameStateSnapshot();
+
+  useEffect(() => {
+    if (isOpen) {
+      setDescription(initialDescription || '');
+      setStatus('idle');
+      setGithubUrl(null);
+    }
+  }, [isOpen, initialDescription]);
 
   if (!isOpen) return null;
 
   const handleClose = () => {
     setStatus('idle');
-    setDescription('');
+    setDescription(initialDescription || '');
     setGithubUrl(null);
     onClose();
   };
@@ -51,13 +64,14 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const handleSubmit = async () => {
     if (!description.trim()) return;
     setStatus('submitting');
-    const title = `[${type.toUpperCase()}] ${description.slice(0, 60)}`;
+    const firstLine = description.trim().split('\n')[0] || '';
+    const title = `[${type.toUpperCase()}] ${firstLine.slice(0, 80)}`;
     const result = await submitProblemReport({
       type,
       priority,
       title,
       description,
-      gameState,
+      gameState: activeGameState,
     });
     setGithubUrl(
       buildGithubIssueUrl({ title, description, labels: mapReportToLabels(type, priority) }),
@@ -146,13 +160,15 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
         </div>
 
         {/* GameState Attachment Notice */}
-        <div className="bg-amber-50 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm text-xs text-slate-600 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
-          <span>
-            The current table GameState (Round {gameState.roundNumber}, {gameState.phase}) will be
-            attached automatically for debugging.
-          </span>
-        </div>
+        {activeGameState && (
+          <div className="bg-amber-50 p-2.5 rounded-xl border-2 border-comic-black shadow-comic-sm text-xs text-slate-600 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-comic-red shrink-0" />
+            <span>
+              The current table GameState (Round {activeGameState.roundNumber},{' '}
+              {activeGameState.phase}) will be attached automatically for debugging.
+            </span>
+          </div>
+        )}
 
         {/* Submit */}
         <button

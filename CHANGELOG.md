@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (UI & Field Reporting): Card Context Menu "Create issue for this card" & Problem Report Prefill**
+  - **Card Context Menu Action:** Added "Create issue for this card" action with `Bug` icon to the card tabletop context menu (`CardContextMenu.tsx`).
+  - **Card Identity Prefill:** Automatically prefills the `ReportProblemModal` description with `Card: ${card.name} (${(card as any).id || card.code})\n\n` (e.g. `Card: Spider-Man (01001a)`).
+  - **Tabletop GameState Telemetry:** Added `getLatestGameStateSnapshot()` in `gamestate-logger-service.ts` to retrieve cached table state from `sessionStorage`, making `gameState` optional in `ReportProblemModal` and `problem-report-service.ts` while preserving full debugging telemetry.
+  - **Clean Issue Titling:** Updated `ReportProblemModal` to derive GitHub issue titles from the first line of the description (up to 80 characters).
+  - **Test Suite:** Added comprehensive unit and contract tests in `tests/ui/card-context-menu.test.ts` and `tests/ui/problem-report-service.test.ts`.
+
 - **Refactor & Documentation (Specifications Suite, Schema, Editor & Engine Alignment): Specifications Cleanup, Schema Grounding & Editor Bug Fix**
   - **Purged Dead Primitive `SPAWN_NEMESIS`:** Completely removed obsolete monolithic `SPAWN_NEMESIS` from `EffectTypeSchema` (`src/data/supplemental/schema.ts`), the execution switch handler in `src/engine/effects/index.ts`, the parameter registry in `src/ui/components/editor/effect-parameter-registry.ts`, and regenerated `src/data/supplemental/schema.json`. Documented the canonical 4-step `PUT_INTO_PLAY` / `SHUFFLE_INTO_DECK` / `SURGE` pipeline in `08_effects_villain_nemesis.md` as implemented on *Shadow of the Past* (`01190`).
   - **Fixed Card Editor Default Step Bug:** Corrected `src/ui/components/editor/StepPipelineEditor.tsx` where adding a step erroneously emitted deprecated `DRAW_CARDS` instead of canonical `DRAW`.

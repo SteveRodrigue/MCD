@@ -14,14 +14,14 @@ Early in the project, declarative ability schemas and effect primitives were doc
 This monolithic approach caused two major problems:
 
 1. **Sprawl & Navigability:** Contributors and AI agents struggled to quickly find specific specifications (e.g. how `FilterSchema` works or how dynamic math formulas are structured).
-2. **Ambiguous Maturity Status:** It was unclear from the documentation which effect primitives were actually coded and working in the engine (🟢 `IMPLEMENTED`) versus those planned on the roadmap (🟡 `ROADMAP / SPECIFIED`).
+2. **Ambiguous Maturity Status:** It was unclear from the documentation which effect primitives were actually coded and working in the engine. Planning status belongs in GitHub issues and the project roadmap, not in the implemented specification suite.
 
 ---
 
 ## Decision Drivers
 
 - **Domain Separation:** Clean, modular organization by domain (Metadata, Timings, Costs, Combat, Zones, Status, Formulations, Modals).
-- **Maturity Transparency:** Explicit visual status badges (🟢 `IMPLEMENTED (v1.0)` vs 🟡 `ROADMAP / SPECIFIED`) on every single primitive with links to code and GitHub issues.
+- **Maturity Transparency:** Specification entries must describe only implemented, tested primitives and link to their code and relevant tracking issues where useful. Planned work remains in GitHub issues and the project roadmap.
 - **Skill Integration:** Direct integration with the `card-integration-protocol` skill, allowing AI agents to anchor confidence ratings directly to specification maturity.
 
 ---
@@ -53,4 +53,5 @@ This monolithic approach caused two major problems:
 ### Positive Consequences
 
 - **Instant Discoverability:** Developers and AI subagents can view small, focused ~100-line specification files rather than parsing giant documents.
-- **Synchronous Maturity Feedback Loop:** When a new primitive is coded in `src/engine/effects/`, its status badge in `docs/specifications/supplemental/` is updated from 🟡 to 🟢, keeping documentation 100% truthful.
+- **Implementation-First Documentation:** The specification suite contains only behavior that exists in the codebase and is covered by automated tests. New planned capabilities are recorded in GitHub issues or `docs/roadmap_and_milestones.md` until implemented and verified.
+- **Single Active Specification Status:** Implemented specification entries use 🟢 `IMPLEMENTED (v1.0)`. `ROADMAP`, `SPECIFIED`, and similar planning labels are not used as specification maturity statuses.

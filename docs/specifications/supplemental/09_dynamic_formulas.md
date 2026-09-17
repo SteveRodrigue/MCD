@@ -1,7 +1,7 @@
 # 09. Dynamic Formulas & Mathematical Expressions
 
 > [!NOTE]
-> **Status:** 🟢 `ACTIVE / SPECIFIED` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md), [ADR-0052](../../decisions/0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md), Issue [#36](https://github.com/SteveRodrigue/MCD/issues/36), Issue [#89](https://github.com/SteveRodrigue/MCD/issues/89), Issue [#90](https://github.com/SteveRodrigue/MCD/issues/90) - _Gamma Slam_ `01021`, _Energy Channel_ `01019`, _Counter-Punch_ `01077`, _Great Responsibility_ `01061`)
+> **Status:** 🟢 `IMPLEMENTED (v1.0)` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md), [ADR-0052](../../decisions/0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md), Issue [#36](https://github.com/SteveRodrigue/MCD/issues/36), Issue [#89](https://github.com/SteveRodrigue/MCD/issues/89), Issue [#90](https://github.com/SteveRodrigue/MCD/issues/90) - _Gamma Slam_ `01021`, _Energy Channel_ `01019`, _Counter-Punch_ `01077`, _Great Responsibility_ `01061`)
 
 ---
 
@@ -25,17 +25,17 @@ Ad-hoc string tokens (`amountFormula`) are completely retired in favor of this s
 
 ### Supported Value Sources (`from`)
 
-| Value Source (`from`) | Evaluated Quantity                                                                                                                            | Typical Context / Trigger                                                  | Example Card Declarations                                                   |
-| :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| `ENTITY_COUNT`        | Count of in-play cards matching an optional declarative `filter: UniversalCardFilter`.                                                        | Board state inspection                                                     | _Jessica Jones_ (`01059` side schemes), _Iron Man_ (`01029a` Tech upgrades) |
-| `COUNTERS`            | Counters on card or identity specified by `counterType` and `target`.                                                                         | Card counters                                                              | _Energy Channel_ (`01019`), _Groot_                                         |
-| `STAT_VALUE`          | Identity, ally, enemy, or scheme stat specified by `stat` (`SUFFERED_DAMAGE`, `ATTACK`, `THWART`, `DEFENSE`, `RECOVERY`, `THREAT`, `DAMAGE`). | Character/scheme attribute scaling                                         | _Gamma Slam_ (`01021`), _Counter-Punch_ (`01077`)                           |
-| `CARD_ATTRIBUTE`      | Numeric attribute of target card specified by `attribute` (`BOOST_ICONS`, `PRINTED_RESOURCES`, `PRINTED_COST`).                               | Card inspection                                                            | Boost/resource scaling                                                      |
-| `INTERCEPTED_VALUE`   | Scalar quantity captured from trigger window (`threatAmount`, `damageAmount`, or `interceptedValue`).                                         | `THREAT_WOULD_BE_PLACED`, `DAMAGE_WOULD_BE_TAKEN`, `DAMAGE_WOULD_BE_DEALT` | _Great Responsibility_ (`01061`), _Emergency_ (`01085`)                     |
-| `PREVIOUS_RESULT`     | The numeric `value` returned by the preceding ability step (`previousResult.value`).                                                          | Sequential steps (`steps: []`)                                             | Multi-step chains converting one count to another                           |
+| Value Source (`from`) | Evaluated Quantity                                                                                                                                                                                                                                       | Typical Context / Trigger                                                  | Example Card Declarations                                                   |
+| :-------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| `ENTITY_COUNT`        | Count of in-play cards matching an optional declarative `filter: UniversalCardFilter`.                                                                                                                                                                   | Board state inspection                                                     | _Jessica Jones_ (`01059` side schemes), _Iron Man_ (`01029a` Tech upgrades) |
+| `COUNTERS`            | Counters on card or identity specified by `counterType` and `target`.                                                                                                                                                                                    | Card counters                                                              | _Energy Channel_ (`01019`), _Groot_                                         |
+| `STAT_VALUE`          | Identity, ally, enemy, or scheme stat specified by `stat` (`SUFFERED_DAMAGE`, `ATTACK`, `THWART`, `DEFENSE`, `RECOVERY`, `THREAT`, `DAMAGE`).                                                                                                            | Character/scheme attribute scaling                                         | _Gamma Slam_ (`01021`), _Counter-Punch_ (`01077`)                           |
+| `CARD_ATTRIBUTE`      | Numeric attribute of target card specified by `attribute` (`BOOST_ICONS`, `PRINTED_RESOURCES`, `PRINTED_COST`).                                                                                                                                          | Card inspection                                                            | Boost/resource scaling                                                      |
+| `INTERCEPTED_VALUE`   | Scalar quantity captured from trigger window (`threatAmount`, `damageAmount`, or `interceptedValue`).                                                                                                                                                    | `THREAT_WOULD_BE_PLACED`, `DAMAGE_WOULD_BE_TAKEN`, `DAMAGE_WOULD_BE_DEALT` | _Great Responsibility_ (`01061`), _Emergency_ (`01085`)                     |
+| `PREVIOUS_RESULT`     | The numeric `value` returned by the preceding ability step (`previousResult.value`).                                                                                                                                                                     | Sequential steps (`steps: []`)                                             | Multi-step chains converting one count to another                           |
 | `DISCARDED_CARDS`     | Inspects cards discarded in preceding step (`previousResult.discardedCards` or `discardedCards`) via `discardAttribute` (`COUNT`, `RESOURCE_ICONS`, `DIFFERENT_RESOURCES`, `BOOST_ICONS`, `DIFFERENT_CARD_TYPES`, `PRINTED_COST`) and optional `filter`. | Discard steps / attrition / milling                                        | _Legal Practice_ (`01023`), _Repulsor Blast_ (`01031`)                      |
-| `HAS_TRAIT`           | Checks if active player identity or in-play cards possess the specified trait in `filter.traits` (1 if true, 0 if false). Multiplied by `multiplier`.       | Trait conditional scaling / bonuses (e.g. `[[AERIAL]]`)                     | _Supersonic Punch_ (`01032`), _Powered Gauntlets_ (`01038`)                 |
-| `HAS_IDENTITY`        | Checks if player's active form card matches `filter.codes` or criteria (1 if true, 0 if false). Multiplied by `multiplier`.                                  | Alter-Ego / Hero identity specific bonuses                                  | _Alpha Flight Station_ (`01015`)                                           |
+| `HAS_TRAIT`           | Checks if active player identity or in-play cards possess the specified trait in `filter.traits` (1 if true, 0 if false). Multiplied by `multiplier`.                                                                                                    | Trait conditional scaling / bonuses (e.g. `[[AERIAL]]`)                    | _Supersonic Punch_ (`01032`), _Powered Gauntlets_ (`01038`)                 |
+| `HAS_IDENTITY`        | Checks if player's active form card matches `filter.codes` or criteria (1 if true, 0 if false). Multiplied by `multiplier`.                                                                                                                              | Alter-Ego / Hero identity specific bonuses                                 | _Alpha Flight Station_ (`01015`)                                            |
 
 ---
 
@@ -115,17 +115,32 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
 }
 ```
 
-### D. Taking Intercepted Threat as Damage (_Great Responsibility_ `01061`)
+### D. Preventing Threat and Taking It as Damage (_Great Responsibility_ `01061`)
 
 ```json
 {
-  "effect": "DEAL_DAMAGE",
-  "effectParams": {
-    "target": "SELF_IDENTITY",
-    "amount": {
-      "from": "INTERCEPTED_VALUE"
+  "timing": "HERO_INTERRUPT",
+  "trigger": "THREAT_WOULD_BE_PLACED",
+  "zone": "HAND",
+  "cost": {
+    "discardSelf": true
+  },
+  "steps": [
+    {
+      "id": "consume_threat",
+      "effect": "PREVENT_THREAT"
+    },
+    {
+      "id": "take_damage",
+      "effect": "DEAL_DAMAGE",
+      "effectParams": {
+        "target": "SELF_IDENTITY",
+        "amount": {
+          "from": "INTERCEPTED_VALUE"
+        }
+      }
     }
-  }
+  ]
 }
 ```
 

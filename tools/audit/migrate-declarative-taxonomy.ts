@@ -225,6 +225,7 @@ function transformStep(
   stepPath: string,
   changes: Change[],
   blockers: Blocker[],
+  trigger?: string,
 ): any[] {
   const step = clone(rawStep);
   const special = transformSpecialStep(step, stepPath, changes, blockers);
@@ -234,7 +235,13 @@ function transformStep(
     const pathPrefix = steps.length > 1 ? `${stepPath}[${index}]` : stepPath;
     const transformed = transformNested(candidate, pathPrefix, changes, blockers);
     if (transformed.effect) {
-      const renamedEffect = renameString(transformed.effect, EFFECT_RENAMES);
+      let renamedEffect = renameString(transformed.effect, EFFECT_RENAMES);
+      if (
+        transformed.effect === 'CONSUME_INTERCEPTED_EVENT' &&
+        trigger === 'THREAT_WOULD_BE_PLACED'
+      ) {
+        renamedEffect = 'PREVENT_THREAT';
+      }
       if (renamedEffect !== transformed.effect) {
         changes.push({
           path: `${pathPrefix}.effect`,
@@ -280,11 +287,11 @@ function transformAbility(
       : [];
   if (Array.isArray(ability.steps)) {
     ability.steps = sourceSteps.flatMap((step: Record<string, any>, index: number) =>
-      transformStep(step, `${abilityPath}.steps[${index}]`, changes, blockers),
+      transformStep(step, `${abilityPath}.steps[${index}]`, changes, blockers, ability.trigger),
     );
   } else if (Array.isArray(ability.sequence)) {
     ability.sequence = sourceSteps.flatMap((step: Record<string, any>, index: number) =>
-      transformStep(step, `${abilityPath}.sequence[${index}]`, changes, blockers),
+      transformStep(step, `${abilityPath}.sequence[${index}]`, changes, blockers, ability.trigger),
     );
   }
 

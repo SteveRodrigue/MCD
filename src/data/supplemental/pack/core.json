@@ -739,7 +739,7 @@
           "steps": [
             {
               "id": "prevent_threat",
-              "effect": "PREVENT_DAMAGE",
+              "effect": "PREVENT_THREAT",
               "effectParams": {
                 "amount": 1
               }
@@ -749,8 +749,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T22:00:00Z",
+        "reviewedAt": "2026-09-16T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -2259,7 +2259,7 @@
           "steps": [
             {
               "id": "consume_threat",
-              "effect": "PREVENT_DAMAGE"
+              "effect": "PREVENT_THREAT"
             },
             {
               "id": "take_damage",
@@ -2276,8 +2276,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T22:00:00Z",
+        "reviewedAt": "2026-09-16T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -3096,7 +3096,7 @@
           "steps": [
             {
               "id": "reduce_threat",
-              "effect": "PREVENT_DAMAGE",
+              "effect": "PREVENT_THREAT",
               "effectParams": {
                 "amount": 1
               }
@@ -3106,8 +3106,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T22:00:00Z",
+        "reviewedAt": "2026-09-16T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

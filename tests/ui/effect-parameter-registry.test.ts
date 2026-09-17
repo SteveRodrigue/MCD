@@ -228,4 +228,31 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(paramKeys).toContain('options');
     expect(paramKeys).toContain('isVoluntary');
   });
+
+  it('PREVENT_THREAT exposes amount and target with dynamic and allowAll capability', () => {
+    const desc = getEffectDescriptor('PREVENT_THREAT');
+    expect(desc.effect).toBe('PREVENT_THREAT');
+    expect(desc.description).toBe(
+      'Prevent or reduce impending threat that would be placed on a scheme.',
+    );
+
+    const paramKeys = desc.parameters.map((p) => p.key);
+    expect(paramKeys).toContain('amount');
+    expect(paramKeys).toContain('target');
+
+    const amountParam = desc.parameters.find((p) => p.key === 'amount');
+    expect(amountParam?.type).toBe('number');
+    expect(amountParam?.allowDynamic).toBe(true);
+    expect(amountParam?.allowAll).toBe(true);
+
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+    expect(targetParam?.type).toBe('select');
+    expect(targetParam?.defaultValue).toBe('MAIN_SCHEME');
+  });
+
+  it('PREVENT_DAMAGE description is decoupled from threat interception', () => {
+    const desc = getEffectDescriptor('PREVENT_DAMAGE');
+    expect(desc.effect).toBe('PREVENT_DAMAGE');
+    expect(desc.description).toBe('Prevent incoming attack or effect damage to a character.');
+  });
 });

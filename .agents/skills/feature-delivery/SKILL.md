@@ -51,6 +51,7 @@ Before writing any implementation code or tests for a new feature, verify the fo
 3. **Schema & Model Design Alignment:**
    - If the feature introduces new effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
    - If the feature extends game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts) and export all relevant interfaces.
+   - Keep the Card Supplemental Editor aligned with every schema, primitive, field, parameter, timing, or card-workflow change. Review [`docs/specifications/tooling/card_supplemental_editor.md`](../../docs/specifications/tooling/card_supplemental_editor.md), update the affected components under `src/ui/components/editor/` (including descriptors, form builders, and raw-JSON validation where applicable), and add or update editor round-trip tests.
 4. **Headless & Decoupled Invariant:**
    - Pure engine logic belongs strictly in `src/engine/`. Never import React, DOM, `window`, `document`, or CSS into engine modules.
 5. **Declarative Data-First & Generic Primitive Invariant:**
@@ -58,10 +59,11 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - All card abilities must be composed of universal, reusable effect primitives in `src/engine/effects/index.ts` parameterized purely via `src/data/supplemental/`. If a capability is missing, implement it as a generic, reusable primitive.
 6. **🎯 Rhino Release Scope Boundary Invariant:**
    - Every feature, card integration, or improvement must strictly target the **Core Set Player cards (101 cards)** or the **Rhino Encounter sets (Rhino I/II/III, Standard, Expert, Bomb Scare, 5 Nemesis Sets - 34 cards)**.
-   - Any expansion card (e.g. *Captain America*, *Thor*, *Klaw*, *Ultron*) or advanced expansion mechanic (Player Side Schemes, 3-sided identities, campaign auxiliary decks) must be deferred to subsequent release gates (Gate 2/3/4).
+   - Any expansion card (e.g. _Captain America_, _Thor_, _Klaw_, _Ultron_) or advanced expansion mechanic (Player Side Schemes, 3-sided identities, campaign auxiliary decks) must be deferred to subsequent release gates (Gate 2/3/4).
 7. **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):**
    - **NEVER** introduce or carry forward legacy shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or temporary shortcuts unless explicitly approved by the user or absolutely necessary.
    - We are at the early stage of the project: always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data over legacy compatibility layers.
+   - For every feature, perform a targeted repository-wide inventory for superseded identifiers, dead branches, unused exports, stale editor descriptors, orphaned tests, and duplicate implementations. Purge confirmed legacy/orphan code in the same delivery, then prove removal with compiler diagnostics, focused tests, and identifier/reference searches. Do not delete code whose ownership or usage is ambiguous; stop and request user validation with the specific reason and affected paths.
 
 ---
 
@@ -167,6 +169,8 @@ flowchart TD
    - Read the controlling ADR in `docs/decisions/`.
    - Update `src/data/supplemental/schema.ts` with strict Zod types if introducing new primitives.
    - Update `src/engine/models/abilities.ts` or `src/engine/models/state.ts`.
+   - Trace the change into the Card Supplemental Editor and its specification. Identify every affected editor descriptor, builder control, validation path, persistence shape, and editor test before implementation.
+   - Identify confirmed legacy/orphan code and references that the feature supersedes. Record the cleanup targets in the implementation plan; flag uncertain ownership or usage as an explicit user decision instead of inferring deletion.
    - Run schema tests: `npm test tests/data/supplemental-validation.test.ts`.
 
 ---
@@ -179,6 +183,7 @@ flowchart TD
   3. **Verification Plan:** Planned unit/acceptance tests covering happy path and edge cases.
   4. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
 - **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. You MUST NOT proceed to writing code or modifying files until the user explicitly reviews and approves the implementation plan.
+- **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and delegates execution only for the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
 
 ---
 
@@ -202,6 +207,8 @@ flowchart TD
   - **Cost & Legality:** `src/engine/pipeline/cost-engine.ts` and `legality-checker.ts`.
   - **Scenario Plugins:** `src/engine/scenarios/` (`ScenarioPlugin` implementations).
   - **UI Components:** `src/ui/components/` (React presentation, Tailwind styling, Pop-Art aesthetic).
+- Keep the Card Supplemental Editor usable for the new canonical shape. Update the relevant editor registry, form builder, validation, persistence, and round-trip tests whenever the feature changes what a card can express or how it is reviewed.
+- Remove confirmed legacy/orphan implementations and references made obsolete by the feature. Do not leave duplicate code paths or dead compatibility branches behind.
 - Run the acceptance test suite to confirm all tests pass cleanly (**Green**).
 
 ---
@@ -242,11 +249,13 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` detailing the new feature, affected subsystems, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
 2. **Check Documentation:** Update relevant docs in `docs/` or `README.md`.
 3. **Check Specifications:** Update `docs/specifications/` or schemas when mechanics or primitives change.
+   - Confirm the Card Supplemental Editor specification and implementation remain aligned, including supported fields, controls, validation, persistence, and round-trip behavior.
 4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new design patterns were introduced.
 5. **Check ADRs:** Ensure referenced ADRs are linked and updated to **Accepted** status, and that every ADR you created or edited still conforms to [`docs/decisions/template.md`](../../../docs/decisions/template.md).
 6. **Check Ambiguities & Git Issues:** Verify resolved ambiguity cards are removed and issues linked.
 7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) synchronized.
 8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, search supplemental data, retrofit affected cards, update audit timestamps, and run `npm run report:declarations`.
+9. **Check Legacy/Orphan Cleanup:** Search for superseded identifiers, stale editor descriptors, unused exports, duplicate implementations, orphaned tests, and dead branches. Remove only confirmed obsolete code, verify zero remaining references, and raise any uncertain deletion for explicit user validation.
 
 ---
 

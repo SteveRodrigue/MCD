@@ -207,6 +207,7 @@ flowchart TD
   - **Happy Path:** Standard execution and expected state transitions.
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
   - **Rules Invariants:** Unicity checks, form restrictions, timing priorities.
+- **Zero Skipped Tests Invariant:** Tests must strictly pass or fail. NEVER write `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions.
 - Run the test suite (`npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**).
 
 ---
@@ -247,7 +248,7 @@ Execute the full multi-tier verification suite:
 npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
 ```
 
-- **Vitest Suite:** All test files and suites pass with 0 failures.
+- **Vitest Suite:** All test files and suites pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail; never introduce `it.skip` or commented-out assertions.
 - **TypeScript:** 0 compilation errors (`tsc --noEmit`).
 - **Vite Production Build:** Production bundle compiles cleanly without warnings.
 - **Declarations Analyzer:** `docs/reports/supplemental_declarations_usage_report.md` compiles with 0 schema violations.

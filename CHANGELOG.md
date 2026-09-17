@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Standards & Testing (Zero Skipped Tests Invariant): Establish Zero Skipped Tests Invariant & Resolve-At-Source Policy**
+  - **Zero Skipped Tests Invariant:** Formalized Principle 7 in `AGENTS.md`, Section 6.4 in `docs/coding_guidelines.md`, and all development skills (`bug-fix`, `feature-delivery`, `commit-and-push`, `card-integration-protocol`, `execute-plan`).
+  - **Strict Binary Outcomes:** Tests must strictly pass or fail (`passed: N, failed: 0, skipped: 0`). Forbids `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions to mask or defer failing tests.
+  - **Resolve At Root Cause:** When defects or test failures arise, they must be investigated and resolved immediately at the source (fixing supplemental data, correcting engine logic, or pruning obsolete tests for superseded paradigms).
+  - **Pruned Legacy Skipped Test:** Purged obsolete skipped test in `tests/engine/villain-phase.test.ts` (legacy synchronous test from August 27 superseded by dedicated contract tests in `tests/engine/prevent-threat.test.ts` and `tests/engine/optional-triggers.test.ts`), bringing the full test suite to 130 files passed, 976 tests passed, 0 skipped.
+
 - **Feature & UI (Interactive Distribution Modal & Pipeline): Interactive Point Distribution System & Shortfall Guardrails ([ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
   - **Engine Models & Pipeline:**
     - Extended `PendingDecisionPrompt` with `kind: 'DISTRIBUTE_POINTS'` and `DistributionPromptConfig`.

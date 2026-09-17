@@ -286,36 +286,55 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
             {prompt.options.map((option, index) => {
               const isDeclineOption =
                 option.id.includes('none') || option.id.includes('decline') || option.id === 'pass';
+              const isDisabled = Boolean(option.disabled);
 
               return (
                 <button
                   key={option.id}
-                  onClick={() => onSelectOption(option.id)}
-                  className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 border-2 border-comic-black rounded-lg shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer ${
-                    isDeclineOption
-                      ? 'bg-slate-100 hover:bg-comic-red text-comic-black hover:text-white'
-                      : 'bg-white hover:bg-comic-yellow text-comic-black'
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (!isDisabled) {
+                      onSelectOption(option.id);
+                    }
+                  }}
+                  className={`group relative flex flex-col items-start text-left p-3 sm:p-3.5 border-2 border-comic-black rounded-lg transition-all ${
+                    isDisabled
+                      ? 'opacity-50 cursor-not-allowed bg-slate-100 text-slate-500 pointer-events-none ring-1 ring-slate-300'
+                      : isDeclineOption
+                        ? 'shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer bg-slate-100 hover:bg-comic-red text-comic-black hover:text-white'
+                        : 'shadow-comic-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] cursor-pointer bg-white hover:bg-comic-yellow text-comic-black'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className="font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2">
                       <span
                         className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
-                          isDeclineOption
-                            ? 'bg-rose-300 text-slate-950'
-                            : 'bg-comic-yellow text-comic-black'
+                          isDisabled
+                            ? 'bg-slate-300 text-slate-600'
+                            : isDeclineOption
+                              ? 'bg-rose-300 text-slate-950'
+                              : 'bg-comic-yellow text-comic-black'
                         }`}
                       >
                         {index + 1}
                       </span>
                       <span>{option.label}</span>
                     </span>
-                    {isDeclineOption ? (
+                    {isDisabled ? (
+                      <XCircle className="w-5 h-5 text-slate-400" />
+                    ) : isDeclineOption ? (
                       <XCircle className="w-5 h-5 text-comic-red group-hover:text-white transition-colors" />
                     ) : (
                       <CheckCircle2 className="w-5 h-5 text-emerald-600 group-hover:text-comic-black transition-colors" />
                     )}
                   </div>
+                  {option.disabledReason && (
+                    <div className="mt-1 pl-8">
+                      <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 border border-comic-black text-amber-950">
+                        ⚠️ {option.disabledReason}
+                      </span>
+                    </div>
+                  )}
                   {option.description && (
                     <p className="mt-0.5 text-xs font-bold text-slate-600 group-hover:text-comic-black pl-8">
                       {option.description}

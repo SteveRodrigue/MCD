@@ -211,6 +211,7 @@ export interface CardEnrichment {
   attackCost?: number;
   thwartCost?: number;
   maxPerPlayer?: number;
+  playUnderAnyPlayerControl?: boolean;
   uses?: CardUsesDefinition;
   /** Explicit keywords on the card (overrides text loader deductions) */
   keywords?: (Keyword | string)[];

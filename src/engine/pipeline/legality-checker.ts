@@ -1042,6 +1042,7 @@ export function canPlayCard(
   sourceZone:
     'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED' = 'HAND',
   targetOwnerPlayerId?: string,
+  targetPlayerId?: string,
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
@@ -1193,25 +1194,52 @@ export function canPlayCard(
 
   // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
   if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
-    const controlledCount =
-      player.tableau.filter(
+    const getControlledCount = (p: PlayerState) =>
+      p.tableau.filter(
         (c) =>
           c.card.code === card.code ||
           c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
       ).length +
       (card.type === CardType.ALLY
-        ? player.allies.filter(
+        ? p.allies.filter(
             (a) =>
               a.card.code === card.code ||
               a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
           ).length
         : 0);
 
-    if (controlledCount >= card.maxPerPlayer) {
-      return {
-        allowed: false,
-        reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
-      };
+    if (card.enrichment?.playUnderAnyPlayerControl) {
+      if (targetPlayerId) {
+        const targetP = getPlayer(state, targetPlayerId);
+        if (!targetP) {
+          return { allowed: false, reason: `Target player ${targetPlayerId} not found.` };
+        }
+        if (getControlledCount(targetP) >= card.maxPerPlayer) {
+          return {
+            allowed: false,
+            reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
+          };
+        }
+      } else {
+        const allReached = state.players.every((p) => getControlledCount(p) >= card.maxPerPlayer!);
+        if (allReached) {
+          return {
+            allowed: false,
+            reason:
+              state.players.length > 1
+                ? 'All players have reached max per player limit for this card.'
+                : `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
+          };
+        }
+      }
+    } else {
+      const controlledCount = getControlledCount(player);
+      if (controlledCount >= card.maxPerPlayer) {
+        return {
+          allowed: false,
+          reason: `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
+        };
+      }
     }
   }
 

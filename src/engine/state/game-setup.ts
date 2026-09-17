@@ -106,14 +106,14 @@ export function setupGame(options: GameSetupOptions): GameState {
       const isPermanent = hasKeyword(card, Keyword.PERMANENT) || (card as any).permanent === true;
 
       if (isPermanent) {
-        permanentCards.push(createCardInstance(card));
+        permanentCards.push(createCardInstance(card, pConfig.id));
       } else {
         drawDeckCards.push(card);
       }
     }
 
     const handSize = pConfig.alterEgo.handSize;
-    const shuffledDeck = shuffle(drawDeckCards.map(createCardInstance));
+    const shuffledDeck = shuffle(drawDeckCards.map((c) => createCardInstance(c, pConfig.id)));
     const hand = shuffledDeck.splice(0, handSize);
 
     const defaultNemesisCards = pConfig.hero.setCode
@@ -123,7 +123,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       pConfig.nemesisCards && pConfig.nemesisCards.length > 0
         ? pConfig.nemesisCards
         : defaultNemesisCards
-    ).map(createCardInstance);
+    ).map((c) => createCardInstance(c, pConfig.id));
 
     return {
       id: pConfig.id,
@@ -200,7 +200,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       .getExpandedCardsBySet(options.scenarioId || 'rhino')
       .filter((c: NormalizedCard) => c.type !== 'villain' && c.type !== 'main_scheme');
   const allEncounterCards = [...rawEncounterCards, ...playerObligations];
-  const encounterInstances = allEncounterCards.map(createCardInstance);
+  const encounterInstances = allEncounterCards.map((c) => createCardInstance(c));
   const shuffledEncounterDeck = shuffle(encounterInstances);
 
   // 5. Setup State

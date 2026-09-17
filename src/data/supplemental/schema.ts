@@ -779,6 +779,7 @@ export const CardEnrichmentSchema = z
     attackCost: z.number().int().nonnegative().optional(),
     thwartCost: z.number().int().nonnegative().optional(),
     maxPerPlayer: z.number().optional(),
+    playUnderAnyPlayerControl: z.boolean().optional(),
     uses: CardUsesSchema.optional(),
     victoryPoints: z.number().optional(),
     keywords: z.array(KeywordEntrySchema).optional(),

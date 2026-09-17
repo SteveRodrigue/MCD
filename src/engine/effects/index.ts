@@ -223,6 +223,41 @@ export function discardHostAttachmentsAndTuckedCards(
 }
 
 /**
+ * Universal helper to cleanly discard a card instance respecting persistent ownership invariants (RR v1.8 p. 11, 23, ADR-0040, ADR-0068).
+ */
+export function discardCardInstance(
+  state: GameState,
+  card: CardInstance,
+  fallbackPlayerId?: string,
+): void {
+  if (!card) return;
+
+  // 1. Cascade host attachments and tucked cards
+  discardHostAttachmentsAndTuckedCards(state, card, fallbackPlayerId);
+
+  // 2. Atomic remove from all zones
+  removeCardFromAllZones(state, card.instanceId);
+
+  // 3. Proper destination routing based on encounter vs. player card ownership
+  if (isEncounterCard(card.card)) {
+    state.encounterDiscard.push(card);
+  } else {
+    const targetPlayer =
+      (card.ownerId ? state.players.find((p) => p.id === card.ownerId) : undefined) ||
+      (fallbackPlayerId ? state.players.find((p) => p.id === fallbackPlayerId) : undefined) ||
+      state.players[0];
+
+    if (targetPlayer) {
+      targetPlayer.discard.push(card);
+      dispatchTrigger(state, 'CARD_DISCARDED', {
+        targetPlayerId: targetPlayer.id,
+        sourceInstanceId: card.instanceId,
+      });
+    }
+  }
+}
+
+/**
  * Universal helper to process character defeat when cards are attached (RR v1.8 p. 6, 13).
  * Triggers all 'HOST_DEFEATED' interrupt abilities on attached cards, then cleanly discards them.
  */
@@ -763,16 +798,7 @@ export function executeEffect(
     (abilityOrStep as CardAbility).cost?.discardSelf &&
     context.sourceCardInstance
   ) {
-    const player = state.players.find((p) => p.id === context.playerId);
-    if (player) {
-      const tableauIdx = player.tableau.findIndex(
-        (c) => c.instanceId === context.sourceCardInstance!.instanceId,
-      );
-      if (tableauIdx !== -1) {
-        const [discarded] = player.tableau.splice(tableauIdx, 1);
-        player.discard.push(discarded);
-      }
-    }
+    discardCardInstance(state, context.sourceCardInstance, context.playerId);
   }
 
   if (
@@ -962,13 +988,8 @@ export function executeDiscard(
 
     if (matchingIndices.length > 0) {
       const targetIdx = matchingIndices[0];
-      const [discarded] = player.tableau.splice(targetIdx, 1);
-      player.discard.push(discarded);
-      dispatchTrigger(state, 'CARD_DISCARDED', {
-        targetPlayerId: player.id,
-        sourceInstanceId: discarded.instanceId,
-        triggerChain: context.triggerChain,
-      });
+      const targetCard = player.tableau[targetIdx];
+      discardCardInstance(state, targetCard, player.id);
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -976,14 +997,14 @@ export function executeDiscard(
         phase: state.phase,
         category: 'combat',
         key: 'player.tableau.discarded',
-        params: { player: player.name, card: discarded.card.name },
+        params: { player: player.name, card: targetCard.card.name },
         onomatopoeia: 'TABLEAU DISCARDED!',
       });
       return {
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: `DISCARDED ${discarded.card.name.toUpperCase()}!`,
+        onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
       };
     }
 
@@ -1000,13 +1021,7 @@ export function executeDiscard(
   if (source === 'SELF') {
     const cardInst = context.sourceCardInstance;
     if (cardInst) {
-      discardHostAttachmentsAndTuckedCards(state, cardInst, player.id);
-      removeCardFromAllZones(state, cardInst.instanceId);
-      if (isEncounterCard(cardInst.card)) {
-        state.encounterDiscard.push(cardInst);
-      } else {
-        player.discard.push(cardInst);
-      }
+      discardCardInstance(state, cardInst, player.id);
       return {
         state,
         success: true,

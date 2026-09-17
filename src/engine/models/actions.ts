@@ -103,6 +103,7 @@ export interface ResolveDecisionPromptAction {
   type: 'RESOLVE_DECISION_PROMPT';
   playerId: string;
   selectedOptionId: string;
+  assignments?: Record<string, number>;
 }
 
 export interface DeclareDefenderAction {

@@ -73,6 +73,7 @@ export type TriggerType =
 export type EffectType =
   | 'DRAW'
   | 'DEAL_DAMAGE'
+  | 'DISTRIBUTE_AMOUNT'
   | 'PREVENT_DAMAGE'
   | 'PREVENT_THREAT'
   | 'HEAL_DAMAGE'

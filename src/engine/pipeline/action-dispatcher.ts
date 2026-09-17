@@ -1967,6 +1967,243 @@ export function dispatchAction(
 
       const activePrompt = peekDecisionPrompt(nextState);
 
+      // Distribution Prompt Resolution (ADR-0064)
+      if (
+        activePrompt &&
+        (activePrompt.kind === 'DISTRIBUTE_POINTS' || activePrompt.distributionConfig !== undefined)
+      ) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+
+        if (
+          (action.selectedOptionId === 'cancel' || action.selectedOptionId === 'pass') &&
+          (activePrompt.distributionConfig?.canCancel || activePrompt.isVoluntary)
+        ) {
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: player.name, type: player.currentForm },
+            key: 'decision.distribution.cancelled',
+            params: { player: player.name, source: activePrompt.sourceCardName },
+            onomatopoeia: 'CANCELLED',
+          });
+          return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
+        }
+
+        const assignments = action.assignments || {};
+        const config = activePrompt.distributionConfig;
+        const domain = config?.allocationDomain || 'DAMAGE';
+
+        // Route assignments to top execution stack frame if one exists
+        if (poppedState.executionStack && poppedState.executionStack.length > 0) {
+          const topFrame = poppedState.executionStack[poppedState.executionStack.length - 1];
+          if (topFrame) {
+            topFrame.context = { ...(topFrame.context || {}), assignments };
+          }
+        }
+
+        // Apply assignments across targets
+        for (const [targetId, amount] of Object.entries(assignments)) {
+          if (amount <= 0) continue;
+
+          if (domain === 'DAMAGE') {
+            let ally: CardInstance | undefined;
+            let allyController: PlayerState | undefined;
+            for (const p of poppedState.players) {
+              const found = p.allies.find((a) => a.instanceId === targetId);
+              if (found) {
+                ally = found;
+                allyController = p;
+                break;
+              }
+            }
+
+            if (ally && allyController) {
+              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
+              if (allyToughIdx !== -1) {
+                ally.statusCards!.splice(allyToughIdx, 1);
+              } else {
+                const currentDmg = ally.tokens?.damage || 0;
+                const newDmg = currentDmg + amount;
+                const allyHp = (ally.card as any).health || 1;
+                if (newDmg >= allyHp) {
+                  const idx = allyController.allies.indexOf(ally);
+                  allyController.allies.splice(idx, 1);
+                  processHostDefeated(poppedState, ally, { player: allyController });
+                  dispatchCanonicalDefeatTriggers(
+                    poppedState,
+                    allyController.id,
+                    ally.instanceId,
+                    'CHARACTER',
+                  );
+                  const owner =
+                    (ally.ownerId
+                      ? poppedState.players.find((pl) => pl.id === ally.ownerId)
+                      : undefined) || allyController;
+                  owner.discard.push(ally);
+                } else {
+                  ally.tokens = { ...ally.tokens, damage: newDmg };
+                }
+              }
+            } else {
+              const targetPlayer =
+                poppedState.players.find(
+                  (pl) =>
+                    pl.id === targetId ||
+                    pl.activeFormCard?.code === targetId ||
+                    pl.hero?.code === targetId,
+                ) || (targetId === player.id ? player : undefined);
+
+              if (targetPlayer) {
+                const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
+                if (toughIdx !== -1) {
+                  targetPlayer.statusCards.splice(toughIdx, 1);
+                } else {
+                  targetPlayer.health = Math.max(0, targetPlayer.health - amount);
+                  if (targetPlayer.health <= 0) poppedState.winner = 'VILLAIN';
+                }
+              } else if (
+                targetId === poppedState.villain?.instanceId ||
+                targetId === 'villain' ||
+                targetId === poppedState.villain?.card?.code
+              ) {
+                const vToughIdx = poppedState.villain.statusCards.indexOf(StatusCard.TOUGH);
+                if (vToughIdx !== -1) {
+                  poppedState.villain.statusCards.splice(vToughIdx, 1);
+                } else {
+                  poppedState.villain.health = Math.max(0, poppedState.villain.health - amount);
+                  if (poppedState.villain.health <= 0) {
+                    handleVillainDefeat(poppedState, poppedState.villain.instanceId);
+                  }
+                }
+              } else {
+                for (const p of poppedState.players) {
+                  const mIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetId);
+                  if (mIdx !== -1) {
+                    const minion = p.engagedMinions[mIdx];
+                    const mToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+                    if (mToughIdx !== -1) {
+                      minion.statusCards!.splice(mToughIdx, 1);
+                    } else {
+                      const currentDmg = minion.tokens?.damage || 0;
+                      const newDmg = currentDmg + amount;
+                      const minionHp = (minion.card as MinionCard).health || 1;
+                      if (newDmg >= minionHp) {
+                        processHostDefeated(poppedState, minion, { player: p });
+                        p.engagedMinions.splice(mIdx, 1);
+                        moveDefeatedCardToPile(poppedState, minion, poppedState.encounterDiscard);
+                        dispatchCanonicalDefeatTriggers(
+                          poppedState,
+                          p.id,
+                          minion.instanceId,
+                          'CHARACTER',
+                        );
+                      } else {
+                        minion.tokens = { ...minion.tokens, damage: newDmg };
+                      }
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          } else if (domain === 'THREAT_REMOVAL') {
+            if (
+              targetId === 'main_scheme' ||
+              targetId === poppedState.mainScheme?.instanceId ||
+              targetId === poppedState.mainScheme?.card?.code
+            ) {
+              poppedState.mainScheme.threat = Math.max(0, poppedState.mainScheme.threat - amount);
+            } else {
+              const sideIdx = (poppedState.sideSchemes || []).findIndex(
+                (s) => s.instanceId === targetId || s.card.code === targetId,
+              );
+              if (sideIdx !== -1) {
+                const side = poppedState.sideSchemes![sideIdx];
+                side.threat = Math.max(0, (side.threat || 0) - amount);
+                if (side.threat <= 0) {
+                  poppedState.sideSchemes!.splice(sideIdx, 1);
+                  dispatchCanonicalDefeatTriggers(
+                    poppedState,
+                    player.id,
+                    side.instanceId,
+                    'SCHEME',
+                  );
+                  poppedState.encounterDiscard.push(side);
+                }
+              }
+            }
+          } else if (domain === 'HEAL') {
+            let ally: CardInstance | undefined;
+            for (const p of poppedState.players) {
+              const found = p.allies.find((a) => a.instanceId === targetId);
+              if (found) {
+                ally = found;
+                break;
+              }
+            }
+            if (ally) {
+              const currentDmg = ally.tokens?.damage || 0;
+              ally.tokens = { ...ally.tokens, damage: Math.max(0, currentDmg - amount) };
+            } else {
+              const targetPlayer = poppedState.players.find(
+                (pl) =>
+                  pl.id === targetId ||
+                  pl.activeFormCard?.code === targetId ||
+                  pl.hero?.code === targetId,
+              );
+              if (targetPlayer) {
+                targetPlayer.health = Math.min(
+                  targetPlayer.maxHealth,
+                  targetPlayer.health + amount,
+                );
+              }
+            }
+          } else if (domain === 'EXHAUST') {
+            const cardInst = findInPlayCardInstance(poppedState, targetId);
+            if (cardInst) {
+              cardInst.exhausted = true;
+            } else {
+              const targetPlayer = poppedState.players.find((pl) => pl.id === targetId);
+              if (targetPlayer) targetPlayer.exhausted = true;
+            }
+          } else if (domain === 'COUNTERS') {
+            const cardInst = findInPlayCardInstance(poppedState, targetId);
+            if (cardInst) {
+              cardInst.tokens = {
+                ...cardInst.tokens,
+                counters: (cardInst.tokens?.counters || 0) + amount,
+              };
+            }
+          }
+        }
+
+        const assignedTotal = Object.values(assignments).reduce((sum, n) => sum + (n || 0), 0);
+        poppedState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: poppedState.roundNumber,
+          phase: poppedState.phase,
+          category: 'ability',
+          actor: { name: player.name, type: player.currentForm },
+          key: 'decision.distribution.resolved',
+          params: {
+            player: player.name,
+            domain,
+            amount: assignedTotal,
+            source: activePrompt.sourceCardName,
+          },
+          onomatopoeia: 'POINTS ASSIGNED!',
+        });
+
+        return {
+          state: poppedState,
+          result: { success: true, onomatopoeia: 'POINTS ASSIGNED!' },
+        };
+      }
+
       // 0. Wakanda Forever! Sequence Order Prompt Resolution (ADR-0038)
       if (
         activePrompt &&

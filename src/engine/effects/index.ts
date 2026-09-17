@@ -11,6 +11,8 @@ import {
   StepResolutionResult,
   DecisionPromptOption,
   PendingDecisionPrompt,
+  DistributionPromptConfig,
+  TargetAllocationItem,
   NormalizedCard,
   PlayerState,
   Keyword,
@@ -28,7 +30,7 @@ import {
 import type { SearchZone } from '../../data/supplemental/schema';
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
-import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
+import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   getEffectiveMaxHealth,
@@ -74,6 +76,7 @@ export interface EffectExecutionContext {
   isFinalStep?: boolean;
   discardedCards?: CardInstance[];
   assignments?: Record<string, number>;
+  interactivePrompt?: boolean;
   /** Active chain of trigger nodes for cycle detection & depth tracking (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   /** Host ability context for timing, trigger, and cost evaluation */
@@ -262,6 +265,238 @@ export function processHostDefeated(
 
   const ownerPlayerId = context?.player?.id || state.players[0]?.id;
   discardHostAttachmentsAndTuckedCards(state, hostCard, ownerPlayerId);
+}
+
+/**
+ * Compiles eligible and ineligible distribution targets with dynamic capacity limits (ADR-0064).
+ */
+export function compileDistributionTargets(
+  state: GameState,
+  targetScope: string,
+  allocationDomain: string,
+  capRule?: string,
+): TargetAllocationItem[] {
+  const targets: TargetAllocationItem[] = [];
+
+  const includeHeroes =
+    targetScope === 'ALL_HEROES_AND_ALLIES' ||
+    targetScope === 'ALL_HEROES' ||
+    targetScope === 'ALL_PLAYERS' ||
+    targetScope === 'ALL_FRIENDLY_CHARACTERS' ||
+    targetScope === 'ALL_CHARACTERS' ||
+    targetScope === 'CHOSEN_CHARACTER' ||
+    targetScope === 'CHOSEN_FRIENDLY_CHARACTER' ||
+    targetScope === 'CHOSEN_HERO';
+
+  const includeAllies =
+    targetScope === 'ALL_HEROES_AND_ALLIES' ||
+    targetScope === 'ALL_ALLIES' ||
+    targetScope === 'ALL_FRIENDLY_CHARACTERS' ||
+    targetScope === 'ALL_CONTROLLED_CHARACTERS' ||
+    targetScope === 'ALL_CHARACTERS' ||
+    targetScope === 'CHOSEN_CHARACTER' ||
+    targetScope === 'CHOSEN_FRIENDLY_CHARACTER' ||
+    targetScope === 'CHOSEN_ALLY';
+
+  const includeSchemes =
+    targetScope === 'ALL_SCHEMES' ||
+    targetScope === 'ALL_SIDE_SCHEMES' ||
+    targetScope === 'MAIN_SCHEME' ||
+    targetScope === 'CHOSEN_SCHEME' ||
+    targetScope === 'CHOSEN_SIDE_SCHEME' ||
+    allocationDomain === 'THREAT_REMOVAL';
+
+  const includeEnemies =
+    targetScope === 'ALL_ENEMIES' ||
+    targetScope === 'ALL_CHARACTERS' ||
+    targetScope === 'CHOSEN_ENEMY';
+
+  // 1. Players / Identities & Allies
+  for (const p of state.players) {
+    if (includeHeroes) {
+      const isHero = p.currentForm === 'hero';
+      const isFormRestricted =
+        (targetScope === 'ALL_HEROES' || targetScope === 'ALL_HEROES_AND_ALLIES') && !isHero;
+      const hasTough = p.statusCards.includes(StatusCard.TOUGH);
+      let isEligible = true;
+      let ineligibilityReason: string | undefined;
+      let allocationCap: number = p.health;
+
+      if (isFormRestricted) {
+        isEligible = false;
+        ineligibilityReason = 'Alter-Ego (Immune)';
+        allocationCap = 0;
+      } else if (allocationDomain === 'HEAL') {
+        const damageSuffered = p.maxHealth - p.health;
+        if (damageSuffered <= 0) {
+          isEligible = false;
+          ineligibilityReason = 'At full health';
+          allocationCap = 0;
+        } else {
+          allocationCap = damageSuffered;
+        }
+      } else if (allocationDomain === 'EXHAUST') {
+        if (p.exhausted) {
+          isEligible = false;
+          ineligibilityReason = 'Already exhausted';
+          allocationCap = 0;
+        } else {
+          allocationCap = 1;
+        }
+      } else if (allocationDomain === 'DAMAGE') {
+        if (capRule === 'REMAINING_HP') {
+          allocationCap = p.health;
+        } else if (capRule === 'NONE') {
+          allocationCap = 999;
+        } else {
+          allocationCap = p.health;
+        }
+      }
+
+      targets.push({
+        instanceId: p.id,
+        name: p.activeFormCard?.name || p.hero?.name || p.name,
+        cardCode: p.activeFormCard?.code || p.hero?.code,
+        cardType: isHero ? 'hero' : 'alter_ego',
+        controllerPlayerId: p.id,
+        controllerName: p.name,
+        currentValue: p.health,
+        maxValue: p.maxHealth,
+        allocationCap,
+        hasTough,
+        statusCards: p.statusCards,
+        isEligible,
+        ineligibilityReason,
+      });
+    }
+
+    if (includeAllies) {
+      for (const ally of p.allies) {
+        const allyHp = (ally.card as any).health || 1;
+        const currentDmg = ally.tokens?.damage || 0;
+        const currentHp = Math.max(0, allyHp - currentDmg);
+        const hasTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
+        let isEligible = true;
+        let ineligibilityReason: string | undefined;
+        let allocationCap: number = currentHp;
+
+        if (allocationDomain === 'HEAL') {
+          if (currentDmg <= 0) {
+            isEligible = false;
+            ineligibilityReason = 'At full health';
+            allocationCap = 0;
+          } else {
+            allocationCap = currentDmg;
+          }
+        } else if (allocationDomain === 'EXHAUST') {
+          if (ally.exhausted) {
+            isEligible = false;
+            ineligibilityReason = 'Already exhausted';
+            allocationCap = 0;
+          } else {
+            allocationCap = 1;
+          }
+        } else if (allocationDomain === 'DAMAGE') {
+          if (capRule === 'REMAINING_HP') {
+            allocationCap = currentHp;
+          } else if (capRule === 'NONE') {
+            allocationCap = 999;
+          } else {
+            allocationCap = currentHp;
+          }
+        }
+
+        targets.push({
+          instanceId: ally.instanceId,
+          name: ally.card.name,
+          cardCode: ally.card.code,
+          cardType: 'ally',
+          controllerPlayerId: p.id,
+          controllerName: p.name,
+          currentValue: currentHp,
+          maxValue: allyHp,
+          allocationCap,
+          hasTough,
+          statusCards: ally.statusCards,
+          isEligible,
+          ineligibilityReason,
+        });
+      }
+    }
+  }
+
+  // 2. Schemes (Main Scheme + Side Schemes)
+  if (includeSchemes && state.mainScheme) {
+    const mainThreat = state.mainScheme.threat || 0;
+    const isMainEligible = mainThreat > 0;
+    targets.push({
+      instanceId: 'main_scheme',
+      name: state.mainScheme.card.name,
+      cardCode: state.mainScheme.card.code,
+      cardType: 'main_scheme',
+      currentValue: mainThreat,
+      allocationCap: mainThreat,
+      isEligible: isMainEligible,
+      ineligibilityReason: isMainEligible ? undefined : 'No threat on scheme',
+    });
+
+    for (const side of state.sideSchemes || []) {
+      const sideThreat = side.threat || 0;
+      const isSideEligible = sideThreat > 0;
+      targets.push({
+        instanceId: side.instanceId,
+        name: side.card.name,
+        cardCode: side.card.code,
+        cardType: 'side_scheme',
+        currentValue: sideThreat,
+        allocationCap: sideThreat,
+        isEligible: isSideEligible,
+        ineligibilityReason: isSideEligible ? undefined : 'No threat on scheme',
+      });
+    }
+  }
+
+  // 3. Enemies (Villain + Minions)
+  if (includeEnemies) {
+    if (state.villain) {
+      const vTough = state.villain.statusCards.includes(StatusCard.TOUGH);
+      targets.push({
+        instanceId: state.villain.instanceId || 'villain',
+        name: state.villain.card.name,
+        cardCode: state.villain.card.code,
+        cardType: 'villain',
+        currentValue: state.villain.health,
+        allocationCap: state.villain.health,
+        hasTough: vTough,
+        statusCards: state.villain.statusCards,
+        isEligible: true,
+      });
+    }
+    for (const p of state.players) {
+      for (const m of p.engagedMinions) {
+        const mHp = (m.card as MinionCard).health || 1;
+        const currentDmg = m.tokens?.damage || 0;
+        const currentHp = Math.max(0, mHp - currentDmg);
+        const mTough = (m.statusCards || []).includes(StatusCard.TOUGH);
+        targets.push({
+          instanceId: m.instanceId,
+          name: m.card.name,
+          cardCode: m.card.code,
+          cardType: 'minion',
+          controllerPlayerId: p.id,
+          controllerName: p.name,
+          currentValue: currentHp,
+          maxValue: mHp,
+          allocationCap: currentHp,
+          hasTough: mTough,
+          statusCards: m.statusCards,
+          isEligible: true,
+        });
+      }
+    }
+  }
+
+  return targets;
 }
 
 /**
@@ -1256,6 +1491,52 @@ export function executeStep(
               if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
             }
           }
+        } else if (
+          amount > 0 &&
+          (context.interactivePrompt || (state as any).interactivePromptMode)
+        ) {
+          const targets = compileDistributionTargets(
+            state,
+            'ALL_HEROES_AND_ALLIES',
+            'DAMAGE',
+            'REMAINING_HP',
+          );
+          const config: DistributionPromptConfig = {
+            totalBudget: amount,
+            effectiveBudget: amount,
+            budgetLabel: 'DAMAGE',
+            unitSingular: 'DMG',
+            unitPlural: 'DMG',
+            exactMatchRequired: true,
+            canCancel: false,
+            allocationDomain: 'DAMAGE',
+            targets,
+          };
+          const prompt: PendingDecisionPrompt = {
+            promptId: `explosion_dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: 'Explosion: Assign Damage',
+            description: `Assign ${amount} damage among heroes and allies:`,
+            sourceCardName: context.sourceCardInstance?.card.name || 'Explosion',
+            sourceCardCode: context.sourceCardInstance?.card.code,
+            sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+            kind: 'DISTRIBUTE_POINTS',
+            distributionConfig: config,
+            options: [
+              {
+                id: 'confirm_distribution',
+                label: 'Confirm Assignment',
+                effect: 'DISTRIBUTE_POINTS',
+              },
+            ],
+          };
+          state = enqueueDistributionPrompt(state, prompt);
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: 'ASSIGN DAMAGE!',
+          };
         } else {
           // Default: Hero takes the assigned damage
           const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
@@ -1711,6 +1992,294 @@ export function executeStep(
         state,
         success: true,
         onomatopoeia,
+      };
+    }
+
+    case 'DISTRIBUTE_AMOUNT': {
+      const stepParams = getStepEffectParams(step);
+      const budget = resolveNumericAmount(stepParams.budget ?? stepParams.amount ?? 0, context, 0, {
+        state,
+        player,
+        sourceCardInstance: context.sourceCardInstance,
+        targetInstanceId: (stepParams.targetInstanceId as string) || context.targetInstanceId,
+      });
+      const allocationDomain = (stepParams.allocationDomain as any) || 'DAMAGE';
+      const targetScope =
+        (stepParams.targetScope as string) ||
+        (stepParams.target as string) ||
+        'ALL_HEROES_AND_ALLIES';
+      const capRule = (stepParams.capRule as string) || 'REMAINING_HP';
+      const canCancel = Boolean(stepParams.canCancel);
+      const exactMatchRequired = stepParams.exactMatchRequired !== false;
+
+      // 1. If assignments already provided, execute immediately
+      if (context.assignments && typeof context.assignments === 'object') {
+        const assignments = context.assignments;
+        for (const [targetId, amount] of Object.entries(assignments)) {
+          if (amount <= 0) continue;
+
+          if (allocationDomain === 'DAMAGE') {
+            let ally: CardInstance | undefined;
+            let allyController: PlayerState | undefined;
+            for (const p of state.players) {
+              const found = p.allies.find((a) => a.instanceId === targetId);
+              if (found) {
+                ally = found;
+                allyController = p;
+                break;
+              }
+            }
+
+            if (ally && allyController) {
+              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
+              if (allyToughIdx !== -1) {
+                ally.statusCards!.splice(allyToughIdx, 1);
+              } else {
+                const currentDmg = ally.tokens?.damage || 0;
+                const newDmg = currentDmg + amount;
+                const allyHp = (ally.card as any).health || 1;
+                if (newDmg >= allyHp) {
+                  const idx = allyController.allies.indexOf(ally);
+                  allyController.allies.splice(idx, 1);
+                  processHostDefeated(state, ally, { player: allyController });
+                  dispatchTrigger(state, 'CHARACTER_DEFEATED', {
+                    targetPlayerId: allyController.id,
+                    targetInstanceId: ally.instanceId,
+                    targetType: 'ally',
+                  });
+                  const owner =
+                    (ally.ownerId
+                      ? state.players.find((pl) => pl.id === ally.ownerId)
+                      : undefined) || allyController;
+                  owner.discard.push(ally);
+                } else {
+                  ally.tokens = { ...ally.tokens, damage: newDmg };
+                }
+              }
+            } else {
+              const targetPlayer =
+                state.players.find(
+                  (pl) =>
+                    pl.id === targetId ||
+                    pl.activeFormCard?.code === targetId ||
+                    pl.hero?.code === targetId,
+                ) || (targetId === player.id ? player : undefined);
+
+              if (targetPlayer) {
+                const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
+                if (toughIdx !== -1) {
+                  targetPlayer.statusCards.splice(toughIdx, 1);
+                } else {
+                  targetPlayer.health = Math.max(0, targetPlayer.health - amount);
+                  if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
+                }
+              } else if (
+                targetId === state.villain?.instanceId ||
+                targetId === 'villain' ||
+                targetId === state.villain?.card?.code
+              ) {
+                const vToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+                if (vToughIdx !== -1) {
+                  state.villain.statusCards.splice(vToughIdx, 1);
+                } else {
+                  state.villain.health = Math.max(0, state.villain.health - amount);
+                  if (state.villain.health <= 0) {
+                    state = handleVillainDefeat(state, state.villain.instanceId);
+                  }
+                }
+              } else {
+                for (const p of state.players) {
+                  const mIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetId);
+                  if (mIdx !== -1) {
+                    const minion = p.engagedMinions[mIdx];
+                    const mToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
+                    if (mToughIdx !== -1) {
+                      minion.statusCards!.splice(mToughIdx, 1);
+                    } else {
+                      const currentDmg = minion.tokens?.damage || 0;
+                      const newDmg = currentDmg + amount;
+                      const minionHp = (minion.card as MinionCard).health || 1;
+                      if (newDmg >= minionHp) {
+                        processHostDefeated(state, minion, { player: p });
+                        p.engagedMinions.splice(mIdx, 1);
+                        moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+                        dispatchTrigger(state, 'CHARACTER_DEFEATED', {
+                          targetPlayerId: p.id,
+                          targetInstanceId: minion.instanceId,
+                          targetType: 'minion',
+                        });
+                      } else {
+                        minion.tokens = { ...minion.tokens, damage: newDmg };
+                      }
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+          } else if (allocationDomain === 'THREAT_REMOVAL') {
+            if (
+              targetId === 'main_scheme' ||
+              targetId === state.mainScheme?.instanceId ||
+              targetId === state.mainScheme?.card?.code
+            ) {
+              state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+            } else {
+              const sideIdx = (state.sideSchemes || []).findIndex(
+                (s) => s.instanceId === targetId || s.card.code === targetId,
+              );
+              if (sideIdx !== -1) {
+                const side = state.sideSchemes![sideIdx];
+                side.threat = Math.max(0, (side.threat || 0) - amount);
+                if (side.threat <= 0) {
+                  state.sideSchemes!.splice(sideIdx, 1);
+                  dispatchTrigger(state, 'SCHEME_DEFEATED', {
+                    targetPlayerId: player.id,
+                    targetInstanceId: side.instanceId,
+                    entityType: 'SCHEME',
+                  });
+                  state.encounterDiscard.push(side);
+                }
+              }
+            }
+          } else if (allocationDomain === 'HEAL') {
+            let ally: CardInstance | undefined;
+            for (const p of state.players) {
+              const found = p.allies.find((a) => a.instanceId === targetId);
+              if (found) {
+                ally = found;
+                break;
+              }
+            }
+            if (ally) {
+              const currentDmg = ally.tokens?.damage || 0;
+              ally.tokens = { ...ally.tokens, damage: Math.max(0, currentDmg - amount) };
+            } else {
+              const targetPlayer = state.players.find(
+                (pl) =>
+                  pl.id === targetId ||
+                  pl.activeFormCard?.code === targetId ||
+                  pl.hero?.code === targetId,
+              );
+              if (targetPlayer) {
+                targetPlayer.health = Math.min(
+                  targetPlayer.maxHealth,
+                  targetPlayer.health + amount,
+                );
+              }
+            }
+          } else if (allocationDomain === 'EXHAUST') {
+            for (const p of state.players) {
+              const c =
+                p.tableau.find((i) => i.instanceId === targetId) ||
+                p.allies.find((i) => i.instanceId === targetId);
+              if (c) c.exhausted = true;
+              if (p.id === targetId) p.exhausted = true;
+            }
+          } else if (allocationDomain === 'COUNTERS') {
+            for (const p of state.players) {
+              const c =
+                p.tableau.find((i) => i.instanceId === targetId) ||
+                p.allies.find((i) => i.instanceId === targetId);
+              if (c) {
+                c.tokens = { ...c.tokens, counters: (c.tokens?.counters || 0) + amount };
+              }
+            }
+          }
+        }
+
+        const totalAssigned = Object.values(assignments).reduce((s, n) => s + (n || 0), 0);
+        return {
+          state,
+          success: true,
+          mutatedState: totalAssigned > 0,
+          value: totalAssigned,
+          onomatopoeia: 'DISTRIBUTED!',
+        };
+      }
+
+      // 2. Interactive Prompt Mode if interactivePrompt requested or interactivePromptMode active
+      if (budget > 0 && (context.interactivePrompt || (state as any).interactivePromptMode)) {
+        const targets = compileDistributionTargets(state, targetScope, allocationDomain, capRule);
+        const unitSingular =
+          stepParams.unitSingular ||
+          (allocationDomain === 'DAMAGE'
+            ? 'DMG'
+            : allocationDomain === 'THREAT_REMOVAL'
+              ? 'THW'
+              : 'PT');
+        const unitPlural =
+          stepParams.unitPlural ||
+          (allocationDomain === 'DAMAGE'
+            ? 'DMG'
+            : allocationDomain === 'THREAT_REMOVAL'
+              ? 'THW'
+              : 'PTS');
+        const config: DistributionPromptConfig = {
+          totalBudget: budget,
+          effectiveBudget: budget,
+          budgetLabel: stepParams.budgetLabel || `${allocationDomain.replace('_', ' ')}`,
+          unitSingular,
+          unitPlural,
+          exactMatchRequired,
+          canCancel,
+          allocationDomain,
+          targets,
+        };
+
+        const prompt: PendingDecisionPrompt = {
+          promptId: `dist_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          playerId: player.id,
+          title: stepParams.promptTitle || `Distribute ${config.budgetLabel}`,
+          description:
+            stepParams.promptDescription ||
+            `Assign ${budget} ${unitPlural} among eligible targets:`,
+          sourceCardName: context.sourceCardInstance?.card.name || 'Game Effect',
+          sourceCardCode: context.sourceCardInstance?.card.code,
+          sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+          kind: 'DISTRIBUTE_POINTS',
+          distributionConfig: config,
+          options: [
+            {
+              id: 'confirm_distribution',
+              label: 'Confirm Assignment',
+              effect: 'DISTRIBUTE_POINTS',
+            },
+          ],
+        };
+
+        state = enqueueDistributionPrompt(state, prompt);
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: 'ASSIGN POINTS!',
+        };
+      }
+
+      // 3. Headless fallback: deterministic default
+      if (allocationDomain === 'DAMAGE') {
+        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+        if (toughIdx !== -1) {
+          player.statusCards.splice(toughIdx, 1);
+        } else {
+          player.health = Math.max(0, player.health - budget);
+          if (player.health <= 0) state.winner = 'VILLAIN';
+        }
+      } else if (allocationDomain === 'THREAT_REMOVAL') {
+        if (state.mainScheme) {
+          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - budget);
+        }
+      } else if (allocationDomain === 'HEAL') {
+        player.health = Math.min(player.maxHealth, player.health + budget);
+      }
+
+      return {
+        state,
+        success: true,
+        mutatedState: budget > 0,
+        value: budget,
+        onomatopoeia: 'POINTS ASSIGNED!',
       };
     }
 

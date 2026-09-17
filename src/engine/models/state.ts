@@ -230,6 +230,38 @@ export interface AttackExecutionContext {
   cancellationReason?: string;
 }
 
+export type DecisionPromptKind = 'SINGLE_CHOICE' | 'DISTRIBUTE_POINTS' | 'MULTI_SELECT_TARGETS';
+
+export interface TargetAllocationItem {
+  instanceId: string;
+  name: string;
+  cardCode?: string;
+  cardType: 'hero' | 'alter_ego' | 'ally' | 'villain' | 'minion' | 'main_scheme' | 'side_scheme';
+  controllerPlayerId?: string;
+  controllerName?: string;
+  currentValue?: number;
+  maxValue?: number;
+  allocationCap?: number;
+  hasTough?: boolean;
+  statusCards?: StatusCard[];
+  isEligible?: boolean;
+  ineligibilityReason?: string;
+  imageUrl?: string;
+}
+
+export interface DistributionPromptConfig {
+  totalBudget: number;
+  effectiveBudget: number;
+  budgetLabel: string;
+  unitSingular: string;
+  unitPlural: string;
+  exactMatchRequired: boolean;
+  canCancel: boolean;
+  shortfallNotice?: string;
+  allocationDomain: 'DAMAGE' | 'THREAT_REMOVAL' | 'HEAL' | 'COUNTERS' | 'EXHAUST';
+  targets: TargetAllocationItem[];
+}
+
 export interface PendingDecisionPrompt {
   promptId: string;
   playerId: string;
@@ -248,6 +280,8 @@ export interface PendingDecisionPrompt {
   parentFrameId?: string;
   queuePosition?: number;
   totalQueued?: number;
+  kind?: DecisionPromptKind;
+  distributionConfig?: DistributionPromptConfig;
 }
 
 export interface EncounterExecutionContext {

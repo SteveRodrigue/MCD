@@ -208,7 +208,7 @@ The Editor is organized into a 3-column split view with responsive real estate c
 
 1. **Form Builder Mode:**
    - Dropdown selectors for `timing` (`TimingTypeSchema`), `trigger` (`TriggerTypeSchema`), and `effect` primitives.
-   - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`). Includes specialized controls for domain-separated interception primitives: `PREVENT_DAMAGE` for combat/effect damage to characters, and `PREVENT_THREAT` ([ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md)) for scheme threat prevention with dynamic scalar binding and default `MAIN_SCHEME` targeting.
+   - Dynamic parameter fields based on selected effect primitive (e.g. `amount`, `target`, `gate`, `duration`). Includes specialized controls for domain-separated interception primitives: `PREVENT_DAMAGE` for combat/effect damage to characters, `PREVENT_THREAT` ([ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md)) for scheme threat prevention with dynamic scalar binding and default `MAIN_SCHEME` targeting, and `DISTRIBUTE_AMOUNT` ([ADR-0064](../../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)) for multi-target pool allocation across damage, threat removal, healing, counters, and exhaustion with interactive distribution modal delegation.
    - Audit trail metadata fields (`confidence`, `reviewedBy`, `originalText`).
 2. **Raw JSON Mode:**
    - Embedded interactive JSON editor with syntax highlighting and live error underlines.

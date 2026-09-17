@@ -11,7 +11,11 @@
 import type { GameState, PlayerState, CardInstance } from '../models';
 import type { DynamicValueSource } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
-import { getEffectiveHeroStats, getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import {
+  getEffectiveHeroStats,
+  getEffectiveMaxHealth,
+  hasPlayerTrait,
+} from '../pipeline/stat-calculator';
 
 export interface DynamicEvaluationOptions {
   state?: GameState;
@@ -272,6 +276,25 @@ export function evaluateDynamicAmount(
         } else if (attribute === 'PRINTED_RESOURCES') {
           baseValue = (cardInst.card as any).resources?.length || 0;
         }
+      }
+      break;
+    }
+    case 'HAS_TRAIT': {
+      if (player) {
+        const traitsToCheck =
+          filter?.traits ||
+          ((amountParam as any).trait ? [(amountParam as any).trait as string] : []);
+        const hasTrait = traitsToCheck.some((t: string) => hasPlayerTrait(player, t));
+        baseValue = hasTrait ? 1 : 0;
+      }
+      break;
+    }
+    case 'HAS_IDENTITY': {
+      const activeCard =
+        player?.activeFormCard ||
+        (player?.currentForm === 'hero' ? player?.hero : player?.alterEgo);
+      if (activeCard) {
+        baseValue = matchesCardFilter(activeCard, filter, { player, state }) ? 1 : 0;
       }
       break;
     }

@@ -177,10 +177,11 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
       const effectParams: Record<string, any> = { count };
       if (m[2] && m[3]) {
         const bonusTotal = parseInt(m[2], 10);
-        const heroName = m[3].toLowerCase();
-        if (heroName.includes('carol')) {
-          effectParams.carolBonus = bonusTotal - count;
-        }
+        effectParams.dynamicBonus = {
+          from: 'HAS_IDENTITY',
+          filter: { names: [m[3].trim()] },
+          multiplier: bonusTotal - count,
+        };
       }
       return [
         {

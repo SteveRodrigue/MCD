@@ -424,6 +424,8 @@ export const DynamicValueSourceSchema = z
       'STAT_VALUE',
       'COUNTERS',
       'CARD_ATTRIBUTE',
+      'HAS_TRAIT',
+      'HAS_IDENTITY',
     ]),
     discardAttribute: DiscardInspectionAttributeSchema.optional(),
     resourceType: ResourceTypeSchema.optional(),

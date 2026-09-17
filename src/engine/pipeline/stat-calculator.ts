@@ -138,6 +138,39 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
 }
 
 /**
+ * Checks whether a player identity currently has a given trait (case-insensitive),
+ * evaluating active form traits, hero/alter-ego printed traits, and tableau CONSTANT ADD_TRAIT upgrades.
+ */
+export function hasPlayerTrait(player: PlayerState, trait: string): boolean {
+  const lower = trait.toLowerCase().trim();
+  const activeTraits = (player.activeFormCard?.traits || []).map((t) => t.toLowerCase().trim());
+  const heroTraits = (player.hero?.traits || []).map((t) => t.toLowerCase().trim());
+  const alterEgoTraits = (player.alterEgo?.traits || []).map((t) => t.toLowerCase().trim());
+
+  if (
+    activeTraits.includes(lower) ||
+    heroTraits.includes(lower) ||
+    alterEgoTraits.includes(lower)
+  ) {
+    return true;
+  }
+
+  return (player.tableau || []).some((t) =>
+    (t.card.enrichment?.abilities || []).some(
+      (a) =>
+        a.timing === 'CONSTANT' &&
+        a.steps?.some(
+          (s) =>
+            s.effect === 'ADD_TRAIT' &&
+            String(getStepEffectParams(s).trait || '')
+              .toLowerCase()
+              .trim() === lower,
+        ),
+    ),
+  );
+}
+
+/**
  * Computes dynamic effective stats for a player's hero or alter-ego,
  * aggregating base card stats and in-play upgrades (e.g. Combat Training +1 ATK, Armored Vest +1 DEF, Heroic Intuition +1 THW).
  */
@@ -149,44 +182,24 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
   let recovery = !isHero ? (player.alterEgo as AlterEgoCard).recover || 0 : 0;
   const keywords: string[] = [];
 
-  const hasAerial = Boolean(
-    player.hero.traits?.includes('Aerial') ||
-    ((player as any).traits || []).includes('Aerial') ||
-    player.tableau.some(
-      (t) =>
-        t.card.code === '01017' ||
-        (t.card.enrichment?.abilities || []).some((a) =>
-          a.steps?.some(
-            (s) => s.effect === 'ADD_TRAIT' && getStepEffectParams(s).trait === 'Aerial',
-          ),
-        ),
-    ),
-  );
-
   // Inspect in-play upgrades in player tableau
   for (const item of player.tableau || []) {
     const abilities = item.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
+          if (step.gate === 'IF_CONDITION_MET' && step.condition === 'TARGET_TRAIT_MATCH') {
+            const requiredTrait = (step.gateParams as any)?.trait as string;
+            if (!hasPlayerTrait(player, requiredTrait)) continue;
+          }
+
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            const aerialBonus = (stepParams.aerialBonus as number) || 0;
-            const extra = hasAerial ? aerialBonus : 0;
-
-            if (stepParams.stat === 'THWART')
-              thwart += ((stepParams.amount as number) || 0) + extra;
-            if (stepParams.stat === 'ATTACK')
-              attack += ((stepParams.amount as number) || 0) + extra;
-            if (stepParams.stat === 'DEFENSE') {
-              if (item.card.code === '01016') {
-                defense += hasAerial ? 2 : 1;
-              } else {
-                defense += ((stepParams.amount as number) || 0) + extra;
-              }
-            }
-            if (stepParams.stat === 'RECOVER' || stepParams.stat === 'RECOVERY')
-              recovery += ((stepParams.amount as number) || 0) + extra;
+            const amount = (stepParams.amount as number) || 0;
+            if (stepParams.stat === 'THWART') thwart += amount;
+            if (stepParams.stat === 'ATTACK') attack += amount;
+            if (stepParams.stat === 'DEFENSE') defense += amount;
+            if (stepParams.stat === 'RECOVER' || stepParams.stat === 'RECOVERY') recovery += amount;
           }
           if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
             keywords.push(stepParams.keyword as string);

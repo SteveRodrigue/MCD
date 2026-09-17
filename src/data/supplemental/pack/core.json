@@ -422,7 +422,7 @@
       }
     },
     "01012": {
-      "comment": "Thwart Event: Hero Action: Remove 2 threat from a scheme. If paid with Energy, remove 2 threat from a different scheme.",
+      "comment": "Thwart Event: Hero Action: Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme.",
       "abilities": [
         {
           "id": "crisis_interdiction",
@@ -432,7 +432,18 @@
               "effect": "REMOVE_THREAT",
               "effectParams": {
                 "amount": 2,
-                "bonusEnergyThwart": 2,
+                "target": "CHOSEN_SCHEME"
+              }
+            },
+            {
+              "effect": "REMOVE_THREAT",
+              "gate": "IF_CONDITION_MET",
+              "condition": "TARGET_TRAIT_MATCH",
+              "gateParams": {
+                "trait": "Aerial"
+              },
+              "effectParams": {
+                "amount": 2,
                 "target": "CHOSEN_SCHEME"
               }
             }
@@ -441,11 +452,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T20:25:00Z",
+        "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(thwart)</i>: Remove 2 threat from a scheme. Then, if you have the [[Aerial]] trait, remove 2 threat from a different scheme."
       }
     },
@@ -520,7 +531,15 @@
               "effect": "DRAW",
               "effectParams": {
                 "count": 1,
-                "carolBonus": 1
+                "dynamicBonus": {
+                  "from": "HAS_IDENTITY",
+                  "filter": {
+                    "codes": [
+                      "01010b"
+                    ]
+                  },
+                  "multiplier": 1
+                }
               }
             }
           ]
@@ -528,8 +547,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T20:25:00Z",
+        "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -547,8 +566,19 @@
               "effect": "MODIFY_STAT",
               "effectParams": {
                 "stat": "DEFENSE",
-                "amount": 1,
-                "aerialBonus": 1
+                "amount": 1
+              }
+            },
+            {
+              "effect": "MODIFY_STAT",
+              "gate": "IF_CONDITION_MET",
+              "condition": "TARGET_TRAIT_MATCH",
+              "gateParams": {
+                "trait": "Aerial"
+              },
+              "effectParams": {
+                "stat": "DEFENSE",
+                "amount": 1
               }
             }
           ]
@@ -556,11 +586,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T20:25:00Z",
+        "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "Captain Marvel gets +1 DEF (+2 DEF instead if you have the [[Aerial]] trait)."
       }
     },
@@ -1169,7 +1199,15 @@
               "effect": "DEAL_DAMAGE",
               "effectParams": {
                 "amount": 4,
-                "aerialBonus": 4,
+                "dynamicBonus": {
+                  "from": "HAS_TRAIT",
+                  "filter": {
+                    "traits": [
+                      "Aerial"
+                    ]
+                  },
+                  "multiplier": 4
+                },
                 "target": "CHOSEN_ENEMY"
               }
             }
@@ -1178,11 +1216,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T20:25:00Z",
+        "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 4 damage to an enemy (8 damage instead if you have the [[Aerial]] trait)."
       }
     },
@@ -1356,7 +1394,15 @@
               "effect": "DEAL_DAMAGE",
               "effectParams": {
                 "amount": 1,
-                "aerialBonus": 1,
+                "dynamicBonus": {
+                  "from": "HAS_TRAIT",
+                  "filter": {
+                    "traits": [
+                      "Aerial"
+                    ]
+                  },
+                  "multiplier": 1
+                },
                 "target": "CHOSEN_ENEMY"
               }
             }
@@ -1365,11 +1411,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-16T20:25:00Z",
+        "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Exhaust Powered Gauntlets → deal 1 damage to an enemy (2 damage instead if you have the [[Aerial]] trait)."
       }
     },

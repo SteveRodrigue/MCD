@@ -35,6 +35,7 @@ import {
   getEffectiveHandSize,
   getEffectiveRetaliate,
   hasEntityKeyword,
+  hasPlayerTrait,
 } from '../pipeline/stat-calculator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { TriggerCallNode } from '../errors/infinite-loop-error';
@@ -393,6 +394,15 @@ export function shouldExecuteStep(
   }
 
   if (gate === 'IF_CONDITION_MET') {
+    if (step.condition === 'TARGET_TRAIT_MATCH') {
+      const requiredTrait =
+        (gateParams.trait as string) ||
+        (Array.isArray(gateParams.traits) ? (gateParams.traits[0] as string) : undefined);
+      const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
+      if (requiredTrait && player) {
+        return hasPlayerTrait(player, requiredTrait);
+      }
+    }
     return !!evaluatedResult && evaluatedResult.conditionMet === true;
   }
 
@@ -865,7 +875,26 @@ export function executeStep(
     }
     case 'DRAW': {
       const rawCount = step.effectParams?.count;
-      const count = rawCount !== undefined ? resolveNumericAmount(rawCount, context, 1) : undefined;
+      let count =
+        rawCount !== undefined
+          ? resolveNumericAmount(rawCount, context, 1, {
+              state,
+              player,
+              sourceCardInstance: context.sourceCardInstance,
+              targetInstanceId:
+                (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            })
+          : undefined;
+      if (step.effectParams?.dynamicBonus) {
+        const bonus = resolveNumericAmount(step.effectParams.dynamicBonus as any, context, 0, {
+          state,
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetInstanceId:
+            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+        });
+        count = (count ?? 1) + bonus;
+      }
       const limit = step.effectParams?.limit as 'HAND_SIZE' | 'PRINTED_HAND_SIZE' | undefined;
       const targetParam = step.effectParams?.target as string | undefined;
       const targetPlayerId =

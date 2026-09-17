@@ -117,7 +117,7 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
   PREVENT_DAMAGE: {
     effect: 'PREVENT_DAMAGE',
-    description: 'Prevent incoming attack or effect damage, or consume intercepted damage/threat.',
+    description: 'Prevent incoming attack or effect damage to a character.',
     parameters: [
       {
         key: 'amount',
@@ -275,6 +275,27 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Scale Per Player',
         type: 'boolean',
         defaultValue: false,
+      },
+      {
+        key: 'target',
+        label: 'Target Scheme',
+        type: 'select',
+        options: TARGET_OPTIONS,
+        defaultValue: 'MAIN_SCHEME',
+      },
+    ],
+  },
+  PREVENT_THREAT: {
+    effect: 'PREVENT_THREAT',
+    description: 'Prevent or reduce impending threat that would be placed on a scheme.',
+    parameters: [
+      {
+        key: 'amount',
+        label: 'Threat Prevented',
+        type: 'number',
+        placeholder: 'e.g. 1 or blank for all',
+        allowDynamic: true,
+        allowAll: true,
       },
       {
         key: 'target',

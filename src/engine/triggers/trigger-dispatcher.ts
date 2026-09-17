@@ -241,6 +241,8 @@ export function formatAbilityStepsSummary(trigger: string, steps: AbilityStep[])
       if (s.effect === 'ADD_STATUS') return `ADD_STATUS (${s.effectParams?.status})`;
       if (s.effect === 'PREVENT_DAMAGE')
         return `PREVENT_DAMAGE (${s.effectParams?.amount ?? 'ALL'})`;
+      if (s.effect === 'PREVENT_THREAT')
+        return `PREVENT_THREAT (${s.effectParams?.amount ?? 'ALL'})`;
       return displayEffectName(s.effect);
     })
     .join(', ');
@@ -689,7 +691,7 @@ export function dispatchTrigger(
           if (ability.cost?.discardSelf !== false) {
             p.discard.push(interruptCard);
           }
-          const hasConsume = ability.steps?.some((s) => s.effect === 'PREVENT_DAMAGE');
+          const hasConsume = ability.steps?.some((s) => s.effect === 'PREVENT_THREAT');
           const threatStep =
             ability.steps?.find((s) => s.effect === 'REMOVE_THREAT') || ability.steps?.[0];
 

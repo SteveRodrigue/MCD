@@ -74,6 +74,7 @@ export type EffectType =
   | 'DRAW'
   | 'DEAL_DAMAGE'
   | 'PREVENT_DAMAGE'
+  | 'PREVENT_THREAT'
   | 'HEAL_DAMAGE'
   | 'GENERATE_RESOURCE'
   | 'REMOVE_THREAT'

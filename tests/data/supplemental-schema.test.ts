@@ -860,7 +860,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'consume_threat',
-                effect: 'PREVENT_DAMAGE',
+                effect: 'PREVENT_THREAT',
               },
               {
                 id: 'take_damage',
@@ -889,7 +889,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'reduce_threat',
-                effect: 'PREVENT_DAMAGE',
+                effect: 'PREVENT_THREAT',
                 effectParams: {
                   amount: 1,
                 },
@@ -908,7 +908,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
             steps: [
               {
                 id: 'prevent_threat',
-                effect: 'PREVENT_DAMAGE',
+                effect: 'PREVENT_THREAT',
                 effectParams: {
                   amount: 1,
                 },

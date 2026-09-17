@@ -109,7 +109,8 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 | :------------------- | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
 | **`DEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector, overkill?: boolean, ranged?: boolean }`   | `DEAL_DAMAGE`, `DEAL_DAMAGE_ALL_ENEMIES`                              |
 | **`HEAL_DAMAGE`**    | `{ amount: number \| DynamicValueSource, target: TargetSelector }`                                         | `HEAL_DAMAGE`, `HEAL_DAMAGE_WITH_SURGE`                               |
-| **`PREVENT_DAMAGE`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | `PREVENT_DAMAGE`, `CONSUME_INTERCEPTED_EVENT`                         |
+| **`PREVENT_DAMAGE`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | `PREVENT_DAMAGE` (threat interception separated per [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)) |
+| **`PREVENT_THREAT`** | `{ amount: number \| 'ALL' \| DynamicValueSource, target?: TargetSelector }`                               | _Separated from `PREVENT_DAMAGE` per [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)_ |
 | **`REMOVE_THREAT`**  | `{ amount: number \| DynamicValueSource, target: TargetSelector }`                                         | `REMOVE_THREAT`                                                       |
 | **`ADD_THREAT`**     | `{ amount: number \| DynamicValueSource, target: TargetSelector, cardCode?: string, perPlayer?: boolean }` | `ADD_THREAT`, `ADD_THREAT_PER_PLAYER`, `PLACE_THREAT_PER_SIDE_SCHEME` |
 

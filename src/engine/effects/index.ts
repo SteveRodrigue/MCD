@@ -1740,16 +1740,11 @@ export function executeStep(
 
     case 'PREVENT_DAMAGE': {
       const currentVal =
-        context.remainingInterceptedValue ??
-        context.interceptedValue ??
-        context.threatAmount ??
-        context.damageAmount ??
-        0;
+        context.remainingInterceptedValue ?? context.interceptedValue ?? context.damageAmount ?? 0;
 
       const hasInterceptContext =
         context.remainingInterceptedValue !== undefined ||
         context.interceptedValue !== undefined ||
-        context.threatAmount !== undefined ||
         context.damageAmount !== undefined;
 
       const amountToPrevent =
@@ -1770,16 +1765,12 @@ export function executeStep(
 
       if (hasInterceptContext) {
         context.remainingInterceptedValue = remaining;
-        if (context.threatAmount !== undefined) {
-          context.threatAmount = remaining;
-        }
         if (context.damageAmount !== undefined) {
           context.damageAmount = remaining;
         }
       }
 
-      const onomatopoeia =
-        context.threatAmount !== undefined ? 'EVENT INTERCEPTED!' : `PREVENTED ${consumed} DAMAGE!`;
+      const onomatopoeia = `PREVENTED ${consumed} DAMAGE!`;
 
       state.log.push({
         id: `log_${Date.now()}`,
@@ -1787,10 +1778,71 @@ export function executeStep(
         round: state.roundNumber,
         phase: state.phase,
         category: 'ability',
-        key:
-          context.threatAmount !== undefined
-            ? 'card.effect.consumeInterceptedEvent'
-            : 'combat.damage.prevented',
+        key: 'combat.damage.prevented',
+        params: {
+          player: player.name,
+          amount: consumed,
+          consumed,
+          remaining,
+        },
+        onomatopoeia,
+      });
+
+      return {
+        state,
+        success: true,
+        mutatedState: consumed > 0,
+        value: consumed,
+        onomatopoeia,
+      };
+    }
+
+    case 'PREVENT_THREAT': {
+      const currentVal =
+        context.remainingInterceptedValue ?? context.threatAmount ?? context.interceptedValue ?? 0;
+
+      const hasInterceptContext =
+        context.remainingInterceptedValue !== undefined ||
+        context.interceptedValue !== undefined ||
+        context.threatAmount !== undefined;
+
+      const amountToPrevent =
+        step.effectParams?.amount !== undefined
+          ? step.effectParams.amount === 'ALL' || step.effectParams.preventAll
+            ? currentVal
+            : resolveNumericAmount(step.effectParams.amount, context, currentVal)
+          : hasInterceptContext
+            ? currentVal
+            : step.effectParams?.preventAll
+              ? 999
+              : 1;
+
+      const consumed = hasInterceptContext
+        ? Math.min(currentVal, amountToPrevent)
+        : amountToPrevent;
+      const remaining = hasInterceptContext ? Math.max(0, currentVal - consumed) : 0;
+
+      if (hasInterceptContext) {
+        context.remainingInterceptedValue = remaining;
+        if (context.threatAmount !== undefined) {
+          context.threatAmount = remaining;
+        }
+      }
+
+      const onomatopoeia =
+        context.threatAmount !== undefined
+          ? consumed === currentVal
+            ? 'THREAT PREVENTED!'
+            : `PREVENTED ${consumed} THREAT!`
+          : `PREVENTED ${consumed} THREAT!`;
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'card.effect.preventThreat',
         params: {
           player: player.name,
           amount: consumed,

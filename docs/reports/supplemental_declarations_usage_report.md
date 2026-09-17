@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-17T01:43:23.452Z`  
+> **Generated:** `2026-09-17T02:11:28.133Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **13** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **13** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **42** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **43** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **19** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -97,7 +97,6 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `DRAW` | **9** | `01001a` Spider-Man (hero), `01010b` Carol Danvers (alter_ego), `01013` Photonic Blast (event) *(+6 more)* |
 | **Effect** | `HEAL_DAMAGE` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01051` Tigra (ally) *(+4 more)* |
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
-| **Effect** | `PREVENT_DAMAGE` | **5** | `01003` Backflip (event), `01017` Cosmic Flight (upgrade), `01019b` Jennifer Walters (alter_ego) *(+2 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | **Effect** | `SEARCH` | **5** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+2 more)* |
 | **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
@@ -180,7 +179,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `DRAW` | **9** | `01001a` (Spider-Man (hero)), `01010b` (Carol Danvers (alter_ego)), `01013` (Photonic Blast (event)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
 | `HEAL_DAMAGE` | **7** | `01006` (Aunt May (support)), `01010a` (Captain Marvel (hero)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
-| `PREVENT_DAMAGE` | **5** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)), `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
 | `SEARCH` | **5** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01095` (Rhino (villain)) |
 | `GRANT_KEYWORD` | **5** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
@@ -188,7 +186,9 @@ These primitives are declared in schema types or specifications but have **0 act
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `PLAYER_CHOICE` | **4** | `01068` (Vision (ally)), `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
+| `PREVENT_THREAT` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
 | `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
+| `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `RETURN_TO_HAND` | **2** | `01020` (Hellcat (ally)), `01166` (Highway Robbery (side_scheme)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |

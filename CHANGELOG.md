@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature & Engine (Threat Interception & Damage Deconflation): Deconflate Damage and Threat Interception Primitives — PREVENT_THREAT ([#120](https://github.com/SteveRodrigue/MCD/issues/120), [#123](https://github.com/SteveRodrigue/MCD/issues/123), [ADR-0063](docs/decisions/0063-deconflate-damage-and-threat-interception-primitives.md))**
+  - **Schema & Types:** Added `'PREVENT_THREAT'` to `EffectTypeSchema` in `src/data/supplemental/schema.ts` and `EffectType` union in `src/engine/models/abilities.ts`. Regenerated `src/data/supplemental/schema.json`.
+  - **Headless Engine Deconflation:**
+    - Implemented dedicated `case 'PREVENT_THREAT':` handler in `src/engine/effects/index.ts` operating strictly on `context.threatAmount`, `remainingInterceptedValue`, and `interceptedValue`. Logs `card.effect.preventThreat` with onomatopoeia `THREAT PREVENTED!` or `PREVENTED ${consumed} THREAT!`.
+    - Decoupled `case 'PREVENT_DAMAGE':` in `src/engine/effects/index.ts` from all threat context and branching, strictly handling character damage.
+    - Updated `formatAbilityStepsSummary` and `THREAT_WOULD_BE_PLACED` interrupt resolution in `src/engine/triggers/trigger-dispatcher.ts` to check and dispatch `PREVENT_THREAT`.
+  - **Card Supplemental Editor & Tooling:**
+    - Registered `PREVENT_THREAT` in `src/ui/components/editor/effect-parameter-registry.ts` with `amount` (numeric, dynamic, allowAll) and `target` (default `MAIN_SCHEME`). Updated `PREVENT_DAMAGE` description to decouple from threat.
+    - Added React UI component tests in `tests/ui/PreventThreatEditor.test.tsx` verifying tooltip, inputs, ALL toggle, and default target initialization in `StepPipelineEditor`.
+    - Updated `tests/ui/effect-parameter-registry.test.ts` with dedicated assertions and 100% schema registration verification.
+    - Documented `PREVENT_THREAT` in `docs/specifications/tooling/card_supplemental_editor.md`.
+  - **Core Set Supplemental Retrofit:**
+    - Retrofitted *Jennifer Walters* (`01019b`), *Great Responsibility* (`01061`), and *Emergency* (`01085`) in `src/data/supplemental/pack/core.json` from `PREVENT_DAMAGE` to `PREVENT_THREAT`, with refreshed audit metadata.
+    - Updated `tools/audit/migrate-declarative-taxonomy.ts` to map `CONSUME_INTERCEPTED_EVENT` on `THREAT_WOULD_BE_PLACED` triggers to `PREVENT_THREAT`.
+  - **Acceptance & Contract Test Suite:**
+    - Authored `tests/engine/prevent-threat.test.ts` (11 contract tests): partial threat reduction (*Emergency*), full prevention + dynamic hero damage (*Great Responsibility*), Alter-Ego form gating & round limits (*Jennifer Walters*), domain isolation invariant (`PREVENT_DAMAGE` on threat, `PREVENT_THREAT` on damage), boundary conditions (0 impending threat, excess prevention amount), and decision prompt copy formatting.
+    - Updated `tests/data/supplemental-schema.test.ts` ability tree tests for `01061`, `01085`, and `01019b`.
+
 - **Feature (UI & Field Reporting): Card Context Menu "Create issue for this card" & Problem Report Prefill**
   - **Card Context Menu Action:** Added "Create issue for this card" action with `Bug` icon to the card tabletop context menu (`CardContextMenu.tsx`).
   - **Card Identity Prefill:** Automatically prefills the `ReportProblemModal` description with `Card: ${card.name} (${(card as any).id || card.code})\n\n` (e.g. `Card: Spider-Man (01001a)`).

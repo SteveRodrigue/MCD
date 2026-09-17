@@ -224,6 +224,7 @@ export const EffectTypeSchema = z.enum([
   'PLAYER_CHOICE',
   'PLAY_FROM_ZONE',
   'PREVENT_DAMAGE',
+  'PREVENT_THREAT',
   'PUT_INTO_PLAY',
   'PUT_INTO_PLAY_ENGAGED',
   'READY',

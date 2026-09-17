@@ -153,23 +153,47 @@
  
  ---
  
- ### `PREVENT_DAMAGE` (Interception & Prevention)
- 
- - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
- - **Description:** Consumes / prevents incoming damage (or threat) within an `INTERRUPT` window (e.g. `DAMAGE_WOULD_BE_TAKEN`, `THREAT_WOULD_BE_PLACED`). Prevents `amount` or all incoming value if `amount` is omitted. Decrements `remainingInterceptedValue`, `threatAmount`, and `damageAmount`.
- 
- ```json
- {
-   "effect": "PREVENT_DAMAGE",
-   "effectParams": {
-     "amount": 1
-   }
- }
- ```
- 
- | Parameter | Type                                          | Required | Default | Description                                                                                  |
- | :-------- | :-------------------------------------------- | :------- | :------ | :------------------------------------------------------------------------------------------- |
- | `amount`  | `number \| { from: "INTERCEPTED_VALUE", ...}` | No       | `All`   | Amount of incoming event value to consume. If omitted, consumes all remaining value to zero. |
+### `PREVENT_DAMAGE` (Damage Interception & Prevention)
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
+- **Description:** Consumes / prevents incoming attack or effect damage within an `INTERRUPT` window (e.g. `DAMAGE_WOULD_BE_TAKEN`). Prevents `amount` or all incoming damage if `amount` is omitted. Decrements `remainingInterceptedValue` and `damageAmount`. Threat interception is deconflated under `PREVENT_THREAT` per [ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md).
+
+```json
+{
+  "effect": "PREVENT_DAMAGE",
+  "effectParams": {
+    "amount": 3,
+    "target": "SELF"
+  }
+}
+```
+
+| Parameter | Type                                    | Required | Default  | Description                                                                                |
+| :-------- | :-------------------------------------- | :------- | :------- | :----------------------------------------------------------------------------------------- |
+| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`    | Amount of incoming damage to consume. If omitted or `'ALL'`, consumes all remaining damage.|
+| `target`  | `TargetSelector`                        | No       | `"SELF"` | Protected character target.                                                                |
+
+---
+
+### `PREVENT_THREAT` (Threat Interception & Prevention)
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts), [ADR-0063](../../decisions/0063-deconflate-damage-and-threat-interception-primitives.md))
+- **Description:** Consumes / reduces impending threat that would be placed on a scheme within an `INTERRUPT` window (`THREAT_WOULD_BE_PLACED`). Prevents `amount` or all impending threat if `amount` is omitted. Decrements `remainingInterceptedValue` and `threatAmount`. Supports dynamic scalar binding (e.g. *Great Responsibility* `01061`), turn limits (e.g. *Jennifer Walters* `01019b`), and partial reduction (e.g. *Emergency* `01085`).
+
+```json
+{
+  "effect": "PREVENT_THREAT",
+  "effectParams": {
+    "amount": 1,
+    "target": "MAIN_SCHEME"
+  }
+}
+```
+
+| Parameter | Type                                    | Required | Default         | Description                                                                                |
+| :-------- | :-------------------------------------- | :------- | :-------------- | :----------------------------------------------------------------------------------------- |
+| `amount`  | `number \| 'ALL' \| DynamicValueSource` | No       | `ALL`           | Amount of impending threat to prevent. If omitted or `'ALL'`, prevents all impending threat.|
+| `target`  | `TargetSelector`                        | No       | `"MAIN_SCHEME"` | Target scheme where threat would be placed.                                                |
  
  ---
  

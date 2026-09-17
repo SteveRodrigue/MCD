@@ -132,6 +132,7 @@ graph TD
     ADR46 --> ADR58["ADR-0058: Declarative Schema Taxonomy & Primitive Consolidation"]
     ADR48 --> ADR58
     ADR49 --> ADR58
+    ADR58 --> ADR63["ADR-0063: Deconflate Damage & Threat Interception Primitives"]
     subgraph CombatTriggers["Combat & Trigger Safeguards"]
         ADR53["ADR-0053: Infinite Trigger Loop Detection & Prevention Guardrails"]
         ADR54["ADR-0054: Parameterized Keyword Stacking & Retaliate Value Accumulation Engine"]
@@ -206,6 +207,7 @@ graph TD
 | [ADR-0060](0060-gate-and-effect-params-separation.md)                                              | 2026-09-14 | Gate and Effect Parameter Separation & Resource Kicker Tracking                     | **Accepted**                                                                                                 | Separate gate-controlling parameters into gateParams and action parameters into effectParams on AbilityStep; track resourcesSpent during PLAY_CARD and route into IF_RESOURCE_MATCH for universal resource kicker resolution (Fixes #107). |
 | [ADR-0061](0061-declarative-next-card-cost-reduction-aura.md)                                      | 2026-09-15 | Declarative Next-Card Cost Reduction Aura Architecture                               | **Accepted**                                                                                                 | Model transient next-card cost reductions via typed `activeCostReductions` on `PlayerState`, centralized `getEffectiveCardCost()`, phase cleanup, and comic pop-art warning/discount badges (Fixes #46). |
 | [ADR-0062](0062-declarative-temporary-stat-modifier-auras.md)                                      | 2026-09-16 | Declarative Temporary Stat Modifier Auras                                            | **Accepted**                                                                                                 | Model phase/round-duration stat buffs via typed `ActiveStatModifier[]` on `CardInstance` and `PlayerState`, universal `MODIFY_STAT` primitive with `target`/`duration`, automatic expiry in phase pipelines, and ally stat bonus display in HeroZone and AllyActionModal (Closes #119). |
+| [ADR-0063](0063-deconflate-damage-and-threat-interception-primitives.md)                           | 2026-09-16 | Deconflate Damage and Threat Interception Primitives                                  | **Accepted**                                                                                                 | Establish strict domain separation between character damage prevention (`PREVENT_DAMAGE`) and scheme threat interception (`PREVENT_THREAT`), eliminating overloaded semantics and internal engine branching (Fixes #120, #123). |
 
 ---
 

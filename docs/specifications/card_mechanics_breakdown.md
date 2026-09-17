@@ -102,7 +102,7 @@ For each card, mechanics are broken down using the following standard schema:
 
 - **MarvelCDB Link:** [https://marvelcdb.com/card/01085](https://marvelcdb.com/card/01085)
 - **Official Printed Text:** _"**Interrupt** (thwart): When the villain schemes, reduce the amount of threat placed on the scheme by 1."_
-- **Ability Timing & Trigger:** `INTERRUPT` @ `VILLAIN_SCHEMES`
+- **Ability Timing & Trigger:** `INTERRUPT` @ `THREAT_WOULD_BE_PLACED`
 - **Step-by-Step Resolution:**
   1. **Trigger Window:** When the **Villain** (not minions) executes a Scheme activation (Step 2 of Villain Phase or via encounter cards like _Advance_).
   2. **Player Prompt:** The controller is prompted: _"Play Emergency to reduce scheme threat by 1?"_

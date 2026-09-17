@@ -1,4 +1,4 @@
-# 09. Action Sequencing & Interactive Prompts
+# 10. Action Sequencing & Interactive Prompts
 
 ---
 
@@ -9,10 +9,10 @@
 
 ### Parameter Separation (`gateParams` vs `effectParams`, ADR-0060)
 
-Under **ADR-0060**, parameters configuring conditional step gates and parameters configuring effect execution are decoupled:
+Under **ADR-0060**, parameters configuring conditional step gates and parameters configuring effect execution are decoupled on every `AbilityStep`:
 - `gateParams`: Key-value map configuring the conditional gate check (e.g. required kicker resource, card code check, status check).
 - `effectParams`: Key-value map configuring the effect primitive execution (e.g. damage amount, target selector, draw count).
-- `params`: Retained for backward-compatible schema ingestion. Engine pipelines query parameters via `getStepEffectParams(step)` and `getStepGateParams(step)`, which read dedicated parameter objects first and fall back to `params`.
+- Step-level `params` is obsolete and has been completely purged from `AbilityStepSchema`. All step parameters must reside in `effectParams` or `gateParams`. (Note: in interactive `PLAYER_CHOICE` prompts, individual option items in `options: []` use `params: { ... }` per `DecisionPromptOptionSchema`).
 
 ### Conditional Gates:
 
@@ -170,6 +170,10 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
   }
 }
 ```
+
+> [!NOTE]
+> **Option Parameters vs Step Parameters:**  
+> The parent `PLAYER_CHOICE` step strictly uses `"effectParams": { "title": "...", "options": [...] }`. Within each option of `options: []`, parameters configuring that choice's effect are declared under `"params": { ... }` per `DecisionPromptOptionSchema`.
 
 > [!NOTE]
 > The `promptId` field on `PendingDecisionPrompt` is **not** used by `resolveDecisionPrompt` for disambiguation — the resolver always pops the head of the `pendingDecisionQueue`. The `promptId` is retained in the queue for log tracing.

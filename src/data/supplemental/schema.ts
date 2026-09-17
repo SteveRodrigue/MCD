@@ -239,7 +239,6 @@ export const EffectTypeSchema = z.enum([
   'SEARCH',
   'SHUFFLE_INTO_DECK',
   'SPAWN_MINION_ENGAGED',
-  'SPAWN_NEMESIS',
   'SPEND_COUNTERS',
   'SURGE',
   'TRANSFER_DAMAGE',

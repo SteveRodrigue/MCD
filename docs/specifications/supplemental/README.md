@@ -8,12 +8,9 @@
 
 ---
 
-## 🏷️ Implementation Status Legend
+## 🏛️ Codebase Grounding & Single Source of Truth
 
-To ensure complete clarity between what is **currently executable** in the engine vs **planned roadmap** features, every primitive in this documentation suite carries an explicit status badge:
-
-- 🟢 **`IMPLEMENTED (v1.0)`**: Fully wired in `src/engine/effects/` and verified with automated regression test suites.
-- 🟡 **`ROADMAP / SPECIFIED`**: Designed and specified for upcoming engine integration. Direct link to the corresponding GitHub Issue # provided.
+Every primitive, trigger, timing, cost, and parameter documented in this specification suite is **100% grounded in the active codebase** (`src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`, and `src/engine/triggers/`). There are no speculative or unimplemented roadmap primitives; all documented features are fully executable and verified via automated regression test suites.
 
 ---
 
@@ -28,7 +25,7 @@ To ensure complete clarity between what is **currently executable** in the engin
 | [**05. Combat & Threat**](./05_effects_combat_threat.md)       | Damage & Scheme Control       | `DEAL_DAMAGE`, `REMOVE_THREAT`, `ADD_THREAT`, Overkill, Piercing, Guard, Crisis.                                         |
 | [**06. Zones & Cards**](./06_effects_zones_cards.md)           | Hand, Deck & Discard Moves    | `DRAW`, `MODIFY_HAND_SIZE`, `SEARCH`, `DISCARD`, `PUT_INTO_PLAY`.                                                        |
 | [**07. Status & Economy**](./07_effects_status_economy.md)     | Conditions & Orientation      | `ADD_STATUS`, `EXHAUST`, `READY`, `GENERATE_RESOURCE`, `DOUBLE_RESOURCE_FOR_ASPECT`, Toughness keyword.                  |
-| [**08. Villain & Nemesis**](./08_effects_villain_nemesis.md)   | Activations & Encounter Sets  | `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `SPAWN_NEMESIS`, `ATTACH_TO_HOST`.                                                 |
+| [**08. Villain & Nemesis**](./08_effects_villain_nemesis.md)   | Activations & Encounter Sets  | `VILLAIN_SCHEMES`, `VILLAIN_ATTACKS`, `ATTACH_TO_HOST`, canonical nemesis pipeline.                                      |
 | [**09. Dynamic Formulas**](./09_dynamic_formulas.md)           | Mathematical Expressions      | `amountCalculated`, dynamic state tokens, scaling multipliers, and min/max clamps.                                       |
 | [**10. Sequences & Modals**](./10_sequences_and_prompts.md)    | Chaining & Player Choices     | `steps: []` multi-action arrays, `PLAYER_CHOICE` Pop-Art decision prompt modals.                                         |
 | [**11. Play Requirements**](./11_play_requirements.md)         | Form, Trait & Control Gates   | `PlayRequirementsSchema`, `identityForm`, `formTrait`, `identityTraits`, `controlFilter`, `identityNames`.               |

@@ -1,4 +1,4 @@
-# 08. Dynamic Formulas & Mathematical Expressions
+# 09. Dynamic Formulas & Mathematical Expressions
 
 > [!NOTE]
 > **Status:** 🟢 `ACTIVE / SPECIFIED` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md), [ADR-0052](../../decisions/0052-centralized-dynamic-formula-and-state-value-evaluator-engine.md), Issue [#36](https://github.com/SteveRodrigue/MCD/issues/36), Issue [#89](https://github.com/SteveRodrigue/MCD/issues/89), Issue [#90](https://github.com/SteveRodrigue/MCD/issues/90) - _Gamma Slam_ `01021`, _Energy Channel_ `01019`, _Counter-Punch_ `01077`, _Great Responsibility_ `01061`)
@@ -68,7 +68,7 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "target": "ENEMY",
     "amount": {
       "from": "STAT_VALUE",
@@ -86,7 +86,7 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "target": "CHOSEN_ENEMY",
     "amount": {
       "from": "COUNTERS",
@@ -105,7 +105,7 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "target": "ATTACKING_ENEMY",
     "amount": {
       "from": "STAT_VALUE",
@@ -120,7 +120,7 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "target": "SELF_IDENTITY",
     "amount": {
       "from": "INTERCEPTED_VALUE"

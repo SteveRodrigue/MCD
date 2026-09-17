@@ -1,4 +1,4 @@
-# 05. Zones, Card Movement & Hand Size Primitives
+# 06. Zones, Card Movement & Hand Size Primitives
 
 ---
 
@@ -12,7 +12,7 @@
 ```json
 {
   "effect": "DRAW",
-  "params": {
+  "effectParams": {
     "count": 2,
     "target": "ACTIVE_PLAYER"
   }
@@ -22,7 +22,7 @@
 ```json
 {
   "effect": "DRAW",
-  "params": {
+  "effectParams": {
     "limit": "PRINTED_HAND_SIZE"
   }
 }
@@ -46,7 +46,7 @@
 ```json
 {
   "effect": "MODIFY_HAND_SIZE",
-  "params": {
+  "effectParams": {
     "scaling": "PER_MATCHING_CARD",
     "filter": {
       "types": ["upgrade"],
@@ -81,7 +81,7 @@
 ```json
 {
   "effect": "DISCARD",
-  "params": {
+  "effectParams": {
     "source": "TABLEAU",
     "filter": {
       "types": ["upgrade", "support"]
@@ -120,7 +120,7 @@ Cards that inspect cards discarded in a preceding step (*"for each ... discarded
 ```json
 {
   "effect": "DEAL_DAMAGE",
-  "params": {
+  "effectParams": {
     "amount": 1,
     "dynamicBonus": {
       "from": "DISCARDED_CARDS",
@@ -170,7 +170,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "SEARCH",
-  "params": {
+  "effectParams": {
     "source": "PLAYER_DECK",
     "lookCount": 3,
     "filter": {
@@ -190,7 +190,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "SEARCH",
-  "params": {
+  "effectParams": {
     "source": "PLAYER_DECK",
     "filter": {
       "traits": ["Black Panther"],
@@ -209,7 +209,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "SEARCH",
-  "params": {
+  "effectParams": {
     "source": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
     "filter": {
       "targetCardCode": "01107"
@@ -232,7 +232,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "PUT_INTO_PLAY",
-  "params": {
+  "effectParams": {
     "from": "SET_ASIDE",
     "to": "ENGAGED_WITH_PLAYER",
     "filter": {
@@ -253,7 +253,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "SHUFFLE_INTO_DECK",
-  "params": {
+  "effectParams": {
     "from": "SET_ASIDE",
     "toDeck": "ENCOUNTER_DECK",
     "filter": {
@@ -273,7 +273,7 @@ Supported `discardAttribute` inspection modes:
 ```json
 {
   "effect": "PLAY_FROM_ZONE",
-  "params": {
+  "effectParams": {
     "source": "ANY_PLAYER_DISCARD",
     "filter": {
       "types": ["ally"]

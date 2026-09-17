@@ -15,6 +15,9 @@ The `timing` field specifies when an ability can be initiated or how it intercep
 | `'ACTION'`              | Player Action       | Voluntary player action during their turn in Player Phase.               | Either Form    |
 | `'HERO_ACTION'`         | Player Action       | Action restricted strictly to Hero form.                                 | Hero only      |
 | `'ALTER_EGO_ACTION'`    | Player Action       | Action restricted strictly to Alter-Ego form.                            | Alter-Ego only |
+| `'RESOURCE'`            | Resource Generation | Voluntary resource generation ability during payment window.             | Either Form    |
+| `'HERO_RESOURCE'`       | Resource Generation | Resource generation restricted strictly to Hero form.                    | Hero only      |
+| `'ALTER_EGO_RESOURCE'`  | Resource Generation | Resource generation restricted strictly to Alter-Ego form.               | Alter-Ego only |
 | `'INTERRUPT'`           | Voluntary Reaction  | Optional reaction interrupting an event before resolution.               | Any            |
 | `'FORCED_INTERRUPT'`    | Mandatory Reaction  | Mandatory reaction interrupting an event before resolution.              | Any            |
 | `'HERO_INTERRUPT'`      | Reaction            | Interrupt restricted to Hero form.                                       | Hero only      |
@@ -28,7 +31,6 @@ The `timing` field specifies when an ability can be initiated or how it intercep
 | `'SPECIAL'`             | Composite Trigger   | Triggered specifically by a parent event (e.g. _Wakanda Forever!_).      | Any            |
 | `'SETUP'`               | Scenario Setup      | Executed during Step 4/8 of game setup (e.g. _T'Challa_ upgrade search). | Setup Phase    |
 | `'BOOST'`               | Boost Resolution    | Triggered when card is flipped as a Villain or Minion boost card.        | Step 2/3 Boost |
-| `'CARD_PLAYED'`         | On-Play Attachment  | Triggered when upgrade/attachment is played onto a host.                 | Play window    |
 
 ---
 
@@ -39,17 +41,28 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `trigger` Enum Literal     | Description                                                                                                                                            | Source Pipeline                           |
 | :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------- |
 | `'WHEN_REVEALED'`          | Card is being revealed from encounter deck or dealt cards.                                                                                             | `step5_revealEncounterCards`              |
+| `'BOOST'`                  | Encounter card is turned faceup as a boost card during attack or scheme activation.                                                                     | `villain-phase.ts`                        |
+| `'BOOST_STAR_RESOLVED'`     | Boost ability containing a star icon resolves during villain or minion activation.                                                                     | `combat-pipeline.ts` / `villain-phase.ts` |
 | `'ATTACK'`                 | Target character is declared as the recipient of an attack.                                                                                            | `executeVillainAttackAgainstPlayer`       |
 | `'MINION_ATTACKED'`        | Minion completes an attack activation against a player.                                                                                                | `executeMinionAttackAgainstPlayer`        |
 | `'ENEMY_INITIATES_ATTACK'` | Enemy initiates attack sequence (Spider-Sense window).                                                                                                 | `combat-pipeline.ts`                      |
+| `'ATTACK_DEFENDED'`        | Player or ally declares defense against an incoming attack.                                                                                            | `combat-pipeline.ts`                      |
+| `'ATTACK_RESOLVED'`        | Attack activation completes resolution against target.                                                                                                 | `combat-pipeline.ts`                      |
+| `'BASIC_ATTACK_PERFORMED'` | Hero or ally executes a basic attack action.                                                                                                           | `action-dispatcher.ts`                    |
+| `'THWART_RESOLVED'`        | Basic or event thwart action completes threat removal on a scheme.                                                                                     | `action-dispatcher.ts`                    |
 | `'DAMAGE_WOULD_BE_TAKEN'`  | Character is about to suffer damage (Backflip window).                                                                                                 | `combat-pipeline.ts`                      |
 | `'DAMAGE_TAKEN'`           | Character suffers damage from any source.                                                                                                              | `effects/index.ts`                        |
 | `'CARD_PLAYED'`            | Card enters play from hand or zone.                                                                                                                    | `action-dispatcher.ts`                    |
+| `'ENTERS_PLAY'`            | Card enters play from any zone (e.g. ally, attachment, or upgrade enters play).                                                                        | `action-dispatcher.ts` / `effects/index.ts` |
+| `'MINION_ENTERS_PLAY'`     | Minion enters play and engages a player (e.g. Hawkeye `01066` response).                                                                               | `effects/index.ts` / `combat-pipeline.ts` |
+| `'TREACHERY_REVEALED'`     | Treachery encounter card is revealed during encounter reveal step.                                                                                     | `step5_revealEncounterCards`              |
 | `'CHARACTER_DEFEATED'`     | Any character (minion, ally, hero) is reduced to 0 HP and defeated.                                                                                    | `combat-pipeline.ts` / `effects/index.ts` |
 | `'SCHEME_DEFEATED'`        | Scheme (main or side) is cleared of threat and defeated.                                                                                               | `action-dispatcher.ts`                    |
 | `'ATTACHED_ENEMY_ATTACKS'` | Enemy hosting this attachment initiates attack (Webbed Up window).                                                                                     | `villain-phase.ts`                        |
 | `'THREAT_WOULD_BE_PLACED'` | Threat is about to be placed on a scheme (Great Responsibility window).                                                                                | `villain-phase.ts`                        |
+| `'THREAT_PLACED'`          | Threat is placed on a scheme after all modifications and interrupts.                                                                                   | `effects/index.ts` / `villain-phase.ts`   |
 | `'MAIN_SCHEME_ADVANCED'`   | Main scheme reaches target threat and advances stage.                                                                                                  | `scenario-helpers.ts`                     |
+| `'RESOURCE_SPENT'`         | Player spends a card or resource during cost payment window.                                                                                           | `cost-engine.ts`                          |
 | `'FORM_CHANGED'`           | Player flips identity form (hero or alter-ego).                                                                                                        | `action-dispatcher.ts`                    |
 | `'STATUS_REMOVED'`         | Status card (Stunned, Confused, Tough) is discarded.                                                                                                   | `effects/index.ts`                        |
 | `'ROUND_BEGAN'`            | Round counter increments, starting player phase.                                                                                                       | `round-upkeep.ts`                         |

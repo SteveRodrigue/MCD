@@ -38,6 +38,7 @@ describe('AbilityCostSection', () => {
     expect(screen.getByTestId('cost-res-plus-physical-0')).toBeDefined();
     expect(screen.getByTestId('cost-spend-counters-toggle-0')).toBeDefined();
     expect(screen.getByTestId('cost-discard-card-toggle-0')).toBeDefined();
+    expect(screen.getByTestId('cost-heal-toggle-0')).toBeDefined();
   });
 
   it('toggles exhaustSelf and discardSelf', async () => {
@@ -205,5 +206,60 @@ describe('AbilityCostSection', () => {
     expect(screen.getByText(/Cost Validation Error/i)).toBeDefined();
     expect(screen.getByText(/Invalid counter type/i)).toBeDefined();
     expect(screen.getByText(/Cost amount must be greater than 0/i)).toBeDefined();
+  });
+
+  it('renders with existing heal cost', () => {
+    render(
+      <AbilityCostSection
+        cost={{ heal: { amount: 2, target: 'TARGET' } }}
+        abilityIndex={0}
+        onChange={vi.fn()}
+      />,
+    );
+
+    const amountInput = screen.getByTestId('cost-heal-amount-0') as HTMLInputElement;
+    const targetSelect = screen.getByTestId('cost-heal-target-0') as HTMLSelectElement;
+
+    expect(amountInput.value).toBe('2');
+    expect(targetSelect.value).toBe('TARGET');
+    expect(screen.getByTestId('cost-heal-toggle-0').textContent).toBe('Remove');
+  });
+
+  it('configures, updates, and removes heal cost', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
+
+    // Add heal cost
+    await user.click(screen.getByTestId('cost-heal-toggle-0'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        heal: { amount: 1, target: 'SELF' },
+      }),
+    );
+
+    // Update amount and target
+    fireEvent.change(screen.getByTestId('cost-heal-amount-0'), {
+      target: { value: '3' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        heal: expect.objectContaining({ amount: 3 }),
+      }),
+    );
+
+    await user.selectOptions(screen.getByTestId('cost-heal-target-0'), 'TARGET');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        heal: expect.objectContaining({ target: 'TARGET' }),
+      }),
+    );
+
+    // Remove heal cost
+    await user.click(screen.getByTestId('cost-heal-toggle-0'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.not.objectContaining({ heal: expect.anything() }),
+    );
   });
 });

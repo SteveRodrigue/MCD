@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-17T19:58:59.047Z`  
+> **Generated:** `2026-09-17T21:44:43.168Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -93,9 +93,9 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `DISCARD` | **15** | `01002` Black Cat (ally), `01031` Repulsor Blast (event), `01050` Hulk (ally) *(+11 more)* |
 | **Effect** | `MODIFY_STAT` | **13** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+8 more)* |
 | **Effect** | `REMOVE_THREAT` | **11** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
+| **Effect** | `DRAW` | **10** | `01001a` Spider-Man (hero), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego) *(+7 more)* |
 | **Effect** | `ADD_THREAT` | **10** | `01107` Breakin' & Takin' (side_scheme), `01108` Crowd Control (side_scheme), `01109` Bomb Scare (side_scheme) *(+6 more)* |
-| **Effect** | `DRAW` | **9** | `01001a` Spider-Man (hero), `01010b` Carol Danvers (alter_ego), `01013` Photonic Blast (event) *(+6 more)* |
-| **Effect** | `HEAL_DAMAGE` | **7** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01051` Tigra (ally) *(+4 more)* |
+| **Effect** | `HEAL_DAMAGE` | **6** | `01006` Aunt May (support), `01051` Tigra (ally), `01080` Med Team (support) *(+3 more)* |
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | **Effect** | `SEARCH` | **5** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+2 more)* |
@@ -175,9 +175,9 @@ These primitives are declared in schema types or specifications but have **0 act
 | `DISCARD` | **15** | `01002` (Black Cat (ally)), `01031` (Repulsor Blast (event)), `01050` (Hulk (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01155` (Affairs of State (obligation)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01173` (Electric Whip Attack (treachery)), `01175` (Family Emergency (obligation)), `01188` (Caught Off Guard (treachery)), `01195` (Unknown Card #01195) |
 | `MODIFY_STAT` | **13** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01070` (Lead from the Front (event)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01173` (Electric Whip Attack (treachery)) |
 | `REMOVE_THREAT` | **11** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
+| `DRAW` | **10** | `01001a` (Spider-Man (hero)), `01010a` (Captain Marvel (hero)), `01010b` (Carol Danvers (alter_ego)), `01013` (Photonic Blast (event)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
 | `ADD_THREAT` | **10** | `01107` (Breakin' & Takin' (side_scheme)), `01108` (Crowd Control (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)), `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)), `01192` (Masterplan (treachery)) |
-| `DRAW` | **9** | `01001a` (Spider-Man (hero)), `01010b` (Carol Danvers (alter_ego)), `01013` (Photonic Blast (event)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
-| `HEAL_DAMAGE` | **7** | `01006` (Aunt May (support)), `01010a` (Captain Marvel (hero)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
+| `HEAL_DAMAGE` | **6** | `01006` (Aunt May (support)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
 | `SEARCH` | **5** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01095` (Rhino (villain)) |
@@ -248,12 +248,12 @@ These primitives are declared in schema types or specifications but have **0 act
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
-| `HERO_ACTION` | **25** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
+| `HERO_ACTION` | **26** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01010a` Captain Marvel (hero), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event) *(+21 more)* |
 | `WHEN_REVEALED` | **25** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+20 more)* |
 | `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01015` Alpha Flight Station (support), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event) *(+11 more)* |
 | `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
-| `ALTER_EGO_ACTION` | **9** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01023` Legal Practice (event), `01026` Superhuman Law Division (support) *(+4 more)* |
+| `ALTER_EGO_ACTION` | **8** | `01006` Aunt May (support), `01010b` Carol Danvers (alter_ego), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01029b` Tony Stark (alter_ego) *(+3 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
 | `HERO_INTERRUPT` | **5** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01061` Great Responsibility (event), `01078` Get Behind Me! (event), `01082` Indomitable (upgrade) |
 | `INTERRUPT` | **4** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01075` Black Widow (ally), `01085` Emergency (event) |
@@ -270,15 +270,15 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Cost Primitives:
 | Cost Key | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `exhaustSelf` | **21** | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01010a` Captain Marvel (hero), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support) *(+16 more)* |
+| `exhaustSelf` | **20** | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) *(+15 more)* |
 | `discardSelf` | **12** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+7 more)* |
 | `resourceCost` | **7** | `01018` Energy Channel (upgrade), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade), `01068` Vision (ally), `01075` Black Widow (ally) *(+2 more)* |
 | `spendCounters` | **5** | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
+| `resources` | **2** | `01010a` Captain Marvel (hero), `01039` Rocket Boots (upgrade) |
 | `discardCard` | **2** | `01015` Alpha Flight Station (support), `01023` Legal Practice (event) |
-| `costCheck` | **1** | `01010a` Captain Marvel (hero) |
+| `heal` | **1** | `01010a` Captain Marvel (hero) |
 | `damageHero` | **1** | `01027` Focused Rage (upgrade) |
 | `damageSelf` | **1** | `01030` War Machine (ally) |
-| `resources` | **1** | `01039` Rocket Boots (upgrade) |
 
 ### Target Selectors:
 | Target Selector | Occurrences | Cards |

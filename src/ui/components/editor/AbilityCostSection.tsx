@@ -198,8 +198,8 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
         </div>
       </div>
 
-      {/* Spend Counters & Discard Card sub-costs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-gray-200">
+      {/* Spend Counters, Discard Card & Heal sub-costs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-2 border-t border-gray-200">
         {/* Spend Counters Sub-form */}
         <div className="bg-white p-2 border border-black rounded shadow-comic-xs">
           <div className="flex items-center justify-between mb-1.5">
@@ -370,6 +370,71 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                 >
                   <option value="CHOSEN">CHOSEN</option>
                   <option value="RANDOM">RANDOM</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Heal Cost Sub-form */}
+        <div className="bg-white p-2 border border-black rounded shadow-comic-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[9px] uppercase font-bold text-gray-700">Heal Cost</span>
+            <button
+              type="button"
+              data-testid={`cost-heal-toggle-${abilityIndex}`}
+              onClick={() => {
+                if (currentCost.heal) {
+                  handleCostUpdate({ heal: undefined });
+                } else {
+                  handleCostUpdate({
+                    heal: { amount: 1, target: 'SELF' },
+                  });
+                }
+              }}
+              className="text-[10px] font-bold text-comic-accent hover:underline cursor-pointer"
+            >
+              {currentCost.heal ? 'Remove' : '+ Add'}
+            </button>
+          </div>
+          {currentCost.heal && (
+            <div className="grid grid-cols-2 gap-1.5">
+              <div>
+                <label className="block text-[8px] uppercase font-bold text-gray-500">Amount</label>
+                <input
+                  type="number"
+                  min="1"
+                  data-testid={`cost-heal-amount-${abilityIndex}`}
+                  value={currentCost.heal.amount ?? 1}
+                  onChange={(e) => {
+                    const amt = parseInt(e.target.value, 10);
+                    handleCostUpdate({
+                      heal: {
+                        ...currentCost.heal,
+                        amount: isNaN(amt) ? 1 : amt,
+                      },
+                    });
+                  }}
+                  className="w-full bg-white border border-black p-1 text-xs rounded text-center font-bold"
+                />
+              </div>
+              <div>
+                <label className="block text-[8px] uppercase font-bold text-gray-500">Target</label>
+                <select
+                  data-testid={`cost-heal-target-${abilityIndex}`}
+                  value={currentCost.heal.target || 'SELF'}
+                  onChange={(e) => {
+                    handleCostUpdate({
+                      heal: {
+                        ...currentCost.heal,
+                        target: e.target.value as 'SELF' | 'TARGET',
+                      },
+                    });
+                  }}
+                  className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                >
+                  <option value="SELF">SELF</option>
+                  <option value="TARGET">TARGET</option>
                 </select>
               </div>
             </div>

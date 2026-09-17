@@ -12,8 +12,8 @@ description: >-
   and anything below 80% is raised as an explicit open question for a second opinion. Never interprets,
   infers, or assumes. STRICTLY READ-ONLY WITH RESPECT TO CODE: writes *.md files
   only and never touches src/, tests/, or any .ts/.tsx/.json file; suspected code defects are filed
-  as detailed GitHub issues for human peer review instead of being fixed. Logs progress in
-  logs/skills/ and executes the mandatory post-task protocol. Trigger whenever
+  as detailed GitHub issues for human peer review instead of being fixed. Executes the
+  mandatory post-task protocol. Trigger whenever
   documentation is reviewed, refreshed, or prefixed with 'documentation-audit:' / 'docs-audit:'.
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
 ---
@@ -33,8 +33,7 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 ## 🛑 Non-Negotiable Guardrails
 
 1. **Read-only with respect to code — absolute.** This skill has a **write allow-list of exactly
-   two things: `*.md` files** (including the Mermaid blocks inside them) **and its own append-only
-   audit log at `logs/skills/documentation_audit_*.log`**. It MUST NOT create, edit,
+   one thing: `*.md` files** (including the Mermaid blocks inside them). It MUST NOT create, edit,
    delete, move, or reformat any file under `src/`, `tests/`, `tools/`, `scripts/`, `data/`,
    `public/`, nor any `.ts`, `.tsx`, `.json`, `.js`, `.css`, or config file — not even a typo,
    a comment, a rename, or a "trivial" one-line fix. Not even if the fix is obvious. Not even if
@@ -55,8 +54,7 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 5. **Preserve voice & style.** Keep the existing tone, emoji section headers, GitHub alert
    callouts, tables, and KaTeX/Mermaid conventions already used in the repo.
 6. **No new documentation files** unless a genuine gap is confirmed and the user approves.
-7. **Prove the blast radius before finishing.** `git status --short` must show `.md` paths only
-   (the audit log under `logs/skills/` is the sole permitted non-`.md` write).
+7. **Prove the blast radius before finishing.** `git status --short` must show `.md` paths only.
    If any other file is dirty, revert it (`git checkout -- <path>`) and report the incident.
    The `AGENTS.md` pre-execution plan gate does not apply here precisely _because_ no source code
    is ever touched; that exemption is void the moment a disallowed file changes.
@@ -122,26 +120,7 @@ its drift exceeds safe automated correction, and ask the user how to proceed. Do
 
 ---
 
-## 📝 Execution Logging Requirement (`logs/skills/`)
-
-Append timestamped entries to `logs/skills/documentation_audit_{YYYY-MM-DD}.log`:
-
-```text
-YYYY-MM-DDTHH:mm:ss.sssZ [SCOPE] Audit started (Scope: <all|docs/decisions|specifications|guidelines|README>)
-YYYY-MM-DDTHH:mm:ss.sssZ [INVENTORY] Extracted <N> effects, <N> timings, <N> costs, <N> ADRs from src/ + docs/
-YYYY-MM-DDTHH:mm:ss.sssZ [DRIFT] Found <N> deprecated concepts, <N> missing primitives, <N> broken links, <N> stale badges
-YYYY-MM-DDTHH:mm:ss.sssZ [ADR] docs/decisions/README.md: <N> table gaps, <N> status mismatches, <N> missing Mermaid nodes
-YYYY-MM-DDTHH:mm:ss.sssZ [CONFIDENCE] <N> findings >=95% (auto), <N> at 80-94% (confirm), <N> <80% (deferred to user)
-YYYY-MM-DDTHH:mm:ss.sssZ [ASK] Open question raised: "<question>" (Confidence <NN>%, blocking <file>)
-YYYY-MM-DDTHH:mm:ss.sssZ [FIX] Updated <file> (<category>, Confidence <NN>%)
-YYYY-MM-DDTHH:mm:ss.sssZ [VERIFY] Links resolved, Mermaid parses, npm run report:declarations clean
-YYYY-MM-DDTHH:mm:ss.sssZ [HANDOFF] Code defects filed as GitHub issues: #<NUM>, #<NUM> (or none)
-YYYY-MM-DDTHH:mm:ss.sssZ [DONE] Post-task protocol executed; CHANGELOG updated
-```
-
----
-
-## 🔄 The 8-Step Documentation Audit Lifecycle
+## The 8-Step Documentation Audit Lifecycle
 
 ```mermaid
 flowchart TD
@@ -190,7 +169,7 @@ with regex over `src/` and record exact symbol lists:
 - **Scripts:** the `scripts` block of `package.json` (docs frequently cite removed or renamed scripts).
 - **Data reality:** counts of packs/cards under `src/data/supplemental/pack/*.json`.
 
-Keep this index in working memory (or `logs/skills/`) — it is the diff baseline for Step 3.
+Keep this index in working memory — it is the diff baseline for Step 3.
 
 ---
 
@@ -365,9 +344,9 @@ Editing standards:
 ### Step 7 — Verify
 
 1. **Blast-radius gate (run first, non-negotiable).** `git status --short` must list `.md` paths
-   only, plus the skill's own `logs/skills/documentation_audit_*.log`. Any dirty
+   only. Any dirty
    `.ts`/`.tsx`/`.json`/config file is a protocol violation: revert it with
-   `git checkout -- <path>`, log the incident, and report it to the user.
+   `git checkout -- <path>`, and report it to the user.
 2. Re-grep every relative link and ADR reference you touched; confirm targets exist.
 3. Re-read each modified Mermaid block for parse validity (balanced brackets/quotes, unique nodes).
 4. Re-run the code-truth extraction for any section you rewrote and confirm a 1:1 match.
@@ -404,7 +383,7 @@ The audit is complete only when **all** hold:
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
 - [ ] RR v1.8 citations verified against `references/mc_rulesreference_v18_compressed.pdf`.
-- [ ] `git status` proves **only `.md` files and the `logs/skills/` audit log changed** — no code was written, reformatted, or deleted.
+- [ ] `git status` proves **only `.md` files changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.
 - [ ] CHANGELOG updated and post-task protocol executed.

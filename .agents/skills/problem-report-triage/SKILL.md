@@ -11,7 +11,7 @@ description: >-
   duplicates/near-matches and, when found, merges by commenting on the existing
   issue and applying the repo's existing 'duplicate' label instead of creating
   a new one. Maps report priority to the repo's real priority:P0-blocker..P3-low
-  labels, logs progress in logs/skills/, and leaves logs/reports/ empty (Inbox Zero)
+  labels, and leaves logs/reports/ empty (Inbox Zero)
   at the end of every run. Trigger whenever asked to "triage reports", "file
   pending problem reports", "clear logs/reports", or prefixed with
   'problem-report-triage:'.
@@ -24,22 +24,6 @@ description: >-
 This skill converts locally-captured Dev Mode problem reports (`logs/reports/*.json`, produced by the in-game "Report a Problem" feature) into tracked GitHub Issues formatted exactly like the repo's **official issue templates** ([`.github/ISSUE_TEMPLATE/bug_report.md`](../../../.github/ISSUE_TEMPLATE/bug_report.md) and [`feature_request.md`](../../../.github/ISSUE_TEMPLATE/feature_request.md)) — merging into an existing issue instead of filing a duplicate when one is detected — then prunes the local file, mirroring the Inbox Zero pattern already used for `docs/ambiguities/`.
 
 **Every filed or merged issue must clearly identify itself as a player-submitted Dev Mode report and preserve the reporter's exact original text**, since the person triaging it later (a maintainer or another skill) was not present when it was written and must be able to read precisely what was reported, not a paraphrase.
-
----
-
-## 📝 Execution Logging Requirement (`logs/skills/`)
-
-Whenever this skill runs, append timestamped progress entries to `logs/skills/problem_report_triage_{YYYY-MM-DD}.log`:
-
-```text
-YYYY-MM-DDTHH:mm:ss.sssZ [SCAN] Found <N> pending report(s) in logs/reports/
-YYYY-MM-DDTHH:mm:ss.sssZ [DUPLICATE] report_<timestamp>_<type>.json matches existing Issue #<NUM> (Confidence: <XX>%) — merging instead of filing
-YYYY-MM-DDTHH:mm:ss.sssZ [MERGE] Commented on Issue #<NUM> and applied 'duplicate' label (Report Count: <N>)
-YYYY-MM-DDTHH:mm:ss.sssZ [FILE] Created GitHub Issue #<NUM>: "[BUG]: <title>" or "[FEAT]: <title>" (<URL>) from report_<timestamp>_<type>.json
-YYYY-MM-DDTHH:mm:ss.sssZ [ATTACH] Attached GameState snapshot excerpt + verbatim original report to Issue #<NUM> (Round <N>, Phase <PHASE>)
-YYYY-MM-DDTHH:mm:ss.sssZ [PRUNE] Deleted local report_<timestamp>_<type>.json after successful filing/merging
-YYYY-MM-DDTHH:mm:ss.sssZ [DONE] logs/reports/ is Inbox Zero (<N> issues filed, <N> merged as duplicates, 0 pending)
-```
 
 ---
 
@@ -95,7 +79,7 @@ Construct the title and body using the repo's **official issue templates** as th
 
 **Bug body:**
 
-```markdown
+````markdown
 > 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the attached GameState; verify it against the original report before acting.
 
 ### 🐛 Describe the Bug
@@ -136,13 +120,15 @@ N/A — filed via Dev Mode; no rules citation was captured. Add one during triag
 ```json
 <gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
 ```
+````
 
 </details>
 
 ---
 
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
-```
+
+````
 
 **Feature/Improvement body:**
 
@@ -180,14 +166,15 @@ N/A — not captured via Dev Mode; explore during triage.
 
 ```json
 <gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
-```
+````
 
 </details>
 
 ---
 
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
-```
+
+````
 
 Never invent Expected Behavior, Rules Citations, Environment details, or Alternatives that the reporter did not state — always mark them "Not stated" / "N/A" and defer to the verbatim section.
 
@@ -212,7 +199,7 @@ To prevent creation errors:
 
 ```bash
 gh issue list --search "<key terms from report.title/description> in:title,body" --state all --limit 15
-```
+````
 
 Compare each candidate against the current report using **title similarity, overlapping key terms (card names, scenario names, phase/action names), and matching report type** — never rely on title string equality alone, and never guess when evidence is thin.
 
@@ -253,11 +240,11 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 
 **Do not use `report.labels` verbatim.** Re-derive the label set from `report.type` and `report.priority` against the repository's real, existing taxonomy (verified with `gh label list` — all of these labels already exist, so `gh label create` is never needed for a standard report):
 
-| `report.type` | Title Prefix | Labels                                            |
-| ------------- | ------------ | ------------------------------------------------- |
-| `bug`         | `[BUG]: `    | `bug`, `priority:<mapped>`, `needs-review`        |
-| `improvement` | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review`|
-| `feature`     | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review`|
+| `report.type` | Title Prefix | Labels                                             |
+| ------------- | ------------ | -------------------------------------------------- |
+| `bug`         | `[BUG]: `    | `bug`, `priority:<mapped>`, `needs-review`         |
+| `improvement` | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review` |
+| `feature`     | `[FEAT]: `   | `enhancement`, `priority:<mapped>`, `needs-review` |
 
 Priority mapping (`report.priority` → repo label — note `P0` renames from `critical` to `blocker`):
 

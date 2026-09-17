@@ -36,7 +36,7 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic resource payment or typed resource mapping.                                        |
 | `discardCard`   | `object`                           | `{"count": 1, "from": "HAND"}`                          | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`.                                    |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
-| `costCheck`     | `string`                           | `"CURRENT_HEALTH < MAX_HEALTH"`                         | Validation rule ensuring the action produces a legal state mutation.                       |
+| `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                   |
 
 ---
 

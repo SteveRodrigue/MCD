@@ -320,8 +320,25 @@
                       ],
                       "additionalProperties": false
                     },
-                    "costCheck": {
-                      "type": "string"
+                    "heal": {
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "target": {
+                          "type": "string",
+                          "enum": [
+                            "SELF",
+                            "TARGET"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "additionalProperties": false

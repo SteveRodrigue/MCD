@@ -12,8 +12,8 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
   let jenniferWaltersAlterEgo: AlterEgoCard;
 
   beforeEach(() => {
-    captainMarvelHero = cardCatalog.getCard('01010b') as HeroCard; // Captain Marvel Hero
-    carolDanversAlterEgo = cardCatalog.getCard('01010a') as AlterEgoCard; // Carol Danvers Alter-Ego
+    captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard; // Captain Marvel Hero
+    carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard; // Carol Danvers Alter-Ego
     sheHulkHero = cardCatalog.getCard('01019a') as HeroCard;
     jenniferWaltersAlterEgo = cardCatalog.getCard('01019b') as AlterEgoCard;
 
@@ -47,41 +47,53 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
     state.players[1].activeFormCard = jenniferWaltersAlterEgo;
   });
 
-  describe('01010a Carol Danvers (Rechannel & Cost Pre-Check)', () => {
-    it('Rejects Rechannel when Carol Danvers is already at maximum health', () => {
+  describe('01010a Captain Marvel (Rechannel & Cost Pre-Check)', () => {
+    it('Rejects Rechannel when Captain Marvel is already at maximum health', () => {
       const p1 = state.players[0];
-      const maxHp = (p1.activeFormCard as AlterEgoCard).health || 12;
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      const maxHp = (p1.activeFormCard as HeroCard).health || 12;
       p1.health = maxHp;
       p1.exhausted = false;
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
 
       const res = dispatchAction(state, {
         type: 'USE_CARD_ABILITY',
         playerId: p1.id,
         cardInstanceId: '01010a',
         abilityId: 'rechannel',
-      });
+        paymentCardInstanceIds: ['energy_card'],
+      } as any);
 
       expect(res.result.success).toBe(false);
-      expect(res.result.error).toContain('maximum health');
+      expect(res.result.error).toContain('Requires at least 1 damage on Identity to heal as cost');
       expect(res.state.players[0].exhausted).toBe(false);
     });
 
-    it('Allows Rechannel and exhausts Carol Danvers when damaged', () => {
+    it('Allows Rechannel and heals 1 damage without exhausting Captain Marvel when damaged', () => {
       const p1 = state.players[0];
-      const maxHp = (p1.activeFormCard as AlterEgoCard).health || 12;
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      const maxHp = (p1.activeFormCard as HeroCard).health || 12;
       p1.health = maxHp - 3;
       p1.exhausted = false;
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
 
       const res = dispatchAction(state, {
         type: 'USE_CARD_ABILITY',
         playerId: p1.id,
         cardInstanceId: '01010a',
         abilityId: 'rechannel',
-      });
+        paymentCardInstanceIds: ['energy_card'],
+      } as any);
 
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].health).toBe(maxHp - 2);
-      expect(res.state.players[0].exhausted).toBe(true);
+      expect(res.state.players[0].exhausted).toBe(false);
     });
   });
 

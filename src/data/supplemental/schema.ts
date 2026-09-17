@@ -491,7 +491,13 @@ export const AbilityCostSchema = z
       })
       .strict()
       .optional(),
-    costCheck: z.string().optional(),
+    heal: z
+      .object({
+        amount: z.number().min(1),
+        target: z.enum(['SELF', 'TARGET']).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

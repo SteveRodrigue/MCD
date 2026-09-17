@@ -35,12 +35,18 @@ export function canPayAbilityCost(
   const cost = ability.cost;
   if (!cost) return { allowed: true };
 
-  // 1. Cost Check / Pre-Condition Validation
-  if (cost.costCheck) {
-    if (cost.costCheck === 'CURRENT_HEALTH < MAX_HEALTH') {
+  // 1. Heal Cost Validation
+  if (cost.heal) {
+    const requiredHeal = cost.heal.amount || 1;
+    const targetMode = cost.heal.target || 'SELF';
+    if (targetMode === 'SELF') {
       const maxHp = getEffectiveMaxHealth(player, _state);
-      if (player.health >= maxHp) {
-        return { allowed: false, reason: 'Identity is already at maximum health.' };
+      const currentDamage = Math.max(0, maxHp - player.health);
+      if (currentDamage < requiredHeal) {
+        return {
+          allowed: false,
+          reason: `Requires at least ${requiredHeal} damage on Identity to heal as cost (currently has ${currentDamage}).`,
+        };
       }
     }
   }
@@ -294,6 +300,26 @@ export function executeAbilityCost(
 
   if (cost.exhaustCard === 'SELF_IDENTITY' || (cost as any).exhaustHero) {
     player.exhausted = true;
+  }
+
+  // 1b. Heal Cost Execution
+  if (cost.heal) {
+    const healAmount = cost.heal.amount || 1;
+    const targetMode = cost.heal.target || 'SELF';
+    if (targetMode === 'SELF') {
+      const maxHp = getEffectiveMaxHealth(player, state);
+      const actualHealed = Math.min(healAmount, maxHp - player.health);
+      player.health = Math.min(maxHp, player.health + actualHealed);
+      state.log.push({
+        id: `log_${Date.now()}_cost_heal`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.cost.heal',
+        params: { player: player.name, healed: actualHealed, currentHealth: player.health },
+        onomatopoeia: `HEAL! +${actualHealed} HP (COST)`,
+      });
+    }
   }
 
   // 2. Direct Damage Cost to Hero

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): First-Class Declarative Heal Ability Cost Primitive & Card Editor UI Support ([Issue #124](https://github.com/SteveRodrigue/MCD/issues/124) / [ADR-0065](docs/decisions/0065-first-class-heal-ability-cost-primitive.md))**
+  - **Schema & Supplemental Data:**
+    - Replaced legacy string `costCheck` with first-class `heal: { amount: number, target?: 'SELF' | 'TARGET' }` in `AbilityCostSchema` (`src/data/supplemental/schema.ts`).
+    - Regenerated canonical `src/data/supplemental/schema.json` (`npm run schema:generate`).
+    - Updated `AbilityCost` interface in `src/engine/models/abilities.ts`.
+    - Retrofitted Captain Marvel (`01010a`) in `src/data/supplemental/pack/core.json` with declarative `resources: ["energy"]` and `heal: { amount: 1, target: "SELF" }` (removing erroneous `exhaustSelf` and `costCheck`), updating audit metadata (`2026-09-17T20:31:00Z`).
+  - **Headless Engine:**
+    - Updated `canPayAbilityCost` in `src/engine/pipeline/cost-engine.ts` to validate that target has at least `heal.amount` damage before activation (enforcing RR v1.8 p. 11, 16).
+    - Updated `executeAbilityCost` in `src/engine/pipeline/cost-engine.ts` to atomically heal damage and log `card.cost.heal` upon payment.
+  - **Card Editor UI:**
+    - Added dedicated Heal Cost sub-form in `src/ui/components/editor/AbilityCostSection.tsx` with toggle button (`+ Add` / `Remove`), amount spinner (`min="1"`), and target selector (`SELF`, `TARGET`).
+  - **Contract & UI Tests:**
+    - Updated `tests/engine/action-cost-engine.test.ts` to test Captain Marvel (`01010a`) Rechannel rejecting at full HP and healing 1 HP without exhausting when damaged.
+    - Added unit tests in `tests/ui/AbilityCostSection.test.tsx` verifying Heal Cost rendering, toggle, amount/target editing, and clean deletion.
+
 - **Engine & UI (Hand Discard Ability Cost & Alpha Flight Station): Hand Card Discard Ability Cost & Interactive Modal ([Issue #45](https://github.com/SteveRodrigue/MCD/issues/45) / ADR-0055)**
   - **Schema & Supplemental Data:**
     - Extended `AbilityCostSchema.discardCard` in `src/data/supplemental/schema.ts` with `filter?: UniversalCardFilterSchema.optional()` and `mode?: z.enum(['CHOSEN', 'RANDOM']).optional()`.

@@ -123,7 +123,10 @@ export interface AbilityCost {
   damageSelf?: number;
   takeDamage?: number;
   selfDamage?: number;
-  costCheck?: string;
+  heal?: {
+    amount: number;
+    target?: 'SELF' | 'TARGET';
+  };
 }
 
 export type ConditionGate =

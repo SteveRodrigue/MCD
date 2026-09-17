@@ -8,6 +8,7 @@
 4. **Declarative Data-First Invariant:** All card-specific logic resides exclusively in `src/data/supplemental/`. The engine (`src/engine/`) only contains universal, card-agnostic state machines and effect primitives. When triaging any card issue, **always audit and correct the supplemental JSON first**. Altering engine code for a single card is an anti-pattern unless a truly universal primitive is missing.
 5. **🎯 Rhino Release First (Scope Boundary Invariant):** All current active development tasks, features, improvements, and bug fixes must strictly target the **Core Set Player Cards (101 cards across 5 Heroes + 4 Aspects + Basic)** and the **Rhino Scenario (Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets - 34 cards)**. Any expansion cards, multi-form mechanics, or non-Rhino villains (Klaw, Ultron) are strictly deferred to subsequent releases.
 6. **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):** We are in the early stage of the project where clean, composable foundations are paramount. **NEVER** introduce or carry forward legacy shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or temporary shortcuts unless explicitly approved by the user or absolutely necessary. Always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data over legacy compatibility layers.
+7. **🚫 Zero Skipped Tests Invariant (No Lingering Code, No Lingering Problems):** Tests must strictly pass or fail — **NEVER** introduce, carry forward, or retain `it.skip`, `describe.skip`, `test.skip`, `fit`, `fdescribe`, or commented-out test assertions. When an issue, defect, edge case, or failing test is encountered, it must be resolved and fixed immediately at the root cause (correcting supplemental data, fixing engine logic, or pruning superseded tests). Lingering broken code, deferred test failures, or temporary skips are strictly forbidden as tech debt. All verification gates must enforce 0 skipped tests (`passed: N, failed: 0, skipped: 0`).
 
 ## Path Policy
 
@@ -40,7 +41,7 @@ BEFORE writing or modifying any source code (`src/`), test files (`tests/`), or 
 
 ## 📋 Mandatory Post-Task Protocol (Enforce on Every Turn)
 
-After executing automated tests and code verification (`npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations`), **ALWAYS** execute this 8-point checklist before concluding the turn:
+After executing automated tests and code verification (`npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` — **confirming 0 failed, 0 skipped, 100% green**), **ALWAYS** execute this 8-point checklist before concluding the turn:
 
 1. **Check CHANGELOG.md:** Update `[Unreleased]` with all new features, fixes, and engine changes.
 2. **Check Documentation:** Update relevant files in `docs/` or `README.md`.

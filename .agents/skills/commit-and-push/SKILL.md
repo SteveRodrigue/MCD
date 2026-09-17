@@ -74,11 +74,11 @@ Before committing, run the project's quality verification pipeline:
    ```
    *Requirement:* Must compile cleanly with 0 TypeScript diagnostics (`tsc --noEmit`).
 
-4. **Automated Test Suite:**
+4. **Automated Test Suite (Zero Skipped Tests Invariant):**
    ```sh
    npm test
    ```
-   *Requirement:* All unit, integration, and contract tests must pass.
+   *Requirement:* All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). Any skipped test (`it.skip`, `describe.skip`, `test.skip`, `it.todo`) is tech debt and strictly blocks commit and push until resolved or pruned. Tests must strictly pass or fail: no lingering code, no lingering problems.
 
 ---
 
@@ -155,7 +155,7 @@ git commit -m "<category>(<scope>): <description>"
    ```sh
    git push origin main
    ```
-2. Verify the pre-push hook executes `npm test` cleanly.
+2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`).
 3. Run `git status` to verify:
    - Working tree is clean (`nothing to commit, working tree clean`).
    - Branch is up to date with remote (`Your branch is up to date with 'origin/main'`).

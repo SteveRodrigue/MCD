@@ -191,10 +191,15 @@ To ensure stability, prevent regressions, and maintain high velocity, all develo
    ```
 3. **Fast Execution:**
    - Unit tests must remain lightweight and headless. The entire test suite should execute in < 2 seconds.
+4. **🚫 Zero Skipped Tests Invariant (Never Allow Skipped Tests):**
+   - **Binary Outcome Only:** Tests must either strictly PASS or FAIL. There is no middle ground, no deferred state, and no `it.skip`, `describe.skip`, `test.skip`, `it.todo`, `fit`, `fdescribe`, or commented-out test assertions.
+   - **Fix Problems As They Are Found:** When a test fails or a regression is discovered, diagnose and resolve it immediately at the root cause. Never bypass, skip, or disable tests to force a green pipeline.
+   - **Zero Lingering Code / Problems:** If an old test asserted superseded engine semantics (e.g. legacy synchronous behavior replaced by interactive decision prompts under an accepted ADR) and dedicated contract tests already verify the modern architecture, prune and delete the obsolete test completely rather than leaving it skipped. Lingering skipped tests are strictly forbidden as tech debt.
+   - **Full Suite Invariant:** Verification across all environments must always enforce `0 failed | 0 skipped | 100% green`.
 
 ---
 
-## 5. Localization (i18n) Standards
+## 7. Localization (i18n) Standards
 
 1. **Zero Hardcoded Display Strings:**
    - All user-facing text, dialogs, button labels, and system log descriptions must use translation keys via `t('key')` or locale catalogs.
@@ -215,7 +220,7 @@ To ensure stability, prevent regressions, and maintain high velocity, all develo
 
 ---
 
-## 6. Code Style & Naming Conventions
+## 8. Code Style & Naming Conventions
 
 | Category                  | Convention                                         | Example                                     |
 | :------------------------ | :------------------------------------------------- | :------------------------------------------ |
@@ -228,7 +233,7 @@ To ensure stability, prevent regressions, and maintain high velocity, all develo
 
 ---
 
-## 7. Git & Commit Message Standards
+## 9. Git & Commit Message Standards
 
 We use [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -241,7 +246,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 8. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
+## 10. UI Layering, Stacking Contexts & Z-Axis Zoom Standards
 
 1. **Unconstrained Z-Axis Elevation for Interactive Elements:**
    - Interactive card containers (such as `PlayerHandTray` and tabletop zones) must maintain `overflow-visible` so elevated/hovered elements can project into the 3D Z-axis without triggering clipping boundaries or scrollbar spawning.
@@ -255,7 +260,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 9. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
+## 11. Comic Typography & UI Scaling Standards (ADR-0004, ADR-0037)
 
 1. **Local-First Font Assets:**
    - Never rely on runtime external CDNs for typography. All comic fonts (`Komika Text`, `Comic Relief`, `Bangers`) must be bundled locally in `public/fonts/` or `@fontsource` packages for complete offline play.
@@ -267,7 +272,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 10. Local-First Card Art & Static Asset Pipeline (ADR-0011)
+## 12. Local-First Card Art & Static Asset Pipeline (ADR-0011)
 
 1. **Local Static Art Resolution (`/cards/:fileName`):**
    - The primary resolution route for all card artwork is the local static endpoint `/cards/${code}${side}.png`.
@@ -279,7 +284,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
-## 11. Declarative Schema Taxonomy & Naming Invariants (ADR-0058)
+## 13. Declarative Schema Taxonomy & Naming Invariants (ADR-0058)
 
 All card ability definitions in `src/data/supplemental/` and primitive handlers in `src/engine/` must strictly adhere to the 5 core naming invariants:
 

@@ -183,9 +183,11 @@ Execute the full verification suite across engine, tests, schemas, build, lint, 
 npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
 ```
 
-- Confirm all test files and suites pass cleanly.
+- **Enforce Zero Skipped Tests Invariant:** Confirm all tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail. Never use `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions to mask or defer failing tests.
 - Confirm 0 TypeScript compilation errors (`tsc --noEmit`).
+- Confirm 0 ESLint warnings/errors and Prettier format compliance.
 - Confirm production bundle succeeds (`vite build`).
+- Confirm declarations report reports 0 schema or false-vanilla violations.
 
 ---
 

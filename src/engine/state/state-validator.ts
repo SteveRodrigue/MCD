@@ -195,7 +195,10 @@ export function attachCardToHost(
     uTarget === 'HERO' ||
     uTarget === 'IDENTITY' ||
     uTarget === 'PLAYER' ||
-    uTarget === 'DEFENDING_CHARACTER'
+    uTarget === 'DEFENDING_CHARACTER' ||
+    uTarget === 'SELF_IDENTITY' ||
+    uTarget === 'CHOSEN_PLAYER' ||
+    uTarget === 'ACTIVE_PLAYER'
   ) {
     const targetPlayer = state.players.find((p) => p.id === targetHostId) || state.players[0];
     if (targetPlayer) {

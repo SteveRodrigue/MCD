@@ -15,6 +15,7 @@ import {
   TargetAllocationItem,
   NormalizedCard,
   PlayerState,
+  VillainState,
   Keyword,
   hasKeyword,
   ActiveCostReduction,
@@ -85,6 +86,30 @@ export interface EffectExecutionContext {
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
 import { evaluateDynamicAmount } from './dynamic-formula-evaluator';
+export {
+  resolveTargets,
+  resolveCharacterTargets,
+  resolveSchemeTargets,
+  resolvePlayerTargets,
+  resolveCardTargets,
+  resolveEntityByInstanceId,
+} from './target-resolver';
+export type {
+  EffectContext,
+  ResolvedTarget,
+  CharacterTarget,
+  SchemeTarget,
+  PlayerTarget,
+  CardTarget,
+} from './target-resolver';
+import {
+  resolveTargets,
+  resolveCharacterTargets,
+  resolveSchemeTargets,
+  resolvePlayerTargets,
+  resolveEntityByInstanceId,
+  type EffectContext,
+} from './target-resolver';
 
 /**
  * Universal dynamic numeric amount resolver (ADR-0049, ADR-0052)
@@ -855,10 +880,8 @@ export function executeDiscard(
 
   // 1. DISCARD FROM HAND
   if (source === 'HAND') {
-    const targetPlayer =
-      (params.target as string) === 'CHOSEN_PLAYER' && context.targetPlayerId
-        ? state.players.find((p) => p.id === context.targetPlayerId) || player
-        : player;
+    const targetPlayers = resolvePlayerTargets(state, params.target as any, context);
+    const targetPlayer = targetPlayers[0] || player;
 
     if (mode === 'RANDOM') {
       let discardedCount = 0;
@@ -1248,7 +1271,8 @@ export function executeStep(
         };
       }
 
-      const targetPlayers = targetParam === 'ALL_PLAYERS' ? state.players : [player];
+      const resolvedPlayers = resolvePlayerTargets(state, targetParam as any, context);
+      const targetPlayers = resolvedPlayers.length > 0 ? resolvedPlayers : [player];
       let totalDrawn = 0;
 
       for (const p of targetPlayers) {
@@ -2303,14 +2327,51 @@ export function executeStep(
       const target = (step.effectParams?.target as string) || 'SELF';
       let healed = 0;
 
-      if (target === 'VILLAIN') {
-        const currentHp = state.villain.health;
-        const maxHp = state.villain.maxHealth || 100;
-        healed = Math.min(maxHp - currentHp, amount);
-        state.villain.health += healed;
-      } else {
-        healed = Math.min(player.maxHealth - player.health, amount);
-        player.health += healed;
+      const targetCharacters = resolveCharacterTargets(state, target as any, context);
+      const charsToHeal =
+        targetCharacters.length > 0
+          ? targetCharacters
+          : [
+              {
+                kind: 'character' as const,
+                entityType:
+                  player.currentForm === 'hero' ? ('hero' as const) : ('alter_ego' as const),
+                entity: player,
+                id: player.id,
+                player,
+              },
+            ];
+
+      let isFullyHealed = true;
+      for (const targetChar of charsToHeal) {
+        const ent: any = targetChar.entity;
+        if (targetChar.entityType === 'villain') {
+          const currentHp = ent.health;
+          const maxHp = ent.maxHealth || 100;
+          const h = Math.min(maxHp - currentHp, amount);
+          ent.health += h;
+          healed += h;
+          if (ent.health < maxHp) isFullyHealed = false;
+        } else if (targetChar.entityType === 'hero' || targetChar.entityType === 'alter_ego') {
+          const currentHp = ent.health;
+          const maxHp = ent.maxHealth;
+          const h = Math.min(maxHp - currentHp, amount);
+          ent.health += h;
+          healed += h;
+          if (ent.health < maxHp) isFullyHealed = false;
+        } else if (targetChar.entityType === 'ally') {
+          const currentDmg = ent.tokens?.damage || 0;
+          const h = Math.min(currentDmg, amount);
+          if (ent.tokens) ent.tokens.damage = Math.max(0, currentDmg - h);
+          healed += h;
+          if ((ent.tokens?.damage || 0) > 0) isFullyHealed = false;
+        } else if (targetChar.entityType === 'minion') {
+          const currentDmg = ent.tokens?.damage || 0;
+          const h = Math.min(currentDmg, amount);
+          if (ent.tokens) ent.tokens.damage = Math.max(0, currentDmg - h);
+          healed += h;
+          if ((ent.tokens?.damage || 0) > 0) isFullyHealed = false;
+        }
       }
 
       const onomatopoeia = `HEAL +${healed} HP!`;
@@ -2329,12 +2390,8 @@ export function executeStep(
         onomatopoeia,
       });
 
-      const isFullyHealed =
-        target === 'VILLAIN'
-          ? state.villain.health >= (state.villain.maxHealth || 100)
-          : player.health >= player.maxHealth;
-
-      const conditionMet = step.condition === 'FULLY_HEALED' ? isFullyHealed : undefined;
+      const isFullyHealedResult = isFullyHealed;
+      const conditionMet = step.condition === 'FULLY_HEALED' ? isFullyHealedResult : undefined;
 
       return {
         state,
@@ -2500,107 +2557,82 @@ export function executeStep(
       if (context.isFinalStep && step.effectParams?.finisherBonus) {
         amount += (step.effectParams.finisherBonus as number) || 0;
       }
-      const targetParam = (step.effectParams?.target as string) || 'MAIN_SCHEME';
+      const targetParam =
+        (step.effectParams?.target as string) ||
+        (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
+        'MAIN_SCHEME';
+      const targetContext: EffectContext = {
+        ...context,
+        targetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+      };
       let removed = 0;
-      let targetSchemeName = state.mainScheme.card.name;
-      let remainingThreat = state.mainScheme.threat;
+      let targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
+      let remainingThreat = state.mainScheme?.threat || 0;
 
-      if (targetParam === 'CHOSEN_SCHEME') {
+      if (
+        targetParam === 'CHOSEN_SCHEME' &&
+        !step.effectParams?.targetInstanceId &&
+        !context.targetInstanceId &&
+        (state.sideSchemes || []).length > 0
+      ) {
         const sideSchemes = state.sideSchemes || [];
-        const explicitTargetId =
-          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
+        // Multiple schemes in play -> enqueue interactive decision prompt
+        const options: DecisionPromptOption[] = [
+          {
+            id: 'main_scheme',
+            label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
+            description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
+            effect: 'REMOVE_THREAT',
+            params: { amount, target: 'MAIN_SCHEME' },
+          },
+          ...sideSchemes.map((s) => ({
+            id: s.instanceId,
+            label: `${s.card.name} (${s.threat || 0} Threat)`,
+            description: `Remove ${amount} threat from ${s.card.name}`,
+            effect: 'REMOVE_THREAT',
+            params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
+          })),
+        ];
 
-        if (explicitTargetId) {
-          if (
-            explicitTargetId === 'main_scheme' ||
-            explicitTargetId === state.mainScheme.instanceId
-          ) {
-            removed = Math.min(state.mainScheme.threat, amount);
-            state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-            targetSchemeName = state.mainScheme.card.name;
-            remainingThreat = state.mainScheme.threat;
-          } else {
-            const sideScheme = sideSchemes.find((s) => s.instanceId === explicitTargetId);
-            if (sideScheme) {
-              const current = sideScheme.threat || 0;
-              removed = Math.min(current, amount);
-              sideScheme.threat = Math.max(0, current - amount);
-              targetSchemeName = sideScheme.card.name;
-              remainingThreat = sideScheme.threat;
-            } else {
-              removed = Math.min(state.mainScheme.threat, amount);
-              state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-              targetSchemeName = state.mainScheme.card.name;
-              remainingThreat = state.mainScheme.threat;
-            }
-          }
-        } else if (sideSchemes.length > 0) {
-          // Multiple schemes in play -> enqueue interactive decision prompt
-          const options: DecisionPromptOption[] = [
-            {
-              id: 'main_scheme',
-              label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
-              description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
-              effect: 'REMOVE_THREAT',
-              params: { amount, target: 'MAIN_SCHEME' },
-            },
-            ...sideSchemes.map((s) => ({
-              id: s.instanceId,
-              label: `${s.card.name} (${s.threat || 0} Threat)`,
-              description: `Remove ${amount} threat from ${s.card.name}`,
-              effect: 'REMOVE_THREAT',
-              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
-            })),
-          ];
+        enqueueDecisionPrompt(state, {
+          promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          playerId: player.id,
+          title: 'Choose a Scheme',
+          description: `Select a scheme to remove ${amount} threat from:`,
+          sourceCardName: context.sourceCardInstance?.card.name || 'Spider-Tracer',
+          options,
+        });
 
-          enqueueDecisionPrompt(state, {
-            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            playerId: player.id,
-            title: 'Choose a Scheme',
-            description: `Select a scheme to remove ${amount} threat from:`,
-            sourceCardName: context.sourceCardInstance?.card.name || 'Spider-Tracer',
-            options,
-          });
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: 'CHOOSE SCHEME!',
+        };
+      }
 
-          return {
-            state,
-            success: true,
-            mutatedState: true,
-            onomatopoeia: 'CHOOSE SCHEME!',
-          };
-        } else {
-          // Only main scheme in play -> remove directly
-          removed = Math.min(state.mainScheme.threat, amount);
-          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-          targetSchemeName = state.mainScheme.card.name;
-          remainingThreat = state.mainScheme.threat;
-        }
-      } else if (targetParam === 'MAIN_SCHEME') {
-        removed = Math.min(state.mainScheme.threat, amount);
-        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-        targetSchemeName = state.mainScheme.card.name;
-        remainingThreat = state.mainScheme.threat;
-      } else if (targetParam === 'SIDE_SCHEME' || context.targetInstanceId) {
-        const targetId =
-          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
-        const sideScheme = (state.sideSchemes || []).find((s) => s.instanceId === targetId);
-        if (sideScheme) {
-          const current = sideScheme.threat || 0;
-          removed = Math.min(current, amount);
-          sideScheme.threat = Math.max(0, current - amount);
-          targetSchemeName = sideScheme.card.name;
-          remainingThreat = sideScheme.threat;
-        } else {
-          removed = Math.min(state.mainScheme.threat, amount);
-          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-          targetSchemeName = state.mainScheme.card.name;
-          remainingThreat = state.mainScheme.threat;
-        }
-      } else {
-        removed = Math.min(state.mainScheme.threat, amount);
-        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
-        targetSchemeName = state.mainScheme.card.name;
-        remainingThreat = state.mainScheme.threat;
+      const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+      const targetSchemes =
+        schemes.length > 0
+          ? schemes
+          : [
+              {
+                kind: 'scheme' as const,
+                entityType: 'main_scheme' as const,
+                entity: state.mainScheme,
+                id: state.mainScheme.instanceId || 'main_scheme',
+              },
+            ];
+
+      for (const st of targetSchemes) {
+        const scheme = st.entity;
+        const current = scheme.threat || 0;
+        const rem = Math.min(current, amount);
+        scheme.threat = Math.max(0, current - amount);
+        removed += rem;
+        targetSchemeName = scheme.card?.name || 'Scheme';
+        remainingThreat = scheme.threat;
       }
 
       const onomatopoeia = `-${removed} THREAT!`;
@@ -2682,41 +2714,15 @@ export function executeStep(
         }
       };
 
-      if (
-        target === 'VILLAIN' ||
-        target === 'CHOSEN_ENEMY' ||
-        target === 'ATTACK_TARGET' ||
-        target === 'ATTACKED_ENEMY' ||
-        target === 'TARGET_ENEMY' ||
-        target === 'MINION' ||
-        target === 'PREVIOUS_TARGET'
-      ) {
-        if ((target === 'MINION' || context.targetType === 'minion') && context.targetInstanceId) {
-          for (const p of state.players) {
-            const minion = p.engagedMinions.find((m) => m.instanceId === context.targetInstanceId);
-            if (minion) {
-              applyStatusToEntity(minion);
-              break;
-            }
-          }
-        } else {
-          applyStatusToEntity(state.villain);
-        }
-      } else if (target === 'ALL_HEROES') {
-        for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
-          applyStatusToEntity(p);
-        }
-      } else if (
-        target === 'HERO' ||
-        target === 'DEFENDING_CHARACTER' ||
-        target === 'DEFENDING_PLAYER' ||
-        target === 'PLAYER' ||
-        target === 'ACTIVE_PLAYER' ||
-        target === 'ACTIVE_IDENTITY' ||
-        target === 'IDENTITY'
-      ) {
-        const targetPlayer = state.players.find((p) => p.id === context.playerId) || player;
-        applyStatusToEntity(targetPlayer);
+      const targetParam = (step.effectParams?.target as string) || 'VILLAIN';
+      const targetContext: EffectContext = {
+        ...context,
+        targetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+      };
+      const targetCharacters = resolveCharacterTargets(state, targetParam as any, targetContext);
+      for (const targetChar of targetCharacters) {
+        applyStatusToEntity(targetChar.entity);
       }
 
       const onomatopoeia = isImmune
@@ -2776,57 +2782,13 @@ export function executeStep(
       const targetPlayer =
         state.players.find((candidate) => candidate.id === context.targetPlayerId) || player;
       const targets: any[] = [];
-
-      const addTargetByInstanceId = (instanceId: string | undefined) => {
-        if (!instanceId) return;
-        const candidates: any[] = [
-          state.villain,
-          state.mainScheme,
-          ...state.sideSchemes,
-          ...state.players,
-          ...state.players.flatMap((candidate) => [
-            ...candidate.allies,
-            ...candidate.engagedMinions,
-            ...candidate.tableau,
-          ]),
-        ];
-        const match = candidates.find((candidate) => candidate?.instanceId === instanceId);
-        if (match) targets.push(match);
-      };
-
-      if (target === 'VILLAIN' || target === 'TRIGGERING_ENEMY') {
-        targets.push(state.villain);
-      } else if (target === 'CHOSEN_ENEMY' || target === 'CHOSEN_CHARACTER') {
-        addTargetByInstanceId(context.targetInstanceId);
-      } else if (target === 'CHOSEN_CONTROLLED_ALLY') {
-        const ally = targetPlayer.allies.find((candidate) =>
-          context.targetInstanceId ? candidate.instanceId === context.targetInstanceId : true,
-        );
-        if (ally) targets.push(ally);
-      } else if (target === 'ALL_CONTROLLED_ALLIES') {
-        targets.push(...targetPlayer.allies);
-      } else if (target === 'CHOSEN_CONTROLLED_CHARACTER') {
-        addTargetByInstanceId(context.targetInstanceId);
-        if (targets.length === 0) targets.push(targetPlayer);
-      } else if (target === 'ALL_CONTROLLED_CHARACTERS') {
-        targets.push(targetPlayer, ...targetPlayer.allies);
-      } else if (target === 'CHOSEN_FRIENDLY_CHARACTER') {
-        addTargetByInstanceId(context.targetInstanceId);
-      } else if (target === 'ALL_FRIENDLY_CHARACTERS') {
-        for (const candidate of state.players) {
-          targets.push(candidate, ...candidate.allies);
-        }
-      } else if (target === 'CHOSEN_SIDE_SCHEME' || target === 'TRIGGERING_SCHEME') {
-        const scheme = state.sideSchemes.find(
-          (candidate) => candidate.instanceId === context.targetInstanceId,
-        );
-        if (scheme) targets.push(scheme);
-      } else if (target === 'ALL_SCHEMES') {
-        targets.push(state.mainScheme, ...state.sideSchemes);
-      } else if (target === 'ACTIVE_PLAYER' || target === 'SELF_IDENTITY' || target === 'HERO') {
-        targets.push(targetPlayer);
-      } else if (context.targetInstanceId) {
-        addTargetByInstanceId(context.targetInstanceId);
+      const resolved = resolveTargets(state, target as any, context);
+      for (const r of resolved) {
+        targets.push(r.entity);
+      }
+      if (targets.length === 0 && context.targetInstanceId) {
+        const fallback = resolveEntityByInstanceId(state, context.targetInstanceId);
+        if (fallback) targets.push(fallback.entity);
       }
 
       let removedCount = 0;
@@ -3103,102 +3065,35 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let readyTargetName = player.name;
 
-      if (targetParam === 'SELF') {
-        const sourceId = context.sourceCardId || context.sourceCardInstance?.instanceId;
-        const tableauCard = player.tableau.find(
-          (c) => c.instanceId === sourceId || c.card.code === sourceId,
-        );
-        const allyCard = player.allies.find(
-          (a) => a.instanceId === sourceId || a.card.code === sourceId,
-        );
-        if (tableauCard) {
-          tableauCard.exhausted = false;
-          readyTargetName = tableauCard.card?.name || 'Tableau Card';
-        } else if (allyCard) {
-          allyCard.exhausted = false;
-          readyTargetName = allyCard.card?.name || 'Ally';
-        } else {
-          player.exhausted = false;
-          readyTargetName = player.activeFormCard?.name || player.name;
-        }
-      } else if (
-        targetParam === 'CHOSEN_ALLY' ||
-        targetParam === 'ALLY' ||
-        context.targetType === 'ally'
-      ) {
-        const ally =
-          (context.targetInstanceId
-            ? player.allies.find((a) => a.instanceId === context.targetInstanceId)
-            : undefined) ||
-          player.allies.find((a) => a.exhausted) ||
-          player.allies[0];
-        if (ally) {
-          ally.exhausted = false;
-          readyTargetName = ally.card?.name || 'Ally';
-        }
-      } else if (targetParam === 'ALL_ALLIES') {
-        for (const ally of player.allies) {
-          ally.exhausted = false;
-        }
-        readyTargetName = 'All Allies';
-      } else if (targetParam === 'ALL_CHARACTERS') {
-        player.exhausted = false;
-        for (const ally of player.allies) {
-          ally.exhausted = false;
-        }
-        readyTargetName = 'All Characters';
-      } else if (targetParam === 'CHOSEN_CHARACTER') {
-        if (context.targetInstanceId) {
-          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
-          if (ally) {
-            ally.exhausted = false;
-            readyTargetName = ally.card?.name || 'Ally';
-          } else {
-            player.exhausted = false;
-            readyTargetName = player.activeFormCard?.name || player.name;
-          }
-        } else if (context.targetType === 'identity') {
-          player.exhausted = false;
-          readyTargetName = player.activeFormCard?.name || player.name;
-        } else if (player.exhausted) {
-          player.exhausted = false;
-          readyTargetName = player.activeFormCard?.name || player.name;
-        } else {
-          const exhaustedAlly = player.allies.find((a) => a.exhausted);
-          if (exhaustedAlly) {
-            exhaustedAlly.exhausted = false;
-            readyTargetName = exhaustedAlly.card?.name || 'Ally';
-          } else {
-            player.exhausted = false;
-          }
-        }
-      } else if (targetParam === 'VILLAIN') {
-        if (state.villain) {
-          state.villain.exhausted = false;
-          readyTargetName = state.villain.card?.name || 'Villain';
-        }
-      } else if (targetParam === 'CHOSEN_MINION') {
-        const minion =
-          (context.targetInstanceId
-            ? player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId)
-            : undefined) ||
-          player.engagedMinions.find((m) => m.exhausted) ||
-          player.engagedMinions[0];
-        if (minion) {
-          minion.exhausted = false;
-          readyTargetName = minion.card?.name || 'Minion';
-        }
-      } else if (targetParam === 'ALL_MINIONS') {
-        for (const p of state.players) {
-          for (const m of p.engagedMinions) {
-            m.exhausted = false;
-          }
-        }
-        readyTargetName = 'All Minions';
-      } else {
-        // SELF_IDENTITY, ACTIVE_PLAYER, or default
+      const targets = resolveTargets(state, targetParam as any, context);
+      if (targets.length === 0) {
         player.exhausted = false;
         readyTargetName = player.activeFormCard?.name || player.name;
+      } else {
+        const names: string[] = [];
+        for (const t of targets) {
+          if (t.kind === 'character') {
+            if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+              (t.entity as PlayerState).exhausted = false;
+              names.push(
+                (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
+              );
+            } else if (t.entityType === 'villain') {
+              (t.entity as VillainState).exhausted = false;
+              names.push((t.entity as VillainState).card?.name || 'Villain');
+            } else {
+              (t.entity as CardInstance).exhausted = false;
+              names.push((t.entity as CardInstance).card?.name || 'Character');
+            }
+          } else if (t.kind === 'card') {
+            t.entity.exhausted = false;
+            names.push(t.entity.card?.name || 'Card');
+          } else if (t.kind === 'player') {
+            t.entity.exhausted = false;
+            names.push(t.entity.activeFormCard?.name || t.entity.name);
+          }
+        }
+        readyTargetName = names.join(', ') || player.name;
       }
 
       state.log.push({
@@ -3243,102 +3138,35 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;
 
-      if (targetParam === 'SELF') {
-        const sourceId = context.sourceCardId || context.sourceCardInstance?.instanceId;
-        const tableauCard = player.tableau.find(
-          (c) => c.instanceId === sourceId || c.card.code === sourceId,
-        );
-        const allyCard = player.allies.find(
-          (a) => a.instanceId === sourceId || a.card.code === sourceId,
-        );
-        if (tableauCard) {
-          tableauCard.exhausted = true;
-          exhaustTargetName = tableauCard.card?.name || 'Tableau Card';
-        } else if (allyCard) {
-          allyCard.exhausted = true;
-          exhaustTargetName = allyCard.card?.name || 'Ally';
-        } else {
-          player.exhausted = true;
-          exhaustTargetName = player.activeFormCard?.name || player.name;
-        }
-      } else if (
-        targetParam === 'CHOSEN_ALLY' ||
-        targetParam === 'ALLY' ||
-        context.targetType === 'ally'
-      ) {
-        const ally =
-          (context.targetInstanceId
-            ? player.allies.find((a) => a.instanceId === context.targetInstanceId)
-            : undefined) ||
-          player.allies.find((a) => !a.exhausted) ||
-          player.allies[0];
-        if (ally) {
-          ally.exhausted = true;
-          exhaustTargetName = ally.card?.name || 'Ally';
-        }
-      } else if (targetParam === 'ALL_ALLIES') {
-        for (const ally of player.allies) {
-          ally.exhausted = true;
-        }
-        exhaustTargetName = 'All Allies';
-      } else if (targetParam === 'ALL_CHARACTERS') {
-        player.exhausted = true;
-        for (const ally of player.allies) {
-          ally.exhausted = true;
-        }
-        exhaustTargetName = 'All Characters';
-      } else if (targetParam === 'CHOSEN_CHARACTER') {
-        if (context.targetInstanceId) {
-          const ally = player.allies.find((a) => a.instanceId === context.targetInstanceId);
-          if (ally) {
-            ally.exhausted = true;
-            exhaustTargetName = ally.card?.name || 'Ally';
-          } else {
-            player.exhausted = true;
-            exhaustTargetName = player.activeFormCard?.name || player.name;
-          }
-        } else if (context.targetType === 'identity') {
-          player.exhausted = true;
-          exhaustTargetName = player.activeFormCard?.name || player.name;
-        } else if (!player.exhausted) {
-          player.exhausted = true;
-          exhaustTargetName = player.activeFormCard?.name || player.name;
-        } else {
-          const readyAlly = player.allies.find((a) => !a.exhausted);
-          if (readyAlly) {
-            readyAlly.exhausted = true;
-            exhaustTargetName = readyAlly.card?.name || 'Ally';
-          } else {
-            player.exhausted = true;
-          }
-        }
-      } else if (targetParam === 'VILLAIN') {
-        if (state.villain) {
-          state.villain.exhausted = true;
-          exhaustTargetName = state.villain.card?.name || 'Villain';
-        }
-      } else if (targetParam === 'CHOSEN_MINION') {
-        const minion =
-          (context.targetInstanceId
-            ? player.engagedMinions.find((m) => m.instanceId === context.targetInstanceId)
-            : undefined) ||
-          player.engagedMinions.find((m) => !m.exhausted) ||
-          player.engagedMinions[0];
-        if (minion) {
-          minion.exhausted = true;
-          exhaustTargetName = minion.card?.name || 'Minion';
-        }
-      } else if (targetParam === 'ALL_MINIONS') {
-        for (const p of state.players) {
-          for (const m of p.engagedMinions) {
-            m.exhausted = true;
-          }
-        }
-        exhaustTargetName = 'All Minions';
-      } else {
-        // SELF_IDENTITY, ACTIVE_PLAYER, or default
+      const targets = resolveTargets(state, targetParam as any, context);
+      if (targets.length === 0) {
         player.exhausted = true;
         exhaustTargetName = player.activeFormCard?.name || player.name;
+      } else {
+        const names: string[] = [];
+        for (const t of targets) {
+          if (t.kind === 'character') {
+            if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+              (t.entity as PlayerState).exhausted = true;
+              names.push(
+                (t.entity as PlayerState).activeFormCard?.name || (t.entity as PlayerState).name,
+              );
+            } else if (t.entityType === 'villain') {
+              (t.entity as VillainState).exhausted = true;
+              names.push((t.entity as VillainState).card?.name || 'Villain');
+            } else {
+              (t.entity as CardInstance).exhausted = true;
+              names.push((t.entity as CardInstance).card?.name || 'Character');
+            }
+          } else if (t.kind === 'card') {
+            t.entity.exhausted = true;
+            names.push(t.entity.card?.name || 'Card');
+          } else if (t.kind === 'player') {
+            t.entity.exhausted = true;
+            names.push(t.entity.activeFormCard?.name || t.entity.name);
+          }
+        }
+        exhaustTargetName = names.join(', ') || player.name;
       }
 
       state.log.push({
@@ -3880,9 +3708,17 @@ export function executeStep(
       );
       const isPerPlayer = !!(step.effectParams?.perPlayer || step.effectParams?.amountPerPlayer);
       const amount = isPerPlayer ? baseAmount * state.players.length : baseAmount;
-      const target = (step.effectParams?.target as string) || 'MAIN_SCHEME';
+      const targetParam =
+        (step.effectParams?.target as string) ||
+        (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
+        'MAIN_SCHEME';
+      const targetContext: EffectContext = {
+        ...context,
+        targetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context?.targetInstanceId,
+      };
 
-      if (target === 'ALL_SIDE_SCHEMES') {
+      if (targetParam === 'ALL_SIDE_SCHEMES') {
         if (state.sideSchemes.length > 0) {
           for (const s of state.sideSchemes) {
             s.threat = (s.threat || 0) + amount;
@@ -3926,14 +3762,12 @@ export function executeStep(
       }
       const cardCode =
         (step.effectParams?.cardCode as string) ||
-        (target !== 'MAIN_SCHEME' && target !== 'THIS_SIDE_SCHEME' && /^\d{5}$/.test(target)
-          ? target
+        (targetParam !== 'MAIN_SCHEME' &&
+        targetParam !== 'THIS_SIDE_SCHEME' &&
+        targetParam !== 'CHOSEN_SCHEME' &&
+        /^\d{5}$/.test(targetParam)
+          ? targetParam
           : undefined);
-      const targetInstanceId =
-        (step.effectParams?.targetInstanceId as string) ||
-        (target.startsWith('scheme_') || target.startsWith('side_') ? target : undefined) ||
-        context.targetInstanceId;
-
       if (cardCode) {
         const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
         if (sideScheme) {
@@ -4005,11 +3839,10 @@ export function executeStep(
         };
       }
 
-      if (targetInstanceId) {
-        const sideScheme = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);
-        if (sideScheme) {
-          sideScheme.threat = (sideScheme.threat || 0) + amount;
-          const onomatopoeia = `SCHEME THREAT +${amount}!`;
+      const targetSchemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+      if (targetSchemes.length > 0) {
+        for (const st of targetSchemes) {
+          st.entity.threat = (st.entity.threat || 0) + amount;
           state.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
@@ -4017,97 +3850,36 @@ export function executeStep(
             phase: state.phase,
             key: 'scheme.threat.added',
             params: {
-              target: sideScheme.card.name,
-              instanceId: targetInstanceId,
+              target: st.entity.card?.name || 'Scheme',
+              instanceId: st.entity.instanceId || 'scheme',
               amount,
-              total: sideScheme.threat,
+              total: st.entity.threat,
             },
-            onomatopoeia,
+            onomatopoeia: `SCHEME THREAT +${amount}!`,
           });
-          return {
-            state,
-            success: true,
-            mutatedState: amount > 0,
-            value: amount,
-            onomatopoeia,
-          };
         }
-
-        if (
-          state.mainScheme &&
-          (state.mainScheme.instanceId === targetInstanceId || targetInstanceId === 'main_scheme')
-        ) {
-          state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
-          const onomatopoeia = `SCHEME THREAT +${amount}!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'scheme.threat.added',
-            params: {
-              target: state.mainScheme.card.name,
-              instanceId: targetInstanceId,
-              amount,
-              total: state.mainScheme.threat,
-            },
-            onomatopoeia,
-          });
-          return {
-            state,
-            success: true,
-            mutatedState: amount > 0,
-            value: amount,
-            onomatopoeia,
-          };
-        }
+        return {
+          state,
+          success: true,
+          mutatedState: amount > 0,
+          value: amount,
+          onomatopoeia: `SCHEME THREAT +${amount}!`,
+        };
       }
 
-      if ((target === 'THIS_SIDE_SCHEME' || target === 'SELF') && context.sourceCardInstance) {
-        const sideScheme = (state.sideSchemes || []).find(
-          (s) =>
-            s.instanceId === context.sourceCardInstance!.instanceId ||
-            s.card.code === context.sourceCardInstance!.card.code,
-        );
-        if (sideScheme) {
-          sideScheme.threat = (sideScheme.threat || 0) + amount;
-          const onomatopoeia = `SCHEME THREAT +${amount}!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'scheme.threat.added',
-            params: { target: sideScheme.card.name, amount, total: sideScheme.threat },
-            onomatopoeia,
-          });
-          return {
-            state,
-            success: true,
-            mutatedState: amount > 0,
-            value: amount,
-            onomatopoeia,
-          };
-        }
-      }
-
-      state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
-      const onomatopoeia = `SCHEME THREAT +${amount}!`;
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
-        key: 'scheme.threat.added',
-        params: { target, amount, total: state.mainScheme.threat },
-        onomatopoeia,
+        key: 'scheme.threat.target_missing',
+        params: { target: targetParam, amount },
       });
       return {
         state,
         success: true,
-        mutatedState: amount > 0,
-        value: amount,
-        onomatopoeia,
+        mutatedState: false,
+        value: 0,
       };
     }
 

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine & Specifications): Streamline and Unify TargetSelector Taxonomy and Resolution Engine ([Issue #68](https://github.com/SteveRodrigue/MCD/issues/68) / [ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md) & [ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
+  - **Headless Rules Engine:**
+    - Created `src/engine/effects/target-resolver.ts` establishing a centralized, type-safe target resolution module for the rules engine.
+    - Implemented `resolveTargets`, `resolveCharacterTargets`, `resolveSchemeTargets`, `resolvePlayerTargets`, `resolveCardTargets`, and `resolveEntityByInstanceId` mapping all 36 canonical `TargetSelector` literals across the orthogonal Entity Type × Scope matrix.
+    - Delegated target entity resolution across core effect primitives (`ADD_STATUS`, `REMOVE_STATUS`, `HEAL_DAMAGE`, `EXHAUST`, `READY`, `REMOVE_THREAT`, `ADD_THREAT`, `DRAW`, `DISCARD`) in `src/engine/effects/index.ts` to `target-resolver.ts`, eliminating over 490 lines of duplicate, ad-hoc entity matching.
+    - Purged legacy ungrounded strings (`ATTACK_TARGET`, `ATTACKED_ENEMY`, `TARGET_ENEMY`, `DEFENDING_CHARACTER`, `DEFENDING_PLAYER`, `ACTIVE_IDENTITY`, `IDENTITY`, `HERO`) in accordance with the Zero Tech Debt Invariant.
+    - Enforced 4-tier guardrails for zero-orphan entity references, spatial card conservation (ADR-0040), and target liveness guarantees (RR v1.8 p. 28).
+    - Updated `attachCardToHost` in `src/engine/state/state-validator.ts` to resolve canonical target selectors (`SELF_IDENTITY`, `CHOSEN_PLAYER`, `ACTIVE_PLAYER`, etc.).
+  - **Data Layer & Types:**
+    - Exported `TargetSelector` type in `src/data/supplemental/schema.ts` (`export type TargetSelector = z.infer<typeof TargetSelectorSchema>;`).
+  - **Specifications & Documentation:**
+    - Added Section 3 ("The Orthogonal Target Taxonomy Model") to `docs/specifications/supplemental/03_costs_and_targeting.md` documenting the complete Scope / Quantifier × Entity Type matrix, dimension definitions, and engine resolution domain mappings.
+  - **Contract & Acceptance Tests:**
+    - Created `tests/engine/target-resolution-engine.test.ts` with 21 contract tests covering all 8 requirement categories (Identity, Controlled vs Friendly, Form-Restricted Scopes, Enemy/Minion Scopes, Universal Characters, Schemes, Continuity & Primitives, Orphan & Liveness guards).
+
 - **Feature (Engine & UI): Cross-Player Attachments & Persistent Card Ownership Invariants ([Issue #23](https://github.com/SteveRodrigue/MCD/issues/23) / [ADR-0068](docs/decisions/0068-cross-player-attachments-and-card-ownership-invariants.md))**
   - **Schema & Supplemental Data Layer:**
     - Added `playUnderAnyPlayerControl: z.boolean().optional()` to `CardEnrichmentSchema` in `src/data/supplemental/schema.ts` and `CardEnrichment` interface in `src/engine/models/abilities.ts`.

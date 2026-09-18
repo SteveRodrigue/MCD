@@ -31,7 +31,6 @@ The delivery workflow may prepare staged changes, a proposed commit message, a w
 | Specific card translation/refinement | `.agents/skills/card-integration-protocol/SKILL.md` |
 | New generic capability               | `.agents/skills/feature-delivery/SKILL.md`          |
 | Defect or regression                 | `.agents/skills/bug-fix/SKILL.md`                   |
-| Vocabulary migration                 | `.agents/skills/schema-taxonomy-migration/SKILL.md` |
 | Documentation drift                  | `.agents/skills/documentation-audit/SKILL.md`       |
 | Dependency alert                     | `.agents/skills/dependabot/SKILL.md`                |
 | Approved plan execution              | `.agents/skills/execute-plan/SKILL.md`              |

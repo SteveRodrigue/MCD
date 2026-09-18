@@ -603,6 +603,8 @@ export type SearchZone = z.infer<typeof SearchZoneSchema>;
 export const SearchAndSelectParamsSchema = z
   .object({
     source: z.union([SearchZoneSchema, z.array(SearchZoneSchema).min(1)]).default('PLAYER_DECK'),
+    target: TargetSelectorSchema.optional().default('SELF'),
+    fromTop: z.boolean().optional().default(false),
     lookCount: z
       .union([z.number().int().nonnegative(), z.literal('ALL'), DynamicValueSourceSchema])
       .optional(),
@@ -619,7 +621,7 @@ export const SearchAndSelectParamsSchema = z
       .optional(),
     shuffleAfter: z.boolean().optional(),
     isVoluntary: z.boolean().optional(),
-    autoSelectIfUnambiguous: z.boolean().optional(),
+    autoSelectIfUnambiguous: z.boolean().optional().default(true),
     promptTitle: z.string().optional(),
   })
   .strict();
@@ -672,6 +674,7 @@ export type ReduceNextCardCostParams = z.infer<typeof ReduceNextCardCostParamsSc
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
+  target?: TargetSelector;
   gateParams?: Record<string, any>;
   effectParams?: Record<string, any>;
   gate?: z.infer<typeof ConditionGateSchema>;
@@ -694,6 +697,7 @@ export const AbilityStepSchema = z
   .object({
     id: z.string().optional(),
     effect: EffectTypeSchema,
+    target: TargetSelectorSchema.optional(),
     gateParams: z.record(z.string(), z.any()).optional(),
     effectParams: z.record(z.string(), z.any()).optional(),
     gate: ConditionGateSchema.optional(),

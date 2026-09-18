@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine, UI & Supplemental): Cross-Player Targeting, Discard Legality & Unambiguous Auto-Resolution for Stark Tower ([Issue #14](https://github.com/SteveRodrigue/MCD/issues/14) / [ADR-0029](docs/decisions/0029-generic-zone-transfer-and-deck-manipulation-primitives.md) & [ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
+  - **Headless Rules Engine & Legality Checking:**
+    - Implemented `evaluateSearchLegality` in `src/engine/pipeline/legality-checker.ts` and integrated it into Step 5 of `canInitiateAbility`, enforcing RR v1.8 p. 2 & 28 by preventing abilities from initiating when no eligible matching card exists in the target discard zone.
+    - Updated `SEARCH` primitive in `src/engine/effects/index.ts` to support `target: 'CHOSEN_PLAYER'` and evaluate discard piles top-to-bottom (`fromTop: true` evaluating `[...pile].reverse()`), ensuring the topmost matching card is retrieved per RR v1.8 p. 10.
+    - Enforced multiplayer target discrimination: in 2+ player matches, decision prompts display all players, disabling ineligible players with `disabledReason: "No Tech upgrade in discard pile"`.
+    - Added support for `GameState.options.autoResolveUnambiguous`: auto-resolves for the single eligible player when enabled and unambiguous, or prompts with disabled reasons when toggled off.
+    - Updated `SEARCH_AND_SELECT_RESOLUTION` in `src/engine/pipeline/action-dispatcher.ts` to route retrieved cards directly to `targetPlayerId`'s hand.
+  - **Data Layer & Supplemental Schema:**
+    - Extended `SearchAndSelectParamsSchema` in `src/data/supplemental/schema.ts` with `target: TargetSelectorSchema.optional().default('SELF')`, `fromTop: z.boolean().optional().default(false)`, and `autoSelectIfUnambiguous: z.boolean().optional().default(true)`.
+    - Updated Stark Tower (`01034`) in `src/data/supplemental/pack/core.json` with `target: "CHOSEN_PLAYER"`, `fromTop: true`, `autoSelectIfUnambiguous: true`, and verified 100% confidence.
+  - **UI Settings & Card Editor:**
+    - Added `autoResolveUnambiguous` (default: `true`) to `GameSettingsContext`, `GameSettingsProvider`, and `GameState.options` via `App.tsx`.
+    - Added comic-styled toggle control for "Auto-Resolve Unambiguous Actions" in `src/ui/components/board/OptionsMenu.tsx` (Bullpen Workshop).
+    - Updated `EFFECT_PARAMETER_REGISTRY.SEARCH` in `src/ui/components/editor/effect-parameter-registry.ts` exposing `target`, `fromTop`, and `autoSelectIfUnambiguous` parameter controls in the Card Editor UI.
+  - **Automated Tests:**
+    - Created `tests/engine/stark-tower-cross-player.test.ts` covering 5 test scenarios: legality pre-check rejection on empty discard, topmost retrieval ordering, multiplayer single-eligible auto-resolution, multiplayer multi-eligible decision prompting, and disabled option inspection when `autoResolveUnambiguous: false`.
+    - Updated `tests/ui/effect-parameter-registry.test.ts` verifying Card Editor descriptors for `target` and `fromTop`.
+
 - **Feature (Engine & Specifications): Streamline and Unify TargetSelector Taxonomy and Resolution Engine ([Issue #68](https://github.com/SteveRodrigue/MCD/issues/68) / [ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md) & [ADR-0064](docs/decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md))**
   - **Headless Rules Engine:**
     - Created `src/engine/effects/target-resolver.ts` establishing a centralized, type-safe target resolution module for the rules engine.

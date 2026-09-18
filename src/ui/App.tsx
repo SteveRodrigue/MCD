@@ -16,9 +16,11 @@ import { GameBoard } from './components/board/GameBoard';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
+import { useGameSettings } from './context/useGameSettings';
 import { SupplementalEditorScreen } from './components/editor/SupplementalEditorScreen';
 
 export const AppContent: React.FC = () => {
+  const { settings } = useGameSettings();
   const [catalog] = useState(() => new CardCatalog([...corePack, ...coreEncounterPack]));
   const [stage, setStage] = useState<'SETUP' | 'MULLIGAN' | 'IN_GAME' | 'EDITOR'>(() => {
     if (typeof window !== 'undefined') {
@@ -32,6 +34,22 @@ export const AppContent: React.FC = () => {
   });
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
+
+  // Sync game settings (e.g. autoResolveUnambiguous) to active gameState.options
+  React.useEffect(() => {
+    setGameState((prev) => {
+      if (!prev || prev.options?.autoResolveUnambiguous === settings.autoResolveUnambiguous) {
+        return prev;
+      }
+      return {
+        ...prev,
+        options: {
+          ...prev.options,
+          autoResolveUnambiguous: settings.autoResolveUnambiguous,
+        },
+      };
+    });
+  }, [settings.autoResolveUnambiguous]);
 
   // Handle browser popstate
   React.useEffect(() => {
@@ -91,6 +109,11 @@ export const AppContent: React.FC = () => {
       modularSetCodes: selection.selectedModularSetCodes,
     });
 
+    newGameState.options = {
+      ...newGameState.options,
+      autoResolveUnambiguous: settings.autoResolveUnambiguous,
+    };
+
     setGameState(newGameState);
     setStage('MULLIGAN');
   };
@@ -103,6 +126,10 @@ export const AppContent: React.FC = () => {
       playerId,
       discardCardInstanceIds: discardIds,
     });
+    nextState.options = {
+      ...nextState.options,
+      autoResolveUnambiguous: settings.autoResolveUnambiguous,
+    };
 
     setGameState(nextState);
   };
@@ -122,6 +149,10 @@ export const AppContent: React.FC = () => {
         currentState = nextState;
       }
     }
+    currentState.options = {
+      ...currentState.options,
+      autoResolveUnambiguous: settings.autoResolveUnambiguous,
+    };
 
     setGameState(currentState);
     setStage('IN_GAME');
@@ -131,6 +162,10 @@ export const AppContent: React.FC = () => {
     if (!gameState) return;
     try {
       const { state: nextState } = dispatchAction(gameState, action);
+      nextState.options = {
+        ...nextState.options,
+        autoResolveUnambiguous: settings.autoResolveUnambiguous,
+      };
       setGameState(nextState);
     } catch (err) {
       if (err instanceof InfiniteLoopError) {

@@ -73,12 +73,26 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     const paramKeys = desc.parameters.map((p) => p.key);
 
     expect(paramKeys).toContain('source');
+    expect(paramKeys).toContain('target');
+    expect(paramKeys).toContain('fromTop');
     expect(paramKeys).toContain('lookCount');
     expect(paramKeys).toContain('takeCount');
     expect(paramKeys).toContain('filter');
     expect(paramKeys).toContain('selectedDestination');
     expect(paramKeys).toContain('unselectedDestination');
     expect(paramKeys).toContain('autoSelectIfUnambiguous');
+
+    const targetParam = desc.parameters.find((p) => p.key === 'target');
+    expect(targetParam?.type).toBe('select');
+    expect(targetParam?.defaultValue).toBe('SELF');
+
+    const fromTopParam = desc.parameters.find((p) => p.key === 'fromTop');
+    expect(fromTopParam?.type).toBe('boolean');
+    expect(fromTopParam?.defaultValue).toBe(false);
+
+    const autoSelectParam = desc.parameters.find((p) => p.key === 'autoSelectIfUnambiguous');
+    expect(autoSelectParam?.type).toBe('boolean');
+    expect(autoSelectParam?.defaultValue).toBe(true);
 
     const filterParam = desc.parameters.find((p) => p.key === 'filter');
     expect(filterParam?.type).toBe('card-filter');

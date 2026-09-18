@@ -163,6 +163,7 @@ export interface SequenceExecutionContext {
 export interface AbilityStep {
   id?: string;
   effect: EffectType;
+  target?: string;
   gateParams?: Record<string, unknown>;
   effectParams?: Record<string, unknown>;
   gate?: ConditionGate;

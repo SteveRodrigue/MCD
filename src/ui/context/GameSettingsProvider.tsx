@@ -35,6 +35,17 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((previous) => ({ ...previous, devMode: !previous.devMode }));
   };
 
+  const setAutoResolveUnambiguous = (enabled: boolean) => {
+    setSettings((previous) => ({ ...previous, autoResolveUnambiguous: enabled }));
+  };
+
+  const toggleAutoResolveUnambiguous = () => {
+    setSettings((previous) => ({
+      ...previous,
+      autoResolveUnambiguous: !(previous.autoResolveUnambiguous !== false),
+    }));
+  };
+
   const setEdgeScrollSpeed = (speed: 'slow' | 'normal' | 'fast') => {
     setSettings((previous) => ({ ...previous, edgeScrollSpeed: speed }));
   };
@@ -60,12 +71,15 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       value={{
         settings,
         devMode: settings.devMode,
+        autoResolveUnambiguous: settings.autoResolveUnambiguous !== false,
         edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
         cardZoomLevel: settings.cardZoomLevel || 'normal',
         defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
         defaultHeroicLevel: settings.defaultHeroicLevel || 0,
         setDevMode,
         toggleDevMode,
+        setAutoResolveUnambiguous,
+        toggleAutoResolveUnambiguous,
         setEdgeScrollSpeed,
         setCardZoomLevel,
         setDefaultDifficulty,

@@ -11,6 +11,7 @@ import {
   Camera,
   BookOpen,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { GameState } from '../../../engine/models';
@@ -27,6 +28,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
   const {
     devMode,
     toggleDevMode,
+    autoResolveUnambiguous,
+    toggleAutoResolveUnambiguous,
     edgeScrollSpeed,
     setEdgeScrollSpeed,
     cardZoomLevel,
@@ -232,6 +235,39 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             <p className="text-xs text-slate-600">
               Enables hidden information inspectors (face-down draw deck inspection, search & debug
               scrying) for development and rules testing.
+            </p>
+          </div>
+
+          {/* Auto-Resolve Unambiguous Actions Setting */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-comic-yellow" />
+                <span className="font-comic text-base text-comic-black">
+                  Auto-Resolve Unambiguous Actions
+                </span>
+              </div>
+
+              {/* Toggle Switch */}
+              <button
+                onClick={toggleAutoResolveUnambiguous}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full border-2 border-comic-black transition-colors cursor-pointer shadow-comic-sm ${
+                  autoResolveUnambiguous ? 'bg-emerald-500' : 'bg-slate-300'
+                }`}
+                role="switch"
+                aria-checked={autoResolveUnambiguous}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white border border-comic-black transition-transform ${
+                    autoResolveUnambiguous ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Automatically resolves abilities and targeting when only 1 legal choice exists.
+              Disable to force decision prompts and view disabled options.
             </p>
           </div>
 

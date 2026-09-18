@@ -10,6 +10,7 @@ import {
   hasKeyword,
   getKeywordValue,
   CardAbility,
+  AbilityStep,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
 import {
@@ -795,6 +796,81 @@ export function evaluateSchemeTargetRequirement(
 }
 
 /**
+ * Evaluates the legality of initiating a SEARCH ability step (RR v1.8 p. 2, 28).
+ * Ensures at least one eligible target exists to change the game state.
+ */
+export function evaluateSearchLegality(
+  state: GameState,
+  player: PlayerState,
+  step: AbilityStep,
+): { allowed: boolean; reason?: string } {
+  const stepParams = getStepEffectParams(step);
+  const source = stepParams.source || 'PLAYER_DECK';
+  const target = (stepParams.target as string) || (step.target as string) || 'SELF';
+  const filter = (stepParams.filter || (step as any).filter) as Record<string, any> | undefined;
+
+  const sources = Array.isArray(source) ? source : [source];
+
+  if (sources.includes('PLAYER_DISCARD')) {
+    if (target === 'CHOSEN_PLAYER' || target === 'ALL_PLAYERS') {
+      const anyPlayerHasMatch = (state.players || []).some((p) =>
+        (p.discard || []).some(
+          (c) => !filter || matchesCardFilter(c.card, filter, { state, player: p }),
+        ),
+      );
+      if (!anyPlayerHasMatch) {
+        return {
+          allowed: false,
+          reason: 'Cannot trigger ability: No player has a matching card in their discard pile.',
+        };
+      }
+    } else if (target === 'SELF' || target === 'ACTIVE_PLAYER' || !target) {
+      const hasMatch = (player.discard || []).some(
+        (c) => !filter || matchesCardFilter(c.card, filter, { state, player }),
+      );
+      if (!hasMatch) {
+        return {
+          allowed: false,
+          reason: 'Cannot trigger ability: No matching card in your discard pile.',
+        };
+      }
+    }
+  }
+
+  if (sources.includes('ENCOUNTER_DISCARD')) {
+    const hasMatch = (state.encounterDiscard || []).some(
+      (c) => !filter || matchesCardFilter(c.card, filter, { state, player }),
+    );
+    if (!hasMatch) {
+      return {
+        allowed: false,
+        reason: 'Cannot trigger ability: No matching card in encounter discard pile.',
+      };
+    }
+  }
+
+  if (sources.includes('PLAYER_DECK')) {
+    if ((player.deck || []).length === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot trigger ability: Player deck is empty.',
+      };
+    }
+  }
+
+  if (sources.includes('ENCOUNTER_DECK')) {
+    if ((state.encounterDeck || []).length === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot trigger ability: Encounter deck is empty.',
+      };
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Evaluates whether an ability on an in-play card or identity can be legally initiated (RR v1.8 p. 15-16, 29, 30; Issue #101).
  * Validates:
  * 1. Active player turn for actions (RR v1.8 p. 19).
@@ -903,6 +979,14 @@ export function canInitiateAbility(
             reason: 'Cannot attack: Villain is protected by an engaged minion with Guard.',
           };
         }
+      }
+    }
+
+    // 5C. Search / Deck / Discard Target (RR v1.8 p. 2, 28)
+    if (step.effect === 'SEARCH') {
+      const searchCheck = evaluateSearchLegality(state, player, step);
+      if (!searchCheck.allowed) {
+        return searchCheck;
       }
     }
   }

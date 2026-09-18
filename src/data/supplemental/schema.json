@@ -439,6 +439,47 @@
                           "REMOVE_STATUS"
                         ]
                       },
+                      "target": {
+                        "type": "string",
+                        "enum": [
+                          "SELF",
+                          "SELF_IDENTITY",
+                          "ACTIVE_PLAYER",
+                          "ALL_PLAYERS",
+                          "ALL_HEROES",
+                          "ALL_HEROES_AND_ALLIES",
+                          "TRIGGERING_HERO",
+                          "CHOSEN_PLAYER",
+                          "VILLAIN",
+                          "MAIN_SCHEME",
+                          "CHOSEN_SCHEME",
+                          "CHOSEN_ENEMY",
+                          "ALL_ENEMIES",
+                          "ENGAGED_ENEMIES",
+                          "ENGAGED_MINIONS",
+                          "CHOSEN_MINION",
+                          "CHOSEN_ENGAGED_MINION",
+                          "ALL_MINIONS",
+                          "CHOSEN_ALLY",
+                          "CHOSEN_CONTROLLED_ALLY",
+                          "ALL_CONTROLLED_ALLIES",
+                          "ALL_ALLIES",
+                          "CHOSEN_CHARACTER",
+                          "CHOSEN_CONTROLLED_CHARACTER",
+                          "ALL_CONTROLLED_CHARACTERS",
+                          "CHOSEN_FRIENDLY_CHARACTER",
+                          "ALL_FRIENDLY_CHARACTERS",
+                          "ALL_CHARACTERS",
+                          "CHOSEN_SIDE_SCHEME",
+                          "ALL_SIDE_SCHEMES",
+                          "ALL_SCHEMES",
+                          "TRIGGERING_SCHEME",
+                          "PREVIOUS_TARGET",
+                          "PREVIOUS_SELECTED_CARD",
+                          "TRIGGERING_MINION",
+                          "TRIGGERING_ENEMY"
+                        ]
+                      },
                       "gateParams": {
                         "type": "object",
                         "propertyNames": {

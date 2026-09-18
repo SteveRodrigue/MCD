@@ -1256,7 +1256,7 @@
       }
     },
     "01034": {
-      "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player to return 1 Tech upgrade from discard to hand.",
+      "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player. That player returns the topmost Tech upgrade in their discard pile to their hand.",
       "abilities": [
         {
           "id": "stark_tower_retrieve",
@@ -1267,8 +1267,11 @@
           "steps": [
             {
               "effect": "SEARCH",
+              "target": "CHOSEN_PLAYER",
               "effectParams": {
                 "source": "PLAYER_DISCARD",
+                "target": "CHOSEN_PLAYER",
+                "fromTop": true,
                 "filter": {
                   "traits": [
                     "Tech"
@@ -1287,11 +1290,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-18T10:10:00Z",
+        "reviewedAt": "2026-09-18T10:10:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Alter-Ego Action</b>: Exhaust Stark Tower → choose a player. That player returns the topmost [[Tech]] upgrade in their discard pile to their hand."
       }
     },

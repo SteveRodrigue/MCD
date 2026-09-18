@@ -1,4 +1,4 @@
-# [ADR-0068] Support Cross-Player Attachments & Card Ownership Invariants
+# [ADR-0066] Support Cross-Player Attachments & Card Ownership Invariants
 
 - **Status:** Accepted
 - **Date:** 2026-09-17

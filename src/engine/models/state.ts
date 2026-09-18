@@ -294,12 +294,21 @@ export interface EncounterExecutionContext {
   cancellationReason?: string;
 }
 
+export interface GameOptions {
+  /**
+   * When true (default), abilities and actions with only 1 legal choice resolve automatically
+   * without opening a decision prompt. When false, prompts always open for inspection.
+   */
+  autoResolveUnambiguous?: boolean;
+}
+
 export interface GameState {
   id: string;
   roundNumber: number;
   phase: GamePhase;
   setupState?: SetupState;
   villainPhaseStep?: VillainPhaseStep;
+  options?: GameOptions;
 
   /** Structured FIFO Prompt Queue (ADR-0032) */
   pendingDecisionQueue?: PendingDecisionPrompt[];

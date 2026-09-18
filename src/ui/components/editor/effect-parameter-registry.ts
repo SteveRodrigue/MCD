@@ -1234,6 +1234,22 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: ['PLAYER_DECK'],
       },
       {
+        key: 'target',
+        label: 'Target Selector',
+        type: 'select',
+        options: TARGET_OPTIONS,
+        defaultValue: 'SELF',
+        description:
+          'Target player whose zones are searched (e.g. CHOSEN_PLAYER for cross-player abilities)',
+      },
+      {
+        key: 'fromTop',
+        label: 'From Top of Discard',
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Evaluate discard pile from top to bottom (retrieves topmost matching card)',
+      },
+      {
         key: 'lookCount',
         label: 'Look Count',
         type: 'number',
@@ -1275,6 +1291,8 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Auto-select Unambiguous Results',
         type: 'boolean',
         defaultValue: true,
+        description:
+          'Automatically resolve without a decision prompt when matching candidate count <= takeCount',
       },
     ],
   },

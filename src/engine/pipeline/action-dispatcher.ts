@@ -2642,7 +2642,10 @@ export function dispatchAction(
         const shuffleAfter: boolean = !!params?.shuffleAfter;
         const isLookCountSpliced: boolean = !!params?.isLookCountSpliced;
 
-        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId)!;
+        const targetPlayer =
+          (params?.targetPlayerId
+            ? poppedState.players.find((p) => p.id === params.targetPlayerId)
+            : undefined) || poppedState.players.find((p) => p.id === action.playerId)!;
 
         if (
           !selectedOption ||

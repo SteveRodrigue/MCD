@@ -6,6 +6,7 @@ export type CardZoomLevel = 'small' | 'normal' | 'larger';
 
 export interface GameSettings {
   devMode: boolean;
+  autoResolveUnambiguous: boolean;
   soundEnabled: boolean;
   animationsSpeed: 'normal' | 'fast' | 'instant';
   edgeScrollSpeed: EdgeScrollSpeed;
@@ -17,12 +18,15 @@ export interface GameSettings {
 export interface GameSettingsContextType {
   settings: GameSettings;
   devMode: boolean;
+  autoResolveUnambiguous: boolean;
   edgeScrollSpeed: EdgeScrollSpeed;
   cardZoomLevel: CardZoomLevel;
   defaultDifficulty: DifficultyMode;
   defaultHeroicLevel: number;
   setDevMode: (enabled: boolean) => void;
   toggleDevMode: () => void;
+  setAutoResolveUnambiguous: (enabled: boolean) => void;
+  toggleAutoResolveUnambiguous: () => void;
   setEdgeScrollSpeed: (speed: EdgeScrollSpeed) => void;
   setCardZoomLevel: (level: CardZoomLevel) => void;
   setDefaultDifficulty: (difficulty: DifficultyMode) => void;
@@ -32,6 +36,7 @@ export interface GameSettingsContextType {
 
 export const DEFAULT_SETTINGS: GameSettings = {
   devMode: true,
+  autoResolveUnambiguous: true,
   soundEnabled: true,
   animationsSpeed: 'normal',
   edgeScrollSpeed: 'normal',

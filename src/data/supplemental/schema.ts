@@ -133,6 +133,8 @@ export const TargetSelectorSchema = z.enum([
   'TRIGGERING_ENEMY',
 ]);
 
+export type TargetSelector = z.infer<typeof TargetSelectorSchema>;
+
 /**
  * Declarative Step Condition Schema across all categories (ADR-0049, RR v1.8 p. 2, 23, 24)
  */

@@ -29,14 +29,14 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | :-------------- | :--------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
 | `exhaustSelf`   | `boolean`                          | `true`                                                  | Card must be currently ready and exhausts upon activation.                                 |
 | `exhaustCard`   | `TargetSelector`                   | `"SELF_IDENTITY"`                                       | A specific target card must exhaust (e.g. exhaust your hero).                              |
-| `discardSelf`   | `boolean`                          | `true`                                                  | Card instance is discarded to owner's discard pile as a cost.                               |
+| `discardSelf`   | `boolean`                          | `true`                                                  | Card instance is discarded to owner's discard pile as a cost.                              |
 | `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
 | `resources`     | `ResourceType[]`                   | `["energy", "mental"]`                                  | Specific printed resource types required (`'physical'`, `'energy'`, `'mental'`, `'wild'`). |
 | `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic resource payment or typed resource mapping.                                        |
 | `discardCard`   | `object`                           | `{"count": 1, "from": "HAND"}`                          | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`.                                    |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
-| `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                   |
+| `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |
 
 ---
 
@@ -51,7 +51,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'ACTIVE_PLAYER'`               | The player currently taking a turn in Player Phase.                                                                   | `state.players[state.activePlayerIndex]`                |
 | `'ALL_PLAYERS'`                 | Every player currently in the game session.                                                                           | Iterates all players.                                   |
 | `'ALL_HEROES'`                  | Every hero identity currently in play.                                                                                | Iterates all heroes.                                    |
-| `'ALL_HEROES_AND_ALLIES'`        | All identities strictly in Hero form plus all allies across all players.                                              | Batch hero and ally target.                             |
+| `'ALL_HEROES_AND_ALLIES'`       | All identities strictly in Hero form plus all allies across all players.                                              | Batch hero and ally target.                             |
 | `'TRIGGERING_HERO'`             | Hero identity that initiated or suffered the trigger event.                                                           | Context hero reference.                                 |
 | `'CHOSEN_PLAYER'`               | Prompt user to choose 1 player.                                                                                       | Decision prompt modal.                                  |
 | `'VILLAIN'`                     | The active Villain stage (`getActiveVillain(state)`).                                                                 | Direct villain reference.                               |
@@ -86,17 +86,18 @@ Defines which game entity is chosen or affected by the ability:
 
 Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 19 ("Player"), and p. 20 ("Status"):
 
-| Target Selector | Affects Heroes? | Affects Alter-Egos? | Affects Allies? | Canonical Meaning & Card Text Equivalent |
-| :--- | :---: | :---: | :---: | :--- |
-| **`ALL_HEROES`** | ✅ Yes | ❌ **No** | ❌ No | Identities strictly in **Hero** form (*"each hero"*, *"heroes"*). |
-| **`ALL_PLAYERS`** | ✅ Yes | ✅ **Yes** | ❌ No | Every player / identity regardless of form (*"each player"*, *"players"*). |
-| **`ALL_HEROES_AND_ALLIES`** | ✅ Yes | ❌ **No** | ✅ Yes | Identities strictly in **Hero** form + all allies (*"heroes and allies"*). |
-| **`ALL_FRIENDLY_CHARACTERS`** | ✅ Yes | ✅ **Yes** | ✅ Yes | All player identities (any form) + all allies (*"characters you/players control"*). |
-| **`ALL_ALLIES`** | ❌ No | ❌ No | ✅ Yes | All allies in play (*"each ally"*, *"all allies"*). |
-| **`ALL_ENEMIES`** | ❌ No | ❌ No | ❌ No | The villain + all minions in play (*"all enemies"*). |
-| **`ALL_CHARACTERS`** | ✅ Yes | ✅ **Yes** | ✅ Yes (+ Enemies) | Every character on the board (*"all characters"*). |
+| Target Selector               | Affects Heroes? | Affects Alter-Egos? |  Affects Allies?   | Canonical Meaning & Card Text Equivalent                                            |
+| :---------------------------- | :-------------: | :-----------------: | :----------------: | :---------------------------------------------------------------------------------- |
+| **`ALL_HEROES`**              |     ✅ Yes      |      ❌ **No**      |       ❌ No        | Identities strictly in **Hero** form (_"each hero"_, _"heroes"_).                   |
+| **`ALL_PLAYERS`**             |     ✅ Yes      |     ✅ **Yes**      |       ❌ No        | Every player / identity regardless of form (_"each player"_, _"players"_).          |
+| **`ALL_HEROES_AND_ALLIES`**   |     ✅ Yes      |      ❌ **No**      |       ✅ Yes       | Identities strictly in **Hero** form + all allies (_"heroes and allies"_).          |
+| **`ALL_FRIENDLY_CHARACTERS`** |     ✅ Yes      |     ✅ **Yes**      |       ✅ Yes       | All player identities (any form) + all allies (_"characters you/players control"_). |
+| **`ALL_ALLIES`**              |      ❌ No      |        ❌ No        |       ✅ Yes       | All allies in play (_"each ally"_, _"all allies"_).                                 |
+| **`ALL_ENEMIES`**             |      ❌ No      |        ❌ No        |       ❌ No        | The villain + all minions in play (_"all enemies"_).                                |
+| **`ALL_CHARACTERS`**          |     ✅ Yes      |     ✅ **Yes**      | ✅ Yes (+ Enemies) | Every character on the board (_"all characters"_).                                  |
 
 #### Rules Evidence & Operational Invariants
+
 1. **Zero Duplicate Invariant:** `ALL_IDENTITIES` is completely excluded from the schema. `ALL_PLAYERS` is the sole canonical selector for targeting every player at the table.
 2. **Dual-Domain Execution for `ALL_PLAYERS` (RR v1.8 p. 11 & p. 20):**
    - For player-state effects (`DRAW`, `DISCARD`, `ALLY_LIMIT_BONUS`, `MODIFY_HAND_SIZE`): Operates on player hands, decks, or board counters.
@@ -108,7 +109,58 @@ Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 
 
 ---
 
-## 3. Universal Card Filter (`UniversalCardFilterSchema`)
+## 3. The Orthogonal Target Taxonomy Model
+
+Target selection in Marvel Champions Digital is modeled as an orthogonal product space between **Scope / Quantifier** and **Entity Type** ($\text{Scope} \times \text{Entity Type}$), standardizing all 36 canonical members of `TargetSelectorSchema` ([ADR-0058](../../decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md), [ADR-0064](../../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)).
+
+### 1. The Orthogonal Target Taxonomy Matrix
+
+| Scope / Quantifier      | IDENTITY (Hero / Alter-Ego) | PLAYER (Participant) | ALLY                     | CHARACTER (Hero + Ally + Enemy)                                        | ENEMY (Villain + Minion) | MINION                                      | VILLAIN           | SCHEME (Main + Side)                               |
+| :---------------------- | :-------------------------- | :------------------- | :----------------------- | :--------------------------------------------------------------------- | :----------------------- | :------------------------------------------ | :---------------- | :------------------------------------------------- |
+| **SELF**                | `SELF_IDENTITY`             | `ACTIVE_PLAYER`      | `SELF` _(if ally)_       | `SELF` _(if host card)_                                                | —                        | —                                           | —                 | `SELF` _(if scheme)_                               |
+| **CHOSEN (Controlled)** | —                           | —                    | `CHOSEN_CONTROLLED_ALLY` | `CHOSEN_CONTROLLED_CHARACTER`                                          | —                        | —                                           | —                 | —                                                  |
+| **CHOSEN (Table-Wide)** | —                           | `CHOSEN_PLAYER`      | `CHOSEN_ALLY`            | `CHOSEN_FRIENDLY_CHARACTER` / `CHOSEN_CHARACTER`                       | `CHOSEN_ENEMY`           | `CHOSEN_MINION`                             | `VILLAIN`         | `CHOSEN_SCHEME` / `CHOSEN_SIDE_SCHEME`             |
+| **ENGAGED**             | —                           | —                    | —                        | —                                                                      | `ENGAGED_ENEMIES`        | `CHOSEN_ENGAGED_MINION` / `ENGAGED_MINIONS` | —                 | —                                                  |
+| **ALL (Controlled)**    | —                           | —                    | `ALL_CONTROLLED_ALLIES`  | `ALL_CONTROLLED_CHARACTERS`                                            | —                        | —                                           | —                 | —                                                  |
+| **ALL (Table-Wide)**    | `ALL_HEROES`                | `ALL_PLAYERS`        | `ALL_ALLIES`             | `ALL_FRIENDLY_CHARACTERS` / `ALL_CHARACTERS` / `ALL_HEROES_AND_ALLIES` | `ALL_ENEMIES`            | `ALL_MINIONS`                               | `VILLAIN`         | `ALL_SCHEMES` / `ALL_SIDE_SCHEMES` / `MAIN_SCHEME` |
+| **TRIGGERING**          | `TRIGGERING_HERO`           | —                    | —                        | —                                                                      | `TRIGGERING_ENEMY`       | `TRIGGERING_MINION`                         | —                 | `TRIGGERING_SCHEME`                                |
+| **PREVIOUS**            | —                           | —                    | —                        | `PREVIOUS_TARGET`                                                      | `PREVIOUS_TARGET`        | `PREVIOUS_TARGET`                           | `PREVIOUS_TARGET` | `PREVIOUS_TARGET` / `PREVIOUS_SELECTED_CARD`       |
+
+### 2. Entity Type Dimension Definitions
+
+- **`IDENTITY`**: A player's physical hero or alter-ego persona (`PlayerState.currentForm`). Governed by form-gating rules (RR v1.8 p. 11, 13).
+- **`PLAYER`**: The participant entity controlling decks, hands, and tableaus. Immune to form restrictions; affects player-state (hand size, draw, discard).
+- **`ALLY`**: Ally card instances deployed into a player's board area (`player.allies`).
+- **`CHARACTER`**: Universal union of Identities, Allies, Villains, and Minions (RR v1.8 p. 6).
+- **`ENEMY`**: Villain + all engaged minions in play.
+- **`MINION`**: Minions engaged with players (`player.engagedMinions`).
+- **`VILLAIN`**: The primary scenario villain (`state.villain`).
+- **`SCHEME`**: Main scheme (`state.mainScheme`) and side schemes (`state.sideSchemes`).
+
+### 3. Scope & Quantifier Dimension Definitions
+
+- **`SELF`**: The source card instance itself or its immediate controller identity.
+- **`CHOSEN`**: Prompt-driven single entity selection (via `PendingDecisionPrompt` or explicit `targetInstanceId`).
+- **`ALL`**: Tablewide iteration over every entity matching the type constraint.
+- **`ENGAGED`**: Scoped strictly to the active/triggering player's engaged threat area.
+- **`TRIGGERING`**: Context-bound entity that caused or suffered the triggering event.
+- **`PREVIOUS`**: Pipeline-continuity passing the target from an immediately preceding ability step.
+
+### 4. Resolution Domain & Invariant Mapping Contract
+
+The headless engine grounds target evaluation to [`src/engine/effects/target-resolver.ts`](../../../src/engine/effects/target-resolver.ts):
+
+- **Single-Source Resolution**: `resolveTargets(state, selector, context)` returns `ResolvedTarget[]` discriminated by entity kind (`character`, `scheme`, `player`, `card`).
+- **Typed Extractors**: Primitives delegate to domain-specific extractors:
+  - `resolveCharacterTargets`: Character entities (Heroes, Allies, Villain, Minions) for status, damage, healing.
+  - `resolveSchemeTargets`: Scheme entities (Main Scheme, Side Schemes) for threat modification.
+  - `resolvePlayerTargets`: Player participants for draw, hand discard, resource limits.
+  - `resolveCardTargets`: Card instances for attachment, exhaustion, readiness.
+- **Liveness & Spatial Conservation**: Only active entities in live zones are returned. Defeated minions, discarded allies, or cleared schemes in discard piles or the victory display are strictly excluded (RR v1.8 p. 28).
+
+---
+
+## 4. Universal Card Filter (`UniversalCardFilterSchema`)
 
 Card filtering across searching, targeting, discarding, and dynamic counters is strictly unified under the **Universal Card Filter Architecture** (ADR-0046).
 

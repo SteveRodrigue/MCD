@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Tests & Rules Verification: Simultaneous Damage Resolution & Official FAQ Tough Absorption for Repulsor Blast ([Issue #12](https://github.com/SteveRodrigue/MCD/issues/12))**
+  - Added official FAQ contract test to `tests/engine/repulsor-blast.test.ts` verifying that Repulsor Blast (`01031`) deals its base damage and energy bonus as a single simultaneous instance of damage.
+  - Verified that an enemy with the Tough status card absorbs the entire damage instance (base 1 damage + dynamic energy bonus), preventing the base damage from removing Tough while allowing the bonus damage to hit health.
+  - Closed Issue #12, aligning with prior implementation in commit `73712f1` and Issue #112.
+
 - **Feature (Engine, UI, & Supplemental): Universal Card Inspector Subsystem & Dynamic Resource Generation for Pepper Potts ([Issue #13](https://github.com/SteveRodrigue/MCD/issues/13) / [ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md) & [ADR-0052](docs/decisions/0052-declarative-dynamic-value-calculation-system.md))**
   - **Universal Card Inspector & Query Subsystem:**
     - Created `src/engine/queries/card-inspector.ts` providing universal card querying and attribute extraction across all zones (`PLAYER_DISCARD`, `PLAYER_DECK`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `SIDE_SCHEMES`, `IN_PLAY`, `TABLEAU`, `TUCKED`, `ATTACHED`) and positions (`TOP`, `BOTTOM`, `TOPMOST_MATCHING`).

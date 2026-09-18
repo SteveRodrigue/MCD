@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine, UI, & Supplemental): Universal Card Inspector Subsystem & Dynamic Resource Generation for Pepper Potts ([Issue #13](https://github.com/SteveRodrigue/MCD/issues/13) / [ADR-0049](docs/decisions/0049-composable-value-transformers-and-event-interception.md) & [ADR-0052](docs/decisions/0052-declarative-dynamic-value-calculation-system.md))**
+  - **Universal Card Inspector & Query Subsystem:**
+    - Created `src/engine/queries/card-inspector.ts` providing universal card querying and attribute extraction across all zones (`PLAYER_DISCARD`, `PLAYER_DECK`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `SIDE_SCHEMES`, `IN_PLAY`, `TABLEAU`, `TUCKED`, `ATTACHED`) and positions (`TOP`, `BOTTOM`, `TOPMOST_MATCHING`).
+    - Implemented `locateCard(state, selector, context)` supporting specific card codes (e.g. Bomb Scare `01109`), traits, and `UniversalCardFilter`.
+    - Implemented `readCardAttribute(card, attribute)` supporting `PRINTED_COST`, `BOOST_ICONS`, `THREAT`, `DAMAGE`, `COUNTERS`, `PRINTED_RESOURCES`, `TOTAL_RESOURCES`, and typed resources (`PHYSICAL_RESOURCES`, `ENERGY_RESOURCES`, `MENTAL_RESOURCES`, `WILD_RESOURCES`).
+    - Implemented `readCardResources(card)` returning explicit arrays of printed resource types (`ResourceType[]`).
+    - Exported all query utilities through `src/engine/index.ts`.
+  - **Zero Tech Debt Purge & Schema Consolidation:**
+    - Purged the bespoke, single-use `GENERATE_TOP_DISCARD_RESOURCES` primitive across `schema.ts`, `schema.json`, effect evaluators, and UI registries.
+    - Added `CardLocationSelectorSchema` and extended `GENERATE_RESOURCE` with `fromCard: CardLocationSelectorSchema.optional()`.
+    - Extended `DynamicValueSourceSchema` with `attribute`, `fromCard`, and `targetCard`.
+  - **Card Declarations Promoted:**
+    - Updated Pepper Potts (`01033`) in `src/data/supplemental/pack/core.json` to use canonical `GENERATE_RESOURCE` with `fromCard: { zone: "PLAYER_DISCARD", position: "TOP" }`.
+    - Retrofitted Explosion (`01111`) in `src/data/supplemental/pack/core_encounter.json` to use canonical `fromCard: { zone: "IN_PLAY", cardCode: "01109" }, attribute: "THREAT"` under `CARD_ATTRIBUTE`.
+  - **Engine Pipeline & Payment Integration:**
+    - Updated `evaluateDynamicAmount` in `src/engine/effects/dynamic-formula-evaluator.ts` to resolve `CARD_ATTRIBUTE` via `locateCard` and `readCardAttribute`.
+    - Updated `GENERATE_RESOURCE` handler in `src/engine/effects/index.ts` to locate cards dynamically and resolve resource types and amounts.
+    - Enforced RR v1.8 p. 16 & 25 in `src/engine/pipeline/legality-checker.ts`: `evaluateCardPlayability` and `canPlayCard` inspect available resources from `fromCard` generators, disallowing generator selection if the source zone is empty or provides 0 resources.
+    - Updated `src/engine/pipeline/action-dispatcher.ts` to exhaust generator cards and push the top card's exact printed resource types to `resourcesSpent`.
+  - **UI & Card Supplemental Editor:**
+    - Updated `src/ui/components/board/CardPaymentModal.tsx` to dynamically inspect `fromCard` generators, rendering live previews of the top card name, resource amount, and resource breakdown, while disabling selection when 0 resources are available.
+    - Updated `src/ui/components/editor/DynamicValueBuilder.tsx` adding dedicated form controls for `fromCard` (zone, position, cardCode, filter accordion, attribute selector).
+    - Updated `src/ui/components/editor/effect-parameter-registry.ts` and `StepPipelineEditor.tsx` replacing obsolete primitives with `sourceMode` toggle ("Static Amount" vs "From Card Location").
+  - **Automated Tests:**
+    - Created `tests/engine/universal-card-inspector.test.ts` (11 tests) verifying `locateCard`, `readCardAttribute`, and `readCardResources` across deck, discard, side schemes, and attachments.
+    - Created `tests/engine/pepper-potts-resource-generator.test.ts` (7 tests) verifying Pepper Potts resource generation across Energy, Mental, double-wild, empty discard pile legality rejection, and payment dispatch.
+    - Authored UI contract tests in `tests/ui/DynamicValueBuilder.test.tsx` verifying card location and attribute builder controls.
+    - Verified 100% pass rate across all 136 test files (1,037 tests) with 0 regressions, 0 skipped tests, and 0 lint/typecheck errors.
+
 - **Feature (Engine, UI & Supplemental): Cross-Player Targeting, Discard Legality & Unambiguous Auto-Resolution for Stark Tower ([Issue #14](https://github.com/SteveRodrigue/MCD/issues/14) / [ADR-0029](docs/decisions/0029-generic-zone-transfer-and-deck-manipulation-primitives.md) & [ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - **Headless Rules Engine & Legality Checking:**
     - Implemented `evaluateSearchLegality` in `src/engine/pipeline/legality-checker.ts` and integrated it into Step 5 of `canInitiateAbility`, enforcing RR v1.8 p. 2 & 28 by preventing abilities from initiating when no eligible matching card exists in the target discard zone.

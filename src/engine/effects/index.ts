@@ -49,11 +49,13 @@ import {
   removeCardFromAllZones,
   initializeCardUses,
 } from '../state/state-validator';
+import { locateCard, readCardResources } from '../queries/card-inspector';
 
 export interface EffectExecutionContext {
   playerId: string;
   targetPlayerId?: string;
   sourceCardInstance?: CardInstance;
+  targetCardInstance?: CardInstance;
   sourceCardId?: string;
   targetType?:
     | 'villain'
@@ -800,6 +802,7 @@ export function executeSequence(
     state: currentState,
     success: true,
     mutatedState: anyStepMutated,
+    value: prevResult?.value,
     onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
@@ -2527,12 +2530,43 @@ export function executeStep(
     }
 
     case 'GENERATE_RESOURCE': {
+      const fromCardSelector = step.effectParams?.fromCard;
+      if (fromCardSelector) {
+        const located = locateCard(state, fromCardSelector, {
+          player,
+          sourceCardInstance: context.sourceCardInstance,
+          targetCardInstance: context.targetCardInstance,
+        });
+
+        if (!located) {
+          return {
+            state,
+            success: false,
+            value: 0,
+            onomatopoeia: 'NO CARD LOCATED!',
+          };
+        }
+
+        const resources = readCardResources(located);
+        const resCount = resources.length;
+        const resListStr = resources.map((r) => `[${r}]`).join(' ');
+
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          value: resCount,
+          onomatopoeia: `+${resCount} ${resListStr || '[wild]'} RESOURCES!`,
+        };
+      }
+
       const resourceType = (step.effectParams?.resource as string) || 'wild';
       const amount = (step.effectParams?.amount as number) || 1;
 
       return {
         state,
         success: true,
+        value: amount,
         onomatopoeia: `+${amount} [${resourceType}] RESOURCE!`,
       };
     }
@@ -4070,21 +4104,6 @@ export function executeStep(
         success: true,
         mutatedState: true,
         onomatopoeia: 'RETURNED TO HAND!',
-      };
-    }
-
-    case 'GENERATE_TOP_DISCARD_RESOURCES': {
-      const topCard = player.discard[player.discard.length - 1];
-      let resCount = 1;
-      if (topCard) {
-        resCount = topCard.card.resources?.total || 1;
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: resCount,
-        onomatopoeia: `+${resCount} RESOURCES FROM DISCARD!`,
       };
     }
 

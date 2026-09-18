@@ -135,7 +135,10 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
 
       const result = executeEffect(
         state,
-        { effect: 'GENERATE_TOP_DISCARD_RESOURCES' },
+        {
+          effect: 'GENERATE_RESOURCE',
+          effectParams: { fromCard: { zone: 'PLAYER_DISCARD', position: 'TOP' } },
+        },
         { playerId: 'p1' },
       );
       expect(result.success).toBe(true);

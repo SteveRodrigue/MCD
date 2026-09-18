@@ -51,6 +51,18 @@ export const SEARCH_SOURCE_OPTIONS = [
   'ENCOUNTER_DISCARD',
   'PLAYER_HAND',
 ] as const;
+export const CARD_ZONE_OPTIONS = [
+  'PLAYER_DISCARD',
+  'PLAYER_DECK',
+  'ENCOUNTER_DECK',
+  'ENCOUNTER_DISCARD',
+  'SIDE_SCHEMES',
+  'IN_PLAY',
+  'TABLEAU',
+  'TUCKED',
+  'ATTACHED',
+] as const;
+export const CARD_POSITION_OPTIONS = ['TOP', 'BOTTOM', 'TOPMOST_MATCHING'] as const;
 export const SELECTED_DESTINATION_OPTIONS = [
   'HAND',
   'TABLEAU',
@@ -400,28 +412,32 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   // 5. Counters & Resource Primitives
   GENERATE_RESOURCE: {
     effect: 'GENERATE_RESOURCE',
-    description: 'Generate resource for cost payment or resource pool.',
+    description:
+      'Generate resources statically or dynamically from a card (e.g. top card of discard pile).',
     parameters: [
       {
+        key: 'sourceMode',
+        label: 'Source Mode',
+        type: 'select',
+        options: ['STATIC', 'FROM_CARD'] as const,
+        defaultValue: 'STATIC',
+        description: 'Static fixed resource or dynamic copy from a card in a zone',
+      },
+      {
         key: 'resource',
-        label: 'Resource Type',
+        label: 'Resource Type (Static)',
         type: 'select',
         options: RESOURCE_OPTIONS,
         defaultValue: 'wild',
       },
       {
         key: 'amount',
-        label: 'Resource Amount',
+        label: 'Resource Amount (Static)',
         type: 'number',
         defaultValue: 1,
         placeholder: '1',
       },
     ],
-  },
-  GENERATE_TOP_DISCARD_RESOURCES: {
-    effect: 'GENERATE_TOP_DISCARD_RESOURCES',
-    description: 'Generate resources based on top card of discard pile (Pepper Potts).',
-    parameters: [],
   },
   DOUBLE_RESOURCE_FOR_ASPECT: {
     effect: 'DOUBLE_RESOURCE_FOR_ASPECT',

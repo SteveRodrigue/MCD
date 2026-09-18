@@ -396,7 +396,6 @@
                           "FLIP_FORM",
                           "FORM_BRANCH",
                           "GENERATE_RESOURCE",
-                          "GENERATE_TOP_DISCARD_RESOURCES",
                           "GIVE_ADDITIONAL_BOOST_CARD",
                           "GRANT_KEYWORD",
                           "HEAL_DAMAGE",

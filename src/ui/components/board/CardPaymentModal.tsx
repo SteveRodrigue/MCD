@@ -9,9 +9,10 @@ import {
   getEffectiveCardCost,
 } from '../../../engine/pipeline/cost-engine';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
-import type { UniversalCardFilter } from '../../../data/supplemental/schema';
+import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
+import { locateCard } from '../../../engine/queries/card-inspector';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -156,6 +157,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       sublabel: string;
       resourceType?: string;
       amount: number;
+      resources?: string[];
     }[] = [];
 
     // 1. Identity Resource Abilities (e.g. Peter Parker: Scientist, Carol Danvers: Rechannel)
@@ -204,7 +206,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             (s) =>
               s.effect === 'GENERATE_RESOURCE' ||
               s.effect === 'COST_REDUCER' ||
-              s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
               s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
       );
@@ -216,6 +217,50 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         isAbilityPlayableInForm(a.timing as any, player.currentForm),
       );
       if (!canUseInForm) continue;
+
+      const genStep = generatorAbilities
+        .flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'GENERATE_RESOURCE');
+
+      if (genStep?.effectParams?.fromCard) {
+        const fromCardSelector = genStep.effectParams.fromCard as CardLocationSelector;
+        const targetCard =
+          fromCardSelector.zone === 'PLAYER_DISCARD' && fromCardSelector.position === 'TOP'
+            ? player.discard[player.discard.length - 1]
+            : locateCard(gameState, fromCardSelector, { player, sourceCardInstance: c });
+
+        if (targetCard) {
+          const cardObj = 'card' in targetCard ? targetCard.card : targetCard;
+          const res = cardObj.resources;
+          const resList: string[] = [];
+          if (res) {
+            for (let i = 0; i < (res.physical || 0); i++) resList.push('physical');
+            for (let i = 0; i < (res.energy || 0); i++) resList.push('energy');
+            for (let i = 0; i < (res.mental || 0); i++) resList.push('mental');
+            for (let i = 0; i < (res.wild || 0); i++) resList.push('wild');
+          }
+          const totalAmt = resList.length > 0 ? resList.length : res?.total || 1;
+          const typesDesc = resList.length > 0 ? resList.join(', ') : 'wild';
+          list.push({
+            id: c.instanceId,
+            name: c.card.name,
+            sublabel: `Top Discard: ${cardObj.name} (+${totalAmt} ${typesDesc})`,
+            resourceType: resList.length === 1 ? resList[0] : 'wild',
+            amount: totalAmt,
+            resources: resList,
+          });
+        } else {
+          list.push({
+            id: c.instanceId,
+            name: c.card.name,
+            sublabel: 'Discard pile empty',
+            resourceType: 'wild',
+            amount: 0,
+            resources: [],
+          });
+        }
+        continue;
+      }
 
       if (uses) {
         if ((c.tokens?.counters || 0) > 0) {
@@ -239,13 +284,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     }
 
     return list;
-  }, [
-    player.activeFormCard,
-    player.tableau,
-    player.currentForm,
-    player.usedAbilitiesThisPhase,
-    player.usedAbilitiesThisRound,
-  ]);
+  }, [player, gameState]);
 
   // Calculate generated resources and breakdown
   const { totalGenerated, resourceBreakdown } = useMemo(() => {
@@ -279,14 +318,24 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     // 2. Generators (Identity abilities + Tableau generators)
     for (const gId of selectedGeneratorIds) {
       const gen = availableGenerators.find((g) => g.id === gId);
-      if (!gen) continue;
+      if (!gen || gen.amount === 0) continue;
 
-      if (gen.resourceType === 'energy') energyCount += gen.amount;
-      else if (gen.resourceType === 'mental') mentalCount += gen.amount;
-      else if (gen.resourceType === 'physical') physicalCount += gen.amount;
-      else wildCount += gen.amount;
+      if (gen.resources && gen.resources.length > 0) {
+        for (const r of gen.resources) {
+          if (r === 'energy') energyCount += 1;
+          else if (r === 'mental') mentalCount += 1;
+          else if (r === 'physical') physicalCount += 1;
+          else wildCount += 1;
+        }
+        total += gen.resources.length;
+      } else {
+        if (gen.resourceType === 'energy') energyCount += gen.amount;
+        else if (gen.resourceType === 'mental') mentalCount += gen.amount;
+        else if (gen.resourceType === 'physical') physicalCount += gen.amount;
+        else wildCount += gen.amount;
 
-      total += gen.amount;
+        total += gen.amount;
+      }
     }
 
     return {
@@ -765,15 +814,19 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {availableGenerators.map((gen) => {
                   const isSelected = selectedGeneratorIds.includes(gen.id);
+                  const isDisabled = gen.amount === 0;
                   return (
                     <button
                       key={gen.id}
                       type="button"
-                      onClick={() => toggleGenerator(gen.id)}
+                      disabled={isDisabled}
+                      onClick={() => !isDisabled && toggleGenerator(gen.id)}
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isSelected
-                          ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
-                          : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
+                        isDisabled
+                          ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
+                          : isSelected
+                            ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
+                            : 'bg-white border-comic-black/40 hover:border-comic-black hover:bg-comic-paper'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 pr-2 min-w-0">

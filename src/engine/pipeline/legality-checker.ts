@@ -23,6 +23,7 @@ import {
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { locateCard, readCardResources } from '../queries/card-inspector';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -1387,8 +1388,27 @@ export function canPlayCard(
             };
           }
           const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-          generatedResources +=
-            Number(genStep ? getStepEffectParams(genStep).amount : undefined) || 1;
+          if (genStep && getStepEffectParams(genStep).fromCard) {
+            const fromCardSelector = getStepEffectParams(genStep).fromCard;
+            const target = locateCard(state, fromCardSelector, { player });
+            if (!target) {
+              return {
+                allowed: false,
+                reason: `Identity ability '${idAbility.id}' cannot generate resources (no card found).`,
+              };
+            }
+            const resources = readCardResources(target);
+            if (resources.length === 0) {
+              return {
+                allowed: false,
+                reason: `Identity ability '${idAbility.id}' cannot generate resources (card provides 0 resources).`,
+              };
+            }
+            generatedResources += resources.length;
+          } else {
+            generatedResources +=
+              Number(genStep ? getStepEffectParams(genStep).amount : undefined) || 1;
+          }
         }
         continue;
       }
@@ -1418,7 +1438,6 @@ export function canPlayCard(
             (s) =>
               s.effect === 'GENERATE_RESOURCE' ||
               s.effect === 'COST_REDUCER' ||
-              s.effect === 'GENERATE_TOP_DISCARD_RESOURCES' ||
               s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
       );
@@ -1441,15 +1460,39 @@ export function canPlayCard(
         };
       }
 
-      // Check if generator relies on counters (uses)
-      if (gCard.card.enrichment?.uses) {
+      const genStep = generatorAbilities
+        .flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'GENERATE_RESOURCE');
+
+      if (genStep && getStepEffectParams(genStep).fromCard) {
+        const fromCardSelector = getStepEffectParams(genStep).fromCard;
+        const target = locateCard(state, fromCardSelector, {
+          player,
+          sourceCardInstance: gCard,
+        });
+        if (!target) {
+          return {
+            allowed: false,
+            reason: `${gCard.card.name} cannot generate resources (no card found in ${fromCardSelector.zone || 'zone'}).`,
+          };
+        }
+        const resources = readCardResources(target);
+        if (resources.length === 0) {
+          return {
+            allowed: false,
+            reason: `${gCard.card.name} cannot generate resources (top card provides 0 resources).`,
+          };
+        }
+        generatedResources += resources.length;
+      } else if (gCard.card.enrichment?.uses) {
         if ((gCard.tokens?.counters || 0) <= 0) {
           return { allowed: false, reason: `${gCard.card.name} has no counters remaining.` };
         }
         generatedResources += 1;
       } else {
         // Generic generator / cost reducer
-        generatedResources += 1;
+        const amt = genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
+        generatedResources += amt;
       }
     }
 
@@ -1596,7 +1639,15 @@ export function evaluateCardPlayability(
         ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
       if (!isUsedRound && !isUsedPhase) {
         const genStep = ab.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-        maxPotentialResources += genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
+        if (genStep && getStepEffectParams(genStep).fromCard) {
+          const fromCardSelector = getStepEffectParams(genStep).fromCard;
+          const target = locateCard(state, fromCardSelector, { player });
+          if (target) {
+            maxPotentialResources += readCardResources(target).length;
+          }
+        } else {
+          maxPotentialResources += genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
+        }
       }
     }
   }
@@ -1622,12 +1673,27 @@ export function evaluateCardPlayability(
     );
     if (!canUseInForm) continue;
 
-    if (uses) {
+    const genStep = generatorAbilities
+      .flatMap((a) => a.steps || [])
+      .find((s) => s.effect === 'GENERATE_RESOURCE');
+
+    if (genStep && getStepEffectParams(genStep).fromCard) {
+      const fromCardSelector = getStepEffectParams(genStep).fromCard;
+      const target = locateCard(state, fromCardSelector, {
+        player,
+        sourceCardInstance: t,
+      });
+      if (target) {
+        const res = readCardResources(target);
+        maxPotentialResources += res.length;
+      }
+    } else if (uses) {
       if ((t.tokens?.counters || 0) > 0) {
         maxPotentialResources += 1;
       }
     } else {
-      maxPotentialResources += 1;
+      const amt = genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
+      maxPotentialResources += amt;
     }
   }
 

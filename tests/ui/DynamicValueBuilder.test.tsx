@@ -206,4 +206,64 @@ describe('DynamicValueBuilder Interactive UI Component', () => {
       }),
     );
   });
+
+  it('configures CARD_ATTRIBUTE location zone, position, card code, and attribute', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <DynamicValueBuilder
+        label="Bomb Scare Threat Scaler"
+        value={{
+          from: 'CARD_ATTRIBUTE',
+          attribute: 'THREAT',
+          fromCard: {
+            zone: 'IN_PLAY',
+            cardCode: '01109',
+          },
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const attrSelect = screen.getByTestId('dynamic-value-attribute-select');
+    expect(attrSelect).toBeDefined();
+
+    const zoneSelect = screen.getByTestId('dynamic-value-card-zone-select');
+    expect(zoneSelect).toBeDefined();
+    await user.selectOptions(zoneSelect, 'PLAYER_DISCARD');
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'CARD_ATTRIBUTE',
+        fromCard: expect.objectContaining({
+          zone: 'PLAYER_DISCARD',
+        }),
+      }),
+    );
+
+    const posSelect = screen.getByTestId('dynamic-value-card-position-select');
+    await user.selectOptions(posSelect, 'TOP');
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'CARD_ATTRIBUTE',
+        fromCard: expect.objectContaining({
+          position: 'TOP',
+        }),
+      }),
+    );
+
+    // Verify round-trip validity against schema
+    expect(
+      DynamicValueSourceSchema.safeParse({
+        from: 'CARD_ATTRIBUTE',
+        attribute: 'THREAT',
+        fromCard: {
+          zone: 'IN_PLAY',
+          cardCode: '01109',
+        },
+      }).success,
+    ).toBe(true);
+  });
 });

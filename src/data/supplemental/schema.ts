@@ -211,7 +211,6 @@ export const EffectTypeSchema = z.enum([
   'FLIP_FORM',
   'FORM_BRANCH',
   'GENERATE_RESOURCE',
-  'GENERATE_TOP_DISCARD_RESOURCES',
   'GIVE_ADDITIONAL_BOOST_CARD',
   'GRANT_KEYWORD',
   'HEAL_DAMAGE',
@@ -400,6 +399,66 @@ export type TriggerFilter = z.infer<typeof TriggerFilterSchema>;
 export const FilterSchema = UniversalCardFilterSchema;
 
 /**
+ * Card Location Selector Schema (ADR-0046, Issue #13, RR v1.8)
+ * Declarative selector for locating cards across zones and in-play areas.
+ */
+export const CardLocationZoneSchema = z.enum([
+  'PLAYER_DISCARD',
+  'PLAYER_DECK',
+  'ENCOUNTER_DECK',
+  'ENCOUNTER_DISCARD',
+  'SIDE_SCHEMES',
+  'IN_PLAY',
+  'TABLEAU',
+  'TUCKED',
+  'ATTACHED',
+]);
+export type CardLocationZone = z.infer<typeof CardLocationZoneSchema>;
+
+export const CardLocationPositionSchema = z.enum(['TOP', 'BOTTOM', 'TOPMOST_MATCHING']);
+export type CardLocationPosition = z.infer<typeof CardLocationPositionSchema>;
+
+export const CardLocationTargetSchema = z.enum([
+  'SELF',
+  'TARGET_CARD',
+  'ATTACHED_CARD',
+  'HOST_CARD',
+]);
+export type CardLocationTarget = z.infer<typeof CardLocationTargetSchema>;
+
+export const CardLocationSelectorSchema = z
+  .object({
+    zone: CardLocationZoneSchema.optional(),
+    position: CardLocationPositionSchema.optional(),
+    cardCode: z.string().optional(),
+    target: CardLocationTargetSchema.optional(),
+    filter: UniversalCardFilterSchema.optional(),
+  })
+  .strict();
+
+export type CardLocationSelector = z.infer<typeof CardLocationSelectorSchema>;
+
+/**
+ * Card Inspection Attribute Schema (Issue #13)
+ * Attributes to inspect when querying a card in a zone or in play.
+ */
+export const CardInspectionAttributeSchema = z.enum([
+  'PRINTED_COST',
+  'BOOST_ICONS',
+  'THREAT',
+  'DAMAGE',
+  'COUNTERS',
+  'PRINTED_RESOURCES',
+  'TOTAL_RESOURCES',
+  'PHYSICAL_RESOURCES',
+  'ENERGY_RESOURCES',
+  'MENTAL_RESOURCES',
+  'WILD_RESOURCES',
+]);
+
+export type CardInspectionAttribute = z.infer<typeof CardInspectionAttributeSchema>;
+
+/**
  * Discard Inspection Attribute Schema (Issue #117)
  * Attributes to inspect when calculating dynamic values from discarded cards.
  */
@@ -415,7 +474,7 @@ export const DiscardInspectionAttributeSchema = z.enum([
 export type DiscardInspectionAttribute = z.infer<typeof DiscardInspectionAttributeSchema>;
 
 /**
- * Dynamic Value Source Schema (ADR-0049, ADR-0052, Issue #117)
+ * Dynamic Value Source Schema (ADR-0049, ADR-0052, Issue #117, Issue #13)
  * Declarative value resolution for composable effect amounts, counters, and scalers.
  */
 export const DynamicValueSourceSchema = z
@@ -449,7 +508,9 @@ export const DynamicValueSourceSchema = z
     counterType: z.string().optional(),
     target: TargetSelectorSchema.optional(),
     filter: UniversalCardFilterSchema.optional(),
-    attribute: z.enum(['BOOST_ICONS', 'PRINTED_RESOURCES', 'PRINTED_COST']).optional(),
+    attribute: CardInspectionAttributeSchema.optional(),
+    fromCard: CardLocationSelectorSchema.optional(),
+    targetCard: CardLocationSelectorSchema.optional(),
     multiplier: z.number().optional(),
     offset: z.number().optional(),
     clamp: z
@@ -462,6 +523,20 @@ export const DynamicValueSourceSchema = z
   .strict();
 
 export type DynamicValueSource = z.infer<typeof DynamicValueSourceSchema>;
+
+/**
+ * Generate Resource Params Schema (Issue #13)
+ */
+export const GenerateResourceParamsSchema = z
+  .object({
+    resource: ResourceTypeSchema.optional(),
+    amount: z.union([z.number(), DynamicValueSourceSchema]).optional(),
+    count: z.number().optional(),
+    fromCard: CardLocationSelectorSchema.optional(),
+  })
+  .strict();
+
+export type GenerateResourceParams = z.infer<typeof GenerateResourceParamsSchema>;
 
 /**
  * Ability Cost Schema

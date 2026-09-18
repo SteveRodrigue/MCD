@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-18T14:20:39.708Z`  
+> **Generated:** `2026-09-18T21:12:59.775Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -19,7 +19,7 @@
 | **Multi-Step Abilities (2+ Steps)** | **13** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **13** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **43** | Distinct effect primitive types actively declared |
+| **Unique Effects In Use** | **42** | Distinct effect primitive types actively declared |
 | **Unique Triggers In Use** | **19** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
@@ -119,7 +119,6 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
 | **Effect** | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality` |
 | **Effect** | `FORM_BRANCH` | `01106` | Stampede (treachery) (core_encounter) | `stampede_attack` |
-| **Effect** | `GENERATE_TOP_DISCARD_RESOURCES` | `01033` | Pepper Potts (support) (core) | `pepper_potts_res` |
 | **Effect** | `GIVE_ADDITIONAL_BOOST_CARD` | `01164` | Titania's Fury (treachery) (core_encounter) | `titanias_fury_boost` |
 | **Effect** | `INTERCEPT_ATTACK` | `01009` | Webbed Up (upgrade) (core) | `webbed_up_intercept` |
 | **Effect** | `MODIFY_ALLY_LIMIT` | `01073` | The Triskelion (support) (core) | `triskelion_ally_limit` |
@@ -186,8 +185,8 @@ These primitives are declared in schema types or specifications but have **0 act
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `PLAYER_CHOICE` | **4** | `01068` (Vision (ally)), `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
+| `GENERATE_RESOURCE` | **3** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)), `01033` (Pepper Potts (support)) |
 | `PREVENT_THREAT` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
-| `GENERATE_RESOURCE` | **2** | `01001b` (Peter Parker (alter_ego)), `01008` (Web-Shooter (upgrade)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `RETURN_TO_HAND` | **2** | `01020` (Hellcat (ally)), `01166` (Highway Robbery (side_scheme)) |
@@ -200,7 +199,6 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
-| `GENERATE_TOP_DISCARD_RESOURCES` | **1** | `01033` (Pepper Potts (support)) |
 | `TRANSFER_DAMAGE` | **1** | `01049` (Vibranium Suit (upgrade)) |
 | `PLAY_FROM_ZONE` | **1** | `01071` (Make the Call (event)) |
 | `MODIFY_ALLY_LIMIT` | **1** | `01073` (The Triskelion (support)) |

@@ -626,9 +626,12 @@
               "effect": "DEAL_DAMAGE",
               "effectParams": {
                 "amount": {
-                  "from": "STAT_VALUE",
-                  "stat": "THREAT",
-                  "targetCardCode": "01109"
+                  "from": "CARD_ATTRIBUTE",
+                  "fromCard": {
+                    "zone": "IN_PLAY",
+                    "cardCode": "01109"
+                  },
+                  "attribute": "THREAT"
                 },
                 "target": "ALL_HEROES_AND_ALLIES"
               }

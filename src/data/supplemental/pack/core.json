@@ -1239,16 +1239,21 @@
           },
           "steps": [
             {
-              "effect": "GENERATE_TOP_DISCARD_RESOURCES",
-              "effectParams": {}
+              "effect": "GENERATE_RESOURCE",
+              "effectParams": {
+                "fromCard": {
+                  "zone": "PLAYER_DISCARD",
+                  "position": "TOP"
+                }
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-18T17:07:00Z",
+        "reviewedAt": "2026-09-18T17:07:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

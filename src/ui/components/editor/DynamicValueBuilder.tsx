@@ -45,7 +45,33 @@ const STAT_OPTIONS = [
   'DAMAGE',
 ] as const;
 
-const ATTRIBUTE_OPTIONS = ['PRINTED_RESOURCES', 'PRINTED_COST', 'BOOST_ICONS'] as const;
+const ATTRIBUTE_OPTIONS = [
+  'PRINTED_RESOURCES',
+  'PRINTED_COST',
+  'BOOST_ICONS',
+  'THREAT',
+  'DAMAGE',
+  'COUNTERS',
+  'TOTAL_RESOURCES',
+  'PHYSICAL_RESOURCES',
+  'ENERGY_RESOURCES',
+  'MENTAL_RESOURCES',
+  'WILD_RESOURCES',
+] as const;
+
+const CARD_LOCATION_ZONE_OPTIONS = [
+  'PLAYER_DISCARD',
+  'PLAYER_DECK',
+  'ENCOUNTER_DECK',
+  'ENCOUNTER_DISCARD',
+  'SIDE_SCHEMES',
+  'IN_PLAY',
+  'TABLEAU',
+  'TUCKED',
+  'ATTACHED',
+] as const;
+
+const CARD_LOCATION_POSITION_OPTIONS = ['TOP', 'BOTTOM', 'TOPMOST_MATCHING'] as const;
 
 export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
   label,
@@ -55,6 +81,7 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
   description,
 }) => {
   const [isFilterExpanded, setIsFilterExpanded] = React.useState(false);
+  const [isCardFilterExpanded, setIsCardFilterExpanded] = React.useState(false);
 
   type ValueMode = 'number' | 'all' | 'formula';
   const currentMode: ValueMode =
@@ -91,6 +118,9 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
     if (next.multiplier !== undefined && next.multiplier !== 1)
       cleaned.multiplier = next.multiplier;
     if (next.offset !== undefined && next.offset !== 0) cleaned.offset = next.offset;
+    if (next.fromCard) cleaned.fromCard = next.fromCard;
+    if (next.targetCard) cleaned.targetCard = next.targetCard;
+    if (next.targetCardCode) cleaned.targetCardCode = next.targetCardCode;
     if (next.clamp) {
       const c: Record<string, number> = {};
       if (typeof next.clamp.min === 'number' && !isNaN(next.clamp.min)) c.min = next.clamp.min;
@@ -98,6 +128,22 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
       if (Object.keys(c).length > 0) cleaned.clamp = c;
     }
     onChange(cleaned as DynamicValueSource);
+  };
+
+  const handleUpdateFromCard = (fromCardUpdates: Record<string, any>) => {
+    const prev = sourceValue.fromCard || {};
+    const nextCard: Record<string, any> = { ...prev, ...fromCardUpdates };
+    const cleanedCard: Record<string, any> = {};
+    if (nextCard.zone) cleanedCard.zone = nextCard.zone;
+    if (nextCard.position) cleanedCard.position = nextCard.position;
+    if (nextCard.cardCode) cleanedCard.cardCode = nextCard.cardCode;
+    if (nextCard.target) cleanedCard.target = nextCard.target;
+    if (nextCard.filter && Object.keys(nextCard.filter).length > 0)
+      cleanedCard.filter = nextCard.filter;
+
+    handleUpdateFormula({
+      fromCard: Object.keys(cleanedCard).length > 0 ? (cleanedCard as any) : undefined,
+    });
   };
 
   // Filter criteria count for summary badge
@@ -114,6 +160,22 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
         sourceValue.filter.resourceIcons?.length,
         sourceValue.filter.hasKeyword ? 1 : undefined,
         sourceValue.filter.hasStatus?.length,
+      ].filter(Boolean).length
+    : 0;
+
+  const cardFilterCriteriaCount = sourceValue.fromCard?.filter
+    ? [
+        sourceValue.fromCard.filter.codes?.length,
+        sourceValue.fromCard.filter.names?.length,
+        sourceValue.fromCard.filter.types?.length,
+        sourceValue.fromCard.filter.traits?.length,
+        sourceValue.fromCard.filter.aspects?.length,
+        sourceValue.fromCard.filter.sets?.length,
+        sourceValue.fromCard.filter.isUnique !== undefined ? 1 : undefined,
+        sourceValue.fromCard.filter.cost ? 1 : undefined,
+        sourceValue.fromCard.filter.resourceIcons?.length,
+        sourceValue.fromCard.filter.hasKeyword ? 1 : undefined,
+        sourceValue.fromCard.filter.hasStatus?.length,
       ].filter(Boolean).length
     : 0;
 
@@ -414,50 +476,135 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
 
           {/* CARD_ATTRIBUTE sub-fields */}
           {sourceValue.from === 'CARD_ATTRIBUTE' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
-                  Card Attribute
-                </label>
-                <select
-                  data-testid="dynamic-value-attribute-select"
-                  value={sourceValue.attribute || 'PRINTED_RESOURCES'}
-                  onChange={(e) =>
-                    handleUpdateFormula({
-                      attribute: e.target.value as any,
-                    })
-                  }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
-                >
-                  {ATTRIBUTE_OPTIONS.map((att) => (
-                    <option key={att} value={att}>
-                      {att}
-                    </option>
-                  ))}
-                </select>
+            <div className="space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                    Card Attribute
+                  </label>
+                  <select
+                    data-testid="dynamic-value-attribute-select"
+                    value={sourceValue.attribute || 'PRINTED_RESOURCES'}
+                    onChange={(e) =>
+                      handleUpdateFormula({
+                        attribute: e.target.value as any,
+                      })
+                    }
+                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  >
+                    {ATTRIBUTE_OPTIONS.map((att) => (
+                      <option key={att} value={att}>
+                        {att}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                    Location Zone
+                  </label>
+                  <select
+                    data-testid="dynamic-value-card-zone-select"
+                    value={sourceValue.fromCard?.zone || ''}
+                    onChange={(e) =>
+                      handleUpdateFromCard({
+                        zone: (e.target.value as any) || undefined,
+                      })
+                    }
+                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-mono font-bold"
+                  >
+                    <option value="">Contextual / In Play</option>
+                    {CARD_LOCATION_ZONE_OPTIONS.map((z) => (
+                      <option key={z} value={z}>
+                        {z}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                    Card Position
+                  </label>
+                  <select
+                    data-testid="dynamic-value-card-position-select"
+                    value={sourceValue.fromCard?.position || ''}
+                    onChange={(e) =>
+                      handleUpdateFromCard({
+                        position: (e.target.value as any) || undefined,
+                      })
+                    }
+                    className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                  >
+                    <option value="">Default (TOP)</option>
+                    {CARD_LOCATION_POSITION_OPTIONS.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                    Specific Card Code
+                  </label>
+                  <input
+                    type="text"
+                    data-testid="dynamic-value-card-code-input"
+                    value={sourceValue.fromCard?.cardCode || sourceValue.targetCardCode || ''}
+                    placeholder="e.g. 01109 (Bomb Scare)"
+                    onChange={(e) => {
+                      const code = e.target.value.trim() || undefined;
+                      handleUpdateFromCard({ cardCode: code });
+                      if (code) {
+                        handleUpdateFormula({ targetCardCode: code });
+                      }
+                    }}
+                    className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black font-mono"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
-                  Target Entity
-                </label>
-                <select
-                  data-testid="dynamic-value-target-select"
-                  value={sourceValue.target || 'TRIGGERING_CARD'}
-                  onChange={(e) =>
-                    handleUpdateFormula({
-                      target: (e.target.value as any) || undefined,
-                    })
-                  }
-                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-mono font-bold"
+              {/* Collapsible UniversalCardFilter Accordion for card attribute */}
+              <div
+                data-testid="card-attribute-filter-accordion"
+                className="rounded border border-black bg-white/70 p-2 space-y-2"
+              >
+                <div
+                  onClick={() => setIsCardFilterExpanded(!isCardFilterExpanded)}
+                  data-testid="toggle-card-filter-btn"
+                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
                 >
-                  <option value="">Default (TRIGGERING_CARD)</option>
-                  {TargetSelectorSchema.options.map((tgt) => (
-                    <option key={tgt} value={tgt}>
-                      {tgt}
-                    </option>
-                  ))}
-                </select>
+                  <div className="flex items-center gap-1.5">
+                    {isCardFilterExpanded ? (
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                    )}
+                    <Layers className="w-3.5 h-3.5 text-comic-accent" />
+                    <span className="text-[10px] font-bold uppercase text-black">
+                      Target Card Filter Criteria
+                    </span>
+                  </div>
+                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                    {cardFilterCriteriaCount > 0
+                      ? `${cardFilterCriteriaCount} criteri${cardFilterCriteriaCount > 1 ? 'a' : 'on'}`
+                      : 'No Filter'}
+                  </span>
+                </div>
+
+                {isCardFilterExpanded && (
+                  <div className="pt-2 border-t border-gray-300">
+                    <UniversalCardFilterBuilder
+                      label="Card Filter"
+                      filter={sourceValue.fromCard?.filter}
+                      onChange={(newFilter) => handleUpdateFromCard({ filter: newFilter })}
+                      isSubBranch={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -46,6 +46,7 @@ import {
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
+import { locateCard, readCardResources } from '../queries/card-inspector';
 import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
@@ -1209,7 +1210,7 @@ export function dispatchAction(
 
       // 1. Discard Payment Cards from Hand & Collect Spent Resources
       const resourcesSpent: string[] = [];
-      for (const pId of action.paymentCardInstanceIds) {
+      for (const pId of action.paymentCardInstanceIds || []) {
         const pIndex = player.hand.findIndex((c) => c.instanceId === pId);
         if (pIndex !== -1) {
           const [discarded] = player.hand.splice(pIndex, 1);
@@ -1253,10 +1254,22 @@ export function dispatchAction(
           );
           if (idAbility) {
             const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-            const resType = (genStep?.effectParams?.resource as string) || 'wild';
-            const amount = Number(genStep?.effectParams?.amount) || 1;
-            for (let i = 0; i < amount; i++) {
-              resourcesSpent.push(resType);
+            if (genStep?.effectParams?.fromCard) {
+              const target = locateCard(nextState, genStep.effectParams.fromCard, {
+                player,
+              });
+              if (target) {
+                const types = readCardResources(target);
+                for (const t of types) {
+                  resourcesSpent.push(t);
+                }
+              }
+            } else {
+              const resType = (genStep?.effectParams?.resource as string) || 'wild';
+              const amount = Number(genStep?.effectParams?.amount) || 1;
+              for (let i = 0; i < amount; i++) {
+                resourcesSpent.push(resType);
+              }
             }
 
             if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
@@ -1299,10 +1312,23 @@ export function dispatchAction(
             const genStep = tableAbility.steps?.find(
               (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
             );
-            const resType = (genStep?.effectParams?.resource as string) || 'wild';
-            const amount = Number(genStep?.effectParams?.amount) || 1;
-            for (let i = 0; i < amount; i++) {
-              resourcesSpent.push(resType);
+            if (genStep?.effectParams?.fromCard) {
+              const target = locateCard(nextState, genStep.effectParams.fromCard, {
+                player,
+                sourceCardInstance: gCard,
+              });
+              if (target) {
+                const types = readCardResources(target);
+                for (const t of types) {
+                  resourcesSpent.push(t);
+                }
+              }
+            } else {
+              const resType = (genStep?.effectParams?.resource as string) || 'wild';
+              const amount = Number(genStep?.effectParams?.amount) || 1;
+              for (let i = 0; i < amount; i++) {
+                resourcesSpent.push(resType);
+              }
             }
 
             const key = `${gCard.instanceId}_${tableAbility.id}`;

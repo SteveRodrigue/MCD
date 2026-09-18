@@ -16,6 +16,7 @@ import {
   getEffectiveMaxHealth,
   hasPlayerTrait,
 } from '../pipeline/stat-calculator';
+import { locateCard, readCardAttribute } from '../queries/card-inspector';
 
 export interface DynamicEvaluationOptions {
   state?: GameState;
@@ -223,8 +224,12 @@ export function evaluateDynamicAmount(
             (filter as any)?.code ||
             (filter as any)?.codes?.[0];
           if (targetCardCode) {
-            const sideScheme = state.sideSchemes?.find((s: any) => s.card?.code === targetCardCode);
-            baseValue = sideScheme ? sideScheme.threat : 0;
+            const located = locateCard(
+              state,
+              { zone: 'IN_PLAY', cardCode: targetCardCode },
+              { player },
+            );
+            baseValue = located ? readCardAttribute(located, 'THREAT') : 0;
           } else if (options.targetInstanceId) {
             const sideScheme = state.sideSchemes?.find(
               (s: any) =>
@@ -266,16 +271,23 @@ export function evaluateDynamicAmount(
       break;
     }
     case 'CARD_ATTRIBUTE': {
-      const cardInst =
-        options.targetCardInstance || options.sourceCardInstance || context.sourceCardInstance;
-      if (cardInst?.card) {
-        if (attribute === 'BOOST_ICONS') {
-          baseValue = (cardInst.card as any).boost || 0;
-        } else if (attribute === 'PRINTED_COST') {
-          baseValue = (cardInst.card as any).cost || 0;
-        } else if (attribute === 'PRINTED_RESOURCES') {
-          baseValue = (cardInst.card as any).resources?.length || 0;
-        }
+      const cardSelector = (amountParam as any).fromCard || (amountParam as any).targetCard;
+      let targetEntity: any = undefined;
+
+      if (cardSelector && state) {
+        targetEntity = locateCard(state, cardSelector, {
+          player,
+          sourceCardInstance: options.sourceCardInstance || context.sourceCardInstance,
+          targetCardInstance: options.targetCardInstance || context.targetCardInstance,
+          targetInstanceId: options.targetInstanceId || context.targetInstanceId,
+        });
+      } else {
+        targetEntity =
+          options.targetCardInstance || options.sourceCardInstance || context.sourceCardInstance;
+      }
+
+      if (targetEntity) {
+        baseValue = readCardAttribute(targetEntity, (attribute as any) || 'PRINTED_RESOURCES');
       }
       break;
     }

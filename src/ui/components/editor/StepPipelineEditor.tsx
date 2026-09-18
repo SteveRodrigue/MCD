@@ -7,7 +7,11 @@ import {
 import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 import { DynamicValueBuilder } from './DynamicValueBuilder';
 import { Plus, Trash2, ArrowUp, ArrowDown, AlertCircle } from 'lucide-react';
-import { getEffectDescriptor } from './effect-parameter-registry';
+import {
+  getEffectDescriptor,
+  CARD_ZONE_OPTIONS,
+  CARD_POSITION_OPTIONS,
+} from './effect-parameter-registry';
 
 export interface StepPipelineEditorProps {
   steps: any[];
@@ -446,6 +450,111 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
                   {descriptor.parameters.map((param) => {
                     const val = effectParams[param.key];
+
+                    if (step.effect === 'GENERATE_RESOURCE') {
+                      if (param.key === 'sourceMode') {
+                        const isFromCard = Boolean(effectParams.fromCard);
+                        return (
+                          <div key={param.key} className="col-span-full space-y-2">
+                            <div>
+                              <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                                Source Mode
+                              </label>
+                              <select
+                                data-testid={`step-param-sourceMode-${abilityIndex}-${sIdx}`}
+                                value={isFromCard ? 'FROM_CARD' : 'STATIC'}
+                                onChange={(e) => {
+                                  if (e.target.value === 'FROM_CARD') {
+                                    const next = { ...effectParams };
+                                    delete next.resource;
+                                    delete next.amount;
+                                    next.fromCard = { zone: 'PLAYER_DISCARD', position: 'TOP' };
+                                    handleUpdateStep(sIdx, { effectParams: next });
+                                  } else {
+                                    const next = { ...effectParams };
+                                    delete next.fromCard;
+                                    next.resource = 'wild';
+                                    next.amount = 1;
+                                    handleUpdateStep(sIdx, { effectParams: next });
+                                  }
+                                }}
+                                className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                              >
+                                <option value="STATIC">STATIC (Fixed Resource Amount)</option>
+                                <option value="FROM_CARD">
+                                  FROM_CARD (Dynamic Card Inspector)
+                                </option>
+                              </select>
+                            </div>
+
+                            {isFromCard && (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-yellow-50/60 border border-yellow-300 rounded shadow-comic-xs">
+                                <div>
+                                  <label className="block text-[9px] uppercase font-bold text-gray-700 mb-0.5">
+                                    Card Location Zone
+                                  </label>
+                                  <select
+                                    data-testid={`step-param-fromCard-zone-${abilityIndex}-${sIdx}`}
+                                    value={effectParams.fromCard?.zone || 'PLAYER_DISCARD'}
+                                    onChange={(e) => {
+                                      const next = {
+                                        ...effectParams,
+                                        fromCard: {
+                                          ...effectParams.fromCard,
+                                          zone: e.target.value,
+                                        },
+                                      };
+                                      handleUpdateStep(sIdx, { effectParams: next });
+                                    }}
+                                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                                  >
+                                    {CARD_ZONE_OPTIONS.map((z) => (
+                                      <option key={z} value={z}>
+                                        {z}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-[9px] uppercase font-bold text-gray-700 mb-0.5">
+                                    Card Position
+                                  </label>
+                                  <select
+                                    data-testid={`step-param-fromCard-position-${abilityIndex}-${sIdx}`}
+                                    value={effectParams.fromCard?.position || 'TOP'}
+                                    onChange={(e) => {
+                                      const next = {
+                                        ...effectParams,
+                                        fromCard: {
+                                          ...effectParams.fromCard,
+                                          position: e.target.value,
+                                        },
+                                      };
+                                      handleUpdateStep(sIdx, { effectParams: next });
+                                    }}
+                                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                                  >
+                                    {CARD_POSITION_OPTIONS.map((p) => (
+                                      <option key={p} value={p}>
+                                        {p}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      if (
+                        effectParams.fromCard &&
+                        (param.key === 'resource' || param.key === 'amount')
+                      ) {
+                        return null;
+                      }
+                    }
 
                     if (param.type === 'card-filter') {
                       return (

@@ -66,7 +66,6 @@ The delivery workflow may prepare staged changes, a proposed commit message, a w
 | Specific card translation or refinement                          | `card-integration-protocol` |
 | New generic mechanic, schema, UI capability, or scenario feature | `feature-delivery`          |
 | Defect or regression                                             | `bug-fix`                   |
-| Trigger/effect/target vocabulary migration                       | `schema-taxonomy-migration` |
 | Documentation drift                                              | `documentation-audit`       |
 | Dependency alert                                                 | `dependabot`                |
 | Approved plan execution                                          | `execute-plan`              |

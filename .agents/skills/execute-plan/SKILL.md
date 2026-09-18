@@ -113,8 +113,8 @@ Upon receiving the subagent's completion message:
 1. Verify that all tests succeeded with **0 failures and 0 skipped tests** (Zero Skipped Tests Invariant).
 2. Update `CHANGELOG.md` under `[Unreleased]` with what was implemented.
 3. If card supplemental JSON was modified, run `npm run report:declarations`.
-4. Create or update `<appDataDir>\brain\<conversation-id>/walkthrough.md`.
-5. Output a clean, concise completion summary to the user.
+4. Create or update the walkthrough/recap in the host's user-facing artifact location when available.
+5. Present the walkthrough, verification results, and proposed commit to the user. Ask for confirmation before committing; do not push without separate authorization.
 
 ---
 

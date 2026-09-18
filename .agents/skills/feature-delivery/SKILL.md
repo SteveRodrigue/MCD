@@ -7,13 +7,13 @@ description: >-
   Enforces mandatory Rules Reference (RR v1.8) audits, strict >=95% confidence thresholds,
   GitHub RFC Peer Review circuit breakers, ADR & Zod schema alignment, BDD acceptance
   tests first, composable modular architecture, execution of the
-  mandatory 7-point post-task protocol, roadmap milestone updates, and auto-closing Git commits (Closes #XX).
+   canonical 8-point post-task protocol and roadmap milestone updates.
   Trigger whenever building a new feature or prefixed with 'feature-delivery:'.
 ---
 
 # 🚀 Feature Delivery Protocol (Specification-Driven Development & Milestone Lifecycle)
 
-**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
 
 This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features, capabilities, and primitives cleanly, composably, and with zero regressions.
 
@@ -112,7 +112,7 @@ flowchart TD
     S4 --> S5["5. Composable & Modular Implementation (Green)"]
     S5 --> S6["6. Declarative Supplemental Wiring & Card Promotion"]
     S6 --> S7["7. Full Verification Suite (npm test, typecheck, build, declarations)"]
-    S7 --> S8["8. Mandatory 7-Point Protocol & Commit (Closes #Issue)"]
+   S7 --> S8["8. Prepare walkthrough, recap, and proposed commit"]
 ```
 
 ---
@@ -255,7 +255,9 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 
 ---
 
-### Step 8: Git Commit (Auto-Close Issue), Push & Verification
+### Step 8: Prepare Delivery Recap
+
+Prepare the staged diff, proposed commit message, walkthrough, and verification recap. Present them to the user and wait for confirmation before executing any commit command. Pushes and issue-closing actions require separate explicit authorization.
 
 1. **Stage & Commit with Auto-Close Syntax:**
 
@@ -270,7 +272,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 2. **Push to Remote:**
 
    ```bash
-   git push origin main
+   # Push only after separate explicit authorization.
    ```
 
 3. **Post Verification Comment on GitHub:**

@@ -1,11 +1,11 @@
 ---
 name: commit-and-push
 description: >-
-  Automated, clean Git commit and push protocol for MCD. Inspects staged/unstaged changes,
+   Approval-gated Git commit and push protocol for MCD. Inspects staged/unstaged changes,
   runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
   automatically selects proper Conventional Commits categories and scopes, generates
-  concise imperative descriptions if not provided, executes commits natively without shell
-  wrappers, and pushes cleanly to remote. Trigger whenever
+   concise imperative descriptions if not provided, prepares a walkthrough and verification
+   recap before commit, and pushes only after separate authorization. Trigger whenever
   committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
 ---
 
@@ -13,13 +13,15 @@ description: >-
 
 **Path Policy:** Use repository-relative paths (`src/engine/`, `docs/`, `.githooks/`) for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
 
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
+
 **Command Execution Policy:** Execute CLI commands natively directly in the environment shell without wrapping in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`.
 
 This skill provides an automated, foolproof workflow to stage, verify, format, categorize, commit, and push changes to remote with zero broken commits or failing hooks.
 
 ---
 
-## 📋 The 7-Step Commit-and-Push Lifecycle
+## Commit Preparation Lifecycle
 
 ```mermaid
 flowchart TD
@@ -27,8 +29,8 @@ flowchart TD
     S2 --> S3["3. Execute Quality Gates (format, lint, typecheck, tests)"]
     S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
     S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
-    S5 --> S6["6. Native Git Commit (Run pre-commit hook)"]
-    S6 --> S7["7. Native Git Push (Run pre-push hook & verify clean state)"]
+      S5 --> S6["6. Prepare commit and walkthrough; request user approval"]
+      S6 --> S7["7. Commit after approval; push only after separate authorization"]
 ```
 
 ---
@@ -148,9 +150,9 @@ Proposed Commit:
 
 ---
 
-## 🔨 Step 6: Native Git Commit
+## Step 6: Native Git Commit
 
-Execute the commit command natively:
+After the walkthrough and verification recap have been presented, execute the commit command only after the user confirms or approves:
 
 ```sh
 git commit -m "<category>(<scope>): <description>"
@@ -162,7 +164,7 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 ## 🚀 Step 7: Native Git Push & Final Verification
 
-1. Push to the remote tracking branch:
+1. Push to the remote tracking branch only after separate explicit authorization:
    ```sh
    git push origin main
    ```

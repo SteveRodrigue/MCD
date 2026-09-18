@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Contract & Acceptance Tests:**
     - Created `tests/engine/target-resolution-engine.test.ts` with 21 contract tests covering all 8 requirement categories (Identity, Controlled vs Friendly, Form-Restricted Scopes, Enemy/Minion Scopes, Universal Characters, Schemes, Continuity & Primitives, Orphan & Liveness guards).
 
-- **Feature (Engine & UI): Cross-Player Attachments & Persistent Card Ownership Invariants ([Issue #23](https://github.com/SteveRodrigue/MCD/issues/23) / [ADR-0068](docs/decisions/0068-cross-player-attachments-and-card-ownership-invariants.md))**
+- **Feature (Engine & UI): Cross-Player Attachments & Persistent Card Ownership Invariants ([Issue #23](https://github.com/SteveRodrigue/MCD/issues/23) / [ADR-0066](docs/decisions/0066-cross-player-attachments-and-card-ownership-invariants.md))**
   - **Schema & Supplemental Data Layer:**
     - Added `playUnderAnyPlayerControl: z.boolean().optional()` to `CardEnrichmentSchema` in `src/data/supplemental/schema.ts` and `CardEnrichment` interface in `src/engine/models/abilities.ts`.
     - Regenerated canonical JSON schema `src/data/supplemental/schema.json` via `npm run schema:generate`.
@@ -103,11 +103,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Schema & Specifications Alignment:**
     - Registered `'ALL_HEROES_AND_ALLIES'` in `TargetSelectorSchema` (`src/data/supplemental/schema.ts`) and regenerated `src/data/supplemental/schema.json`.
     - Documented the authoritative Orthogonal Collective Target Scopes Table in `docs/specifications/supplemental/03_costs_and_targeting.md` per RR v1.8 p. 11, 13, 14, 19, and 20.
-    - Updated *Explosion* (`01111`) in `src/data/supplemental/pack/core_encounter.json` to canonical `"target": "ALL_HEROES_AND_ALLIES"`.
+    - Updated _Explosion_ (`01111`) in `src/data/supplemental/pack/core_encounter.json` to canonical `"target": "ALL_HEROES_AND_ALLIES"`.
   - **Headless Engine Invariant Enforcement:**
     - Updated `DEAL_DAMAGE` in `src/engine/effects/index.ts` to recognize `ALL_HEROES_AND_ALLIES`.
-    - Enforced strict Hero-form invariant on `ALL_HEROES` in `DEAL_DAMAGE`: filters `state.players.filter(pl => pl.currentForm === 'hero')`, ensuring Alter-Egos are completely immune to hero-targeted damage (*Shocker* `01103`).
-    - Decoupled `ALL_HEROES` in `ADD_STATUS` from single-target active player resolution, iterating across all players currently in Hero form and immunizing Alter-Egos (*Rhino Stage III* `01096`).
+    - Enforced strict Hero-form invariant on `ALL_HEROES` in `DEAL_DAMAGE`: filters `state.players.filter(pl => pl.currentForm === 'hero')`, ensuring Alter-Egos are completely immune to hero-targeted damage (_Shocker_ `01103`).
+    - Decoupled `ALL_HEROES` in `ADD_STATUS` from single-target active player resolution, iterating across all players currently in Hero form and immunizing Alter-Egos (_Rhino Stage III_ `01096`).
     - Aligned `RhinoScenarioPlugin.resolveStageIIIWhenRevealed` to filter players in Hero form.
   - **Acceptance & Contract Test Suite:**
     - Authored `tests/engine/target-scopes-and-form-invariants.test.ts` (4 contract tests covering Shocker hero damage vs alter-ego immunity, 2-player selective hero damage, Rhino Stage III multiplayer hero stuns with alter-ego immunity, and Explosion `ALL_HEROES_AND_ALLIES` distribution).
@@ -127,7 +127,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - Inactive player ally Tough prevention and lethal ally defeat with owner discard and trigger dispatch.
       - Direct single-target assignment via `targetInstanceId` on inactive player's ally.
 
-
 - **Feature & Engine (Threat Interception & Damage Deconflation): Deconflate Damage and Threat Interception Primitives — PREVENT_THREAT ([#120](https://github.com/SteveRodrigue/MCD/issues/120), [#123](https://github.com/SteveRodrigue/MCD/issues/123), [ADR-0063](docs/decisions/0063-deconflate-damage-and-threat-interception-primitives.md))**
   - **Schema & Types:** Added `'PREVENT_THREAT'` to `EffectTypeSchema` in `src/data/supplemental/schema.ts` and `EffectType` union in `src/engine/models/abilities.ts`. Regenerated `src/data/supplemental/schema.json`.
   - **Headless Engine Deconflation:**
@@ -140,10 +139,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Updated `tests/ui/effect-parameter-registry.test.ts` with dedicated assertions and 100% schema registration verification.
     - Documented `PREVENT_THREAT` in `docs/specifications/tooling/card_supplemental_editor.md`.
   - **Core Set Supplemental Retrofit:**
-    - Retrofitted *Jennifer Walters* (`01019b`), *Great Responsibility* (`01061`), and *Emergency* (`01085`) in `src/data/supplemental/pack/core.json` from `PREVENT_DAMAGE` to `PREVENT_THREAT`, with refreshed audit metadata.
+    - Retrofitted _Jennifer Walters_ (`01019b`), _Great Responsibility_ (`01061`), and _Emergency_ (`01085`) in `src/data/supplemental/pack/core.json` from `PREVENT_DAMAGE` to `PREVENT_THREAT`, with refreshed audit metadata.
     - Updated `tools/audit/migrate-declarative-taxonomy.ts` to map `CONSUME_INTERCEPTED_EVENT` on `THREAT_WOULD_BE_PLACED` triggers to `PREVENT_THREAT`.
   - **Acceptance & Contract Test Suite:**
-    - Authored `tests/engine/prevent-threat.test.ts` (11 contract tests): partial threat reduction (*Emergency*), full prevention + dynamic hero damage (*Great Responsibility*), Alter-Ego form gating & round limits (*Jennifer Walters*), domain isolation invariant (`PREVENT_DAMAGE` on threat, `PREVENT_THREAT` on damage), boundary conditions (0 impending threat, excess prevention amount), and decision prompt copy formatting.
+    - Authored `tests/engine/prevent-threat.test.ts` (11 contract tests): partial threat reduction (_Emergency_), full prevention + dynamic hero damage (_Great Responsibility_), Alter-Ego form gating & round limits (_Jennifer Walters_), domain isolation invariant (`PREVENT_DAMAGE` on threat, `PREVENT_THREAT` on damage), boundary conditions (0 impending threat, excess prevention amount), and decision prompt copy formatting.
     - Updated `tests/data/supplemental-schema.test.ts` ability tree tests for `01061`, `01085`, and `01019b`.
 
 - **Feature (UI & Field Reporting): Card Context Menu "Create issue for this card" & Problem Report Prefill**
@@ -154,7 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Test Suite:** Added comprehensive unit and contract tests in `tests/ui/card-context-menu.test.ts` and `tests/ui/problem-report-service.test.ts`.
 
 - **Refactor & Documentation (Specifications Suite, Schema, Editor & Engine Alignment): Specifications Cleanup, Schema Grounding & Editor Bug Fix**
-  - **Purged Dead Primitive `SPAWN_NEMESIS`:** Completely removed obsolete monolithic `SPAWN_NEMESIS` from `EffectTypeSchema` (`src/data/supplemental/schema.ts`), the execution switch handler in `src/engine/effects/index.ts`, the parameter registry in `src/ui/components/editor/effect-parameter-registry.ts`, and regenerated `src/data/supplemental/schema.json`. Documented the canonical 4-step `PUT_INTO_PLAY` / `SHUFFLE_INTO_DECK` / `SURGE` pipeline in `08_effects_villain_nemesis.md` as implemented on *Shadow of the Past* (`01190`).
+  - **Purged Dead Primitive `SPAWN_NEMESIS`:** Completely removed obsolete monolithic `SPAWN_NEMESIS` from `EffectTypeSchema` (`src/data/supplemental/schema.ts`), the execution switch handler in `src/engine/effects/index.ts`, the parameter registry in `src/ui/components/editor/effect-parameter-registry.ts`, and regenerated `src/data/supplemental/schema.json`. Documented the canonical 4-step `PUT_INTO_PLAY` / `SHUFFLE_INTO_DECK` / `SURGE` pipeline in `08_effects_villain_nemesis.md` as implemented on _Shadow of the Past_ (`01190`).
   - **Fixed Card Editor Default Step Bug:** Corrected `src/ui/components/editor/StepPipelineEditor.tsx` where adding a step erroneously emitted deprecated `DRAW_CARDS` instead of canonical `DRAW`.
   - **Supplemental Specifications Cleanup (`docs/specifications/`):**
     - **Header Numbering Alignment:** Aligned inverted section headers in `05_effects_combat_threat.md`, `06_effects_zones_cards.md`, `07_effects_status_economy.md`, `08_effects_villain_nemesis.md`, `09_dynamic_formulas.md`, and `10_sequences_and_prompts.md`.
@@ -162,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Combat & Threat Primitives (`05_effects_combat_threat.md`):** Purged phantom `DEAL_DAMAGE_SPLIT` and obsolete `PLACE_THREAT_PER_SIDE_SCHEME`; replaced `RETALIATE / QUICKSTRIKE` section with `GRANT_KEYWORD` primitive documentation and ADR-0054 Retaliate value stacking decomposition.
     - **Status & Economy Primitives (`07_effects_status_economy.md`):** Clarified Toughness as a passive entry keyword rather than an effect primitive; added documentation for counter economy primitives (`ADD_COUNTERS`, `REMOVE_COUNTERS`, `SPEND_COUNTERS`).
     - **Metadata, Timings & Triggers Synchronization (`01_metadata_and_audit.md`, `02_timings_and_triggers.md`, `03_costs_and_targeting.md`):** Added missing `CardEnrichment` properties (`isLandscape`, `attackCost`, `thwartCost`, `maxPerPlayer`, `uses`, `keywords`, `traits`, `restrictedSlots`, `additionalBoostCards`), documented `StructuredKeywordSchema` per ADR-0054, and added `ambiguityFile` to `CardAuditRecord`. In `02_timings_and_triggers.md`, moved `CARD_PLAYED` from timing to triggers, added `RESOURCE` timings, and synchronized all 33 engine event triggers. In `03_costs_and_targeting.md`, fixed phantom `spendTokens` to canonical `spendCounters` and added `discardSelf` and `damageSelf`.
-    - **Documentation Grounding (`README.md`, `card_mechanics_breakdown.md`, `card_supplemental_editor.md`):** Declared 100% executable codebase grounding (retiring `ROADMAP / SPECIFIED` badges); updated *Emergency* (`01085`) trigger to `INTERRUPT @ THREAT_WOULD_BE_PLACED`; updated card editor ASCII diagram to show `EffectParams`.
+    - **Documentation Grounding (`README.md`, `card_mechanics_breakdown.md`, `card_supplemental_editor.md`):** Declared 100% executable codebase grounding (retiring `ROADMAP / SPECIFIED` badges); updated _Emergency_ (`01085`) trigger to `INTERRUPT @ THREAT_WOULD_BE_PLACED`; updated card editor ASCII diagram to show `EffectParams`.
 
 - **Fix & Refactor (Engine, Supplemental Data & Schema): Declarative Conditional Modifiers & Ad-hoc Bonus Parameter Elimination ([#67](https://github.com/SteveRodrigue/MCD/issues/67))**
   - **Dynamic Value Sources (`HAS_TRAIT`, `HAS_IDENTITY`):** Extended `DynamicValueSourceSchema` with `'HAS_TRAIT'` and `'HAS_IDENTITY'` in `src/data/supplemental/schema.ts`, evaluated via `evaluateDynamicAmount` in `src/engine/effects/dynamic-formula-evaluator.ts`.
@@ -233,7 +232,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Supplemental Pack Retrofit:** Migrated Repulsor Blast (`01031`) in `src/data/supplemental/pack/core.json` to canonical `DISCARDED_CARDS` with `RESOURCE_ICONS`, `energy` resource filter, and `multiplier: 2`.
   - **Contract Test Suites:** Authored `tests/engine/discarded-cards-dynamic-value.test.ts` (19 tests) covering all 6 attributes, multi-resource cards, wild icon boundaries, and filter predicates. Updated `repulsor-blast.test.ts`, `dynamic-formula-evaluator.test.ts`, `supplemental-schema.test.ts` (with strict negative rejection assertions), and `DynamicValueBuilder.test.tsx`.
 
-
 - **Feature & Fix (Rules Engine & Card Editor): Primitive SEARCH Multi-Zone, 0/'ALL' Pool & Non-Negative Validation ([#115](https://github.com/SteveRodrigue/MCD/issues/115), [ADR-0030](docs/decisions/0030-unified-ability-step-sequence-architecture.md), [ADR-0046](docs/decisions/0046-universal-declarative-card-filtering-architecture.md))**
   - **Multi-Source Zone Search (`SearchZoneSchema`):** Extended `SearchAndSelectParamsSchema` in `src/data/supplemental/schema.ts` to allow `source` to be an array of zones (`SearchZone | SearchZone[]`), aggregating candidate cards across multiple piles (e.g. `['ENCOUNTER_DECK', 'ENCOUNTER_DISCARD']`) and automatically shuffling all searched decks upon completion.
   - **Unified `0` and `'ALL'` Count Semantics:**
@@ -269,7 +267,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `StepPipelineEditor.tsx`: Multi-step resolution pipeline (step addition, removal, up/down reordering, `ConditionGateSchema` dropdown, `StepConditionSchema` dropdown, `EffectTypeSchema` descriptor routing, `DynamicValueBuilder`, and `UniversalCardFilterBuilder`).
   - **Real-Time Live Zod Validation:** Added immediate client-side validation using `CardEnrichmentSchema.safeParse(supplemental)` and `CardAbilitySchema.safeParse(ability)`, providing visual status badges (`SCHEMA COMPLIANT` / `ISSUES DETECTED`), error issue counts, toggleable error details lists, and field/ability-level border highlights.
   - **Component Unit & Contract Test Suite:** Added dedicated component tests in `tests/ui/CardAttributesSection.test.tsx`, `tests/ui/AbilityCostSection.test.tsx`, and `tests/ui/TriggerFilterSection.test.tsx`, updated `tests/ui/ability-limit-and-zone-editor.test.ts`, and expanded `tests/ui/AbilityFormBuilder.test.tsx` with live Zod validation tests, bringing the UI suite to 28/28 passing test files (189 tests).
-
 
 - **Refactor (Declarative Taxonomy & Schema Pruning): Phase 2 Redundant & Singular Primitives Consolidation ([ADR-0058](docs/decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md))**
   - **Pruned 10 Retired Effect Primitives:** Pruned `ADD_THREAT_PER_PLAYER`, `CONSUME_INTERCEPTED_EVENT`, `TRIGGER_SURGE`, `DEAL_DAMAGE_ALL_ENEMIES`, `BUFF_ALL_FRIENDLY_CHARACTERS`, `BOOST_STAT_CHOICE`, `SHUFFLE_DISCARD_INTO_DECK`, `RETURN_FACEDOWN_CARDS_TO_OWNERS`, `ADD_COUNTER`, and `REMOVE_COUNTER` from `EffectTypeSchema` in `src/data/supplemental/schema.ts`, `EffectType` in `src/engine/models/abilities.ts`, and `src/data/supplemental/schema.json`.

@@ -6,14 +6,14 @@ description: >-
   and resolving bugs across the engine, UI, and data layers. Inspects real-time table
   state snapshots in logs/gamestates/, opens tracked GitHub issues, enforces failing
   regression test creation first, blast-radius guardrails, zero-regression full-suite
-  verification, execution of the mandatory 7-point post-task
-  protocol, and auto-closing Git commits (Fixes #XX). Trigger whenever a bug is reported
+  verification, execution of the canonical 8-point post-task
+  protocol. Trigger whenever a bug is reported
   or prefixed with 'bug-fix:'.
 ---
 
 # 🛠️ Bug-Fix Protocol (Standard TDD & GitHub Issue Lifecycle Workflow)
 
-**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
 
 This skill guides the agent through an authoritative, test-first, and issue-tracked protocol to resolve defects safely, deterministically, and with zero regressions.
 
@@ -48,7 +48,7 @@ flowchart TD
     S3 --> S4["4. Root-Cause Analysis & Blast-Radius Check (Tier 1/2/3)"]
     S4 --> S5["5. Apply Surgical Fix (Green)"]
     S5 --> S6["6. Full Verification Suite (test, typecheck, build, declarations)"]
-    S6 --> S7["7. Execute 7-Point Mandatory Post-Task Protocol (Update CHANGELOG with #Issue)"]
+    S6 --> S7["7. Execute canonical 8-point post-task protocol"]
     S7 --> S8["8. Commit to Git (Fixes #Issue), Push & Verify Issue Closed"]
 ```
 
@@ -191,7 +191,9 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 
 ---
 
-### Step 8: Git Commit (Auto-Close Issue), Push & Verification
+### Step 8: Prepare Delivery Recap
+
+Prepare the staged diff, proposed commit message, walkthrough, and verification recap. Present them to the user and wait for confirmation before executing any commit command. Pushes and issue-closing actions require separate explicit authorization.
 
 1. **Stage & Commit with Auto-Close Syntax:**
 
@@ -201,20 +203,25 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
    ```
 
    - **Scopes:** `fix(engine)`, `fix(ui)`, `fix(data)`, `fix(rules)`, `fix(assets)`, `fix(setup)`.
-   - The `(Fixes #<NUM>)` trailer automatically links and closes the GitHub issue upon push.
+
+- Add `(Fixes #<NUM>)` to the proposed commit only when issue closure is explicitly authorized.
 
 2. **Push to Remote:**
 
    ```bash
-   git push origin main
+
    ```
 
+# Push only after separate explicit authorization.
+
+````
+
 3. **Post Verification Comment & Ensure Closed:**
-   If `gh` CLI is available, optionally post a verification note and confirm issue state:
-   ```bash
-   gh issue comment <NUM> --body "✅ **Verified**: Regression test passing cleanly. Full verification suite passing (0 typecheck errors, 0 build warnings)."
-   gh issue close <NUM> --comment "Resolved and closed via automated TDD protocol."
-   ```
+If `gh` CLI is available, optionally post a verification note and confirm issue state:
+```bash
+gh issue comment <NUM> --body "✅ **Verified**: Regression test passing cleanly. Full verification suite passing (0 typecheck errors, 0 build warnings)."
+gh issue close <NUM> --comment "Resolved and closed via automated TDD protocol."
+````
 
 ---
 

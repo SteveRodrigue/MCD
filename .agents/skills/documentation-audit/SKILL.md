@@ -18,7 +18,7 @@ description: >-
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
 ---
 
-**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, preservation, verification, and delivery policies.
 
 # 📚 Documentation Audit Protocol (Technical Writer & Code-Truth Synchronization)
 

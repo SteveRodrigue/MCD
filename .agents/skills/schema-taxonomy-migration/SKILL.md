@@ -5,9 +5,10 @@ description: >-
   declarative supplemental primitives (TriggerTypeSchema, EffectTypeSchema,
   TargetSelectorSchema, and related enums in src/data/supplemental/schema.ts) with
   zero tech debt and zero mid-migration breakage. Enforces a Pre-Flight Checklist
-  (Phase 0), an additive-before-cleanup sequencing invariant (new names ship as
-  aliases first, old names are only deleted after all supplemental data is migrated
-  and tests are green), a deterministic batch migration script over
+  (Phase 0), an additive-before-cleanup sequencing invariant (temporary compatibility
+  is permitted only when explicitly approved in the migration plan, and old names are
+  deleted after all supplemental data is migrated and tests are green), a deterministic
+  batch migration script over
   src/data/supplemental/pack/*.json with mandatory dry-run diffing, per-phase
   quality gates, checkbox-tracked progress committed directly into the governing
   docs/reports/*_audit_report.md, and closure via ADR + CHANGELOG + roadmap sync.
@@ -17,7 +18,7 @@ description: >-
 
 # 🏷️ Schema Taxonomy Migration Protocol (Phase 0–8 Consolidation Workflow)
 
-**Path Policy:** Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
 
 This skill governs any change to the _vocabulary_ of the declarative supplemental layer — renaming, merging, or retiring `TriggerTypeSchema` / `EffectTypeSchema` / `TargetSelectorSchema` enum members (and their `AbilityStep`/`params` shapes) — as distinct from adding a genuinely new capability (which is `feature-delivery`'s job) or integrating a single card (`card-integration-protocol`'s job). Reference invocation: **ADR-0058** and [docs/reports/card_editor_and_supplemental_schema_audit_report.md](../../../docs/reports/card_editor_and_supplemental_schema_audit_report.md).
 
@@ -76,7 +77,7 @@ Before touching any file, confirm all of the following (see Section "Phase 0" in
 
 - Add every new canonical enum member to `schema.ts` **alongside** existing legacy members — never replace in this phase.
 - Implement any genuinely new capability introduced by the consolidation (e.g. a merged primitive gaining a new optional param) as its own isolated, tested addition.
-- Add backward-compatible `case` fallthroughs in engine switch dispatchers: `case 'NEW': case 'OLD': { ...unchanged body... }`.
+- If explicitly approved in the migration plan, temporarily support both labels in engine switch dispatchers: `case 'NEW': case 'OLD': { ...unchanged body... }`. Delete the old label during cleanup.
 - Regenerate `schema.json` (`npm run schema:generate`).
 - Add new contract tests for the _new_ behavior only. Full suite must remain green with zero changes to existing test assertions.
 
@@ -125,9 +126,9 @@ Before touching any file, confirm all of the following (see Section "Phase 0" in
 
 ---
 
-## 🛑 Mandatory Post-Task Protocol Reminder
+## Post-Task Protocol Reminder
 
-Every phase-closing commit still owes the standard 8-point `AGENTS.md` checklist (CHANGELOG, docs, specifications, guidelines, ADRs, ambiguities/issues, roadmap, supplemental retrofit + `report:declarations`) — this skill's Phase 7/8 are that checklist applied specifically to a taxonomy migration, not a replacement for it.
+Every phase uses the canonical 8-point checklist in [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md). Prepare each phase's commit and walkthrough, then request user approval before committing; pushing requires separate authorization.
 
 ---
 

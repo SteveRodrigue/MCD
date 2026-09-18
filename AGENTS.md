@@ -1,57 +1,40 @@
-# Marvel Champions Digital (MCD) — Agent Instructions
+# Marvel Champions Digital (MCD) - Agent Instructions
 
-## 🏛️ Project Principles
+The canonical shared policies and quality gates are in
+[`.agents/rules/shared-quality-gates.md`](.agents/rules/shared-quality-gates.md).
+The shell policy is in [`.agents/rules/command-execution.md`](.agents/rules/command-execution.md),
+and the post-task procedure is in
+[`.agents/rules/post-task-checklist.md`](.agents/rules/post-task-checklist.md).
 
-1. **Marvel Champions Rules Reference (RR v1.8):** Adhere strictly to the official rules, timing priority, costs, and state machine transitions.
-2. **Headless Engine / Presentation Decoupling:** Engine logic in `src/engine/` is pure TypeScript and decoupled from React UI in `src/ui/`.
-3. **1960s Comic Pop-Art Aesthetics:** Vibrant colors, Ben-Day halftone patterns, bold typography, and comic onomatopoeias.
-4. **Declarative Data-First Invariant:** All card-specific logic resides exclusively in `src/data/supplemental/`. The engine (`src/engine/`) only contains universal, card-agnostic state machines and effect primitives. When triaging any card issue, **always audit and correct the supplemental JSON first**. Altering engine code for a single card is an anti-pattern unless a truly universal primitive is missing.
-5. **🎯 Rhino Release First (Scope Boundary Invariant):** All current active development tasks, features, improvements, and bug fixes must strictly target the **Core Set Player Cards (101 cards across 5 Heroes + 4 Aspects + Basic)** and the **Rhino Scenario (Rhino I/II/III, Standard, Expert, Bomb Scare, and 5 Nemesis Sets - 34 cards)**. Any expansion cards, multi-form mechanics, or non-Rhino villains (Klaw, Ultron) are strictly deferred to subsequent releases.
-6. **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):** We are in the early stage of the project where clean, composable foundations are paramount. **NEVER** introduce or carry forward legacy shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or temporary shortcuts unless explicitly approved by the user or absolutely necessary. Always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data over legacy compatibility layers.
-7. **🚫 Zero Skipped Tests Invariant (No Lingering Code, No Lingering Problems):** Tests must strictly pass or fail — **NEVER** introduce, carry forward, or retain `it.skip`, `describe.skip`, `test.skip`, `fit`, `fdescribe`, or commented-out test assertions. When an issue, defect, edge case, or failing test is encountered, it must be resolved and fixed immediately at the root cause (correcting supplemental data, fixing engine logic, or pruning superseded tests). Lingering broken code, deferred test failures, or temporary skips are strictly forbidden as tech debt. All verification gates must enforce 0 skipped tests (`passed: N, failed: 0, skipped: 0`).
+## Project principles
 
-## Path Policy
+- Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
+- Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
+- Keep card-specific behavior declarative in `src/data/supplemental/`; engine primitives must be generic.
+- Keep active work within the Rhino Release boundary unless the user explicitly changes scope.
+- Preserve the project's comic pop-art visual direction in user-facing UI work.
+- Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
+- Never add skipped or todo tests to hide unfinished work.
 
-All agent and skill documentation MUST use paths relative to the MCD repository root. Never add personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links for local project files. Use repository-relative paths such as `src/engine/` or `docs/README.md`; reserve absolute URLs for external resources only.
+## Before implementation
 
-## ⚡ Command Execution Policy (No Redundant Shell Wrappers)
+For source, test, supplemental-data, dependency, or configuration changes, create or update a reviewable implementation plan with rules/spec analysis, file changes, tests, and open decisions. State UI/Card Editor impact explicitly when relevant, then stop for user approval before implementation. The plan may use the host's user-facing artifact location or a repository-relative plan file; do not overwrite an unrelated existing plan.
 
-On Windows, the agent's tool execution environment already runs natively inside PowerShell (`Shell: powershell`).
+## Delivery
 
-- **NEVER wrap commands in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`:** Run all executables, CLI tools, npm scripts, git commands, and PowerShell cmdlets directly (e.g., `npm test`, `git status`, `gh issue list`, `Get-ChildItem`).
-- **Rationale:** Spawning nested child PowerShell processes introduces 1–2 seconds of process startup latency per invocation, wastes memory, and causes nested quote stripping and parsing errors (e.g. unclosed parentheses or broken string interpolation).
+The delivery workflow may prepare staged changes, a proposed commit message, a walkthrough, and verification recap. Ask the user to confirm or approve that recap before committing. Pushing requires separate explicit authorization.
 
----
+## Skill index
 
-## 🛑 Mandatory Pre-Execution Protocol (Enforce Before Writing Code)
-
-BEFORE writing or modifying any source code (`src/`), test files (`tests/`), or card supplemental data (`src/data/supplemental/`), the agent **MUST ALWAYS** execute this 3-step pre-execution gate:
-
-1. **Author `implementation_plan.md` Artifact:**
-   Create `<appDataDir>\brain\<conversation-id>/implementation_plan.md` using `write_to_file` with `ArtifactMetadata: { RequestFeedback: true, UserFacing: true }`.
-2. **Include Mandatory Sections in the Plan:**
-   - **📖 Rules Reference (RR v1.8) & Spec Analysis:** Exact citations from RR v1.8, timing priority, cost resolution, and active ADRs.
-   - **📁 Proposed Changes:** File-by-file breakdown (`[NEW]`, `[MODIFY]`, `[DELETE]`) across engine pipelines, effect primitives, and supplemental JSON.
-   - **🧪 Acceptance / Contract Tests Plan:** Exact test files and test cases covering both standard behavior and boundary conditions.
-   - **❓ Open Questions & Design Decisions:** Any architectural trade-offs flagged with GitHub alert callouts (`> [!IMPORTANT]`, `> [!WARNING]`).
-3. **HARD STOP & WAIT FOR APPROVAL:**
-   The agent **MUST STOP CALLING TOOLS IMMEDIATELY** and conclude the turn. You MUST NOT modify or create any source code or test files until the user explicitly reviews, refines, and clicks "Approve / Proceed" on the plan.
-
----
-
-## 📋 Mandatory Post-Task Protocol (Enforce on Every Turn)
-
-After executing automated tests and code verification (`npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations` — **confirming 0 failed, 0 skipped, 100% green**), **ALWAYS** execute this 8-point checklist before concluding the turn:
-
-1. **Check CHANGELOG.md:** Update `[Unreleased]` with all new features, fixes, and engine changes.
-2. **Check Documentation:** Update relevant files in `docs/` or `README.md`.
-3. **Check Specifications:** Update specifications documentation (e.g. `docs/specifications/` or schemas) when mechanics, primitives, or schemas change.
-4. **Check Guidelines:** Update guidelines documentation (e.g. `docs/coding_guidelines.md`) when development standards, conventions, or design patterns change.
-5. **Check ADRs:** Check if a new or updated Architecture Decision Record (`docs/decisions/`) is needed. **Every ADR — new or edited — MUST follow [`docs/decisions/template.md`](docs/decisions/template.md) exactly:** copy the template, keep the `# [ADR-XXXX] Title` heading and the `Status` / `Date` / `Authors` / `Deciders` metadata block, and keep the standard section order (Context and Problem Statement, Decision Drivers, Considered Options, Decision Outcome, Evaluation of Options, Consequences). Never invent an alternative header or status format, and always add the matching row to the `docs/decisions/README.md` log table in ascending ID order.
-6. **Check Git Issues & Ambiguities:** Check if an issue or `docs/ambiguities/` file can be closed/resolved.
-7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
-8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, **ALWAYS**:
-   - **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that use or benefit from this capability.
-   - **Retrofit Card Definitions:** Apply the new/updated declarative schema to all affected card entries.
-   - **Update Audit Metadata:** If card data was changed, update `"updatedAt"`, `"reviewedAt"` (current ISO timestamp with `HH:MM`, e.g. `2026-09-01T09:48:00Z`), `"reviewedBy": "antigravity"`, and `"originalText"` (exact printed card text).
-   - **Run Declarations Analyzer:** **ALWAYS run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`)** whenever cards, abilities, effects, or ambiguity reports are modified to ensure `docs/reports/supplemental_declarations_usage_report.md` reflects updated metrics and zero schema violations.
+| Task                                 | Skill                                               |
+| ------------------------------------ | --------------------------------------------------- |
+| Specific card translation/refinement | `.agents/skills/card-integration-protocol/SKILL.md` |
+| New generic capability               | `.agents/skills/feature-delivery/SKILL.md`          |
+| Defect or regression                 | `.agents/skills/bug-fix/SKILL.md`                   |
+| Vocabulary migration                 | `.agents/skills/schema-taxonomy-migration/SKILL.md` |
+| Documentation drift                  | `.agents/skills/documentation-audit/SKILL.md`       |
+| Dependency alert                     | `.agents/skills/dependabot/SKILL.md`                |
+| Approved plan execution              | `.agents/skills/execute-plan/SKILL.md`              |
+| Prioritization                       | `.agents/skills/next-task/SKILL.md`                 |
+| Local problem reports                | `.agents/skills/problem-report-triage/SKILL.md`     |
+| User-approved commit/push            | `.agents/skills/commit-and-push/SKILL.md`           |

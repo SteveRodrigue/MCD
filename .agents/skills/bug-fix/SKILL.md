@@ -6,8 +6,8 @@ description: >-
   and resolving bugs across the engine, UI, and data layers. Inspects real-time table
   state snapshots in logs/gamestates/, opens tracked GitHub issues, enforces failing
   regression test creation first, blast-radius guardrails, zero-regression full-suite
-  verification, execution of the canonical 8-point post-task
-  protocol. Trigger whenever a bug is reported
+  verification, roadmap-aware impact triage that still permits preventative fixes outside
+  active milestones, and execution of the canonical 8-point post-task protocol. Trigger whenever a bug is reported
   or prefixed with 'bug-fix:'.
 ---
 
@@ -75,10 +75,31 @@ flowchart TD
 
 ---
 
-### Step 1C: Rhino Release Scope Check 🎯
+### Step 1C: Roadmap Impact & Future-Risk Triage 🎯
 
-- Verify whether the reported bug affects **Gate 1: The Rhino Release** (Core Set Player cards or Rhino/Standard/Expert/Bomb Scare/Nemesis encounter cards).
-- If the defect affects an expansion card outside the Rhino Release boundary (e.g. _Klaw_, _Ultron_, _Thor_), tag the issue with `deferred:post-rhino` and prioritize active Rhino blockers.
+Assess two independent dimensions. Roadmap alignment affects priority, not eligibility:
+
+1. **Current roadmap and milestone impact:** Determine whether the defect blocks an active gate,
+   acceptance criterion, release workflow, or work already scheduled in
+   `docs/roadmap_and_milestones.md`. Bugs with greater impact on current delivery normally receive
+   higher priority.
+2. **Long-term risk:** Determine whether leaving the defect would create compounding technical debt,
+   corrupt state or data, weaken a shared contract, spread an incorrect pattern, block a future
+   migration, conceal regressions, create a security or accessibility risk, or become materially
+   more expensive to fix later.
+
+Apply these rules:
+
+- Never reject or automatically defer a bug solely because its card, scenario, component, or
+  subsystem is outside the active roadmap or milestone.
+- Prioritize active-gate blockers when severity and long-term risk are otherwise comparable.
+- Permit an off-milestone fix when severity, cross-cutting blast radius, compounding risk,
+  prevention value, or explicit user direction justifies addressing it now.
+- When deferring a valid bug, record the evidence-based reason, prerequisites, expected future
+  impact, and the milestone or review condition that should reactivate it. Use only repository
+  labels that have been verified to exist; do not invent release-specific labels.
+- Record the triage outcome in the issue and implementation plan as one of:
+  `current-milestone priority`, `preventative priority`, `scheduled`, or `deferred with trigger`.
 
 ---
 

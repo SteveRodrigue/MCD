@@ -298,20 +298,29 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                   const reqType =
                     ab.cost.resourceCost && typeof ab.cost.resourceCost === 'object'
                       ? (Object.keys(ab.cost.resourceCost)[0] as any)
-                      : undefined;
+                      : ab.cost.resources && ab.cost.resources.length > 0
+                        ? (ab.cost.resources[0] as any)
+                        : undefined;
                   const amount =
                     typeof ab.cost.resourceCost === 'number'
                       ? ab.cost.resourceCost
                       : reqType && typeof ab.cost.resourceCost === 'object'
                         ? (ab.cost.resourceCost as any)[reqType] || 1
-                        : 0;
+                        : ab.cost.resources && ab.cost.resources.length > 0
+                          ? ab.cost.resources.length
+                          : 0;
                   const discardCount =
                     ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
                   const discardFilter = ab.cost.discardCard?.filter;
+                  const scaling = ab.steps?.find(
+                    (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
+                  )?.effectParams?.scaling;
                   if (amount > 0 || discardCount > 0) {
                     return {
                       amount,
                       resourceType: reqType,
+                      requirePrinted: ab.cost.requirePrinted,
+                      scaling: scaling as string | undefined,
                       title: pendingPaymentAction.headline,
                       discardCount,
                       discardFilter,
@@ -321,7 +330,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                 })()
               : undefined
           }
-          player={activePlayer}
+          player={
+            pendingPaymentAction?.action?.playerId
+              ? gameState.players.find((p) => p.id === pendingPaymentAction.action.playerId) ||
+                activePlayer
+              : activePlayer
+          }
           gameState={gameState}
           onClose={() => {
             setPaymentModalCard(null);

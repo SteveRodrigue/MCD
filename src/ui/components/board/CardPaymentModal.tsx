@@ -12,7 +12,7 @@ import { matchesCardFilter } from '../../../engine/filters/card-filter';
 import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
-import { locateCard } from '../../../engine/queries/card-inspector';
+import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -21,6 +21,8 @@ interface CardPaymentModalProps {
   abilityCost?: {
     amount?: number;
     resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
+    requirePrinted?: boolean;
+    scaling?: string;
     title?: string;
     discardCount?: number;
     discardFilter?: UniversalCardFilter;
@@ -350,8 +352,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     card?.faction,
   ]);
 
-  const isResourceCostCovered = useMemo(() => {
-    if (cost <= 0) return true;
+  const isRequirePrinted = Boolean(abilityCost?.requirePrinted);
+  const isScalingPerResource = abilityCost?.scaling === 'PER_RESOURCE_SPENT';
+
+  const committedMatching = useMemo(() => {
     if (abilityCost?.resourceType) {
       const matching =
         abilityCost.resourceType === 'physical'
@@ -361,10 +365,18 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             : abilityCost.resourceType === 'mental'
               ? resourceBreakdown.mentalCount
               : totalGenerated;
-      return matching + resourceBreakdown.wildCount >= cost;
+      return isRequirePrinted ? matching : matching + resourceBreakdown.wildCount;
+    }
+    return totalGenerated;
+  }, [abilityCost, isRequirePrinted, resourceBreakdown, totalGenerated]);
+
+  const isResourceCostCovered = useMemo(() => {
+    if (cost <= 0) return true;
+    if (abilityCost?.resourceType) {
+      return committedMatching >= cost;
     }
     return totalGenerated >= cost;
-  }, [abilityCost, resourceBreakdown, totalGenerated, cost]);
+  }, [abilityCost?.resourceType, committedMatching, totalGenerated, cost]);
 
   const isDiscardCostCovered = useMemo(() => {
     if (!abilityCost?.discardCount || abilityCost.discardCount <= 0) return true;
@@ -549,7 +561,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             {/* Cost Badge */}
             <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto shrink-0 pl-2">
               <span className="text-xs font-black uppercase text-comic-black/60">
-                Required Cost
+                {isScalingPerResource ? 'Placement Value' : 'Required Cost'}
               </span>
               <div className="flex items-center space-x-1">
                 {cost > 0 ? (
@@ -561,13 +573,17 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                     )}
                     <span
                       className={`text-3xl font-black ${
-                        reductions.length > 0 ? 'text-comic-green' : 'text-comic-red'
+                        isCostCovered ? 'text-comic-green' : 'text-comic-red'
                       }`}
                     >
-                      {cost}
+                      {isScalingPerResource ? `+${committedMatching}` : cost}
                     </span>
                     <span className="text-xs font-bold uppercase text-comic-black">
-                      {abilityCost?.resourceType ? abilityCost.resourceType : 'Res'}
+                      {isScalingPerResource
+                        ? 'Tokens'
+                        : abilityCost?.resourceType
+                          ? abilityCost.resourceType
+                          : 'Res'}
                     </span>
                   </>
                 ) : abilityCost?.discardCount ? (
@@ -578,6 +594,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   <span className="text-3xl font-black text-comic-green">0</span>
                 )}
               </div>
+              {isRequirePrinted && (
+                <span className="mt-1 text-[9px] font-black uppercase px-1.5 py-0.5 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs">
+                  Printed Only (No Wild)
+                </span>
+              )}
             </div>
           </div>
 
@@ -683,15 +704,22 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black uppercase text-comic-black tracking-wide">
-                  Resources Committed:
+                  {isScalingPerResource
+                    ? `Tokens to Place (+${committedMatching}):`
+                    : 'Resources Committed:'}
                 </span>
                 <span
                   className={`text-sm font-black uppercase ${
                     isCostCovered ? 'text-comic-green' : 'text-comic-red'
                   }`}
                 >
-                  {totalGenerated} / {cost}{' '}
-                  {isCostCovered ? '✓ (Ready)' : `(Need ${cost - totalGenerated} more)`}
+                  {isScalingPerResource
+                    ? `${committedMatching} ${abilityCost?.resourceType || 'matching'} (Min ${cost} needed)`
+                    : `${abilityCost?.resourceType ? committedMatching : totalGenerated} / ${cost} ${
+                        isCostCovered
+                          ? '✓ (Ready)'
+                          : `(Need ${cost - (abilityCost?.resourceType ? committedMatching : totalGenerated)} more)`
+                      }`}
                 </span>
               </div>
 
@@ -702,7 +730,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                     isCostCovered ? 'bg-comic-green' : 'bg-comic-yellow'
                   }`}
                   style={{
-                    width: `${Math.min(100, cost === 0 ? 100 : (totalGenerated / cost) * 100)}%`,
+                    width: `${Math.min(
+                      100,
+                      cost === 0
+                        ? 100
+                        : ((abilityCost?.resourceType ? committedMatching : totalGenerated) /
+                            cost) *
+                            100,
+                    )}%`,
                   }}
                 />
               </div>
@@ -755,15 +790,25 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                     .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
                   const isDoubled =
                     aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === card.faction;
+                  const printedIcons = readCardResources(hCard);
+                  const matchingPrintedCount =
+                    isRequirePrinted && abilityCost?.resourceType
+                      ? printedIcons.filter((r) => r === abilityCost.resourceType).length
+                      : undefined;
+                  const isHandCardDisabled =
+                    isUsedForDiscardCost ||
+                    (isRequirePrinted &&
+                      abilityCost?.resourceType !== undefined &&
+                      (matchingPrintedCount || 0) === 0);
 
                   return (
                     <button
                       key={hCard.instanceId}
                       type="button"
-                      disabled={isUsedForDiscardCost}
+                      disabled={isHandCardDisabled}
                       onClick={() => toggleHandCard(hCard.instanceId)}
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isUsedForDiscardCost
+                        isHandCardDisabled
                           ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
                           : isSelected
                             ? 'bg-comic-yellow/30 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
@@ -788,7 +833,13 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
 
                       {/* Resource Yield Badge */}
                       <div className="flex items-center space-x-1 shrink-0">
-                        {isDoubled ? (
+                        {matchingPrintedCount !== undefined ? (
+                          <span className="text-xs font-black px-2 py-0.5 bg-comic-paper text-comic-black rounded border border-comic-black flex items-center space-x-1">
+                            <span>
+                              {matchingPrintedCount} {abilityCost?.resourceType?.toUpperCase()}
+                            </span>
+                          </span>
+                        ) : isDoubled ? (
                           <span className="text-xs font-black px-2.5 py-0.5 bg-emerald-600 text-white rounded-md border-2 border-comic-black shadow-comic-sm flex items-center space-x-1">
                             <span>2 Res (2× Aspect)</span>
                           </span>
@@ -814,15 +865,19 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {availableGenerators.map((gen) => {
                   const isSelected = selectedGeneratorIds.includes(gen.id);
-                  const isDisabled = gen.amount === 0;
+                  const isGenDisabled =
+                    gen.amount === 0 ||
+                    (isRequirePrinted &&
+                      abilityCost?.resourceType !== undefined &&
+                      gen.resourceType !== abilityCost.resourceType);
                   return (
                     <button
                       key={gen.id}
                       type="button"
-                      disabled={isDisabled}
-                      onClick={() => !isDisabled && toggleGenerator(gen.id)}
+                      disabled={isGenDisabled}
+                      onClick={() => !isGenDisabled && toggleGenerator(gen.id)}
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border-2 text-left transition-all ${
-                        isDisabled
+                        isGenDisabled
                           ? 'opacity-40 cursor-not-allowed bg-gray-100 border-gray-300'
                           : isSelected
                             ? 'bg-comic-blue/20 border-comic-black shadow-comic-sm font-bold scale-[1.01]'
@@ -929,7 +984,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Confirm & Play!</span>
+            <span>
+              {isScalingPerResource
+                ? `Confirm & Place +${committedMatching} Tokens!`
+                : 'Confirm & Play!'}
+            </span>
           </button>
         </div>
       </div>

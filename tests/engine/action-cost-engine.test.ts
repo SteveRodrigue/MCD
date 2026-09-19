@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
+import { canPayAbilityCost } from '../../src/engine/pipeline/cost-engine';
 
 describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
   let state: GameState;
@@ -433,6 +434,317 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(res.result.success).toBe(true);
       expect(res.state.players[0].tableau.length).toBe(0);
       expect(res.state.villain.health).toBe(initialVillainHealth - 10);
+    });
+  });
+
+  describe('Energy Channel Resource Payment & Generator Support (Issue #96)', () => {
+    it('Payment via generator only (ready in-play generator without hand card discard)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Empty hand
+      p1.hand = [];
+      p1.discard = [];
+
+      // Energy Channel + Web-Shooter in tableau
+      const webShooterCard = cardCatalog.getCard('01008')!;
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+        {
+          instanceId: 'web_shooter_inst',
+          card: webShooterCard,
+          tokens: { counters: 3 },
+          counters: { web: 3 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+        generatorInstanceIds: ['web_shooter_inst'],
+      } as any);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      const ec = res.state.players[0].tableau.find((c) => c.instanceId === 'ec_inst')!;
+      expect(ec.counters?.energy).toBe(1);
+      const ws = res.state.players[0].tableau.find((c) => c.instanceId === 'web_shooter_inst')!;
+      expect(ws.exhausted).toBe(true);
+      expect(ws.tokens?.counters).toBe(2);
+    });
+
+    it('Payment via combined hand card + generator', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has 1-energy card
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
+      p1.discard = [];
+
+      // Tableau has Energy Channel + Web-Shooter
+      const webShooterCard = cardCatalog.getCard('01008')!;
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+        {
+          instanceId: 'web_shooter_inst',
+          card: webShooterCard,
+          tokens: { counters: 3 },
+          counters: { web: 3 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['energy_card'],
+        generatorInstanceIds: ['web_shooter_inst'],
+      } as any);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      expect(res.state.players[0].discard.length).toBe(1);
+      const ec = res.state.players[0].tableau.find((c) => c.instanceId === 'ec_inst')!;
+      expect(ec.counters?.energy).toBe(2);
+      const ws = res.state.players[0].tableau.find((c) => c.instanceId === 'web_shooter_inst')!;
+      expect(ws.exhausted).toBe(true);
+      expect(ws.tokens?.counters).toBe(2);
+    });
+
+    it('Variable X energy resource spending places exact number of counters in one action', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Hand has 2 separate energy cards
+      p1.hand = [
+        { instanceId: 'e1', card: cardCatalog.getCard('01002')!, exhausted: false },
+        { instanceId: 'e2', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
+      p1.discard = [];
+
+      // Ready generator
+      const webShooterCard = cardCatalog.getCard('01008')!;
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 0 },
+          counters: { energy: 0 },
+          exhausted: false,
+        },
+        {
+          instanceId: 'web_shooter_inst',
+          card: webShooterCard,
+          tokens: { counters: 3 },
+          counters: { web: 3 },
+          exhausted: false,
+        },
+      ];
+
+      const res = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['e1', 'e2'],
+        generatorInstanceIds: ['web_shooter_inst'],
+      } as any);
+
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[0].hand.length).toBe(0);
+      expect(res.state.players[0].discard.length).toBe(2);
+      const ec = res.state.players[0].tableau.find((c) => c.instanceId === 'ec_inst')!;
+      expect(ec.counters?.energy).toBe(3);
+    });
+
+    it('Enforces resource cost for Rechannel (01010a) and Rocket Boots (01039)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+      p1.health = 8; // damaged so heal check passes
+
+      // Card with physical only (01026 Enhanced Physique)
+      p1.hand = [
+        { instanceId: 'phys_card', card: cardCatalog.getCard('01026')!, exhausted: false },
+      ];
+
+      // Try Rechannel with non-energy card
+      const rejectRes = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: '01010a',
+        abilityId: 'rechannel',
+        paymentCardInstanceIds: ['phys_card'],
+      } as any);
+
+      expect(rejectRes.result.success).toBe(false);
+      expect(rejectRes.result.error).toMatch(/insufficient resources/i);
+
+      // Now with energy card (01002)
+      p1.hand = [
+        { instanceId: 'energy_card', card: cardCatalog.getCard('01002')!, exhausted: false },
+      ];
+      const allowRes = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: '01010a',
+        abilityId: 'rechannel',
+        paymentCardInstanceIds: ['energy_card'],
+      } as any);
+
+      expect(allowRes.result.success).toBe(true);
+      expect(allowRes.state.players[0].health).toBe(9);
+    });
+
+    it('requirePrinted: true vs false wild substitution verification', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Wild resource card (Spider-Woman 01011)
+      const wildCard = {
+        instanceId: 'wild_card',
+        card: cardCatalog.getCard('01011')!,
+        exhausted: false,
+      };
+      // Energy resource card (Black Cat 01002)
+      const energyCard = {
+        instanceId: 'energy_card',
+        card: cardCatalog.getCard('01002')!,
+        exhausted: false,
+      };
+
+      // Ability with requirePrinted: true
+      const printedCostAbility = {
+        id: 'test_printed_cost',
+        timing: 'ACTION' as const,
+        cost: {
+          resourceCost: { energy: 1 },
+          requirePrinted: true,
+        },
+        steps: [
+          {
+            effect: 'HEAL_DAMAGE',
+            effectParams: { amount: 1, target: 'SELF' },
+          },
+        ],
+      };
+
+      p1.health = 8;
+      p1.hand = [wildCard];
+
+      // When requirePrinted: true, wild card should be rejected
+      const canPayWild = canPayAbilityCost(state, p1, printedCostAbility, undefined, {
+        paymentCardInstanceIds: ['wild_card'],
+      });
+      expect(canPayWild.allowed).toBe(false);
+      expect(canPayWild.reason).toMatch(/insufficient resources/i);
+
+      // When requirePrinted: true, energy card should be accepted
+      p1.hand = [energyCard];
+      const canPayEnergy = canPayAbilityCost(state, p1, printedCostAbility, undefined, {
+        paymentCardInstanceIds: ['energy_card'],
+      });
+      expect(canPayEnergy.allowed).toBe(true);
+
+      // When requirePrinted: false (or undefined), wild card is accepted per RR v1.8 p. 15
+      const standardCostAbility = {
+        ...printedCostAbility,
+        cost: {
+          resourceCost: { energy: 1 },
+          requirePrinted: false,
+        },
+      };
+      p1.hand = [wildCard];
+      const canPayStandard = canPayAbilityCost(state, p1, standardCostAbility, undefined, {
+        paymentCardInstanceIds: ['wild_card'],
+      });
+      expect(canPayStandard.allowed).toBe(true);
+    });
+
+    it('Overpayment with Captain Marvel 3-energy card (Energy Absorption 01014): 4 tokens -> 7 tokens -> clamped 10 damage Blast', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      state.activePlayerIndex = 0;
+
+      // Energy Channel starts with 4 tokens
+      p1.tableau = [
+        {
+          instanceId: 'ec_inst',
+          card: cardCatalog.getCard('01018')!,
+          tokens: { counters: 4 },
+          counters: { energy: 4 },
+          exhausted: false,
+        },
+      ];
+
+      // Hand has Energy Absorption (01014), which produces 3 energy resources
+      p1.hand = [
+        { instanceId: 'energy_absorption', card: cardCatalog.getCard('01014')!, exhausted: false },
+      ];
+      p1.discard = [];
+
+      // Spend Energy Absorption to add tokens
+      const addRes = dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_add',
+        paymentCardInstanceIds: ['energy_absorption'],
+      } as any);
+
+      expect(addRes.result.success).toBe(true);
+      expect(addRes.state.players[0].hand.length).toBe(0);
+      expect(addRes.state.players[0].discard.length).toBe(1);
+
+      // Token count successfully increases to 7 tokens (>5 and >6)
+      const ec = addRes.state.players[0].tableau.find((c) => c.instanceId === 'ec_inst')!;
+      expect(ec.counters?.energy).toBe(7);
+      expect(ec.tokens?.counters).toBe(7);
+
+      // Trigger Blast ability subsequently with 7 tokens: deals exactly clamped 10 damage
+      const initialVillainHealth = addRes.state.villain.health;
+      const blastRes = dispatchAction(addRes.state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p1.id,
+        cardInstanceId: 'ec_inst',
+        abilityId: 'energy_channel_blast',
+        targetInstanceId: addRes.state.villain.instanceId,
+      });
+
+      expect(blastRes.result.success).toBe(true);
+      expect(blastRes.state.players[0].tableau.length).toBe(0);
+      expect(blastRes.state.players[0].discard.some((c) => c.instanceId === 'ec_inst')).toBe(true);
+      // Clamped to 10 damage (5 tokens' worth of damage at 2 per counter, safely ignoring excess)
+      expect(blastRes.state.villain.health).toBe(initialVillainHealth - 10);
     });
   });
 });

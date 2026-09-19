@@ -18,7 +18,8 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 - Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
 - Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
 - Keep card-specific behavior in `src/data/supplemental/`; engine primitives must remain generic.
-- Keep active work within the Rhino Release boundary unless the user explicitly changes scope.
+- Align implementation work with the currently active roadmap and milestone gates unless the user
+  explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Do not introduce permanent shims, aliases, deprecated names, duplicate paths, or temporary shortcuts without explicit approval.
 - Tests must pass or fail; never add or retain skipped or todo tests to hide unfinished work.
 
@@ -68,6 +69,7 @@ The delivery workflow may prepare staged changes, a proposed commit message, a w
 | Defect or regression                                             | `bug-fix`                   |
 | Documentation drift                                              | `documentation-audit`       |
 | Dependency alert                                                 | `dependabot`                |
+| Code health, duplication, test hygiene, or naming audit          | `code-audit`                |
 | Approved plan execution                                          | `execute-plan`              |
 | Work prioritization                                              | `next-task`                 |
 | Local problem-report filing                                      | `problem-report-triage`     |

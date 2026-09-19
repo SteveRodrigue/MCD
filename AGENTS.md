@@ -11,7 +11,8 @@ and the post-task procedure is in
 - Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
 - Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
 - Keep card-specific behavior declarative in `src/data/supplemental/`; engine primitives must be generic.
-- Keep active work within the Rhino Release boundary unless the user explicitly changes scope.
+- Align implementation work with the currently active roadmap and milestone gates unless the user
+  explicitly changes scope. Read-only audits may inspect any user-selected scope.
 - Preserve the project's comic pop-art visual direction in user-facing UI work.
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
 - Never add skipped or todo tests to hide unfinished work.
@@ -26,14 +27,15 @@ The delivery workflow may prepare staged changes, a proposed commit message, a w
 
 ## Skill index
 
-| Task                                 | Skill                                               |
-| ------------------------------------ | --------------------------------------------------- |
-| Specific card translation/refinement | `.agents/skills/card-integration-protocol/SKILL.md` |
-| New generic capability               | `.agents/skills/feature-delivery/SKILL.md`          |
-| Defect or regression                 | `.agents/skills/bug-fix/SKILL.md`                   |
-| Documentation drift                  | `.agents/skills/documentation-audit/SKILL.md`       |
-| Dependency alert                     | `.agents/skills/dependabot/SKILL.md`                |
-| Approved plan execution              | `.agents/skills/execute-plan/SKILL.md`              |
-| Prioritization                       | `.agents/skills/next-task/SKILL.md`                 |
-| Local problem reports                | `.agents/skills/problem-report-triage/SKILL.md`     |
-| User-approved commit/push            | `.agents/skills/commit-and-push/SKILL.md`           |
+| Task                                  | Skill                                               |
+| ------------------------------------- | --------------------------------------------------- |
+| Specific card translation/refinement  | `.agents/skills/card-integration-protocol/SKILL.md` |
+| New generic capability                | `.agents/skills/feature-delivery/SKILL.md`          |
+| Defect or regression                  | `.agents/skills/bug-fix/SKILL.md`                   |
+| Documentation drift                   | `.agents/skills/documentation-audit/SKILL.md`       |
+| Dependency alert                      | `.agents/skills/dependabot/SKILL.md`                |
+| Code health and maintainability audit | `.agents/skills/code-audit/SKILL.md`                |
+| Approved plan execution               | `.agents/skills/execute-plan/SKILL.md`              |
+| Prioritization                        | `.agents/skills/next-task/SKILL.md`                 |
+| Local problem reports                 | `.agents/skills/problem-report-triage/SKILL.md`     |
+| User-approved commit/push             | `.agents/skills/commit-and-push/SKILL.md`           |

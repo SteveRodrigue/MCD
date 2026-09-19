@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Changed (Developer Tooling): Local Dev Mode GameState Retention**
+  - Updated the `problem-report-triage` workflow to retain full problem-report GameState snapshots locally under `logs/gamestates/` and reference only their local paths in GitHub issues.
+  - Removed GitHub GameState JSON uploads from the local triage worker; it now atomically writes and verifies a collision-safe snapshot before pruning a filed report.
+  - Added retention-policy notices to historic Dev Mode issues `#129` through `#139`; their existing snapshot comments remain intact because exact local reconstruction is not proven.
+
 - **Refactor (Data & Tooling): Encapsulate Supplemental Comments into Audit Metadata (ADR-0067)**
   - **Schema & Engine Models:**
     - Moved `comment?: string` from `CardEnrichment` into `CardAuditMetadata` in `src/engine/models/abilities.ts`.

@@ -5,9 +5,9 @@ description: >-
   captures in logs/reports/*.json into tracked GitHub Issues formatted per
   the official .github/ISSUE_TEMPLATE forms ([BUG]: with bug/needs-review labels,
   [FEAT]: with enhancement label), always preserving the reporter's verbatim
-  original text in a dedicated section for later human review. Enforces a 55KB
-  body length limit to prevent GitHub GraphQL limits, splitting overflow details
-  into issue comments when needed. Before filing, searches open GitHub issues for
+  original text in a dedicated section for later human review. Stores full
+  GameState evidence locally under logs/gamestates/ and references only its
+  repository-relative path in GitHub. Before filing, searches open GitHub issues for
   duplicates/near-matches and, when found, merges by commenting on the existing
   issue and applying the repo's existing 'duplicate' label instead of creating
   a new one. Maps report priority to the repo's real priority:P0-blocker..P3-low
@@ -54,13 +54,14 @@ Each `logs/reports/report_{timestamp}_{type}.json` file (written by [src/ui/serv
 flowchart TD
     S1["1. Scan logs/reports/*.json"] --> S2{"Any pending reports?"}
     S2 -- "No" --> DONE["✅ Already Inbox Zero — end turn"]
-    S2 -- "Yes" --> S3["2. Build Issue Body per Report<br/>(description + condensed GameState excerpt)"]
+    S2 -- "Yes" --> S3["2. Build Issue Body per Report<br/>(description + local GameState path)"]
     S3 --> S3B{"3. Duplicate/Merge Detection<br/>(gh issue list --search)"}
     S3B -- "Duplicate Found" --> M1["3a. Comment on Existing Issue<br/>+ Apply 'duplicate' Label"]
-    M1 --> S6["5. Delete Local Report File, Log [PRUNE]"]
+    M1 --> S4B["4b. Write and verify local GameState"]
     S3B -- "No Match" --> S4["4. File New GitHub Issue (gh issue create --label <labels>)"]
-    S4 --> S5["4a. Verify Issue Created, Log [FILE]/[ATTACH]"]
-    S5 --> S6
+    S4 --> S5["4a. Verify Issue Created, Log [FILE]"]
+    S5 --> S4B
+    S4B --> S6["5. Delete Local Report File, Log [PRUNE]"]
     S6 --> S2
 ```
 
@@ -79,8 +80,8 @@ Construct the title and body using the repo's **official issue templates** as th
 
 **Bug body:**
 
-````markdown
-> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the attached GameState; verify it against the original report before acting.
+```markdown
+> 🎮 **Filed via Dev Mode "Report a Problem"** — this issue was submitted directly by a player from the live game table, not pre-triaged by a maintainer. Reproduction context below is inferred automatically from the local GameState snapshot; verify it against the original report before acting.
 
 ### 🐛 Describe the Bug
 
@@ -114,21 +115,15 @@ N/A — filed via Dev Mode; no rules citation was captured. Add one during triag
 
 > <report.description, character-for-character, unedited — this is the single source of truth for what the reporter actually said>
 
-<details>
-<summary>🎮 GameState Snapshot at time of report (click to expand)</summary>
+### 💾 Local GameState Snapshot
 
-```json
-<gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
-```
-````
-
-</details>
+- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
+- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
 
 ---
 
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
-
-````
+```
 
 **Feature/Improvement body:**
 
@@ -161,37 +156,26 @@ N/A — not captured via Dev Mode; explore during triage.
 
 > <report.description, character-for-character, unedited>
 
-<details>
-<summary>🎮 GameState Snapshot at time of report (click to expand)</summary>
+### 💾 Local GameState Snapshot
 
-```json
-<gameState JSON — full if total body <= 55,000 chars; summary if oversized with note that full state is in comments>
-````
-
-</details>
+- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
+- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
 
 ---
 
 _Filed automatically via Dev Mode "Report a Problem" by the `problem-report-triage` skill from `logs/reports/report_<timestamp>_<type>.json`._
-
-````
+```
 
 Never invent Expected Behavior, Rules Citations, Environment details, or Alternatives that the reporter did not state — always mark them "Not stated" / "N/A" and defer to the verbatim section.
 
-#### 🛡️ GitHub Issue Body Size Limit Guardrail (Max 65,536 Characters)
+#### 🛡️ Local GameState Retention Guardrail
 
-GitHub enforces a strict limit of **65,536 characters** on issue bodies (`GraphQL: Body is too long (maximum is 65536 characters)`). Full serialized `gameState` trees frequently exceed 500 KB.
+Full serialized `gameState` trees are debugging evidence and must remain local under `logs/gamestates/`.
 
-To prevent creation errors:
-1. **Size Budget:** The formatted issue body must not exceed **55,000 characters**.
-2. **If Full Body $\le$ 55,000 Characters:** Embed the entire `gameState` JSON inside `<details><summary>🎮 Full GameState JSON snapshot at time of report (click to expand)</summary>`.
-3. **If Full Body > 55,000 Characters:**
-   - **In the Main Issue Body:** Include a concise excerpt of key reproduction fields (`id`, `roundNumber`, `phase`, `scenarioId`, `difficulty`, `heroicLevel`, `firstPlayerIndex`, `activePlayerIndex`, and player array with `id`, `name`, `currentForm`, `health`, `maxHealth`).
-   - Add an explicit callout directly in the details block or above it:
-     ```markdown
-     > ⚠️ **Full GameState snapshot exceeded issue body limits. More details available in the comments below.**
-     ```
-   - **In Step 4a (Comments):** Post the complete `gameState` JSON into the issue thread as one or more follow-up comments using `gh issue comment <NUM> --body-file <temp-comment-file>.md`. If the JSON itself exceeds 55,000 characters, break it into numbered sequential parts (e.g. `Part 1/N`, `Part 2/N`) or post the active scenario and player subtrees separately.
+1. **Never publish GameState JSON on GitHub:** Do not include full or excerpted GameState JSON in issue bodies or comments.
+2. **Use a collision-safe filename:** Start with `logs/gamestates/gamestate_<timestamp>_<type>.json`; add a numeric suffix if that path exists.
+3. **Write atomically:** Write to a temporary sibling file, rename it to the final path, then parse the final JSON to verify it.
+4. **Preserve before pruning:** Do not delete the report until both GitHub filing or merge confirmation and local snapshot verification succeed.
 
 ### Step 3: Duplicate / Merge Detection 🔍
 
@@ -199,7 +183,7 @@ To prevent creation errors:
 
 ```bash
 gh issue list --search "<key terms from report.title/description> in:title,body" --state all --limit 15
-````
+```
 
 Compare each candidate against the current report using **title similarity, overlapping key terms (card names, scenario names, phase/action names), and matching report type** — never rely on title string equality alone, and never guess when evidence is thin.
 
@@ -214,27 +198,32 @@ When a duplicate is detected, do **not** create a new issue. Instead:
 
 1. **Comment on the existing issue** with the new report's verbatim text, so the issue thread reflects that another player independently hit the same problem — the comment must preserve the reporter's original words, not a paraphrase:
 
-   ```bash
-   gh issue comment <NUM> --body "> 🎮 **Another Dev Mode report was received for this issue** (Priority: <report.priority>, Type: <report.type>).
+```bash
+ gh issue comment <NUM> --body "> 🎮 **Another Dev Mode report was received for this issue** (Priority: <report.priority>, Type: <report.type>).
 
-   ### 📝 Original User Report (Verbatim — Preserved for Review)
+ ### 📝 Original User Report (Verbatim — Preserved for Review)
 
-   > <report.description, character-for-character, unedited>
+ > <report.description, character-for-character, unedited>
 
-   <GameState excerpt from Step 2 — Round/Phase/Scenario/Heroes — if it adds reproduction detail not already on the issue>
+### 💾 Local GameState Snapshot
 
-   ---
-   _Merged automatically by the \`problem-report-triage\` skill from \`report_<timestamp>_<type>.json\`. This issue has now been reported more than once — consider raising its priority._"
-   ```
+- **Path:** `logs/gamestates/gamestate_<timestamp>_<type>.json`
+- **Notice:** This snapshot is retained locally in the developer environment and is gitignored. It is unavailable to public GitHub readers; a maintainer must retrieve the local file to inspect the exact state.
+
+---
+
+_Merged automatically by the \`problem-report-triage\` skill from \`report_<timestamp>_<type>.json\`. This issue has now been reported more than once — consider raising its priority._"
+
+```
 
 2. **Apply the repository's existing `duplicate` label** (already defined — `gh label list` confirms it exists, so no `gh label create` is needed) so downstream skills (`next-task`, `bug-fix`, `feature-delivery`) can see at a glance that an issue has multiple independent reports and should be weighted higher in prioritization:
 
-   ```bash
-   gh issue edit <NUM> --add-label "duplicate"
-   ```
+```bash
+gh issue edit <NUM> --add-label "duplicate"
+```
 
 3. **If the new report's priority is higher** than the existing issue's current `priority:P?-*` label, swap the priority label up (e.g. remove `priority:P2-medium`, add `priority:P1-high`) so the escalated severity is visible without manual triage.
-4. Log `[MERGE]` with the issue number and running report count, then proceed directly to Step 5 (Prune) — a merged report is fully accounted for once its comment is confirmed posted.
+4. Log `[MERGE]` with the issue number and running report count, then proceed to Step 4b to write and verify the local GameState before pruning.
 
 ### Step 4: File a New GitHub Issue (No Duplicate Found)
 
@@ -262,24 +251,27 @@ gh issue create \
   --body-file <temp-body-file>.md
 ```
 
-### Step 4a: Verify, Comment Overflow & Log
+### Step 4a: Verify And Log
 
 1. Confirm the issue was created (`gh issue view <NUM>` or inspect the `gh issue create` output URL).
-2. **Comment Overflow Payload (if applicable):** If the full GameState snapshot was omitted from the issue body due to the 55,000 character limit, post the complete GameState (or chunked parts if $>55,000$ chars) as follow-up comments:
-   ```bash
-   gh issue comment <NUM> --body-file <temp-gamestate-comment>.md
-   ```
-3. Append `[FILE]` and `[ATTACH]` log lines with the real issue number and URL.
+2. Append a `[FILE]` log line with the real issue number and URL.
+
+### Step 4b: Write And Verify The Local GameState
+
+1. Reserve a collision-safe path under `logs/gamestates/` using `gamestate_<timestamp>_<type>.json` with a numeric suffix when needed.
+2. Write the complete `report.gameState` JSON to a temporary sibling file, then rename it to the reserved final path.
+3. Verify the final file exists, is readable, and parses as JSON. Log `[SNAPSHOT]` with the exact repository-relative path.
+4. Never upload any part of the GameState to GitHub.
 
 ### Step 5: Prune the Local Report (Inbox Zero)
 
-Once — and only once — the outcome is confirmed (either a **new GitHub Issue was created**, Step 4a, or an **existing issue was successfully commented on and re-labeled**, Step 3a), delete the local report file:
+Once — and only once — both the GitHub outcome is confirmed and the local GameState snapshot is written and verified, delete the local report file:
 
 ```bash
 rm logs/reports/report_<timestamp>_<type>.json
 ```
 
-Never delete a report file before its outcome (new issue or merge comment) is confirmed. If `gh issue create`, `gh issue comment`, or `gh issue edit` fails (e.g. no network, no `gh` auth), leave the file in place, log the failure, and continue to the next report — do not stop the whole batch on one failure.
+Never delete a report file before both outcomes are complete. If GitHub filing, duplicate merge, local snapshot writing, or snapshot verification fails, leave the file in place, log the failure, and continue to the next report — do not stop the whole batch on one failure.
 
 Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contains zero `report_*.json` files and log `[DONE]`.
 
@@ -288,11 +280,13 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 ## 🛑 Safety Notes
 
 - This skill only ever reads `logs/reports/*.json` and calls `gh issue list` / `gh issue create` / `gh issue comment` / `gh issue edit` / deletes the already-filed local JSON file. It never modifies `src/`, `tests/`, or any card supplemental data. `gh label create` should not be needed for a standard run since `bug`, `enhancement`, `needs-review`, `duplicate`, and all `priority:P?-*` labels already exist in the repository — if `gh issue create` reports a missing label, stop and treat it as a `[SCAN]`-logged anomaly rather than silently inventing a new label taxonomy.
-- **Enforce Body Length Limit ($\le$ 55,000 characters):** GitHub issues fail with GraphQL errors if the body exceeds 65,536 characters. Always inspect the generated body length before executing `gh issue create`, and post full payloads in comments when needed.
+- **Never publish GameState JSON on GitHub:** Do not put GameState JSON, full or abbreviated, into an issue body or comment. Reference only the verified local `logs/gamestates/` path and local-only availability warning.
+- **Atomic local persistence gate:** Write to a temporary sibling file and rename only after complete serialization. Verify the final file parses as JSON before pruning the report.
 - **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a _summary of the section below_, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
 - If a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
 - **Never guess at a duplicate match.** If duplicate-detection confidence is below the 80% threshold, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread.
 - Deleting a local report file is irreversible; always confirm the outcome first — either the new Issue exists (Step 4a) or the merge comment/label was applied (Step 3a) — before Step 5.
+- **Historic issues #129–#139:** Retain the 291 GameState comments already published. Exact local reconstruction is not proven, so do not delete or claim local replacement snapshots. Add a transparent policy note that future reports retain GameState only locally.
 
 ---
 

@@ -25,6 +25,7 @@ interface CardAudit {
   reviewedBy?: string;
   originalText?: string;
   ambiguityFile?: string;
+  comment?: string;
 }
 
 interface AbilityStep {
@@ -48,7 +49,6 @@ interface CardAbility {
 
 interface SupplementalEntry {
   noSupplementalNeeded?: boolean;
-  comment?: string;
   abilities?: CardAbility[];
   audit?: CardAudit;
 }
@@ -339,7 +339,8 @@ export function runDeclarationsAudit() {
           faction: upstream ? upstream.faction_code : 'Unknown',
           pack: packName,
           comment: (
-            entry.comment || 'No abilities required (Vanilla / Base Stats / Standard Resource)'
+            entry.audit?.comment ||
+            'No abilities required (Vanilla / Base Stats / Standard Resource)'
           )
             .replace(/\r?\n|\r/g, ' ')
             .replace(/\s+/g, ' ')

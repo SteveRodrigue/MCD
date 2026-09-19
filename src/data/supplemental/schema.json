@@ -15,9 +15,6 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "comment": {
-            "type": "string"
-          },
           "abilities": {
             "type": "array",
             "items": {
@@ -620,6 +617,9 @@
                 "type": "string"
               },
               "originalText": {
+                "type": "string"
+              },
+              "comment": {
                 "type": "string"
               }
             },

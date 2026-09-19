@@ -62,7 +62,6 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
       const initial = cardDetails.supplemental
         ? JSON.parse(JSON.stringify(cardDetails.supplemental))
         : {
-            comment: `Supplemental definition for ${cardDetails.upstream.name || cardDetails.code}`,
             abilities: [],
             audit: {
               reviewedBy: 'developer',
@@ -542,10 +541,10 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                     </div>
                   </div>
 
-                  {editedSupplemental.comment && (
+                  {editedSupplemental.audit?.comment && (
                     <div className="mt-2.5 pt-2 border-t border-gray-200 text-xs font-comic text-gray-700">
                       <span className="font-bold text-black">Comment: </span>
-                      {editedSupplemental.comment}
+                      {editedSupplemental.audit.comment}
                     </div>
                   )}
                 </div>

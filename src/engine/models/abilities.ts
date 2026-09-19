@@ -201,12 +201,12 @@ export interface CardAuditMetadata {
   confidence?: number;
   originalText?: string;
   ambiguityFile?: string;
+  comment?: string;
 }
 
 export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
   cardName?: string;
-  comment?: string;
   playRequirements?: PlayRequirements;
   audit?: CardAuditMetadata;
   isLandscape?: boolean;

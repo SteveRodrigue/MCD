@@ -82,8 +82,8 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 
 - **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md).
-- **DEDUCTIVE SCHEMA MODELING:** If a card's mechanics match a documented schema in `docs/specifications/supplemental/`, translate the card strictly using that documented structure. If no documented schema exists or if it is marked 🟡 `ROADMAP`, the card requires specification refinement or engine addition.
-- **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** `comment` is human-readable documentation and **CANNOT** replace engine data. Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
+- **SUPPLEMENTAL CARD COMMENTS POLICY & AGENT PROHIBITION (ADR-0067):** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must NEVER autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
+- **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 - **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   - **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
   - ❌ _Anti-Patterns (Prohibited):_ `HYDRA_BOMBER_CHOICE`, `NICK_FURY_CHOICE`, `PEPPER_POTTS_RESOURCE`, `BLACK_CAT_SEARCH`.
@@ -95,7 +95,6 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 
 ```json
 "{card_code}": {
-  "comment": "<Brief human summary>",
   "audit": {
     "createdAt": "YYYY-MM-DDTHH:mm",
     "updatedAt": "YYYY-MM-DDTHH:mm",
@@ -145,7 +144,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ### Step 5: Bidirectional Round-Trip Validation & Specification-Tied Confidence
 
 - **The Decompiler Feedback Loop:** Read **strictly** the drafted `abilities: [...]` array (and its `timing`, `trigger`, `cost`, and `steps: [{ effect, params, gate }]` pipeline) and decompile it into natural card text.
-  - **Strict Rule:** Do **NOT** read `comment` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
+  - **Strict Rule:** Do **NOT** read `audit.comment` during this step. The decompiled text must be derived 100% from the machine-executable attributes.
 - **Fidelity Evaluation:** Compare the decompiled text against the original printed card text from `data/upstream/`:
   - Does the executable schema reproduce the exact same timing, triggers, costs, targets, search zones, shuffle side-effects, constraints, and consequences?
   - Can the schema express every clause of the printed card text without semantic loss?
@@ -165,7 +164,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   - **$\le$ 50% (Missing Implementation):** If a card has rules text but `abilities: [...]` is empty, missing, or marked `noSupplementalNeeded`.
 - **Refinement Iteration Limit:** Max **3 refinement iterations** between Steps 2 $\rightarrow$ 3 $\rightarrow$ 4 $\rightarrow$ 5.
 - **🚨 CIRCUIT-BREAKER PROTOCOL (If Confidence Remains $< 95\%$ after Attempt 3 or Tier 3 Gate):**
-  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY `comment` and `audit` (with `ambiguityFile` path). This prevents the engine from attempting to execute unsupported logic.
+  1. **DO NOT COMMIT ACTIVE ABILITIES FOR BLOCKED CARDS:** If a card is ambiguous, incomplete, or blocked by a Tier 3 refactor, the **`abilities: [...]` array MUST BE STRIPPED / OMITTED** from `src/data/supplemental/pack/{pack_code}.json`. The supplemental entry retains ONLY the `audit` block (with `ambiguityFile` path). This prevents the engine from attempting to execute unsupported logic.
   2. Create a dedicated ambiguity report file in `docs/ambiguities/{pack}_{card_code}_{slug}.md` with clear, exhaustive reasoning detailing:
      - Exact printed text and intended mechanics.
      - Specific lines of code in `src/engine/effects/` or `src/engine/pipeline/` that are missing or incomplete.

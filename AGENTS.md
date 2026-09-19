@@ -16,6 +16,7 @@ and the post-task procedure is in
 - Preserve the project's comic pop-art visual direction in user-facing UI work.
 - Do not introduce unapproved legacy shims, aliases, deprecated names, duplicate paths, or temporary shortcuts.
 - Never add skipped or todo tests to hide unfinished work.
+- **Supplemental Card Comments Policy:** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 
 ## Before implementation
 

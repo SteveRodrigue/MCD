@@ -2,7 +2,6 @@
   "$schema": "../schema.json",
   "cards": {
     "01001a": {
-      "comment": "Hero Identity: When villain initiates an attack against you, draw 1 card.",
       "audit": {
         "createdAt": "2026-08-28T08:53",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -34,7 +33,6 @@
       ]
     },
     "01001b": {
-      "comment": "Alter-Ego Identity: Scientist (Resource: Generate a Mental resource, limit 1/round).",
       "abilities": [
         {
           "id": "scientist",
@@ -62,7 +60,6 @@
       }
     },
     "01002": {
-      "comment": "Ally: Forced Response: After you PLAY Black Cat (CARD_PLAYED, not ENTERS_PLAY) → discard top 2 cards, add Mental-resource cards to hand. No consequential attack damage.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -97,7 +94,6 @@
       ]
     },
     "01003": {
-      "comment": "Defense Event: Interrupt when taking attack damage -> prevent all damage.",
       "abilities": [
         {
           "id": "backflip",
@@ -126,7 +122,6 @@
       }
     },
     "01004": {
-      "comment": "Hero Event: Cancel When Revealed effects of a treachery card.",
       "abilities": [
         {
           "id": "enhanced_spider_sense",
@@ -156,7 +151,6 @@
       }
     },
     "01005": {
-      "comment": "Attack Event: Hero Action -> Deal 8 damage to an enemy.",
       "abilities": [
         {
           "id": "swinging_web_kick",
@@ -183,7 +177,6 @@
       }
     },
     "01006": {
-      "comment": "Support: Alter-Ego Action -> Exhaust Aunt May to heal 4 damage from Peter Parker.",
       "abilities": [
         {
           "id": "aunt_may",
@@ -213,7 +206,6 @@
       }
     },
     "01007": {
-      "comment": "UPGRADE: Spider-Tracer. Attach to a minion. Forced Interrupt: When attached minion is defeated, remove 3 threat from a scheme.",
       "abilities": [
         {
           "id": "spider_tracer_attach",
@@ -253,7 +245,6 @@
       }
     },
     "01008": {
-      "comment": "UPGRADE: Web-Shooter. Enters with 3 counters. Exhaust & spend counter -> generate 1 wild resource.",
       "abilities": [
         {
           "id": "web_shooter_resource",
@@ -292,7 +283,6 @@
       }
     },
     "01009": {
-      "comment": "UPGRADE: Webbed Up. Attach to an enemy. Max 1 per enemy. Forced Interrupt: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy.",
       "playRequirements": {
         "identityForm": "HERO"
       },
@@ -371,7 +361,6 @@
       }
     },
     "01010b": {
-      "comment": "Alter-Ego Identity: Commander — Alter-Ego Action: Choose a player -> that player draws 1 card (limit 1/round).",
       "abilities": [
         {
           "id": "commander",
@@ -399,7 +388,6 @@
       }
     },
     "01011": {
-      "comment": "Ally: Response: After Spider-Woman enters play, confuse the villain.",
       "abilities": [
         {
           "id": "spider_woman_enters_play",
@@ -427,7 +415,6 @@
       }
     },
     "01012": {
-      "comment": "Thwart Event: Hero Action: Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme.",
       "abilities": [
         {
           "id": "crisis_interdiction",
@@ -466,7 +453,6 @@
       }
     },
     "01013": {
-      "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy. If paid with Energy, draw 1 card.",
       "abilities": [
         {
           "id": "photonic_blast",
@@ -507,7 +493,6 @@
     },
     "01014": {
       "noSupplementalNeeded": true,
-      "comment": "RESOURCE: Energy Absorption",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
@@ -561,7 +546,6 @@
       }
     },
     "01016": {
-      "comment": "Upgrade: While in Hero form, Captain Marvel gets +1 DEF (+2 DEF instead if you have the Aerial trait).",
       "abilities": [
         {
           "id": "captain_marvel_helmet_def",
@@ -600,7 +584,6 @@
       }
     },
     "01017": {
-      "comment": "Upgrade: Attached hero gains Aerial trait. Interrupt: When taking damage, discard Cosmic Flight -> prevent 3 of that damage.",
       "abilities": [
         {
           "id": "cosmic_flight_aerial",
@@ -642,7 +625,6 @@
       }
     },
     "01018": {
-      "comment": "Upgrade: Enters play with 0 counters. Hero Action: Spend Energy -> place 1 energy counter (max 5). Hero Action: Discard Energy Channel -> deal 2 damage per counter to an enemy.",
       "maxPerPlayer": 1,
       "uses": {
         "type": "energy",
@@ -706,7 +688,6 @@
       }
     },
     "01019a": {
-      "comment": "Hero Identity: Forced Response: After changing to this form, deal 15 damage (divided among enemies / 1 to an enemy).",
       "abilities": [
         {
           "id": "she_hulk_form_change",
@@ -734,7 +715,6 @@
       }
     },
     "01019b": {
-      "comment": "Alter-Ego Identity: Alter-Ego Interrupt: When threat would be placed on a scheme, prevent 1 of that threat (limit 1/round).",
       "abilities": [
         {
           "id": "jennifer_walters_thwart",
@@ -763,7 +743,6 @@
       }
     },
     "01020": {
-      "comment": "Ally: Action: Return Hellcat to your hand.",
       "abilities": [
         {
           "id": "hellcat_return",
@@ -789,7 +768,6 @@
       }
     },
     "01021": {
-      "comment": "Attack Event: Hero Action: Deal damage to an enemy equal to the amount of damage on She-Hulk (up to max 15).",
       "abilities": [
         {
           "id": "gamma_slam_action",
@@ -822,7 +800,6 @@
       }
     },
     "01022": {
-      "comment": "EVENT: Ground Stomp. Hero Action (attack): Deal 1 damage to each enemy.",
       "abilities": [
         {
           "id": "ground_stomp_action",
@@ -849,7 +826,6 @@
       }
     },
     "01023": {
-      "comment": "EVENT: Legal Practice. Alter-Ego Action: Discard up to 5 cards from your hand -> remove 1 threat from a scheme for each card discarded this way.",
       "abilities": [
         {
           "id": "legal_practice_action",
@@ -883,7 +859,6 @@
       }
     },
     "01024": {
-      "comment": "Event: Hero Response: After you make a basic attack (using your ATK), ready She-Hulk.",
       "abilities": [
         {
           "id": "one_two_punch_response",
@@ -915,7 +890,6 @@
       }
     },
     "01025": {
-      "comment": "Event: Action: Change form. Draw cards up to your new form's printed hand size limit.",
       "abilities": [
         {
           "id": "split_personality",
@@ -947,7 +921,6 @@
       }
     },
     "01026": {
-      "comment": "Support: Alter-Ego Action: Exhaust Superhuman Law Division and spend a Mental resource -> remove 2 threat from a scheme.",
       "abilities": [
         {
           "id": "superhuman_law_division",
@@ -980,7 +953,6 @@
       }
     },
     "01027": {
-      "comment": "Upgrade: Hero Action: Exhaust Focused Rage and take 1 damage -> draw 1 card.",
       "abilities": [
         {
           "id": "focused_rage",
@@ -1010,7 +982,6 @@
       }
     },
     "01028": {
-      "comment": "Upgrade: She-Hulk gets +2 ATK. Forced Response: After attacking, stun the target and discard Superhuman Strength.",
       "abilities": [
         {
           "id": "superhuman_strength_atk",
@@ -1054,7 +1025,6 @@
       }
     },
     "01029a": {
-      "comment": "HERO: Iron Man. Hand size is increased by 1 for each Tech upgrade you control.",
       "abilities": [
         {
           "id": "iron_man_hand_size",
@@ -1089,7 +1059,6 @@
       }
     },
     "01029b": {
-      "comment": "Alter-Ego Identity: Futurist — Action: Look at top 3 cards of deck. Add 1 card to hand, discard rest. (Limit once per round.)",
       "abilities": [
         {
           "id": "futurist",
@@ -1124,7 +1093,6 @@
       }
     },
     "01030": {
-      "comment": "ALLY: War Machine. Action: Exhaust War Machine and deal 2 damage to him -> deal 1 damage to each enemy.",
       "abilities": [
         {
           "id": "war_machine_action",
@@ -1155,7 +1123,6 @@
       }
     },
     "01031": {
-      "comment": "Hero Action (attack): Deal 1 damage to an enemy and discard top 5 cards of your deck. For each printed energy resource discarded this way, deal 2 additional damage to that enemy.",
       "abilities": [
         {
           "id": "repulsor_blast",
@@ -1195,7 +1162,6 @@
       }
     },
     "01032": {
-      "comment": "Attack Event: Hero Action: Deal 4 damage to an enemy (8 damage instead if you have Aerial trait).",
       "abilities": [
         {
           "id": "supersonic_punch",
@@ -1231,7 +1197,6 @@
       }
     },
     "01033": {
-      "comment": "Support: Resource: Exhaust Pepper Potts -> generate resources equal to printed resources on top card of discard pile.",
       "abilities": [
         {
           "id": "pepper_potts_res",
@@ -1263,7 +1228,6 @@
       }
     },
     "01034": {
-      "comment": "Support: Alter-Ego Action: Exhaust Stark Tower -> choose a player. That player returns the topmost Tech upgrade in their discard pile to their hand.",
       "abilities": [
         {
           "id": "stark_tower_retrieve",
@@ -1306,7 +1270,6 @@
       }
     },
     "01035": {
-      "comment": "UPGRADE: Arc Reactor. Trait: Tech. Hero Action: Exhaust Arc Reactor -> ready Iron Man.",
       "abilities": [
         {
           "id": "arc_reactor_ready",
@@ -1335,7 +1298,6 @@
       }
     },
     "01036": {
-      "comment": "UPGRADE: Mark V Armor. Trait: Tech. You get +6 hit points.",
       "abilities": [
         {
           "id": "mark_v_armor_hp",
@@ -1361,7 +1323,6 @@
       }
     },
     "01037": {
-      "comment": "Upgrade: Tech. Hero Action: Exhaust Mark V Helmet -> remove 1 threat from a scheme (remove 1 from each scheme instead if Aerial).",
       "abilities": [
         {
           "id": "mark_v_helmet",
@@ -1392,7 +1353,6 @@
       }
     },
     "01038": {
-      "comment": "Upgrade: Tech. Hero Action: Exhaust Powered Gauntlets and spend Energy -> deal 1 damage to an enemy (2 damage instead if Aerial).",
       "abilities": [
         {
           "id": "powered_gauntlets",
@@ -1434,7 +1394,6 @@
       }
     },
     "01039": {
-      "comment": "UPGRADE: Rocket Boots. Trait: Tech. You get +1 hit point. Hero Action: Exhaust Rocket Boots and spend an Energy resource -> Iron Man gains Aerial trait until the end of the phase.",
       "abilities": [
         {
           "id": "rocket_boots_hp",
@@ -1479,7 +1438,6 @@
       }
     },
     "01040a": {
-      "comment": "Hero Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
       "abilities": [
         {
           "id": "black_panther_retaliate",
@@ -1506,7 +1464,6 @@
       }
     },
     "01040b": {
-      "comment": "Alter-Ego Identity: Setup: Search deck/discard for a Black Panther upgrade and put into play.",
       "abilities": [
         {
           "id": "t_challa_foresight",
@@ -1546,7 +1503,6 @@
       }
     },
     "01041": {
-      "comment": "Ally: Response: After Shuri enters play, search deck for an upgrade and add it to hand.",
       "abilities": [
         {
           "id": "shuri_enters_play",
@@ -1584,7 +1540,6 @@
       }
     },
     "01042": {
-      "comment": "Event: Alter-Ego Action: Shuffle up to 3 cards from your discard pile into your deck.",
       "abilities": [
         {
           "id": "ancestral_knowledge_action",
@@ -1612,7 +1567,6 @@
       }
     },
     "01043a": {
-      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
           "traits": [
@@ -1646,7 +1600,6 @@
       }
     },
     "01043b": {
-      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
           "traits": [
@@ -1680,7 +1633,6 @@
       }
     },
     "01043c": {
-      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
           "traits": [
@@ -1714,7 +1666,6 @@
       }
     },
     "01043d": {
-      "comment": "Event: Hero Action: Trigger the special ability of each Black Panther upgrade in play, in order of your choice.",
       "playRequirements": {
         "controlFilter": {
           "traits": [
@@ -1749,7 +1700,6 @@
     },
     "01044": {
       "noSupplementalNeeded": true,
-      "comment": "RESOURCE: Vibranium",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T09:34",
@@ -1761,7 +1711,6 @@
       }
     },
     "01045": {
-      "comment": "Support: Alter-Ego Action: Exhaust The Golden City -> draw 2 cards.",
       "abilities": [
         {
           "id": "golden_city",
@@ -1790,7 +1739,6 @@
       }
     },
     "01046": {
-      "comment": "Upgrade: Special: Deal 1 damage to each enemy (2 damage if triggered last).",
       "abilities": [
         {
           "id": "energy_daggers_special",
@@ -1818,7 +1766,6 @@
       }
     },
     "01047": {
-      "comment": "Upgrade: Special: Deal 2 damage to an enemy (4 damage if triggered last).",
       "abilities": [
         {
           "id": "panther_claws_special",
@@ -1846,7 +1793,6 @@
       }
     },
     "01048": {
-      "comment": "Upgrade: Special: Remove 1 threat from a scheme (2 threat if triggered last).",
       "abilities": [
         {
           "id": "tactical_genius_special",
@@ -1874,7 +1820,6 @@
       }
     },
     "01049": {
-      "comment": "Upgrade: Special: Move 1 damage from Black Panther to an enemy (move 2 damage if triggered last).",
       "abilities": [
         {
           "id": "vibranium_suit_special",
@@ -1903,7 +1848,6 @@
       }
     },
     "01050": {
-      "comment": "Ally: Forced Response: After Hulk attacks, discard the top card of your deck and resolve effect based on printed resource icon.",
       "abilities": [
         {
           "id": "hulk_smash_response",
@@ -1970,7 +1914,6 @@
       }
     },
     "01051": {
-      "comment": "Ally: Response: After Tigra attacks and defeats a minion, heal 1 damage from Tigra.",
       "abilities": [
         {
           "id": "tigra_defeat_heal",
@@ -1998,7 +1941,6 @@
       }
     },
     "01052": {
-      "comment": "Event: Hero Response: After your hero attacks and defeats an enemy, remove 2 threat from a scheme.",
       "abilities": [
         {
           "id": "chase_them_down",
@@ -2026,7 +1968,6 @@
       }
     },
     "01053": {
-      "comment": "Attack Event: Hero Action: Deal 5 damage to a minion. If paid with Physical resource, gains Overkill.",
       "abilities": [
         {
           "id": "relentless_assault",
@@ -2055,7 +1996,6 @@
       }
     },
     "01054": {
-      "comment": "Attack Event: Hero Action: Deal 5 damage to an enemy.",
       "abilities": [
         {
           "id": "uppercut",
@@ -2082,7 +2022,6 @@
       }
     },
     "01055": {
-      "comment": "Resource Card: Double generated resources when paying for an Aggression card.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -2108,7 +2047,6 @@
       ]
     },
     "01056": {
-      "comment": "Support: Enters play with 3 counters. Action: Exhaust and remove 1 counter -> deal 2 damage to an enemy.",
       "uses": {
         "type": "attack",
         "count": 3,
@@ -2147,7 +2085,6 @@
       }
     },
     "01057": {
-      "comment": "UPGRADE: Combat Training. You get +1 ATK.",
       "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
@@ -2176,7 +2113,6 @@
       }
     },
     "01058": {
-      "comment": "Ally: Response: After Daredevil thwarts, deal 1 damage to an enemy.",
       "abilities": [
         {
           "id": "daredevil_after_thwart",
@@ -2204,7 +2140,6 @@
       }
     },
     "01059": {
-      "comment": "ALLY: Jessica Jones. Jessica Jones gets +1 THW for each side scheme in play (to a maximum of +4 THW).",
       "abilities": [
         {
           "id": "jessica_jones_thw_bonus",
@@ -2233,7 +2168,6 @@
       }
     },
     "01060": {
-      "comment": "Thwart Event: Hero Action: Remove 3 threat (4 threat if paid with Mental) from a scheme.",
       "abilities": [
         {
           "id": "for_justice",
@@ -2261,7 +2195,6 @@
       }
     },
     "01061": {
-      "comment": "Justice Event: Hero Interrupt: When threat would be placed on a scheme, take it as damage instead.",
       "abilities": [
         {
           "id": "great_responsibility_interrupt",
@@ -2300,7 +2233,6 @@
       }
     },
     "01062": {
-      "comment": "Resource Card: Double generated resources when paying for a Justice card.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -2326,7 +2258,6 @@
       ]
     },
     "01063": {
-      "comment": "Support: Response: After you defeat a minion, exhaust to remove 1 threat from a scheme.",
       "abilities": [
         {
           "id": "interrogation_room_response",
@@ -2358,7 +2289,6 @@
       "maxPerPlayer": 1
     },
     "01064": {
-      "comment": "Support: Enters play with 3 snoop counters. Action: Exhaust and remove 1 counter -> remove 1 threat from a scheme.",
       "uses": {
         "type": "snoop",
         "count": 3,
@@ -2397,7 +2327,6 @@
       }
     },
     "01065": {
-      "comment": "UPGRADE: Heroic Intuition. You get +1 THW.",
       "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
@@ -2426,7 +2355,6 @@
       }
     },
     "01066": {
-      "comment": "Ally: Enters play with 4 arrow counters. Response: After a minion enters play, remove 1 arrow counter -> deal 2 damage to that minion.",
       "uses": {
         "type": "arrow",
         "count": 4,
@@ -2465,7 +2393,6 @@
       }
     },
     "01067": {
-      "comment": "ALLY: Maria Hill. Response: After Maria Hill enters play, each player draws 1 card.",
       "abilities": [
         {
           "id": "maria_hill_enters_play",
@@ -2493,7 +2420,6 @@
       }
     },
     "01068": {
-      "comment": "Ally: Action: Spend 1 Energy resource -> Vision gets +2 ATK or +2 THW for this phase. (Limit once per round.)",
       "abilities": [
         {
           "id": "vision_boost",
@@ -2552,7 +2478,6 @@
       }
     },
     "01069": {
-      "comment": "Event: Action: Ready an ally.",
       "abilities": [
         {
           "id": "get_ready_action",
@@ -2578,7 +2503,6 @@
       }
     },
     "01070": {
-      "comment": "Event: Hero Action: Each friendly character gets +1 ATK and +1 THW until end of phase.",
       "abilities": [
         {
           "id": "lead_from_the_front_action",
@@ -2607,7 +2531,6 @@
       }
     },
     "01071": {
-      "comment": "Event: Action: Pay printed cost of an ally in any player's discard pile -> put that ally into play under your control.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -2641,7 +2564,6 @@
       ]
     },
     "01072": {
-      "comment": "Resource Card: Double generated resources when paying for a Leadership card.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -2667,7 +2589,6 @@
       ]
     },
     "01073": {
-      "comment": "SUPPORT: The Triskelion. Constant: Increase your ally limit by 1.",
       "abilities": [
         {
           "id": "triskelion_ally_limit",
@@ -2694,7 +2615,6 @@
       }
     },
     "01074": {
-      "comment": "UPGRADE: Inspired. Attach to an ally. Max 1 per ally. Attached ally gets +1 THW and +1 ATK.",
       "abilities": [
         {
           "id": "inspired_attach",
@@ -2747,7 +2667,6 @@
       }
     },
     "01075": {
-      "comment": "Ally: Hero Interrupt: When a treachery card is revealed from encounter deck, exhaust Black Widow and spend 1 Mental resource -> cancel its When Revealed effects and discard it.",
       "abilities": [
         {
           "id": "black_widow_cancel",
@@ -2778,7 +2697,6 @@
       }
     },
     "01076": {
-      "comment": "Ally: Toughness. Luke Cage enters play with a tough status card.",
       "abilities": [
         {
           "id": "luke_cage_tough",
@@ -2805,7 +2723,6 @@
       }
     },
     "01077": {
-      "comment": "Attack Event: Hero Response: After your hero defends against an attack, deal damage to the attacker equal to your hero's ATK.",
       "abilities": [
         {
           "id": "counter_punch_response",
@@ -2841,7 +2758,6 @@
       }
     },
     "01078": {
-      "comment": "Event: Hero Interrupt: When a treachery card is revealed from encounter deck, cancel its When Revealed effects. The villain attacks you instead.",
       "abilities": [
         {
           "id": "get_behind_me_interrupt",
@@ -2878,7 +2794,6 @@
       }
     },
     "01079": {
-      "comment": "Resource Card: Double generated resources when paying for a Protection card.",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-09-14T18:37:00Z",
@@ -2904,7 +2819,6 @@
       ]
     },
     "01080": {
-      "comment": "Support: Enters play with 3 medical counters. Action: Exhaust and remove 1 medical counter -> heal 2 damage from any friendly character.",
       "uses": {
         "type": "medical",
         "count": 3,
@@ -2943,7 +2857,6 @@
       }
     },
     "01081": {
-      "comment": "Upgrade: Attached hero gets +1 DEF.",
       "maxPerPlayer": 1,
       "playUnderAnyPlayerControl": true,
       "abilities": [
@@ -2972,7 +2885,6 @@
       }
     },
     "01082": {
-      "comment": "Upgrade: Hero Interrupt: After your hero defends against an attack, discard Indomitable -> ready your hero.",
       "abilities": [
         {
           "id": "indomitable_ready",
@@ -3002,7 +2914,6 @@
       }
     },
     "01083": {
-      "comment": "Ally: Forced Response: After Mockingbird enters play, stun an enemy.",
       "abilities": [
         {
           "id": "mockingbird_enters_play",
@@ -3030,7 +2941,6 @@
       }
     },
     "01084": {
-      "comment": "ALLY: Nick Fury. Forced Response: After Nick Fury enters play, choose 1 of 3 effects. At end of round, discard Nick Fury.",
       "abilities": [
         {
           "id": "nick_fury_enters_play",
@@ -3102,7 +3012,6 @@
       }
     },
     "01085": {
-      "comment": "Basic Event: Interrupt (thwart): When threat would be placed on a scheme, reduce the amount of threat placed by 1.",
       "abilities": [
         {
           "id": "emergency_interrupt",
@@ -3134,7 +3043,6 @@
       }
     },
     "01086": {
-      "comment": "Event: Action: Heal 2 damage from any character.",
       "abilities": [
         {
           "id": "first_aid",
@@ -3161,7 +3069,6 @@
       }
     },
     "01087": {
-      "comment": "Attack Event: Hero Action: Deal 3 damage to an enemy.",
       "abilities": [
         {
           "id": "haymaker",
@@ -3197,8 +3104,7 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per deck."
-      },
-      "comment": "RESOURCE: Energy"
+      }
     },
     "01089": {
       "noSupplementalNeeded": true,
@@ -3210,8 +3116,7 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per deck."
-      },
-      "comment": "RESOURCE: Genius"
+      }
     },
     "01090": {
       "noSupplementalNeeded": true,
@@ -3223,11 +3128,9 @@
         "rulesVersion": "v1.8",
         "confidence": 100,
         "originalText": "Max 1 per deck."
-      },
-      "comment": "RESOURCE: Strength"
+      }
     },
     "01091": {
-      "comment": "Support: Action: Exhaust Avengers Mansion -> choose a player to draw 1 card.",
       "maxPerPlayer": 1,
       "abilities": [
         {
@@ -3258,7 +3161,6 @@
       }
     },
     "01092": {
-      "comment": "Support: Action: Exhaust Helicarrier -> choose a player to reduce resource cost of next card by 1.",
       "maxPerPlayer": 1,
       "audit": {
         "createdAt": "2026-08-27T23:00",
@@ -3290,7 +3192,6 @@
       ]
     },
     "01093": {
-      "comment": "Upgrade: Attach to your hero. Hero Action: Spend a Physical resource and discard Tenacity -> ready your hero.",
       "abilities": [
         {
           "id": "tenacity_ready",

@@ -107,7 +107,7 @@ describe('Ability Limits, Activation Zone & maxPerRound Deprecation (Contract Te
 
   it('allows switching limits and zones on card enrichment while keeping schema valid', () => {
     const enrichment = {
-      comment: 'Scientist ability limit test',
+      audit: { comment: 'Scientist ability limit test' },
       abilities: [
         {
           id: 'scientist',

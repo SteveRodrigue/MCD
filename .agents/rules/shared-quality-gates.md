@@ -23,6 +23,10 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 - Do not introduce permanent shims, aliases, deprecated names, duplicate paths, or temporary shortcuts without explicit approval.
 - Tests must pass or fail; never add or retain skipped or todo tests to hide unfinished work.
 
+## Supplemental card comments policy
+
+The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
+
 ## Plan and approval gate
 
 Before modifying source, tests, supplemental data, dependencies, or configuration:

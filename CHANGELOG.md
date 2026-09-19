@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Data & Tooling): Encapsulate Supplemental Comments into Audit Metadata (ADR-0067)**
+  - **Schema & Engine Models:**
+    - Moved `comment?: string` from `CardEnrichment` into `CardAuditMetadata` in `src/engine/models/abilities.ts`.
+    - Moved `comment` from `CardEnrichmentSchema` into `CardAuditRecordSchema` in `src/data/supplemental/schema.ts` (both remain `.strict()`), and regenerated `src/data/supplemental/schema.json`.
+  - **Supplemental Pack Data:**
+    - Purged all 153 legacy root-level `comment` fields from `src/data/supplemental/pack/core.json` (99) and `core_encounter.json` (54); no legacy text was migrated.
+  - **Card Editor UI:**
+    - Updated `CardAttributesSection.tsx` and `DualCardInspector.tsx` to read/write the developer comment via `supplemental.audit.comment`.
+  - **Tooling:**
+    - Updated `tools/audit/supplemental-declarations-analyzer.ts` to read `entry.audit?.comment` and regenerated `docs/reports/supplemental_declarations_usage_report.md`.
+  - **Documentation & Agent Governance:**
+    - Authored [ADR-0067](docs/decisions/0067-encapsulating-supplemental-comments-into-audit-metadata.md) and registered it in `docs/decisions/README.md`.
+    - Updated `AGENTS.md`, `.agents/rules/shared-quality-gates.md`, and `.agents/skills/card-integration-protocol/SKILL.md` to forbid agents from autonomously adding or updating `audit.comment`.
+  - **Automated Tests:**
+    - Updated fixtures in `tests/data/supplemental-schema.test.ts`, `tests/ui/CardAttributesSection.test.tsx`, `tests/ui/AbilityFormBuilder.test.tsx`, `tests/ui/ability-limit-and-zone-editor.test.ts`, and `tests/tools/supplemental-editor-api.test.ts` to use `audit.comment`.
+    - Added a test asserting `CardEnrichmentSchema` strictly rejects a root-level `comment` key.
+
 - **Fix (Engine & UI): In-Hand Trigger Event Cost Enforcement & Decision-to-Payment Modal Handshake ([Issue #125](https://github.com/SteveRodrigue/MCD/issues/125))**
   - **Engine Models & Action Types:**
     - Extended `ResolveDecisionPromptAction` in `src/engine/models/actions.ts` with optional `paymentCardInstanceIds?: string[]` and `generatorInstanceIds?: string[]`.

@@ -3,7 +3,6 @@
   "cards": {
     "01094": {
       "noSupplementalNeeded": true,
-      "comment": "VILLAIN: Rhino",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T12:46",
@@ -15,7 +14,6 @@
       }
     },
     "01095": {
-      "comment": "VILLAIN: Rhino (Stage II). When Revealed: Search the encounter deck and discard pile for Breakin' & Takin' and reveal it. Shuffle the encounter deck.",
       "abilities": [
         {
           "id": "rhino_stage_ii_when_revealed",
@@ -52,7 +50,6 @@
       }
     },
     "01096": {
-      "comment": "VILLAIN: Rhino (Stage III). When Revealed: Stun each hero. Rhino gains Tough.",
       "abilities": [
         {
           "id": "rhino_stage_iii_when_revealed",
@@ -94,7 +91,6 @@
     },
     "01097a": {
       "noSupplementalNeeded": true,
-      "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T12:46",
@@ -107,7 +103,6 @@
     },
     "01097b": {
       "noSupplementalNeeded": true,
-      "comment": "MAIN_SCHEME: The Break-In!",
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-08-28T12:46",
@@ -119,7 +114,6 @@
       }
     },
     "01098": {
-      "comment": "ATTACHMENT: Armored Rhino Suit. When any damage would be dealt to Rhino, absorbs damage up to 5 and discards.",
       "abilities": [
         {
           "id": "armored_rhino_suit_attach",
@@ -161,7 +155,6 @@
       }
     },
     "01099": {
-      "comment": "ATTACHMENT: Charge. Rhino gets +3 ATK and Overkill. Discard after attack resolves.",
       "abilities": [
         {
           "id": "charge_attach",
@@ -213,7 +206,6 @@
       }
     },
     "01100": {
-      "comment": "ATTACHMENT: Enhanced Ivory Horn. Rhino gets +1 ATK. Hero Action: Spend 3 physical resources to discard.",
       "abilities": [
         {
           "id": "ivory_horn_attach",
@@ -270,7 +262,6 @@
       }
     },
     "01101": {
-      "comment": "MINION: Hydra Mercenary. Keyword: Guard (Heroes cannot attack the villain while engaged).",
       "abilities": [
         {
           "id": "hydra_mercenary_guard",
@@ -296,7 +287,6 @@
       }
     },
     "01102": {
-      "comment": "MINION: Sandman. Enters with Toughness. Forced Response: After Sandman attacks, discard top 2 encounter cards.",
       "abilities": [
         {
           "id": "sandman_toughness",
@@ -337,7 +327,6 @@
       }
     },
     "01103": {
-      "comment": "MINION: Shocker. When Revealed: Deal 1 damage to each hero.",
       "abilities": [
         {
           "id": "shocker_when_revealed",
@@ -365,7 +354,6 @@
       }
     },
     "01104": {
-      "comment": "Treachery: When Revealed -> Rhino heals 4 HP. If 0 healed, gains Surge.",
       "abilities": [
         {
           "id": "hard_to_keep_down_heal",
@@ -399,7 +387,6 @@
       }
     },
     "01105": {
-      "comment": "Treachery: When Revealed -> Give Rhino Tough status card. If already Tough, gains Surge.",
       "abilities": [
         {
           "id": "im_tough_status",
@@ -437,7 +424,6 @@
       }
     },
     "01106": {
-      "comment": "Treachery: When Revealed -> In Hero form, Rhino attacks you. In Alter-Ego, gains Surge.",
       "abilities": [
         {
           "id": "stampede_attack",
@@ -473,7 +459,6 @@
       }
     },
     "01107": {
-      "comment": "SIDE_SCHEME: Breakin' & Takin'. Base threat 2. When Revealed: Place 1 threat per player.",
       "abilities": [
         {
           "id": "breakin_and_takin_when_revealed",
@@ -502,7 +487,6 @@
       }
     },
     "01108": {
-      "comment": "SIDE_SCHEME: Crowd Control. Crisis icon. When Revealed: Place 1 acceleration token or threat per player.",
       "abilities": [
         {
           "id": "crowd_control_when_revealed",
@@ -531,7 +515,6 @@
       }
     },
     "01109": {
-      "comment": "SIDE_SCHEME: Bomb Scare. Base threat 2. When Revealed: Place 1 threat per player.",
       "abilities": [
         {
           "id": "bomb_scare_when_revealed",
@@ -560,7 +543,6 @@
       }
     },
     "01110": {
-      "comment": "MINION: Hydra Bomber. When Revealed: Choose to take 2 damage or place 1 threat on main scheme.",
       "abilities": [
         {
           "id": "hydra_bomber_when_revealed",
@@ -610,7 +592,6 @@
       }
     },
     "01111": {
-      "comment": "Treachery: When Revealed: If Bomb Scare is in play, assign X damage among heroes and allies, where X is threat on Bomb Scare. If Bomb Scare is not in play, this card gains surge.",
       "abilities": [
         {
           "id": "explosion_when_revealed",
@@ -658,7 +639,6 @@
       }
     },
     "01112": {
-      "comment": "Treachery: When Revealed -> Deal 1 damage to each hero and place 1 threat on main scheme.",
       "abilities": [
         {
           "id": "false_alarm_confuse",
@@ -686,7 +666,6 @@
       }
     },
     "01155": {
-      "comment": "Obligation: Affairs of State",
       "abilities": [
         {
           "id": "affairs_of_state",
@@ -723,7 +702,6 @@
       }
     },
     "01157": {
-      "comment": "Minion: Killmonger",
       "abilities": [
         {
           "id": "killmonger_response",
@@ -749,7 +727,6 @@
       }
     },
     "01158": {
-      "comment": "Treachery: Heart-Shaped Herb",
       "abilities": [
         {
           "id": "heart_shaped_herb",
@@ -775,7 +752,6 @@
       }
     },
     "01159": {
-      "comment": "Treachery: Ritual Combat",
       "abilities": [
         {
           "id": "ritual_combat",
@@ -801,7 +777,6 @@
       }
     },
     "01160": {
-      "comment": "Obligation: Legal Work",
       "abilities": [
         {
           "id": "legal_work",
@@ -828,7 +803,6 @@
       }
     },
     "01161": {
-      "comment": "Side Scheme: Personal Challenge. When Revealed: Place an additional 1 [per_hero] threat here.",
       "abilities": [
         {
           "id": "personal_challenge_when_revealed",
@@ -857,7 +831,6 @@
       }
     },
     "01162": {
-      "comment": "Minion: Titania",
       "abilities": [
         {
           "id": "titania_response",
@@ -883,7 +856,6 @@
       }
     },
     "01163": {
-      "comment": "Attachment: Genetically Enhanced",
       "abilities": [
         {
           "id": "genetically_enhanced",
@@ -907,7 +879,6 @@
       }
     },
     "01164": {
-      "comment": "Treachery: Titania's Fury. When Revealed: Deal 2 damage to hero. Star Boost: Give the villain 1 additional boost card for this activation.",
       "abilities": [
         {
           "id": "titanias_fury",
@@ -945,7 +916,6 @@
       }
     },
     "01165": {
-      "comment": "Obligation: Eviction Notice",
       "abilities": [
         {
           "id": "eviction_notice",
@@ -972,7 +942,6 @@
       }
     },
     "01166": {
-      "comment": "Side Scheme: Highway Robbery. When Revealed: Each player places a random card from hand facedown here. When Defeated: Return each facedown card here to its owner's hand.",
       "abilities": [
         {
           "id": "highway_robbery_when_revealed",
@@ -1007,7 +976,6 @@
       }
     },
     "01167": {
-      "comment": "Minion: Vulture. Printed Quickstrike keyword is natively handled by engine.",
       "noSupplementalNeeded": true,
       "audit": {
         "updatedAt": "2026-09-01T13:31:00Z",
@@ -1018,7 +986,6 @@
       }
     },
     "01168": {
-      "comment": "Treachery: Sweeping Swoop. When Revealed: Deal 2 damage to hero. Star Boost: Stun defending character.",
       "abilities": [
         {
           "id": "sweeping_swoop",
@@ -1060,7 +1027,6 @@
       }
     },
     "01169": {
-      "comment": "Treachery: The Vulture's Plans",
       "abilities": [
         {
           "id": "vultures_plans",
@@ -1086,7 +1052,6 @@
       }
     },
     "01170": {
-      "comment": "Obligation: Business Problems",
       "abilities": [
         {
           "id": "business_problems",
@@ -1113,7 +1078,6 @@
       }
     },
     "01171": {
-      "comment": "Side Scheme: Imminent Overload. When Revealed: Place an additional 1 [per_hero] threat here.",
       "abilities": [
         {
           "id": "imminent_overload_when_revealed",
@@ -1142,7 +1106,6 @@
       }
     },
     "01172": {
-      "comment": "Minion: Whiplash",
       "abilities": [
         {
           "id": "whiplash_response",
@@ -1183,7 +1146,6 @@
       }
     },
     "01173": {
-      "comment": "Attachment: Electric Whip Attack. Constant: +1 ATK. Star Boost: Discard an upgrade or support you control.",
       "abilities": [
         {
           "id": "electric_whip_attack",
@@ -1230,7 +1192,6 @@
       }
     },
     "01174": {
-      "comment": "Treachery: Electromagnetic Backlash",
       "abilities": [
         {
           "id": "electromagnetic_backlash",
@@ -1256,7 +1217,6 @@
       }
     },
     "01175": {
-      "comment": "Obligation: Family Emergency",
       "abilities": [
         {
           "id": "family_emergency",
@@ -1283,7 +1243,6 @@
       }
     },
     "01176": {
-      "comment": "Side Scheme: The Psyche-Magnitron. When Revealed: Place an additional 1 [per_hero] threat here.",
       "abilities": [
         {
           "id": "psyche_magnitron_when_revealed",
@@ -1312,7 +1271,6 @@
       }
     },
     "01177": {
-      "comment": "Minion: Yon-Rogg. Forced Response: After Yon-Rogg attacks, place 1 threat on The Psyche-Magnitron.",
       "abilities": [
         {
           "id": "yon_rogg_response",
@@ -1340,7 +1298,6 @@
       }
     },
     "01178": {
-      "comment": "Treachery: Kree Manipulator. Surge. When Revealed: Place 1 threat on main scheme. Boost: If undefended, place 1 threat on main scheme.",
       "abilities": [
         {
           "id": "kree_manipulator_when_revealed",
@@ -1383,7 +1340,6 @@
       }
     },
     "01179": {
-      "comment": "Treachery: Yon-Rogg's Treason",
       "abilities": [
         {
           "id": "yon_roggs_treason",
@@ -1409,7 +1365,6 @@
       }
     },
     "01186": {
-      "comment": "TREACHERY: Advance. When Revealed: The villain schemes.",
       "abilities": [
         {
           "id": "advance_when_revealed",
@@ -1434,7 +1389,6 @@
       }
     },
     "01187": {
-      "comment": "TREACHERY: Assault. When Revealed: Alter-Ego gains surge. Hero: The villain attacks you.",
       "abilities": [
         {
           "id": "assault_when_revealed",
@@ -1459,7 +1413,6 @@
       }
     },
     "01188": {
-      "comment": "Treachery: Caught Off Guard -> Choose and discard an upgrade or support you control.",
       "abilities": [
         {
           "id": "caught_off_guard_when_revealed",
@@ -1494,7 +1447,6 @@
       }
     },
     "01189": {
-      "comment": "TREACHERY: Gang-Up. When Revealed: Alter-Ego gains surge. Hero: The villain and each minion engaged with you attacks you.",
       "abilities": [
         {
           "id": "gang_up_when_revealed",
@@ -1519,7 +1471,6 @@
       }
     },
     "01190": {
-      "comment": "TREACHERY: Shadow of the Past. When Revealed: Put set-aside nemesis minion(s) and side scheme into play. Shuffle remaining nemesis cards into encounter deck. If no nemesis minion enters play, surge.",
       "abilities": [
         {
           "id": "shadow_of_the_past_when_revealed",
@@ -1593,7 +1544,6 @@
       }
     },
     "01191": {
-      "comment": "TREACHERY: Exhaustion. When Revealed: Choose to exhaust your identity or take 2 damage.",
       "abilities": [
         {
           "id": "exhaustion_when_revealed",
@@ -1642,7 +1592,6 @@
       }
     },
     "01192": {
-      "comment": "TREACHERY: Masterplan. When Revealed: Place 4 threat on each side scheme. If none, discard until side scheme is found and reveal it.",
       "abilities": [
         {
           "id": "masterplan_when_revealed",
@@ -1670,7 +1619,6 @@
       }
     },
     "01193": {
-      "comment": "TREACHERY: Under Fire. Surge. When Revealed: Reveal the top card of the encounter deck.",
       "abilities": [
         {
           "id": "under_fire_when_revealed",
@@ -1699,7 +1647,6 @@
       }
     },
     "01194": {
-      "comment": "Treachery: Masterplan -> Place 1 threat on main scheme for each side scheme in discard.",
       "abilities": [
         {
           "id": "masterplan_when_revealed",
@@ -1724,7 +1671,6 @@
       }
     },
     "01195": {
-      "comment": "Treachery: Under Fire -> Reveal additional encounter card.",
       "abilities": [
         {
           "id": "under_fire_when_revealed",

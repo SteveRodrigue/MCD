@@ -1437,12 +1437,18 @@ export function dispatchAction(
         const isMinion = nextState.players.some((p) =>
           p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
         );
-        const isSideScheme = nextState.sideSchemes.some(
+        const isSideScheme = (nextState.sideSchemes || []).some(
           (s) => s.instanceId === action.targetInstanceId,
+        );
+        const isMainScheme = Boolean(
+          nextState.mainScheme &&
+          (action.targetInstanceId === nextState.mainScheme.card?.code ||
+            action.targetInstanceId === nextState.mainScheme.instanceId),
         );
         if (isMinion) targetType = 'minion';
         else if (isSideScheme) targetType = 'side_scheme';
-        else targetType = 'main_scheme';
+        else if (isMainScheme) targetType = 'main_scheme';
+        else targetType = 'villain';
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {

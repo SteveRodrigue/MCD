@@ -166,6 +166,7 @@ export interface DecisionPromptOption {
   id: string;
   label: string;
   description?: string;
+  cardCode?: string;
   effect: string;
   params?: Record<string, unknown>;
   disabled?: boolean;

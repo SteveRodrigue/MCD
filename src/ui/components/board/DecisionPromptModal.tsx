@@ -309,6 +309,8 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                     ? Object.values(optParams.ability.cost.resourceCost)[0]
                     : 1);
 
+              const optionCardCode = option.cardCode || (optParams?.cardCode as string | undefined);
+
               return (
                 <button
                   key={option.id}
@@ -339,6 +341,13 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                       >
                         {index + 1}
                       </span>
+                      {optionCardCode && (
+                        <CardArtThumbnail
+                          cardCode={optionCardCode}
+                          cardName={option.label}
+                          size="sm"
+                        />
+                      )}
                       <span>{option.label}</span>
                       {requiresPayment && costAmount !== undefined && costAmount > 0 && (
                         <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">

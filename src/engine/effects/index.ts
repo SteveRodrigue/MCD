@@ -1815,28 +1815,67 @@ export function executeStep(
               moveDefeatedCardToPile(state, minion, state.encounterDiscard);
 
               // Overkill routing to villain if attack has Overkill
+              const kickerResource: string | undefined =
+                (step.effectParams?.kickerResource as string | undefined) ||
+                (step.effectParams?.overkillOnPhysical ? 'physical' : undefined);
+              const kickerMet = kickerResource
+                ? Boolean(
+                    context.resourcesSpent?.some((r) => {
+                      const lower = String(r).toLowerCase();
+                      return lower === kickerResource.toLowerCase() || lower === 'wild';
+                    }),
+                  )
+                : false;
+              const hasConditionalOverkill = Boolean(
+                step.effectParams?.overkillOnPhysical || step.effectParams?.overkillOnCondition,
+              );
               const isOverkill = Boolean(
-                step.effectParams?.overkill ||
+                (step.effectParams?.overkill && !hasConditionalOverkill) ||
+                (hasConditionalOverkill && kickerMet) ||
                 step.effectParams?.keyword === 'Overkill' ||
-                (context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
-                (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'),
+                (!hasConditionalOverkill &&
+                  ((context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
+                    (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'))),
               );
 
               if (isOverkill && excessDmg > 0) {
-                state.villain.health = Math.max(0, state.villain.health - excessDmg);
-                state.log.push({
-                  id: `log_${Date.now()}`,
-                  timestamp: Date.now(),
-                  round: state.roundNumber,
-                  phase: state.phase,
-                  category: 'combat',
-                  key: 'overkill.villain.hit',
-                  params: {
-                    damage: excessDmg,
-                    villain: state.villain.card.name,
-                  },
-                  onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
-                });
+                const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+                if (villainToughIdx !== -1) {
+                  state.villain.statusCards.splice(villainToughIdx, 1);
+                  state.log.push({
+                    id: `log_${Date.now()}`,
+                    timestamp: Date.now(),
+                    round: state.roundNumber,
+                    phase: state.phase,
+                    category: 'combat',
+                    key: 'card.effect.dealDamage',
+                    params: {
+                      player: player.name,
+                      target: state.villain.card.name,
+                      amount: 0,
+                      toughAbsorbed: true,
+                    },
+                    onomatopoeia: 'CLANG! (TOUGH)',
+                  });
+                } else {
+                  state.villain.health = Math.max(0, state.villain.health - excessDmg);
+                  state.log.push({
+                    id: `log_${Date.now()}`,
+                    timestamp: Date.now(),
+                    round: state.roundNumber,
+                    phase: state.phase,
+                    category: 'combat',
+                    key: 'overkill.villain.hit',
+                    params: {
+                      damage: excessDmg,
+                      villain: state.villain.card.name,
+                    },
+                    onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
+                  });
+                  if (state.villain.health <= 0) {
+                    state = handleVillainDefeat(state, state.villain.instanceId);
+                  }
+                }
               }
 
               const onomatopoeia = 'SMASH! MINION DEFEATED!';
@@ -2617,6 +2656,7 @@ export function executeStep(
             id: 'main_scheme',
             label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
             description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
+            cardCode: state.mainScheme.card.code,
             effect: 'REMOVE_THREAT',
             params: { amount, target: 'MAIN_SCHEME' },
           },
@@ -2624,6 +2664,7 @@ export function executeStep(
             id: s.instanceId,
             label: `${s.card.name} (${s.threat || 0} Threat)`,
             description: `Remove ${amount} threat from ${s.card.name}`,
+            cardCode: s.card.code,
             effect: 'REMOVE_THREAT',
             params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
           })),
@@ -2632,9 +2673,10 @@ export function executeStep(
         enqueueDecisionPrompt(state, {
           promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           playerId: player.id,
-          title: 'Choose a Scheme',
-          description: `Select a scheme to remove ${amount} threat from:`,
-          sourceCardName: context.sourceCardInstance?.card.name || 'Spider-Tracer',
+          title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
+          description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
+          sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
+          sourceCardCode: context.sourceCardInstance?.card.code,
           options,
         });
 

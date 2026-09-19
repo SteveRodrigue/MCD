@@ -1972,10 +1972,12 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
+              "condition": "RESOURCE_KICKER_MET",
               "effectParams": {
                 "amount": 5,
                 "target": "CHOSEN_MINION",
-                "overkill": true,
+                "kickerResource": "physical",
+                "overkillOnCondition": true,
                 "overkillOnPhysical": true
               }
             }
@@ -1984,11 +1986,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-19T20:50:00Z",
+        "reviewedAt": "2026-09-19T20:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>Hero Action</b> <i>(attack)</i>: Deal 5 damage to a minion. If you paid for this card using a [physical] resource, this attack gains overkill. <i>(Excess damage from this attack is dealt to the villain.)</i>"
       }
     },

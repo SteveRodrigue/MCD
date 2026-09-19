@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Rules): Relentless Assault Overkill Resolution, Physical Kicker & Prompt Provenance ([Issue #137](https://github.com/SteveRodrigue/MCD/issues/137))**
+  - **Rules Compliance & Resource Kicker Enforcement:**
+    - Updated *Relentless Assault* (`01053`) in `src/data/supplemental/pack/core.json` to declare `condition: "RESOURCE_KICKER_MET"` with `kickerResource: "physical"`, `overkillOnCondition: true`, and `overkillOnPhysical: true`.
+    - In `src/engine/effects/index.ts` (`case 'DEAL_DAMAGE'`), enforced that conditional Overkill attacks only gain the Overkill keyword if paid for using at least one `[physical]` (or wild) resource per RR v1.8 and card text (*"If you paid for this card using a [physical] resource, this attack gains overkill"*).
+  - **Generic Combat Defense & Overkill Absorption:**
+    - Updated Overkill minion defeat routing in `src/engine/effects/index.ts` to respect `StatusCard.TOUGH` on the villain per RR v1.8 p. 22: when excess damage spills over to a Tough villain, the Tough status card is discarded, damage is prevented, and `toughAbsorbed: true` is logged (`CLANG! (TOUGH)`).
+    - Enforced villain defeat checking (`handleVillainDefeat`) when excess Overkill damage reduces villain health to 0.
+    - Preserved scheme threat integrity: confirmed and verified that Overkill excess damage routes strictly to the villain and never mutates scheme threat.
+  - **Target Determination Fallback Fix:**
+    - Corrected `src/engine/pipeline/action-dispatcher.ts` to explicitly verify `isMainScheme` against `mainScheme.card.code` / `mainScheme.instanceId`, preventing unassigned enemy target IDs from defaulting to `'main_scheme'`.
+  - **Decision Prompt Modal & Pop-Art Provenance:**
+    - Added optional `cardCode?: string` to `DecisionPromptOption` and `DecisionPromptOptionSchema` in `src/engine/models/state.ts` and `src/data/supplemental/schema.ts`.
+    - Updated `src/engine/effects/index.ts` (`REMOVE_THREAT`) to pass `sourceCardCode` and `sourceCardName` into `enqueueDecisionPrompt`, plus `cardCode` on each scheme option.
+    - Updated `src/ui/components/board/DecisionPromptModal.tsx` to render the pop-art square card preview (`CardArtThumbnail`, `aspect-square`) inside option buttons whenever `cardCode` is present, eliminating player confusion between attack effects and host-defeat triggers (e.g. *Spider-Tracer*).
+  - **Automated Verification:**
+    - Authored 4 regression tests in `tests/cards/aggression/relentless-assault-overkill.test.ts`.
+    - Authored unit test in `tests/ui/DecisionPromptModal.test.tsx` verifying option `CardArtThumbnail` rendering.
+    - Updated `tests/engine/combat-damage-prevention-and-overkill.test.ts` to supply the physical resource kicker context.
+
 - **Fix (Card Data & Editor): Fix Powered Gauntlets Resource Cost & Complete Card Editor Field Binding ([ADR-0069](docs/decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md) / [Issue #139](https://github.com/SteveRodrigue/MCD/issues/139))**
   - **Card Data Correction:**
     - Corrected card `01038` (Powered Gauntlets) in `src/data/supplemental/pack/core.json` by removing the invalid `"resourceCost": { "energy": 1 }` cost requirement, leaving cost strictly as `{"exhaustSelf": true}` per RR v1.8 p. 9.

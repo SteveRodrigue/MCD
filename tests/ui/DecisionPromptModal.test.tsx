@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { DecisionPromptModal } from '../../src/ui/components/board/DecisionPromptModal';
 import { PendingDecisionPrompt } from '../../src/engine/models';
@@ -75,5 +75,37 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
 
     expect(screen.getByText(/⚡ COST: 1 RESOURCE/i)).toBeDefined();
+  });
+
+  it('renders CardArtThumbnail inside options when cardCode is present', async () => {
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_options_art',
+      playerId: 'p1',
+      sourceCardName: 'Spider-Tracer',
+      sourceCardCode: '01007',
+      title: 'Spider-Tracer: Choose a Scheme',
+      description: 'Spider-Tracer: Select a scheme to remove 3 threat from:',
+      options: [
+        {
+          id: 'main_scheme',
+          label: 'The Break-In (4 Threat)',
+          cardCode: '01097b',
+          effect: 'REMOVE_THREAT',
+        },
+        {
+          id: 'side_scheme_1',
+          label: 'Crowd Control (2 Threat)',
+          cardCode: '01104',
+          effect: 'REMOVE_THREAT',
+        },
+      ],
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+
+    expect(screen.getByAltText('The Break-In (4 Threat)')).toBeDefined();
+    expect(screen.getByAltText('Crowd Control (2 Threat)')).toBeDefined();
   });
 });

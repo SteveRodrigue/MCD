@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
+import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-calculator';
 import { useCardArt } from '../../hooks/useCardArt';
 import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
 import { FormattedCardText } from './FormattedCardText';
@@ -9,6 +10,8 @@ import { CardContextMenu } from './CardContextMenu';
 export interface CardViewProps {
   card: NormalizedCard;
   instance?: CardInstance;
+  dynamicTraits?: string[];
+  effectiveTraits?: string[];
   isExhausted?: boolean;
   isPlayable?: boolean;
   unplayableReason?: string;
@@ -36,6 +39,8 @@ export interface CardViewProps {
 export const CardView: React.FC<CardViewProps> = ({
   card,
   instance,
+  dynamicTraits,
+  effectiveTraits: _effectiveTraits,
   isExhausted = false,
   isPlayable,
   unplayableReason,
@@ -88,6 +93,12 @@ export const CardView: React.FC<CardViewProps> = ({
     card.type === CardType.MAIN_SCHEME ||
     card.type === CardType.SIDE_SCHEME ||
     (card.type as string) === 'player_side_scheme';
+
+  const activeDynamicTraits =
+    dynamicTraits ??
+    (instance?.attachments && instance.attachments.length > 0
+      ? getEffectiveCardTraitsDetails(card, instance).dynamicTraits
+      : []);
 
   // Size Dimension Classes for Portrait vs Landscape Cards (3.5:2.5 vs 2.5:3.5)
   const sizeClasses = isLandscape
@@ -244,6 +255,26 @@ export const CardView: React.FC<CardViewProps> = ({
             CANNOT PLAY
           </div>
         )}
+
+        {/* Dynamic Traits Pop-Art Badge Row */}
+        {activeDynamicTraits.length > 0 && (
+          <div
+            data-testid="dynamic-traits-row"
+            className="absolute top-1.5 left-1/2 -translate-x-1/2 z-20 flex flex-wrap justify-center items-center gap-1 pointer-events-none max-w-[95%]"
+          >
+            {activeDynamicTraits.map((trait, idx) => (
+              <span
+                key={idx}
+                data-testid={`dynamic-trait-badge-${trait.toLowerCase()}`}
+                className="bg-cyan-300 text-slate-950 font-comic text-[9px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-sm font-black uppercase tracking-wider flex items-center gap-1"
+              >
+                <span>✨</span>
+                <span>{trait}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* 1. Real Card Art Image */}
         {!showFallback && (
           <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
@@ -286,10 +317,21 @@ export const CardView: React.FC<CardViewProps> = ({
               {card.subname && (
                 <p className="text-[10px] font-bold text-comic-red italic">{card.subname}</p>
               )}
-              {(card.printedTraits || (card.traits && card.traits.length > 0)) && (
-                <p className="text-[9px] font-semibold text-slate-600 italic">
-                  {card.printedTraits || card.traits.join('. ')}
-                </p>
+              {(card.printedTraits ||
+                (card.traits && card.traits.length > 0) ||
+                activeDynamicTraits.length > 0) && (
+                <div className="text-[9px] font-semibold text-slate-600 italic flex items-center flex-wrap gap-1">
+                  <span>{card.printedTraits || (card.traits || []).join('. ')}</span>
+                  {activeDynamicTraits.map((trait, idx) => (
+                    <span
+                      key={idx}
+                      data-testid={`fallback-dynamic-trait-${trait.toLowerCase()}`}
+                      className="bg-cyan-300 text-slate-950 font-comic text-[8px] not-italic px-1.5 py-0.2 rounded-full border border-comic-black font-black uppercase tracking-wide"
+                    >
+                      +{trait}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
 

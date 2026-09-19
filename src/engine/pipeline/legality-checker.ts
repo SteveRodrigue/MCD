@@ -21,7 +21,7 @@ import {
   getEffectiveCardCost,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
-import { getEffectiveAllyLimit } from './stat-calculator';
+import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { locateCard, readCardResources } from '../queries/card-inspector';
 
@@ -1052,16 +1052,9 @@ export function evaluatePlayRequirements(
 
   // 3. Identity Traits Requirement (e.g. ['Avenger'], ['X-Men'], ['Mystic'])
   if (reqs.identityTraits && reqs.identityTraits.length > 0) {
-    const heroTraits = (player.hero.traits || []).map((t) => t.toLowerCase());
-    const alterEgoTraits = (player.alterEgo.traits || []).map((t) => t.toLowerCase());
-    const activeTraits = (player.activeFormCard.traits || []).map((t) => t.toLowerCase());
-
-    const hasMatchingTrait = reqs.identityTraits.some((reqTrait: string) => {
-      const lower = reqTrait.toLowerCase();
-      return (
-        activeTraits.includes(lower) || heroTraits.includes(lower) || alterEgoTraits.includes(lower)
-      );
-    });
+    const hasMatchingTrait = reqs.identityTraits.some((reqTrait: string) =>
+      hasPlayerTrait(player, reqTrait),
+    );
 
     if (!hasMatchingTrait) {
       return {

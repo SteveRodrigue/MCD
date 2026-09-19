@@ -21,6 +21,28 @@
 
 ---
 
+### `ADD_TRAIT`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4))
+- **Description:** Dynamically grants a trait (e.g. `Aerial`, `Avenger`, `Gamma`) to the target character (identity, ally, or enemy) as long as the source card remains in play. Typically declared on continuous abilities (`"timing": "CONSTANT"`) or attachments.
+- **Engine Resolution:** Evaluated dynamically via `getEffectivePlayerTraits`, `getEffectiveCardTraits`, and `hasPlayerTrait` in `src/engine/pipeline/stat-calculator.ts`. Dynamically granted traits satisfy card play requirements (`identityTraits` in [**11. Play Requirements**](./11_play_requirements.md)) and conditional ability triggers (`TARGET_TRAIT_MATCH`).
+- **UI Presentation:** Rendered with 1960s comic pop-art badge pills (`[✨ Aerial]`) at the top of cards during tabletop play and hover-zoom in `CardView.tsx`, as well as within inspection modals (`IdentityActionModal.tsx`, `AllyActionModal.tsx`).
+- **Parameters:**
+  - `trait`: `string` (Required) — Trait name to grant (e.g. `"Aerial"`).
+  - `target`: `TargetSelector` (Optional) — Target entity to grant the trait to (`'SELF'`, `'SELF_IDENTITY'`, `'ATTACHED_HOST'`). Defaults to `'SELF'`.
+
+```json
+{
+  "effect": "ADD_TRAIT",
+  "effectParams": {
+    "trait": "Aerial",
+    "target": "SELF"
+  }
+}
+```
+
+---
+
 ### `Toughness` (Keyword, not an effect primitive)
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (RR v1.8 p. 29)

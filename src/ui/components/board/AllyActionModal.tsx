@@ -2,7 +2,10 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Swords, Target, Zap, X, Shield, Skull } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, GameAction, AllyCard } from '../../../engine/models';
-import { getEffectiveAllyStats } from '../../../engine/pipeline/stat-calculator';
+import {
+  getEffectiveAllyStats,
+  getEffectiveCardTraitsDetails,
+} from '../../../engine/pipeline/stat-calculator';
 import { getValidAttackTargets } from './attack-target-utils';
 import { getValidThwartTargets } from './thwart-target-utils';
 import { canPayAbilityCost } from '../../../engine/pipeline/cost-engine';
@@ -47,6 +50,7 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
   const baseThw = (allyCard as any).thwart ?? 0;
   const atkBonus = allyStats.attack - baseAtk;
   const thwBonus = allyStats.thwart - baseThw;
+  const allyTraitsDetails = getEffectiveCardTraitsDetails(ally.card, ally);
 
   const currentDamage = ally.tokens?.damage || 0;
   const maxHealth = allyCard.health || 2;
@@ -148,6 +152,34 @@ export const AllyActionModal: React.FC<AllyActionModalProps> = ({
               )}
             </span>
           </div>
+        </div>
+
+        {/* Active Traits Strip */}
+        <div
+          data-testid="ally-active-traits-strip"
+          className="relative px-5 py-2 bg-amber-50 border-b-2 border-comic-black flex flex-wrap items-center gap-1.5 text-xs font-bold"
+        >
+          <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
+            Traits:
+          </span>
+          {allyTraitsDetails.printedTraits.map((trait, idx) => (
+            <span
+              key={`printed-${idx}`}
+              className="bg-white text-slate-800 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-xs font-bold"
+            >
+              {trait}
+            </span>
+          ))}
+          {allyTraitsDetails.dynamicTraits.map((trait, idx) => (
+            <span
+              key={`dynamic-${idx}`}
+              data-testid={`ally-dynamic-trait-${trait.toLowerCase()}`}
+              className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+            >
+              <span>✨</span>
+              <span>{trait}</span>
+            </span>
+          ))}
         </div>
 
         {/* 3. Action Choices */}

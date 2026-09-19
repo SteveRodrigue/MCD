@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-18T22:08:08.961Z`  
+> **Generated:** `2026-09-19T03:50:24.096Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---

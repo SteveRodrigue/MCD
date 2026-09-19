@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Rules Presentation): Facedown Encounter Card Display in Hero Threat Zone ([Issue #138](https://github.com/SteveRodrigue/MCD/issues/138))**
+  - **Facedown Encounter Cards Visual Indicator:**
+    - Created `FacedownEncounterCard.tsx` in `src/ui/components/cards/` featuring a comic pop-art styled card back (crimson/slate theme, bold black borders, halftone bendy dots, alert skull iconography, and "ENCOUNTER" header).
+    - Renders dynamic count badge `FACEDOWN ({count})` with visual card stacking for multiple dealt cards.
+    - Displays rules tooltip: `"Dealt facedown. Will be revealed and resolved during Step 5 of the Villain Phase."` per RR v1.8 p. 11, 18, 22.
+    - Integrated Dev Mode inspection modal (enabled via `devMode`) allowing developers to peek at dealt cards without state mutation.
+  - **Hero Zone Threat Area Integration:**
+    - Updated `HeroZone.tsx` to render `FacedownEncounterCard` directly to the left of engaged minions inside the `Encounter Threat Zone` whenever `player.dealtEncounterCards.length > 0`.
+    - Enhanced zone header to clearly display both engaged minions and pending dealt cards (`Threat Zone: {player.name} ({minions} Minions • {dealt} Dealt Cards)`).
+    - Preserved fallback secure perimeter styling when no minions are engaged.
+  - **Automated Tests:**
+    - Authored 10 comprehensive unit and integration tests in `tests/ui/facedown-encounter-cards-display.test.tsx` verifying component visibility, count updating, empty state handling, devMode peek modal inspection, and side-by-side minion arrangement in `HeroZone`.
+
+
 - **Changed (Developer Tooling): Local Dev Mode GameState Retention**
   - Updated the `problem-report-triage` workflow to retain full problem-report GameState snapshots locally under `logs/gamestates/` and reference only their local paths in GitHub issues.
   - Removed GitHub GameState JSON uploads from the local triage worker; it now atomically writes and verifies a collision-safe snapshot before pruning a filed report.

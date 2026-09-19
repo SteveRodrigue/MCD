@@ -26,6 +26,8 @@ import {
 import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
+import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
+import { useGameSettings } from '../../context/useGameSettings';
 import { IdentityActionModal } from './IdentityActionModal';
 import { AttackTargetModal } from './AttackTargetModal';
 import { AllyActionModal } from './AllyActionModal';
@@ -50,6 +52,7 @@ interface HeroZoneProps {
   seatNumber?: number;
   isFocused?: boolean;
   isMultiHero?: boolean;
+  devMode?: boolean;
   onFocus?: () => void;
   onDispatchAction?: (action: GameAction) => void;
   onInitiateAction?: (item: LegalActionItem) => void;
@@ -61,12 +64,23 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   seatNumber,
   isFocused = true,
   isMultiHero = false,
+  devMode: devModeProp,
   onFocus,
   onDispatchAction,
   onInitiateAction,
 }) => {
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const palette = useMemo(() => getHeroColorPalette(player), [player]);
+
+  let isDevMode = devModeProp ?? false;
+  try {
+    const settings = useGameSettings();
+    if (devModeProp === undefined && settings) {
+      isDevMode = settings.devMode;
+    }
+  } catch {
+    // Rendered outside GameSettingsProvider
+  }
 
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState
@@ -83,6 +97,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
   const healthPercent = Math.max(0, Math.min(100, (player.health / effectiveMaxHealth) * 100));
   const engagedMinions = player.engagedMinions || [];
+  const dealtCards = player.dealtEncounterCards || [];
+  const hasDealtCards = dealtCards.length > 0;
 
   const effectiveStats = getEffectiveHeroStats(
     gameState || ({ sideSchemes: [], players: [] } as any),
@@ -310,13 +326,15 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         )}
       </div>
 
-      {/* 1. Engaged Minions Row (Always Visible for this Hero Seat!) */}
+      {/* 1. Engaged Minions & Dealt Encounter Cards Row (Always Visible for this Hero Seat!) */}
       <div className="bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm">
         <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
           <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
             <span className="font-comic text-xs text-comic-red uppercase font-bold">
-              Minions Engaged with {player.name} ({engagedMinions.length})
+              {hasDealtCards
+                ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards)`
+                : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
             </span>
           </div>
           <span className="text-[10px] font-bold text-slate-500 uppercase">
@@ -324,48 +342,63 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </span>
         </div>
 
-        {engagedMinions.length > 0 ? (
-          <div className="flex flex-wrap gap-4 items-center pt-1">
-            {engagedMinions.map((minion) => {
-              const isGuard = hasKeyword(minion.card, Keyword.GUARD);
-              const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
+        <div className="flex flex-wrap items-center gap-4 pt-1">
+          {hasDealtCards && (
+            <FacedownEncounterCard cards={dealtCards} heroName={player.name} devMode={isDevMode} />
+          )}
 
-              return (
-                <div key={minion.instanceId} className="flex flex-col items-center gap-1">
-                  <CardView card={minion.card} instance={minion} size="sm" enableHoverZoom={true} />
-                  <div className="flex items-center gap-1 flex-wrap justify-center">
-                    <span
-                      className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
-                      title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
-                    >
-                      SCH {(minion.card as any).scheme ?? 0}
-                    </span>
-                    <span
-                      className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
-                      title={`Attack: ${(minion.card as any).attack ?? 0}`}
-                    >
-                      ATK {(minion.card as any).attack ?? 0}
-                    </span>
-                    {isGuard && (
-                      <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
-                        GUARD
+          {engagedMinions.length > 0 ? (
+            <div className="flex flex-wrap gap-4 items-center">
+              {engagedMinions.map((minion) => {
+                const isGuard = hasKeyword(minion.card, Keyword.GUARD);
+                const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
+
+                return (
+                  <div key={minion.instanceId} className="flex flex-col items-center gap-1">
+                    <CardView
+                      card={minion.card}
+                      instance={minion}
+                      size="sm"
+                      enableHoverZoom={true}
+                    />
+                    <div className="flex items-center gap-1 flex-wrap justify-center">
+                      <span
+                        className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                        title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
+                      >
+                        SCH {(minion.card as any).scheme ?? 0}
                       </span>
-                    )}
-                    {isTough && (
-                      <span className="bg-sky-400 text-slate-950 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
-                        TOUGH
+                      <span
+                        className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                        title={`Attack: ${(minion.card as any).attack ?? 0}`}
+                      >
+                        ATK {(minion.card as any).attack ?? 0}
                       </span>
-                    )}
+                      {isGuard && (
+                        <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                          GUARD
+                        </span>
+                      )}
+                      {isTough && (
+                        <span className="bg-sky-400 text-slate-950 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                          TOUGH
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2">
-            <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
-          </div>
-        )}
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              className={`py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2 ${
+                hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
+              }`}
+            >
+              <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}

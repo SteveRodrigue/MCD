@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { getHeroColorPalette, getContrastTextColor } from '../../utils/hero-theme';
 import {
   Shield,
   Heart,
@@ -65,6 +66,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   onInitiateAction,
 }) => {
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
+  const palette = useMemo(() => getHeroColorPalette(player), [player]);
 
   const isHero = player.currentForm === 'hero';
   const isPlayerTurn = gameState
@@ -260,25 +262,42 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
   return (
     <section
-      className={`comic-panel p-4 bg-white/95 relative shadow-comic space-y-4 transition-all ${
+      onClick={!isFocused && onFocus ? onFocus : undefined}
+      className={`comic-panel p-4 relative shadow-comic space-y-4 transition-all ${
         !isFocused
-          ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300'
-          : 'ring-2 ring-comic-blue shadow-comic-lg'
+          ? 'ring-1 ring-slate-300/80 bg-slate-100/90 cursor-pointer'
+          : 'bg-white/95 ring-2 ring-comic-blue shadow-comic-lg'
       }`}
+      style={isFocused ? { borderColor: palette.primary } : undefined}
     >
       {/* Zone Title Ribbon */}
       <div className="absolute -top-3 left-4 flex items-center gap-2">
         <div
-          className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
-            isFocused ? 'bg-comic-blue' : 'bg-slate-700'
+          className={`border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1.5 ${
+            isFocused ? '' : 'bg-slate-700 text-white'
           }`}
+          style={{
+            backgroundColor: isFocused ? palette.primary : undefined,
+            color: isFocused ? palette.contrastText.primary : undefined,
+          }}
         >
           <Shield className="w-3.5 h-3.5" />
           <span>
-            {seatNumber ? `SEAT ${seatNumber}: ` : ''}
+            {seatNumber && isMultiHero ? `SEAT ${seatNumber}: ` : ''}
             {player.name}
-            {isMultiHero && (isFocused ? ' • (ACTIVE HERO)' : '')}
+            {!isFocused && ' • (WAITING)'}
           </span>
+          {isFocused && (
+            <span
+              className="text-[10px] px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 shadow-comic-xs"
+              style={{
+                backgroundColor: palette.accent || palette.secondary,
+                color: getContrastTextColor(palette.accent || palette.secondary),
+              }}
+            >
+              ★ ACTIVE HERO
+            </span>
+          )}
         </div>
 
         {!isFocused && onFocus && (
@@ -356,7 +375,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-1">
-              <Shield className="w-4 h-4 text-comic-blue shrink-0" />
+              <Shield className="w-4 h-4 shrink-0" style={{ color: palette.primary }} />
               <span className="font-comic text-sm text-comic-black truncate max-w-[110px]">
                 {player.activeFormCard.name}
               </span>
@@ -378,7 +397,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 Health:
               </span>
               <div className="flex items-center gap-1">
-                <span className="text-comic-blue font-comic text-xs">
+                <span className="font-comic text-xs" style={{ color: palette.primary }}>
                   {player.health} / {effectiveMaxHealth} HP
                 </span>
                 {hpBonus > 0 && (
@@ -390,8 +409,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
             </div>
             <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-comic-black shadow-comic-sm">
               <div
-                className="bg-comic-blue h-full transition-all duration-300"
-                style={{ width: `${healthPercent}%` }}
+                className="h-full transition-all duration-300"
+                style={{ width: `${healthPercent}%`, backgroundColor: palette.primary }}
               />
             </div>
           </div>

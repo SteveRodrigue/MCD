@@ -149,8 +149,8 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
 
     expect(seat0.className).toContain('opacity-100');
     expect(seat0.className).toContain('z-10');
-    expect(seat1.className).toContain('opacity-90');
-    expect(seat2.className).toContain('opacity-90');
+    expect(seat1.className).toContain('opacity-60');
+    expect(seat2.className).toContain('opacity-60');
 
     // Simulate active player transitioning to Player 2 (index 1)
     const updatedState1 = {
@@ -169,8 +169,8 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     // Active seat auto-aligned and focused for Player 2
     expect(seat1.className).toContain('opacity-100');
     expect(seat1.className).toContain('z-10');
-    expect(seat0.className).toContain('opacity-90');
-    expect(seat2.className).toContain('opacity-90');
+    expect(seat0.className).toContain('opacity-60');
+    expect(seat2.className).toContain('opacity-60');
     expect(scrollToSpy).toHaveBeenCalled();
 
     scrollToSpy.mockClear();
@@ -192,8 +192,8 @@ describe('GameBoard Multiplayer Centered Alignment & Active-Player Focus (Issue 
     // Active seat auto-aligned and focused for Player 3
     expect(seat2.className).toContain('opacity-100');
     expect(seat2.className).toContain('z-10');
-    expect(seat0.className).toContain('opacity-90');
-    expect(seat1.className).toContain('opacity-90');
+    expect(seat0.className).toContain('opacity-60');
+    expect(seat1.className).toContain('opacity-60');
     expect(scrollToSpy).toHaveBeenCalled();
   });
 });

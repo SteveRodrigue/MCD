@@ -190,8 +190,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                       ref={(el) => {
                         heroStationRefs.current[idx] = el;
                       }}
-                      className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 transition-all duration-300 ${
-                        isFocused ? 'opacity-100 z-10' : 'opacity-90 hover:opacity-100 z-0'
+                      onClick={!isFocused ? () => handleSelectSeat(idx) : undefined}
+                      className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 ${
+                        isFocused
+                          ? 'opacity-100 z-10 scale-[1.00] transition-all duration-300'
+                          : 'opacity-60 grayscale-[35%] hover:opacity-95 hover:grayscale-0 z-0 transition-all duration-300 cursor-pointer'
                       }`}
                     >
                       {/* Hero Play Area */}

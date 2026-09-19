@@ -109,6 +109,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       executeEffect(state, ability, {
         playerId: 'p1',
         targetInstanceId: minionInst.instanceId,
+        resourcesSpent: ['physical'],
       });
 
       // Minion is defeated

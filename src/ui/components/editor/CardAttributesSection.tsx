@@ -397,7 +397,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
 
         {/* Structured Keywords Matrix (ADR-0054) */}
         <div className="sm:col-span-2 pt-2 border-t border-gray-200">
-          <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1.5 flex items-center gap-1">
+          <label className="text-[10px] font-bold uppercase text-gray-700 mb-1.5 flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5 text-comic-yellow fill-comic-yellow" />
             <span>Structured Keywords Matrix (ADR-0054)</span>
           </label>

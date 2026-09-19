@@ -18,6 +18,8 @@ docs/
 ├── specifications/               # Project-authored developer specifications & schemas
 │   ├── card_mechanics_breakdown.md # Step-by-step card resolution breakdowns
 │   └── supplemental/             # 10-part supplemental schema specification suite
+├── visual-guides/                 # Diagram-first companion atlas (Mermaid flowcharts/sequences)
+│   └── README.md                  # Index: engine loop, ability lifecycle, triggers, combat, authoring guide
 ├── algorithmic_rules_reference.md # Mathematical & state-machine specification of RR v1.8
 ├── coding_guidelines.md          # Core coding guidelines & standards
 ├── installation_guide.md         # Comprehensive environment setup & installation guide

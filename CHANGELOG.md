@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): In-Hand Trigger Event Cost Enforcement & Decision-to-Payment Modal Handshake ([Issue #125](https://github.com/SteveRodrigue/MCD/issues/125))**
+  - **Engine Models & Action Types:**
+    - Extended `ResolveDecisionPromptAction` in `src/engine/models/actions.ts` with optional `paymentCardInstanceIds?: string[]` and `generatorInstanceIds?: string[]`.
+  - **Supplemental Card Data:**
+    - Updated _Enhanced Spider-Sense_ (`01004`), _Get Behind Me!_ (`01078`), _One-Two Punch_ (`01024`), and _Counter-Punch_ (`01077`) in `src/data/supplemental/pack/core.json` to explicitly declare `resourceCost: 1` on their reactive abilities.
+  - **Rules Invariants (RR v1.8 p. 11, 12, 15, 16):**
+    - **Self-Payment Exclusion:** Enforced that a card in hand cannot generate resources to pay for its own cost in `canPayAbilityCost` and `executeAbilityCost` (filtering out `sourceCardInst.instanceId`).
+    - **Prompt Suppression When Unaffordable:** When a player cannot pay the resource cost (or lacks matching required resource types like Energy or Mental), `canPayAbilityCost` returns `allowed: false` and the prompt is strictly suppressed during trigger scanning.
+    - **In-Hand Event Cost Derivation:** For in-hand event cards whose abilities omit an explicit resource cost, the engine automatically derives required resources from `card.cost`.
+  - **Engine Prompts & Pipeline:**
+    - Updated `trigger-dispatcher.ts` to attach `requiresPayment`, `costCardInstanceId`, and `resourceCost` metadata to prompt options, appending cost indicators to labels.
+    - Updated `resolveDecisionPrompt` in `prompt-queue.ts` and `action-dispatcher.ts` to forward `paymentOptions` to `executeAbilityCost`.
+  - **UI & Modal Handshake:**
+    - Updated `GameBoard.tsx` so selecting a decision prompt option requiring payment smoothly opens `CardPaymentModal` with `cardToPlay` and `abilityCost`.
+    - Upon payment confirmation, dispatches `RESOLVE_DECISION_PROMPT` containing `paymentCardInstanceIds` and `generatorInstanceIds`.
+    - In `CardPaymentModal.tsx`, guaranteed that `cardToPlay` is excluded from selectable hand payment cards.
+    - In `DecisionPromptModal.tsx`, rendered comic cost badges (`⚡ COST: ${amount} RESOURCE(S)`).
+  - **Automated Tests:**
+    - Authored unit tests in `tests/engine/cancel-when-revealed.test.ts` verifying self-payment exclusion, type mismatch prompt suppression, resolution with payment cards, and resolution with generators.
+    - Authored UI test in `tests/ui/DecisionPromptModal.test.tsx` verifying cost badge rendering.
+
 - **Fix (Engine & UI): Ability Cost Generator Payment, Printed Resource Requirement & Energy Channel Scaling ([Issue #96](https://github.com/SteveRodrigue/MCD/issues/96))**
   - **Engine Models & Supplemental Schema:**
     - Extended `AbilityCost` in `src/engine/models/abilities.ts` and `AbilityCostSchema` in `src/data/supplemental/schema.ts` (regenerating `src/data/supplemental/schema.json`) with `requirePrinted?: boolean`.

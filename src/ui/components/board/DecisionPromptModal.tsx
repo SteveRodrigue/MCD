@@ -288,6 +288,27 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                 option.id.includes('none') || option.id.includes('decline') || option.id === 'pass';
               const isDisabled = Boolean(option.disabled);
 
+              const optParams = option.params as Record<string, any> | undefined;
+              const requiresPayment =
+                !isDeclineOption &&
+                Boolean(
+                  (option as any).requiresPayment ||
+                  optParams?.requiresPayment ||
+                  (optParams?.resourceCost && optParams.resourceCost.amount > 0) ||
+                  (optParams?.ability?.cost?.resourceCost !== undefined &&
+                    optParams?.ability?.cost?.resourceCost !== 0),
+                );
+
+              const costAmount =
+                optParams?.resourceCost?.amount ??
+                (option as any).resourceCost?.amount ??
+                (typeof optParams?.ability?.cost?.resourceCost === 'number'
+                  ? optParams.ability.cost.resourceCost
+                  : typeof optParams?.ability?.cost?.resourceCost === 'object' &&
+                      optParams?.ability?.cost?.resourceCost !== null
+                    ? Object.values(optParams.ability.cost.resourceCost)[0]
+                    : 1);
+
               return (
                 <button
                   key={option.id}
@@ -306,7 +327,7 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2">
+                    <span className="font-comic font-black text-sm sm:text-base uppercase tracking-wide flex items-center gap-2 flex-wrap">
                       <span
                         className={`w-6 h-6 rounded-full border-2 border-comic-black flex items-center justify-center text-xs font-black ${
                           isDisabled
@@ -319,6 +340,11 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                         {index + 1}
                       </span>
                       <span>{option.label}</span>
+                      {requiresPayment && costAmount !== undefined && costAmount > 0 && (
+                        <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
+                          ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}
+                        </span>
+                      )}
                     </span>
                     {isDisabled ? (
                       <XCircle className="w-5 h-5 text-slate-400" />

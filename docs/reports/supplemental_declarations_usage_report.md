@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-19T14:25:49.562Z`  
+> **Generated:** `2026-09-19T15:12:05.545Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -268,17 +268,17 @@ These primitives are declared in schema types or specifications but have **0 act
 
 ### Cost Primitives:
 
-| Cost Key        | Occurrences | Cards                                                                                                                                                                                     |
-| :-------------- | :---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exhaustSelf`   | **20**      | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) _(+15 more)_ |
-| `discardSelf`   | **12**      | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) _(+7 more)_             |
-| `resourceCost`  | **7**       | `01018` Energy Channel (upgrade), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade), `01068` Vision (ally), `01075` Black Widow (ally) _(+2 more)_           |
-| `spendCounters` | **5**       | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support)                                        |
-| `resources`     | **2**       | `01010a` Captain Marvel (hero), `01039` Rocket Boots (upgrade)                                                                                                                            |
-| `discardCard`   | **2**       | `01015` Alpha Flight Station (support), `01023` Legal Practice (event)                                                                                                                    |
-| `heal`          | **1**       | `01010a` Captain Marvel (hero)                                                                                                                                                            |
-| `damageHero`    | **1**       | `01027` Focused Rage (upgrade)                                                                                                                                                            |
-| `damageSelf`    | **1**       | `01030` War Machine (ally)                                                                                                                                                                |
+| Cost Key        | Occurrences | Cards                                                                                                                                                                                              |
+| :-------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exhaustSelf`   | **20**      | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) _(+15 more)_          |
+| `discardSelf`   | **12**      | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) _(+7 more)_                      |
+| `resourceCost`  | **11**      | `01004` Enhanced Spider-Sense (event), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade) _(+6 more)_ |
+| `spendCounters` | **5**       | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support)                                                 |
+| `resources`     | **2**       | `01010a` Captain Marvel (hero), `01039` Rocket Boots (upgrade)                                                                                                                                     |
+| `discardCard`   | **2**       | `01015` Alpha Flight Station (support), `01023` Legal Practice (event)                                                                                                                             |
+| `heal`          | **1**       | `01010a` Captain Marvel (hero)                                                                                                                                                                     |
+| `damageHero`    | **1**       | `01027` Focused Rage (upgrade)                                                                                                                                                                     |
+| `damageSelf`    | **1**       | `01030` War Machine (ally)                                                                                                                                                                         |
 
 ### Target Selectors:
 

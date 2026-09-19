@@ -7,7 +7,7 @@ import {
   CardAbility,
 } from '../models';
 import { executeEffect } from '../effects';
-import { executeAbilityCost } from './cost-engine';
+import { executeAbilityCost, AbilityPaymentOptions } from './cost-engine';
 import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
 
 /**
@@ -190,6 +190,7 @@ export function resolveDecisionPrompt(
   state: GameState,
   playerId: string,
   selectedOptionId: string,
+  paymentOptions?: AbilityPaymentOptions,
 ): {
   state: GameState;
   result: ActionResult;
@@ -285,7 +286,7 @@ export function resolveDecisionPrompt(
       : undefined;
 
     if (optAbility.cost && player) {
-      executeAbilityCost(nextState, player, optAbility, sourceCardInst);
+      executeAbilityCost(nextState, player, optAbility, sourceCardInst, paymentOptions);
     }
 
     if (player) {

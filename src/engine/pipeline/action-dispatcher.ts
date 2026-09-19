@@ -2883,7 +2883,19 @@ export function dispatchAction(
         }
       }
 
-      const promptRes = resolveDecisionPrompt(nextState, action.playerId, action.selectedOptionId);
+      const paymentOptions =
+        action.paymentCardInstanceIds || action.generatorInstanceIds
+          ? {
+              paymentCardInstanceIds: action.paymentCardInstanceIds,
+              generatorInstanceIds: action.generatorInstanceIds,
+            }
+          : undefined;
+      const promptRes = resolveDecisionPrompt(
+        nextState,
+        action.playerId,
+        action.selectedOptionId,
+        paymentOptions,
+      );
       let resultingState = promptRes.state;
 
       // If resolving an initiation trigger prompt for an active attack, continue attack

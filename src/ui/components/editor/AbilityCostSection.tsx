@@ -1,5 +1,7 @@
 import React from 'react';
-import { Shield, Coins, AlertCircle } from 'lucide-react';
+import { Shield, Coins, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import { TargetSelectorSchema } from '../../../data/supplemental/schema';
+import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 
 export interface AbilityCostSectionProps {
   cost?: any;
@@ -16,6 +18,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
   hasErrors = false,
   errors = [],
 }) => {
+  const [isDiscardFilterExpanded, setIsDiscardFilterExpanded] = React.useState(false);
   const currentCost = cost || {};
 
   const handleCostUpdate = (nextCostFields: Record<string, any>) => {
@@ -27,6 +30,54 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
       }
     }
     onChange(Object.keys(updated).length > 0 ? updated : undefined);
+  };
+
+  const getResourceCount = (res: 'physical' | 'energy' | 'mental' | 'wild') => {
+    const arrayCount = (currentCost.resources || []).filter((r: string) => r === res).length;
+    const mapCount =
+      typeof currentCost.resourceCost === 'object' && currentCost.resourceCost !== null
+        ? currentCost.resourceCost[res] || 0
+        : 0;
+    return arrayCount + mapCount;
+  };
+
+  const totalResourceCount =
+    (currentCost.resources?.length || 0) +
+    (typeof currentCost.resourceCost === 'object' && currentCost.resourceCost !== null
+      ? Object.values(currentCost.resourceCost as Record<string, number>).reduce(
+          (sum: number, c) => sum + (typeof c === 'number' ? c : 0),
+          0,
+        )
+      : typeof currentCost.resourceCost === 'number'
+        ? currentCost.resourceCost
+        : 0);
+
+  const hasAnyResources =
+    (currentCost.resources && currentCost.resources.length > 0) ||
+    currentCost.resourceCost !== undefined;
+
+  const handleRemoveResource = (res: 'physical' | 'energy' | 'mental' | 'wild') => {
+    const cur = [...(currentCost.resources || [])];
+    const idx = cur.lastIndexOf(res);
+    if (idx >= 0) {
+      cur.splice(idx, 1);
+      handleCostUpdate({
+        resources: cur.length > 0 ? cur : undefined,
+      });
+    } else if (
+      typeof currentCost.resourceCost === 'object' &&
+      currentCost.resourceCost !== null &&
+      currentCost.resourceCost[res]
+    ) {
+      const nextMap = { ...currentCost.resourceCost };
+      nextMap[res] -= 1;
+      if (nextMap[res] <= 0) {
+        delete nextMap[res];
+      }
+      handleCostUpdate({
+        resourceCost: Object.keys(nextMap).length > 0 ? nextMap : undefined,
+      });
+    }
   };
 
   return (
@@ -89,6 +140,27 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
         </label>
 
         <div className="flex items-center gap-1">
+          <span className="text-gray-600 font-bold">Exhaust Card:</span>
+          <select
+            data-testid={`cost-exhaust-card-${abilityIndex}`}
+            value={currentCost.exhaustCard || ''}
+            onChange={(e) => {
+              handleCostUpdate({
+                exhaustCard: e.target.value || undefined,
+              });
+            }}
+            className="bg-white border border-black px-1 py-0.5 text-xs rounded font-bold"
+          >
+            <option value="">(None)</option>
+            {TargetSelectorSchema.options.map((tgt) => (
+              <option key={tgt} value={tgt}>
+                {tgt}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-1">
           <span className="text-gray-600 font-bold">Self DMG:</span>
           <input
             type="number"
@@ -132,14 +204,14 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
         <div className="flex items-center justify-between mb-1">
           <span className="text-[9px] uppercase font-bold text-gray-600 flex items-center gap-1">
             <Coins className="w-3 h-3 text-amber-600" />
-            <span>Resource Costs ({currentCost.resources?.length || 0})</span>
+            <span>Resource Costs ({totalResourceCount})</span>
           </span>
-          {currentCost.resources && currentCost.resources.length > 0 && (
+          {hasAnyResources && (
             <button
               type="button"
               data-testid={`cost-clear-resources-${abilityIndex}`}
               onClick={() => {
-                handleCostUpdate({ resources: undefined });
+                handleCostUpdate({ resources: undefined, resourceCost: undefined });
               }}
               className="text-[9px] text-comic-red font-bold hover:underline cursor-pointer"
             >
@@ -149,7 +221,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {(['physical', 'energy', 'mental', 'wild'] as const).map((res) => {
-            const count = (currentCost.resources || []).filter((r: string) => r === res).length;
+            const count = getResourceCount(res);
             return (
               <div
                 key={res}
@@ -178,14 +250,7 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
                   <button
                     type="button"
                     data-testid={`cost-res-minus-${res}-${abilityIndex}`}
-                    onClick={() => {
-                      const cur = [...(currentCost.resources || [])];
-                      const idx = cur.lastIndexOf(res);
-                      if (idx >= 0) cur.splice(idx, 1);
-                      handleCostUpdate({
-                        resources: cur.length > 0 ? cur : undefined,
-                      });
-                    }}
+                    onClick={() => handleRemoveResource(res)}
                     className="w-4 h-4 bg-gray-200 hover:bg-gray-300 font-bold flex items-center justify-center rounded text-xs border border-gray-400 cursor-pointer"
                     title={`Remove ${res} resource`}
                   >
@@ -195,6 +260,23 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
               </div>
             );
           })}
+          <div className="flex items-center gap-1.5 bg-white border border-black px-2 py-0.5 rounded text-xs shadow-comic-xs">
+            <span className="font-bold text-[11px] text-gray-700">Generic:</span>
+            <input
+              type="number"
+              min="0"
+              data-testid={`cost-resource-cost-generic-${abilityIndex}`}
+              value={typeof currentCost.resourceCost === 'number' ? currentCost.resourceCost : ''}
+              onChange={(e) => {
+                const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                handleCostUpdate({
+                  resourceCost: isNaN(val as number) || val === undefined ? undefined : val,
+                });
+              }}
+              placeholder="0"
+              className="w-12 bg-white border border-black px-1 py-0.5 text-center text-xs rounded font-bold"
+            />
+          </div>
         </div>
         <div className="mt-2 pt-1 border-t border-gray-100 flex items-center gap-2">
           <label className="flex items-center gap-1.5 cursor-pointer text-xs">
@@ -327,66 +409,133 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             </button>
           </div>
           {currentCost.discardCard && (
-            <div className="grid grid-cols-3 gap-1.5">
-              <div>
-                <label className="block text-[8px] uppercase font-bold text-gray-500">Count</label>
-                <input
-                  type="number"
-                  min="1"
-                  data-testid={`cost-discard-card-count-${abilityIndex}`}
-                  value={currentCost.discardCard.count ?? 1}
-                  onChange={(e) => {
-                    const c = parseInt(e.target.value, 10);
-                    handleCostUpdate({
-                      discardCard: {
-                        ...currentCost.discardCard,
-                        count: isNaN(c) ? 1 : c,
-                      },
-                    });
-                  }}
-                  className="w-full bg-white border border-black p-1 text-xs rounded text-center font-bold"
-                />
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <div>
+                  <label className="block text-[8px] uppercase font-bold text-gray-500">
+                    Count
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    data-testid={`cost-discard-card-count-${abilityIndex}`}
+                    value={currentCost.discardCard.count ?? 1}
+                    onChange={(e) => {
+                      const c = parseInt(e.target.value, 10);
+                      handleCostUpdate({
+                        discardCard: {
+                          ...currentCost.discardCard,
+                          count: isNaN(c) ? 1 : c,
+                        },
+                      });
+                    }}
+                    className="w-full bg-white border border-black p-1 text-xs rounded text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[8px] uppercase font-bold text-gray-500">
+                    Max Count
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    data-testid={`cost-discard-card-max-count-${abilityIndex}`}
+                    value={currentCost.discardCard.maxCount ?? ''}
+                    onChange={(e) => {
+                      const mc = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                      handleCostUpdate({
+                        discardCard: {
+                          ...currentCost.discardCard,
+                          maxCount: isNaN(mc as number) ? undefined : mc,
+                        },
+                      });
+                    }}
+                    placeholder="Optional"
+                    className="w-full bg-white border border-black p-1 text-xs rounded text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[8px] uppercase font-bold text-gray-500">
+                    From Zone
+                  </label>
+                  <select
+                    data-testid={`cost-discard-card-from-${abilityIndex}`}
+                    value={currentCost.discardCard.from || 'HAND'}
+                    onChange={(e) => {
+                      handleCostUpdate({
+                        discardCard: {
+                          ...currentCost.discardCard,
+                          from: e.target.value as 'HAND' | 'DECK' | 'PLAY',
+                        },
+                      });
+                    }}
+                    className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                  >
+                    <option value="HAND">HAND</option>
+                    <option value="DECK">DECK</option>
+                    <option value="PLAY">PLAY</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[8px] uppercase font-bold text-gray-500">Mode</label>
+                  <select
+                    data-testid={`cost-discard-card-mode-${abilityIndex}`}
+                    value={currentCost.discardCard.mode || 'CHOSEN'}
+                    onChange={(e) => {
+                      handleCostUpdate({
+                        discardCard: {
+                          ...currentCost.discardCard,
+                          mode: e.target.value as 'CHOSEN' | 'RANDOM',
+                        },
+                      });
+                    }}
+                    className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                  >
+                    <option value="CHOSEN">CHOSEN</option>
+                    <option value="RANDOM">RANDOM</option>
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-[8px] uppercase font-bold text-gray-500">
-                  From Zone
-                </label>
-                <select
-                  data-testid={`cost-discard-card-from-${abilityIndex}`}
-                  value={currentCost.discardCard.from || 'HAND'}
-                  onChange={(e) => {
-                    handleCostUpdate({
-                      discardCard: {
-                        ...currentCost.discardCard,
-                        from: e.target.value as 'HAND' | 'DECK' | 'PLAY',
-                      },
-                    });
-                  }}
-                  className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+
+              {/* UniversalCardFilterBuilder Sub-form for discardCard.filter */}
+              <div
+                data-testid={`cost-discard-card-filter-accordion-${abilityIndex}`}
+                className="rounded border border-gray-300 bg-gray-50 p-1.5 space-y-1"
+              >
+                <div
+                  onClick={() => setIsDiscardFilterExpanded(!isDiscardFilterExpanded)}
+                  data-testid={`cost-discard-card-filter-toggle-${abilityIndex}`}
+                  className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
                 >
-                  <option value="HAND">HAND</option>
-                  <option value="DECK">DECK</option>
-                  <option value="PLAY">PLAY</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[8px] uppercase font-bold text-gray-500">Mode</label>
-                <select
-                  data-testid={`cost-discard-card-mode-${abilityIndex}`}
-                  value={currentCost.discardCard.mode || 'CHOSEN'}
-                  onChange={(e) => {
-                    handleCostUpdate({
-                      discardCard: {
-                        ...currentCost.discardCard,
-                        mode: e.target.value as 'CHOSEN' | 'RANDOM',
-                      },
-                    });
-                  }}
-                  className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-                >
-                  <option value="CHOSEN">CHOSEN</option>
-                  <option value="RANDOM">RANDOM</option>
-                </select>
+                  <span className="text-[9px] font-bold uppercase text-gray-700 flex items-center gap-1">
+                    {isDiscardFilterExpanded ? (
+                      <ChevronDown className="w-3 h-3 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="w-3 h-3 text-gray-600" />
+                    )}
+                    <span>Discard Card Filter</span>
+                  </span>
+                  <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[8px] font-bold text-black">
+                    {currentCost.discardCard.filter ? 'Configured' : 'None'}
+                  </span>
+                </div>
+                {isDiscardFilterExpanded && (
+                  <div className="pt-1 border-t border-gray-200">
+                    <UniversalCardFilterBuilder
+                      label="Discard Filter Criteria"
+                      filter={currentCost.discardCard.filter}
+                      onChange={(newFilter) => {
+                        handleCostUpdate({
+                          discardCard: {
+                            ...currentCost.discardCard,
+                            filter: newFilter || undefined,
+                          },
+                        });
+                      }}
+                      isSubBranch={true}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

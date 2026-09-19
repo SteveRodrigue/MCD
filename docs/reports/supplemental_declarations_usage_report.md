@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-19T16:04:05.345Z`  
+> **Generated:** `2026-09-19T20:04:24.934Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -270,7 +270,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- |
 | `exhaustSelf` | **20** | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) *(+15 more)* |
 | `discardSelf` | **12** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+7 more)* |
-| `resourceCost` | **11** | `01004` Enhanced Spider-Sense (event), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event), `01026` Superhuman Law Division (support), `01038` Powered Gauntlets (upgrade) *(+6 more)* |
+| `resourceCost` | **10** | `01004` Enhanced Spider-Sense (event), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event), `01026` Superhuman Law Division (support), `01068` Vision (ally) *(+5 more)* |
 | `spendCounters` | **5** | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
 | `resources` | **2** | `01010a` Captain Marvel (hero), `01039` Rocket Boots (upgrade) |
 | `discardCard` | **2** | `01015` Alpha Flight Station (support), `01023` Legal Practice (event) |

@@ -73,3 +73,40 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'VILLAIN_PHASE_ENDED'`    | Villain phase completes (after Step 5 reveals).                                                                                                        | `villain-phase.ts`                        |
 | `'PHASE_START'`            | A new game phase begins.                                                                                                                               | `pipeline.ts`                             |
 | `'DEFEATED'`               | Side/Player Side Scheme reduced to 0 threat - resolves 'When Defeated' rewards declared on the scheme card (e.g. _Highway Robbery_ `01166`, ADR-0034). | `action-dispatcher.ts` (`BASIC_THWART`)   |
+
+---
+
+## 3. Event Trigger Filters (`TriggerFilter`)
+
+When an ability defines `triggerFilter`, the trigger matcher (`matchesTriggerFilter` in `src/engine/triggers/trigger-dispatcher.ts`) evaluates the triggering event context against these declarative criteria before allowing the ability to trigger or queue prompts.
+
+```json
+"triggerFilter": {
+  "attackerKind": "VILLAIN",
+  "targetPlayerScope": "SELF"
+}
+```
+
+### Active Field Specifications
+
+| Field                | Type                                                    | Description                                                                                                    | Evaluated In Engine? |
+| :------------------- | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------- | :------------------- |
+| `attackerKind`       | `'VILLAIN' \| 'MINION' \| 'ANY_ENEMY'`                  | Filters by enemy category initiating the attack or activation (e.g. Spider-Sense `01001a` triggers on villain). | ✅ Yes               |
+| `attackerCardFilter` | `UniversalCardFilter`                                   | Evaluates criteria matching the attacker card instance.                                                       | ✅ Yes               |
+| `sourceCardCode`     | `string`                                                | Scopes the trigger to a specific printed card code (e.g. Hulk `01050`).                                        | ✅ Yes               |
+| `sourceInstanceId`   | `string`                                                | Scopes the trigger to a specific runtime card instance identity (ADR-0050).                                    | ✅ Yes               |
+| `targetPlayerScope`  | `'SELF' \| 'OTHER' \| 'ANY'`                            | Constrains whether the attacked/affected player is the card controller (`SELF`), another player, or any.       | ✅ Yes               |
+| `targetForm`         | `'HERO' \| 'ALTER_EGO'`                                 | Restricts trigger resolution based on the target identity's form.                                              | ✅ Yes               |
+| `targetType`         | `'VILLAIN' \| 'MINION' \| 'SCHEME' \| 'CHARACTER'`      | Matches the entity classification being targeted or affected.                                                 | ✅ Yes               |
+| `isEngaged`          | `boolean`                                               | Matches whether the target/source enemy is engaged with the triggering player.                                 | ✅ Yes               |
+
+### Purged Speculative Orphan Fields (ADR-0069)
+
+Per [ADR-0069](../../decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md), five speculative fields were discovered to have 0 engine evaluation logic and 0 occurrences in supplemental data packs:
+- `damageSourceType`
+- `damageTargetType`
+- `defeatEntityType`
+- `defeatByAttack`
+- `formChangeDirection`
+
+These 5 fields have been **permanently purged** from `TriggerFilterSchema` and removed from the Card Editor UI. Because `TriggerFilterSchema` enforces `.strict()`, any attempt to declare these properties in supplemental data packs will be rejected at compile and test time.

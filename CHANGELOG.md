@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Card Data & Editor): Fix Powered Gauntlets Resource Cost & Complete Card Editor Field Binding ([ADR-0069](docs/decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md) / [Issue #139](https://github.com/SteveRodrigue/MCD/issues/139))**
+  - **Card Data Correction:**
+    - Corrected card `01038` (Powered Gauntlets) in `src/data/supplemental/pack/core.json` by removing the invalid `"resourceCost": { "energy": 1 }` cost requirement, leaving cost strictly as `{"exhaustSelf": true}` per RR v1.8 p. 9.
+  - **Card Editor Completeness & Resource Cost Binding:**
+    - Updated `AbilityCostSection.tsx` to bind both `currentCost.resources: string[]` and `currentCost.resourceCost: number | Record<string, number>`, rendering accurate resource counts in the UI.
+    - Added Generic Resource Cost number input (`resourceCost: number`) for untyped resource costs.
+    - Updated "Clear Resources" to cleanly unset both `resources` and `resourceCost`.
+    - Added UI controls for `exhaustCard` (`TargetSelector`), `discardCard.maxCount`, and collapsible `discardCard.filter` accordion (`UniversalCardFilterBuilder`).
+    - Added `CardAttributesSection.tsx` inputs for `attackCost`, `thwartCost`, `playUnderAnyPlayerControl`, `errata`, `playRequirements.identityNames`, and `playRequirements.controlZones` (`tableau`, `allies`, `identity`).
+    - Updated `StepPipelineEditor.tsx` with inputs for `step.id`, `step.target` (`TargetSelector`), and `step.filter` (`UniversalCardFilterBuilder`).
+    - Updated `TriggerFilterSection.tsx` to support active evaluated trigger parameters (`sourceCardCode`, `sourceInstanceId`, `targetType`, `attackerCardFilter`).
+    - Enhanced `DualCardInspector.tsx` Visual Review tab with full cost breakdown and a dedicated Card Attributes & Rules summary box.
+  - **Trigger Filter Schema Cleanup (Orphan Purge):**
+    - Purged 5 un-evaluated orphan properties (`damageSourceType`, `damageTargetType`, `defeatEntityType`, `defeatByAttack`, `formChangeDirection`) from `TriggerFilterSchema` in `src/data/supplemental/schema.ts` and `schema.json`.
+  - **Documentation & Architecture:**
+    - Authored [ADR-0069](docs/decisions/0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md) and registered it in `docs/decisions/README.md`.
+    - Synchronized supplemental specifications (`01_metadata_and_audit.md`, `02_timings_and_triggers.md`, `03_costs_and_targeting.md`).
+    - Regenerated `docs/reports/supplemental_declarations_usage_report.md`.
+  - **Automated Verification:**
+    - Authored gameplay contract test in `tests/cards/iron-man/powered-gauntlets-cost.test.ts` verifying Iron Man can activate Powered Gauntlets with 0 cards and 0 resources.
+    - Authored unit tests in `tests/ui/StepPipelineEditor.test.tsx` and updated `AbilityCostSection.test.tsx`, `CardAttributesSection.test.tsx`, and `TriggerFilterSection.test.tsx`.
+
 - **Feature (Engine & UI): Granular Villain Phase Stepper & Interactive Turn Pacing ([ADR-0068](docs/decisions/0068-granular-villain-phase-stepper-and-interactive-turn-pacing.md) / [Issue #140](https://github.com/SteveRodrigue/MCD/issues/140))**
   - **Granular Stepper Engine Pipeline:**
     - Implemented `advanceVillainPhaseStep(state, options)` in `src/engine/pipeline/villain-phase.ts`, enabling step-by-step interactive progression through the 6 discrete Villain Phase milestones (Step 1 Main Scheme Threat, Step 2 Villain Activation, Step 3 Minion Activations, Step 4 Deal Encounter Cards, Step 5 Reveal Encounter Cards, and Step 6 Round Upkeep & Token Pass).

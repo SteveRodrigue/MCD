@@ -380,15 +380,10 @@ export const TriggerFilterSchema = z
     attackerCardFilter: UniversalCardFilterSchema.optional(),
     sourceCardCode: z.string().optional(),
     sourceInstanceId: z.string().optional(),
-    targetPlayerScope: z.enum(['SELF','OTHER','ANY']).optional(),
+    targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),
     targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
     targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER']).optional(),
     isEngaged: z.boolean().optional(),
-    damageSourceType: z.enum(['ATTACK', 'SCHEME', 'EFFECT']).optional(),
-    damageTargetType: z.enum(['HERO', 'ALLY', 'SCHEME']).optional(),
-    defeatEntityType: z.enum(['CHARACTER', 'SCHEME', 'ATTACHMENT']).optional(),
-    defeatByAttack: z.boolean().optional(),
-    formChangeDirection: z.enum(['HERO_TO_ALTER_EGO', 'ALTER_EGO_TO_HERO']).optional(),
   })
   .strict();
 

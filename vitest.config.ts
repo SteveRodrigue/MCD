@@ -19,6 +19,7 @@ export default defineConfig({
           environment: 'node',
           include: [
             'tests/engine/**/*.test.ts',
+            'tests/cards/**/*.test.ts',
             'tests/data/**/*.test.ts',
             'tests/tools/**/*.test.ts',
             'tests/ui/**/*.test.ts',

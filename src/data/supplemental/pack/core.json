@@ -1358,10 +1358,7 @@
           "id": "powered_gauntlets",
           "timing": "HERO_ACTION",
           "cost": {
-            "exhaustSelf": true,
-            "resourceCost": {
-              "energy": 1
-            }
+            "exhaustSelf": true
           },
           "steps": [
             {
@@ -1385,8 +1382,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T20:25:00Z",
-        "reviewedAt": "2026-09-16T20:25:00Z",
+        "updatedAt": "2026-09-19T15:53:00Z",
+        "reviewedAt": "2026-09-19T15:53:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

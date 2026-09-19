@@ -14,9 +14,11 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 {
   "cards": {
     "01001a": {
-      "comment": "HERO: Spider-Man. Interrupt: When attacked, draw 1 card.",
       "abilities": [ ... ],
-      "audit": { ... },
+      "audit": {
+        "comment": "HERO: Spider-Man. Interrupt: When attacked, draw 1 card.",
+        ...
+      },
       "errata": null
     }
   }
@@ -27,24 +29,27 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 
 ## 2. Field Specifications: `CardEnrichment`
 
-| Field                  | Type                           | Required | Description                                                                                                        |
-| :--------------------- | :----------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------- |
-| `comment`              | `string`                       | Optional | Human-readable explanation of card type, title, and mechanics.                                                     |
-| `abilities`            | `CardAbility[]`                | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                              |
-| `playRequirements`     | `PlayRequirements`             | Optional | Card-level form, trait, and control constraints (RR v1.8 p. 16, see [Module 11](./11_play_requirements.md)).       |
-| `audit`                | `CardAuditRecord`              | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                              |
-| `noSupplementalNeeded` | `boolean`                      | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).             |
-| `isLandscape`          | `boolean`                      | Optional | Indicates horizontal orientation (e.g. main schemes, side schemes).                                                |
-| `attackCost`           | `number`                       | Optional | Consequential damage suffered when an ally executes a basic attack (default: 1).                                   |
-| `thwartCost`           | `number`                       | Optional | Consequential damage suffered when an ally executes a basic thwart (default: 1).                                   |
-| `maxPerPlayer`         | `number`                       | Optional | Maximum copies a single player can have in play simultaneously (e.g. `1` for Max 1 per player).                     |
-| `uses`                 | `CardUses`                     | Optional | Counters configured when entering play (`count`, `counterType`, `max`, `discardOnEmpty`).                          |
-| `victoryPoints`        | `number`                       | Optional | Numeric value of printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Paired with `keywords: ["Victory"]`.       |
-| `keywords`             | `KeywordEntry[]`               | Optional | Card-level keywords. Supports plain strings or `StructuredKeywordSchema` for parameterized keywords per ADR-0054.  |
-| `traits`               | `string[]`                     | Optional | Printed traits or supplemental trait extensions (e.g. `["Avenger", "Aerial"]`).                                    |
-| `restrictedSlots`      | `number`                       | Optional | Number of restricted slots consumed by this card (e.g. `1` or `2`, RR v1.8 p. 24).                                 |
-| `additionalBoostCards` | `number`                       | Optional | Additional boost cards dealt to this enemy activation during attacks or schemes.                                   |
-| `errata`               | `string \| null`               | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                               |
+| Field                       | Type                           | Required | Description                                                                                                        |
+| :-------------------------- | :----------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------- |
+| `abilities`                 | `CardAbility[]`                | Optional | Array of declarative ability objects. Empty array `[]` if passive card or unverified.                              |
+| `playRequirements`          | `PlayRequirements`             | Optional | Card-level form, trait, and control constraints (RR v1.8 p. 16, see [Module 11](./11_play_requirements.md)).       |
+| `audit`                     | `CardAuditRecord`              | Optional | Audit and verification metadata trail. Required for cards with confidence $\ge 95\%$.                              |
+| `noSupplementalNeeded`      | `boolean`                      | Optional | Flag set to `true` strictly for vanilla cards with 0 printed rules text (e.g. basic double resources).             |
+| `isLandscape`               | `boolean`                      | Optional | Indicates horizontal orientation (e.g. main schemes, side schemes).                                                |
+| `attackCost`                | `number`                       | Optional | Consequential damage suffered when an ally executes a basic attack (default: 1).                                   |
+| `thwartCost`                | `number`                       | Optional | Consequential damage suffered when an ally executes a basic thwart (default: 1).                                   |
+| `maxPerPlayer`              | `number`                       | Optional | Maximum copies a single player can have in play simultaneously (e.g. `1` for Max 1 per player).                     |
+| `playUnderAnyPlayerControl` | `boolean`                      | Optional | Allows card to be played under any player's control (RR v1.8, ADR-0066).                                           |
+| `uses`                      | `CardUses`                     | Optional | Counters configured when entering play (`count`, `counterType`, `max`, `discardOnEmpty`).                          |
+| `victoryPoints`             | `number`                       | Optional | Numeric value of printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Paired with `keywords: ["Victory"]`.       |
+| `keywords`                  | `KeywordEntry[]`               | Optional | Card-level keywords. Supports plain strings or `StructuredKeywordSchema` for parameterized keywords per ADR-0054.  |
+| `traits`                    | `string[]`                     | Optional | Printed traits or supplemental trait extensions (e.g. `["Avenger", "Aerial"]`).                                    |
+| `restrictedSlots`           | `number`                       | Optional | Number of restricted slots consumed by this card (e.g. `1` or `2`, RR v1.8 p. 24).                                 |
+| `additionalBoostCards`      | `number`                       | Optional | Additional boost cards dealt to this enemy activation during attacks or schemes.                                   |
+| `errata`                    | `string \| null`               | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                               |
+
+> [!NOTE]
+> Root-level `comment` was decommissioned and encapsulated into `audit.comment` per [ADR-0067](../../decisions/0067-encapsulating-supplemental-comments-into-audit-metadata.md). Root `comment` is strictly rejected by `CardEnrichmentSchema`.
 
 > [!NOTE]
 > `victoryPoints` routes the defeated card to the permanent `state.victoryDisplay` zone instead of its normal discard pile (see [ADR-0034](../../decisions/0034-player-side-schemes-victory-display-and-auxiliary-decks.md)).
@@ -96,3 +101,4 @@ Cards declaring parameterized keywords (such as `Retaliate X`) declare them unde
 | `confidence`    | `number` | `0` to `100`         | Integer rating. Confidence $\ge 95\%$ enables ambiguity pruning (Inbox Zero).        |
 | `ambiguityFile` | `string` | Relative path        | Relative path to ambiguity tracking document in `docs/ambiguities/` (if applicable). |
 | `originalText`  | `string` | Raw text             | Exact printed rules text from upstream/printed card for self-contained auditability. |
+| `comment`       | `string` | Free text            | Human developer commentary reserved strictly for user notes per ADR-0067.            |

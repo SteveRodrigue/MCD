@@ -281,4 +281,80 @@ describe('AbilityCostSection', () => {
       expect.not.objectContaining({ requirePrinted: true }),
     );
   });
+
+  it('displays typed resource counts from resourceCost map and clears both resources and resourceCost', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulAbilityCostSection
+        initial={{ resourceCost: { energy: 2, physical: 1 } }}
+        onChange={handleChange}
+      />,
+    );
+
+    expect(screen.getByTestId('cost-res-count-energy-0').textContent).toBe('2');
+    expect(screen.getByTestId('cost-res-count-physical-0').textContent).toBe('1');
+    expect(screen.getByTestId('cost-res-count-mental-0').textContent).toBe('0');
+
+    // Click Clear Resources
+    await user.click(screen.getByTestId('cost-clear-resources-0'));
+    expect(handleChange).toHaveBeenCalledWith(undefined);
+  });
+
+  it('configures generic resourceCost number', async () => {
+    const handleChange = vi.fn();
+
+    render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
+
+    fireEvent.change(screen.getByTestId('cost-resource-cost-generic-0'), {
+      target: { value: '3' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resourceCost: 3,
+      }),
+    );
+  });
+
+  it('configures exhaustCard TargetSelector', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('cost-exhaust-card-0'), 'CHOSEN_ALLY');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        exhaustCard: 'CHOSEN_ALLY',
+      }),
+    );
+  });
+
+  it('configures discardCard maxCount and expands filter accordion', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulAbilityCostSection
+        initial={{ discardCard: { count: 1, from: 'HAND' } }}
+        onChange={handleChange}
+      />,
+    );
+
+    // Set maxCount
+    fireEvent.change(screen.getByTestId('cost-discard-card-max-count-0'), {
+      target: { value: '2' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        discardCard: expect.objectContaining({ maxCount: 2 }),
+      }),
+    );
+
+    // Expand filter accordion
+    expect(screen.getByTestId('cost-discard-card-filter-accordion-0')).toBeDefined();
+    await user.click(screen.getByTestId('cost-discard-card-filter-toggle-0'));
+    expect(screen.getByText(/Discard Filter Criteria/i)).toBeDefined();
+  });
 });

@@ -31,6 +31,40 @@ interface DualCardInspectorProps {
   ) => Promise<boolean>;
 }
 
+function formatCostSummary(cost: any): string {
+  if (!cost) return '';
+  const parts: string[] = [];
+  if (cost.exhaustSelf || (cost as any).exhaust) parts.push('Exhaust Self');
+  if (cost.exhaustCard) parts.push(`Exhaust ${cost.exhaustCard}`);
+  if (cost.discardSelf) parts.push('Discard Self');
+  if (cost.damageSelf) parts.push(`Take ${cost.damageSelf} DMG`);
+  if (cost.damageHero) parts.push(`Hero takes ${cost.damageHero} DMG`);
+  if (cost.spendCounters) parts.push(`Spend ${cost.spendCounters} Counters`);
+  if (cost.heal) parts.push(`Heal ${cost.heal}`);
+  if (cost.discardCard) {
+    const dc = cost.discardCard;
+    if (dc.count) parts.push(`Discard ${dc.count} Card${dc.count > 1 ? 's' : ''}`);
+    else if (dc.maxCount)
+      parts.push(`Discard up to ${dc.maxCount} Card${dc.maxCount > 1 ? 's' : ''}`);
+    else parts.push('Discard Card');
+  }
+  if (cost.resources && cost.resources.length > 0) {
+    parts.push(cost.resources.join(', '));
+  }
+  if (cost.resourceCost !== undefined) {
+    if (typeof cost.resourceCost === 'number') {
+      parts.push(`${cost.resourceCost} resource${cost.resourceCost === 1 ? '' : 's'}`);
+    } else if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
+      const resParts = Object.entries(cost.resourceCost)
+        .filter(([, v]) => typeof v === 'number' && (v as number) > 0)
+        .map(([k, v]) => `${v} ${k}`)
+        .join(', ');
+      if (resParts) parts.push(resParts);
+    }
+  }
+  return parts.length > 0 ? parts.join(' • ') : 'None';
+}
+
 export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
   cardDetails,
   loading,
@@ -549,6 +583,146 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                   )}
                 </div>
 
+                {/* Card Attributes & Rules Summary */}
+                <div
+                  data-testid="summary-card-attributes"
+                  className="bg-white border-3 border-black p-3 shadow-comic-sm"
+                >
+                  <div className="flex items-center gap-2 border-b-2 border-black pb-1.5 mb-2 font-bangers text-sm tracking-wide text-comic-dark">
+                    <Tag className="w-4 h-4 text-black" />
+                    <span>CARD ATTRIBUTES & RULES</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-sans">
+                    {editedSupplemental.attackCost !== undefined && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Conseq. ATK Cost
+                        </span>
+                        <span className="font-bold">{editedSupplemental.attackCost}</span>
+                      </div>
+                    )}
+                    {editedSupplemental.thwartCost !== undefined && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Conseq. THW Cost
+                        </span>
+                        <span className="font-bold">{editedSupplemental.thwartCost}</span>
+                      </div>
+                    )}
+                    {editedSupplemental.playUnderAnyPlayerControl !== undefined && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Play Under Any
+                        </span>
+                        <span className="font-bold">
+                          {editedSupplemental.playUnderAnyPlayerControl ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                    )}
+                    {editedSupplemental.maxPerPlayer !== undefined && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Max Per Player
+                        </span>
+                        <span className="font-bold">{editedSupplemental.maxPerPlayer}</span>
+                      </div>
+                    )}
+                    {editedSupplemental.restrictedSlots !== undefined && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Restricted Slots
+                        </span>
+                        <span className="font-bold">{editedSupplemental.restrictedSlots}</span>
+                      </div>
+                    )}
+                    {editedSupplemental.uses && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Uses
+                        </span>
+                        <span className="font-bold">
+                          {editedSupplemental.uses.count} {editedSupplemental.uses.type}
+                        </span>
+                      </div>
+                    )}
+                    {editedSupplemental.keywords && editedSupplemental.keywords.length > 0 && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Keywords
+                        </span>
+                        <span className="font-bold">{editedSupplemental.keywords.join(', ')}</span>
+                      </div>
+                    )}
+                    {editedSupplemental.traits && editedSupplemental.traits.length > 0 && (
+                      <div className="bg-comic-paper p-1.5 border border-black rounded">
+                        <span className="text-[10px] uppercase font-bold text-gray-500 block">
+                          Traits
+                        </span>
+                        <span className="font-bold">{editedSupplemental.traits.join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {editedSupplemental.errata && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-comic-red font-comic">
+                      <span className="font-bold text-black">Errata: </span>
+                      {editedSupplemental.errata}
+                    </div>
+                  )}
+
+                  {editedSupplemental.playRequirements && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 text-xs space-y-1">
+                      <span className="font-bold text-black block">Play Requirements:</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] font-mono bg-gray-50 p-2 border border-gray-300 rounded">
+                        {editedSupplemental.playRequirements.identityNames && (
+                          <div>
+                            <span className="font-bold text-gray-600">Identities: </span>
+                            <span>
+                              {editedSupplemental.playRequirements.identityNames.join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {editedSupplemental.playRequirements.controlZones && (
+                          <div>
+                            <span className="font-bold text-gray-600">Zones: </span>
+                            <span>
+                              {editedSupplemental.playRequirements.controlZones.join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {editedSupplemental.playRequirements.aspects && (
+                          <div>
+                            <span className="font-bold text-gray-600">Aspects: </span>
+                            <span>{editedSupplemental.playRequirements.aspects.join(', ')}</span>
+                          </div>
+                        )}
+                        {editedSupplemental.playRequirements.requiresEngagedMinion && (
+                          <div>
+                            <span className="font-bold text-gray-600">Minion Engaged: </span>
+                            <span>Yes</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {editedSupplemental.attackCost === undefined &&
+                    editedSupplemental.thwartCost === undefined &&
+                    editedSupplemental.playUnderAnyPlayerControl === undefined &&
+                    editedSupplemental.maxPerPlayer === undefined &&
+                    editedSupplemental.restrictedSlots === undefined &&
+                    !editedSupplemental.uses &&
+                    (!editedSupplemental.keywords || editedSupplemental.keywords.length === 0) &&
+                    (!editedSupplemental.traits || editedSupplemental.traits.length === 0) &&
+                    !editedSupplemental.errata &&
+                    !editedSupplemental.playRequirements && (
+                      <div className="text-xs text-gray-400 italic">
+                        No additional card-level attributes or restrictions defined.
+                      </div>
+                    )}
+                </div>
+
                 {/* Abilities List */}
                 <div className="bg-white border-3 border-black p-3 shadow-comic-sm">
                   <div className="flex items-center justify-between border-b-2 border-black pb-1.5 mb-3 font-bangers text-base tracking-wide text-comic-dark">
@@ -595,13 +769,8 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                               <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red">
                                 <Shield className="w-3.5 h-3.5" />
                                 <span>
-                                  Cost:{' '}
-                                  {ab.cost.exhaustSelf || (ab.cost as any).exhaust
-                                    ? 'Exhaust '
-                                    : ''}
-                                  {ab.cost.discardSelf ? 'Discard ' : ''}
-                                  {ab.cost.damageSelf ? `Take ${ab.cost.damageSelf} DMG ` : ''}
-                                  {ab.cost.resources ? JSON.stringify(ab.cost.resources) : ''}
+                                  Cost: {ab.cost.exhaustSelf ? '' : ''}
+                                  {formatCostSummary(ab.cost)}
                                 </span>
                               </div>
                             )}

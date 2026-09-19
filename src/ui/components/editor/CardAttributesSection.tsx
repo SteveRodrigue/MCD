@@ -98,6 +98,14 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
         <div className="flex items-center gap-1.5 font-bangers text-sm">
           <Sliders className="w-4 h-4 text-comic-accent" />
           <span>CARD-LEVEL ATTRIBUTES & AUDIT</span>
+          {audit.rulesVersion && (
+            <span
+              data-testid="card-audit-rules-version"
+              className="text-[10px] font-sans font-bold bg-blue-100 text-blue-900 border border-blue-400 px-1.5 py-0.2 rounded ml-1"
+            >
+              Rules: {audit.rulesVersion}
+            </span>
+          )}
         </div>
         {hasErrors && (
           <div className="flex items-center gap-1 text-[11px] font-bold text-comic-red bg-red-50 border border-comic-red px-1.5 py-0.5 rounded">
@@ -176,6 +184,20 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
             className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
           />
         </div>
+
+        {audit.originalText && (
+          <div
+            data-testid="card-audit-original-text-container"
+            className="sm:col-span-2 bg-gray-50 border border-gray-300 p-2 rounded text-xs"
+          >
+            <span className="font-bold text-[10px] uppercase text-gray-500 block mb-1">
+              Original Printed Rules Text (Audit Reference)
+            </span>
+            <div data-testid="card-audit-original-text" className="font-comic text-gray-700 italic">
+              {audit.originalText}
+            </div>
+          </div>
+        )}
 
         {/* Traits input */}
         <div className="sm:col-span-2">
@@ -283,6 +305,88 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
             />
             <span>Landscape Orientation (e.g. Side Schemes)</span>
           </label>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+            Consequential Attack DMG (attackCost)
+          </label>
+          <input
+            type="number"
+            min="0"
+            data-testid="card-attack-cost-input"
+            value={supplemental.attackCost !== undefined ? supplemental.attackCost : ''}
+            placeholder="Default: 1 (0 for Black Cat)"
+            onChange={(e) => {
+              const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
+              onChange({
+                ...supplemental,
+                attackCost: isNaN(val as number) || val === undefined ? undefined : val,
+              });
+            }}
+            className="w-full bg-white border border-black p-1.5 text-xs rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+            Consequential Thwart DMG (thwartCost)
+          </label>
+          <input
+            type="number"
+            min="0"
+            data-testid="card-thwart-cost-input"
+            value={supplemental.thwartCost !== undefined ? supplemental.thwartCost : ''}
+            placeholder="Default: 1"
+            onChange={(e) => {
+              const val = e.target.value !== '' ? parseInt(e.target.value, 10) : undefined;
+              onChange({
+                ...supplemental,
+                thwartCost: isNaN(val as number) || val === undefined ? undefined : val,
+              });
+            }}
+            className="w-full bg-white border border-black p-1.5 text-xs rounded"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+            Cross-Player Control (ADR-0066)
+          </label>
+          <label className="flex items-center gap-1.5 pt-2 text-xs font-bold cursor-pointer">
+            <input
+              type="checkbox"
+              data-testid="card-play-under-any-player-control-checkbox"
+              checked={Boolean(supplemental.playUnderAnyPlayerControl)}
+              onChange={(e) => {
+                onChange({
+                  ...supplemental,
+                  playUnderAnyPlayerControl: e.target.checked || undefined,
+                });
+              }}
+              className="accent-black"
+            />
+            <span>Play Under Any Player Control</span>
+          </label>
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+            Card-Level Errata (Official FFG Ruling)
+          </label>
+          <input
+            type="text"
+            data-testid="card-errata-input"
+            value={supplemental.errata || ''}
+            placeholder="Leave empty if no official errata applies"
+            onChange={(e) => {
+              onChange({
+                ...supplemental,
+                errata: e.target.value.trim() ? e.target.value : undefined,
+              });
+            }}
+            className="w-full bg-white border border-black p-1.5 text-xs rounded"
+          />
         </div>
 
         {/* Uses Lifecycle (RR v1.8 p. 30, ADR-0057) */}
@@ -615,6 +719,88 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
               placeholder="e.g. Avenger, Mystic, X-Men"
               className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
             />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Required Identity Names (comma-separated)
+            </label>
+            <input
+              type="text"
+              data-testid="play-req-identity-names-input"
+              value={(supplemental.playRequirements?.identityNames || []).join(', ')}
+              onChange={(e) => {
+                const names = e.target.value
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+                const current = supplemental.playRequirements || {};
+                if (names.length === 0) {
+                  const { identityNames: _, ...rest } = current;
+                  onChange({
+                    ...supplemental,
+                    playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                  });
+                } else {
+                  onChange({
+                    ...supplemental,
+                    playRequirements: {
+                      ...current,
+                      identityNames: names,
+                    },
+                  });
+                }
+              }}
+              placeholder="e.g. Peter Parker, Tony Stark"
+              className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+              Required Control Zones (controlZones)
+            </label>
+            <div className="flex items-center gap-2">
+              {(['tableau', 'allies', 'identity'] as const).map((zone) => {
+                const currentZones: string[] = supplemental.playRequirements?.controlZones || [];
+                const isSelected = currentZones.includes(zone);
+                return (
+                  <button
+                    key={zone}
+                    type="button"
+                    data-testid={`play-req-zone-${zone}`}
+                    onClick={() => {
+                      const updatedZones = isSelected
+                        ? currentZones.filter((z) => z !== zone)
+                        : [...currentZones, zone];
+                      const current = supplemental.playRequirements || {};
+                      if (updatedZones.length === 0) {
+                        const { controlZones: _, ...rest } = current;
+                        onChange({
+                          ...supplemental,
+                          playRequirements: Object.keys(rest).length > 0 ? rest : undefined,
+                        });
+                      } else {
+                        onChange({
+                          ...supplemental,
+                          playRequirements: {
+                            ...current,
+                            controlZones: updatedZones,
+                          },
+                        });
+                      }
+                    }}
+                    className={`px-2.5 py-1 text-xs font-bold rounded border-2 border-black transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-comic-accent text-white shadow-comic-xs'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {zone}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Controlled Card Requirement: UniversalCardFilterBuilder Integration */}

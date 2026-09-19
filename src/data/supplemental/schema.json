@@ -132,40 +132,6 @@
                     },
                     "isEngaged": {
                       "type": "boolean"
-                    },
-                    "damageSourceType": {
-                      "type": "string",
-                      "enum": [
-                        "ATTACK",
-                        "SCHEME",
-                        "EFFECT"
-                      ]
-                    },
-                    "damageTargetType": {
-                      "type": "string",
-                      "enum": [
-                        "HERO",
-                        "ALLY",
-                        "SCHEME"
-                      ]
-                    },
-                    "defeatEntityType": {
-                      "type": "string",
-                      "enum": [
-                        "CHARACTER",
-                        "SCHEME",
-                        "ATTACHMENT"
-                      ]
-                    },
-                    "defeatByAttack": {
-                      "type": "boolean"
-                    },
-                    "formChangeDirection": {
-                      "type": "string",
-                      "enum": [
-                        "HERO_TO_ALTER_EGO",
-                        "ALTER_EGO_TO_HERO"
-                      ]
                     }
                   },
                   "additionalProperties": false

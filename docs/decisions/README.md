@@ -56,6 +56,7 @@ graph TD
     ADR49["ADR-0049: Value Transformers & Event Interception"] --> ADR58
     ADR58 --> ADR63["ADR-0063: Damage & Threat Interception Separation"]
     ADR58 --> ADR64["ADR-0064: Canonical Target Scopes & Distribution Modal"]
+    ADR58 --> ADR69["ADR-0069: Card Editor Field Completeness & Trigger Filter Orphan Purge"]
 ```
 
 ### 5. In-Play Trigger Lifecycle
@@ -139,6 +140,7 @@ graph TD
 | [ADR-0066](0066-cross-player-attachments-and-card-ownership-invariants.md)                        | 2026-09-17 | Support Cross-Player Attachments & Card Ownership Invariants                         | **Accepted**                                                                                                     | Support cross-player cards ("Play under any player's control", attachments) with persistent ownerId, decision prompt selection, disabled options for maxPerPlayer, and owner discard routing per RR v1.8.                                                                                       |
 | [ADR-0067](0067-encapsulating-supplemental-comments-into-audit-metadata.md)                        | 2026-09-19 | Encapsulating Supplemental Comments into Audit Metadata                              | **Accepted**                                                                                                     | Move `comment` from the root of `CardEnrichmentSchema` into `audit.comment`, purge all legacy comments from pack files, reserve `audit.comment` for user notes, and forbid autonomous agent comments.                                                                                           |
 | [ADR-0068](0068-granular-villain-phase-stepper-and-interactive-turn-pacing.md)                     | 2026-09-19 | Granular Villain Phase Stepper and Interactive Turn Pacing                           | **Accepted**                                                                                                     | Model discrete atomic villain phase progression via advanceVillainPhaseStep, typed step events, combat resolution summaries, and configurable UI pacing (auto, manual, instant) without sacrificing headless determinism (Fixes #140). |
+| [ADR-0069](0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md)         | 2026-09-19 | Card Editor Field Binding Completeness & Trigger Filter Orphan Purge                 | **Accepted**                                                                                                     | Expose 100% of active engine properties in Card Editor UI, purge 5 un-evaluated orphan fields from TriggerFilterSchema, and remove invalid resource cost on Powered Gauntlets (Fixes #139). |
 
 ---
 

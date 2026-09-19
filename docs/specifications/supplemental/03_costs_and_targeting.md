@@ -33,8 +33,9 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `damageHero`    | `number`                           | `1`                                                     | Direct damage the hero identity must suffer as a cost (e.g. _War Machine_).                |
 | `damageSelf`    | `number`                           | `1`                                                     | Direct damage the card instance itself must suffer as a cost.                              |
 | `resources`     | `ResourceType[]`                   | `["energy", "mental"]`                                  | Specific printed resource types required (`'physical'`, `'energy'`, `'mental'`, `'wild'`). |
-| `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic resource payment or typed resource mapping.                                        |
-| `discardCard`   | `object`                           | `{"count": 1, "from": "HAND"}`                          | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`.                                    |
+| `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic untyped resource cost ($N$) or typed resource map. Evaluated in `cost-engine.ts`.  |
+| `requirePrinted`| `boolean`                          | `true`                                                  | When true, resources paid must match printed icons on cards (RR v1.8 p. 15).                |
+| `discardCard`   | `object`                           | `{"count": 1, "from": "HAND", "filter": { ... }}`       | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`. Supports `maxCount` and `filter`.  |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |
 

@@ -61,7 +61,7 @@ describe('TriggerFilterSection', () => {
     );
   });
 
-  it('configures targetForm, damageSourceType, and defeatEntityType', async () => {
+  it('configures targetForm and targetType', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -72,35 +72,30 @@ describe('TriggerFilterSection', () => {
     await user.selectOptions(formSelect, 'HERO');
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetForm: 'HERO' }));
 
-    // Damage source
-    const dmgSourceSelect = screen.getByTestId('trigger-damage-source-type-0');
-    await user.selectOptions(dmgSourceSelect, 'ATTACK');
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({ damageSourceType: 'ATTACK' }),
-    );
-
-    // Defeat entity
-    const defeatEntitySelect = screen.getByTestId('trigger-defeat-entity-type-0');
-    await user.selectOptions(defeatEntitySelect, 'CHARACTER');
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({ defeatEntityType: 'CHARACTER' }),
-    );
+    // Target entity type
+    const targetTypeSelect = screen.getByTestId('trigger-target-type-0');
+    await user.selectOptions(targetTypeSelect, 'CHARACTER');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'CHARACTER' }));
   });
 
-  it('configures formChangeDirection', async () => {
+  it('configures sourceCardCode and sourceInstanceId', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
     render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
 
-    const changeDirSelect = screen.getByTestId('trigger-form-change-direction-0');
-    await user.selectOptions(changeDirSelect, 'ALTER_EGO_TO_HERO');
+    const cardCodeInput = screen.getByTestId('trigger-source-card-code-0');
+    await user.type(cardCodeInput, '01050');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ sourceCardCode: '01050' }));
+
+    const instanceIdInput = screen.getByTestId('trigger-source-instance-id-0');
+    await user.type(instanceIdInput, 'inst_123');
     expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({ formChangeDirection: 'ALTER_EGO_TO_HERO' }),
+      expect.objectContaining({ sourceInstanceId: 'inst_123' }),
     );
   });
 
-  it('toggles isEngaged and defeatByAttack checkboxes', async () => {
+  it('toggles isEngaged checkbox', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();
 
@@ -109,10 +104,34 @@ describe('TriggerFilterSection', () => {
     const engagedCheck = screen.getByTestId('trigger-is-engaged-0');
     await user.click(engagedCheck);
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ isEngaged: true }));
+  });
 
-    const defeatCheck = screen.getByTestId('trigger-defeat-by-attack-0');
-    await user.click(defeatCheck);
-    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ defeatByAttack: true }));
+  it('expands attackerCardFilter accordion and configures criteria', async () => {
+    const user = userEvent.setup();
+    render(
+      <TriggerFilterSection
+        filter={{ attackerCardFilter: { traits: ['Elite'] } }}
+        abilityIndex={0}
+        isExpanded={true}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId('trigger-attacker-card-filter-accordion-0')).toBeDefined();
+    await user.click(screen.getByTestId('toggle-trigger-attacker-card-filter-btn-0'));
+    expect(screen.getAllByText(/Attacker Card Criteria/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('verifies that purged orphan inputs do not exist in the DOM (ADR-0069)', () => {
+    render(
+      <TriggerFilterSection filter={{}} abilityIndex={0} isExpanded={true} onChange={vi.fn()} />,
+    );
+
+    expect(screen.queryByTestId('trigger-damage-source-type-0')).toBeNull();
+    expect(screen.queryByTestId('trigger-damage-target-type-0')).toBeNull();
+    expect(screen.queryByTestId('trigger-defeat-entity-type-0')).toBeNull();
+    expect(screen.queryByTestId('trigger-defeat-by-attack-0')).toBeNull();
+    expect(screen.queryByTestId('trigger-form-change-direction-0')).toBeNull();
   });
 
   it('renders validation errors when hasErrors is true', () => {

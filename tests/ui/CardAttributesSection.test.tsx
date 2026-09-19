@@ -234,4 +234,102 @@ describe('CardAttributesSection', () => {
     expect(screen.getByText(/restrictedSlots must be a positive integer/i)).toBeDefined();
     expect(screen.getByText(/traits is required/i)).toBeDefined();
   });
+
+  it('configures attackCost, thwartCost, playUnderAnyPlayerControl, and errata', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
+
+    // attackCost
+    fireEvent.change(screen.getByTestId('card-attack-cost-input'), { target: { value: '0' } });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attackCost: 0,
+      }),
+    );
+
+    // thwartCost
+    fireEvent.change(screen.getByTestId('card-thwart-cost-input'), { target: { value: '2' } });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        thwartCost: 2,
+      }),
+    );
+
+    // playUnderAnyPlayerControl
+    await user.click(screen.getByTestId('card-play-under-any-player-control-checkbox'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playUnderAnyPlayerControl: true,
+      }),
+    );
+
+    // errata
+    fireEvent.change(screen.getByTestId('card-errata-input'), {
+      target: { value: 'Official errata text' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errata: 'Official errata text',
+      }),
+    );
+  });
+
+  it('configures playRequirements identityNames and controlZones', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
+
+    // identityNames
+    fireEvent.change(screen.getByTestId('play-req-identity-names-input'), {
+      target: { value: 'Peter Parker, Tony Stark' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playRequirements: expect.objectContaining({
+          identityNames: ['Peter Parker', 'Tony Stark'],
+        }),
+      }),
+    );
+
+    // controlZones
+    await user.click(screen.getByTestId('play-req-zone-tableau'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playRequirements: expect.objectContaining({
+          controlZones: ['tableau'],
+        }),
+      }),
+    );
+
+    await user.click(screen.getByTestId('play-req-zone-allies'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        playRequirements: expect.objectContaining({
+          controlZones: ['tableau', 'allies'],
+        }),
+      }),
+    );
+  });
+
+  it('renders rulesVersion badge and originalText preview in audit', () => {
+    render(
+      <CardAttributesSection
+        supplemental={{
+          audit: {
+            rulesVersion: 'v1.8',
+            originalText: 'Hero Action: Exhaust to do something.',
+          },
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId('card-audit-rules-version')).toBeDefined();
+    expect(screen.getByTestId('card-audit-original-text').textContent).toContain(
+      'Hero Action: Exhaust to do something.',
+    );
+  });
 });

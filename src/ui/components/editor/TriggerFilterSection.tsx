@@ -1,5 +1,6 @@
 import React from 'react';
 import { Crosshair, ChevronDown, ChevronRight, AlertCircle } from 'lucide-react';
+import { UniversalCardFilterBuilder } from './UniversalCardFilterBuilder';
 
 export interface TriggerFilterSectionProps {
   filter?: any;
@@ -21,6 +22,7 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
   errors = [],
 }) => {
   const [internalExpanded, setInternalExpanded] = React.useState(false);
+  const [isAttackerFilterExpanded, setIsAttackerFilterExpanded] = React.useState(false);
 
   const expanded = isExpanded !== undefined ? isExpanded : internalExpanded;
   const toggleExpand = () => {
@@ -137,62 +139,60 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
-          {/* damageSourceType */}
+          {/* targetType */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
-              Damage Source
+              Target Entity Type
             </label>
             <select
-              data-testid={`trigger-damage-source-type-${abilityIndex}`}
-              value={currentFilter.damageSourceType || ''}
-              onChange={(e) => handleFieldChange('damageSourceType', e.target.value || undefined)}
+              data-testid={`trigger-target-type-${abilityIndex}`}
+              value={currentFilter.targetType || ''}
+              onChange={(e) => handleFieldChange('targetType', e.target.value || undefined)}
               className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
             >
               <option value="">Any</option>
-              <option value="ATTACK">Attack Damage</option>
+              <option value="VILLAIN">Villain</option>
+              <option value="MINION">Minion</option>
               <option value="SCHEME">Scheme</option>
-              <option value="EFFECT">Card Effect</option>
+              <option value="CHARACTER">Character</option>
             </select>
           </div>
 
-          {/* defeatEntityType */}
+          {/* sourceCardCode */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
-              Defeat Entity
+              Source Card Code
             </label>
-            <select
-              data-testid={`trigger-defeat-entity-type-${abilityIndex}`}
-              value={currentFilter.defeatEntityType || ''}
-              onChange={(e) => handleFieldChange('defeatEntityType', e.target.value || undefined)}
-              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-            >
-              <option value="">Any</option>
-              <option value="CHARACTER">Character (Hero/Ally/Enemy)</option>
-              <option value="SCHEME">Scheme</option>
-              <option value="ATTACHMENT">Attachment</option>
-            </select>
-          </div>
-
-          {/* formChangeDirection */}
-          <div>
-            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
-              Form Change Direction
-            </label>
-            <select
-              data-testid={`trigger-form-change-direction-${abilityIndex}`}
-              value={currentFilter.formChangeDirection || ''}
+            <input
+              type="text"
+              data-testid={`trigger-source-card-code-${abilityIndex}`}
+              value={currentFilter.sourceCardCode || ''}
               onChange={(e) =>
-                handleFieldChange('formChangeDirection', e.target.value || undefined)
+                handleFieldChange('sourceCardCode', e.target.value.trim() || undefined)
               }
-              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
-            >
-              <option value="">Any</option>
-              <option value="ALTER_EGO_TO_HERO">Alter-Ego to Hero</option>
-              <option value="HERO_TO_ALTER_EGO">Hero to Alter-Ego</option>
-            </select>
+              placeholder="e.g. 01050"
+              className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+            />
           </div>
 
-          {/* Checkboxes: isEngaged & defeatByAttack */}
+          {/* sourceInstanceId */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Source Instance ID
+            </label>
+            <input
+              type="text"
+              data-testid={`trigger-source-instance-id-${abilityIndex}`}
+              value={currentFilter.sourceInstanceId || ''}
+              onChange={(e) =>
+                handleFieldChange('sourceInstanceId', e.target.value.trim() || undefined)
+              }
+              placeholder="e.g. inst_123"
+              className="w-full bg-white border border-black p-1 text-xs rounded font-mono"
+            />
+          </div>
+
+          {/* Checkbox: isEngaged */}
           <div className="flex items-center gap-4 col-span-1 sm:col-span-2 pt-2">
             <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-800">
               <input
@@ -204,17 +204,42 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
               />
               <span>Enemy Engaged With You</span>
             </label>
+          </div>
 
-            <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-800">
-              <input
-                type="checkbox"
-                data-testid={`trigger-defeat-by-attack-${abilityIndex}`}
-                checked={Boolean(currentFilter.defeatByAttack)}
-                onChange={(e) => handleFieldChange('defeatByAttack', e.target.checked || undefined)}
-                className="accent-black"
-              />
-              <span>Defeated by Attack</span>
-            </label>
+          {/* attackerCardFilter Sub-form */}
+          <div className="col-span-full pt-1">
+            <div
+              data-testid={`trigger-attacker-card-filter-accordion-${abilityIndex}`}
+              className="rounded border border-black bg-white p-2 space-y-1.5"
+            >
+              <div
+                onClick={() => setIsAttackerFilterExpanded(!isAttackerFilterExpanded)}
+                data-testid={`toggle-trigger-attacker-card-filter-btn-${abilityIndex}`}
+                className="flex items-center justify-between cursor-pointer select-none hover:bg-yellow-50 p-1 rounded"
+              >
+                <span className="text-[10px] font-bold uppercase text-gray-700 flex items-center gap-1">
+                  {isAttackerFilterExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+                  )}
+                  <span>Attacker Card Criteria (attackerCardFilter)</span>
+                </span>
+                <span className="bg-comic-yellow border border-black px-1.5 py-0.2 rounded text-[9px] font-bold text-black">
+                  {currentFilter.attackerCardFilter ? 'Configured' : 'None'}
+                </span>
+              </div>
+              {isAttackerFilterExpanded && (
+                <div className="pt-2 border-t border-gray-200">
+                  <UniversalCardFilterBuilder
+                    label="Attacker Card Criteria"
+                    filter={currentFilter.attackerCardFilter}
+                    onChange={(newFilter) => handleFieldChange('attackerCardFilter', newFilter)}
+                    isSubBranch={true}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -23,6 +23,8 @@ import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 export { drawEncounterCard };
+import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';
+export { step6_passFirstPlayerAndRoundUpkeep };
 
 /**
  * Step 1: Place Threat on Main Scheme (RR v1.8 p. 31)
@@ -551,14 +553,366 @@ export function resolveActiveEncounterCardAfterInterrupt(
   state.activeEncounterContext = undefined;
 }
 
-import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';
-export { step6_passFirstPlayerAndRoundUpkeep };
+/**
+ * Advances the Villain Phase by exactly one discrete atomic milestone (ADR-0068 / Issue #140).
+ * Milestones:
+ * 1. Step 1: Place threat on main scheme & emit THREAT_PLACED step event.
+ * 2. Step 2 & 3: Pop and resolve 1 enemy activation (villain or minion), recording lastCombatOutcome and emitting step event.
+ * 3. Step 4: Deal encounter cards to player threat zones & emit DEAL_ENCOUNTER_CARD step event.
+ * 4. Step 5: Pop and reveal 1 encounter card across players, resolving When Revealed / Treachery and emitting REVEAL_ENCOUNTER_CARD step event.
+ * 5. Step 6: Upkeep and return to PLAYER_PHASE & emit PASS_FIRST_PLAYER step event.
+ */
+export function advanceVillainPhaseStep(state: GameState, options?: CombatOptions): GameState {
+  if (state.winner) return state;
+
+  // Halt if an interactive decision prompt is currently waiting for player input
+  if (state.pendingDecisionPrompt) return state;
+
+  const nextState: GameState = JSON.parse(JSON.stringify(state));
+
+  // Case 0: Phase transition from PLAYER_PHASE to VILLAIN_PHASE
+  if (nextState.phase !== GamePhase.VILLAIN_PHASE) {
+    nextState.phase = GamePhase.VILLAIN_PHASE;
+
+    // Reset phase-level ability limits and expire phase cost reductions for all players
+    for (const player of nextState.players) {
+      player.usedAbilitiesThisPhase = {};
+      player.activeCostReductions = (player.activeCostReductions || []).filter(
+        (r) => r.duration !== 'PHASE',
+      );
+      player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+      player.activeStatModifiers = (player.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'PHASE',
+      );
+      for (const ally of player.allies) {
+        ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+          (m) => m.duration !== 'PHASE',
+        );
+        if (ally.tokens) {
+          delete (ally.tokens as any).thwBonus;
+          delete (ally.tokens as any).atkBonus;
+        }
+      }
+    }
+
+    nextState.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: nextState.roundNumber,
+      phase: GamePhase.VILLAIN_PHASE,
+      key: 'phase.villain_phase.start',
+      params: { round: nextState.roundNumber },
+      onomatopoeia: 'VILLAIN PHASE!',
+    });
+
+    // Dispatch Villain Phase Began triggers across all players
+    for (const player of nextState.players) {
+      dispatchTrigger(nextState, 'VILLAIN_PHASE_BEGAN', { targetPlayerId: player.id });
+    }
+
+    // Step 1: Place threat on main scheme
+    const threatBefore = nextState.mainScheme.threat;
+    step1_placeThreat(nextState);
+    const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+
+    nextState.villainPhaseStepEvent = {
+      type: 'THREAT_PLACED',
+      step: VillainPhaseStep.MAIN_SCHEME_THREAT,
+      amount: threatAdded,
+      description: `${threatAdded} threat placed on ${nextState.mainScheme.card.name}.`,
+      onomatopoeia: 'SCHEME GROWS!',
+    };
+
+    if (nextState.winner) return nextState;
+
+    nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
+    delete (nextState as any).pendingActivations;
+    return nextState;
+  }
+
+  // Case 1: Currently on MAIN_SCHEME_THREAT -> advance to VILLAIN_ACTIVATIONS
+  if (nextState.villainPhaseStep === VillainPhaseStep.MAIN_SCHEME_THREAT) {
+    nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
+    delete (nextState as any).pendingActivations;
+    return nextState;
+  }
+
+  // Case 2: Currently on VILLAIN_ACTIVATIONS
+  if (nextState.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
+    if (!(nextState as any).pendingActivations) {
+      const activations: {
+        type: 'VILLAIN' | 'MINION';
+        playerId: string;
+        minionInstanceId?: string;
+      }[] = [];
+      for (let i = 0; i < nextState.players.length; i++) {
+        const playerIdx = (nextState.firstPlayerIndex + i) % nextState.players.length;
+        const player = nextState.players[playerIdx];
+
+        activations.push({ type: 'VILLAIN', playerId: player.id });
+        for (const minion of player.engagedMinions) {
+          activations.push({
+            type: 'MINION',
+            playerId: player.id,
+            minionInstanceId: minion.instanceId,
+          });
+        }
+      }
+      (nextState as any).pendingActivations = activations;
+    }
+
+    const pending = (nextState as any).pendingActivations as {
+      type: 'VILLAIN' | 'MINION';
+      playerId: string;
+      minionInstanceId?: string;
+    }[];
+
+    if (pending && pending.length > 0) {
+      const act = pending.shift()!;
+      const player = nextState.players.find((p) => p.id === act.playerId);
+      if (!player) {
+        return advanceVillainPhaseStep(nextState, options);
+      }
+
+      const resolvedOptions: CombatOptions | undefined =
+        options?.synchronousPolicy !== undefined
+          ? { acceptOptionalTriggers: true, ...options }
+          : options;
+
+      if (act.type === 'VILLAIN') {
+        if (player.currentForm === 'hero') {
+          const mutatedState = executeVillainAttackAgainstPlayer(
+            nextState,
+            player,
+            resolvedOptions,
+          );
+          const dmg = mutatedState.lastCombatOutcome?.finalDamage ?? 0;
+          mutatedState.villainPhaseStepEvent = {
+            type: 'VILLAIN_ATTACK',
+            step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+            sourceName: mutatedState.villain.card.name,
+            targetPlayerId: player.id,
+            targetName: player.name,
+            amount: dmg,
+            description: `${mutatedState.villain.card.name} attacked ${player.name} for ${dmg} damage.`,
+            onomatopoeia: dmg > 0 ? 'BANG!' : 'BLOCKED!',
+            combatOutcome: mutatedState.lastCombatOutcome,
+          };
+          if (mutatedState.pendingDecisionPrompt || mutatedState.winner) {
+            return mutatedState;
+          }
+          if ((mutatedState as any).pendingActivations?.length === 0) {
+            delete (mutatedState as any).pendingActivations;
+            mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+          }
+          return mutatedState;
+        } else {
+          const threatBefore = nextState.mainScheme.threat;
+          executeVillainSchemeAgainstPlayer(nextState, player);
+          const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+          nextState.villainPhaseStepEvent = {
+            type: 'VILLAIN_SCHEME',
+            step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+            sourceName: nextState.villain.card.name,
+            targetPlayerId: player.id,
+            targetName: player.name,
+            amount: threatAdded,
+            description: `${nextState.villain.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
+            onomatopoeia: 'SCHEME!',
+          };
+          if (nextState.pendingDecisionPrompt || nextState.winner) {
+            return nextState;
+          }
+          if ((nextState as any).pendingActivations?.length === 0) {
+            delete (nextState as any).pendingActivations;
+            nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+          }
+          return nextState;
+        }
+      } else if (act.type === 'MINION') {
+        const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+        if (minion) {
+          if (player.currentForm === 'hero') {
+            const mutatedState = executeMinionActivationAgainstPlayer(
+              nextState,
+              minion,
+              player,
+              resolvedOptions,
+            );
+            const dmg = mutatedState.lastCombatOutcome?.finalDamage ?? 0;
+            mutatedState.villainPhaseStepEvent = {
+              type: 'MINION_ATTACK',
+              step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+              sourceName: minion.card.name,
+              targetPlayerId: player.id,
+              targetName: player.name,
+              amount: dmg,
+              description: `${minion.card.name} attacked ${player.name} for ${dmg} damage.`,
+              onomatopoeia: dmg > 0 ? 'POW!' : 'BLOCKED!',
+              combatOutcome: mutatedState.lastCombatOutcome,
+            };
+            if (mutatedState.pendingDecisionPrompt || mutatedState.winner) {
+              return mutatedState;
+            }
+            if ((mutatedState as any).pendingActivations?.length === 0) {
+              delete (mutatedState as any).pendingActivations;
+              mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+            }
+            return mutatedState;
+          } else {
+            const threatBefore = nextState.mainScheme.threat;
+            executeMinionActivationAgainstPlayer(nextState, minion, player, resolvedOptions);
+            const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+            nextState.villainPhaseStepEvent = {
+              type: 'MINION_SCHEME',
+              step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+              sourceName: minion.card.name,
+              targetPlayerId: player.id,
+              targetName: player.name,
+              amount: threatAdded,
+              description: `${minion.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
+              onomatopoeia: 'MINION SCHEMES!',
+            };
+            if (nextState.pendingDecisionPrompt || nextState.winner) {
+              return nextState;
+            }
+            if ((nextState as any).pendingActivations?.length === 0) {
+              delete (nextState as any).pendingActivations;
+              nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+            }
+            return nextState;
+          }
+        }
+      }
+    }
+
+    delete (nextState as any).pendingActivations;
+    nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+    return nextState;
+  }
+
+  // Case 3: DEAL_ENCOUNTER_CARDS
+  if (nextState.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
+    step4_dealEncounterCards(nextState);
+    const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
+    nextState.villainPhaseStepEvent = {
+      type: 'DEAL_ENCOUNTER_CARD',
+      step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+      amount: totalDealt,
+      description: `${totalDealt} encounter card(s) dealt to player threat zone(s).`,
+      onomatopoeia: 'ENCOUNTER DEALT!',
+    };
+    nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+    if (nextState.winner) return nextState;
+    return nextState;
+  }
+
+  // Case 4: REVEAL_ENCOUNTER_CARDS
+  if (nextState.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
+    let targetPlayer: PlayerState | undefined;
+    for (let i = 0; i < nextState.players.length; i++) {
+      const pIdx = (nextState.firstPlayerIndex + i) % nextState.players.length;
+      if (nextState.players[pIdx].dealtEncounterCards.length > 0) {
+        targetPlayer = nextState.players[pIdx];
+        break;
+      }
+    }
+
+    if (targetPlayer && targetPlayer.dealtEncounterCards.length > 0) {
+      const cardInstance = targetPlayer.dealtEncounterCards.shift()!;
+      const card = cardInstance.card;
+
+      nextState.activeEncounterContext = {
+        encounterInstanceId: cardInstance.instanceId,
+        encounterCard: cardInstance,
+        targetPlayerId: targetPlayer.id,
+      };
+
+      const whenRevealedAbilities = (card.enrichment?.abilities || []).filter(
+        (a) => a.trigger === 'WHEN_REVEALED' || a.timing === 'WHEN_REVEALED',
+      );
+
+      let isCancelled = false;
+      if (whenRevealedAbilities.length > 0) {
+        const triggerRes = dispatchTrigger(nextState, 'WHEN_REVEALED', {
+          targetPlayerId: targetPlayer.id,
+          encounterCardInstance: cardInstance,
+          acceptOptionalTriggers: options?.acceptOptionalTriggers,
+        });
+        if (triggerRes.cancelled || nextState.activeEncounterContext?.cancelled) {
+          isCancelled = true;
+        }
+
+        if (!isCancelled && card.type === CardType.TREACHERY) {
+          const treacheryRes = dispatchTrigger(nextState, 'TREACHERY_REVEALED', {
+            targetPlayerId: targetPlayer.id,
+            encounterCardInstance: cardInstance,
+            acceptOptionalTriggers: options?.acceptOptionalTriggers,
+          });
+          if (treacheryRes.cancelled || nextState.activeEncounterContext?.cancelled) {
+            isCancelled = true;
+          }
+        }
+
+        if (nextState.pendingDecisionPrompt) {
+          return nextState;
+        }
+      }
+
+      resolveActiveEncounterCardAfterInterrupt(nextState, cardInstance, targetPlayer, isCancelled);
+
+      nextState.villainPhaseStepEvent = {
+        type: 'REVEAL_ENCOUNTER_CARD',
+        step: VillainPhaseStep.REVEAL_ENCOUNTER_CARDS,
+        sourceName: cardInstance.card.name,
+        targetPlayerId: targetPlayer.id,
+        targetName: targetPlayer.name,
+        description: `${targetPlayer.name} revealed ${cardInstance.card.name}.`,
+        onomatopoeia: 'HAZARD!',
+        card: cardInstance,
+      };
+
+      if (nextState.pendingDecisionPrompt || nextState.winner) {
+        return nextState;
+      }
+
+      const anyRemaining = nextState.players.some((p) => p.dealtEncounterCards.length > 0);
+      if (!anyRemaining) {
+        nextState.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
+      }
+      return nextState;
+    }
+
+    nextState.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
+  }
+
+  // Case 5: PASS_FIRST_PLAYER & Round Upkeep
+  if (nextState.villainPhaseStep === VillainPhaseStep.PASS_FIRST_PLAYER) {
+    for (const player of nextState.players) {
+      dispatchTrigger(nextState, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
+    }
+    const finalState = step6_passFirstPlayerAndRoundUpkeep(nextState);
+    finalState.villainPhaseStepEvent = {
+      type: 'PASS_FIRST_PLAYER',
+      step: VillainPhaseStep.PASS_FIRST_PLAYER,
+      description: 'Round upkeep completed. First player token passed.',
+      onomatopoeia: 'ROUND UPKEEP!',
+    };
+    return finalState;
+  }
+
+  return nextState;
+}
 
 /**
  * Resumes and continues Villain Phase progression after a prompt resolution (ADR-0031 / ADR-0032).
  */
 export function continueVillainPhase(state: GameState, options?: CombatOptions): GameState {
   if (state.winner) return state;
+
+  if (options?.stepping || state.options?.villainPhaseStepping) {
+    return advanceVillainPhaseStep(state, options);
+  }
 
   // Step 2: Activations
   if (state.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
@@ -597,6 +951,10 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
  * 5. Passes execution to Step 6 (Round Upkeep & Token Rotation).
  */
 export function executeVillainPhase(state: GameState, options?: CombatOptions): GameState {
+  if (options?.stepping || state.options?.villainPhaseStepping) {
+    return advanceVillainPhaseStep(state, options);
+  }
+
   const nextState: GameState = JSON.parse(JSON.stringify(state));
   nextState.phase = GamePhase.VILLAIN_PHASE;
 

@@ -12,6 +12,7 @@ import {
   BookOpen,
   ExternalLink,
   Sparkles,
+  Clock,
 } from 'lucide-react';
 import { useGameSettings } from '../../context/useGameSettings';
 import { GameState } from '../../../engine/models';
@@ -38,6 +39,8 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
     setDefaultDifficulty,
     defaultHeroicLevel,
     setDefaultHeroicLevel,
+    villainPhasePacing,
+    setVillainPhasePacing,
   } = useGameSettings();
 
   if (!isOpen) return null;
@@ -268,6 +271,46 @@ export const OptionsMenu: React.FC<OptionsMenuProps> = ({ isOpen, onClose, gameS
             <p className="text-xs text-slate-600">
               Automatically resolves abilities and targeting when only 1 legal choice exists.
               Disable to force decision prompts and view disabled options.
+            </p>
+          </div>
+
+          {/* Villain Phase Pacing Setting */}
+          <div className="bg-amber-50 p-4 rounded-xl border-2 border-comic-black shadow-comic-sm space-y-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-comic-red" />
+                <span className="font-comic text-base text-comic-black">Villain Phase Pacing</span>
+              </div>
+
+              {/* Segmented Pacing Controls */}
+              <div className="flex items-center bg-white rounded-lg border-2 border-comic-black p-0.5 shadow-comic-sm flex-wrap">
+                {(
+                  [
+                    { id: 'auto_normal', label: 'Auto (Normal)' },
+                    { id: 'auto_fast', label: 'Auto (Fast)' },
+                    { id: 'manual', label: 'Manual Step' },
+                    { id: 'instant', label: 'Instant' },
+                  ] as const
+                ).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setVillainPhasePacing(id)}
+                    className={`px-2.5 py-1 font-comic text-xs uppercase rounded transition-all cursor-pointer font-bold ${
+                      villainPhasePacing === id
+                        ? 'bg-comic-yellow text-comic-black border border-comic-black shadow-comic-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600">
+              Controls villain phase speed: Auto Normal (~900ms pause) or Fast (~450ms) with comic
+              pacing; Manual Step (click Next Step or Spacebar); Instant (no pauses, auto-resolves
+              immediately).
             </p>
           </div>
 

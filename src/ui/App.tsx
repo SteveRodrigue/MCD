@@ -35,10 +35,15 @@ export const AppContent: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [loopError, setLoopError] = useState<InfiniteLoopError | null>(null);
 
-  // Sync game settings (e.g. autoResolveUnambiguous) to active gameState.options
+  // Sync game settings (e.g. autoResolveUnambiguous, villainPhaseStepping) to active gameState.options
   React.useEffect(() => {
+    const shouldStep = settings.villainPhasePacing !== 'instant';
     setGameState((prev) => {
-      if (!prev || prev.options?.autoResolveUnambiguous === settings.autoResolveUnambiguous) {
+      if (
+        !prev ||
+        (prev.options?.autoResolveUnambiguous === settings.autoResolveUnambiguous &&
+          prev.options?.villainPhaseStepping === shouldStep)
+      ) {
         return prev;
       }
       return {
@@ -46,10 +51,11 @@ export const AppContent: React.FC = () => {
         options: {
           ...prev.options,
           autoResolveUnambiguous: settings.autoResolveUnambiguous,
+          villainPhaseStepping: shouldStep,
         },
       };
     });
-  }, [settings.autoResolveUnambiguous]);
+  }, [settings.autoResolveUnambiguous, settings.villainPhasePacing]);
 
   // Handle browser popstate
   React.useEffect(() => {
@@ -112,6 +118,7 @@ export const AppContent: React.FC = () => {
     newGameState.options = {
       ...newGameState.options,
       autoResolveUnambiguous: settings.autoResolveUnambiguous,
+      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
     };
 
     setGameState(newGameState);
@@ -129,6 +136,7 @@ export const AppContent: React.FC = () => {
     nextState.options = {
       ...nextState.options,
       autoResolveUnambiguous: settings.autoResolveUnambiguous,
+      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
     };
 
     setGameState(nextState);
@@ -152,6 +160,7 @@ export const AppContent: React.FC = () => {
     currentState.options = {
       ...currentState.options,
       autoResolveUnambiguous: settings.autoResolveUnambiguous,
+      villainPhaseStepping: settings.villainPhasePacing !== 'instant',
     };
 
     setGameState(currentState);
@@ -165,6 +174,7 @@ export const AppContent: React.FC = () => {
       nextState.options = {
         ...nextState.options,
         autoResolveUnambiguous: settings.autoResolveUnambiguous,
+        villainPhaseStepping: settings.villainPhasePacing !== 'instant',
       };
       setGameState(nextState);
     } catch (err) {

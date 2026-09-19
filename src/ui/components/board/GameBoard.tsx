@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { GameState, GameAction, CardInstance } from '../../../engine/models';
+import {
+  GameState,
+  GameAction,
+  CardInstance,
+  CombatResolutionSummary,
+} from '../../../engine/models';
+import { VillainPhaseStepper } from './VillainPhaseStepper';
+import { CombatBoostModal } from './CombatBoostModal';
 import { TopBar } from './TopBar';
 import { VillainZone } from './VillainZone';
 import { HeroZone } from './HeroZone';
@@ -48,7 +55,75 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     };
   } | null>(null);
 
-  const { edgeScrollSpeed } = useGameSettings();
+  const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing } = useGameSettings();
+  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
+  const [activeCombatOutcome, setActiveCombatOutcome] = useState<CombatResolutionSummary | null>(
+    null,
+  );
+  const [isBoostModalOpen, setIsBoostModalOpen] = useState<boolean>(false);
+
+  const handleNextVillainStep = useCallback(() => {
+    if (gameState.phase !== 'VILLAIN_PHASE') return;
+    if (gameState.pendingDecisionPrompt) return;
+    setIsBoostModalOpen(false);
+    if (onDispatchAction) {
+      onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
+    }
+  }, [gameState.phase, gameState.pendingDecisionPrompt, onDispatchAction]);
+
+  const handleSkipVillainPacing = useCallback(() => {
+    setIsBoostModalOpen(false);
+    if (setVillainPhasePacing) {
+      setVillainPhasePacing('instant');
+    }
+    if (onDispatchAction) {
+      onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
+    }
+  }, [setVillainPhasePacing, onDispatchAction]);
+
+  const prevOutcomeRef = useRef<CombatResolutionSummary | undefined>(undefined);
+  useEffect(() => {
+    if (
+      gameState.lastCombatOutcome &&
+      gameState.lastCombatOutcome !== prevOutcomeRef.current &&
+      gameState.phase === 'VILLAIN_PHASE' &&
+      villainPhasePacing !== 'instant'
+    ) {
+      setActiveCombatOutcome(gameState.lastCombatOutcome);
+      setIsBoostModalOpen(true);
+    }
+    prevOutcomeRef.current = gameState.lastCombatOutcome;
+  }, [gameState.lastCombatOutcome, gameState.phase, villainPhasePacing]);
+
+  // Auto-advance timer during VILLAIN_PHASE
+  useEffect(() => {
+    if (gameState.phase !== 'VILLAIN_PHASE') return;
+    if (gameState.winner) return;
+    if (gameState.pendingDecisionPrompt) return;
+    if (!isAutoPlaying) return;
+    if (villainPhasePacing === 'manual') return;
+
+    if (villainPhasePacing === 'instant') {
+      handleNextVillainStep();
+      return;
+    }
+
+    const delay = villainPhasePacing === 'auto_fast' ? 450 : 900;
+    const timer = setTimeout(() => {
+      handleNextVillainStep();
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [
+    gameState.phase,
+    gameState.winner,
+    gameState.pendingDecisionPrompt,
+    gameState.villainPhaseStep,
+    gameState.villainPhaseStepEvent,
+    isAutoPlaying,
+    villainPhasePacing,
+    handleNextVillainStep,
+  ]);
 
   const totalPlayers = gameState.players.length;
   const isMultiHero = totalPlayers >= 2;
@@ -142,6 +217,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
 
       {/* 2. Panoramic Tabletop Main Stage */}
       <main className="flex-1 w-full flex flex-col items-center justify-start p-2 md:p-4 pt-20 md:pt-24 gap-4 max-w-full">
+        {/* Villain Phase Stepper Ribbon (Issue #140) */}
+        {gameState.phase === 'VILLAIN_PHASE' && (
+          <VillainPhaseStepper
+            gameState={gameState}
+            pacing={villainPhasePacing}
+            onNextStep={handleNextVillainStep}
+            onToggleAutoPlay={() => setIsAutoPlaying((prev) => !prev)}
+            onSkip={handleSkipVillainPacing}
+            isAutoPlaying={isAutoPlaying}
+          />
+        )}
+
         {/* Scenario Main Villain & Schemes Console */}
         <VillainZone
           villain={gameState.villain}
@@ -479,6 +566,18 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               selectedOptionId: optionId,
               ...payload,
             });
+          }
+        }}
+      />
+
+      {/* 9. Combat Boost & Damage Resolution Modal (Issue #140) */}
+      <CombatBoostModal
+        isOpen={isBoostModalOpen && Boolean(activeCombatOutcome)}
+        outcome={activeCombatOutcome || undefined}
+        onContinue={() => {
+          setIsBoostModalOpen(false);
+          if (villainPhasePacing === 'manual' || !isAutoPlaying) {
+            handleNextVillainStep();
           }
         }}
       />

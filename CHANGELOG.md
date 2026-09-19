@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine & UI): Granular Villain Phase Stepper & Interactive Turn Pacing ([ADR-0068](docs/decisions/0068-granular-villain-phase-stepper-and-interactive-turn-pacing.md) / [Issue #140](https://github.com/SteveRodrigue/MCD/issues/140))**
+  - **Granular Stepper Engine Pipeline:**
+    - Implemented `advanceVillainPhaseStep(state, options)` in `src/engine/pipeline/villain-phase.ts`, enabling step-by-step interactive progression through the 6 discrete Villain Phase milestones (Step 1 Main Scheme Threat, Step 2 Villain Activation, Step 3 Minion Activations, Step 4 Deal Encounter Cards, Step 5 Reveal Encounter Cards, and Step 6 Round Upkeep & Token Pass).
+    - Preserved backwards compatibility: `executeVillainPhase` and `continueVillainPhase` run continuously and synchronously when stepping is disabled or omitted.
+    - Added `ADVANCE_VILLAIN_PHASE` to `ActionType` and implemented handler in `src/engine/pipeline/action-dispatcher.ts`.
+    - Added `CombatResolutionSummary` and `VillainPhaseStepEvent` metadata models to `GameState` (`state.lastCombatOutcome` and `state.villainPhaseStepEvent`).
+    - Enhanced `combat-pipeline.ts` to record revealed boost cards and calculate combat math summaries (base ATK + boost cards + icons vs DEF = final damage).
+  - **Comic Pop-Art UI Stepper & Visual Effects:**
+    - Created `VillainPhaseStepper.tsx` displaying step category badges, comic onomatopoeias, narrative descriptions, and controls ("Next Step", auto-play pause/resume toggle, and skip remaining steps).
+    - Created `CombatBoostModal.tsx` displaying full combat resolution formula, revealed boost cards, boost icon counts, star abilities, and final damage dealt banner with Spacebar/Enter shortcut support.
+    - Created `ComicDamageSplash.tsx` rendering comic starburst overlays ("-X HP" / "BANG!" / "POW!") on player identity stations in `HeroZone.tsx`.
+    - Added `villainPhasePacing` setting (`auto_normal`, `auto_fast`, `manual`, `instant`) with persistence in `GameSettingsProvider.tsx` and segmented controls in `OptionsMenu.tsx`.
+    - Integrated auto-advancement timers and stepper controls into `GameBoard.tsx`, pausing cleanly when interactive decision prompts are opened.
+  - **Automated Verification:**
+    - Authored comprehensive engine unit tests in `tests/engine/villain-phase-stepping.test.ts` (discrete milestone advancement, prompt pausing, action dispatching, and continuous fallback).
+    - Authored UI component unit tests in `tests/ui/villain-phase-stepper.test.tsx` (stepper controls, modal formula rendering, keybindings, and damage splash).
+
 - **Fix (UI & Rules Presentation): Facedown Encounter Card Display in Hero Threat Zone ([Issue #138](https://github.com/SteveRodrigue/MCD/issues/138))**
   - **Facedown Encounter Cards Visual Indicator:**
     - Created `FacedownEncounterCard.tsx` in `src/ui/components/cards/` featuring a comic pop-art styled card back (crimson/slate theme, bold black borders, halftone bendy dots, alert skull iconography, and "ENCOUNTER" header).

@@ -247,6 +247,7 @@ _Objective: Complete, test, and ship a 100% polished, playable vertical slice fe
 ### 1.3. 🟠 `[Should-Have]` Comic Tabletop UI & Ergonomics
 
 - [x] **Pop-Art Combat Modals:** Interactive `AttackTargetModal.tsx`, `IdentityActionModal.tsx`, `DecisionPromptModal.tsx`, and Defender declaration window.
+- [x] **Granular Villain Phase Stepper & Interactive Turn Pacing ([ADR-0068](decisions/0068-granular-villain-phase-stepper-and-interactive-turn-pacing.md) / [Issue #140](https://github.com/SteveRodrigue/MCD/issues/140)) ✅ (Completed):** Step-by-step interactive milestone progression, auto-advance pacing controls (Normal, Fast, Manual, Instant), pop-art Combat Boost calculation modal, and comic damage splashes.
 - [x] **Dynamic Hand & Zone Displays:** Fan-out hand cards, vertical scheme threat gauge, and hero tableau layout.
 - [ ] **[Issue #50](https://github.com/SteveRodrigue/MCD/issues/50):** `[IMPROVEMENT] Adjust UI layout in multiplayer (2+ hero board)` for clean tabletop layout.
 - [ ] **[Issue #4](https://github.com/SteveRodrigue/MCD/issues/4):** `feat(ui): Display active and dynamic traits on card hover/mouseover`.

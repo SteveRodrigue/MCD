@@ -40,6 +40,7 @@ import {
 } from './cost-engine';
 import { executeEffect, moveDefeatedCardToPile, processHostDefeated } from '../effects';
 import {
+  advanceVillainPhaseStep,
   continueVillainPhase,
   executeMinionAttackAgainstPlayer,
   resolveActiveEncounterCardAfterInterrupt,
@@ -2027,6 +2028,35 @@ export function dispatchAction(
           },
         };
       }
+    }
+
+    case 'ADVANCE_VILLAIN_PHASE': {
+      if (nextState.winner) {
+        return {
+          state,
+          result: { success: false, error: 'Game has already ended' },
+        };
+      }
+
+      if (nextState.pendingDecisionPrompt) {
+        return {
+          state,
+          result: {
+            success: false,
+            error: 'Cannot advance villain phase while a decision prompt is pending',
+          },
+        };
+      }
+
+      const advancedState = advanceVillainPhaseStep(nextState);
+      const onom = advancedState.villainPhaseStepEvent?.onomatopoeia || 'STEP';
+      return {
+        state: advancedState,
+        result: {
+          success: true,
+          onomatopoeia: onom,
+        },
+      };
     }
 
     case 'DEV_ADD_CARD_TO_HAND': {

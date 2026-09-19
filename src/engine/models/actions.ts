@@ -14,7 +14,8 @@ export type ActionType =
   | 'END_PLAYER_TURN'
   | 'DEV_ADD_CARD_TO_HAND'
   | 'MINION_ENGAGES_PLAYER'
-  | 'REVEAL_ENCOUNTER_CARD';
+  | 'REVEAL_ENCOUNTER_CARD'
+  | 'ADVANCE_VILLAIN_PHASE';
 
 export interface ResolveMulliganAction {
   type: 'RESOLVE_MULLIGAN';
@@ -141,6 +142,11 @@ export interface RevealEncounterCardAction {
   encounterCard: any;
 }
 
+export interface AdvanceVillainPhaseAction {
+  type: 'ADVANCE_VILLAIN_PHASE';
+  playerId?: string;
+}
+
 export type GameAction =
   | ResolveMulliganAction
   | ChangeFormAction
@@ -157,7 +163,8 @@ export type GameAction =
   | EndPlayerTurnAction
   | DevAddCardToHandAction
   | MinionEngagesPlayerAction
-  | RevealEncounterCardAction;
+  | RevealEncounterCardAction
+  | AdvanceVillainPhaseAction;
 
 export interface ActionResult {
   success: boolean;

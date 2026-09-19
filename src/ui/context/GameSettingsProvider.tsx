@@ -54,6 +54,10 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setSettings((previous) => ({ ...previous, cardZoomLevel: level }));
   };
 
+  const setVillainPhasePacing = (pacing: 'auto_normal' | 'auto_fast' | 'manual' | 'instant') => {
+    setSettings((previous) => ({ ...previous, villainPhasePacing: pacing }));
+  };
+
   const setDefaultDifficulty = (difficulty: typeof DEFAULT_SETTINGS.defaultDifficulty) => {
     setSettings((previous) => ({ ...previous, defaultDifficulty: difficulty }));
   };
@@ -74,6 +78,7 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         autoResolveUnambiguous: settings.autoResolveUnambiguous !== false,
         edgeScrollSpeed: settings.edgeScrollSpeed || 'normal',
         cardZoomLevel: settings.cardZoomLevel || 'normal',
+        villainPhasePacing: settings.villainPhasePacing || 'auto_normal',
         defaultDifficulty: settings.defaultDifficulty || 'STANDARD',
         defaultHeroicLevel: settings.defaultHeroicLevel || 0,
         setDevMode,
@@ -82,6 +87,7 @@ export const GameSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ 
         toggleAutoResolveUnambiguous,
         setEdgeScrollSpeed,
         setCardZoomLevel,
+        setVillainPhasePacing,
         setDefaultDifficulty,
         setDefaultHeroicLevel,
         updateSettings,

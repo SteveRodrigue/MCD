@@ -37,6 +37,7 @@ function dispatchCanonicalCharacterDefeat(
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
   acceptOptionalTriggers?: boolean;
+  stepping?: boolean;
 }
 
 /**
@@ -525,6 +526,10 @@ export function step4_and_5_dealAndResolveBoostCards(
     while (attackContext.boostQueue.length > 0) {
       const currentBoost = attackContext.boostQueue.shift()!;
       state.activeBoostCard = currentBoost;
+      if (!attackContext.revealedBoostCards) {
+        attackContext.revealedBoostCards = [];
+      }
+      attackContext.revealedBoostCards.push(currentBoost);
 
       // 1. Dispatch Boost Reveal Interrupt Window (e.g. Defiance, Target Acquired)
       dispatchTrigger(state, 'WHEN_BOOST_CARD_REVEALED', {
@@ -768,6 +773,38 @@ export function applyCalculatedAttackDamage(
   }
 
   attackContext.finalDamage = rawDamage;
+
+  const attackerName =
+    attackContext.attackerType === 'VILLAIN'
+      ? state.villain.card.name
+      : attackContext.attackerCard?.card.name || 'Minion';
+  const attackerCode =
+    attackContext.attackerType === 'VILLAIN'
+      ? state.villain.card.code
+      : attackContext.attackerCard?.card.code;
+
+  state.lastCombatOutcome = {
+    attackerName,
+    attackerCode,
+    attackerType: attackContext.attackerType,
+    targetPlayerId: player.id,
+    targetHeroName: player.hero?.name || player.name,
+    defenderType: attackContext.defender?.type,
+    defenderName:
+      attackContext.defender?.type === 'HERO'
+        ? player.hero?.name || player.name
+        : attackContext.defender?.type === 'ALLY'
+          ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)?.card
+              .name || 'Ally'
+          : undefined,
+    baseAttack: attackContext.baseAttack,
+    boostCards: attackContext.revealedBoostCards ? [...attackContext.revealedBoostCards] : [],
+    totalBoostIcons: attackContext.totalBoostIcons,
+    defenseValue: attackContext.defenseValue || 0,
+    finalDamage: rawDamage,
+    hasOverkill: attackContext.hasOverkill,
+    hasPiercing: attackContext.hasPiercing,
+  };
 }
 
 /**

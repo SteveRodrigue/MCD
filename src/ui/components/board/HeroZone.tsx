@@ -29,6 +29,7 @@ import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
 import { useGameSettings } from '../../context/useGameSettings';
 import { IdentityActionModal } from './IdentityActionModal';
+import { ComicDamageSplash } from './ComicDamageSplash';
 import { AttackTargetModal } from './AttackTargetModal';
 import { AllyActionModal } from './AllyActionModal';
 import { TableauActionModal } from './TableauActionModal';
@@ -135,6 +136,16 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     isHero && !player.exhausted && isPlayerTurn && validHeroAttackTargets.length > 0;
   const canThwart =
     isHero && !player.exhausted && isPlayerTurn && validHeroThwartTargets.some((t) => t.allowed);
+
+  const stepEvent = gameState?.villainPhaseStepEvent;
+  const isTargetOfDamageEvent = Boolean(
+    stepEvent &&
+    stepEvent.targetPlayerId === player.id &&
+    (stepEvent.type === 'VILLAIN_ATTACK' || stepEvent.type === 'MINION_ATTACK') &&
+    stepEvent.amount !== undefined &&
+    stepEvent.amount > 0,
+  );
+  const splashDamageAmount = isTargetOfDamageEvent ? stepEvent!.amount! : 0;
 
   // Ally & Tableau Action Selection States
   const [selectedAllyForModal, setSelectedAllyForModal] = useState<CardInstance | null>(null);
@@ -543,7 +554,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           )}
 
           {/* Identity Card */}
-          <div className="pt-0.5 flex flex-col justify-center items-center w-full">
+          <div className="pt-0.5 flex flex-col justify-center items-center w-full relative">
             <CardView
               card={player.activeFormCard}
               dynamicTraits={identityTraitsDetails.dynamicTraits}
@@ -554,6 +565,12 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               enableHoverZoom={true}
               onClick={() => setIsIdentityModalOpen(true)}
             />
+            {isTargetOfDamageEvent && (
+              <ComicDamageSplash
+                amount={splashDamageAmount}
+                onomatopoeia={stepEvent?.onomatopoeia || 'BANG!'}
+              />
+            )}
             <CardAttachmentFan
               attachments={player.attachments}
               cardsUnderneath={player.cardsUnderneath}

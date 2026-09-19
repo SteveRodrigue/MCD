@@ -216,6 +216,7 @@ export interface AttackExecutionContext {
   phase: CombatPhase;
   baseAttack: number;
   boostQueue: CardInstance[];
+  revealedBoostCards?: CardInstance[];
   totalBoostIcons: number;
   defender?: DefenderDeclaration;
   heroDefended?: boolean;
@@ -229,6 +230,46 @@ export interface AttackExecutionContext {
   finalDamage?: number;
   cancelled?: boolean;
   cancellationReason?: string;
+}
+
+export interface CombatResolutionSummary {
+  attackerName: string;
+  attackerCode?: string;
+  attackerType: 'VILLAIN' | 'MINION';
+  targetPlayerId: string;
+  targetHeroName?: string;
+  defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  defenderName?: string;
+  baseAttack: number;
+  boostCards: CardInstance[];
+  totalBoostIcons: number;
+  defenseValue: number;
+  finalDamage: number;
+  hasOverkill?: boolean;
+  hasPiercing?: boolean;
+}
+
+export type VillainPhaseStepEventType =
+  | 'THREAT_PLACED'
+  | 'VILLAIN_ATTACK'
+  | 'VILLAIN_SCHEME'
+  | 'MINION_ATTACK'
+  | 'MINION_SCHEME'
+  | 'DEAL_ENCOUNTER_CARD'
+  | 'REVEAL_ENCOUNTER_CARD'
+  | 'PASS_FIRST_PLAYER';
+
+export interface VillainPhaseStepEvent {
+  type: VillainPhaseStepEventType;
+  step: VillainPhaseStep;
+  sourceName?: string;
+  targetPlayerId?: string;
+  targetName?: string;
+  amount?: number;
+  description: string;
+  onomatopoeia?: string;
+  combatOutcome?: CombatResolutionSummary;
+  card?: CardInstance;
 }
 
 export type DecisionPromptKind = 'SINGLE_CHOICE' | 'DISTRIBUTE_POINTS' | 'MULTI_SELECT_TARGETS';
@@ -299,6 +340,7 @@ export interface GameOptions {
    * without opening a decision prompt. When false, prompts always open for inspection.
    */
   autoResolveUnambiguous?: boolean;
+  villainPhaseStepping?: boolean;
 }
 
 export interface GameState {
@@ -350,6 +392,8 @@ export interface GameState {
   activeBoostCard?: CardInstance;
   activeAttackContext?: AttackExecutionContext;
   activeEncounterContext?: EncounterExecutionContext;
+  lastCombatOutcome?: CombatResolutionSummary;
+  villainPhaseStepEvent?: VillainPhaseStepEvent;
   winner: 'HEROES' | 'VILLAIN' | null;
   log: GameLogEntry[];
   /** Last engine diagnostic error recorded (e.g. infinite trigger loop, invariant violation) */

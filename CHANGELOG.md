@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **UI & Ergonomics: Centered Viewport Alignment & Active-Player Turn Synchronization in Multiplayer ([Issue #50](https://github.com/SteveRodrigue/MCD/issues/50) / [ADR-0017](docs/decisions/0017-panoramic-horizontal-tabletop-and-edge-scrolling.md))**
+  - **Centered Tabletop Viewport (1 to 4 Players):**
+    - Updated the multi-hero panoramic track in `src/ui/components/board/GameBoard.tsx` to wrap the hero stations within `<div className="flex items-start justify-center min-w-full w-max gap-6">` inside the outer scroll container (`w-full overflow-x-auto`).
+    - When all hero stations fit on screen (e.g. 2 players on 1080p/1440p displays or 3–4 players on ultrawide monitors), players are centered symmetrically beneath the Villain Zone with equal margins.
+    - When stations overflow, `min-w-full w-max` ensures the track starts cleanly at the scroll origin with zero clipping of Player 1 on the left.
+  - **Active-Player Turn Focus Synchronization:**
+    - Added a reactive `useEffect` to synchronize `gameState.activePlayerIndex` with `handleSelectSeat` when `isMultiHero` is active.
+    - Turn transitions automatically auto-center the active seat into full view, guaranteeing 100% on-screen visibility without requiring manual horizontal scrolling.
+    - Memoized `handleSelectSeat` using `useCallback([scrollToChild])`.
+  - **Automated Tests:**
+    - Authored `tests/ui/gameboard-multiplayer-alignment.test.tsx` (4 tests) verifying solo mode `mx-auto` isolation, multiplayer centering classes (`justify-center min-w-full w-max`), 3- and 4-player layouts, and reactive active-player turn transitions with `scrollTo` auto-alignment.
+
+
 - **Feature (Engine & UI): Display Active and Dynamic Traits on Card Hover/Mouseover and Action Modals ([Issue #4](https://github.com/SteveRodrigue/MCD/issues/4) / [ADR-0004](docs/decisions/0004-visual-art-direction-comic-pop-art.md) & [ADR-0012](docs/decisions/0012-z-axis-hover-zoom-and-layering.md))**
   - **Headless Trait Calculation Engine:**
     - Exported interface `EffectiveTraitsResult` (`traits`, `dynamicTraits`, `printedTraits`) in `src/engine/pipeline/stat-calculator.ts`.

@@ -321,39 +321,43 @@ handoff contract. Ask the user which findings to address. For selected items:
 4. Reference the report path and selected finding IDs in implementation plans, issues, and tickets.
 5. Stop for explicit approval before implementation. Commit and push remain separately authorized.
 
-## Tooling Strategies and Tradeoffs
+## Tooling Policy
 
-### Strategy A - Native Evidence-First Audit (Default)
+Perform the audit with the repository's existing toolchain and available workspace analysis:
 
-Use TypeScript, ESLint, Vitest coverage, repository search, build output, and local call-site tracing.
+- TypeScript type checking and compiler diagnostics.
+- ESLint diagnostics, including unused declarations and disable directives.
+- Vitest focused tests, full tests, and coverage when required by the selected depth.
+- Production build output.
+- Exact repository search, import/export tracing, symbol references, and local call-site analysis.
+- Git history only when current code cannot establish intent.
 
-- **Pros:** no dependency churn; understands project conventions; easiest to review; lowest setup cost.
-- **Cons:** weaker whole-program dead-export and clone detection; more reviewer effort; dynamic paths remain manual.
-- **Choose when:** focused reviews, dirty worktrees, or the first audit baseline.
+Do not install dependencies, add analyzers, or modify configuration during the read-only audit.
+The audit may recommend a tool or library as one remediation option when a confirmed problem is
+better solved by adopting a proven capability than by maintaining custom code. Such a recommendation
+must be tied to a specific finding; never propose tooling merely because it is popular or available.
 
-### Strategy B - Add Local Static Analyzers
+For each proposed tool or library, the report must include:
 
-Propose, but do not install without approval, tools such as `knip` for unused files/exports/dependencies
-and `jscpd` for clone detection. Add explicit configuration for Vite, Vitest, scripts, tools,
-supplemental data, and generated exclusions.
+- The affected classes, functions, or architectural responsibility and the concrete deficiency.
+- A comparison of at least three options: retain and improve the current implementation, adopt the
+  proposed dependency, and one credible alternative when available.
+- Benefits and limitations of each option, with a clear recommendation and rationale.
+- Compatibility with the project's architecture, TypeScript/Vite/Vitest stack, local-first policy,
+  browser/runtime targets, licensing, maintenance health, security posture, and release cadence.
+- Dependency weight, bundle/runtime impact, transitive dependencies, API stability, configuration
+  burden, migration effort, lock-in, failure modes, and ongoing ownership cost.
+- A migration outline, affected tests, rollback path, blast-radius tier, and measurable acceptance
+  criteria proving that adoption improves the identified problem.
 
-- **Pros:** repeatable repository-wide detection; CI-friendly; useful trend baseline.
-- **Cons:** dependency/config maintenance; false positives around registries and dynamic data;
-  clone percentages can incentivize harmful abstractions.
-- **Choose when:** full audits recur and the team wants enforceable thresholds.
+Prefer the standard library and existing dependencies when they solve the problem adequately. A new
+dependency must provide material correctness, reliability, maintainability, performance, or security
+value that outweighs its lifecycle cost. Installation or architectural adoption requires a separate
+approval-gated implementation plan; dependency security findings route through `dependabot`.
 
-### Strategy C - Continuous Quality Platform
-
-Propose CodeQL, SonarQube/SonarCloud, or an equivalent platform for historical trends and policy gates.
-
-- **Pros:** dashboards, change-over-time analysis, security rules, pull-request integration.
-- **Cons:** service and configuration overhead; noisy generic rules; possible cost/privacy concerns;
-  does not understand Marvel Champions domain semantics without customization.
-- **Choose when:** team size and review volume justify centralized governance.
-
-**Recommendation:** begin with Strategy A. Use one completed full audit to measure false-positive
-patterns, then pilot Strategy B in report-only mode. Adopt CI thresholds only after the baseline is
-clean and exclusions are reviewed; otherwise the metric becomes noise instead of a quality gate.
+If the existing toolchain cannot verify a candidate finding, lower its confidence, record the
+limitation and missing evidence in the report, and classify it as an Open Question when confidence
+falls below 80%. Do not recommend a tool solely to raise confidence in an otherwise unsupported claim.
 
 ## Prompt Examples
 

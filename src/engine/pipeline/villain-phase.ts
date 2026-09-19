@@ -295,24 +295,6 @@ export function step2_villainAndMinionActivations(
 export const step2_villainActivations = step2_villainAndMinionActivations;
 
 /**
- * Step 3: Minion Activations (Deprecated standalone step; now interleaved in Step 2 per RR v1.8 p. 22).
- * Kept as an optional direct-call helper if needed by legacy tests.
- */
-export function step3_minionActivations(state: GameState, options?: CombatOptions): GameState {
-  if (state.winner) return state;
-  state.villainPhaseStep = VillainPhaseStep.MINION_ACTIVATIONS;
-
-  for (const player of state.players) {
-    for (const minion of player.engagedMinions) {
-      executeMinionActivationAgainstPlayer(state, minion, player, options);
-      if (state.winner) return state;
-    }
-  }
-
-  return state;
-}
-
-/**
  * Step 4: Deal Encounter Cards (RR v1.8 p. 11, p. 22, p. 32 & FFG Heroic Mode)
  * 1. Pass 1 (Base & Heroic): Deal 1 + heroicLevel encounter cards to each player in player order, starting with First Player.
  * 2. Pass 2 (Hazard Icons): Deal 1 additional encounter card for each active Hazard icon sequentially in player order starting with First Player.

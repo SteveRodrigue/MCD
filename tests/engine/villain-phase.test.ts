@@ -11,7 +11,6 @@ import {
   executeVillainPhase,
   step1_placeThreat,
   step2_villainActivations,
-  step3_minionActivations,
   step4_dealEncounterCards,
   step5_revealEncounterCards,
   step6_passFirstPlayerAndRoundUpkeep,
@@ -275,27 +274,6 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       expect(activationLogs[1].params?.player).toBe(p2.name);
       expect(activationLogs[2].params?.player).toBe(p1.name);
       expect(activationLogs[3].params?.player).toBe(p1.name);
-    });
-  });
-
-  describe('Step 3: Minion Activations (RR v1.8 p. 31)', () => {
-    it('engaged minion attacks Hero or schemes Alter-Ego', () => {
-      const minionCard = catalog.getCard('01110')!; // Hydra Bomber (ATK 1, SCH 1)
-      const minionInstance = createCardInstance(minionCard);
-      gameState.players[0].engagedMinions.push(minionInstance);
-
-      // In Alter-Ego -> Schemes (+1 threat)
-      const initialThreat = gameState.mainScheme.threat;
-      step3_minionActivations(gameState);
-      expect(gameState.mainScheme.threat).toBe(initialThreat + 1);
-
-      // In Hero -> Attacks (1 damage)
-      gameState.players[0].currentForm = 'hero';
-      gameState.players[0].activeFormCard = gameState.players[0].hero;
-      const initialHealth = gameState.players[0].health;
-
-      step3_minionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
-      expect(gameState.players[0].health).toBe(initialHealth - 1);
     });
   });
 

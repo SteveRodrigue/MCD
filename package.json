@@ -21,6 +21,7 @@
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js}\"",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:coverage && npm run build",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
@@ -46,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",

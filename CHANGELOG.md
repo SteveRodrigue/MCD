@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Ability Cost Generator Payment, Printed Resource Requirement & Energy Channel Scaling ([Issue #96](https://github.com/SteveRodrigue/MCD/issues/96))**
+  - **Engine Models & Supplemental Schema:**
+    - Extended `AbilityCost` in `src/engine/models/abilities.ts` and `AbilityCostSchema` in `src/data/supplemental/schema.ts` (regenerating `src/data/supplemental/schema.json`) with `requirePrinted?: boolean`.
+  - **Cost Engine & Action Dispatcher (`generatorInstanceIds`):**
+    - Updated `src/engine/pipeline/cost-engine.ts` to normalize resource cost extraction across `cost.resourceCost` and `cost.resources`.
+    - Added support for in-play generator activations (`options.generatorInstanceIds`) during ability costs: exhausting generators, recording them in `usedAbilitiesThisRound`/`Phase`, and accumulating their generated resources into `resourcesPaid`.
+    - In `src/engine/pipeline/action-dispatcher.ts`, enabled `USE_CARD_ABILITY` to accept payments when `paymentCardInstanceIds?.length > 0` or `generatorInstanceIds?.length > 0`, passing combined `resourcesPaid` to `scaling: 'PER_RESOURCE_SPENT'`.
+    - Updated `src/engine/pipeline/legal-actions-generator.ts` to require `'payment'` modal for abilities specifying resource costs.
+    - Updated `src/engine/effects/index.ts` to preserve counter operations with explicit `amount: 0`.
+  - **Rules Alignment (Printed Resources vs. Wild Substitution):**
+    - Adhered to Marvel Champions Rules Reference v1.8 (p. 15): Wild resources substitute freely for Energy, Physical, and Mental when the cost does not specify "printed".
+    - When `requirePrinted: true` is declared, Wild resources and wild generators are strictly disallowed from substituting.
+  - **UI & Card Editor:**
+    - Updated `src/ui/components/editor/AbilityCostSection.tsx` with a "Require Printed Resources" checkbox toggle (`cost-require-printed-${abilityIndex}`).
+    - Updated `src/ui/components/board/HeroZone.tsx` button label to `⚡ ADD TOKENS` and supported array-based resource costs.
+    - Updated `src/ui/components/board/GameBoard.tsx` to properly resolve `action.playerId` for payment modals.
+    - Updated `src/ui/components/board/CardPaymentModal.tsx` to enforce printed matching when required, render a "Requires printed resource icons" badge, and provide real-time counter placement previews for `PER_RESOURCE_SPENT` scaling.
+  - **Energy Channel Overpayment Invariant:**
+    - Verified players can commit resources beyond 5 tokens (e.g. paying 3 energy via _Energy Absorption_ when already at 4 tokens to reach 7 tokens), with subsequent blast ability triggering clamped safely to 10 damage.
+  - **Automated Tests:**
+    - Authored 6 tests in `tests/engine/action-cost-engine.test.ts` (generator-only payments, combined hand+generator payments, variable X spending, printed requirement vs. wild substitution, overpayment to 7 tokens and clamped 10 damage).
+    - Authored unit test in `tests/ui/AbilityCostSection.test.tsx` verifying the Card Editor toggle.
+
 - **Feature (UI & Data): Hero-Themed Color Palette Integration, Default Fallback & Inactive Player Board Distinguishability ([Issue #110](https://github.com/SteveRodrigue/MCD/issues/110) / [ADR-0004](docs/decisions/0004-visual-art-direction-comic-pop-art.md))**
   - **Data Model & Normalization:**
     - Extended `NormalizedCard` in `src/engine/models/card.ts` with optional `meta?: Record<string, unknown>`.
@@ -25,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Authored `tests/ui/hero-theme-palette.test.ts` (15 tests) verifying color extraction across all 5 Core Heroes, hex validation, and fallback handling.
     - Authored `tests/ui/hero-board-theme-and-distinguishability.test.tsx` (5 tests) verifying themed active styling, fallback application, inactive visual treatments, and click-to-focus behavior.
 
-
 - **UI & Ergonomics: Centered Viewport Alignment & Active-Player Turn Synchronization in Multiplayer ([Issue #50](https://github.com/SteveRodrigue/MCD/issues/50) / [ADR-0017](docs/decisions/0017-panoramic-horizontal-tabletop-and-edge-scrolling.md))**
   - **Centered Tabletop Viewport (1 to 4 Players):**
     - Updated the multi-hero panoramic track in `src/ui/components/board/GameBoard.tsx` to wrap the hero stations within `<div className="flex items-start justify-center min-w-full w-max gap-6">` inside the outer scroll container (`w-full overflow-x-auto`).
@@ -38,11 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Automated Tests:**
     - Authored `tests/ui/gameboard-multiplayer-alignment.test.tsx` (4 tests) verifying solo mode `mx-auto` isolation, multiplayer centering classes (`justify-center min-w-full w-max`), 3- and 4-player layouts, and reactive active-player turn transitions with `scrollTo` auto-alignment.
 
-
 - **Feature (Engine & UI): Display Active and Dynamic Traits on Card Hover/Mouseover and Action Modals ([Issue #4](https://github.com/SteveRodrigue/MCD/issues/4) / [ADR-0004](docs/decisions/0004-visual-art-direction-comic-pop-art.md) & [ADR-0012](docs/decisions/0012-z-axis-hover-zoom-and-layering.md))**
   - **Headless Trait Calculation Engine:**
     - Exported interface `EffectiveTraitsResult` (`traits`, `dynamicTraits`, `printedTraits`) in `src/engine/pipeline/stat-calculator.ts`.
-    - Implemented and exported `getEffectivePlayerTraits(player: PlayerState)` and `getEffectivePlayerTraitsDetails(player: PlayerState)` to evaluate printed identity traits and in-play dynamic `CONSTANT ADD_TRAIT` upgrades (e.g. *Cosmic Flight* `01017` granting Captain Marvel `Aerial`) as well as player attachments.
+    - Implemented and exported `getEffectivePlayerTraits(player: PlayerState)` and `getEffectivePlayerTraitsDetails(player: PlayerState)` to evaluate printed identity traits and in-play dynamic `CONSTANT ADD_TRAIT` upgrades (e.g. _Cosmic Flight_ `01017` granting Captain Marvel `Aerial`) as well as player attachments.
     - Implemented and exported `getEffectiveCardTraits` and `getEffectiveCardTraitsDetails` for general cards, allies, minions, and villains, resolving attached dynamic trait grants.
     - Refactored `hasPlayerTrait` to use `getEffectivePlayerTraits` for single-source-of-truth trait queries across the engine.
     - Updated `evaluatePlayRequirements` in `src/engine/pipeline/legality-checker.ts` to call `hasPlayerTrait` for `identityTraits` verification, ensuring cards requiring traits can be played when granted dynamically via upgrades.

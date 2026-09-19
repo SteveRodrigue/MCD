@@ -262,4 +262,23 @@ describe('AbilityCostSection', () => {
       expect.not.objectContaining({ heal: expect.anything() }),
     );
   });
+
+  it('toggles requirePrinted in resource costs', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulAbilityCostSection initial={{}} onChange={handleChange} />);
+
+    await user.click(screen.getByTestId('cost-require-printed-0'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requirePrinted: true,
+      }),
+    );
+
+    await user.click(screen.getByTestId('cost-require-printed-0'));
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.not.objectContaining({ requirePrinted: true }),
+    );
+  });
 });

@@ -802,13 +802,14 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                         : { allowed: false, reason: 'Game state not loaded' };
                       const canUse = isPlayerTurn && costCheck.allowed;
                       const label = ab.id.includes('add')
-                        ? '⚡ +1 TOKEN'
+                        ? '⚡ ADD TOKENS'
                         : ab.id.includes('blast')
                           ? '💥 BLAST'
                           : '⚡ USE';
 
                       const hasPaymentCost =
                         ab.cost?.resourceCost ||
+                        (ab.cost?.resources && ab.cost.resources.length > 0) ||
                         (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
 
                       return (

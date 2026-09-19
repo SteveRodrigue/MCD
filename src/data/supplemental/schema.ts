@@ -548,6 +548,7 @@ export const AbilityCostSchema = z
     discardSelf: z.boolean().optional(),
     resources: z.array(ResourceTypeSchema).optional(),
     resourceCost: z.union([z.number(), z.record(z.string(), z.number())]).optional(),
+    requirePrinted: z.boolean().optional(),
     damageHero: z.number().optional(),
     damageSelf: z.number().optional(),
     spendCounters: z

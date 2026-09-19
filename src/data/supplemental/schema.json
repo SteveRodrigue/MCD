@@ -259,6 +259,9 @@
                         }
                       ]
                     },
+                    "requirePrinted": {
+                      "type": "boolean"
+                    },
                     "damageHero": {
                       "type": "number"
                     },

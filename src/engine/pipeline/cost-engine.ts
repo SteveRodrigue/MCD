@@ -14,6 +14,8 @@ import { removeCardFromAllZones } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
+import { locateCard, readCardResources } from '../queries/card-inspector';
+import { getCardEnrichment } from '../../data/supplemental';
 
 export interface AbilityPaymentOptions {
   paymentCardInstanceIds?: string[];
@@ -23,14 +25,219 @@ export interface AbilityPaymentOptions {
 }
 
 /**
+ * Normalizes and extracts resource requirements and requirePrinted constraint from an ability cost.
+ */
+export function extractResourceCost(cost?: CardAbility['cost']): {
+  hasCost: boolean;
+  requiredType?: string;
+  requiredAmount: number;
+  requirePrinted: boolean;
+} {
+  if (!cost) {
+    return { hasCost: false, requiredAmount: 0, requirePrinted: false };
+  }
+  const requirePrinted = Boolean(cost.requirePrinted);
+  if (cost.resources && cost.resources.length > 0) {
+    return {
+      hasCost: true,
+      requiredType: cost.resources[0],
+      requiredAmount: cost.resources.length,
+      requirePrinted,
+    };
+  }
+  if (cost.resourceCost !== undefined) {
+    if (typeof cost.resourceCost === 'number') {
+      return {
+        hasCost: true,
+        requiredType: undefined,
+        requiredAmount: cost.resourceCost,
+        requirePrinted,
+      };
+    }
+    if (typeof cost.resourceCost === 'object' && cost.resourceCost !== null) {
+      const keys = Object.keys(cost.resourceCost);
+      const reqType = keys[0];
+      const reqAmount = reqType ? cost.resourceCost[reqType] || 1 : 1;
+      return {
+        hasCost: true,
+        requiredType: reqType,
+        requiredAmount: reqAmount,
+        requirePrinted,
+      };
+    }
+  }
+  return { hasCost: false, requiredAmount: 0, requirePrinted: false };
+}
+
+/**
+ * Calculates matching resources provided by a physical card in hand (RR v1.8 p. 15).
+ */
+export function getCardProvidedResources(
+  cardInst: CardInstance,
+  requiredType?: string,
+  requirePrinted?: boolean,
+): number {
+  const printedList = readCardResources(cardInst);
+  if (printedList.length > 0) {
+    if (requirePrinted && requiredType) {
+      return printedList.filter((r) => r === requiredType).length;
+    }
+    if (!requiredType) {
+      return printedList.length;
+    }
+    return printedList.filter((r) => r === requiredType || r === 'wild').length;
+  }
+  const res = cardInst.card?.resources;
+  if (!res) return requirePrinted ? 0 : !requiredType ? 1 : 0;
+  if (requirePrinted && requiredType) {
+    return (res as any)[requiredType] || 0;
+  }
+  if (!requiredType) {
+    return res.total || 1;
+  }
+  return ((res as any)[requiredType] || 0) + (res.wild || 0);
+}
+
+/**
+ * Calculates matching resources provided by an in-play generator or identity ability (RR v1.8 p. 15, 25).
+ */
+export function getGeneratorProvidedResources(
+  state: GameState,
+  player: PlayerState,
+  gId: string,
+  requiredType?: string,
+  requirePrinted?: boolean,
+): number {
+  if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+    const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+      (a) =>
+        a.timing === 'RESOURCE' ||
+        a.timing === 'HERO_RESOURCE' ||
+        a.timing === 'ALTER_EGO_RESOURCE' ||
+        a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
+    );
+    if (!idAbility) return 0;
+    if (idAbility.timing === 'HERO_RESOURCE' && player.currentForm !== 'hero') return 0;
+    if (idAbility.timing === 'ALTER_EGO_RESOURCE' && player.currentForm !== 'alter_ego') return 0;
+    if (
+      idAbility.limit === 'ONCE_PER_ROUND' &&
+      (player.usedAbilitiesThisRound?.[idAbility.id] || 0) >= 1
+    ) {
+      return 0;
+    }
+    if (
+      idAbility.limit === 'ONCE_PER_PHASE' &&
+      (player.usedAbilitiesThisPhase?.[idAbility.id] || 0) >= 1
+    ) {
+      return 0;
+    }
+    const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+    if (genStep && getStepEffectParams(genStep).fromCard) {
+      const target = locateCard(state, getStepEffectParams(genStep).fromCard!, { player });
+      if (!target) return 0;
+      const printedList = readCardResources(target);
+      if (requirePrinted && requiredType) {
+        return printedList.filter((r) => r === requiredType).length;
+      }
+      if (!requiredType) {
+        return printedList.length;
+      }
+      return printedList.filter((r) => r === requiredType || r === 'wild').length;
+    }
+    const resType = (genStep?.effectParams?.resource as string) || 'wild';
+    const amount = Number(genStep?.effectParams?.amount) || 1;
+    if (requirePrinted) {
+      return resType === requiredType ? amount : 0;
+    }
+    if (!requiredType || resType === requiredType || resType === 'wild') {
+      return amount;
+    }
+    return 0;
+  }
+
+  const gCard = player.tableau.find((c) => c.instanceId === gId);
+  if (!gCard || gCard.exhausted) return 0;
+
+  const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
+  const abilities = enrichment?.abilities || [];
+  const tableAbility = abilities.find(
+    (a) =>
+      isResourceAbility(a.timing) ||
+      a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+  );
+
+  if (!tableAbility) {
+    if (enrichment?.uses) {
+      const uType = enrichment.uses.type;
+      const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
+      if (count <= 0) return 0;
+      if (requirePrinted) return 0;
+      return 1;
+    }
+    return 0;
+  }
+
+  if (!isAbilityPlayableInForm(tableAbility.timing as any, player.currentForm)) return 0;
+
+  const abilityKey = `${gCard.instanceId}_${tableAbility.id}`;
+  if (
+    tableAbility.limit === 'ONCE_PER_ROUND' &&
+    (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
+  ) {
+    return 0;
+  }
+  if (
+    tableAbility.limit === 'ONCE_PER_PHASE' &&
+    (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
+  ) {
+    return 0;
+  }
+
+  if (enrichment?.uses) {
+    const uType = enrichment.uses.type;
+    const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
+    if (count <= 0) return 0;
+  }
+
+  const genStep = tableAbility.steps?.find(
+    (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
+  );
+  if (genStep && getStepEffectParams(genStep).fromCard) {
+    const target = locateCard(state, getStepEffectParams(genStep).fromCard!, {
+      player,
+      sourceCardInstance: gCard,
+    });
+    if (!target) return 0;
+    const printedList = readCardResources(target);
+    if (requirePrinted && requiredType) {
+      return printedList.filter((r) => r === requiredType).length;
+    }
+    if (!requiredType) {
+      return printedList.length;
+    }
+    return printedList.filter((r) => r === requiredType || r === 'wild').length;
+  }
+
+  const resType = (genStep?.effectParams?.resource as string) || 'wild';
+  const amount = Number(genStep?.effectParams?.amount) || 1;
+  if (requirePrinted) {
+    return resType === requiredType ? amount : 0;
+  }
+  if (!requiredType || resType === requiredType || resType === 'wild') {
+    return amount;
+  }
+  return 0;
+}
+
+/**
  * Validates whether a player can satisfy all prerequisites and costs of a card ability.
  */
 export function canPayAbilityCost(
-  _state: GameState,
+  state: GameState,
   player: PlayerState,
   ability: CardAbility,
   sourceCardInst?: CardInstance,
-  _options?: AbilityPaymentOptions,
+  options?: AbilityPaymentOptions,
 ): { allowed: boolean; reason?: string } {
   const cost = ability.cost;
   if (!cost) return { allowed: true };
@@ -40,7 +247,7 @@ export function canPayAbilityCost(
     const requiredHeal = cost.heal.amount || 1;
     const targetMode = cost.heal.target || 'SELF';
     if (targetMode === 'SELF') {
-      const maxHp = getEffectiveMaxHealth(player, _state);
+      const maxHp = getEffectiveMaxHealth(player, state);
       const currentDamage = Math.max(0, maxHp - player.health);
       if (currentDamage < requiredHeal) {
         return {
@@ -137,7 +344,7 @@ export function canPayAbilityCost(
       }
       if (cost.discardCard.filter) {
         const matchingCount = player.hand.filter((c) =>
-          matchesCardFilter(c.card, cost.discardCard!.filter, { player, state: _state }),
+          matchesCardFilter(c.card, cost.discardCard!.filter, { player, state }),
         ).length;
         if (matchingCount < requiredCount) {
           return {
@@ -146,8 +353,8 @@ export function canPayAbilityCost(
           };
         }
       }
-      if (_options?.discardCardInstanceIds) {
-        for (const id of _options.discardCardInstanceIds) {
+      if (options?.discardCardInstanceIds) {
+        for (const id of options.discardCardInstanceIds) {
           const cardInst = player.hand.find((c) => c.instanceId === id);
           if (!cardInst) {
             return {
@@ -157,7 +364,7 @@ export function canPayAbilityCost(
           }
           if (
             cost.discardCard.filter &&
-            !matchesCardFilter(cardInst.card, cost.discardCard.filter, { player, state: _state })
+            !matchesCardFilter(cardInst.card, cost.discardCard.filter, { player, state })
           ) {
             return {
               allowed: false,
@@ -165,44 +372,79 @@ export function canPayAbilityCost(
             };
           }
         }
-        if (!maxCount && _options.discardCardInstanceIds.length < requiredCount) {
+        if (!maxCount && options.discardCardInstanceIds.length < requiredCount) {
           return {
             allowed: false,
-            reason: `Insufficient cards selected to discard as cost (Requires ${requiredCount}, selected ${_options.discardCardInstanceIds.length}).`,
+            reason: `Insufficient cards selected to discard as cost (Requires ${requiredCount}, selected ${options.discardCardInstanceIds.length}).`,
           };
         }
       }
     }
   }
 
-  // 6. Resource Cost Validation (cost.resourceCost, e.g. { energy: 1 })
-  if (cost.resourceCost) {
-    const requiredType =
-      typeof cost.resourceCost === 'object' ? Object.keys(cost.resourceCost)[0] : undefined;
-    const requiredAmount =
-      typeof cost.resourceCost === 'number'
-        ? cost.resourceCost
-        : requiredType
-          ? cost.resourceCost[requiredType] || 1
-          : 1;
+  // 6. Resource Cost Validation (cost.resourceCost / cost.resources)
+  const resCost = extractResourceCost(cost);
+  if (resCost.hasCost) {
+    const { requiredType, requiredAmount, requirePrinted } = resCost;
+    const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
+    const specifiedGeneratorIds = options?.generatorInstanceIds || [];
 
-    const specifiedPaymentIds = _options?.paymentCardInstanceIds || [];
-    if (specifiedPaymentIds.length > 0) {
+    if (specifiedPaymentIds.length > 0 || specifiedGeneratorIds.length > 0) {
       let providedAmount = 0;
       for (const id of specifiedPaymentIds) {
         const cardInst = player.hand.find((c) => c.instanceId === id);
         if (!cardInst) {
           return { allowed: false, reason: `Selected payment card ${id} not found in hand.` };
         }
-        const res = cardInst.card.resources;
-        if (!requiredType) {
-          providedAmount += res?.total || 1;
+        providedAmount += getCardProvidedResources(cardInst, requiredType, requirePrinted);
+      }
+      for (const gId of specifiedGeneratorIds) {
+        if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+          const genAmt = getGeneratorProvidedResources(
+            state,
+            player,
+            gId,
+            requiredType,
+            requirePrinted,
+          );
+          if (genAmt <= 0) {
+            return {
+              allowed: false,
+              reason: `Identity resource ability cannot generate ${requiredType || 'the required'} resource.`,
+            };
+          }
+          providedAmount += genAmt;
         } else {
-          const matching = (res as any)?.[requiredType] || 0;
-          const wild = res?.wild || 0;
-          providedAmount += matching + wild;
+          const gCard = player.tableau.find((c) => c.instanceId === gId);
+          if (!gCard) {
+            return {
+              allowed: false,
+              reason: `Resource generator instance ${gId} not found in tableau.`,
+            };
+          }
+          if (gCard.exhausted) {
+            return {
+              allowed: false,
+              reason: `Resource generator ${gCard.card.name} is already exhausted.`,
+            };
+          }
+          const genAmt = getGeneratorProvidedResources(
+            state,
+            player,
+            gId,
+            requiredType,
+            requirePrinted,
+          );
+          if (genAmt <= 0) {
+            return {
+              allowed: false,
+              reason: `Resource generator ${gCard.card.name} cannot generate ${requiredType || 'the required'} resource.`,
+            };
+          }
+          providedAmount += genAmt;
         }
       }
+
       if (providedAmount < requiredAmount) {
         return {
           allowed: false,
@@ -210,22 +452,34 @@ export function canPayAbilityCost(
         };
       }
     } else {
-      // General availability check across player hand cards
+      // General availability check across player hand cards AND ready generators
       let availableAmount = 0;
       for (const cardInst of player.hand) {
-        const res = cardInst.card.resources;
-        if (!requiredType) {
-          availableAmount += res?.total || 1;
-        } else {
-          const matching = (res as any)?.[requiredType] || 0;
-          const wild = res?.wild || 0;
-          availableAmount += matching + wild;
+        availableAmount += getCardProvidedResources(cardInst, requiredType, requirePrinted);
+      }
+      for (const gCard of player.tableau) {
+        if (!gCard.exhausted) {
+          availableAmount += getGeneratorProvidedResources(
+            state,
+            player,
+            gCard.instanceId,
+            requiredType,
+            requirePrinted,
+          );
         }
       }
+      availableAmount += getGeneratorProvidedResources(
+        state,
+        player,
+        'identity_ability',
+        requiredType,
+        requirePrinted,
+      );
+
       if (availableAmount < requiredAmount) {
         return {
           allowed: false,
-          reason: `Insufficient resources in hand (Requires ${requiredAmount} ${requiredType || 'resources'}, has ${availableAmount}).`,
+          reason: `Insufficient resources (Requires ${requiredAmount} ${requiredType || 'resources'}, has ${availableAmount}).`,
         };
       }
     }
@@ -256,8 +510,8 @@ export function canPayAbilityCost(
     const stepParams = getStepEffectParams(step);
     const target = stepParams.target;
     if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
-      const totalMinions = _state.players.reduce(
-        (acc, p) => acc + (p.engagedMinions?.length || 0),
+      const totalMinions = state.players.reduce(
+        (acc: number, p: PlayerState) => acc + (p.engagedMinions?.length || 0),
         0,
       );
       if (totalMinions === 0) {
@@ -433,19 +687,111 @@ export function executeAbilityCost(
     }
   }
 
-  // 5. Resource Cost Payment (cost.resourceCost)
+  // 5. Resource Cost Payment (cost.resourceCost / cost.resources)
   let resourcesPaid = 0;
-  if (cost.resourceCost) {
-    const requiredType =
-      typeof cost.resourceCost === 'object' ? Object.keys(cost.resourceCost)[0] : undefined;
-    const requiredAmount =
-      typeof cost.resourceCost === 'number'
-        ? cost.resourceCost
-        : requiredType
-          ? cost.resourceCost[requiredType] || 1
-          : 1;
-
+  const resCost = extractResourceCost(cost);
+  if (resCost.hasCost) {
+    const { requiredType, requiredAmount, requirePrinted } = resCost;
     const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
+    const specifiedGeneratorIds = options?.generatorInstanceIds || [];
+
+    // Process generator activations
+    for (const gId of specifiedGeneratorIds) {
+      if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+        const genAmt = getGeneratorProvidedResources(
+          state,
+          player,
+          gId,
+          requiredType,
+          requirePrinted,
+        );
+        resourcesPaid += genAmt;
+
+        const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+          (a) =>
+            a.timing === 'RESOURCE' ||
+            a.timing === 'HERO_RESOURCE' ||
+            a.timing === 'ALTER_EGO_RESOURCE' ||
+            a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
+        );
+        if (idAbility) {
+          if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+          player.usedAbilitiesThisRound[idAbility.id] =
+            (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
+          if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+          player.usedAbilitiesThisPhase[idAbility.id] =
+            (player.usedAbilitiesThisPhase[idAbility.id] || 0) + 1;
+        }
+        state.log.push({
+          id: `log_${Date.now()}_id_res`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          key: 'identity.ability.used',
+          params: { ability: idAbility?.id || 'resource', hero: player.activeFormCard.name },
+          onomatopoeia: 'RESOURCE GENERATED!',
+        });
+      } else {
+        const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
+        if (gIdx !== -1) {
+          const gCard = player.tableau[gIdx];
+          const genAmt = getGeneratorProvidedResources(
+            state,
+            player,
+            gId,
+            requiredType,
+            requirePrinted,
+          );
+          resourcesPaid += genAmt;
+
+          gCard.exhausted = true;
+          const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
+          const abilities = enrichment?.abilities || [];
+          const tableAbility = abilities.find(
+            (a) =>
+              isResourceAbility(a.timing) ||
+              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+          );
+          if (tableAbility) {
+            const key = `${gCard.instanceId}_${tableAbility.id}`;
+            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+            player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
+            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+            player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
+          }
+          if (enrichment?.uses) {
+            const counterType = enrichment.uses.type;
+            if (
+              gCard.tokens &&
+              typeof gCard.tokens.counters === 'number' &&
+              gCard.tokens.counters > 0
+            ) {
+              gCard.tokens.counters = Math.max(0, gCard.tokens.counters - 1);
+            }
+            if (
+              counterType &&
+              gCard.counters &&
+              typeof gCard.counters[counterType] === 'number' &&
+              gCard.counters[counterType] > 0
+            ) {
+              gCard.counters[counterType] = Math.max(0, gCard.counters[counterType] - 1);
+            }
+            checkAndDiscardZeroCounterCard(state, player, gCard, counterType);
+          }
+          state.log.push({
+            id: `log_${Date.now()}_gen_res`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.ability.used',
+            params: { card: gCard.card.name },
+            onomatopoeia: 'GENERATED RESOURCE!',
+          });
+        }
+      }
+    }
+
+    // Process payment cards from hand
     if (specifiedPaymentIds.length > 0) {
       for (const id of specifiedPaymentIds) {
         const idx = player.hand.findIndex((c) => c.instanceId === id);
@@ -453,41 +799,27 @@ export function executeAbilityCost(
           const [discarded] = player.hand.splice(idx, 1);
           player.discard.push(discarded);
           discardedCount++;
-          const res = discarded.card.resources;
-          if (!requiredType) {
-            resourcesPaid += res?.total || 1;
-          } else {
-            const matching = (res as any)?.[requiredType] || 0;
-            const wild = res?.wild || 0;
-            resourcesPaid += matching + wild;
-          }
+          const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
+          resourcesPaid += cardAmt;
         }
       }
-    } else {
+    } else if (specifiedGeneratorIds.length === 0) {
       // Auto-consume cards from hand until requiredAmount is satisfied
       while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
         let cardIdx = -1;
-        if (!requiredType) {
-          cardIdx = 0;
-        } else {
-          cardIdx = player.hand.findIndex((c) => {
-            const res = c.card.resources;
-            return ((res as any)?.[requiredType] || 0) > 0 || (res?.wild || 0) > 0;
-          });
+        for (let i = 0; i < player.hand.length; i++) {
+          if (getCardProvidedResources(player.hand[i], requiredType, requirePrinted) > 0) {
+            cardIdx = i;
+            break;
+          }
         }
         if (cardIdx === -1) break;
 
         const [discarded] = player.hand.splice(cardIdx, 1);
         player.discard.push(discarded);
         discardedCount++;
-        const res = discarded.card.resources;
-        if (!requiredType) {
-          resourcesPaid += res?.total || 1;
-        } else {
-          const matching = (res as any)?.[requiredType] || 0;
-          const wild = res?.wild || 0;
-          resourcesPaid += matching + wild;
-        }
+        const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
+        resourcesPaid += cardAmt;
       }
     }
   }

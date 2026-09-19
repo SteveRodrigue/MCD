@@ -3941,8 +3941,7 @@ export function executeStep(
     case 'MODIFY_COUNTER': {
       const targetParam = (step.effectParams?.target as string) || 'SELF';
       const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-      let amount = (step.effectParams?.amount as number) || 1;
-      if (typeof amount !== 'number') amount = 1;
+      const amount = typeof step.effectParams?.amount === 'number' ? step.effectParams.amount : 1;
 
       if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};
@@ -3974,8 +3973,7 @@ export function executeStep(
     case 'REMOVE_COUNTERS': {
       const targetParam = (step.effectParams?.target as string) || 'SELF';
       const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-      let amount = (step.effectParams?.amount as number) || 1;
-      if (typeof amount !== 'number') amount = 1;
+      const amount = typeof step.effectParams?.amount === 'number' ? step.effectParams.amount : 1;
 
       if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};

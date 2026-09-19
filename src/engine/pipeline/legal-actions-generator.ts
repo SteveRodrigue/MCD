@@ -244,7 +244,9 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
             badge,
             iconType: 'ability',
             requiresModal:
-              ab.cost?.resourceCost || (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
+              ab.cost?.resourceCost ||
+              (ab.cost?.resources && ab.cost.resources.length > 0) ||
+              (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
                 ? 'payment'
                 : undefined,
             targetCardInstance: {
@@ -334,6 +336,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
               iconType: 'ability',
               requiresModal:
                 ab.cost?.resourceCost ||
+                (ab.cost?.resources && ab.cost.resources.length > 0) ||
                 (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND')
                   ? 'payment'
                   : undefined,

@@ -111,6 +111,7 @@ export interface AbilityCost {
   };
   resourceCost?: number | Record<string, number>;
   resources?: string[];
+  requirePrinted?: boolean;
   discardCard?: {
     count?: number;
     maxCount?: number;

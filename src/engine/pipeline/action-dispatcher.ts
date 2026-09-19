@@ -1848,14 +1848,20 @@ export function dispatchAction(
         };
       }
 
-      // Resource payment validation: Player must explicitly select payment cards (RR v1.8 p. 25 / ADR-0055)
-      if (ability.cost?.resourceCost) {
-        if (!action.paymentCardInstanceIds || action.paymentCardInstanceIds.length === 0) {
+      // Resource payment validation: Player must explicitly select payment cards or generators (RR v1.8 p. 25 / ADR-0055)
+      if (
+        ability.cost?.resourceCost ||
+        (ability.cost?.resources && ability.cost.resources.length > 0)
+      ) {
+        const hasPaymentCards = (action.paymentCardInstanceIds?.length || 0) > 0;
+        const hasGenerators = (action.generatorInstanceIds?.length || 0) > 0;
+        if (!hasPaymentCards && !hasGenerators) {
           return {
             state,
             result: {
               success: false,
-              error: 'Payment cards must be selected to satisfy the resource cost.',
+              error:
+                'Payment cards or resource generators must be selected to satisfy the resource cost.',
             },
           };
         }

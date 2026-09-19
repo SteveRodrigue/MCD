@@ -196,6 +196,22 @@ export const AbilityCostSection: React.FC<AbilityCostSectionProps> = ({
             );
           })}
         </div>
+        <div className="mt-2 pt-1 border-t border-gray-100 flex items-center gap-2">
+          <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+            <input
+              type="checkbox"
+              data-testid={`cost-require-printed-${abilityIndex}`}
+              checked={Boolean(currentCost.requirePrinted)}
+              onChange={(e) => {
+                handleCostUpdate({
+                  requirePrinted: e.target.checked || undefined,
+                });
+              }}
+              className="accent-black"
+            />
+            <span className="font-bold text-gray-700">Require Printed Resources</span>
+          </label>
+        </div>
       </div>
 
       {/* Spend Counters, Discard Card & Heal sub-costs */}

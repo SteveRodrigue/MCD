@@ -38,6 +38,8 @@ import {
   getEffectiveHandSize,
   getEffectiveAllyStats,
   getEffectiveAllyLimit,
+  getEffectivePlayerTraitsDetails,
+  getEffectiveCardTraitsDetails,
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
 
@@ -86,6 +88,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   );
   const effectiveHandSize = getEffectiveHandSize(player, gameState);
   const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
+  const identityTraitsDetails = getEffectivePlayerTraitsDetails(player);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
   const baseThw = isHero ? heroCard.thwart || 0 : 0;
@@ -491,6 +494,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           <div className="pt-0.5 flex flex-col justify-center items-center w-full">
             <CardView
               card={player.activeFormCard}
+              dynamicTraits={identityTraitsDetails.dynamicTraits}
+              effectiveTraits={identityTraitsDetails.traits}
               isExhausted={player.exhausted}
               size="sm"
               showTokens={false}
@@ -709,13 +714,20 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     {/* Dedicated Host Card & Attachment Anchor Container (Coordinates align with top of host card) */}
                     <div className="relative flex flex-col items-center">
                       <div className="relative z-30 flex flex-col items-center">
-                        <CardView
-                          card={ally.card}
-                          instance={ally}
-                          size="sm"
-                          enableHoverZoom={true}
-                          onClick={() => setSelectedAllyForModal(ally)}
-                        />
+                        {(() => {
+                          const allyTraitsDetails = getEffectiveCardTraitsDetails(ally.card, ally);
+                          return (
+                            <CardView
+                              card={ally.card}
+                              instance={ally}
+                              dynamicTraits={allyTraitsDetails.dynamicTraits}
+                              effectiveTraits={allyTraitsDetails.traits}
+                              size="sm"
+                              enableHoverZoom={true}
+                              onClick={() => setSelectedAllyForModal(ally)}
+                            />
+                          );
+                        })()}
                       </div>
 
                       {/* Fan-Down Staircase Attachments Stack (Anchored to top of host card) */}

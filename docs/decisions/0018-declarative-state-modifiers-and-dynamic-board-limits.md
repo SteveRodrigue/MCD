@@ -38,6 +38,9 @@ All player limits and board parameters are derived dynamically from state querie
 - **Hand Size Limit (`getPlayerHandSizeLimit`):**
   - Base: active identity printed `handSize`.
   - Queries in-play cards for `HAND_SIZE_BONUS` (e.g. _Symbiote Suit_).
+- **Active & Dynamic Card Traits (`getEffectivePlayerTraits`, `getEffectiveCardTraits`, `hasPlayerTrait`):**
+  - Queries active identity printed traits (`player.activeFormCard`, `player.hero`, `player.alterEgo`) and scans in-play tableau cards and attachments for `timing: "CONSTANT"`, `effect: "ADD_TRAIT"` (e.g. *Cosmic Flight* `01017` granting *Aerial*).
+  - Used dynamically by legality checking (`identityTraits`) and ability condition gates (`TARGET_TRAIT_MATCH`) without hardcoded identity ID checks.
 
 ### 3. Generic Counter & Generator Architecture
 

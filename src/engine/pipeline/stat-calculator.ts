@@ -6,10 +6,18 @@ import {
   HeroCard,
   AlterEgoCard,
   PlayerState,
+  NormalizedCard,
+  CardType,
 } from '../models';
 import { matchesCardFilter } from '../filters/card-filter';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+
+export interface EffectiveTraitsResult {
+  traits: string[]; // Deduplicated canonical traits (printed + dynamic)
+  dynamicTraits: string[]; // Only traits granted dynamically via ADD_TRAIT
+  printedTraits: string[]; // Base printed traits
+}
 
 export interface EffectiveVillainStats {
   attack: number;
@@ -137,37 +145,161 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
   };
 }
 
+function dedupeTraits(traits: (string | undefined | null)[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const t of traits) {
+    if (!t) continue;
+    const trimmed = t.trim();
+    if (!trimmed) continue;
+    const lower = trimmed.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      result.push(trimmed);
+    }
+  }
+  return result;
+}
+
+function extractAddTraitEffects(sources: (CardInstance | undefined)[]): string[] {
+  const dynamicTraits: string[] = [];
+  for (const item of sources) {
+    if (!item) continue;
+    const abilities = item.card?.enrichment?.abilities || [];
+    for (const ab of abilities) {
+      if (ab.timing === 'CONSTANT') {
+        for (const step of ab.steps || []) {
+          if (step.effect === 'ADD_TRAIT') {
+            const stepParams = getStepEffectParams(step);
+            const trait = stepParams.trait as string | undefined;
+            if (trait && trait.trim()) {
+              dynamicTraits.push(trait.trim());
+            }
+          }
+        }
+      }
+    }
+  }
+  return dynamicTraits;
+}
+
+/**
+ * Computes full effective trait details for a player identity,
+ * inspecting active form traits, hero/alter-ego printed traits,
+ * tableau upgrades with CONSTANT ADD_TRAIT, and identity attachments with CONSTANT ADD_TRAIT.
+ */
+export function getEffectivePlayerTraitsDetails(player: PlayerState): EffectiveTraitsResult {
+  const rawPrinted = [
+    ...(player.activeFormCard?.traits || []),
+    ...(player.hero?.traits || []),
+    ...(player.alterEgo?.traits || []),
+  ];
+  const printedTraits = dedupeTraits(rawPrinted);
+
+  const dynamicSources = [...(player.tableau || []), ...(player.attachments || [])];
+  const dynamicTraits = dedupeTraits(extractAddTraitEffects(dynamicSources));
+  const traits = dedupeTraits([...printedTraits, ...dynamicTraits]);
+
+  return {
+    traits,
+    dynamicTraits,
+    printedTraits,
+  };
+}
+
+/**
+ * Computes active and dynamic traits for a player identity (deduplicated).
+ */
+export function getEffectivePlayerTraits(player: PlayerState): string[] {
+  return getEffectivePlayerTraitsDetails(player).traits;
+}
+
+/**
+ * Computes full effective trait details for any card or card instance,
+ * delegating to player traits if matching identity, and inspecting attachments for CONSTANT ADD_TRAIT.
+ */
+export function getEffectiveCardTraitsDetails(
+  card: NormalizedCard,
+  instance?: CardInstance,
+  context?: { player?: PlayerState; state?: GameState; villain?: VillainState },
+): EffectiveTraitsResult {
+  const targetPlayer =
+    context?.player ||
+    (context?.state?.players || []).find(
+      (p) =>
+        p.activeFormCard?.code === card.code ||
+        p.hero?.code === card.code ||
+        p.alterEgo?.code === card.code,
+    );
+
+  const isIdentityCard =
+    targetPlayer &&
+    (targetPlayer.activeFormCard?.code === card.code ||
+      targetPlayer.hero?.code === card.code ||
+      targetPlayer.alterEgo?.code === card.code ||
+      card.type === CardType.HERO ||
+      card.type === CardType.ALTER_EGO ||
+      (card as any).type === 'hero' ||
+      (card as any).type === 'alter_ego');
+
+  if (targetPlayer && isIdentityCard) {
+    const playerDetails = getEffectivePlayerTraitsDetails(targetPlayer);
+    if (instance?.attachments && instance.attachments.length > 0) {
+      const extraDynamic = dedupeTraits(extractAddTraitEffects(instance.attachments));
+      const combinedDynamic = dedupeTraits([...playerDetails.dynamicTraits, ...extraDynamic]);
+      const combinedTraits = dedupeTraits([...playerDetails.traits, ...extraDynamic]);
+      return {
+        traits: combinedTraits,
+        dynamicTraits: combinedDynamic,
+        printedTraits: playerDetails.printedTraits,
+      };
+    }
+    return playerDetails;
+  }
+
+  const printedTraits = dedupeTraits(card.traits || []);
+
+  const attachmentSources: CardInstance[] = [];
+  if (instance?.attachments) {
+    attachmentSources.push(...instance.attachments);
+  }
+  if (
+    context?.villain &&
+    (card.type === CardType.VILLAIN || (card as any).type === 'villain') &&
+    context.villain.attachments
+  ) {
+    attachmentSources.push(...context.villain.attachments);
+  }
+
+  const dynamicTraits = dedupeTraits(extractAddTraitEffects(attachmentSources));
+  const traits = dedupeTraits([...printedTraits, ...dynamicTraits]);
+
+  return {
+    traits,
+    dynamicTraits,
+    printedTraits,
+  };
+}
+
+/**
+ * Computes active effective traits for any card or card instance.
+ */
+export function getEffectiveCardTraits(
+  card: NormalizedCard,
+  instance?: CardInstance,
+  context?: { player?: PlayerState; state?: GameState; villain?: VillainState },
+): string[] {
+  return getEffectiveCardTraitsDetails(card, instance, context).traits;
+}
+
 /**
  * Checks whether a player identity currently has a given trait (case-insensitive),
- * evaluating active form traits, hero/alter-ego printed traits, and tableau CONSTANT ADD_TRAIT upgrades.
+ * evaluating active form traits, hero/alter-ego printed traits, tableau CONSTANT ADD_TRAIT upgrades,
+ * and identity attachments with CONSTANT ADD_TRAIT.
  */
 export function hasPlayerTrait(player: PlayerState, trait: string): boolean {
   const lower = trait.toLowerCase().trim();
-  const activeTraits = (player.activeFormCard?.traits || []).map((t) => t.toLowerCase().trim());
-  const heroTraits = (player.hero?.traits || []).map((t) => t.toLowerCase().trim());
-  const alterEgoTraits = (player.alterEgo?.traits || []).map((t) => t.toLowerCase().trim());
-
-  if (
-    activeTraits.includes(lower) ||
-    heroTraits.includes(lower) ||
-    alterEgoTraits.includes(lower)
-  ) {
-    return true;
-  }
-
-  return (player.tableau || []).some((t) =>
-    (t.card.enrichment?.abilities || []).some(
-      (a) =>
-        a.timing === 'CONSTANT' &&
-        a.steps?.some(
-          (s) =>
-            s.effect === 'ADD_TRAIT' &&
-            String(getStepEffectParams(s).trait || '')
-              .toLowerCase()
-              .trim() === lower,
-        ),
-    ),
-  );
+  return getEffectivePlayerTraits(player).some((t) => t.toLowerCase().trim() === lower);
 }
 
 /**

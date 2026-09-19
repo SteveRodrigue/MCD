@@ -5,6 +5,7 @@ import { PlayerState, GameState, GameAction, HeroCard, AlterEgoCard } from '../.
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
+  getEffectivePlayerTraitsDetails,
 } from '../../../engine/pipeline/stat-calculator';
 import {
   canChangeForm,
@@ -42,6 +43,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
     gameState || ({ sideSchemes: [], players: [] } as any),
     player,
   );
+  const traitsDetails = getEffectivePlayerTraitsDetails(player);
   const isPlayerTurn = gameState
     ? gameState.phase === 'PLAYER_PHASE' &&
       gameState.players[gameState.activePlayerIndex]?.id === player.id
@@ -147,6 +149,34 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
             {(player.activeFormCard as unknown as HeroCard | AlterEgoCard).handSize ??
               (isHero ? 5 : 6)}
           </span>
+        </div>
+
+        {/* Active Traits Strip */}
+        <div
+          data-testid="identity-active-traits-strip"
+          className="relative px-5 py-2 bg-amber-50 border-b-2 border-comic-black flex flex-wrap items-center gap-1.5 text-xs font-bold"
+        >
+          <span className="text-[10px] uppercase font-black text-slate-500 tracking-wider">
+            Traits:
+          </span>
+          {traitsDetails.printedTraits.map((trait, idx) => (
+            <span
+              key={`printed-${idx}`}
+              className="bg-white text-slate-800 font-comic text-[10px] px-2 py-0.5 rounded border border-comic-black shadow-comic-xs font-bold"
+            >
+              {trait}
+            </span>
+          ))}
+          {traitsDetails.dynamicTraits.map((trait, idx) => (
+            <span
+              key={`dynamic-${idx}`}
+              data-testid={`identity-dynamic-trait-${trait.toLowerCase()}`}
+              className="bg-cyan-300 text-slate-950 font-comic text-[10px] px-2 py-0.5 rounded-full border-2 border-comic-black shadow-comic-xs font-black uppercase tracking-wider flex items-center gap-0.5"
+            >
+              <span>✨</span>
+              <span>{trait}</span>
+            </span>
+          ))}
         </div>
 
         {/* 3. Action Options List */}

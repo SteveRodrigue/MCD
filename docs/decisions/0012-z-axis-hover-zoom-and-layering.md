@@ -1,4 +1,4 @@
-﻿# [ADR-0012] Z-Axis Unconstrained Elevation & Hover-Zoom Architecture
+# [ADR-0012] Z-Axis Unconstrained Elevation & Hover-Zoom Architecture
 
 * **Status:** Accepted
 * **Date:** 2026-08-27
@@ -37,6 +37,11 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
    * Bottom Hand Tray Base: `z-20`
    * Hovered / Elevated Card: `z-50` with high-contrast comic drop shadow (`shadow-2xl`).
 
+3. **Dynamic Inspection & Badge Overlays on Hover-Zoom (Issue #4):**
+   * Physical card art captures only static printed card text. Cards that dynamically acquire traits (e.g. *Cosmic Flight* `01017` granting Captain Marvel the `[[Aerial]]` trait, or attachment traits) must clearly communicate their effective state to the player.
+   * On hover-zoom, dynamically gained traits are rendered as high-contrast 1960s pop-art badge pills (`[✨ Aerial]`) positioned at the card header overlay.
+   * Badges scale seamlessly with the card container (`transform origin` and `--card-zoom-scale`) without triggering container clipping or stacking context collapse.
+
 ---
 
 ## Consequences & Tradeoffs
@@ -44,6 +49,7 @@ However, when the parent container has `overflow-x: auto` or `overflow: hidden`,
 ### Positive:
 * **No Scrollbars:** Zero unwanted scrollbars or clipped card headers on hover.
 * **Smooth Tactile Feel:** Hovering a card smoothly projects it into the foreground over the board without layout shifts.
+* **Immediate State Clarity:** Players can visually confirm dynamic traits (e.g. Aerial form) on hover-zoom without opening modal inspection dialogs.
 * **Zero Overhead:** Accomplished purely with standard CSS3 transforms and unconstrained stacking contexts without extra portal DOM nodes.
 
 ### Negative / Tradeoffs:

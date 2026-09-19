@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (Engine & UI): Display Active and Dynamic Traits on Card Hover/Mouseover and Action Modals ([Issue #4](https://github.com/SteveRodrigue/MCD/issues/4) / [ADR-0004](docs/decisions/0004-visual-art-direction-comic-pop-art.md) & [ADR-0012](docs/decisions/0012-z-axis-hover-zoom-and-layering.md))**
+  - **Headless Trait Calculation Engine:**
+    - Exported interface `EffectiveTraitsResult` (`traits`, `dynamicTraits`, `printedTraits`) in `src/engine/pipeline/stat-calculator.ts`.
+    - Implemented and exported `getEffectivePlayerTraits(player: PlayerState)` and `getEffectivePlayerTraitsDetails(player: PlayerState)` to evaluate printed identity traits and in-play dynamic `CONSTANT ADD_TRAIT` upgrades (e.g. *Cosmic Flight* `01017` granting Captain Marvel `Aerial`) as well as player attachments.
+    - Implemented and exported `getEffectiveCardTraits` and `getEffectiveCardTraitsDetails` for general cards, allies, minions, and villains, resolving attached dynamic trait grants.
+    - Refactored `hasPlayerTrait` to use `getEffectivePlayerTraits` for single-source-of-truth trait queries across the engine.
+    - Updated `evaluatePlayRequirements` in `src/engine/pipeline/legality-checker.ts` to call `hasPlayerTrait` for `identityTraits` verification, ensuring cards requiring traits can be played when granted dynamically via upgrades.
+  - **1960s Comic Pop-Art Presentation & Modals:**
+    - Updated `src/ui/components/cards/CardView.tsx` to accept `dynamicTraits` and `effectiveTraits`, rendering high-contrast 1960s pop-art badge pills (`[✨ Aerial]`) at the top of cards with dynamic traits.
+    - Displayed dynamic traits alongside printed traits in the fallback vector card layout.
+    - Updated `src/ui/components/board/HeroZone.tsx` to compute and pass identity dynamic traits and ally dynamic traits to `CardView`.
+    - Enhanced `src/ui/components/board/IdentityActionModal.tsx` and `AllyActionModal.tsx` to render an "Active Traits" strip highlighting dynamic traits with pop-art badge accents.
+  - **Automated Tests:**
+    - Authored 14 engine tests in `tests/engine/effective-traits.test.ts` verifying player, ally, attachment, Cosmic Flight, and legality-checker trait interactions.
+    - Authored 5 UI tests in `tests/ui/CardView-dynamic-traits.test.tsx` verifying badge pill rendering and fallback display.
+
 - **Tests & Rules Verification: Simultaneous Damage Resolution & Official FAQ Tough Absorption for Repulsor Blast ([Issue #12](https://github.com/SteveRodrigue/MCD/issues/12))**
   - Added official FAQ contract test to `tests/engine/repulsor-blast.test.ts` verifying that Repulsor Blast (`01031`) deals its base damage and energy bonus as a single simultaneous instance of damage.
   - Verified that an enemy with the Tough status card absorbs the entire damage instance (base 1 damage + dynamic energy bonus), preventing the base damage from removing Tough while allowing the bonus damage to hit health.

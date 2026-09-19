@@ -23,6 +23,7 @@ export const CardAuditRecordSchema = z
     confidence: z.number().min(0).max(100).optional(),
     ambiguityFile: z.string().optional(),
     originalText: z.string().optional(),
+    comment: z.string().optional(),
   })
   .strict();
 
@@ -852,7 +853,6 @@ export type PlayRequirements = z.infer<typeof PlayRequirementsSchema>;
  */
 export const CardEnrichmentSchema = z
   .object({
-    comment: z.string().optional(),
     abilities: z.array(CardAbilitySchema).optional(),
     playRequirements: PlayRequirementsSchema.optional(),
     audit: CardAuditRecordSchema.optional(),

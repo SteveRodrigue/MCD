@@ -26,7 +26,12 @@ const StatefulCardAttributesSection: React.FC<{
 
 describe('CardAttributesSection', () => {
   it('renders all card metadata and attribute inputs', () => {
-    render(<CardAttributesSection supplemental={{ comment: 'Test card' }} onChange={vi.fn()} />);
+    render(
+      <CardAttributesSection
+        supplemental={{ audit: { comment: 'Test card' } }}
+        onChange={vi.fn()}
+      />,
+    );
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
     expect(screen.getByPlaceholderText(/e\.g\. Hero attack/i)).toBeDefined();
@@ -44,13 +49,18 @@ describe('CardAttributesSection', () => {
   it('updates basic card metadata (comment, limits, confidence, attribution)', () => {
     const handleChange = vi.fn();
     render(
-      <StatefulCardAttributesSection initial={{ comment: 'Initial' }} onChange={handleChange} />,
+      <StatefulCardAttributesSection
+        initial={{ audit: { comment: 'Initial' } }}
+        onChange={handleChange}
+      />,
     );
 
     const commentInput = screen.getByPlaceholderText(/e\.g\. Hero attack/i);
     fireEvent.change(commentInput, { target: { value: 'Updated comment' } });
     expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({ comment: 'Updated comment' }),
+      expect.objectContaining({
+        audit: expect.objectContaining({ comment: 'Updated comment' }),
+      }),
     );
 
     const maxInput = screen.getByPlaceholderText(/Leave empty if unrestricted/i);
@@ -95,7 +105,7 @@ describe('CardAttributesSection', () => {
 
     render(
       <StatefulCardAttributesSection
-        initial={{ comment: 'Counters card' }}
+        initial={{ audit: { comment: 'Counters card' } }}
         onChange={handleChange}
       />,
     );

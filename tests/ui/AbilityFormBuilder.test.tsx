@@ -24,7 +24,9 @@ const StatefulAbilityFormBuilder: React.FC<{
 
 describe('AbilityFormBuilder Card-Level Attributes', () => {
   it('renders top-level card metadata fields', () => {
-    render(<AbilityFormBuilder supplemental={{ comment: 'Test card' }} onChange={vi.fn()} />);
+    render(
+      <AbilityFormBuilder supplemental={{ audit: { comment: 'Test card' } }} onChange={vi.fn()} />,
+    );
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
     expect(screen.getByTestId('card-traits-input')).toBeDefined();
@@ -81,7 +83,10 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
     const handleChange = vi.fn();
 
     render(
-      <StatefulAbilityFormBuilder initial={{ comment: 'Uses card' }} onChange={handleChange} />,
+      <StatefulAbilityFormBuilder
+        initial={{ audit: { comment: 'Uses card' } }}
+        onChange={handleChange}
+      />,
     );
 
     // Click Configure Uses
@@ -435,7 +440,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     expect(parsed.success).toBe(true);
 
     const fullCard = {
-      comment: 'Valid upgraded card',
+      audit: { comment: 'Valid upgraded card' },
       uses: { count: 3, type: 'shield', discardOnEmpty: false },
       keywords: [{ keyword: 'Retaliate', amount: 1 }, 'Guard'],
       restrictedSlots: 1,
@@ -452,7 +457,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
       render(
         <AbilityFormBuilder
           supplemental={{
-            comment: 'Valid Card',
+            audit: { comment: 'Valid Card' },
             abilities: [
               {
                 id: 'valid_ab',

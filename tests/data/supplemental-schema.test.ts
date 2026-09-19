@@ -86,7 +86,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Rejects card ability with illegal timing', () => {
       const invalidCard = {
-        comment: 'Test card',
+        audit: { comment: 'Test card' },
         abilities: [
           {
             id: 'bad_ability',
@@ -101,7 +101,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Rejects card ability missing steps or having empty steps array', () => {
       const missingSteps = {
-        comment: 'Test card missing steps',
+        audit: { comment: 'Test card missing steps' },
         abilities: [
           {
             id: 'missing_steps_ability',
@@ -110,7 +110,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         ],
       };
       const emptySteps = {
-        comment: 'Test card empty steps',
+        audit: { comment: 'Test card empty steps' },
         abilities: [
           {
             id: 'empty_steps_ability',
@@ -125,7 +125,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Accepts valid card ability with steps array', () => {
       const validCard = {
-        comment: 'Valid card with steps',
+        audit: { comment: 'Valid card with steps' },
         abilities: [
           {
             id: 'valid_ability',
@@ -239,11 +239,20 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Strictly rejects decommissioned mechanicSteps in CardEnrichmentSchema (ADR-0059)', () => {
       const legacyCard = {
-        comment: 'Test card',
+        audit: { comment: 'Test card' },
         mechanicSteps: ['Step 1: Test step'],
         abilities: [],
       };
       const res = CardEnrichmentSchema.safeParse(legacyCard);
+      expect(res.success).toBe(false);
+    });
+
+    it('Strictly rejects root-level comment in CardEnrichmentSchema (ADR-0067)', () => {
+      const legacyRootComment = {
+        comment: 'This should live in audit.comment now',
+        abilities: [],
+      };
+      const res = CardEnrichmentSchema.safeParse(legacyRootComment);
       expect(res.success).toBe(false);
     });
 
@@ -406,7 +415,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Accepts valid card uses declaration in CardEnrichmentSchema', () => {
       const cardWithUses = {
-        comment: 'Web-Shooter',
+        audit: { comment: 'Web-Shooter' },
         uses: {
           count: 3,
           type: 'web',
@@ -440,7 +449,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Rejects unknown/undeclared properties in CardEnrichmentSchema (.strict() enforcement)', () => {
       const cardWithUnknownKey = {
-        comment: 'Invalid key card',
+        audit: { comment: 'Invalid key card' },
         unknownCustomKey: 'some_value',
       };
       const res = CardEnrichmentSchema.safeParse(cardWithUnknownKey);
@@ -472,7 +481,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
 
     it('Accepts valid attackCost, thwartCost, and isLandscape in CardEnrichmentSchema', () => {
       const allyEnrichment = {
-        comment: 'Black Cat takes 0 consequential damage',
+        audit: { comment: 'Black Cat takes 0 consequential damage' },
         attackCost: 0,
         thwartCost: 1,
         isLandscape: false,

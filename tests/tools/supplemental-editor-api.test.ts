@@ -165,7 +165,6 @@ describe('CardSupplementalService & Editor API Middleware', () => {
     it('persists valid supplemental data and auto-stamps audit metadata', () => {
       const validPayload = {
         supplemental: {
-          comment: 'Test card enrichment',
           abilities: [
             {
               id: 'hero_draw',
@@ -180,6 +179,7 @@ describe('CardSupplementalService & Editor API Middleware', () => {
             },
           ],
           audit: {
+            comment: 'Test card enrichment',
             reviewedBy: 'test_reviewer',
             confidence: 95,
           },
@@ -198,7 +198,7 @@ describe('CardSupplementalService & Editor API Middleware', () => {
 
       const savedPack = JSON.parse(fs.readFileSync(savedPackPath, 'utf8'));
       expect(savedPack.cards['01001a']).toBeDefined();
-      expect(savedPack.cards['01001a'].comment).toBe('Test card enrichment');
+      expect(savedPack.cards['01001a'].audit.comment).toBe('Test card enrichment');
       expect(savedPack.cards['01001a'].audit.reviewedBy).toBe('test_reviewer');
       expect(savedPack.cards['01001a'].audit.confidence).toBe(95);
       expect(savedPack.cards['01001a'].audit.updatedAt).toBe(result.updatedAt);

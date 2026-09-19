@@ -25,7 +25,10 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange({
       ...supplemental,
-      comment: e.target.value || undefined,
+      audit: {
+        ...supplemental.audit,
+        comment: e.target.value || undefined,
+      },
     });
   };
 
@@ -125,7 +128,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
           </label>
           <input
             type="text"
-            value={supplemental.comment || ''}
+            value={supplemental.audit?.comment || ''}
             onChange={handleCommentChange}
             placeholder="e.g. Hero attack: deals 3 damage..."
             className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"

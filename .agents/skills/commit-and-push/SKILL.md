@@ -4,8 +4,9 @@ description: >-
    Approval-gated Git commit and push protocol for MCD. Inspects staged/unstaged changes,
   runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
   automatically selects proper Conventional Commits categories and scopes, generates
-   concise imperative descriptions if not provided, prepares a walkthrough and verification
-   recap before commit, and pushes only after separate authorization. Trigger whenever
+   concise imperative descriptions if not provided, validates referenced GitHub issues,
+   prepares a walkthrough and verification recap before commit, and pushes only after
+   separate authorization. Trigger whenever
   committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
 ---
 
@@ -17,7 +18,7 @@ description: >-
 
 **Command Execution Policy:** Execute CLI commands natively directly in the environment shell without wrapping in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`.
 
-This skill provides an automated, foolproof workflow to stage, verify, format, categorize, commit, and push changes to remote with zero broken commits or failing hooks.
+This skill provides an approval-gated workflow to stage, verify, format, categorize, commit, and push changes to remote with explicit issue-state checks and no hidden staging or delivery scope.
 
 ---
 
@@ -29,7 +30,7 @@ flowchart TD
     S2 --> S3["3. Execute Quality Gates (format, lint, typecheck, tests)"]
     S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
     S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
-      S5 --> S6["6. Prepare commit and walkthrough; request user approval"]
+      S5 --> S6["6. Validate issue references; prepare walkthrough and request approval"]
       S6 --> S7["7. Commit after approval; push only after separate authorization"]
 ```
 
@@ -40,17 +41,20 @@ flowchart TD
 1. Run `git status` to detect staged, unstaged, and untracked files.
 2. Run `git diff` and `git diff --cached` to inspect the exact lines of code changed.
 3. Verify that no unwanted files (e.g. debug scripts in `scratch/`, OS artifacts, temporary logs) are inadvertently staged.
+4. Record the intended file set. Do not silently absorb unrelated staged or unstaged changes.
 
 ---
 
 ## 📦 Step 2: Stage Target Changes
 
 1. If files are unstaged, stage intentional changes:
-   - For complete feature/fix deliveries: `git add .`
+   - For complete feature/fix deliveries: stage the reviewed file list explicitly.
    - For selective commits: `git add <file1> <file2> ...`
 2. If supplemental card data (`src/data/supplemental/`) was modified:
    - **Always run:** `npm run report:declarations`
    - Stage the updated report: `git add docs/reports/supplemental_declarations_usage_report.md`
+3. Re-run `git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
+4. Never use `git add .` or a formatter's broad staging command as automatic recovery; review and stage only the files intentionally changed by this task.
 
 ---
 
@@ -64,7 +68,7 @@ Before committing, run the project's quality verification pipeline:
    npm run format:check
    ```
 
-   _Auto-Recovery:_ If formatting issues are found, automatically run `npm run format` and stage the re-formatted files (`git add .`).
+   _Recovery:_ If formatting issues are found, format only the reviewed file set, inspect the diff, and stage only the intended files.
 
 2. **ESLint Static Analysis:**
 
@@ -150,9 +154,27 @@ Proposed Commit:
 
 ---
 
-## Step 6: Native Git Commit
+## Step 6: Issue Integrity, Commit, and Walkthrough
 
-After the walkthrough and verification recap have been presented, execute the commit command only after the user confirms or approves:
+Before presenting the final walkthrough, inspect issue references in the staged diff and proposed commit message.
+
+1. Extract explicit references such as `Fixes #123`, `Closes #123`, `Refs #123`, and `Issue #123`. Do not treat card IDs, ADR numbers, or arbitrary `#` text as GitHub issue references.
+2. If no issue references exist, record `Issue validation: not applicable` and continue.
+3. If references exist, confirm GitHub CLI availability and authentication with `gh auth status`.
+4. Query every referenced issue:
+
+   ```sh
+   gh issue view <NUM> --json number,state,title,url
+   ```
+
+5. Before commit, enforce these conditions:
+   - `Fixes` and `Closes` references point to an existing **open** issue.
+   - `Refs` and informational references point to an existing issue; either state is valid.
+   - A closed issue must not receive a new `Fixes` or `Closes` trailer. Change it to `Refs` or obtain explicit user approval for the exception.
+6. If GitHub is unavailable or unauthenticated, stop before committing when issue references require validation. Report the exact limitation; do not claim validation succeeded.
+7. Include the issue validation results in the walkthrough and verification recap. Ask for user confirmation before committing.
+
+After confirmation, execute the commit command natively:
 
 ```sh
 git commit -m "<category>(<scope>): <description>"
@@ -169,6 +191,13 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
    git push origin main
    ```
 2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`).
-3. Run `git status` to verify:
+3. Re-query every referenced issue after push:
+   ```sh
+   gh issue view <NUM> --json number,state,closedAt,title,url
+   ```
+   - For `Fixes` and `Closes`, verify the issue is now `CLOSED`.
+   - For `Refs` and informational references, report the current state and URL; do not claim the issue was closed.
+   - If the expected state is not reached, report the post-push discrepancy explicitly instead of treating the delivery as fully verified.
+4. Run `git status` to verify:
    - Working tree is clean (`nothing to commit, working tree clean`).
    - Branch is up to date with remote (`Your branch is up to date with 'origin/main'`).

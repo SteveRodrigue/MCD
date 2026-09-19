@@ -49,4 +49,31 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
 
     expect(onSelectOption).toHaveBeenCalledWith('yes');
   });
+
+  it('renders cost badge on options that require resource payment', () => {
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_cost',
+      playerId: 'p1',
+      sourceCardName: 'Enhanced Spider-Sense',
+      title: 'Do you want to use the following ability from Enhanced Spider-Sense?',
+      description: "Cancel the 'When Revealed' effects of that treachery.",
+      options: [
+        {
+          id: 'trigger_enhanced_spider_sense',
+          label: 'Yes',
+          effect: 'EXECUTE_OPTIONAL_TRIGGER',
+          params: {
+            requiresPayment: true,
+            resourceCost: { amount: 1 },
+          },
+        },
+        { id: 'pass', label: 'No', effect: 'PASS' },
+      ],
+      isVoluntary: true,
+    };
+
+    render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+
+    expect(screen.getByText(/⚡ COST: 1 RESOURCE/i)).toBeDefined();
+  });
 });

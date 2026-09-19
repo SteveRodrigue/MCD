@@ -8,6 +8,7 @@ import {
   hasKeyword,
   NormalizedCard,
   ActiveCostReduction,
+  CardType,
 } from '../models';
 import { getEffectiveMaxHealth } from './stat-calculator';
 import { removeCardFromAllZones } from '../state/state-validator';
@@ -383,7 +384,24 @@ export function canPayAbilityCost(
   }
 
   // 6. Resource Cost Validation (cost.resourceCost / cost.resources)
-  const resCost = extractResourceCost(cost);
+  let resCost = extractResourceCost(cost);
+  if (
+    !resCost.hasCost &&
+    ability.zone === 'HAND' &&
+    sourceCardInst?.card &&
+    ((sourceCardInst.card.type as any) === 'event' || sourceCardInst.card.type === CardType.EVENT)
+  ) {
+    const cardCost = sourceCardInst.card.cost ?? 0;
+    if (cardCost > 0) {
+      resCost = {
+        hasCost: true,
+        requiredType: undefined,
+        requiredAmount: cardCost,
+        requirePrinted: false,
+      };
+    }
+  }
+
   if (resCost.hasCost) {
     const { requiredType, requiredAmount, requirePrinted } = resCost;
     const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
@@ -392,6 +410,9 @@ export function canPayAbilityCost(
     if (specifiedPaymentIds.length > 0 || specifiedGeneratorIds.length > 0) {
       let providedAmount = 0;
       for (const id of specifiedPaymentIds) {
+        if (sourceCardInst && id === sourceCardInst.instanceId) {
+          return { allowed: false, reason: 'A card cannot pay for its own cost.' };
+        }
         const cardInst = player.hand.find((c) => c.instanceId === id);
         if (!cardInst) {
           return { allowed: false, reason: `Selected payment card ${id} not found in hand.` };
@@ -455,6 +476,7 @@ export function canPayAbilityCost(
       // General availability check across player hand cards AND ready generators
       let availableAmount = 0;
       for (const cardInst of player.hand) {
+        if (sourceCardInst && cardInst.instanceId === sourceCardInst.instanceId) continue;
         availableAmount += getCardProvidedResources(cardInst, requiredType, requirePrinted);
       }
       for (const gCard of player.tableau) {
@@ -538,9 +560,19 @@ export function executeAbilityCost(
   sourceCardInst?: CardInstance,
   options?: AbilityPaymentOptions,
 ): { state: GameState; discardedCount: number; resourcesPaid: number } {
-  const cost = ability.cost;
+  const hasInHandEventCost =
+    ability.zone === 'HAND' &&
+    sourceCardInst?.card &&
+    ((sourceCardInst.card.type as any) === 'event' ||
+      sourceCardInst.card.type === CardType.EVENT) &&
+    (sourceCardInst.card.cost ?? 0) > 0;
+
+  const cost =
+    ability.cost ?? (hasInHandEventCost ? ({} as NonNullable<CardAbility['cost']>) : undefined);
   let discardedCount = 0;
-  if (!cost) return { state, discardedCount: 0, resourcesPaid: 0 };
+  if (!cost) {
+    return { state, discardedCount: 0, resourcesPaid: 0 };
+  }
 
   // 1. Exhaustion
   const isExhaustSelf = cost.exhaustSelf || (cost as any).exhaust;
@@ -689,7 +721,23 @@ export function executeAbilityCost(
 
   // 5. Resource Cost Payment (cost.resourceCost / cost.resources)
   let resourcesPaid = 0;
-  const resCost = extractResourceCost(cost);
+  let resCost = extractResourceCost(cost);
+  if (
+    !resCost.hasCost &&
+    ability.zone === 'HAND' &&
+    sourceCardInst?.card &&
+    ((sourceCardInst.card.type as any) === 'event' || sourceCardInst.card.type === CardType.EVENT)
+  ) {
+    const cardCost = sourceCardInst.card.cost ?? 0;
+    if (cardCost > 0) {
+      resCost = {
+        hasCost: true,
+        requiredType: undefined,
+        requiredAmount: cardCost,
+        requirePrinted: false,
+      };
+    }
+  }
   if (resCost.hasCost) {
     const { requiredType, requiredAmount, requirePrinted } = resCost;
     const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
@@ -794,6 +842,7 @@ export function executeAbilityCost(
     // Process payment cards from hand
     if (specifiedPaymentIds.length > 0) {
       for (const id of specifiedPaymentIds) {
+        if (sourceCardInst && id === sourceCardInst.instanceId) continue;
         const idx = player.hand.findIndex((c) => c.instanceId === id);
         if (idx !== -1) {
           const [discarded] = player.hand.splice(idx, 1);
@@ -808,6 +857,7 @@ export function executeAbilityCost(
       while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
         let cardIdx = -1;
         for (let i = 0; i < player.hand.length; i++) {
+          if (sourceCardInst && player.hand[i].instanceId === sourceCardInst.instanceId) continue;
           if (getCardProvidedResources(player.hand[i], requiredType, requirePrinted) > 0) {
             cardIdx = i;
             break;

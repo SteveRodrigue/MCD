@@ -147,9 +147,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const cost = effectiveCost;
 
   // Available hand payment cards (all hand cards except the card being played if played from hand)
-  const availableHandCards = abilityCost
-    ? player.hand
-    : player.hand.filter((c) => c.instanceId !== cardToPlay?.instanceId);
+  const availableHandCards = player.hand.filter((c) => c.instanceId !== cardToPlay?.instanceId);
 
   // Available generators: Identity resource abilities + ready tableau generators (ADR-0018)
   const availableGenerators = useMemo(() => {

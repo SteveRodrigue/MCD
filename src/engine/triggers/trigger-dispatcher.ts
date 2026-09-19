@@ -2,7 +2,11 @@ import { GameState, TriggerType, AbilityStep, PlayerState } from '@engine/models
 import { TriggerFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect } from '../effects';
-import { executeAbilityCost, canPayAbilityCost } from '../pipeline/cost-engine';
+import {
+  executeAbilityCost,
+  canPayAbilityCost,
+  extractResourceCost,
+} from '../pipeline/cost-engine';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { InfiniteLoopError, TriggerCallNode } from '../errors/infinite-loop-error';
 
@@ -794,9 +798,17 @@ export function dispatchTrigger(
           };
           const nextChain = checkAndRecordTriggerNode(state, node, currentChain);
 
-          player.hand.splice(handInterruptIdx, 1);
-          if (ability.cost?.discardSelf !== false) {
-            player.discard.push(interruptCard);
+          if (
+            ability.cost ||
+            (interruptCard.card.type === 'event' && (interruptCard.card.cost ?? 0) > 0)
+          ) {
+            executeAbilityCost(state, player, ability, interruptCard);
+          }
+          if (player.hand.some((c) => c.instanceId === interruptCard.instanceId)) {
+            player.hand.splice(handInterruptIdx, 1);
+            if (ability.cost?.discardSelf !== false) {
+              player.discard.push(interruptCard);
+            }
           }
           executeEffect(state, ability, {
             playerId: player.id,
@@ -809,10 +821,21 @@ export function dispatchTrigger(
           }
         } else {
           const cardName = interruptCard.card.name;
+          const resCost = extractResourceCost(ability.cost);
+          const reqAmount = resCost.hasCost
+            ? resCost.requiredAmount
+            : interruptCard.card.type === 'event'
+              ? (interruptCard.card.cost ?? 0)
+              : 0;
+          const hasCost = reqAmount > 0;
+          const costSuffix = hasCost
+            ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
+            : '';
+
           enqueueDecisionPrompt(state, {
             promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             playerId: player.id,
-            title: `Do you want to use the following ability from ${cardName}?`,
+            title: `Do you want to use the following ability from ${cardName}${costSuffix}?`,
             description: formatAbilityStepsSummary(trigger, ability.steps || []),
             sourceCardName: cardName,
             sourceCardCode: interruptCard.card.code,
@@ -825,12 +848,17 @@ export function dispatchTrigger(
             options: [
               {
                 id: `trigger_${ability.id}`,
-                label: 'Yes',
+                label: hasCost ? `Yes${costSuffix}` : 'Yes',
                 effect: 'EXECUTE_OPTIONAL_TRIGGER',
                 params: {
                   ability,
                   context,
                   sourceCardInstanceId: interruptCard.instanceId,
+                  requiresPayment: hasCost,
+                  costCardInstanceId: interruptCard.instanceId,
+                  resourceCost: hasCost
+                    ? { amount: reqAmount, resourceType: resCost.requiredType }
+                    : undefined,
                 },
               },
               {

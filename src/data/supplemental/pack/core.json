@@ -134,7 +134,8 @@
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true
+            "discardSelf": true,
+            "resourceCost": 1
           },
           "steps": [
             {
@@ -890,7 +891,8 @@
           "trigger": "BASIC_ATTACK_PERFORMED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true
+            "discardSelf": true,
+            "resourceCost": 1
           },
           "steps": [
             {
@@ -2811,7 +2813,8 @@
           "trigger": "ATTACK_DEFENDED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true
+            "discardSelf": true,
+            "resourceCost": 1
           },
           "steps": [
             {
@@ -2846,7 +2849,8 @@
           "trigger": "TREACHERY_REVEALED",
           "zone": "HAND",
           "cost": {
-            "discardSelf": true
+            "discardSelf": true,
+            "resourceCost": 1
           },
           "steps": [
             {

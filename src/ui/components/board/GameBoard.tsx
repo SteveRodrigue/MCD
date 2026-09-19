@@ -37,6 +37,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);
   const [pendingPaymentAction, setPendingPaymentAction] = useState<LegalActionItem | null>(null);
+  const [pendingPromptPayment, setPendingPromptPayment] = useState<{
+    optionId: string;
+    playerId: string;
+    card: CardInstance;
+    abilityCost: {
+      amount: number;
+      resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
+      requirePrinted?: boolean;
+    };
+  } | null>(null);
 
   const { edgeScrollSpeed } = useGameSettings();
 
@@ -283,63 +293,69 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onDismiss={() => setIsEndTurnPromptOpen(false)}
       />
 
-      {/* 6. Card Payment Modal (Triggered via Newspaper or In-Play Interaction) */}
-      {paymentModalCard && (
+      {/* 6. Card Payment Modal (Triggered via Newspaper, In-Play Interaction, or Decision Prompt) */}
+      {(paymentModalCard || pendingPromptPayment) && (
         <CardPaymentModal
           isOpen={true}
-          cardToPlay={paymentModalCard}
+          cardToPlay={pendingPromptPayment?.card || paymentModalCard}
           abilityCost={
-            pendingPaymentAction?.action.type === 'USE_CARD_ABILITY'
-              ? (() => {
-                  const ab = paymentModalCard.card.enrichment?.abilities?.find(
-                    (a) => a.id === (pendingPaymentAction.action as any).abilityId,
-                  );
-                  if (!ab?.cost) return undefined;
-                  const reqType =
-                    ab.cost.resourceCost && typeof ab.cost.resourceCost === 'object'
-                      ? (Object.keys(ab.cost.resourceCost)[0] as any)
-                      : ab.cost.resources && ab.cost.resources.length > 0
-                        ? (ab.cost.resources[0] as any)
-                        : undefined;
-                  const amount =
-                    typeof ab.cost.resourceCost === 'number'
-                      ? ab.cost.resourceCost
-                      : reqType && typeof ab.cost.resourceCost === 'object'
-                        ? (ab.cost.resourceCost as any)[reqType] || 1
+            pendingPromptPayment
+              ? pendingPromptPayment.abilityCost
+              : pendingPaymentAction?.action.type === 'USE_CARD_ABILITY'
+                ? (() => {
+                    const ab = paymentModalCard?.card.enrichment?.abilities?.find(
+                      (a) => a.id === (pendingPaymentAction.action as any).abilityId,
+                    );
+                    if (!ab?.cost) return undefined;
+                    const reqType =
+                      ab.cost.resourceCost && typeof ab.cost.resourceCost === 'object'
+                        ? (Object.keys(ab.cost.resourceCost)[0] as any)
                         : ab.cost.resources && ab.cost.resources.length > 0
-                          ? ab.cost.resources.length
-                          : 0;
-                  const discardCount =
-                    ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
-                  const discardFilter = ab.cost.discardCard?.filter;
-                  const scaling = ab.steps?.find(
-                    (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
-                  )?.effectParams?.scaling;
-                  if (amount > 0 || discardCount > 0) {
-                    return {
-                      amount,
-                      resourceType: reqType,
-                      requirePrinted: ab.cost.requirePrinted,
-                      scaling: scaling as string | undefined,
-                      title: pendingPaymentAction.headline,
-                      discardCount,
-                      discardFilter,
-                    };
-                  }
-                  return undefined;
-                })()
-              : undefined
+                          ? (ab.cost.resources[0] as any)
+                          : undefined;
+                    const amount =
+                      typeof ab.cost.resourceCost === 'number'
+                        ? ab.cost.resourceCost
+                        : reqType && typeof ab.cost.resourceCost === 'object'
+                          ? (ab.cost.resourceCost as any)[reqType] || 1
+                          : ab.cost.resources && ab.cost.resources.length > 0
+                            ? ab.cost.resources.length
+                            : 0;
+                    const discardCount =
+                      ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
+                    const discardFilter = ab.cost.discardCard?.filter;
+                    const scaling = ab.steps?.find(
+                      (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
+                    )?.effectParams?.scaling;
+                    if (amount > 0 || discardCount > 0) {
+                      return {
+                        amount,
+                        resourceType: reqType,
+                        requirePrinted: ab.cost.requirePrinted,
+                        scaling: scaling as string | undefined,
+                        title: pendingPaymentAction.headline,
+                        discardCount,
+                        discardFilter,
+                      };
+                    }
+                    return undefined;
+                  })()
+                : undefined
           }
           player={
-            pendingPaymentAction?.action?.playerId
-              ? gameState.players.find((p) => p.id === pendingPaymentAction.action.playerId) ||
+            pendingPromptPayment
+              ? gameState.players.find((p) => p.id === pendingPromptPayment.playerId) ||
                 activePlayer
-              : activePlayer
+              : pendingPaymentAction?.action?.playerId
+                ? gameState.players.find((p) => p.id === pendingPaymentAction.action.playerId) ||
+                  activePlayer
+                : activePlayer
           }
           gameState={gameState}
           onClose={() => {
             setPaymentModalCard(null);
             setPendingPaymentAction(null);
+            setPendingPromptPayment(null);
           }}
           onConfirmPlay={(
             paymentHandCardIds: string[],
@@ -348,7 +364,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
             selectedDiscardCardIds?: string[],
           ) => {
             if (onDispatchAction) {
-              if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
+              if (pendingPromptPayment) {
+                onDispatchAction({
+                  type: 'RESOLVE_DECISION_PROMPT',
+                  playerId: pendingPromptPayment.playerId,
+                  selectedOptionId: pendingPromptPayment.optionId,
+                  paymentCardInstanceIds: paymentHandCardIds,
+                  generatorInstanceIds: generatorCardIds,
+                });
+              } else if (pendingPaymentAction?.action.type === 'USE_CARD_ABILITY') {
                 onDispatchAction({
                   ...pendingPaymentAction.action,
                   paymentCardInstanceIds: paymentHandCardIds,
@@ -356,7 +380,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                   targetInstanceId,
                   discardCardInstanceIds: selectedDiscardCardIds,
                 });
-              } else {
+              } else if (paymentModalCard) {
                 onDispatchAction({
                   type: 'PLAY_CARD',
                   playerId: activePlayer.id,
@@ -369,6 +393,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
             }
             setPaymentModalCard(null);
             setPendingPaymentAction(null);
+            setPendingPromptPayment(null);
           }}
         />
       )}
@@ -386,7 +411,68 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onSelectOption={(optionId, payload) => {
           const activePrompt =
             gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
-          if (activePrompt && onDispatchAction) {
+          if (!activePrompt) return;
+
+          const isDecline =
+            optionId === 'pass' ||
+            optionId === 'PASS' ||
+            optionId.includes('decline') ||
+            optionId.includes('none');
+
+          const selectedOption = activePrompt.options?.find((o) => o.id === optionId);
+          const promptPlayer =
+            gameState.players.find((p) => p.id === activePrompt.playerId) || activePlayer;
+
+          const optParams = selectedOption?.params as Record<string, any> | undefined;
+          const requiresPayment =
+            !isDecline &&
+            Boolean(
+              (selectedOption as any)?.requiresPayment ||
+              optParams?.requiresPayment ||
+              optParams?.resourceCost ||
+              (optParams?.ability?.cost?.resourceCost !== undefined &&
+                optParams?.ability?.cost?.resourceCost !== 0),
+            );
+
+          if (requiresPayment && selectedOption) {
+            const cardInstanceId =
+              (optParams?.costCardInstanceId as string | undefined) ||
+              (optParams?.sourceCardInstanceId as string | undefined);
+            const cardInst =
+              promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
+              promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId);
+
+            if (cardInst) {
+              const resCost = optParams?.resourceCost;
+              const ability = optParams?.ability;
+              const costAmount =
+                resCost?.amount ??
+                (typeof ability?.cost?.resourceCost === 'number'
+                  ? ability.cost.resourceCost
+                  : (cardInst.card.cost ?? 1));
+              const resourceType =
+                resCost?.resourceType ??
+                (typeof ability?.cost?.resourceCost === 'object' &&
+                ability.cost.resourceCost !== null
+                  ? Object.keys(ability.cost.resourceCost)[0]
+                  : undefined);
+
+              setPendingPromptPayment({
+                optionId,
+                playerId: activePrompt.playerId,
+                card: cardInst,
+                abilityCost: {
+                  amount: costAmount,
+                  resourceType: resourceType as any,
+                  requirePrinted: ability?.cost?.requirePrinted,
+                },
+              });
+              setPaymentModalCard(cardInst);
+              return;
+            }
+          }
+
+          if (onDispatchAction) {
             onDispatchAction({
               type: 'RESOLVE_DECISION_PROMPT',
               playerId: activePrompt.playerId,

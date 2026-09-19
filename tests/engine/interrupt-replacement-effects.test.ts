@@ -44,7 +44,8 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
     it('cancels treachery When Revealed and induces a villain attack when accepted automatically', () => {
       const gbmCard = cardCatalog.getCard('01078')!;
       const gbmInst = createCardInstance(gbmCard);
-      state.players[0].hand.push(gbmInst);
+      const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
+      state.players[0].hand.push(gbmInst, paymentCard);
 
       const treacheryCard = cardCatalog.getCard('01103')!; // False Alarm (Rhino treachery)
       const treacheryInst = createCardInstance(treacheryCard);
@@ -99,7 +100,8 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
 
       const gbmCard = cardCatalog.getCard('01078')!;
       const gbmInst = createCardInstance(gbmCard);
-      state.players[0].hand.push(gbmInst);
+      const paymentCard = createCardInstance(cardCatalog.getCard('01005')!);
+      state.players[0].hand.push(gbmInst, paymentCard);
 
       const treacheryCard = cardCatalog.getCard('01103')!;
       const treacheryInst = createCardInstance(treacheryCard);

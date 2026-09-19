@@ -106,6 +106,8 @@ export interface ResolveDecisionPromptAction {
   playerId: string;
   selectedOptionId: string;
   assignments?: Record<string, number>;
+  paymentCardInstanceIds?: string[];
+  generatorInstanceIds?: string[];
 }
 
 export interface DeclareDefenderAction {

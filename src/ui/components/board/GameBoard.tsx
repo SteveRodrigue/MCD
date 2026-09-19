@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { GameState, GameAction, CardInstance } from '../../../engine/models';
 import { TopBar } from './TopBar';
@@ -75,13 +75,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
   const heroStationRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Smoothly center the active hero whenever activeSeatIndex changes
-  const handleSelectSeat = (seatIdx: number) => {
-    setActiveSeatIndex(seatIdx);
-    const targetElement = heroStationRefs.current[seatIdx];
-    if (targetElement) {
-      scrollToChild(targetElement);
-    }
-  };
+  const handleSelectSeat = useCallback(
+    (seatIdx: number) => {
+      setActiveSeatIndex(seatIdx);
+      const targetElement = heroStationRefs.current[seatIdx];
+      if (targetElement) {
+        scrollToChild(targetElement);
+      }
+    },
+    [scrollToChild],
+  );
 
   // Auto-align to initial active seat on mount
   useEffect(() => {
@@ -92,6 +95,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
       }
     }
   }, [isMultiHero, activeSeatIndex, scrollToChild]);
+
+  // Synchronize activePlayerIndex with active seat in multiplayer
+  useEffect(() => {
+    if (isMultiHero && gameState.activePlayerIndex !== undefined) {
+      handleSelectSeat(gameState.activePlayerIndex);
+    }
+  }, [isMultiHero, gameState.activePlayerIndex, handleSelectSeat]);
 
   // Execute action from Daily Bugle or interactive tabletop element
   const handleSelectNewspaperAction = (item: LegalActionItem) => {
@@ -168,52 +178,54 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
             {/* Scrollable Panoramic Track */}
             <div
               ref={containerRef}
-              className="flex items-start gap-6 overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
+              className="w-full overflow-x-auto no-scrollbar scroll-smooth px-4 py-2"
             >
-              {gameState.players.map((player, idx) => {
-                const isFocused = activeSeatIndex === idx;
+              <div className="flex items-start justify-center min-w-full w-max gap-6">
+                {gameState.players.map((player, idx) => {
+                  const isFocused = activeSeatIndex === idx;
 
-                return (
-                  <div
-                    key={player.id}
-                    ref={(el) => {
-                      heroStationRefs.current[idx] = el;
-                    }}
-                    className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 transition-all duration-300 ${
-                      isFocused ? 'opacity-100 z-10' : 'opacity-90 hover:opacity-100 z-0'
-                    }`}
-                  >
-                    {/* Hero Play Area */}
-                    <HeroZone
-                      player={player}
-                      gameState={gameState}
-                      seatNumber={idx + 1}
-                      isFocused={isFocused}
-                      isMultiHero={true}
-                      onFocus={() => handleSelectSeat(idx)}
-                      onDispatchAction={onDispatchAction}
-                      onInitiateAction={handleSelectNewspaperAction}
-                    />
+                  return (
+                    <div
+                      key={player.id}
+                      ref={(el) => {
+                        heroStationRefs.current[idx] = el;
+                      }}
+                      className={`w-[820px] lg:w-[880px] shrink-0 space-y-4 transition-all duration-300 ${
+                        isFocused ? 'opacity-100 z-10' : 'opacity-90 hover:opacity-100 z-0'
+                      }`}
+                    >
+                      {/* Hero Play Area */}
+                      <HeroZone
+                        player={player}
+                        gameState={gameState}
+                        seatNumber={idx + 1}
+                        isFocused={isFocused}
+                        isMultiHero={true}
+                        onFocus={() => handleSelectSeat(idx)}
+                        onDispatchAction={onDispatchAction}
+                        onInitiateAction={handleSelectNewspaperAction}
+                      />
 
-                    {/* Hero Hand Tray */}
-                    <PlayerHandTray
-                      hand={player.hand}
-                      deck={player.deck}
-                      discard={player.discard}
-                      setAsideCards={player.setAsideCards}
-                      heroName={player.name}
-                      handSizeLimit={getEffectiveHandSize(player, gameState)}
-                      seatNumber={idx + 1}
-                      isFocused={isFocused}
-                      isMultiHero={true}
-                      player={player}
-                      gameState={gameState}
-                      onDispatchAction={onDispatchAction}
-                      onFocus={() => handleSelectSeat(idx)}
-                    />
-                  </div>
-                );
-              })}
+                      {/* Hero Hand Tray */}
+                      <PlayerHandTray
+                        hand={player.hand}
+                        deck={player.deck}
+                        discard={player.discard}
+                        setAsideCards={player.setAsideCards}
+                        heroName={player.name}
+                        handSizeLimit={getEffectiveHandSize(player, gameState)}
+                        seatNumber={idx + 1}
+                        isFocused={isFocused}
+                        isMultiHero={true}
+                        player={player}
+                        gameState={gameState}
+                        onDispatchAction={onDispatchAction}
+                        onFocus={() => handleSelectSeat(idx)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (

@@ -1,12 +1,12 @@
 ---
 name: commit-and-push
 description: >-
-   Approval-gated Git commit and push protocol for MCD. Inspects staged/unstaged changes,
+  Approval-gated Git commit and push protocol for MCD. Inspects staged/unstaged changes,
   runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
   automatically selects proper Conventional Commits categories and scopes, generates
-   concise imperative descriptions if not provided, validates referenced GitHub issues,
-   prepares a walkthrough and verification recap before commit, and pushes only after
-   separate authorization. Trigger whenever
+  concise imperative descriptions if not provided, validates referenced GitHub issues,
+  prepares a walkthrough and verification recap before commit, and pushes only after
+  separate authorization. Trigger whenever
   committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
 ---
 

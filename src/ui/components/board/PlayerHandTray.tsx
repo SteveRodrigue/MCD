@@ -13,6 +13,7 @@ import { useGameSettings } from '../../context/useGameSettings';
 import { CardPaymentModal } from './CardPaymentModal';
 import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
+import { getHeroColorPalette } from '../../utils/hero-theme';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -110,6 +111,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   onDispatchAction,
 }) => {
   const { devMode } = useGameSettings();
+  const palette = useMemo(() => getHeroColorPalette(player), [player]);
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [showNemesisModal, setShowNemesisModal] = useState(false);
@@ -261,23 +263,36 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   return (
     <>
       <section
-        className={`comic-panel px-3.5 pt-3 pb-2.5 bg-amber-100/95 relative shadow-comic transition-all overflow-visible ${
+        className={`comic-panel px-3.5 pt-3 pb-2.5 relative shadow-comic transition-all overflow-visible ${
           !isFocused
-            ? 'opacity-90 hover:opacity-100 ring-2 ring-slate-300'
-            : 'ring-2 ring-comic-blue shadow-comic-lg'
+            ? 'ring-1 ring-slate-300/80 bg-slate-100/90'
+            : 'bg-amber-100/95 ring-2 ring-comic-blue shadow-comic-lg'
         }`}
+        style={isFocused ? { borderColor: palette.primary } : undefined}
       >
         {/* Zone Title Ribbon */}
         <div className="absolute -top-3 left-4 right-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
             <div
-              className={`text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
+              className={`border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1 ${
                 isActivePlayerTurn
-                  ? 'bg-comic-red font-bold'
+                  ? 'bg-comic-red font-bold text-white'
                   : isFocused
-                    ? 'bg-comic-blue'
-                    : 'bg-slate-700'
+                    ? ''
+                    : 'bg-slate-700 text-white'
               }`}
+              style={{
+                backgroundColor: isActivePlayerTurn
+                  ? undefined
+                  : isFocused
+                    ? palette.primary
+                    : undefined,
+                color: isActivePlayerTurn
+                  ? undefined
+                  : isFocused
+                    ? palette.contrastText.primary
+                    : undefined,
+              }}
             >
               <Sparkles className="w-3.5 h-3.5 text-comic-yellow" />
               <span>

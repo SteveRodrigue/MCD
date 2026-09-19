@@ -216,6 +216,7 @@ export function normalizeRawCard(
     isLandscape,
     orientation: isLandscape ? 'landscape' : 'portrait',
     enrichment,
+    meta: raw.meta,
     raw,
   };
 

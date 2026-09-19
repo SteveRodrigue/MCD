@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (UI & Data): Hero-Themed Color Palette Integration, Default Fallback & Inactive Player Board Distinguishability ([Issue #110](https://github.com/SteveRodrigue/MCD/issues/110) / [ADR-0004](docs/decisions/0004-visual-art-direction-comic-pop-art.md))**
+  - **Data Model & Normalization:**
+    - Extended `NormalizedCard` in `src/engine/models/card.ts` with optional `meta?: Record<string, unknown>`.
+    - Updated `normalizeRawCard` in `src/data/importer/card-loader.ts` to assign `meta: raw.meta` onto normalized cards, providing direct access to upstream card metadata.
+  - **Themed Color Palette Utility & Robust Fallback:**
+    - Implemented `src/ui/utils/hero-theme.ts` exporting `HeroColorPalette`, `DEFAULT_HERO_PALETTE` (`#1d4ed8` comic-blue, `#d97706` comic-yellow, `#dc2626` comic-red, `#0f172a` dark neutral, `#ffffff` light), `getHeroColorPalette(player)`, and `getContrastTextColor(hexColor)`.
+    - Automatically extracts character-specific color palettes from `hero.meta.colors` (e.g. Spider-Man web-red/blue, Captain Marvel navy/red/gold, She-Hulk purple/green, Iron Man red/gold, Black Panther purple/gold).
+    - Added luminance YIQ contrast text calculation (`getContrastTextColor`) to ensure text on badges and ribbons always provides optimal contrast, preventing black-on-black text when heroes have dark accent colors (such as Spider-Man's `#010101` black accent).
+    - Deterministically validates hex format (`^#(?:[0-9a-fA-F]{3}){1,2}$`) and falls back element-by-element to default comic pop-art colors when metadata is missing, partial, or malformed.
+  - **Dynamic Themed Player Board & High-Contrast Inactive Distinguishability:**
+    - Updated `src/ui/components/board/HeroZone.tsx`: Active hero boards dynamically style the zone title ribbon, health bar progress fill, active focus ring, and identity shield icon using the hero's signature palette, featuring a prominent `[★ ACTIVE HERO]` badge pill.
+    - Updated `src/ui/components/board/PlayerHandTray.tsx`: Active hand tray applies the hero's theme palette to the outer border and ribbon.
+    - Inactive player boards are now unmistakably visually distinguishable: stations render at `opacity-60` with a `grayscale-[35%]` filter, muted slate borders (`ring-1 ring-slate-300/80 bg-slate-100/90`), and `(WAITING)` indicator.
+    - Added click-to-focus on inactive player stations in `GameBoard.tsx` and `HeroZone.tsx`, allowing one-click active seat selection.
+  - **Automated Tests:**
+    - Authored `tests/ui/hero-theme-palette.test.ts` (15 tests) verifying color extraction across all 5 Core Heroes, hex validation, and fallback handling.
+    - Authored `tests/ui/hero-board-theme-and-distinguishability.test.tsx` (5 tests) verifying themed active styling, fallback application, inactive visual treatments, and click-to-focus behavior.
+
+
 - **UI & Ergonomics: Centered Viewport Alignment & Active-Player Turn Synchronization in Multiplayer ([Issue #50](https://github.com/SteveRodrigue/MCD/issues/50) / [ADR-0017](docs/decisions/0017-panoramic-horizontal-tabletop-and-edge-scrolling.md))**
   - **Centered Tabletop Viewport (1 to 4 Players):**
     - Updated the multi-hero panoramic track in `src/ui/components/board/GameBoard.tsx` to wrap the hero stations within `<div className="flex items-start justify-center min-w-full w-max gap-6">` inside the outer scroll container (`w-full overflow-x-auto`).

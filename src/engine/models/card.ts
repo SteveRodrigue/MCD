@@ -108,6 +108,7 @@ export interface NormalizedCard {
   isLandscape: boolean;
   orientation: 'portrait' | 'landscape';
   enrichment?: import('./abilities').CardEnrichment;
+  meta?: Record<string, unknown>;
   raw: RawUpstreamCard;
 }
 

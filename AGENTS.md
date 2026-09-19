@@ -24,7 +24,7 @@ For source, test, supplemental-data, dependency, or configuration changes, creat
 
 ## Delivery
 
-The delivery workflow may prepare staged changes, a proposed commit message, a walkthrough, and verification recap. Ask the user to confirm or approve that recap before committing. Pushing requires separate explicit authorization.
+Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the delivery workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting the verification results and any issue-state discrepancies afterward.
 
 ## Skill index
 

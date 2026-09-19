@@ -1,12 +1,12 @@
 ---
 name: commit-and-push
 description: >-
-  Approval-gated Git commit and push protocol for MCD. Inspects staged/unstaged changes,
+  Git commit and push protocol for MCD. Inspects staged/unstaged changes,
   runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
   automatically selects proper Conventional Commits categories and scopes, generates
-  concise imperative descriptions if not provided, validates referenced GitHub issues,
-  prepares a walkthrough and verification recap before commit, and pushes only after
-  separate authorization. Trigger whenever
+  concise imperative descriptions if not provided, validates referenced GitHub issues, and
+  proceeds directly through commit and push once the user has explicitly requested delivery
+  in the current message. Trigger whenever
   committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
 ---
 
@@ -18,7 +18,7 @@ description: >-
 
 **Command Execution Policy:** Execute CLI commands natively directly in the environment shell without wrapping in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`.
 
-This skill provides an approval-gated workflow to stage, verify, format, categorize, commit, and push changes to remote with explicit issue-state checks and no hidden staging or delivery scope.
+This skill provides a workflow to stage, verify, format, categorize, commit, and push changes to remote with explicit issue-state checks and no hidden staging or delivery scope. A commit and push only ever happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", or the skill's trigger prefix); the agent never initiates delivery on its own.
 
 ---
 
@@ -30,8 +30,8 @@ flowchart TD
     S2 --> S3["3. Execute Quality Gates (format, lint, typecheck, tests)"]
     S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
     S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
-      S5 --> S6["6. Validate issue references; prepare walkthrough and request approval"]
-      S6 --> S7["7. Commit after approval; push only after separate authorization"]
+      S5 --> S6["6. Validate issue references, then commit"]
+      S6 --> S7["7. Push and run final verification"]
 ```
 
 ---
@@ -141,12 +141,12 @@ Analyze the staged git diff and synthesize a concise, informative title adhering
 - **Accurate Scope:** Reference the primary subsystem or card code (e.g. `fix(data): Update Gamma Slam target to CHOSEN_ENEMY`).
 - **Detailed Body (Optional):** For multi-file changes, include a bulleted summary of key changes below the header.
 
-### 3. Propose to User (or Confirm):
+### 3. State the Commit Message:
 
-When running interactively, present the formulated message:
+State the formulated message before committing, so the change is traceable in the transcript:
 
 ```text
-Proposed Commit:
+Commit:
   category: <category>
   scope:    <scope>
   message:  <category>(<scope>): <description>
@@ -154,9 +154,9 @@ Proposed Commit:
 
 ---
 
-## Step 6: Issue Integrity, Commit, and Walkthrough
+## Step 6: Issue Integrity and Commit
 
-Before presenting the final walkthrough, inspect issue references in the staged diff and proposed commit message.
+Before committing, inspect issue references in the staged diff and commit message.
 
 1. Extract explicit references such as `Fixes #123`, `Closes #123`, `Refs #123`, and `Issue #123`. Do not treat card IDs, ADR numbers, or arbitrary `#` text as GitHub issue references.
 2. If no issue references exist, record `Issue validation: not applicable` and continue.
@@ -170,11 +170,9 @@ Before presenting the final walkthrough, inspect issue references in the staged 
 5. Before commit, enforce these conditions:
    - `Fixes` and `Closes` references point to an existing **open** issue.
    - `Refs` and informational references point to an existing issue; either state is valid.
-   - A closed issue must not receive a new `Fixes` or `Closes` trailer. Change it to `Refs` or obtain explicit user approval for the exception.
+   - A closed issue must not receive a new `Fixes` or `Closes` trailer. Change it to `Refs`, or stop and ask the user only for this specific conflict.
 6. If GitHub is unavailable or unauthenticated, stop before committing when issue references require validation. Report the exact limitation; do not claim validation succeeded.
-7. Include the issue validation results in the walkthrough and verification recap. Ask for user confirmation before committing.
-
-After confirmation, execute the commit command natively:
+7. Once quality gates (Step 3) and issue validation pass, commit directly without a separate approval round-trip:
 
 ```sh
 git commit -m "<category>(<scope>): <description>"
@@ -186,7 +184,7 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 ## 🚀 Step 7: Native Git Push & Final Verification
 
-1. Push to the remote tracking branch only after separate explicit authorization:
+1. Since the user's request already authorized commit and push together, push to the remote tracking branch directly after a successful commit:
    ```sh
    git push origin main
    ```

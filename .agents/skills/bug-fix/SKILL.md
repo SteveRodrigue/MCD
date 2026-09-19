@@ -214,7 +214,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 
 ### Step 8: Prepare Delivery Recap
 
-Prepare the staged diff, proposed commit message, walkthrough, and verification recap. Present them to the user and wait for confirmation before executing any commit command. Pushes and issue-closing actions require separate explicit authorization.
+Delivery (commit and push) only happens once the user explicitly requests it in the current message. When requested, stage the reviewed diff, run quality gates, state the proposed commit message, and proceed directly through commit and push without a separate mid-flow approval round-trip. Issue-closing trailers still require the conditions in the issue integrity checks below.
 
 1. **Stage & Commit with Auto-Close Syntax:**
 
@@ -225,15 +225,13 @@ Prepare the staged diff, proposed commit message, walkthrough, and verification 
 
    - **Scopes:** `fix(engine)`, `fix(ui)`, `fix(data)`, `fix(rules)`, `fix(assets)`, `fix(setup)`.
 
-- Add `(Fixes #<NUM>)` to the proposed commit only when issue closure is explicitly authorized.
+- Add `(Fixes #<NUM>)` to the commit only when the referenced issue is open and closure is warranted by the fix.
 
 2. **Push to Remote:**
 
    ```bash
-
+   git push origin main
    ```
-
-# Push only after separate explicit authorization.
 
 ````
 

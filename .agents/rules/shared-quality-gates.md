@@ -62,7 +62,7 @@ Report unavailable commands rather than inventing results.
 
 ## Delivery authorization
 
-The delivery workflow may prepare staged changes, a proposed commit message, a walkthrough, and a verification recap. It must ask the user to confirm or approve that recap before creating a commit. Pushing requires separate explicit authorization.
+Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting verification results and any issue-state discrepancies afterward.
 
 ## Skill selection
 

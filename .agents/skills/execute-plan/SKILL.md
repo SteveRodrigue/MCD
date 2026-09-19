@@ -114,7 +114,7 @@ Upon receiving the subagent's completion message:
 2. Update `CHANGELOG.md` under `[Unreleased]` with what was implemented.
 3. If card supplemental JSON was modified, run `npm run report:declarations`.
 4. Create or update the walkthrough/recap in the host's user-facing artifact location when available.
-5. Present the walkthrough, verification results, and proposed commit to the user. Ask for confirmation before committing; do not push without separate authorization.
+5. Present the walkthrough and verification results to the user. If the user's original request already authorized delivery (e.g. "implement and commit/push this plan"), proceed directly through commit and push; otherwise wait for an explicit commit/push request before delivering.
 
 ---
 

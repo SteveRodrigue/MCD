@@ -257,7 +257,7 @@ Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
 
 ### Step 8: Prepare Delivery Recap
 
-Prepare the staged diff, proposed commit message, walkthrough, and verification recap. Present them to the user and wait for confirmation before executing any commit command. Pushes and issue-closing actions require separate explicit authorization.
+Delivery (commit and push) only happens once the user explicitly requests it in the current message. When requested, stage the reviewed diff, run quality gates, state the proposed commit message, and proceed directly through commit and push without a separate mid-flow approval round-trip.
 
 1. **Stage & Commit with Auto-Close Syntax:**
 
@@ -272,7 +272,7 @@ Prepare the staged diff, proposed commit message, walkthrough, and verification 
 2. **Push to Remote:**
 
    ```bash
-   # Push only after separate explicit authorization.
+   git push origin main
    ```
 
 3. **Post Verification Comment on GitHub:**

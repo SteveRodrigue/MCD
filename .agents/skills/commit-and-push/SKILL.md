@@ -112,16 +112,16 @@ Select the appropriate Conventional Commits category and scope based on the modi
 
 ### Scope Matrix
 
-| Subsystem Modified                                       | Recommended Scope                     |
-| :------------------------------------------------------- | :------------------------------------ |
-| `src/engine/` (State, actions, combat, triggers, phases) | `(engine)`                            |
-| `src/ui/` (Components, views, modals, layouts, styles)   | `(ui)`                                |
-| `src/data/supplemental/` (Pack JSONs, card declarations) | `(data)`                              |
-| `src/data/importer/` (Card loader, normalization, i18n)  | `(importer)`                          |
-| `src/tools/` or `tools/` (Analyzers, CLI tools, scripts) | `(tooling)`                           |
-| `docs/` (Specs, guides, ADRs, roadmaps, reports)         | `(docs)`                              |
-| `.githooks/` or `.github/` (Hooks, workflows, CI)        | `(hooks)` or `(ci)`                   |
-| Test files in `tests/` across subsystems                 | `(tests)` or matching subsystem scope |
+| Subsystem Modified                                                                                                                                                            | Recommended Scope                     |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------ |
+| `src/engine/` (State, actions, combat, triggers, phases)                                                                                                                      | `(engine)`                            |
+| `src/ui/` (Components, views, modals, layouts, styles)                                                                                                                        | `(ui)`                                |
+| `src/data/supplemental/` (Pack JSONs, card declarations)                                                                                                                      | `(data)`                              |
+| `src/data/importer/` (Card loader, normalization, i18n)                                                                                                                       | `(importer)`                          |
+| `src/tools/` or `tools/` (Analyzers, CLI tools, scripts)                                                                                                                      | `(tooling)`                           |
+| `docs/` (all files, any depth) and root-level `.md` files (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`) | `(docs)`                              |
+| `.githooks/` or `.github/` (Hooks, workflows, CI)                                                                                                                             | `(hooks)` or `(ci)`                   |
+| Test files in `tests/` across subsystems                                                                                                                                      | `(tests)` or matching subsystem scope |
 
 ---
 

@@ -2,8 +2,9 @@
 name: documentation-audit
 description: >-
   Deterministic 8-step Technical Writer protocol to audit, correct, and synchronize the
-  MCD documentation set (docs/, README.md, CHANGELOG.md, AGENTS.md, CHEATSHEET.md) against
-  the actual source of truth in src/. Detects and fixes deprecated concepts, superseded ADRs,
+  MCD documentation set (all of docs/, recursively, plus every root-level *.md file such as
+  README.md, CHANGELOG.md, AGENTS.md, CHEATSHEET.md, CONTRIBUTING.md, SECURITY.md, and
+  CODE_OF_CONDUCT.md) against the actual source of truth in src/. Detects and fixes deprecated concepts, superseded ADRs,
   stale schema/effect primitive lists, missing effects, timings, costs, and engine functions,
   broken relative links, and drifted status badges. Enforces an extensive review of
   docs/decisions/README.md (ADR log table completeness, ordering, status/superseded chains,
@@ -137,19 +138,28 @@ flowchart TD
 
 ### Step 1 — Scope & Inventory the Doc Surface
 
-With no argument, audit the **full documentation surface** below. Enumerate it explicitly first:
+With no argument, the **full documentation surface is every file matching `docs/**/*.md`
+(recursively, with no subfolder excluded) plus every root-level `*.md` file** in the repository
+root (`README.md`, `CHANGELOG.md`, `AGENTS.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`,
+`CODE_OF_CONDUCT.md`, and any other root `*.md` file present). This is a live glob, not a fixed
+enumeration — newly added files under `docs/` (e.g. a new ADR, a new `docs/visual-guides/*.md`
+entry, a new specification module) are automatically in scope without updating this skill.
 
-| Surface        | Path                                                                                                       | Primary Truth Source                                              |
-| :------------- | :--------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------- |
-| Agent contract | `AGENTS.md`                                                                                                | repo conventions, `package.json` scripts                          |
-| Entry docs     | `README.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `docs/README.md`                                          | `package.json`, folder structure                                  |
-| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                          | `src/` implementation reality                                     |
-| Specifications | `docs/specifications/supplemental/01–09*.md`, `supplemental_data_schema.md`, `card_mechanics_breakdown.md` | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`  |
-| Guidelines     | `docs/coding_guidelines.md`, `docs/guidelines/*.md`                                                        | `src/` patterns, `eslint.config.js`, `tsconfig.json`              |
-| Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                      | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/` |
-| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                           | GitHub issues/milestones, git history                             |
-| Reports        | `docs/reports/*.md`                                                                                        | regenerated, never hand-edited                                    |
-| Ambiguities    | `docs/ambiguities/*.md`                                                                                    | `src/data/supplemental/pack/*.json`                               |
+The table below is a **truth-source lookup guide**, not a path allow-list — use it to route each
+file you discover via the glob above to the right code-truth check in Step 2:
+
+| Surface        | Path (illustrative, not exhaustive)                                                                    | Primary Truth Source                                                        |
+| :------------- | :----------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| Agent contract | `AGENTS.md`                                                                                            | repo conventions, `package.json` scripts                                    |
+| Entry docs     | `README.md`, `CHEATSHEET.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/README.md` | `package.json`, folder structure                                            |
+| ADRs           | `docs/decisions/*.md`, `docs/decisions/README.md`                                                      | `src/` implementation reality                                               |
+| Specifications | `docs/specifications/**/*.md`                                                                          | `src/data/supplemental/schema.ts`, `src/engine/effects/index.ts`            |
+| Visual guides  | `docs/visual-guides/*.md`                                                                              | `src/engine/pipeline/*.ts`, `src/engine/triggers/*.ts`, linked spec modules |
+| Guidelines     | `docs/coding_guidelines.md`, `docs/guidelines/*.md`                                                    | `src/` patterns, `eslint.config.js`, `tsconfig.json`                        |
+| Rules mapping  | `docs/algorithmic_rules_reference.md`                                                                  | `references/mc_rulesreference_v18_compressed.pdf` + `src/engine/`           |
+| Planning       | `docs/roadmap_and_milestones.md`, `CHANGELOG.md`                                                       | GitHub issues/milestones, git history                                       |
+| Reports        | `docs/reports/*.md`                                                                                    | regenerated, never hand-edited                                              |
+| Ambiguities    | `docs/ambiguities/*.md`                                                                                | `src/data/supplemental/pack/*.json`                                         |
 
 If the user narrowed the scope (argument hint), audit only that subset — but **always** include
 Step 4 when any ADR, engine primitive, or architectural concept is touched.
@@ -319,12 +329,16 @@ Apply fixes in this order so later edits build on corrected facts:
 
 1. ADR files' own Status lines and superseding links.
 2. `docs/decisions/README.md`: table completeness → ordering → statuses → Mermaid graph.
-3. Specification suite (`docs/specifications/supplemental/`): add missing primitives (D3) with the
+3. Specification suite (`docs/specifications/**/*.md`): add missing primitives (D3) with the
    exact schema shape from `schema.ts`, correct badges (D5), remove/downgrade phantoms (D4).
-4. Guidelines and `docs/coding_guidelines.md`: commands, conventions, lint/test invocations.
-5. `docs/algorithmic_rules_reference.md`: RR citations and engine mapping.
-6. `README.md`, `CHEATSHEET.md`, `docs/README.md`, `AGENTS.md`: paths, scripts, counts.
-7. `docs/roadmap_and_milestones.md`: checkboxes and milestone badges.
+4. `docs/visual-guides/*.md`: keep diagram labels, function/trigger names, and step numbering in
+   sync with the linked specification module and the actual pipeline source it illustrates.
+5. Guidelines and `docs/coding_guidelines.md`: commands, conventions, lint/test invocations.
+6. `docs/algorithmic_rules_reference.md`: RR citations and engine mapping.
+7. Remaining `docs/**/*.md` files not covered above.
+8. Root-level `*.md` files (`README.md`, `CHEATSHEET.md`, `AGENTS.md`, `CONTRIBUTING.md`,
+   `SECURITY.md`, `CODE_OF_CONDUCT.md`, `docs/README.md`): paths, scripts, counts.
+9. `docs/roadmap_and_milestones.md`: checkboxes and milestone badges.
 
 Editing standards:
 

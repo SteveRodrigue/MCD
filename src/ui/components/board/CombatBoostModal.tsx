@@ -59,9 +59,14 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
               </h2>
             </div>
           </div>
-          <span className="px-2 py-0.5 bg-comic-yellow text-comic-black rounded border-2 border-comic-black font-black text-xs uppercase shadow-comic-sm">
-            {outcome.attackerName}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-comic-yellow text-comic-black rounded border-2 border-comic-black font-black text-xs uppercase shadow-comic-sm">
+              {outcome.attackerName}
+            </span>
+            <span className="px-2 py-0.5 bg-white text-comic-black rounded border-2 border-comic-black font-black text-xs uppercase shadow-comic-sm">
+              Target: {outcome.targetHeroName || 'Hero'}
+            </span>
+          </div>
         </div>
 
         {/* Modal Body */}
@@ -175,8 +180,17 @@ export const CombatBoostModal: React.FC<CombatBoostModalProps> = ({
                 <span className="text-xl md:text-2xl font-black text-blue-700">
                   {outcome.defenseValue}
                 </span>
-                <span className="text-[9px] text-slate-600 truncate max-w-[100px]">
-                  {defenderLabel}
+                <span
+                  className="text-[9px] text-slate-600 truncate max-w-[140px]"
+                  title={
+                    outcome.defenderType === 'ALLY' && outcome.targetHeroName
+                      ? `${defenderLabel} protecting ${outcome.targetHeroName}`
+                      : defenderLabel
+                  }
+                >
+                  {outcome.defenderType === 'ALLY' && outcome.targetHeroName
+                    ? `${defenderLabel} protecting ${outcome.targetHeroName}`
+                    : defenderLabel}
                 </span>
               </div>
             </div>

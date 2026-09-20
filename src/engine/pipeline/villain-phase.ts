@@ -686,6 +686,20 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             player,
             resolvedOptions,
           );
+          if (mutatedState.pendingDecisionPrompt) {
+            mutatedState.villainPhaseStepEvent = {
+              type: 'VILLAIN_ATTACK',
+              step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+              sourceName: mutatedState.villain.card.name,
+              targetPlayerId: player.id,
+              targetName: player.name,
+              amount: undefined,
+              description: `${mutatedState.villain.card.name} is attacking ${player.name}! Declare a defender.`,
+              onomatopoeia: 'DEFEND!',
+              combatOutcome: undefined,
+            };
+            return mutatedState;
+          }
           const dmg = mutatedState.lastCombatOutcome?.finalDamage ?? 0;
           mutatedState.villainPhaseStepEvent = {
             type: 'VILLAIN_ATTACK',
@@ -698,7 +712,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             onomatopoeia: dmg > 0 ? 'BANG!' : 'BLOCKED!',
             combatOutcome: mutatedState.lastCombatOutcome,
           };
-          if (mutatedState.pendingDecisionPrompt || mutatedState.winner) {
+          if (mutatedState.winner) {
             return mutatedState;
           }
           if ((mutatedState as any).pendingActivations?.length === 0) {
@@ -739,6 +753,20 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
               player,
               resolvedOptions,
             );
+            if (mutatedState.pendingDecisionPrompt) {
+              mutatedState.villainPhaseStepEvent = {
+                type: 'MINION_ATTACK',
+                step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+                sourceName: minion.card.name,
+                targetPlayerId: player.id,
+                targetName: player.name,
+                amount: undefined,
+                description: `${minion.card.name} is attacking ${player.name}! Declare a defender.`,
+                onomatopoeia: 'DEFEND!',
+                combatOutcome: undefined,
+              };
+              return mutatedState;
+            }
             const dmg = mutatedState.lastCombatOutcome?.finalDamage ?? 0;
             mutatedState.villainPhaseStepEvent = {
               type: 'MINION_ATTACK',
@@ -751,7 +779,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
               onomatopoeia: dmg > 0 ? 'POW!' : 'BLOCKED!',
               combatOutcome: mutatedState.lastCombatOutcome,
             };
-            if (mutatedState.pendingDecisionPrompt || mutatedState.winner) {
+            if (mutatedState.winner) {
               return mutatedState;
             }
             if ((mutatedState as any).pendingActivations?.length === 0) {

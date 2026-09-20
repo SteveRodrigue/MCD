@@ -234,6 +234,7 @@ export interface AttackExecutionContext {
 }
 
 export interface CombatResolutionSummary {
+  id?: string;
   attackerName: string;
   attackerCode?: string;
   attackerType: 'VILLAIN' | 'MINION';

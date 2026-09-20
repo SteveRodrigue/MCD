@@ -7,10 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Engine): Villain Phase Attack Details, Targeting Visibility & Combat Math Timing ([Issue #144](https://github.com/SteveRodrigue/MCD/issues/144))**
+  - **Attack Targeting Visibility & Details:**
+    - Updated `CombatBoostModal.tsx` to prominently display both the attacker and target hero (`Target: ${outcome.targetHeroName || 'Hero'}`) in the header banner, and clearly label ally defenders protecting their hero in the authoritative combat formula.
+    - Updated `HeroZone.tsx` to detect active incoming attack targeting (`isTargetOfIncomingAttack`) and display an attention-grabbing `💥 UNDER ATTACK` badge and pulsing attention border when the hero is targeted by an enemy attack.
+    - Updated `VillainPhaseStepper.tsx` to include target hero names in step category badges (e.g. `2. VILLAIN ➔ Peter Parker`, `2. MINION ➔ Peter Parker`, `2. SCHEME ➔ Peter Parker`).
+  - **Timing & Combat Math Modal Fix:**
+    - Added unique `id?: string` to `CombatResolutionSummary` in `src/engine/models/state.ts` and set it to `attackContext.attackId` during damage calculation.
+    - Updated `GameBoard.tsx` to track combat outcome by unique ID instead of object reference, gating modal display on `!gameState.pendingDecisionPrompt` so combat resolution math never displays before or during defender declaration.
+    - Updated `initiateEnemyAttack` in `src/engine/pipeline/combat-pipeline.ts` to reset `state.lastCombatOutcome = undefined` at attack initiation, eliminating stale outcome leakage across attacks and rounds.
+    - Updated `advanceVillainPhaseStep` in `src/engine/pipeline/villain-phase.ts` to emit an initiation step event (`"${attacker} is attacking ${target}! Declare a defender."`) with undefined damage/outcome while awaiting defense, rather than prematurely reporting a completed attack.
+    - Updated `action-dispatcher.ts` so resolving defense in stepping mode does not immediately advance to the next player's activation, preserving the completed combat state and math modal for player review before stepping forward.
+  - **Automated Verification:**
+    - Added regression tests in `tests/engine/villain-phase-stepping.test.ts` verifying clearance of stale combat outcome, accurate attack initiation details, and combat outcome population upon defense resolution.
+    - Added unit tests in `tests/ui/villain-phase-stepper.test.tsx` verifying stepper target names and combat boost modal target hero display.
+
 - **Fix (Engine & Rules): Relentless Assault Overkill Resolution, Physical Kicker & Prompt Provenance ([Issue #137](https://github.com/SteveRodrigue/MCD/issues/137))**
   - **Rules Compliance & Resource Kicker Enforcement:**
-    - Updated *Relentless Assault* (`01053`) in `src/data/supplemental/pack/core.json` to declare `condition: "RESOURCE_KICKER_MET"` with `kickerResource: "physical"`, `overkillOnCondition: true`, and `overkillOnPhysical: true`.
-    - In `src/engine/effects/index.ts` (`case 'DEAL_DAMAGE'`), enforced that conditional Overkill attacks only gain the Overkill keyword if paid for using at least one `[physical]` (or wild) resource per RR v1.8 and card text (*"If you paid for this card using a [physical] resource, this attack gains overkill"*).
+    - Updated _Relentless Assault_ (`01053`) in `src/data/supplemental/pack/core.json` to declare `condition: "RESOURCE_KICKER_MET"` with `kickerResource: "physical"`, `overkillOnCondition: true`, and `overkillOnPhysical: true`.
+    - In `src/engine/effects/index.ts` (`case 'DEAL_DAMAGE'`), enforced that conditional Overkill attacks only gain the Overkill keyword if paid for using at least one `[physical]` (or wild) resource per RR v1.8 and card text (_"If you paid for this card using a [physical] resource, this attack gains overkill"_).
   - **Generic Combat Defense & Overkill Absorption:**
     - Updated Overkill minion defeat routing in `src/engine/effects/index.ts` to respect `StatusCard.TOUGH` on the villain per RR v1.8 p. 22: when excess damage spills over to a Tough villain, the Tough status card is discarded, damage is prevented, and `toughAbsorbed: true` is logged (`CLANG! (TOUGH)`).
     - Enforced villain defeat checking (`handleVillainDefeat`) when excess Overkill damage reduces villain health to 0.
@@ -20,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Decision Prompt Modal & Pop-Art Provenance:**
     - Added optional `cardCode?: string` to `DecisionPromptOption` and `DecisionPromptOptionSchema` in `src/engine/models/state.ts` and `src/data/supplemental/schema.ts`.
     - Updated `src/engine/effects/index.ts` (`REMOVE_THREAT`) to pass `sourceCardCode` and `sourceCardName` into `enqueueDecisionPrompt`, plus `cardCode` on each scheme option.
-    - Updated `src/ui/components/board/DecisionPromptModal.tsx` to render the pop-art square card preview (`CardArtThumbnail`, `aspect-square`) inside option buttons whenever `cardCode` is present, eliminating player confusion between attack effects and host-defeat triggers (e.g. *Spider-Tracer*).
+    - Updated `src/ui/components/board/DecisionPromptModal.tsx` to render the pop-art square card preview (`CardArtThumbnail`, `aspect-square`) inside option buttons whenever `cardCode` is present, eliminating player confusion between attack effects and host-defeat triggers (e.g. _Spider-Tracer_).
   - **Automated Verification:**
     - Authored 4 regression tests in `tests/cards/aggression/relentless-assault-overkill.test.ts`.
     - Authored unit test in `tests/ui/DecisionPromptModal.test.tsx` verifying option `CardArtThumbnail` rendering.
@@ -77,7 +92,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Preserved fallback secure perimeter styling when no minions are engaged.
   - **Automated Tests:**
     - Authored 10 comprehensive unit and integration tests in `tests/ui/facedown-encounter-cards-display.test.tsx` verifying component visibility, count updating, empty state handling, devMode peek modal inspection, and side-by-side minion arrangement in `HeroZone`.
-
 
 - **Changed (Developer Tooling): Local Dev Mode GameState Retention**
   - Updated the `problem-report-triage` workflow to retain full problem-report GameState snapshots locally under `logs/gamestates/` and reference only their local paths in GitHub issues.

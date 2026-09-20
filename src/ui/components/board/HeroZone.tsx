@@ -147,6 +147,13 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   );
   const splashDamageAmount = isTargetOfDamageEvent ? stepEvent!.amount! : 0;
 
+  const isTargetOfIncomingAttack = Boolean(
+    gameState?.activeAttackContext?.targetPlayerId === player.id ||
+    (stepEvent?.targetPlayerId === player.id &&
+      stepEvent?.type === 'VILLAIN_ATTACK' &&
+      !stepEvent?.combatOutcome),
+  );
+
   // Ally & Tableau Action Selection States
   const [selectedAllyForModal, setSelectedAllyForModal] = useState<CardInstance | null>(null);
   const [selectedTableauCardForModal, setSelectedTableauCardForModal] =
@@ -291,11 +298,19 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
     <section
       onClick={!isFocused && onFocus ? onFocus : undefined}
       className={`comic-panel p-4 relative shadow-comic space-y-4 transition-all ${
-        !isFocused
-          ? 'ring-1 ring-slate-300/80 bg-slate-100/90 cursor-pointer'
-          : 'bg-white/95 ring-2 ring-comic-blue shadow-comic-lg'
+        isTargetOfIncomingAttack
+          ? 'ring-4 ring-rose-500 bg-rose-50/60 shadow-comic-lg'
+          : !isFocused
+            ? 'ring-1 ring-slate-300/80 bg-slate-100/90 cursor-pointer'
+            : 'bg-white/95 ring-2 ring-comic-blue shadow-comic-lg'
       }`}
-      style={isFocused ? { borderColor: palette.primary } : undefined}
+      style={
+        isTargetOfIncomingAttack
+          ? { borderColor: '#dc2626' }
+          : isFocused
+            ? { borderColor: palette.primary }
+            : undefined
+      }
     >
       {/* Zone Title Ribbon */}
       <div className="absolute -top-3 left-4 flex items-center gap-2">
@@ -323,6 +338,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               }}
             >
               ★ ACTIVE HERO
+            </span>
+          )}
+          {isTargetOfIncomingAttack && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded font-black border border-comic-black ml-1 bg-comic-red text-white shadow-comic-xs animate-pulse">
+              💥 UNDER ATTACK
             </span>
           )}
         </div>
@@ -415,7 +435,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       {/* 2. Main Hero Play Area Grid: Identity Station, Allies, Tableau */}
       <div className="flex flex-wrap items-start gap-4 pt-1">
         {/* Identity Station (Shrunk to exact width of card + borders) */}
-        <div className="w-fit min-w-[210px] flex flex-col gap-2 bg-sky-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
+        <div
+          className={`w-fit min-w-[210px] flex flex-col gap-2 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0 transition-all ${
+            isTargetOfIncomingAttack
+              ? 'bg-rose-100/90 ring-4 ring-rose-500 animate-pulse border-rose-600 shadow-comic-lg'
+              : 'bg-sky-50/80'
+          }`}
+        >
+          {isTargetOfIncomingAttack && (
+            <div className="w-full text-center py-1 px-2 bg-comic-red text-white font-comic text-xs font-black uppercase tracking-wider rounded border-2 border-comic-black shadow-comic-sm animate-bounce">
+              💥 UNDER ATTACK
+            </div>
+          )}
           {/* Header */}
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-1">

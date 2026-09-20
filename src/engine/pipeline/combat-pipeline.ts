@@ -171,6 +171,8 @@ export function initiateEnemyAttack(
   targetPlayerId: string,
   options?: CombatOptions,
 ): GameState {
+  state.lastCombatOutcome = undefined;
+
   const player = state.players.find((p) => p.id === targetPlayerId);
   if (!player) return state;
 
@@ -440,6 +442,15 @@ export function resolveDefenderDeclaration(
 
   // Step 7: Post-Attack Reactions, Retaliate & Cleanup
   step7_resolvePostAttackAndRetaliate(state, attackContext);
+
+  if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
+    const rawDamage = state.lastCombatOutcome.finalDamage;
+    const attackerName = state.lastCombatOutcome.attackerName;
+    state.villainPhaseStepEvent.amount = rawDamage;
+    state.villainPhaseStepEvent.description = `${attackerName} attacked ${player.name} (${attackContext.defender?.type === 'HERO' ? 'Hero Defended' : attackContext.defender?.type === 'ALLY' ? 'Ally Defended' : 'Undefended'}) for ${rawDamage} damage.`;
+    state.villainPhaseStepEvent.onomatopoeia = rawDamage > 0 ? 'BANG!' : 'BLOCKED!';
+    state.villainPhaseStepEvent.combatOutcome = state.lastCombatOutcome;
+  }
 
   state.activeAttackContext = undefined;
 
@@ -784,6 +795,7 @@ export function applyCalculatedAttackDamage(
       : attackContext.attackerCard?.card.code;
 
   state.lastCombatOutcome = {
+    id: attackContext.attackId,
     attackerName,
     attackerCode,
     attackerType: attackContext.attackerType,
@@ -826,6 +838,14 @@ export function finishAttackDamageAndPostResolution(
 
   applyCalculatedAttackDamage(state, player, attackContext, rawDamage);
   step7_resolvePostAttackAndRetaliate(state, attackContext);
+
+  if (state.lastCombatOutcome && state.villainPhaseStepEvent) {
+    const attackerName = state.lastCombatOutcome.attackerName;
+    state.villainPhaseStepEvent.amount = rawDamage;
+    state.villainPhaseStepEvent.description = `${attackerName} attacked ${player.name} (${attackContext.defender?.type === 'HERO' ? 'Hero Defended' : attackContext.defender?.type === 'ALLY' ? 'Ally Defended' : 'Undefended'}) for ${rawDamage} damage.`;
+    state.villainPhaseStepEvent.onomatopoeia = rawDamage > 0 ? 'BANG!' : 'BLOCKED!';
+    state.villainPhaseStepEvent.combatOutcome = state.lastCombatOutcome;
+  }
 
   state.activeAttackContext = undefined;
   return state;

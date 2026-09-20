@@ -16,6 +16,8 @@ build/
 # Scratch and Temporary Runner Scripts
 scratch/
 /scratch/
+tmp/
+temp/
 
 # Tauri Native Builds
 src-tauri/target/

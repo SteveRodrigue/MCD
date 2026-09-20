@@ -3,9 +3,10 @@ name: card-integration-protocol
 description: >-
   Standard 8-step protocol for analyzing, translating, validating, and integrating
   Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
-  and rules engine. Enforces a 3-tier blast-radius refactor guardrail, 3-iteration circuit-breaker,
-  batch-resilient ambiguity isolation, encapsulated audit metadata (ISO timestamps with HH:MM),
-  and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero).
+  and rules engine. Enforces zero assumption of existing supplemental correctness,
+  mandatory user peer review with diff presentation, a 3-tier blast-radius refactor guardrail,
+  3-iteration circuit-breaker, batch-resilient ambiguity isolation, encapsulated audit metadata
+  (ISO timestamps with HH:MM), and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero).
   Use whenever adding or refining any card.
 ---
 
@@ -28,6 +29,15 @@ Before modifying engine source code, classify the required change into one of th
   - **In Batch-Mode (Scanning multiple cards / sets):** **Do not halt the batch.** Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning all remaining cards in the set, and present a consolidated report + implementation plan at the end of the batch run.
 - **🎯 Rhino Release Target Inventory (Gate 1 Focus):** Active card integration strictly targets **Core Set Player Cards (101 cards in `data/upstream/pack/core.json`)** and **Rhino Scenario Encounters (34 cards in `data/upstream/pack/core_encounter.json`)**. Expansion packs are deferred to subsequent gates.
 - **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):** NEVER introduce temporary shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or ad-hoc shortcuts. Always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data.
+- **🔍 Zero Assumption of Existing Supplemental Correctness (Spec Evolution & Gap Analysis):**
+  - **Never Assume Existing Supplemental Data Is Correct:** When reviewing, refining, or auditing an existing card, NEVER assume the current supplemental JSON in `src/data/supplemental/` is accurate, complete, or up to canonical standard.
+  - **Impact of Specification Evolution:** As `docs/specifications/supplemental/` evolves, existing card supplemental data can become outdated, misaligned, or eligible for refactoring using newer, more expressive primitives and parameters.
+  - **Differential Comparison to Expose Gaps & Ambiguities:** Always independently translate the card from printed text and the current specifications, then contrast the proposed data against the existing supplemental data. Comparing the two directly surfaces engine gaps, specification drift, or unhandled card ambiguities.
+  - **Mandatory User Peer Review Gate:** Any change to a card's supplemental data **must** be peer-reviewed by the user before implementation. Always present:
+    1. `card.text` (the exact printed text from upstream)
+    2. **Original Supplemental Data** (existing JSON in `src/data/supplemental/`)
+    3. **Proposed Supplemental Data** (new/refactored JSON)
+    4. **The "Why?"** (the concrete rationale: spec changes, gaps identified, rule corrections, or refactoring reasons).
 
 ---
 
@@ -35,37 +45,39 @@ Before modifying engine source code, classify the required change into one of th
 
 ```mermaid
 flowchart TD
-    S1["1. Read Upstream Card Text (data/upstream/)"] --> S2["2. Literal Semantic Mapping (No Guesswork)"]
-    S2 --> S3["3. Draft Supplemental JSON Schema & Audit Block"]
+    S1["1. Read Upstream Card Text (data/upstream/) & Existing Supplemental Baseline"] --> S2["2. Semantic Mapping & Spec Consultation (Zero Assumption)"]
+    S2 --> S3["3. Draft Supplemental JSON Schema & Differential Gap Analysis"]
     S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
     S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
     S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
     S5 -- "No (< 95%, Attempts < 3)" --> S3
     S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
 Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
-    S6 --> S7{"7. Blast-Radius Tier Check"}
-    S7 -- "Tier 1 / Tier 2" --> S8["8. Author Composable Primitives, Stamp Audit & Prune Ambiguity"]
+    S6 --> S7{"7. User Peer Review Gate & Blast-Radius Check"}
+    S7 -- "Approved (Tier 1 / Tier 2)" --> S8["8. Author Composable Primitives, Stamp Audit & Prune Ambiguity"]
     S7 -- "Tier 3 (Structural)" --> T3{"Single Card or Batch?"}
     T3 -- "Single Card" --> T3S["Log Ambiguity, Write Implementation Plan & STOP for Approval"]
     T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
 ```
 
-### Step 1: Ingest Upstream Card & Draft
+### Step 1: Ingest Upstream Card & Existing Supplemental Baseline
 
 - **Log Format Convention:** Format card identifiers as `[{card_name}] ({card_code})` (e.g. `[The Break-In! (1A)] (01097a)`). **Avoid using `#` prefix** before 6-digit hex-like card codes (e.g. `#01097a`), which triggers false CSS color swatch decorators in IDE log viewers.
 - Fetch the exact printed card text from `data/upstream/pack/{pack_code}.json`.
 - Do not paraphrase, summarize, or alter the upstream text during analysis.
+- **Ingest Existing Supplemental Baseline (If Present):** If the card already exists in `src/data/supplemental/pack/{pack_code}.json`, load it strictly as a comparison baseline. **CRITICAL:** Do **NOT** assume the existing supplemental data is correct or complete. Treat it strictly as a snapshot that may be outdated or flawed relative to current specifications.
 
 ### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
 
 - Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
-- **MANDATORY SPECIFICATION CONSULTATION:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
+- **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
   - `01_metadata_and_audit.md` (Metadata & Audit standards)
   - `02_timings_and_triggers.md` (Timings & Triggers matrix)
   - `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
   - `04_effects_combat_threat.md` / `05_effects_zones_cards.md` / `06_effects_status_economy.md` / `07_effects_villain_nemesis.md` (Effect primitives)
   - `08_dynamic_formulas.md` (Formulas & Math tokens)
   - `09_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
+- **Specification Evolution Awareness:** If `docs/specifications/` has evolved or received updates, existing supplemental data may be outdated or could be refactored into cleaner, more canonical forms. Map the card directly against current specifications without assuming existing card JSON is up to date.
 - Before drafting schema, rigorously answer the **8-Point Socratic Q&A Checklist**:
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
@@ -82,6 +94,12 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ### Step 3: Draft Structured Supplemental Schema & Audit Block
 
 - **AUTHORITATIVE SCHEMA STANDARD:** All drafted supplemental entries MUST conform 100% to the [Supplemental Data Schema Specification](../../../docs/specifications/supplemental/README.md), [Hero Creation Guide](../../../docs/guidelines/hero_creation_guide.md), and [Scenario Creation Guide](../../../docs/guidelines/scenario_creation_guide.md).
+- **DIFFERENTIAL COMPARISON FOR GAP & AMBIGUITY IDENTIFICATION:**
+  - After drafting the proposed supplemental schema independently, contrast it directly against the existing supplemental data (if present).
+  - Comparing existing vs. newly drafted schema highlights:
+    - Outdated structures or legacy representations in existing data that can be refactored.
+    - Missing engine primitives or specification gaps not yet captured in `docs/specifications/`.
+    - Card-specific ambiguities or subtle rule edge cases that were previously missed or oversimplified.
 - **SUPPLEMENTAL CARD COMMENTS POLICY & AGENT PROHIBITION (ADR-0067):** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must NEVER autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 - **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 - **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
@@ -191,10 +209,16 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
     - **Tier 2 (Additive Generic Helper / Dispatch Fix):** If the fix is a localized **card-agnostic generic helper** (e.g. composable `PLAYER_CHOICE`, `ADD_THREAT_PER_PLAYER`) or wiring a missing dispatch without architectural changes, implement the generic fix and write a regression unit test.
     - **Tier 3 (Structural Blocker / Interactive UI Modal):** If the card requires interactive decision modals, new state machines, state schema redesigns, or phase loop redesigns, **confidence CANNOT exceed 80%**; isolate the card to `docs/ambiguities/` and strip `abilities: [...]`.
 
-### Step 7: Composable Generic Primitives & Blast-Radius Gate
+### Step 7: Differential Comparison, Blast-Radius Gate & Mandatory User Peer Review
 
+- **Mandatory User Peer Review for Supplemental Changes:**
+  Any addition, refinement, or refactoring of a card's supplemental data **MUST** be peer-reviewed and approved by the user before writing changes to `src/data/supplemental/` or proceeding to delivery. When presenting the change for user review (in an implementation plan, prompt response, or review recap), always present:
+  1. **Printed Card Text (`card.text`):** The exact printed rules text from `data/upstream/pack/{pack_code}.json`.
+  2. **Original Supplemental Data:** The existing JSON entry in `src/data/supplemental/pack/{pack_code}.json` (or `None` if brand new).
+  3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
+  4. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
 - Check change tier (Tier 1 vs Tier 2 vs Tier 3):
-  - **Tier 1 (No code change needed / Fast-track):** Card integrated without any code change required.
+  - **Tier 1 (No code change needed / Fast-track):** Card integrated or updated in supplemental JSON without engine code changes. Present the peer-review diff to the user.
   - **Tier 2 (Additive helper added):** Implement generic reusable building block.
   - **Tier 3 (Structural):** Isolate to `docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
 

@@ -6,7 +6,7 @@
   "description": "An open-source digital implementation of Marvel Champions: The Card Game",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx scripts/dev-server-with-log.ts",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",

@@ -8,13 +8,13 @@ This guide provides comprehensive, step-by-step instructions for setting up, ins
 
 Before installing the project, verify that your development environment meets the following minimum requirements:
 
-| Tool           | Minimum Version             | Recommended Version     | Purpose                                                |
-| :------------- | :-------------------------- | :---------------------- | :----------------------------------------------------- |
-| **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                          |
-| **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)         |
-| **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                    |
+| Tool           | Minimum Version             | Recommended Version     | Purpose                                                           |
+| :------------- | :-------------------------- | :---------------------- | :---------------------------------------------------------------- |
+| **Node.js**    | `>= 18.0.0`                 | `>= 20.x` or `22.x LTS` | JavaScript/TypeScript runtime                                     |
+| **npm**        | `>= 9.0.0`                  | `>= 10.x`               | Default package manager (bundled with Node.js)                    |
+| **Git**        | `>= 2.30.0`                 | Latest                  | Source control & repository cloning                               |
 | **GitHub CLI** | `>= 2.40.0`                 | Latest (`v2.100.x`)     | Developer tooling, issue triage & next-task evaluation (`gh.exe`) |
-| **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                    |
+| **OS**         | Windows 10/11, macOS, Linux | Any modern 64-bit OS    | Cross-platform web & desktop target                               |
 
 ---
 
@@ -219,6 +219,7 @@ gh auth status
    - **`pre-push`:** Automatically runs `npm test` across all test suites before pushing to remote branches.
 
    To manually activate or verify hooks at any time:
+
    ```bash
    npm run prepare
    ```
@@ -242,6 +243,10 @@ npm run dev
 ```
 
 The application is pre-configured in `vite.config.ts` to run strictly on **`http://localhost:3000/`**. Open this link in Google Chrome, Mozilla Firefox, Microsoft Edge, or Apple Safari.
+
+Each `npm run dev` invocation also mirrors Vite output to a timestamped, ignored log in
+`logs/dev-server/`. The launcher retains the newest 10 logs, including startup failures
+such as an occupied port `3000`.
 
 ### Production Build & Preview
 

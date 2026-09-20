@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Changed (Developer Tooling): Durable Vite Dev-Server Diagnostics**
+  - Routed `npm run dev` through `scripts/dev-server-with-log.ts`, which mirrors Vite startup and runtime output to the terminal and a timestamped local log under `logs/dev-server/` while preserving Vite's exit code.
+  - Retains the newest 10 dev-server logs, making startup failures such as the strict port-3000 collision available after the terminal closes.
+
 - **Fix (UI): Side Scheme Card Hover Zoom & Z-Axis Stacking Context ([Issue #148](https://github.com/SteveRodrigue/MCD/issues/148))**
   - **Unbounded Hover Zoom:** Replaced `overflow-y-auto max-h-[260px]` with `overflow-visible flex flex-wrap gap-3 items-center pt-1` in `VillainZone.tsx`, eliminating container clipping and internal scrollbars so hovered side scheme cards scale cleanly ($2.5\times$, $440\text{px}\times 320\text{px}$) over the tabletop.
   - **Dynamic Stacking Context:**
@@ -33,7 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Automated Verification:**
     - Authored comprehensive test suite in `tests/ui/comic-log-formatter.test.ts` asserting all 5 key state-driven sentences in English and French, unmapped event handling, and dynamic color extraction.
     - Authored component tests in `tests/ui/combat-log-drawer.test.tsx` verifying Daily Bugle masthead, desktop docking classes, and category filtering.
-
 
 - **Fix (UI & Engine): Villain Phase Attack Details, Targeting Visibility & Combat Math Timing ([Issue #144](https://github.com/SteveRodrigue/MCD/issues/144))**
   - **Attack Targeting Visibility & Details:**

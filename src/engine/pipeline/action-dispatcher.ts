@@ -540,6 +540,9 @@ export function dispatchAction(
           key: 'player.action.attackVillain',
           params: {
             player: player.name,
+            who_attacks: player.hero?.name || player.name,
+            who_is_taking_damage: nextState.villain.card.name,
+            amount: attackDamage,
             damage: attackDamage,
             remainingHealth: nextState.villain.health,
           },
@@ -1423,10 +1426,15 @@ export function dispatchAction(
         timestamp: Date.now(),
         round: nextState.roundNumber,
         phase: nextState.phase,
-        key: 'player.action.playCard',
+        actor: {
+          name: player.hero?.name || player.name,
+          type: player.currentForm === 'hero' ? 'hero' : 'alter_ego',
+        },
+        key: 'CARD_PLAYED',
         params: {
-          player: player.name,
+          who: player.hero?.name || player.name,
           card: playedCardInstance.card.name,
+          cost: playedCardInstance.card.cost ?? 0,
         },
         onomatopoeia,
       });
@@ -2003,6 +2011,12 @@ export function dispatchAction(
 
       const currentPlayer = nextState.players[nextState.activePlayerIndex];
       const nextIndex = (nextState.activePlayerIndex + 1) % nextState.players.length;
+      const characterName =
+        currentPlayer.activeFormCard?.name ||
+        (currentPlayer.currentForm === 'alter_ego'
+          ? currentPlayer.alterEgo?.name
+          : currentPlayer.hero?.name) ||
+        currentPlayer.name;
 
       nextState.log.push({
         id: `log_${Date.now()}`,
@@ -2010,9 +2024,15 @@ export function dispatchAction(
         round: nextState.roundNumber,
         phase: nextState.phase,
         category: 'phase',
-        actor: { name: currentPlayer.name, type: 'hero' },
+        actor: {
+          name: characterName,
+          type: currentPlayer.currentForm || 'hero',
+        },
         key: 'player.turn.ended',
-        params: { player: currentPlayer.name },
+        params: {
+          player: characterName,
+          who: characterName,
+        },
         onomatopoeia: 'PASS',
       });
 

@@ -52,6 +52,7 @@ export function step1_placeThreat(state: GameState): GameState {
     key: 'villainPhase.step1.threatPlaced',
     params: {
       amount: totalThreatToAdd,
+      scheme: state.mainScheme.card.name,
       currentThreat: state.mainScheme.threat,
       targetThreat: state.mainScheme.targetThreat,
     },

@@ -224,7 +224,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
       />
 
       {/* 2. Panoramic Tabletop Main Stage */}
-      <main className="flex-1 w-full flex flex-col items-center justify-start p-2 md:p-4 pt-20 md:pt-24 gap-4 max-w-full">
+      <main
+        className={`flex-1 flex flex-col items-center justify-start p-2 md:p-4 pt-20 md:pt-24 gap-4 max-w-full transition-all duration-300 ${
+          isLogOpen ? 'w-full lg:w-[calc(100%-420px)]' : 'w-full'
+        }`}
+      >
         {/* Villain Phase Stepper Ribbon (Issue #140) */}
         {gameState.phase === 'VILLAIN_PHASE' && (
           <VillainPhaseStepper
@@ -498,6 +502,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         isOpen={isLogOpen}
         onClose={() => setIsLogOpen(false)}
         logs={gameState.log}
+        gameState={gameState}
       />
 
       {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}

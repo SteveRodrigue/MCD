@@ -7,6 +7,11 @@ interface ComicSpeechBalloonProps {
   fontClass?: string;
 }
 
+/**
+ * Daily Bugle Classifieds & Flash News Bulletin entry for Combat Log.
+ * Renders state-driven comic actions with character color banners,
+ * narrative headlines, dialogue quotes, and comic stat pills.
+ */
 export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
   dialogue,
   index,
@@ -15,7 +20,11 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
   const {
     type,
     speakerName,
+    speakerRole,
     speakerAvatar,
+    speakerColor,
+    speakerContrastColor,
+    speakerBorderColor,
     dialogueQuote,
     narrativeAction,
     onomatopoeia,
@@ -23,209 +32,120 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
     round,
   } = dialogue;
 
-  // =========================================================================
-  // 1. 📜 NARRATOR CAPTION (Classic Stan Lee Golden-Yellow Box)
-  // =========================================================================
-  if (type === 'narrator_caption') {
-    return (
-      <div className="relative my-3 bg-amber-300 border-3 border-comic-black p-4 shadow-comic rounded-md transform -rotate-0.5 animate-in fade-in duration-200">
-        <div className="flex items-center justify-between border-b-2 border-comic-black/40 pb-1.5 mb-2 text-xs font-comic font-black uppercase text-slate-900 tracking-wider">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">📜</span>
-            <span>NARRATOR DISPATCH</span>
-            {round !== undefined && (
-              <span className="bg-white px-2 py-0.5 rounded border border-comic-black text-[10px] font-black shadow-comic-sm">
-                ROUND {round}
-              </span>
-            )}
-          </div>
-          <span className="text-slate-700 font-mono text-xs font-bold">#{index + 1}</span>
+  // Banner color theme with fallbacks
+  const bannerBg =
+    speakerColor ||
+    (type === 'narrator_caption' ? '#d97706' : type === 'villain_shout' ? '#701a75' : '#1d4ed8');
+
+  const bannerText = speakerContrastColor || (type === 'narrator_caption' ? '#0f172a' : '#ffffff');
+
+  const bannerBorder =
+    speakerBorderColor ||
+    (type === 'narrator_caption' ? '#b45309' : type === 'villain_shout' ? '#d97706' : '#d97706');
+
+  const defaultTitle =
+    type === 'narrator_caption'
+      ? 'DAILY BUGLE DISPATCH'
+      : type === 'villain_shout'
+        ? 'VILLAIN ACTION'
+        : type === 'hero_thought'
+          ? 'ALTER-EGO MEMO'
+          : 'HERO BULLETIN';
+
+  return (
+    <div className="relative my-2.5 bg-[#fdfbf7] border-2 border-comic-black rounded-md shadow-comic-sm overflow-hidden transition-all hover:border-comic-black animate-in fade-in duration-150">
+      {/* 1. Top Classification Strip / Banner */}
+      <div
+        className="flex items-center justify-between px-3 py-1.5 border-b-2 font-comic font-black text-xs uppercase tracking-wider"
+        style={{
+          backgroundColor: bannerBg,
+          color: bannerText,
+          borderColor: bannerBorder,
+        }}
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <span className="text-sm shrink-0">
+            {speakerAvatar || (type === 'narrator_caption' ? '📜' : '💬')}
+          </span>
+          <span className="truncate font-bold">{speakerName || defaultTitle}</span>
+          {speakerRole && (
+            <span
+              className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider border shrink-0 opacity-90"
+              style={{
+                borderColor: bannerText,
+                color: bannerText,
+              }}
+            >
+              {speakerRole.replace('_', ' ')}
+            </span>
+          )}
+          {round !== undefined && type === 'narrator_caption' && (
+            <span className="bg-white text-slate-900 px-1.5 py-0.2 rounded border border-comic-black text-[9px] font-black shrink-0 shadow-comic-sm">
+              R{round}
+            </span>
+          )}
         </div>
 
-        {onomatopoeia && (
-          <div className="inline-block bg-comic-black text-amber-300 font-comic text-sm sm:text-base font-black px-3 py-1 rounded border border-comic-black transform -rotate-1 mb-2 shadow-comic-sm tracking-wide">
-            {onomatopoeia}
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {onomatopoeia && (
+            <span className="bg-comic-yellow text-comic-black font-comic text-[10px] font-black px-1.5 py-0.5 rounded border border-comic-black shadow-comic-sm transform -rotate-1">
+              {onomatopoeia}
+            </span>
+          )}
+          <span className="font-mono text-[10px] opacity-75 font-bold">#{index + 1}</span>
+        </div>
+      </div>
+
+      {/* 2. Newsprint Bulletin Body */}
+      <div className="p-3">
+        {/* In-character dialogue quote box */}
+        {dialogueQuote && (
+          <div
+            className={`p-2 rounded border-l-4 my-1 text-xs sm:text-sm ${fontClass} italic font-bold tracking-wide`}
+            style={{
+              backgroundColor: '#f4ede2',
+              borderLeftColor: bannerBg,
+              color: '#1e293b',
+            }}
+          >
+            {type === 'hero_thought' ? '💭 ' : '💬 '}&ldquo;{dialogueQuote}&rdquo;
           </div>
         )}
 
-        <p
-          className={`${fontClass} text-sm sm:text-base font-bold text-comic-black leading-relaxed tracking-wide`}
-        >
+        {/* Prominent Bold Narrative Headline */}
+        <p className={`${fontClass} text-xs sm:text-sm font-bold text-slate-900 leading-snug mt-1`}>
           {narrativeAction}
         </p>
-      </div>
-    );
-  }
 
-  // =========================================================================
-  // 2. 🦹 VILLAIN SHOUT (Menacing Jagged Spiky Burst Balloon)
-  // =========================================================================
-  if (type === 'villain_shout') {
-    return (
-      <div className="relative my-3 mr-4 ml-2 animate-in slide-in-from-left duration-200">
-        <div className="bg-rose-950 text-white border-3 border-comic-red p-3.5 rounded-lg shadow-comic relative">
-          {/* Header with Villain Name & Icon */}
-          <div className="flex items-center justify-between border-b border-rose-800 pb-1.5 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{speakerAvatar || '🦹'}</span>
-              <span className="font-comic font-black text-sm text-rose-300 uppercase tracking-wide">
-                {speakerName || 'VILLAIN'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {onomatopoeia && (
-                <span className="bg-comic-red text-white font-comic text-xs font-black px-2 py-0.5 rounded border border-comic-black shadow-sm">
-                  {onomatopoeia}
-                </span>
-              )}
-              <span className="text-rose-400 font-mono text-xs">#{index + 1}</span>
-            </div>
-          </div>
-
-          {/* Menacing Shouting Quote */}
-          {dialogueQuote && (
-            <div
-              className={`bg-rose-900/90 border-l-4 border-comic-red p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-black text-rose-100 tracking-wide uppercase italic`}
-            >
-              "{dialogueQuote}"
-            </div>
-          )}
-
-          {/* Action Narrative */}
-          <p
-            className={`${fontClass} text-xs sm:text-sm font-bold text-rose-100 leading-normal mt-1`}
-          >
-            {narrativeAction}
-          </p>
-
-          {/* Stat Pills */}
-          {stats && (stats.damage || stats.threat) && (
-            <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-rose-900">
+        {/* Comic Stat Badges */}
+        {stats &&
+          (stats.damage !== undefined ||
+            stats.threat !== undefined ||
+            stats.recovery !== undefined ||
+            stats.cost !== undefined) && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-slate-200">
               {stats.damage !== undefined && (
-                <span className="bg-comic-red text-white text-xs font-comic font-black px-2.5 py-0.5 rounded border border-comic-black shadow-sm">
+                <span className="bg-comic-red text-white text-[11px] font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
                   💥 {stats.damage} DMG
                 </span>
               )}
               {stats.threat !== undefined && (
-                <span className="bg-purple-900 text-purple-200 text-xs font-comic font-black px-2.5 py-0.5 rounded border border-purple-500 shadow-sm">
-                  ⚠️ +{stats.threat} THREAT
+                <span className="bg-purple-800 text-purple-100 text-[11px] font-comic font-black px-2 py-0.5 rounded border border-purple-950 shadow-comic-sm">
+                  ⚠️ {stats.threat > 0 ? `+${stats.threat}` : stats.threat} THREAT
+                </span>
+              )}
+              {stats.recovery !== undefined && (
+                <span className="bg-emerald-600 text-white text-[11px] font-comic font-black px-2 py-0.5 rounded border border-emerald-950 shadow-comic-sm">
+                  ✨ +{stats.recovery} RECOVER
+                </span>
+              )}
+              {stats.cost !== undefined && (
+                <span className="bg-amber-400 text-slate-950 text-[11px] font-comic font-black px-2 py-0.5 rounded border border-comic-black shadow-comic-sm">
+                  ⚡ {stats.cost} COST
                 </span>
               )}
             </div>
           )}
-        </div>
-      </div>
-    );
-  }
-
-  // =========================================================================
-  // 3. 💭 HERO THOUGHT BUBBLE (Cloud Scalloped Alter-Ego Balloon)
-  // =========================================================================
-  if (type === 'hero_thought') {
-    return (
-      <div className="relative my-3 ml-4 mr-2 animate-in slide-in-from-right duration-200">
-        <div className="bg-sky-50 border-3 border-dashed border-sky-600 p-3.5 rounded-2xl shadow-comic relative">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-sky-200 pb-1.5 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{speakerAvatar || '🧑'}</span>
-              <span className="font-comic font-bold text-sm text-sky-900 uppercase">
-                {speakerName || 'ALTER-EGO'}{' '}
-                <span className="text-xs text-sky-600 font-normal">(THOUGHT)</span>
-              </span>
-            </div>
-            <span className="text-sky-500 font-mono text-xs">#{index + 1}</span>
-          </div>
-
-          {/* Thought Quote */}
-          {dialogueQuote && (
-            <div
-              className={`bg-white p-2.5 rounded-xl border border-sky-200 text-xs sm:text-sm ${fontClass} italic font-bold text-slate-800 my-1.5`}
-            >
-              💭 "{dialogueQuote}"
-            </div>
-          )}
-
-          {/* Narrative Action */}
-          <p
-            className={`${fontClass} text-xs sm:text-sm text-slate-900 leading-normal font-bold mt-1`}
-          >
-            {narrativeAction}
-          </p>
-
-          {/* Recovery Pill */}
-          {stats?.recovery !== undefined && (
-            <div className="mt-2">
-              <span className="bg-emerald-600 text-white text-xs font-comic font-black px-2.5 py-0.5 rounded border border-comic-black shadow-sm">
-                ✨ +{stats.recovery} HP RECOVERED
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // =========================================================================
-  // 4. 🦸 HERO SPEECH BALLOON (Classic Rounded White Balloon with Pointer)
-  // =========================================================================
-  return (
-    <div className="relative my-3 ml-4 mr-2 animate-in slide-in-from-right duration-200">
-      <div className="bg-white border-3 border-comic-black p-3.5 rounded-xl shadow-comic relative">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-1.5 mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{speakerAvatar || '🦸'}</span>
-            <span className="font-comic font-black text-sm text-sky-700 uppercase tracking-wide">
-              {speakerName || 'HERO'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {onomatopoeia && (
-              <span className="bg-comic-red text-white font-comic text-xs font-black px-2 py-0.5 rounded border border-comic-black shadow-sm">
-                {onomatopoeia}
-              </span>
-            )}
-            <span className="text-slate-400 font-mono text-xs">#{index + 1}</span>
-          </div>
-        </div>
-
-        {/* Hero Speech Quote */}
-        {dialogueQuote && (
-          <div
-            className={`bg-sky-50 border-l-4 border-sky-500 p-2 rounded-r my-1.5 text-xs sm:text-sm ${fontClass} font-bold text-slate-900 tracking-wide`}
-          >
-            💬 "{dialogueQuote}"
-          </div>
-        )}
-
-        {/* Action Narrative */}
-        <p
-          className={`${fontClass} text-xs sm:text-sm font-bold text-slate-900 leading-normal mt-1`}
-        >
-          {narrativeAction}
-        </p>
-
-        {/* Stat Badges */}
-        {stats && (stats.damage || stats.threat || stats.cost) && (
-          <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-100">
-            {stats.damage !== undefined && (
-              <span className="bg-comic-red text-white text-xs font-comic font-black px-2.5 py-0.5 rounded border border-comic-black shadow-sm">
-                💥 {stats.damage} DMG
-              </span>
-            )}
-            {stats.threat !== undefined && (
-              <span className="bg-emerald-600 text-white text-xs font-comic font-black px-2.5 py-0.5 rounded border border-comic-black shadow-sm">
-                🛡️ -{stats.threat} THREAT
-              </span>
-            )}
-            {stats.cost !== undefined && (
-              <span className="bg-slate-200 text-slate-800 text-xs font-bold px-2 py-0.5 rounded border border-slate-300">
-                ⚡ Cost: {stats.cost}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

@@ -2757,7 +2757,6 @@ export function executeStep(
       if (statusParam === 'STUNNED' || statusParam === StatusCard.STUNNED)
         status = StatusCard.STUNNED;
 
-      const target = (step.effectParams?.target as string) || 'VILLAIN';
       let mutatedState = false;
       let alreadyHadStatus = false;
       let isImmune = false;
@@ -2801,10 +2800,39 @@ export function executeStep(
         applyStatusToEntity(targetChar.entity);
       }
 
+      const firstTarget = targetCharacters[0];
+      let targetName: string =
+        targetParam === 'VILLAIN' ? state.villain.card.name : String(targetParam || 'Villain');
+      if (firstTarget) {
+        if (firstTarget.entityType === 'villain') {
+          targetName = state.villain.card.name;
+        } else if (firstTarget.entityType === 'hero' || firstTarget.entityType === 'alter_ego') {
+          const p = firstTarget.entity as PlayerState;
+          targetName = p.hero?.name || p.name;
+        } else if ('card' in firstTarget.entity) {
+          targetName = (firstTarget.entity as CardInstance).card.name;
+        }
+      }
+
+      const sourceCardName = context.sourceCardInstance?.card.name;
+      const actorName = sourceCardName || player.hero?.name || player.name;
+      const actorType =
+        context.sourceCardInstance?.card.type === CardType.ALLY
+          ? 'ally'
+          : context.sourceCardInstance?.card.type === CardType.MINION
+            ? 'minion'
+            : player.currentForm === 'hero'
+              ? 'hero'
+              : 'alter_ego';
+
       const onomatopoeia = isImmune
         ? 'IMMUNE! (STALWART)'
         : mutatedState
-          ? `${status} APPLIED!`
+          ? status === StatusCard.STUNNED
+            ? 'STUNNED!'
+            : status === StatusCard.CONFUSED
+              ? 'CONFUSED!'
+              : 'TOUGH!'
           : `${status} ALREADY APPLIED!`;
 
       state.log.push({
@@ -2812,10 +2840,17 @@ export function executeStep(
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
+        actor: {
+          name: actorName,
+          type: actorType,
+        },
         key: 'card.effect.addStatus',
         params: {
+          who: actorName,
+          card: sourceCardName || 'Card',
           status,
-          target,
+          target: targetName,
+          who_is_taking_damage: targetName,
           mutatedState,
           alreadyHadStatus,
           isImmune,

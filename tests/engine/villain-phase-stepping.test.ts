@@ -161,6 +161,83 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     expect(dispatchRes.result.error).toContain('decision prompt is pending');
   });
 
+  it('clears stale lastCombatOutcome and populates attack initiation details when prompt opens (Issue #144)', () => {
+    // Simulate stale combat outcome from previous round
+    gameState.lastCombatOutcome = {
+      id: 'stale_attack_999',
+      attackerName: 'Rhino',
+      attackerType: 'VILLAIN',
+      targetPlayerId: 'p1',
+      targetHeroName: 'Spider-Man',
+      baseAttack: 5,
+      boostCards: [],
+      totalBoostIcons: 3,
+      defenseValue: 0,
+      finalDamage: 8,
+    };
+
+    // Provide boost card for the incoming attack
+    const boostCard = createCardInstance({
+      ...catalog.getCard('01107')!,
+      boostIcons: 1,
+    });
+    gameState.encounterDeck = [boostCard];
+
+    // Transition to VILLAIN_PHASE Step 1 (Threat)
+    let state = advanceVillainPhaseStep(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    expect(state.villainPhaseStep).toBe(VillainPhaseStep.VILLAIN_ACTIVATIONS);
+
+    // Advance to Step 2 without synchronous policy -> prompts for defender
+    state = advanceVillainPhaseStep(state, { acceptOptionalTriggers: true });
+
+    // 1. Must halt with DECLARE_DEFENDER prompt
+    expect(state.pendingDecisionPrompt).toBeDefined();
+    expect(state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER')).toBe(
+      true,
+    );
+
+    // 2. Stale combat outcome must be CLEARED while awaiting defender declaration
+    expect(state.lastCombatOutcome).toBeUndefined();
+
+    // 3. Step event must accurately reflect attack initiation and target hero, not a completed attack
+    expect(state.villainPhaseStepEvent).toBeDefined();
+    expect(state.villainPhaseStepEvent?.type).toBe('VILLAIN_ATTACK');
+    expect(state.villainPhaseStepEvent?.targetPlayerId).toBe('p1');
+    expect(state.villainPhaseStepEvent?.targetName).toBe('Peter Parker');
+    expect(state.villainPhaseStepEvent?.combatOutcome).toBeUndefined();
+    expect(state.villainPhaseStepEvent?.amount).toBeUndefined();
+    expect(state.villainPhaseStepEvent?.description).toContain('is attacking Peter Parker');
+
+    // 4. Resolve defender declaration as UNDEFENDED
+    const undefendedOption = state.pendingDecisionPrompt!.options.find(
+      (o) => o.params?.defenderType === 'UNDEFENDED',
+    )!;
+
+    const res = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: undefendedOption.id,
+    });
+
+    expect(res.result.success).toBe(true);
+    const resolvedState = res.state;
+
+    // 5. Combat outcome must now be populated for the new attack with unique id and target hero
+    expect(resolvedState.lastCombatOutcome).toBeDefined();
+    expect(resolvedState.lastCombatOutcome?.id).toBeDefined();
+    expect(resolvedState.lastCombatOutcome?.id).not.toBe('stale_attack_999');
+    expect(resolvedState.lastCombatOutcome?.targetHeroName).toBe('Spider-Man');
+    expect(resolvedState.lastCombatOutcome?.attackerName).toBe('Rhino');
+    expect(resolvedState.lastCombatOutcome?.baseAttack).toBe(2);
+    expect(resolvedState.lastCombatOutcome?.totalBoostIcons).toBe(1);
+    expect(resolvedState.lastCombatOutcome?.finalDamage).toBe(3);
+
+    // 6. Step event must now record completed attack resolution with combatOutcome
+    expect(resolvedState.villainPhaseStepEvent?.combatOutcome).toBeDefined();
+    expect(resolvedState.villainPhaseStepEvent?.amount).toBe(3);
+    expect(resolvedState.villainPhaseStepEvent?.description).toContain('attacked Peter Parker');
+  });
+
   it('executes continuously without pausing when stepping is omitted in executeVillainPhase', () => {
     const boostCard = createCardInstance({
       ...catalog.getCard('01107')!,

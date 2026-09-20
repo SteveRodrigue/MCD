@@ -46,6 +46,33 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       expect(screen.getByText('SCHEME GROWS!')).toBeDefined();
     });
 
+    it('renders target name in category badge during activations (Issue #144)', () => {
+      const attackState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+        villainPhaseStepEvent: {
+          type: 'VILLAIN_ATTACK',
+          step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+          targetName: 'Peter Parker',
+          description: 'Rhino is attacking Peter Parker! Declare a defender.',
+          onomatopoeia: 'DEFEND!',
+        },
+      };
+
+      render(
+        <VillainPhaseStepper
+          gameState={attackState as GameState}
+          pacing="manual"
+          onNextStep={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText('2. VILLAIN ➔ Peter Parker')).toBeDefined();
+      expect(
+        screen.getByText('Rhino is attacking Peter Parker! Declare a defender.'),
+      ).toBeDefined();
+    });
+
     it('triggers onNextStep when Next Step button is clicked', () => {
       const onNextStep = vi.fn();
 
@@ -139,6 +166,7 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
 
       expect(screen.getByTestId('combat-boost-modal')).toBeDefined();
       expect(screen.getAllByText('Rhino').length).toBeGreaterThan(0);
+      expect(screen.getByText('Target: Spider-Man')).toBeDefined();
       expect(screen.getByText('Base ATK')).toBeDefined();
       expect(screen.getByText('Boost Icons')).toBeDefined();
       expect(screen.getByText('Total ATK')).toBeDefined();
@@ -147,6 +175,27 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       const continueButton = screen.getByRole('button', { name: /continue/i });
       fireEvent.click(continueButton);
       expect(onContinue).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders ally defender protecting target hero (Issue #144)', () => {
+      const outcome: CombatResolutionSummary = {
+        attackerName: 'Rhino',
+        attackerType: 'VILLAIN',
+        targetPlayerId: 'p1',
+        targetHeroName: 'Spider-Man',
+        baseAttack: 2,
+        boostCards: [],
+        totalBoostIcons: 1,
+        defenseValue: 0,
+        defenderType: 'ALLY',
+        defenderName: 'Black Cat',
+        finalDamage: 3,
+      };
+
+      render(<CombatBoostModal isOpen={true} outcome={outcome} onContinue={vi.fn()} />);
+
+      expect(screen.getByText('Black Cat protecting Spider-Man')).toBeDefined();
+      expect(screen.getByText('Target: Spider-Man')).toBeDefined();
     });
 
     it('triggers onContinue on Spacebar and Enter keydown events', () => {

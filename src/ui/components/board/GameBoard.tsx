@@ -81,19 +81,27 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     }
   }, [setVillainPhasePacing, onDispatchAction]);
 
-  const prevOutcomeRef = useRef<CombatResolutionSummary | undefined>(undefined);
+  const prevOutcomeIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
+    const outcome = gameState.lastCombatOutcome;
     if (
-      gameState.lastCombatOutcome &&
-      gameState.lastCombatOutcome !== prevOutcomeRef.current &&
+      outcome &&
+      outcome.id &&
+      outcome.id !== prevOutcomeIdRef.current &&
       gameState.phase === 'VILLAIN_PHASE' &&
+      !gameState.pendingDecisionPrompt &&
       villainPhasePacing !== 'instant'
     ) {
-      setActiveCombatOutcome(gameState.lastCombatOutcome);
+      setActiveCombatOutcome(outcome);
       setIsBoostModalOpen(true);
+      prevOutcomeIdRef.current = outcome.id;
     }
-    prevOutcomeRef.current = gameState.lastCombatOutcome;
-  }, [gameState.lastCombatOutcome, gameState.phase, villainPhasePacing]);
+  }, [
+    gameState.lastCombatOutcome,
+    gameState.phase,
+    gameState.pendingDecisionPrompt,
+    villainPhasePacing,
+  ]);
 
   // Auto-advance timer during VILLAIN_PHASE
   useEffect(() => {
@@ -576,6 +584,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         outcome={activeCombatOutcome || undefined}
         onContinue={() => {
           setIsBoostModalOpen(false);
+          setActiveCombatOutcome(null);
           if (villainPhasePacing === 'manual' || !isAutoPlaying) {
             handleNextVillainStep();
           }

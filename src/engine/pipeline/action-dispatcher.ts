@@ -2978,7 +2978,11 @@ export function dispatchAction(
         resultingState.phase === GamePhase.VILLAIN_PHASE &&
         !resultingState.pendingDecisionPrompt
       ) {
-        resultingState = continueVillainPhase(resultingState);
+        if (resultingState.options?.villainPhaseStepping && resultingState.lastCombatOutcome) {
+          // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
+        } else {
+          resultingState = continueVillainPhase(resultingState);
+        }
       }
 
       return {
@@ -2998,7 +3002,11 @@ export function dispatchAction(
       });
 
       if (updatedState.phase === GamePhase.VILLAIN_PHASE && !updatedState.pendingDecisionPrompt) {
-        updatedState = continueVillainPhase(updatedState);
+        if (updatedState.options?.villainPhaseStepping && updatedState.lastCombatOutcome) {
+          // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
+        } else {
+          updatedState = continueVillainPhase(updatedState);
+        }
       }
 
       return {

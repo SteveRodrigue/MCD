@@ -35,12 +35,31 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
       categoryColor = 'bg-amber-400 text-comic-black';
       break;
     case VillainPhaseStep.VILLAIN_ACTIVATIONS:
-      if (stepEvent?.type === 'MINION_ATTACK' || stepEvent?.type === 'MINION_SCHEME') {
-        categoryLabel = '2. MINION';
-        categoryColor = 'bg-rose-500 text-white';
+      if (stepEvent?.targetName) {
+        if (stepEvent.type === 'VILLAIN_ATTACK') {
+          categoryLabel = `2. VILLAIN ➔ ${stepEvent.targetName}`;
+          categoryColor = 'bg-comic-red text-white';
+        } else if (stepEvent.type === 'MINION_ATTACK') {
+          categoryLabel = `2. MINION ➔ ${stepEvent.targetName}`;
+          categoryColor = 'bg-rose-500 text-white';
+        } else if (stepEvent.type === 'VILLAIN_SCHEME') {
+          categoryLabel = `2. SCHEME ➔ ${stepEvent.targetName}`;
+          categoryColor = 'bg-comic-red text-white';
+        } else if (stepEvent.type === 'MINION_SCHEME') {
+          categoryLabel = `2. SCHEME ➔ ${stepEvent.targetName}`;
+          categoryColor = 'bg-rose-500 text-white';
+        } else {
+          categoryLabel = '2. ACTIVATION';
+          categoryColor = 'bg-comic-red text-white';
+        }
       } else {
-        categoryLabel = '2. VILLAIN';
-        categoryColor = 'bg-comic-red text-white';
+        if (stepEvent?.type === 'MINION_ATTACK' || stepEvent?.type === 'MINION_SCHEME') {
+          categoryLabel = '2. MINION';
+          categoryColor = 'bg-rose-500 text-white';
+        } else {
+          categoryLabel = '2. VILLAIN';
+          categoryColor = 'bg-comic-red text-white';
+        }
       }
       break;
     case VillainPhaseStep.DEAL_ENCOUNTER_CARDS:

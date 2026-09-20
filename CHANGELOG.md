@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI): Side Scheme Card Hover Zoom & Z-Axis Stacking Context ([Issue #148](https://github.com/SteveRodrigue/MCD/issues/148))**
+  - **Unbounded Hover Zoom:** Replaced `overflow-y-auto max-h-[260px]` with `overflow-visible flex flex-wrap gap-3 items-center pt-1` in `VillainZone.tsx`, eliminating container clipping and internal scrollbars so hovered side scheme cards scale cleanly ($2.5\times$, $440\text{px}\times 320\text{px}$) over the tabletop.
+  - **Dynamic Stacking Context:**
+    - Elevated root `VillainZone` panel with `hover:z-30 focus-within:z-30` so zoomed cards render above downstream player and hero board components.
+    - Added `relative z-10 hover:z-40 focus-within:z-40` to the side schemes column container.
+    - Added `relative z-10 hover:z-50 focus-within:z-50` to individual side scheme card wrappers so that hovered cards immediately rise above adjacent sibling side schemes.
+  - **Automated Verification:** Added component regression tests in `tests/ui/villain-zone-zoom.test.tsx` verifying stacking classes, `overflow-visible`, and absence of clipping constraints.
+
 - **Feature (UI, Engine & Locales): Better Combat Log - Daily Bugle Chronicle, Dynamic Token Normalization & Desktop Docking ([Issue #142](https://github.com/SteveRodrigue/MCD/issues/142))**
   - **Dynamic Token Normalization & Generic Mapping:**
     - Implemented `normalizeLogParams` and canonical key mapper in `src/ui/utils/comic-log-formatter.ts`, resolving structured event params (`who`, `who_attacks`, `who_is_taking_damage`, `who_defends`, `target`, `amount`, `card`, `scheme`, `status`, `source`, `form`) with state fallbacks (active villain, main scheme, player hero names).

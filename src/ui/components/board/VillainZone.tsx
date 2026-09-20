@@ -116,7 +116,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
   return (
     <>
-      <section className="comic-panel p-4 bg-white/95 relative shadow-comic">
+      <section className="comic-panel p-4 bg-white/95 relative hover:z-30 focus-within:z-30 shadow-comic">
         {/* Zone Title Ribbon */}
         <div className="absolute -top-3 left-4 bg-comic-red text-white border border-comic-black font-comic text-xs px-3 py-0.5 tracking-wider shadow-comic-sm flex items-center gap-1">
           <Skull className="w-3.5 h-3.5" />
@@ -329,16 +329,19 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           </div>
 
           {/* 4. Active Side Schemes & Player Schemes (Takes remaining width) */}
-          <div className="flex-1 min-w-[200px] flex flex-col gap-2 bg-slate-50/90 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm min-h-[220px]">
+          <div className="flex-1 min-w-[200px] flex flex-col gap-2 bg-slate-50/90 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm min-h-[220px] relative z-10 hover:z-40 focus-within:z-40">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase text-slate-600 border-b border-slate-200 pb-1.5">
               <Flame className="w-4 h-4 text-comic-red" />
               <span>Active Side Schemes ({sideSchemes.length})</span>
             </div>
 
             {sideSchemes.length > 0 ? (
-              <div className="flex flex-wrap gap-3 items-center overflow-y-auto max-h-[260px] pt-1">
+              <div className="flex flex-wrap gap-3 items-center pt-1 overflow-visible">
                 {sideSchemes.map((scheme) => (
-                  <div key={scheme.instanceId} className="flex flex-col items-center gap-1">
+                  <div
+                    key={scheme.instanceId}
+                    className="flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50"
+                  >
                     <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
                     <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm">
                       ⚠️ {scheme.threat} THREAT

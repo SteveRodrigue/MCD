@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { X, BookOpen, ChevronDown, ChevronRight, Globe, Type } from 'lucide-react';
-import { GameLogEntry } from '../../../engine/models';
+import { GameLogEntry, GameState } from '../../../engine/models';
 import { formatComicLogEntry } from '../../utils/comic-log-formatter';
 import { ComicSpeechBalloon } from './ComicSpeechBalloon';
 import { FONT_PRESETS } from './combat-log-presets';
@@ -10,6 +10,7 @@ interface CombatLogDrawerProps {
   onClose: () => void;
   logs: GameLogEntry[];
   currentLocale?: 'en' | 'fr';
+  gameState?: GameState;
 }
 
 type FilterCategory = 'all' | 'heroes' | 'villains' | 'narrator';
@@ -19,6 +20,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   onClose,
   logs,
   currentLocale = 'en',
+  gameState,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [locale, setLocale] = useState<'en' | 'fr'>(currentLocale);
@@ -47,8 +49,8 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
 
   // Format all log entries into comic dialogue
   const formattedLogs = useMemo(() => {
-    return logs.map((entry) => formatComicLogEntry(entry, locale));
-  }, [logs, locale]);
+    return logs.map((entry) => formatComicLogEntry(entry, locale, gameState));
+  }, [logs, locale, gameState]);
 
   // Filter logs by selected speaker category
   const filteredLogs = useMemo(() => {
@@ -75,8 +77,8 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-[420px] bg-slate-100 border-l-4 border-comic-black shadow-comic-lg z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200">
-      {/* 1. Vintage Comic Issue Header Bar (Deep Navy Masthead) */}
+    <div className="fixed lg:fixed inset-y-0 right-0 w-full sm:w-[420px] lg:w-[420px] bg-slate-100 border-l-4 border-comic-black shadow-comic-lg z-50 flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-200">
+      {/* 1. Daily Bugle Masthead Header Bar */}
       <div className="bg-slate-900 p-3 sm:p-4 border-b-4 border-comic-black shadow-comic-sm">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -85,10 +87,10 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
             </div>
             <div>
               <h2 className="font-comic text-xl text-comic-yellow leading-tight tracking-wide">
-                ACTION CHRONICLE
+                DAILY BUGLE
               </h2>
               <div className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-                DAILY BUGLE SPECIAL EDITION • ISSUE LOG
+                FLASH NEWS & ACTION CHRONICLE • ISSUE LOG
               </div>
             </div>
           </div>
@@ -167,7 +169,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
       {/* 3. Log Stream Container */}
       <div
         ref={scrollRef}
-        className="flex-1 p-3 overflow-y-auto space-y-1 bg-slate-900 bg-bendy-dots"
+        className="flex-1 p-3 overflow-y-auto space-y-1 bg-[#f4ede2] bg-bendy-dots"
       >
         {filteredLogs.length === 0 ? (
           <div className="p-8 text-center bg-white/10 rounded-xl border border-slate-700 my-4">

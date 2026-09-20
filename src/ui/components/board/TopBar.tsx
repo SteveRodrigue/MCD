@@ -42,7 +42,11 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <>
-      <header className="w-full bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-40 fixed top-0 left-0 right-0">
+      <header
+        className={`bg-amber-50 border-b-3 border-comic-black shadow-comic px-4 py-2 flex flex-wrap items-center justify-between gap-3 z-40 fixed top-0 left-0 transition-all duration-300 ${
+          isLogOpen ? 'right-0 lg:right-[420px]' : 'right-0'
+        }`}
+      >
         {/* Left: Round & Phase Badges */}
         <div className="flex items-center gap-3">
           {/* Round Badge */}

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (UI, Engine & Locales): Better Combat Log - Daily Bugle Chronicle, Dynamic Token Normalization & Desktop Docking ([Issue #142](https://github.com/SteveRodrigue/MCD/issues/142))**
+  - **Dynamic Token Normalization & Generic Mapping:**
+    - Implemented `normalizeLogParams` and canonical key mapper in `src/ui/utils/comic-log-formatter.ts`, resolving structured event params (`who`, `who_attacks`, `who_is_taking_damage`, `who_defends`, `target`, `amount`, `card`, `scheme`, `status`, `source`, `form`) with state fallbacks (active villain, main scheme, player hero names).
+    - Mapped 20 hierarchical and primitive engine events (`DEAL_DAMAGE`, `CARD_PLAYED`, `HERO_DEFENDED`, `ALLY_DEFENDED`, `ATTACK_UNDEFENDED`, `CANCEL_WHEN_REVEALED`, `VILLAIN_PHASE_STEP1_THREAT`, `VILLAIN_SCHEME_THREAT`, `READY_CHARACTER`, `COST_REDUCTION_CONSUMED`, `CHANGE_FORM`, `SIDE_SCHEME_REVEALED`, `HEAL_DAMAGE`, `REMOVE_THREAT`, `APPLY_STATUS`, `REMOVE_STATUS`, `BOOST_REVEALED`, `TREACHERY_SURGED`, `CHARACTER_DEFEATED`, `SIDE_SCHEME_DEFEATED`) to declarative templates in both English and French (`src/locales/en/combat-log.json`, `src/locales/fr/combat-log.json`).
+  - **Dynamic Color Palettes:**
+    - Integrated dynamic color extraction in `comic-log-formatter.ts`: hero actions reflect hero color palettes via `getHeroColorPalette()`, villains/minions reflect card metadata or fall back to official Villain Card Back burgundy (`#701a75`), gold border (`#d97706`), and white contrast, while narrator entries render classic Stan Lee golden banner colors (`#d97706` / `#f59e0b` / `#b45309`).
+  - **Daily Bugle Pop-Art Chronicle & Speech Balloons:**
+    - Restyled `ComicSpeechBalloon.tsx` as Daily Bugle Classifieds / Flash News bulletins with newsprint background (`#fdfbf7`), character avatar classification strip, in-character quote box, bold narrative action sentences, onomatopoeia stamps, and comic stat badges (💥 DMG, ⚠️ THREAT, ✨ RECOVER, ⚡ COST).
+  - **Desktop Board Docking & Responsive Layout:**
+    - Updated `GameBoard.tsx` (`lg:w-[calc(100%-420px)]`) and `TopBar.tsx` (`lg:right-[420px]`) so that when the combat log is toggled open on desktop, all tabletop UI components (villain zone, heroes, hand tray) and top navigation buttons smoothly shift left, ensuring zero play area or controls are covered or hidden by the docked drawer.
+    - Updated `CombatLogDrawer.tsx` to support docked desktop positioning alongside slide-out mobile overlay, with Daily Bugle masthead styling.
+  - **Engine Event Alignment:**
+    - Updated `action-dispatcher.ts` (`PLAY_CARD`, `BASIC_ATTACK`), `combat-pipeline.ts` (defender declaration), and `villain-phase.ts` (step 1 threat) to provide rich structured params (`who_attacks`, `who_is_taking_damage`, `who_defends`, `target`, `scheme`, `amount`).
+    - Added dedicated status effect templates (`STATUS_STUNNED`, `STATUS_CONFUSED`, `STATUS_TOUGH`) mapping `card.effect.addStatus` with proper card attribution (e.g. `"Mockingbird stunned Rhino!"`).
+    - Added `PLAYER_TURN_ENDED` template (`"{{who}} turns ended."` / `"Le tour de {{who}} est terminé."`) for `player.turn.ended`, sanitizing internal UI designations (e.g. `Hero Seat (Spider-Man)` -> `Spider-Man`) in `cleanCharacterName`.
+  - **Automated Verification:**
+    - Authored comprehensive test suite in `tests/ui/comic-log-formatter.test.ts` asserting all 5 key state-driven sentences in English and French, unmapped event handling, and dynamic color extraction.
+    - Authored component tests in `tests/ui/combat-log-drawer.test.tsx` verifying Daily Bugle masthead, desktop docking classes, and category filtering.
+
+
 - **Fix (UI & Engine): Villain Phase Attack Details, Targeting Visibility & Combat Math Timing ([Issue #144](https://github.com/SteveRodrigue/MCD/issues/144))**
   - **Attack Targeting Visibility & Details:**
     - Updated `CombatBoostModal.tsx` to prominently display both the attacker and target hero (`Target: ${outcome.targetHeroName || 'Hero'}`) in the header banner, and clearly label ally defenders protecting their hero in the authoritative combat formula.

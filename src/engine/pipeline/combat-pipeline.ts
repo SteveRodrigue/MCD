@@ -379,6 +379,12 @@ export function resolveDefenderDeclaration(
   state.activeAttackContext = attackContext;
   attackContext.defender = declaration;
 
+  const attackerName =
+    attackContext.attackerType === 'VILLAIN'
+      ? state.villain.card.name
+      : attackContext.attackerCard?.card.name || 'Minion';
+  const heroOrPlayerName = player.hero?.name || player.name;
+
   // Apply Defender Exhaustion & DEF stat
   if (declaration.type === 'HERO') {
     player.exhausted = true;
@@ -392,7 +398,13 @@ export function resolveDefenderDeclaration(
       phase: state.phase,
       category: 'combat',
       key: 'combat.hero.defended',
-      params: { player: player.name, defense: attackContext.defenseValue },
+      params: {
+        player: player.name,
+        defense: attackContext.defenseValue,
+        who_attacks: attackerName,
+        who_defends: heroOrPlayerName,
+        target: heroOrPlayerName,
+      },
       onomatopoeia: 'DEFENSE DECLARED!',
     });
   } else if (declaration.type === 'ALLY' && declaration.allyInstanceId) {
@@ -409,7 +421,13 @@ export function resolveDefenderDeclaration(
         phase: state.phase,
         category: 'combat',
         key: 'combat.ally.defended',
-        params: { player: player.name, ally: ally.card.name },
+        params: {
+          player: player.name,
+          ally: ally.card.name,
+          who_attacks: attackerName,
+          who_defends: ally.card.name,
+          target: heroOrPlayerName,
+        },
         onomatopoeia: 'ALLY BLOCKS!',
       });
     }
@@ -424,7 +442,12 @@ export function resolveDefenderDeclaration(
       phase: state.phase,
       category: 'combat',
       key: 'combat.attack.undefended',
-      params: { player: player.name },
+      params: {
+        player: player.name,
+        who_attacks: attackerName,
+        who_defends: heroOrPlayerName,
+        target: heroOrPlayerName,
+      },
       onomatopoeia: 'UNDEFENDED!',
     });
   }

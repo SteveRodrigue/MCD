@@ -1,6 +1,6 @@
 ---
 name: dependabot
-description: 'Audit GitHub Dependabot alerts for the MCD repository, assess dependency and codebase impact, and prepare a review-gated remediation plan. Use when checking Dependabot alerts, security vulnerabilities, npm dependency advisories, upgrade risk, or dependency security fixes.'
+description: 'Audit Dependabot alerts and npm security advisories, assess risk, and prepare remediation plans. Trigger on dependabot alerts or security audits.'
 argument-hint: 'Optional scope: all alerts, a package, an alert number, or a severity threshold'
 user-invocable: true
 disable-model-invocation: false
@@ -8,20 +8,18 @@ disable-model-invocation: false
 
 # Dependabot Audit & Remediation Protocol
 
-Use this skill to turn GitHub Dependabot alerts into evidence-backed remediation plans. The skill audits the live repository alerts, maps each vulnerable dependency to the MCD build and runtime surface, and prepares an implementation plan for user review before any dependency or source change is made.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, preservation, plan, and verification policies.
 
-## Path Policy
-
-Use paths relative to the MCD repository root for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links. Use repository-relative paths such as `package.json`, `src/`, `tests/`, or `docs/`.
+Use this skill to turn GitHub Dependabot alerts into evidence-backed remediation plans before making any dependency or source changes.
 
 ## Safety Rules
 
 - Never expose authentication tokens, credentials, or environment secrets.
-- Do not run `npm audit fix`, upgrade dependencies, edit `package.json`, edit lockfiles, or modify source code before the user approves the implementation plan.
-- Treat GitHub Dependabot data as advisory evidence. Verify the affected version range, patched version, package usage, and exploitability in this repository.
-- Separate production dependencies from development-only dependencies. A vulnerability in a build or test tool can still affect CI or local development, but may not affect the shipped application.
+- Do not run `npm audit fix`, upgrade dependencies, edit `package.json`, edit lockfiles, or modify source code before user approves the plan.
+- Treat GitHub Dependabot data as advisory evidence: verify affected versions, patched versions, package usage, and exploitability.
+- Separate production dependencies from development-only dependencies.
 - Do not suppress, dismiss, or close a Dependabot alert as a substitute for remediation.
-- Preserve unrelated working-tree changes. Do not reset, checkout, or clean files without explicit user approval.
+
 
 ## Procedure
 

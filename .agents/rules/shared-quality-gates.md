@@ -65,19 +65,7 @@ Report unavailable commands rather than inventing results.
 
 Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting verification results and any issue-state discrepancies afterward.
 
-## Skill selection
 
-| Primary task                                                     | Skill                       |
-| ---------------------------------------------------------------- | --------------------------- |
-| Specific card translation or refinement                          | `card-integration-protocol` |
-| New generic mechanic, schema, UI capability, or scenario feature | `feature-delivery`          |
-| Defect or regression                                             | `bug-fix`                   |
-| Documentation drift                                              | `documentation-audit`       |
-| Dependency alert                                                 | `dependabot`                |
-| Code health, duplication, test hygiene, or naming audit          | `code-audit`                |
-| Approved plan execution                                          | `execute-plan`              |
-| Work prioritization                                              | `next-task`                 |
-| Local problem-report filing                                      | `problem-report-triage`     |
-| User-approved commit or push                                     | `commit-and-push`           |
+### Primitive and Card Retrofit Ordering
 
 When a card requires a new generic primitive, `feature-delivery` owns the primitive and `card-integration-protocol` owns the card retrofit; the plan must state the order.

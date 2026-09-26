@@ -31,18 +31,3 @@ For source, test, supplemental-data, dependency, or configuration changes, creat
 ## Delivery
 
 Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the delivery workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting the verification results and any issue-state discrepancies afterward.
-
-## Skill index
-
-| Task                                  | Skill                                               |
-| ------------------------------------- | --------------------------------------------------- |
-| Specific card translation/refinement  | `.agents/skills/card-integration-protocol/SKILL.md` |
-| New generic capability                | `.agents/skills/feature-delivery/SKILL.md`          |
-| Defect or regression                  | `.agents/skills/bug-fix/SKILL.md`                   |
-| Documentation drift                   | `.agents/skills/documentation-audit/SKILL.md`       |
-| Dependency alert                      | `.agents/skills/dependabot/SKILL.md`                |
-| Code health and maintainability audit | `.agents/skills/code-audit/SKILL.md`                |
-| Approved plan execution               | `.agents/skills/execute-plan/SKILL.md`              |
-| Prioritization                        | `.agents/skills/next-task/SKILL.md`                 |
-| Local problem reports                 | `.agents/skills/problem-report-triage/SKILL.md`     |
-| User-approved commit/push             | `.agents/skills/commit-and-push/SKILL.md`           |

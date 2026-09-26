@@ -1,45 +1,33 @@
 ---
 name: card-integration-protocol
-description: >-
-  Standard 8-step protocol for analyzing, translating, validating, and integrating
-  Marvel Champions cards into the declarative supplemental layer (src/data/supplemental/)
-  and rules engine. Enforces zero assumption of existing supplemental correctness,
-  mandatory user peer review with diff presentation, a 3-tier blast-radius refactor guardrail,
-  3-iteration circuit-breaker, batch-resilient ambiguity isolation, encapsulated audit metadata
-  (ISO timestamps with HH:MM), and 1-file-per-card tracking in docs/ambiguities/ (Inbox Zero).
-  Use whenever adding or refining any card.
+description: 'Standard 8-step protocol for analyzing, translating, validating, and integrating Marvel Champions cards into src/data/supplemental/ and the rules engine. Trigger whenever adding or refining any card.'
 ---
 
 # Card Integration Protocol (8-Step Standard Workflow)
 
-**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
-
-This skill guides the agent and developers through the rigorous, deterministic process of integrating Marvel Champions cards into the digital game engine.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies. Classify changes using the canonical 3-tier blast radius before editing code.
 
 ---
 
-## Blast-Radius Refactor Guardrails (3-Tier Classification)
+## Refactor Guardrails & Card Authority
 
-Before modifying engine source code, classify the required change into one of three tiers:
-
-- **Tier 1 (Fast-Track — Direct Execution):** Supplemental JSON edits, adding enum/union literals (`TriggerType`, `EffectType`), adding `case` branches to existing switch dispatchers, adding unit tests.
-- **Tier 2 (Additive Generic Helpers — Permitted with 0 Regressions):** Adding pure generic utility functions in `src/engine/effects/` (e.g. deck inspection, stack filtering). All existing tests must pass with zero regressions.
-- **🛑 Tier 3 (Structural Refactor Gate — Mandatory Plan & User Approval):** Modifying core state schemas (`GameState`, `PlayerState`, `CardInstance`), refactoring phase loops in `villain-phase.ts`, altering action dispatch contracts, or rewriting major subsystems.
-  - **In Single-Card Mode:** Stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for explicit user approval before touching source code.
-  - **In Batch-Mode (Scanning multiple cards / sets):** **Do not halt the batch.** Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning all remaining cards in the set, and present a consolidated report + implementation plan at the end of the batch run.
-- **🎯 Rhino Release Target Inventory (Gate 1 Focus):** Active card integration strictly targets **Core Set Player Cards (101 cards in `data/upstream/pack/core.json`)** and **Rhino Scenario Encounters (34 cards in `data/upstream/pack/core_encounter.json`)**. Expansion packs are deferred to subsequent gates.
-- **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):** NEVER introduce temporary shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or ad-hoc shortcuts. Always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data.
-- **🔍 Zero Assumption of Existing Supplemental Correctness (Spec Evolution & Gap Analysis):**
-  - **Never Assume Existing Supplemental Data Is Correct:** When reviewing, refining, or auditing an existing card, NEVER assume the current supplemental JSON in `src/data/supplemental/` is accurate, complete, or up to canonical standard.
-  - **Impact of Specification Evolution:** As `docs/specifications/supplemental/` evolves, existing card supplemental data can become outdated, misaligned, or eligible for refactoring using newer, more expressive primitives and parameters.
-  - **Differential Comparison to Expose Gaps & Ambiguities:** Always independently translate the card from printed text and the current specifications, then contrast the proposed data against the existing supplemental data. Comparing the two directly surfaces engine gaps, specification drift, or unhandled card ambiguities.
-  - **Mandatory User Peer Review Gate:** Any change to a card's supplemental data **must** be peer-reviewed by the user before implementation. Always present:
-    1. `card.text` (the exact printed text from upstream)
-    2. **Original Supplemental Data** (existing JSON in `src/data/supplemental/`)
-    3. **Proposed Supplemental Data** (new/refactored JSON)
-    4. **The "Why?"** (the concrete rationale: spec changes, gaps identified, rule corrections, or refactoring reasons).
+- **Blast-Radius Handling:** Apply the 3-Tier blast radius from `shared-quality-gates.md`.
+  - **In Single-Card Mode:** If Tier 3 (structural refactor required), stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for user approval.
+  - **In Batch-Mode (Scanning multiple cards/sets):** Do not halt the batch. Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning, and present a consolidated report at the end.
+- **Zero Tech Debt Invariant:** Never introduce temporary shims or backwards-compatibility aliases; prefer direct refactoring of schemas and supplemental data.
+- **🔍 Zero Assumption of Existing Supplemental Correctness:**
+  - Never assume existing supplemental data in `src/data/supplemental/` is accurate, complete, or up to canonical standard.
+  - As `docs/specifications/supplemental/` evolves, existing card supplemental data can become outdated or eligible for refactoring.
+  - Always independently translate the card from printed text and specifications, then contrast proposed data against the existing baseline to surface gaps or drift.
+- **Mandatory User Peer Review Gate:**
+  Any change to a card's supplemental data must be peer-reviewed by the user before implementation. Always present:
+  1. `card.text` (exact printed text from upstream)
+  2. **Original Supplemental Data** (existing JSON)
+  3. **Proposed Supplemental Data** (new/refactored JSON)
+  4. **The "Why?"** (rationale: spec evolution, gap resolution, or rule correction)
 
 ---
+
 
 ## 🔄 The 8-Step Integration Workflow
 

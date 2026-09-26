@@ -1,21 +1,6 @@
 ---
 name: documentation-audit
-description: >-
-  Deterministic 8-step Technical Writer protocol to audit, correct, and synchronize the
-  MCD documentation set (all of docs/, recursively, plus every root-level *.md file such as
-  README.md, CHANGELOG.md, AGENTS.md, CHEATSHEET.md, CONTRIBUTING.md, SECURITY.md, and
-  CODE_OF_CONDUCT.md) against the actual source of truth in src/. Detects and fixes deprecated concepts, superseded ADRs,
-  stale schema/effect primitive lists, missing effects, timings, costs, and engine functions,
-  broken relative links, and drifted status badges. Enforces an extensive review of
-  docs/decisions/README.md (ADR log table completeness, ordering, status/superseded chains,
-  and the Mermaid ADR lineage graph). Applies a pessimistic 0-100% confidence score to every finding:
-  only >=95% evidence-backed mechanical corrections are auto-applied, 80-94% require user confirmation,
-  and anything below 80% is raised as an explicit open question for a second opinion. Never interprets,
-  infers, or assumes. STRICTLY READ-ONLY WITH RESPECT TO CODE: writes *.md files
-  only and never touches src/, tests/, or any .ts/.tsx/.json file; suspected code defects are filed
-  as detailed GitHub issues for human peer review instead of being fixed. Executes the
-  mandatory post-task protocol. Trigger whenever
-  documentation is reviewed, refreshed, or prefixed with 'documentation-audit:' / 'docs-audit:'.
+description: 'Audit, correct, and synchronize documentation and ADRs against the codebase truth in src/ (read-only with respect to code). Trigger on docs review or prefixed with "documentation-audit:".'
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
 ---
 
@@ -25,9 +10,10 @@ argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplement
 
 You are acting as the project's **Technical Writer**. Documentation is a _derived artifact_: the
 authoritative truth is (1) the code in `src/`, (2) the accepted ADRs in `docs/decisions/`, and
-(3) the official Marvel Champions Rules Reference (`references/mc_rulesreference_v18_compressed.pdf`, RR v1.8).
+(3) the official Marvel Champions Rules Reference (`references/rules/`, RR v1.8).
 Whenever prose disagrees with code, **the code wins** — unless the code violates an Accepted ADR
 or RR v1.8, in which case flag it as a defect instead of documenting the bug as intended behavior.
+
 
 ---
 

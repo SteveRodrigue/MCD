@@ -1,16 +1,6 @@
 ---
 name: code-audit
-description: >-
-  Evidence-first senior software engineering audit for maintainability and code health.
-  Finds orphaned, unreachable, deprecated, and superseded code; duplicate, orphaned,
-  outdated, skipped, or low-value tests; duplicate or structurally similar functions and
-  classes; inconsistent or misleading names; architecture boundary violations; avoidable
-  complexity; weak type and error contracts; and dependency hygiene problems. Produces a
-   severity-ranked, confidence-scored, read-only review with concrete evidence, false-positive
-   checks, remediation options, a durable ticket-ready report in logs/reports/code-audit/, and
-   an approval-gated implementation plan. Use when asked for
-  a code audit, dead-code review, maintainability review, duplication analysis, test hygiene
-  review, naming consistency review, or prefixed with 'code-audit:'.
+description: 'Evidence-first codebase audit for dead code, duplication, architecture boundaries, and maintainability. Trigger when asked for a code audit or prefixed with "code-audit:".'
 argument-hint: '<scope> [--mode=focused|full|diff] [--depth=quick|standard|deep]'
 ---
 

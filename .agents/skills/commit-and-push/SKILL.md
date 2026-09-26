@@ -1,24 +1,14 @@
 ---
 name: commit-and-push
-description: >-
-  Git commit and push protocol for MCD. Inspects staged/unstaged changes,
-  runs pre-commit quality gates (Prettier, ESLint, TypeScript, tests, declarations report),
-  automatically selects proper Conventional Commits categories and scopes, generates
-  concise imperative descriptions if not provided, validates referenced GitHub issues, and
-  proceeds directly through commit and push once the user has explicitly requested delivery
-  in the current message. Trigger whenever
-  committing, pushing, or prefixed with 'commit-and-push:' / '/commit-and-push'.
+description: 'Inspect staged/unstaged changes, run quality gates, format Conventional Commit messages, and push when explicitly requested by user. Trigger on "commit and push" or prefixed with "commit-and-push:".'
 ---
 
 # 🚀 Commit-and-Push Protocol (Clean Delivery & Quality Gate Workflow)
 
-**Path Policy:** Use repository-relative paths (`src/engine/`, `docs/`, `.githooks/`) for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
-
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
 
-**Command Execution Policy:** Execute CLI commands natively directly in the environment shell without wrapping in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`.
+A commit and push only ever happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", or the skill's trigger prefix); the agent never initiates delivery on its own.
 
-This skill provides a workflow to stage, verify, format, categorize, commit, and push changes to remote with explicit issue-state checks and no hidden staging or delivery scope. A commit and push only ever happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", or the skill's trigger prefix); the agent never initiates delivery on its own.
 
 ---
 

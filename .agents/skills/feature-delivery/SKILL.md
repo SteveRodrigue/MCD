@@ -1,51 +1,36 @@
 ---
 name: feature-delivery
-description: >-
-  Standard 8-step specification-driven Feature Delivery protocol for designing,
-  architecting, testing, implementing, verifying, and shipping new engine capabilities,
-  declarative primitives, scenario plugins, UI components, and roadmap milestone tasks.
-  Enforces mandatory Rules Reference (RR v1.8) audits, strict >=95% confidence thresholds,
-  GitHub RFC Peer Review circuit breakers, ADR & Zod schema alignment, BDD acceptance
-  tests first, composable modular architecture, execution of the
-   canonical 8-point post-task protocol and roadmap milestone updates.
-  Trigger whenever building a new feature or prefixed with 'feature-delivery:'.
+description: 'Specification-driven protocol for designing, testing, and shipping new engine capabilities, primitives, UI components, and milestones. Trigger when building features or prefixed with "feature-delivery:".'
 ---
 
 # 🚀 Feature Delivery Protocol (Specification-Driven Development & Milestone Lifecycle)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
 
-This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features, capabilities, and primitives cleanly, composably, and with zero regressions.
+This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features cleanly, composably, and with zero regressions.
 
 ---
 
 ## Architectural Pre-Conditions & Rules Authority
 
-Before writing any implementation code or tests for a new feature, verify the following four architectural prerequisites:
+Before writing any implementation code or tests for a new feature, verify the following architectural prerequisites:
 
-1. **📖 Authoritative Rules Reference Audit (RR v1.8):**
-   - Consult [`mc_rulesreference_v18_compressed.pdf`](../../references/mc_rulesreference_v18_compressed.pdf) and official FFG Rulings for every rule, timing window, cost interaction, and state transition involved.
-   - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** (see below). Never implement speculative or guessed heuristics.
+1. **📖 Rules Reference Audit (RR v1.8):**
+   - Research rules using structured Markdown in `references/rules/` (or `npm run rule -- <term>`). Follow `See also:` links and consult `references/rules/TOPIC_MAP.md`. Do not open the raw PDF unless confidence is $< 95\%$.
+   - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** below. Never implement speculative heuristics.
 2. **Approved Architecture Decision Record (ADR):**
-   - Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR (e.g. ADR-0030 for Ability Sequences, ADR-0031 for Combat/Defense, ADR-0032 for Resolution Stack, ADR-0033 for Scenario Setup, ADR-0034 for Player Side Schemes, ADR-0035 for Multi-Form/Counters, ADR-0036 for Status Scaling).
-   - If the feature introduces a new major paradigm not covered by an existing ADR, draft a **Proposed ADR** first before coding.
-   - **Mandatory template:** every new or edited ADR **MUST** be created by copying [`docs/decisions/template.md`](../../../docs/decisions/template.md) and filling it in. Keep the `# [ADR-XXXX] Title` heading, the `Status` / `Date` / `Authors` / `Deciders` metadata block, and the standard section order (Context and Problem Statement → Decision Drivers → Considered Options → Decision Outcome → Evaluation of Options → Consequences). Do not invent alternative headings or status formats. Register the ADR in the `docs/decisions/README.md` log table in ascending ID order, and if it supersedes an earlier ADR, update **both** directions (old ADR's `Status` → `Superseded by [ADR-XXXX](...)`, new ADR names what it supersedes).
+   - Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR.
+   - If introducing a new paradigm, draft a **Proposed ADR** first using [`docs/decisions/template.md`](../../../docs/decisions/template.md) and register it in `docs/decisions/README.md`.
 3. **Schema & Model Design Alignment:**
-   - If the feature introduces new effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
-   - If the feature extends game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts) and export all relevant interfaces.
-   - Keep the Card Supplemental Editor aligned with every schema, primitive, field, parameter, timing, or card-workflow change. Review [`docs/specifications/tooling/card_supplemental_editor.md`](../../docs/specifications/tooling/card_supplemental_editor.md), update the affected components under `src/ui/components/editor/` (including descriptors, form builders, and raw-JSON validation where applicable), and add or update editor round-trip tests.
-4. **Headless & Decoupled Invariant:**
-   - Pure engine logic belongs strictly in `src/engine/`. Never import React, DOM, `window`, `document`, or CSS into engine modules.
-5. **Declarative Data-First & Generic Primitive Invariant:**
-   - Never create bespoke, hardcoded card functions in `src/engine/` (e.g. `resolveSpiderSense()`, `executeGammaSlam()`).
-   - All card abilities must be composed of universal, reusable effect primitives in `src/engine/effects/index.ts` parameterized purely via `src/data/supplemental/`. If a capability is missing, implement it as a generic, reusable primitive.
-6. **🎯 Rhino Release Scope Boundary Invariant:**
-   - Every feature, card integration, or improvement must strictly target the **Core Set Player cards (101 cards)** or the **Rhino Encounter sets (Rhino I/II/III, Standard, Expert, Bomb Scare, 5 Nemesis Sets - 34 cards)**.
-   - Any expansion card (e.g. _Captain America_, _Thor_, _Klaw_, _Ultron_) or advanced expansion mechanic (Player Side Schemes, 3-sided identities, campaign auxiliary decks) must be deferred to subsequent release gates (Gate 2/3/4).
-7. **🚫 Zero Tech Debt Invariant (Never Allow Tech Debt Without Explicit Approval):**
-   - **NEVER** introduce or carry forward legacy shims, backwards-compatibility aliases, deprecated naming, duplicate parallel code paths, or temporary shortcuts unless explicitly approved by the user or absolutely necessary.
-   - We are at the early stage of the project: always prefer direct refactoring, clean canonical schemas, and complete rewriting of existing supplemental data over legacy compatibility layers.
-   - For every feature, perform a targeted repository-wide inventory for superseded identifiers, dead branches, unused exports, stale editor descriptors, orphaned tests, and duplicate implementations. Purge confirmed legacy/orphan code in the same delivery, then prove removal with compiler diagnostics, focused tests, and identifier/reference searches. Do not delete code whose ownership or usage is ambiguous; stop and request user validation with the specific reason and affected paths.
+   - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
+   - If extending game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts).
+   - Keep the Card Supplemental Editor aligned per [`docs/specifications/tooling/card_supplemental_editor.md`](../../docs/specifications/tooling/card_supplemental_editor.md).
+4. **Core Invariants (from `shared-quality-gates.md`):**
+   - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
+   - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
+   - Rhino release scope boundary (Core set player cards & Rhino encounters for Gate 1).
+   - Zero tech debt (no unapproved shims, aliases, or duplicate paths; purge confirmed legacy/orphan code).
+
 
 ---
 
@@ -237,50 +222,18 @@ npm run format:check && npm run lint && npm run typecheck && npm test && npm run
 
 ---
 
-### Step 7: Mandatory Post-Task Protocol (8-Point Audit Checklist)
+### Step 8: Post-Task Hygiene & Delivery Recap
 
-Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
+1. **Execute Post-Task Protocol:**
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: update CHANGELOG, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `npm run report:declarations`.
+2. **Present Verification & Solution Recap:**
+   Present the completed feature, verification logs, and proposed diff to the user.
+3. **Delivery Authorization:**
+   Per `AGENTS.md`, commit and push occur only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
+   - Stage reviewed files (`git add <files>`).
+   - Commit with auto-closing syntax: `feat(<scope>): <description> (Closes #<NUM>)`.
+   - Push to remote and confirm issue closure.
 
-1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` detailing the new feature, affected subsystems, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
-2. **Check Documentation:** Update relevant docs in `docs/` or `README.md`.
-3. **Check Specifications:** Update `docs/specifications/` or schemas when mechanics or primitives change.
-   - Confirm the Card Supplemental Editor specification and implementation remain aligned, including supported fields, controls, validation, persistence, and round-trip behavior.
-4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new design patterns were introduced.
-5. **Check ADRs:** Ensure referenced ADRs are linked and updated to **Accepted** status, and that every ADR you created or edited still conforms to [`docs/decisions/template.md`](../../../docs/decisions/template.md).
-6. **Check Ambiguities & Git Issues:** Verify resolved ambiguity cards are removed and issues linked.
-7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) synchronized.
-8. **Check Card Supplemental Retrofit, Integration Protocol & Usage Report:** If any mechanic, keyword, effect primitive, cost, or timing logic was added or modified, search supplemental data, retrofit affected cards, update audit timestamps, and run `npm run report:declarations`.
-9. **Check Legacy/Orphan Cleanup:** Search for superseded identifiers, stale editor descriptors, unused exports, duplicate implementations, orphaned tests, and dead branches. Remove only confirmed obsolete code, verify zero remaining references, and raise any uncertain deletion for explicit user validation.
-10. **Check Test Completeness:** Confirm every changed behavior has a test, including Card Editor round-trip, validation, persistence, and UI interaction tests whenever those surfaces are affected. Confirm the explicit unaffected statement and evidence when they are not.
-
----
-
-### Step 8: Prepare Delivery Recap
-
-Delivery (commit and push) only happens once the user explicitly requests it in the current message. When requested, stage the reviewed diff, run quality gates, state the proposed commit message, and proceed directly through commit and push without a separate mid-flow approval round-trip.
-
-1. **Stage & Commit with Auto-Close Syntax:**
-
-   ```bash
-   git add -A
-   git commit -m "feat(<scope>): <concise feature description> (Closes #<NUM>)"
-   ```
-
-   - **Scopes:** `feat(engine)`, `feat(ui)`, `feat(data)`, `feat(setup)`, `feat(combat)`, `feat(schema)`.
-   - The `(Closes #<NUM>)` trailer automatically links the commit and closes the GitHub issue upon push.
-
-2. **Push to Remote:**
-
-   ```bash
-   git push origin main
-   ```
-
-3. **Post Verification Comment on GitHub:**
-   If `gh` CLI is available, post a completion comment with test suite verification proof:
-   ```bash
-   gh issue comment <NUM> --body "✅ **Delivered & Verified**: Acceptance test suite \`tests/<subsystem>/<feature>.test.ts\` passing. Full verification suite clean (0 typecheck errors, 0 build warnings). Milestone updated in \`docs/roadmap_and_milestones.md\`."
-   gh issue close <NUM> --comment "Resolved and closed via automated Feature Delivery protocol."
-   ```
 
 ---
 

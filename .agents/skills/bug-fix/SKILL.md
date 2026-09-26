@@ -1,45 +1,16 @@
 ---
 name: bug-fix
-description: >-
-  Deterministic 8-step Test-Driven Development (TDD) and GitHub Issue lifecycle
-  protocol for triaging, filing issues, reproducing, diagnosing, fixing, verifying,
-  and resolving bugs across the engine, UI, and data layers. Inspects real-time table
-  state snapshots in logs/gamestates/, opens tracked GitHub issues, enforces failing
-  regression test creation first, blast-radius guardrails, zero-regression full-suite
-  verification, roadmap-aware impact triage that still permits preventative fixes outside
-  active milestones, and execution of the canonical 8-point post-task protocol. Trigger whenever a bug is reported
-  or prefixed with 'bug-fix:'.
+description: 'Deterministic 8-step TDD and GitHub issue lifecycle for triaging, reproducing, fixing, and verifying bugs across engine, UI, and data layers. Trigger whenever a bug is reported or prefixed with "bug-fix:".'
 ---
 
 # 🛠️ Bug-Fix Protocol (Standard TDD & GitHub Issue Lifecycle Workflow)
 
-**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
-
-This skill guides the agent through an authoritative, test-first, and issue-tracked protocol to resolve defects safely, deterministically, and with zero regressions.
-
----
-
-## Blast-Radius Refactor Guardrails (3-Tier Classification)
-
-Before modifying any source code, classify the required bug fix into one of three tiers:
-
-- **Tier 1 (Localized Bug Fix — Direct Execution):**
-  - Local component styling/layout fixes in `src/ui/`.
-  - Localized bug fix inside a single engine helper, trigger handler, or payment step.
-  - Declarative supplemental JSON correction in `src/data/supplemental/`.
-  - Adding or refining unit tests.
-- **Tier 2 (Shared Subsystem & State Reducer Fix — Verification Required):**
-  - Modifying shared pipeline functions (`action-dispatcher.ts`, `round-upkeep.ts`, `villain-phase.ts`, `combat-pipeline.ts`).
-  - Adjusting generic trigger dispatchers, status token counters, or resolution stacks.
-  - **Requirement:** Must execute the full test suite across all heroes and scenarios to prove 0 regressions.
-- **🛑 Tier 3 (Structural & Architectural Defect — Mandatory Plan & User Approval):**
-  - Changing core state interfaces (`GameState`, `PlayerState`, `CardInstance`).
-  - Restructuring public action dispatch signatures, execution stacks, or phase state machines.
-  - **Requirement:** Stop immediately, create `implementation_plan.md` detailing the architectural changes, and wait for explicit user approval before touching source code.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies. Classify fixes by the canonical 3-tier blast radius before modifying code.
 
 ---
 
 ## 🔄 The 8-Step Bug Fix Lifecycle
+
 
 ```mermaid
 flowchart TD
@@ -197,50 +168,20 @@ npm run format:check && npm run lint && npm run typecheck && npm test && npm run
 
 ---
 
-### Step 7: Mandatory Post-Task Protocol (8-Point Audit Checklist)
+### Step 7: Post-Task Hygiene Protocol
 
-Before completing the turn, execute the 8 mandatory checks from `AGENTS.md`:
-
-1. **Check CHANGELOG.md:** Add entry under `[Unreleased]` with the bug fix summary, root cause, and clickable GitHub issue link (`[#<NUM>](https://github.com/SteveRodrigue/MCD/issues/<NUM>)`).
-2. **Check Documentation:** Update any relevant docs in `docs/` or `README.md`.
-3. **Check Specifications:** Update `docs/specifications/` or `docs/algorithmic_rules_reference.md` if rules mechanics or timing changed.
-4. **Check Guidelines:** Update `docs/coding_guidelines.md` if new invariants or design patterns were introduced.
-5. **Check ADRs:** Update or reference Architecture Decision Records in `docs/decisions/`. Any new or edited ADR **MUST** follow [`docs/decisions/template.md`](../../../docs/decisions/template.md) verbatim (heading form, `Status`/`Date`/`Authors`/`Deciders` block, and standard section order).
-6. **Check Ambiguities & Issues:** Close or resolve any related files in `docs/ambiguities/`.
-7. **Check Roadmap & Milestones:** Check off completed tasks, update active milestone status badges, and keep `docs/roadmap_and_milestones.md` synchronized.
-8. **Check Declarations Usage Report:** Run `npm run report:declarations` whenever cards or supplemental data are modified.
+Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to the fix's blast-radius tier (Tier 1: CHANGELOG, and declarations if card data modified; Tier 2/3: full relevant checklist).
 
 ---
 
-### Step 8: Prepare Delivery Recap
+### Step 8: Present Fix & Verification Recap
 
-Delivery (commit and push) only happens once the user explicitly requests it in the current message. When requested, stage the reviewed diff, run quality gates, state the proposed commit message, and proceed directly through commit and push without a separate mid-flow approval round-trip. Issue-closing trailers still require the conditions in the issue integrity checks below.
+Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit and push) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
+1. Stage the intentionally changed files (e.g. `git add <files>`).
+2. Run quality gates.
+3. Commit with Conventional Commits syntax (e.g. `fix(<scope>): <description> (Fixes #<NUM>)`).
+4. Push to remote and verify issue closure.
 
-1. **Stage & Commit with Auto-Close Syntax:**
-
-   ```bash
-   git add -A
-   git commit -m "fix(<scope>): <concise description of bug fix> (Fixes #<NUM>)"
-   ```
-
-   - **Scopes:** `fix(engine)`, `fix(ui)`, `fix(data)`, `fix(rules)`, `fix(assets)`, `fix(setup)`.
-
-- Add `(Fixes #<NUM>)` to the commit only when the referenced issue is open and closure is warranted by the fix.
-
-2. **Push to Remote:**
-
-   ```bash
-   git push origin main
-   ```
-
-````
-
-3. **Post Verification Comment & Ensure Closed:**
-If `gh` CLI is available, optionally post a verification note and confirm issue state:
-```bash
-gh issue comment <NUM> --body "✅ **Verified**: Regression test passing cleanly. Full verification suite passing (0 typecheck errors, 0 build warnings)."
-gh issue close <NUM> --comment "Resolved and closed via automated TDD protocol."
-````
 
 ---
 

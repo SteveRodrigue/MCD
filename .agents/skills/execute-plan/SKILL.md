@@ -1,18 +1,12 @@
 ---
 name: execute-plan
-description: >-
-  Executes an approved implementation_plan.md by delegating execution to a low-latency Flash
-  subagent (Model: 'flash'). The subagent applies changes surgically, runs verification tests,
-  and reports diffs without verbose meta-analysis or multi-step retrospectives. Automatically
-  triggers whenever the user clicks 'Proceed', approves an implementation plan, or prefixes
-  with 'execute-plan:'.
+description: 'Executes an approved implementation plan using a low-latency Flash subagent. Triggers automatically on plan approval, clicking "Proceed", or prefixed with "execute-plan:".'
 ---
 
 # ⚡ Execute-Plan Protocol (Subagent Direct Implementation)
 
-**Path Policy:** Use repository-relative paths (`src/engine/`, `docs/`, `tests/`) for all local project files. Never use personal filesystem paths, drive-letter paths, `file:///` links, or `vscode://` links.
+**Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
 
-**Command Execution Policy:** Execute CLI commands natively directly in PowerShell without wrapping in `powershell -Command "..."` or `powershell -NoProfile -Command "..."`.
 
 ---
 

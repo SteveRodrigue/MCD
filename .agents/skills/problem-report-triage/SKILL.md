@@ -1,20 +1,6 @@
 ---
 name: problem-report-triage
-description: >-
-  Inbox-Zero triage protocol that converts local Dev Mode "Report a Problem"
-  captures in logs/reports/*.json into tracked GitHub Issues formatted per
-  the official .github/ISSUE_TEMPLATE forms ([BUG]: with bug/needs-review labels,
-  [FEAT]: with enhancement label), always preserving the reporter's verbatim
-  original text in a dedicated section for later human review. Stores full
-  GameState evidence locally under logs/gamestates/ and references only its
-  repository-relative path in GitHub. Before filing, searches open GitHub issues for
-  duplicates/near-matches and, when found, merges by commenting on the existing
-  issue and applying the repo's existing 'duplicate' label instead of creating
-  a new one. Maps report priority to the repo's real priority:P0-blocker..P3-low
-  labels, and leaves logs/reports/ empty (Inbox Zero)
-  at the end of every run. Trigger whenever asked to "triage reports", "file
-  pending problem reports", "clear logs/reports", or prefixed with
-  'problem-report-triage:'.
+description: 'Inbox-Zero triage protocol converting Dev Mode problem reports in logs/reports/ into deduplicated GitHub issues with gamestate captures. Trigger on "triage reports" or prefixed with "problem-report-triage:".'
 ---
 
 # 🗂️ Problem Report Triage Protocol (Local Report → GitHub Issue, Inbox Zero)

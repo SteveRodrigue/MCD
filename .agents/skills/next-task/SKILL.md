@@ -1,12 +1,6 @@
 ---
 name: next-task
-description: >-
-  Automated Technical Product Manager & Work Prioritization skill that evaluates all open
-  GitHub issues, active roadmap milestones, and 170-pack card catalog ROI. Computes a
-  weighted composite score to recommend the Top 3-5 next actionable tasks with ready-to-trigger
-  prompts for feature-delivery, bug-fix, or card-integration-protocol.
-  Enforces automatic transition to the Mandatory Pre-Execution Plan Review Gate upon selection.
-  Trigger whenever asking "What should I work on next?" or prefixed with 'next-task'.
+description: 'Evaluates open GitHub issues, milestones, and catalog ROI to recommend prioritized next tasks. Trigger when asking what to work on next or prefixed with "next-task".'
 ---
 
 # 🎯 Next-Task Prioritization & Dispatch Protocol

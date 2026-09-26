@@ -7,7 +7,16 @@ This directory serves as the **immutable external ground truth** repository for 
 ## Directory Contents
 
 * **[`links.md`](links.md):** Authoritative external links (MarvelCDB FAQs, Card Explorer discussion templates, Hall of Heroes rulings archive, FFG official rules support).
-* **[`mc_rulesreference_v18_compressed.pdf`](mc_rulesreference_v18_compressed.pdf):** Official Rules Reference v1.8.
+* **[`rules/`](rules/):** **Primary Rules Reference.** Structured, modularized Markdown translation of Rules Reference v1.8 (Glossary A–Z, Appendices I–VI, `TOPIC_MAP.md`, and machine-readable dependency graph).
+* **[`rules_reference_v18.md`](rules_reference_v18.md):** Unabridged monolithic Markdown version of Rules Reference v1.8.
+* **[`mc_rulesreference_v18_compressed.pdf`](mc_rulesreference_v18_compressed.pdf):** Official Rules Reference v1.8 (Immutable external binary source). Agents should consult `rules/` instead of opening this PDF directly.
+
+### Quick Rules Lookup
+```powershell
+python scripts/lookup-rule.py "toughness"
+# or
+npm run rule -- "toughness"
+```
 
 ---
 

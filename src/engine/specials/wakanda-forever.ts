@@ -1,5 +1,10 @@
 import { GameState, CardInstance } from '../models';
-import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
+import {
+  EffectExecutionContext,
+  EffectResult,
+  executeSequence,
+  defeatSideScheme,
+} from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
 import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
@@ -107,6 +112,9 @@ export function resolveSingleWakandaUpgrade(
       const sideScheme = state.sideSchemes.find((s) => s.instanceId === targetSchemeId);
       if (sideScheme) {
         sideScheme.threat = Math.max(0, sideScheme.threat - thw);
+        if (sideScheme.threat <= 0) {
+          defeatSideScheme(state, sideScheme.instanceId, player.id);
+        }
       } else {
         state.mainScheme.threat = Math.max(0, state.mainScheme.threat - thw);
       }

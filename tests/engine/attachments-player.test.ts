@@ -167,8 +167,13 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     expect(resolveRes.result.success).toBe(true);
     expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
-    // 3 threat removed from Bomb Scare (3 - 3 = 0)
-    expect(resolveRes.state.sideSchemes[0].threat).toBe(0);
+    // 3 threat removed from Bomb Scare (3 - 3 = 0) -> side scheme defeated and discarded (RR v1.8 p. 9, 25)
+    expect(resolveRes.state.sideSchemes.length).toBe(0);
+    expect(
+      resolveRes.state.encounterDiscard.some(
+        (c) => c.instanceId === 'side_scheme_bomb_scare' || c.card.code === '01107',
+      ),
+    ).toBe(true);
     // Main scheme threat untouched
     expect(resolveRes.state.mainScheme.threat).toBe(5);
     // Spider-Tracer placed in player discard

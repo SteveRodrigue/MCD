@@ -16,6 +16,7 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 ## Project invariants
 
 - Follow Marvel Champions Rules Reference v1.8 for gameplay behavior.
+- Use the structured Markdown reference in `references/rules/` (or `npm run rule -- <term>`) for rules research. Agents must not open or view the raw PDF (`references/mc_rulesreference_v18_compressed.pdf`) unless confidence on an ambiguous reading is low (<95%) or explicitly requested by the user. Always follow `See also:` links and consult `references/rules/TOPIC_MAP.md` for cross-cutting interactions.
 - Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
 - Keep card-specific behavior in `src/data/supplemental/`; engine primitives must remain generic.
 - Align implementation work with the currently active roadmap and milestone gates unless the user

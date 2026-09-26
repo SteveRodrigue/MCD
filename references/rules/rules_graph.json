@@ -1,0 +1,4846 @@
+{
+  "ability": {
+    "title": "ABILITY",
+    "anchor": "ability",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Action",
+      "Alteration Effect",
+      "\u201cAnd\u201d",
+      "Cancel",
+      "Delayed Effect",
+      "Forced",
+      "In Play and Out of Play",
+      "Initiating Abilities",
+      "Interrupt",
+      "Labeled Ability",
+      "Lasting Effects",
+      "Qualifiers",
+      "Replacement Effect",
+      "Resource Ability",
+      "Response",
+      "Simultaneous Resolution",
+      "Special",
+      "Target",
+      "\u201cThen\u201d",
+      "When Defeated Abilities",
+      "When Revealed Abilities",
+      "\u201cWould\u201d"
+    ],
+    "referenced_by": [
+      "ACTION",
+      "\u201cAFTER\u201d",
+      "ALTERATION EFFECT",
+      "\u201cAND\u201d",
+      "CANCEL",
+      "CARD ABILITY",
+      "CHOOSE (GAME ELEMENT)",
+      "CHOOSE (OPTION)",
+      "CONSTANT ABILITY",
+      "COST",
+      "DEAL, DEAL AN ENCOUNTER CARD",
+      "DEFEND, DEFENSE",
+      "DELAYED EFFECT",
+      "EFFECT",
+      "ENERGY RESOURCE ( [energy])",
+      "ENGAGE",
+      "\u201cFOR EACH\u201d",
+      "FORCED",
+      "IGNORE",
+      "IN PLAY AND OUT OF PLAY",
+      "INITIATING ABILITIES",
+      "LASTING EFFECTS",
+      "MENTAL RESOURCE ( [mental])",
+      "PERIL",
+      "PHYSICAL RESOURCE ( [physical])",
+      "PLAY RESTRICTIONS AND PERMISSIONS",
+      "PLAYER ELIMINATION",
+      "PREVENT",
+      "REFERENTIAL ABILITY",
+      "REPLACEMENT EFFECT",
+      "RESOLVE",
+      "RESPONSE",
+      "SET ASIDE, SET-ASIDE",
+      "\u201cSWAP\u201d",
+      "TARGET",
+      "TEXT BOX",
+      "TIMING",
+      "TRIGGERED ABILITY",
+      "WILD RESOURCE ( [wild])",
+      "YOU, YOUR"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "acceleration-icon": {
+    "title": "ACCELERATION ICON ( [acceleration])",
+    "anchor": "acceleration-icon",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Icons",
+      "Main Scheme",
+      "Threat",
+      "Villain Phase"
+    ],
+    "referenced_by": [
+      "ICONS",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "acceleration-token": {
+    "title": "ACCELERATION TOKEN",
+    "anchor": "acceleration-token",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Component Limitations",
+      "Encounter Deck",
+      "Main Scheme",
+      "Villain"
+    ],
+    "referenced_by": [
+      "ENCOUNTER DECK",
+      "MAIN SCHEME, MAIN SCHEME DECK"
+    ],
+    "faqs": []
+  },
+  "action": {
+    "title": "ACTION",
+    "anchor": "action",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ability",
+      "Player Turn",
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "FORCED",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "activation": {
+    "title": "ACTIVATION",
+    "anchor": "activation",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Boost",
+      "Attack (Enemy Activation)",
+      "Scheme (Enemy Activation)",
+      "Minion",
+      "Villain",
+      "Villain Phase"
+    ],
+    "referenced_by": [
+      "ALTERATION EFFECT",
+      "AMPLIFY ICON ( [amplify])",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ENEMY ACTIVATION",
+      "ENEMY ATTACKS",
+      "ENEMY SCHEMES",
+      "SCHEME (ENEMY ACTIVATION)",
+      "TEAMWORK ( TRAIT )",
+      "VILLAIN, VILLAIN DECK",
+      "VILLAIN PHASE",
+      "VILLAINOUS"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "active-player": {
+    "title": "ACTIVE PLAYER",
+    "anchor": "active-player",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Player",
+      "Player Turn"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "additional": {
+    "title": "\u201cADDITIONAL \u201d",
+    "anchor": "additional",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Alteration Effect"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "after": {
+    "title": "\u201cAFTER\u201d",
+    "anchor": "after",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ability",
+      "Response"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "all-purpose-counter": {
+    "title": "ALL-PURPOSE COUNTER",
+    "anchor": "all-purpose-counter",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Component Limitations",
+      "Uses (X \u201cType\u201d)"
+    ],
+    "referenced_by": [
+      "COUNTER",
+      "USES (X \u201cTYPE\u201d)",
+      "VILLAIN DEFEAT"
+    ],
+    "faqs": []
+  },
+  "alliance": {
+    "title": "ALLIANCE",
+    "anchor": "alliance",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Cost",
+      "Initiating Abilities",
+      "Keywords"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "ally": {
+    "title": "ALLY",
+    "anchor": "ally",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ally Limit",
+      "Consequential Damage",
+      "Hit Points"
+    ],
+    "referenced_by": [
+      "ALLY LIMIT",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "ATTACKS AGAINST ALLIES",
+      "BASIC POWER",
+      "CARD TYPES",
+      "CHARACTER",
+      "CONFUSE, CONFUSED",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "DEFEAT",
+      "DEFEND, DEFENSE",
+      "EXCESS DAMAGE",
+      "HEAL",
+      "HIT POINTS",
+      "INDIRECT DAMAGE",
+      "MAXIMUM HIT POINTS",
+      "OVERKILL",
+      "PLAYER CARD",
+      "PLAYER TURN",
+      "PLAYER\u2019S PLAY AREA",
+      "RETALIATE X",
+      "STALWART",
+      "STATUS CARDS",
+      "STUN, STUNNED",
+      "SUSTAINED DAMAGE",
+      "TEAM-UP",
+      "THWART",
+      "TOUGHNESS",
+      "UNIQUE ICON ( [unique])",
+      "WHEN DEFEATED ABILITIES",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "ally-limit": {
+    "title": "ALLY LIMIT",
+    "anchor": "ally-limit",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ally",
+      "Discard",
+      "Enters Play"
+    ],
+    "referenced_by": [
+      "ALLY"
+    ],
+    "faqs": []
+  },
+  "already": {
+    "title": "\u201cALREADY\u201d",
+    "anchor": "already",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Alteration Effect"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "alteration-effect": {
+    "title": "ALTERATION EFFECT",
+    "anchor": "alteration-effect",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ability",
+      "Activation",
+      "Modifiers",
+      "Replacement Effect",
+      "Target"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "\u201cADDITIONAL \u201d",
+      "\u201cALREADY\u201d",
+      "\u201cEACH TIME\u201d",
+      "REPLACEMENT EFFECT",
+      "\u201cTHAT\u201d",
+      "\u201cTHIS\u201d"
+    ],
+    "faqs": []
+  },
+  "alter-ego-alter-ego-form": {
+    "title": "ALTER-EGO, ALTER-EGO FORM",
+    "anchor": "alter-ego-alter-ego-form",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Form",
+      "Identity"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "amplify-icon": {
+    "title": "AMPLIFY ICON ( [amplify])",
+    "anchor": "amplify-icon",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Activation",
+      "Boost",
+      "Enemy",
+      "Icons"
+    ],
+    "referenced_by": [
+      "ICONS"
+    ],
+    "faqs": []
+  },
+  "and": {
+    "title": "\u201cAND\u201d",
+    "anchor": "and",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ability",
+      "Cancel",
+      "Prevent"
+    ],
+    "referenced_by": [
+      "ABILITY"
+    ],
+    "faqs": []
+  },
+  "arrow-icon": {
+    "title": "ARROW ICON ( \u2192)",
+    "anchor": "arrow-icon",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Cost Arrow Icon"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "aspect-card": {
+    "title": "ASPECT CARD",
+    "anchor": "aspect-card",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Basic Card",
+      "Classifications",
+      "Identity-Specific Card",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "BASIC CARD",
+      "CLASSIFICATIONS",
+      "IDENTITY-SPECIFIC CARD"
+    ],
+    "faqs": []
+  },
+  "assault": {
+    "title": "ASSAULT",
+    "anchor": "assault",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Consequential Damage",
+      "Keywords"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "atk": {
+    "title": "ATK",
+    "anchor": "atk",
+    "file": "glossary/A.md",
+    "see_also": [],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "attachment": {
+    "title": "ATTACHMENT",
+    "anchor": "attachment",
+    "file": "glossary/A.md",
+    "see_also": [],
+    "referenced_by": [
+      "ATTACH TO",
+      "CARD TYPES",
+      "ENCOUNTER CARD",
+      "ENCOUNTER DECK",
+      "REVEAL",
+      "VILLAIN DEFEAT",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "attach-to": {
+    "title": "ATTACH TO",
+    "anchor": "attach-to",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Attachment",
+      "Game Element",
+      "Upgrade"
+    ],
+    "referenced_by": [
+      "UPGRADE"
+    ],
+    "faqs": []
+  },
+  "attack-enemy-activation": {
+    "title": "ATTACK (ENEMY ACTIVATION)",
+    "anchor": "attack-enemy-activation",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Activation",
+      "Ally",
+      "Attacks Against Allies",
+      "Boost",
+      "Damage",
+      "Defend",
+      "Enemy",
+      "Identity",
+      "Minion",
+      "Modifiers",
+      "Retaliate X",
+      "Target",
+      "Villain",
+      "Villainous"
+    ],
+    "referenced_by": [
+      "ACTIVATION",
+      "ATTACKS AGAINST ALLIES",
+      "BASIC POWER",
+      "BOOST , BOOST ICON ( [boost])",
+      "DEFEND, DEFENSE",
+      "ENEMY ACTIVATION",
+      "ENEMY ATTACKS",
+      "INDIRECT DAMAGE",
+      "OVERKILL",
+      "PIERCING",
+      "QUICKSTRIKE",
+      "RANGED",
+      "RETALIATE X",
+      "STATUS CARDS",
+      "UNDEFENDED",
+      "VILLAIN, VILLAIN DECK",
+      "VILLAIN PHASE",
+      "VILLAINOUS"
+    ],
+    "faqs": []
+  },
+  "attack-player-ability-type": {
+    "title": "ATTACK (PLAYER ABILITY TYPE)",
+    "anchor": "attack-player-ability-type",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ally",
+      "Basic Power",
+      "Damage",
+      "Defend",
+      "Enemy",
+      "Identity",
+      "Labeled Ability",
+      "Minion",
+      "Modifiers",
+      "Retaliate X",
+      "Target",
+      "Villain"
+    ],
+    "referenced_by": [
+      "BASIC POWER",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "GUARD",
+      "LABELED ABILITY",
+      "OVERKILL",
+      "PIERCING",
+      "RANGED",
+      "RETALIATE X",
+      "STATUS CARDS"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "attacks-against-allies": {
+    "title": "ATTACKS AGAINST ALLIES",
+    "anchor": "attacks-against-allies",
+    "file": "glossary/A.md",
+    "see_also": [
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Defend",
+      "Target"
+    ],
+    "referenced_by": [
+      "ATTACK (ENEMY ACTIVATION)"
+    ],
+    "faqs": []
+  },
+  "base-value": {
+    "title": "BASE VALUE",
+    "anchor": "base-value",
+    "file": "glossary/B.md",
+    "see_also": [
+      "Modifiers",
+      "Printed"
+    ],
+    "referenced_by": [
+      "MAXIMUM HIT POINTS",
+      "MODIFIERS",
+      "NON-NUMERICAL VARIABLE",
+      "PRINTED"
+    ],
+    "faqs": []
+  },
+  "basic-card": {
+    "title": "BASIC CARD",
+    "anchor": "basic-card",
+    "file": "glossary/B.md",
+    "see_also": [
+      "Aspect Card",
+      "Classifications",
+      "Identity-Specific Card",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "ASPECT CARD",
+      "CLASSIFICATIONS",
+      "IDENTITY-SPECIFIC CARD"
+    ],
+    "faqs": []
+  },
+  "basic-power": {
+    "title": "BASIC POWER",
+    "anchor": "basic-power",
+    "file": "glossary/B.md",
+    "see_also": [
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Defend",
+      "Identity",
+      "Minion",
+      "Modifiers",
+      "Recover",
+      "Recovery",
+      "Scheme (Enemy Activation)",
+      "Thwart"
+    ],
+    "referenced_by": [
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "DASH (VALUE)",
+      "DEF",
+      "PLAYER TURN",
+      "REC",
+      "RECOVER , RECOVERY",
+      "SCH",
+      "STATUS CARDS",
+      "THW",
+      "THWART"
+    ],
+    "faqs": []
+  },
+  "boost-boost-icon": {
+    "title": "BOOST , BOOST ICON ( [boost])",
+    "anchor": "boost-boost-icon",
+    "file": "glossary/B.md",
+    "see_also": [
+      "Attack (Enemy Activation)",
+      "Scheme (Enemy Activation)",
+      "Star Icon",
+      "Villainous"
+    ],
+    "referenced_by": [
+      "ACTIVATION",
+      "AMPLIFY ICON ( [amplify])",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ICONS",
+      "SCHEME (ENEMY ACTIVATION)",
+      "VILLAINOUS"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "campaign-mode": {
+    "title": "CAMPAIGN MODE",
+    "anchor": "campaign-mode",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "campaign-specific-card": {
+    "title": "CAMPAIGN-SPECIFIC CARD",
+    "anchor": "campaign-specific-card",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Classifications",
+      "Modes of Play"
+    ],
+    "referenced_by": [
+      "CLASSIFICATIONS",
+      "MODES OF PLAY"
+    ],
+    "faqs": []
+  },
+  "cancel": {
+    "title": "CANCEL",
+    "anchor": "cancel",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability",
+      "Replacement Effect"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "\u201cAND\u201d",
+      "CONFUSE, CONFUSED",
+      "INTERRUPT",
+      "MAX, MAXIMUM",
+      "REPLACEMENT EFFECT",
+      "RESOLVE",
+      "STUN, STUNNED"
+    ],
+    "faqs": []
+  },
+  "cannot": {
+    "title": "\u201cCANNOT\u201d",
+    "anchor": "cannot",
+    "file": "glossary/C.md",
+    "see_also": [
+      "The Golden Rules",
+      "Target \u00a9 MARVEL \u00a9 2019 FFG 100 ENCOUNTER GROUP (XX/XX)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "card-ability": {
+    "title": "CARD ABILITY",
+    "anchor": "card-ability",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "card-types": {
+    "title": "CARD TYPES",
+    "anchor": "card-types",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ally",
+      "Attachment",
+      "Encounter Card",
+      "Environment",
+      "Event",
+      "Identity",
+      "Main Scheme",
+      "Minion",
+      "Obligation",
+      "Player Card",
+      "Player Side Scheme",
+      "Resource Card",
+      "Side Scheme",
+      "Support",
+      "Treachery",
+      "Upgrade",
+      "Villain",
+      "Appendix III: Card Anatomy"
+    ],
+    "referenced_by": [
+      "COPY",
+      "ENVIRONMENT",
+      "EVENT",
+      "GAME ELEMENT",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "MINION",
+      "OBLIGATION",
+      "PLAYER SIDE SCHEME",
+      "RESOURCE CARD",
+      "SIDE SCHEME",
+      "TREACHERY",
+      "SUPPORT",
+      "UPGRADE"
+    ],
+    "faqs": []
+  },
+  "character": {
+    "title": "CHARACTER",
+    "anchor": "character",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ally",
+      "Identity",
+      "Minion",
+      "Villain"
+    ],
+    "referenced_by": [
+      "REFERENTIAL ABILITY"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "choose-game-element": {
+    "title": "CHOOSE (GAME ELEMENT)",
+    "anchor": "choose-game-element",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability",
+      "Game Element",
+      "Player",
+      "Target"
+    ],
+    "referenced_by": [
+      "\u201cEACH PLAYER\u201d",
+      "ENCOUNTER DECK",
+      "REVEAL",
+      "TARGET",
+      "WHEN REVEALED ABILITIES"
+    ],
+    "faqs": []
+  },
+  "choose-option": {
+    "title": "CHOOSE (OPTION)",
+    "anchor": "choose-option",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability",
+      "Player",
+      "Target"
+    ],
+    "referenced_by": [
+      "REVEAL"
+    ],
+    "faqs": []
+  },
+  "classifications": {
+    "title": "CLASSIFICATIONS",
+    "anchor": "classifications",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Identity-Specific Card)",
+      "Aspect Card)",
+      "Basic Card)",
+      "Scenario-Specific Card)",
+      "Modular Encounter Set)",
+      "Campaign-Specific Card)",
+      "Modes of Play"
+    ],
+    "referenced_by": [
+      "ASPECT CARD",
+      "BASIC CARD",
+      "CAMPAIGN-SPECIFIC CARD",
+      "ENCOUNTER CARD",
+      "ENCOUNTER SET",
+      "EXPERT SET",
+      "IDENTITY-SPECIFIC CARD",
+      "MODULAR ENCOUNTER SET",
+      "OWNERSHIP AND CONTROL",
+      "PLAYER CARD",
+      "REFERENTIAL ABILITY",
+      "SCENARIO-SPECIFIC CARD",
+      "STANDARD SET"
+    ],
+    "faqs": []
+  },
+  "confuse-confused": {
+    "title": "CONFUSE, CONFUSED",
+    "anchor": "confuse-confused",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ally",
+      "Cancel",
+      "Identity",
+      "Minion",
+      "Status Cards",
+      "Target",
+      "Villain"
+    ],
+    "referenced_by": [
+      "STALWART",
+      "STATUS CARDS",
+      "STEADY",
+      "VULNERABLE"
+    ],
+    "faqs": []
+  },
+  "consequential-damage": {
+    "title": "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+    "anchor": "consequential-damage",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ally",
+      "Attack (Player Ability Type)",
+      "Basic Power",
+      "Damage",
+      "Icons",
+      "Thwart"
+    ],
+    "referenced_by": [
+      "ALLY",
+      "ASSAULT",
+      "THWART"
+    ],
+    "faqs": []
+  },
+  "constant-ability": {
+    "title": "CONSTANT ABILITY",
+    "anchor": "constant-ability",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "control": {
+    "title": "CONTROL",
+    "anchor": "control",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ownership and Control"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "copy": {
+    "title": "COPY",
+    "anchor": "copy",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Card Types",
+      "Subtitle"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "cost": {
+    "title": "COST",
+    "anchor": "cost",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Ability",
+      "Cost Arrow Icon",
+      "Game Element",
+      "Initiating Abilities",
+      "Keywords"
+    ],
+    "referenced_by": [
+      "ALLIANCE",
+      "COST ARROW ICON ( \u2192)",
+      "EFFECT",
+      "ENERGY RESOURCE ( [energy])",
+      "IGNORE",
+      "INITIATING ABILITIES",
+      "MENTAL RESOURCE ( [mental])",
+      "\u201cOVERPAY\u201d",
+      "\u201cPAY\u201d",
+      "PHYSICAL RESOURCE ( [physical])",
+      "PREVENT",
+      "REQUIREMENT (RESOURCES)",
+      "RESOURCE",
+      "RESOURCE ABILITY",
+      "TARGET",
+      "WILD RESOURCE ( [wild])"
+    ],
+    "faqs": []
+  },
+  "cost-arrow-icon": {
+    "title": "COST ARROW ICON ( \u2192)",
+    "anchor": "cost-arrow-icon",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Cost",
+      "Icons"
+    ],
+    "referenced_by": [
+      "ARROW ICON ( \u2192)",
+      "COST",
+      "ICONS"
+    ],
+    "faqs": []
+  },
+  "counter": {
+    "title": "COUNTER",
+    "anchor": "counter",
+    "file": "glossary/C.md",
+    "see_also": [
+      "All-Purpose Counter"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "crisis-icon": {
+    "title": "CRISIS ICON ( [crisis])",
+    "anchor": "crisis-icon",
+    "file": "glossary/C.md",
+    "see_also": [
+      "Main Scheme",
+      "Threat"
+    ],
+    "referenced_by": [
+      "ICONS"
+    ],
+    "faqs": []
+  },
+  "damage": {
+    "title": "DAMAGE",
+    "anchor": "damage",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Component Limitations",
+      "Defeat",
+      "Hit Points",
+      "Indirect Damage",
+      "Move",
+      "Prevent",
+      "Tough"
+    ],
+    "referenced_by": [
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "DEFEND, DEFENSE",
+      "EXCESS DAMAGE",
+      "HIT POINTS",
+      "INDIRECT DAMAGE",
+      "OVERKILL",
+      "PIERCING",
+      "PREVENT",
+      "RETALIATE X",
+      "STATUS CARDS",
+      "SUSTAINED DAMAGE",
+      "TOUGH",
+      "VILLAIN DEFEAT"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "dash-value": {
+    "title": "DASH (VALUE)",
+    "anchor": "dash-value",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Basic Power",
+      "Non-Numerical Variable"
+    ],
+    "referenced_by": [
+      "MODIFIERS",
+      "NON-NUMERICAL VARIABLE"
+    ],
+    "faqs": []
+  },
+  "deal-deal-an-encounter-card": {
+    "title": "DEAL, DEAL AN ENCOUNTER CARD",
+    "anchor": "deal-deal-an-encounter-card",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Ability",
+      "Encounter Card",
+      "Encounter Deck",
+      "Player",
+      "Villain Phase"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "deck": {
+    "title": "DECK",
+    "anchor": "deck",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Encounter Deck",
+      "Main Scheme",
+      "Player Deck",
+      "Villain"
+    ],
+    "referenced_by": [
+      "GAME ELEMENT"
+    ],
+    "faqs": []
+  },
+  "deck-customization": {
+    "title": "DECK CUSTOMIZATION",
+    "anchor": "deck-customization",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "def": {
+    "title": "DEF",
+    "anchor": "def",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Basic Power",
+      "Defend"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "defeat": {
+    "title": "DEFEAT",
+    "anchor": "defeat",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Ally",
+      "Hit Points",
+      "Minion",
+      "Player",
+      "Player Elimination",
+      "Removed from the Game",
+      "Side Scheme",
+      "Villain",
+      "Villain Defeat"
+    ],
+    "referenced_by": [
+      "DAMAGE",
+      "ENGAGE",
+      "HIT POINTS",
+      "INDIRECT DAMAGE",
+      "LEAVES PLAY",
+      "SIDE SCHEME",
+      "VICTORY X",
+      "VILLAIN DEFEAT",
+      "WHEN DEFEATED ABILITIES"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "defend-defense": {
+    "title": "DEFEND, DEFENSE",
+    "anchor": "defend-defense",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Ability",
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Damage",
+      "\u201cFriendly\u201d",
+      "Identity",
+      "Labeled Ability",
+      "Player"
+    ],
+    "referenced_by": [
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "ATTACKS AGAINST ALLIES",
+      "BASIC POWER",
+      "DEF",
+      "LABELED ABILITY"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "delayed-effect": {
+    "title": "DELAYED EFFECT",
+    "anchor": "delayed-effect",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Ability"
+    ],
+    "referenced_by": [
+      "ABILITY"
+    ],
+    "faqs": []
+  },
+  "discard": {
+    "title": "DISCARD",
+    "anchor": "discard",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Discard Pile",
+      "Encounter Card",
+      "In Play and Out of Play",
+      "Ownership and Control",
+      "Player Card",
+      "Shuffle"
+    ],
+    "referenced_by": [
+      "ALLY LIMIT",
+      "DISCARD PILE",
+      "DRAW, DRAWING CARDS",
+      "ENCOUNTER DECK",
+      "END OF PLAYER PHASE",
+      "EVENT",
+      "LEAVES PLAY",
+      "PLAYER",
+      "PLAYER DECK",
+      "RESTRICTED",
+      "TREACHERY",
+      "USES (X \u201cTYPE\u201d)",
+      "VILLAINOUS"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "discard-pile": {
+    "title": "DISCARD PILE",
+    "anchor": "discard-pile",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Discard",
+      "In Play and Out of Play",
+      "Ownership and Control",
+      "Player",
+      "Shuffle"
+    ],
+    "referenced_by": [
+      "DISCARD",
+      "ENCOUNTER DECK",
+      "ENCOUNTER DISCARD PILE",
+      "GAME ELEMENT",
+      "LEAVES PLAY",
+      "PLAYER",
+      "PLAYER DECK",
+      "PLAYER DISCARD PILE",
+      "PLAYER\u2019S PLAY AREA",
+      "VICTORY X",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "double-sided-card": {
+    "title": "DOUBLE-SIDED CARD",
+    "anchor": "double-sided-card",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Encounter Card",
+      "In Play and Out of Play",
+      "Player Card",
+      "Victory X",
+      "Villain"
+    ],
+    "referenced_by": [
+      "FLIP"
+    ],
+    "faqs": []
+  },
+  "draw-drawing-cards": {
+    "title": "DRAW, DRAWING CARDS",
+    "anchor": "draw-drawing-cards",
+    "file": "glossary/D.md",
+    "see_also": [
+      "Discard",
+      "In Play and Out of Play",
+      "Ownership and Control",
+      "Player",
+      "Player Deck",
+      "Player Phase"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "each-player": {
+    "title": "\u201cEACH PLAYER\u201d",
+    "anchor": "each-player",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Choose (Game Element)",
+      "Player"
+    ],
+    "referenced_by": [
+      "SIMULTANEOUS RESOLUTION"
+    ],
+    "faqs": []
+  },
+  "each-time": {
+    "title": "\u201cEACH TIME\u201d",
+    "anchor": "each-time",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Alteration Effect"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "effect": {
+    "title": "EFFECT",
+    "anchor": "effect",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Ability",
+      "Cost"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "empty-deck": {
+    "title": "EMPTY DECK",
+    "anchor": "empty-deck",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Encounter Deck",
+      "Player Deck"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "encounter-card": {
+    "title": "ENCOUNTER CARD",
+    "anchor": "encounter-card",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Attachment",
+      "Classifications",
+      "Environment",
+      "Main Scheme",
+      "Minion",
+      "Obligation",
+      "Side Scheme",
+      "Treachery",
+      "Villain",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "DEAL, DEAL AN ENCOUNTER CARD",
+      "DISCARD",
+      "DOUBLE-SIDED CARD",
+      "ENVIRONMENT",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "MINION",
+      "OBLIGATION",
+      "OWNERSHIP AND CONTROL",
+      "PLAYER TURN",
+      "REVEAL",
+      "SIDE SCHEME",
+      "TREACHERY",
+      "SURGE",
+      "WHEN REVEALED ABILITIES"
+    ],
+    "faqs": []
+  },
+  "encounter-deck": {
+    "title": "ENCOUNTER DECK",
+    "anchor": "encounter-deck",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Acceleration Token",
+      "Attachment",
+      "Choose (Game Element)",
+      "Discard",
+      "Discard Pile",
+      "Environment",
+      "Minion",
+      "Side Scheme",
+      "Treachery"
+    ],
+    "referenced_by": [
+      "ACCELERATION TOKEN",
+      "DEAL, DEAL AN ENCOUNTER CARD",
+      "DECK",
+      "EMPTY DECK",
+      "OBLIGATION",
+      "OWNERSHIP AND CONTROL",
+      "PLAYER DECK",
+      "RUNNING OUT OF CARDS",
+      "SEARCH",
+      "SHUFFLE",
+      "TREACHERY",
+      "SURGE",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "encounter-discard-pile": {
+    "title": "ENCOUNTER DISCARD PILE",
+    "anchor": "encounter-discard-pile",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Discard Pile"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "encounter-set": {
+    "title": "ENCOUNTER SET",
+    "anchor": "encounter-set",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Classifications",
+      "Expert Set",
+      "Modular Encounter Set",
+      "Scenario-Specific Card",
+      "Standard Set"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "end-of-player-phase": {
+    "title": "END OF PLAYER PHASE",
+    "anchor": "end-of-player-phase",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Discard",
+      "Draw",
+      "Hand Size",
+      "Lasting Effects",
+      "Player",
+      "Player Phase",
+      "Player Turn",
+      "Ready"
+    ],
+    "referenced_by": [
+      "HAND SIZE",
+      "PLAYER PHASE"
+    ],
+    "faqs": []
+  },
+  "enemy": {
+    "title": "ENEMY",
+    "anchor": "enemy",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Game Element",
+      "Minion",
+      "Villain"
+    ],
+    "referenced_by": [
+      "AMPLIFY ICON ( [amplify])",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "enemy-activation": {
+    "title": "ENEMY ACTIVATION",
+    "anchor": "enemy-activation",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Activation",
+      "Attack (Enemy Activation)",
+      "Scheme (Enemy Activation)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "enemy-attacks": {
+    "title": "ENEMY ATTACKS",
+    "anchor": "enemy-attacks",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Activation",
+      "Attack (Enemy Activation)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "enemy-schemes": {
+    "title": "ENEMY SCHEMES",
+    "anchor": "enemy-schemes",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Activation",
+      "Scheme (Enemy Activation)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "energy-resource": {
+    "title": "ENERGY RESOURCE ( [energy])",
+    "anchor": "energy-resource",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Icons",
+      "Mental Resource",
+      "Physical Resource",
+      "Resource",
+      "Wild Resource"
+    ],
+    "referenced_by": [
+      "ICONS",
+      "MENTAL RESOURCE ( [mental])",
+      "PHYSICAL RESOURCE ( [physical])",
+      "RESOURCE",
+      "RESOURCE CARD",
+      "WILD RESOURCE ( [wild])"
+    ],
+    "faqs": []
+  },
+  "engage": {
+    "title": "ENGAGE",
+    "anchor": "engage",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Ability",
+      "Defeat",
+      "Minion",
+      "Player",
+      "Player\u2019s Play Area"
+    ],
+    "referenced_by": [
+      "GUARD",
+      "MINION",
+      "PATROL",
+      "PLAYER ELIMINATION",
+      "QUICKSTRIKE",
+      "TEAMWORK ( TRAIT )",
+      "VILLAIN PHASE"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "enters-play": {
+    "title": "ENTERS PLAY",
+    "anchor": "enters-play",
+    "file": "glossary/E.md",
+    "see_also": [
+      "In Play and Out of Play",
+      "Leaves Play",
+      "Play",
+      "Reveal"
+    ],
+    "referenced_by": [
+      "ALLY LIMIT",
+      "ENVIRONMENT",
+      "HINDER X",
+      "IN PLAY AND OUT OF PLAY",
+      "LASTING EFFECTS",
+      "LEAVES PLAY",
+      "MINION",
+      "OBLIGATION",
+      "PLAY, PUT INTO PLAY",
+      "READY",
+      "RESOURCE CARD",
+      "REVEAL",
+      "SIDE SCHEME",
+      "SUPPORT",
+      "TOUGHNESS",
+      "UNIQUE ICON ( [unique])",
+      "UPGRADE",
+      "USES (X \u201cTYPE\u201d)"
+    ],
+    "faqs": []
+  },
+  "environment": {
+    "title": "ENVIRONMENT",
+    "anchor": "environment",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Card Types",
+      "Encounter Card",
+      "Enters Play",
+      "Leaves Play",
+      "Villain"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "ENCOUNTER CARD",
+      "ENCOUNTER DECK",
+      "REVEAL",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "event": {
+    "title": "EVENT",
+    "anchor": "event",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Card Types",
+      "Discard",
+      "Identity",
+      "Labeled Ability",
+      "Player",
+      "Player Card",
+      "Ownership and Control"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "PLAYER CARD",
+      "PLAYER TURN",
+      "RESOLVE",
+      "YOU, YOUR"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "excess-damage": {
+    "title": "EXCESS DAMAGE",
+    "anchor": "excess-damage",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Ally",
+      "Damage",
+      "Hit Points",
+      "Identity",
+      "Minion",
+      "Remaining Hit Points",
+      "Villain"
+    ],
+    "referenced_by": [
+      "VILLAIN DEFEAT"
+    ],
+    "faqs": []
+  },
+  "exhausted": {
+    "title": "EXHAUSTED",
+    "anchor": "exhausted",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Ready"
+    ],
+    "referenced_by": [
+      "READY",
+      "THWART"
+    ],
+    "faqs": []
+  },
+  "expert-mode": {
+    "title": "EXPERT MODE",
+    "anchor": "expert-mode",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "expert-set": {
+    "title": "EXPERT SET",
+    "anchor": "expert-set",
+    "file": "glossary/E.md",
+    "see_also": [
+      "Classifications",
+      "Modes of Play",
+      "Modular Encounter Set",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "ENCOUNTER SET",
+      "MODES OF PLAY"
+    ],
+    "faqs": []
+  },
+  "find": {
+    "title": "FIND",
+    "anchor": "find",
+    "file": "glossary/F.md",
+    "see_also": [
+      "Search",
+      "Removed from the Game",
+      "Victory Display"
+    ],
+    "referenced_by": [
+      "IN PLAYER ORDER",
+      "PLAYER",
+      "SEARCH",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "first-player": {
+    "title": "FIRST PLAYER",
+    "anchor": "first-player",
+    "file": "glossary/F.md",
+    "see_also": [
+      "In Player Order",
+      "Player",
+      "Player Elimination",
+      "Player Phase"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "flip": {
+    "title": "FLIP",
+    "anchor": "flip",
+    "file": "glossary/F.md",
+    "see_also": [
+      "Double-Sided Card"
+    ],
+    "referenced_by": [
+      "FORM, CHANGE FORM"
+    ],
+    "faqs": []
+  },
+  "for-each": {
+    "title": "\u201cFOR EACH\u201d",
+    "anchor": "for-each",
+    "file": "glossary/F.md",
+    "see_also": [
+      "Ability",
+      "Target"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "forced": {
+    "title": "FORCED",
+    "anchor": "forced",
+    "file": "glossary/F.md",
+    "see_also": [
+      "Ability",
+      "Action",
+      "Target"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "form-change-form": {
+    "title": "FORM, CHANGE FORM",
+    "anchor": "form-change-form",
+    "file": "glossary/F.md",
+    "see_also": [
+      "Flip",
+      "Identity",
+      "Keywords"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "friendly": {
+    "title": "\u201cFRIENDLY\u201d",
+    "anchor": "friendly",
+    "file": "glossary/F.md",
+    "see_also": [],
+    "referenced_by": [
+      "DEFEND, DEFENSE"
+    ],
+    "faqs": []
+  },
+  "gains": {
+    "title": "\u201cGAINS\u201d",
+    "anchor": "gains",
+    "file": "glossary/G.md",
+    "see_also": [
+      "Keywords",
+      "Printed",
+      "Traits"
+    ],
+    "referenced_by": [
+      "STALWART"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "game-element": {
+    "title": "GAME ELEMENT",
+    "anchor": "game-element",
+    "file": "glossary/G.md",
+    "see_also": [
+      "Card Types",
+      "Deck",
+      "Discard Pile",
+      "Player",
+      "Target"
+    ],
+    "referenced_by": [
+      "ATTACH TO",
+      "CHOOSE (GAME ELEMENT)",
+      "COST",
+      "ENEMY",
+      "MOVE",
+      "PLAYER ELIMINATION",
+      "TARGET"
+    ],
+    "faqs": []
+  },
+  "generate": {
+    "title": "GENERATE",
+    "anchor": "generate",
+    "file": "glossary/G.md",
+    "see_also": [
+      "Resource"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "gets": {
+    "title": "\u201cGETS\u201d",
+    "anchor": "gets",
+    "file": "glossary/G.md",
+    "see_also": [
+      "Hit Points",
+      "Modifiers"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "guard": {
+    "title": "GUARD",
+    "anchor": "guard",
+    "file": "glossary/G.md",
+    "see_also": [
+      "Attack (Player Ability Type)",
+      "Engage",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Villain"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "hand-size": {
+    "title": "HAND SIZE",
+    "anchor": "hand-size",
+    "file": "glossary/H.md",
+    "see_also": [
+      "End of Player Phase",
+      "Modifiers"
+    ],
+    "referenced_by": [
+      "END OF PLAYER PHASE"
+    ],
+    "faqs": []
+  },
+  "hazard-icon": {
+    "title": "HAZARD ICON ( [hazard])",
+    "anchor": "hazard-icon",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Deal",
+      "In Player Order",
+      "Villain Phase"
+    ],
+    "referenced_by": [
+      "ICONS",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "heal": {
+    "title": "HEAL",
+    "anchor": "heal",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Ally",
+      "Hit Points",
+      "Identity",
+      "Minion",
+      "Villain"
+    ],
+    "referenced_by": [
+      "HIT POINTS",
+      "RECOVER , RECOVERY"
+    ],
+    "faqs": []
+  },
+  "hero-hero-form": {
+    "title": "HERO, HERO FORM",
+    "anchor": "hero-hero-form",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Form",
+      "Identity"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "heroic-mode": {
+    "title": "HEROIC MODE",
+    "anchor": "heroic-mode",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "hinder-x": {
+    "title": "HINDER X",
+    "anchor": "hinder-x",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Enters Play",
+      "Keywords",
+      "Reminder Text",
+      "Reveal",
+      "Threat"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "hit-points": {
+    "title": "HIT POINTS",
+    "anchor": "hit-points",
+    "file": "glossary/H.md",
+    "see_also": [
+      "Ally",
+      "Damage",
+      "Defeat",
+      "Heal",
+      "Identity",
+      "Maximum Hit Points",
+      "Minion",
+      "Modifiers",
+      "Player Elimination",
+      "Remaining Hit Points",
+      "Sustained Damage",
+      "Villain",
+      "Villain Defeat"
+    ],
+    "referenced_by": [
+      "ALLY",
+      "DAMAGE",
+      "DEFEAT",
+      "EXCESS DAMAGE",
+      "\u201cGETS\u201d",
+      "HEAL",
+      "INFINITE HIT POINTS",
+      "MAXIMUM HIT POINTS",
+      "MINION",
+      "OVERKILL",
+      "PLAYER ELIMINATION",
+      "RECOVER , RECOVERY",
+      "REMAINING HIT POINTS",
+      "SUSTAINED DAMAGE",
+      "VILLAIN DEFEAT"
+    ],
+    "faqs": []
+  },
+  "icons": {
+    "title": "ICONS",
+    "anchor": "icons",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Energy Resource)",
+      "Physical Resource)",
+      "Wild Resource)",
+      "Acceleration Icon)",
+      "Amplify Icon)",
+      "Crisis",
+      "Hazard",
+      "Boost)",
+      "Star Icon)",
+      "Cost Arrow Icon)",
+      "Per Player Icon)",
+      "Unique Icon)"
+    ],
+    "referenced_by": [
+      "ACCELERATION ICON ( [acceleration])",
+      "AMPLIFY ICON ( [amplify])",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "COST ARROW ICON ( \u2192)",
+      "ENERGY RESOURCE ( [energy])",
+      "IGNORE",
+      "MENTAL RESOURCE ( [mental])",
+      "PER PLAYER ICON ( [per-player])",
+      "PHYSICAL RESOURCE ( [physical])",
+      "RESOURCE",
+      "RESOURCE CARD",
+      "WILD RESOURCE ( [wild])"
+    ],
+    "faqs": []
+  },
+  "identity": {
+    "title": "IDENTITY",
+    "anchor": "identity",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Form",
+      "In Play and Out of Play",
+      "Player",
+      "Player Card"
+    ],
+    "referenced_by": [
+      "ALTER-EGO, ALTER-EGO FORM",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "BASIC POWER",
+      "CARD TYPES",
+      "CHARACTER",
+      "CONFUSE, CONFUSED",
+      "DEFEND, DEFENSE",
+      "EVENT",
+      "EXCESS DAMAGE",
+      "FORM, CHANGE FORM",
+      "HEAL",
+      "HERO, HERO FORM",
+      "HIT POINTS",
+      "IDENTITY-SPECIFIC CARD",
+      "MAXIMUM HIT POINTS",
+      "MINION",
+      "NEMESIS ENCOUNTER SET",
+      "OBLIGATION",
+      "OVERKILL",
+      "PLAYER",
+      "PLAYER CARD",
+      "PLAYER ELIMINATION",
+      "PLAYER\u2019S PLAY AREA",
+      "RECOVER , RECOVERY",
+      "REFERENTIAL ABILITY",
+      "REMAINING HIT POINTS",
+      "RESOURCE CARD",
+      "RETALIATE X",
+      "STALWART",
+      "STATUS CARDS",
+      "STUN, STUNNED",
+      "SUSTAINED DAMAGE",
+      "TEAM-UP",
+      "TOUGHNESS",
+      "UNIQUE ICON ( [unique])",
+      "UPGRADE",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "identity-specific-card": {
+    "title": "IDENTITY-SPECIFIC CARD",
+    "anchor": "identity-specific-card",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Aspect Card",
+      "Basic Card",
+      "Classifications",
+      "Identity",
+      "Nemesis Encounter Set",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "ASPECT CARD",
+      "BASIC CARD",
+      "CLASSIFICATIONS",
+      "NEMESIS ENCOUNTER SET",
+      "REFERENTIAL ABILITY"
+    ],
+    "faqs": []
+  },
+  "ignore": {
+    "title": "IGNORE",
+    "anchor": "ignore",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Icons",
+      "Requirement (Resources)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "in-play-and-out-of-play": {
+    "title": "IN PLAY AND OUT OF PLAY",
+    "anchor": "in-play-and-out-of-play",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Ability",
+      "Enters Play",
+      "Leaves Play",
+      "Play",
+      "Play Restrictions and Permissions",
+      "Set Aside",
+      "Target",
+      "Victory Display"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "DISCARD",
+      "DISCARD PILE",
+      "DOUBLE-SIDED CARD",
+      "DRAW, DRAWING CARDS",
+      "ENTERS PLAY",
+      "IDENTITY",
+      "LEAVES PLAY",
+      "NEMESIS ENCOUNTER SET",
+      "OWNERSHIP AND CONTROL",
+      "PERMANENT",
+      "PLAY, PUT INTO PLAY",
+      "PLAY AREA",
+      "PLAYER",
+      "PLAYER\u2019S PLAY AREA",
+      "REMOVED FROM THE GAME",
+      "SET ASIDE, SET-ASIDE",
+      "SUPPORT",
+      "TEAM-UP",
+      "TUCK",
+      "UPGRADE",
+      "VICTORY DISPLAY",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "in-player-order": {
+    "title": "IN PLAYER ORDER",
+    "anchor": "in-player-order",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Find",
+      "Player",
+      "Player Phase",
+      "Player Turn"
+    ],
+    "referenced_by": [
+      "FIRST PLAYER",
+      "HAZARD ICON ( [hazard])",
+      "PLAYER PHASE",
+      "REVEAL",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "incite-x": {
+    "title": "INCITE X",
+    "anchor": "incite-x",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Keywords",
+      "Main Scheme",
+      "Reminder Text",
+      "Reveal",
+      "Threat"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "indirect-damage": {
+    "title": "INDIRECT DAMAGE",
+    "anchor": "indirect-damage",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Damage",
+      "Defeat",
+      "Player"
+    ],
+    "referenced_by": [
+      "DAMAGE"
+    ],
+    "faqs": []
+  },
+  "infinite-hit-points": {
+    "title": "INFINITE HIT POINTS",
+    "anchor": "infinite-hit-points",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Hit Points"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "initiating-abilities": {
+    "title": "INITIATING ABILITIES",
+    "anchor": "initiating-abilities",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Play Restrictions and Permissions",
+      "Target"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "ALLIANCE",
+      "COST",
+      "PLAY, PUT INTO PLAY",
+      "PLAYING CARDS",
+      "REQUIREMENT (RESOURCES)"
+    ],
+    "faqs": []
+  },
+  "instead": {
+    "title": "\u201cINSTEAD\u201d",
+    "anchor": "instead",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Replacement Effect"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "interrupt": {
+    "title": "INTERRUPT",
+    "anchor": "interrupt",
+    "file": "glossary/I.md",
+    "see_also": [
+      "Cancel",
+      "Replacement Effect",
+      "Triggered Ability",
+      "\u201cWould\u201d"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "REPLACEMENT EFFECT",
+      "TIMING",
+      "TRIGGERED ABILITY",
+      "TRIGGERING CONDITION",
+      "\u201cWOULD\u201d"
+    ],
+    "faqs": []
+  },
+  "keywords": {
+    "title": "KEYWORDS",
+    "anchor": "keywords",
+    "file": "glossary/K.md",
+    "see_also": [
+      "Alliance)",
+      "Form)",
+      "Hinder X)",
+      "Linked",
+      "Overkill)",
+      "Patrol)",
+      "Peril)",
+      "Permanent)",
+      "Piercing)",
+      "Quickstrike)",
+      "Requirement (Resources))",
+      "Restricted)",
+      "Stalwart)",
+      "Steady)",
+      "Team-Up)",
+      "Teamwork (Trait))",
+      "Temporary)",
+      "Tough/",
+      "Uses (X \u201ctype\u201d))",
+      "Victory X)",
+      "Villainous)"
+    ],
+    "referenced_by": [
+      "ALLIANCE",
+      "ASSAULT",
+      "COST",
+      "FORM, CHANGE FORM",
+      "\u201cGAINS\u201d",
+      "GUARD",
+      "HINDER X",
+      "INCITE X",
+      "LINKED (CARD TITLE)",
+      "\u201cLOSES\u201d",
+      "OVERKILL",
+      "PATROL",
+      "PERIL",
+      "PERMANENT",
+      "PIERCING",
+      "QUICKSTRIKE",
+      "RANGED",
+      "REQUIREMENT (RESOURCES)",
+      "RESTRICTED",
+      "RETALIATE X",
+      "SETUP (KEYWORD)",
+      "STALWART",
+      "STEADY",
+      "SURGE",
+      "TABLE TALK",
+      "TEAM-UP",
+      "TEAMWORK ( TRAIT )",
+      "TEMPORARY",
+      "TOUGHNESS",
+      "USES (X \u201cTYPE\u201d)",
+      "VICTORY X",
+      "VILLAINOUS"
+    ],
+    "faqs": []
+  },
+  "labeled-ability": {
+    "title": "LABELED ABILITY",
+    "anchor": "labeled-ability",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Attack (Player Ability Type)",
+      "Defend",
+      "Thwart"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "DEFEND, DEFENSE",
+      "EVENT",
+      "TARGET",
+      "THWART"
+    ],
+    "faqs": []
+  },
+  "lasting-effects": {
+    "title": "LASTING EFFECTS",
+    "anchor": "lasting-effects",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Ability",
+      "Enters Play"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "END OF PLAYER PHASE"
+    ],
+    "faqs": []
+  },
+  "leader": {
+    "title": "LEADER",
+    "anchor": "leader",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Villain"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "leaves-play": {
+    "title": "LEAVES PLAY",
+    "anchor": "leaves-play",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Defeat",
+      "Discard",
+      "Discard Pile",
+      "Enters Play",
+      "In Play and Out of Play",
+      "Removed from the Game",
+      "Victory Display"
+    ],
+    "referenced_by": [
+      "ENTERS PLAY",
+      "ENVIRONMENT",
+      "IN PLAY AND OUT OF PLAY",
+      "MINION",
+      "OBLIGATION",
+      "PERMANENT",
+      "PLAY, PUT INTO PLAY",
+      "REMOVED FROM THE GAME",
+      "RESOURCE CARD",
+      "SIDE SCHEME",
+      "SUPPORT",
+      "UPGRADE",
+      "USES (X \u201cTYPE\u201d)"
+    ],
+    "faqs": []
+  },
+  "limit": {
+    "title": "LIMIT",
+    "anchor": "limit",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Player Card"
+    ],
+    "referenced_by": [
+      "MAX, MAXIMUM"
+    ],
+    "faqs": []
+  },
+  "linked-card-title": {
+    "title": "LINKED (CARD TITLE)",
+    "anchor": "linked-card-title",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Keywords",
+      "Ownership and Control",
+      "Set Aside"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "look-looked-at": {
+    "title": "LOOK, LOOKED-AT",
+    "anchor": "look-looked-at",
+    "file": "glossary/L.md",
+    "see_also": [],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "loses": {
+    "title": "\u201cLOSES\u201d",
+    "anchor": "loses",
+    "file": "glossary/L.md",
+    "see_also": [
+      "Keywords",
+      "Printed",
+      "Traits"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "main-scheme-main-scheme-deck": {
+    "title": "MAIN SCHEME, MAIN SCHEME DECK",
+    "anchor": "main-scheme-main-scheme-deck",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Acceleration Icon",
+      "Acceleration Token",
+      "Card Types",
+      "Encounter Card",
+      "Removed from the Game",
+      "Target Threat",
+      "Threat",
+      "Villain",
+      "Villain Phase"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "max-maximum": {
+    "title": "MAX, MAXIMUM",
+    "anchor": "max-maximum",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Cancel",
+      "Limit",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "maximum-hit-points": {
+    "title": "MAXIMUM HIT POINTS",
+    "anchor": "maximum-hit-points",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Ally",
+      "Base Value",
+      "Hit Points",
+      "Identity",
+      "Minion",
+      "Modifiers",
+      "Villain"
+    ],
+    "referenced_by": [
+      "HIT POINTS",
+      "SUSTAINED DAMAGE"
+    ],
+    "faqs": []
+  },
+  "may": {
+    "title": "MAY",
+    "anchor": "may",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Player"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "mental-resource": {
+    "title": "MENTAL RESOURCE ( [mental])",
+    "anchor": "mental-resource",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Energy Resource",
+      "Icons",
+      "Physical Resource",
+      "Resource",
+      "Wild Resource"
+    ],
+    "referenced_by": [
+      "ENERGY RESOURCE ( [energy])",
+      "PHYSICAL RESOURCE ( [physical])",
+      "RESOURCE",
+      "RESOURCE CARD",
+      "WILD RESOURCE ( [wild])"
+    ],
+    "faqs": []
+  },
+  "minion": {
+    "title": "MINION",
+    "anchor": "minion",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Card Types",
+      "Encounter Card",
+      "Engage",
+      "Enters Play",
+      "Form",
+      "Hit Points",
+      "Identity",
+      "Leaves Play",
+      "Player",
+      "Player\u2019s Play Area",
+      "Villain",
+      "Villain Phase"
+    ],
+    "referenced_by": [
+      "ACTIVATION",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "BASIC POWER",
+      "CARD TYPES",
+      "CHARACTER",
+      "CONFUSE, CONFUSED",
+      "DEFEAT",
+      "ENCOUNTER CARD",
+      "ENCOUNTER DECK",
+      "ENEMY",
+      "ENGAGE",
+      "EXCESS DAMAGE",
+      "GUARD",
+      "HEAL",
+      "HIT POINTS",
+      "MAXIMUM HIT POINTS",
+      "OVERKILL",
+      "PATROL",
+      "PLAYER ELIMINATION",
+      "PLAYER\u2019S PLAY AREA",
+      "QUICKSTRIKE",
+      "RETALIATE X",
+      "REVEAL",
+      "SCHEME (ENEMY ACTIVATION)",
+      "STALWART",
+      "STATUS CARDS",
+      "STUN, STUNNED",
+      "TOUGHNESS",
+      "UNIQUE ICON ( [unique])",
+      "VILLAIN PHASE",
+      "VILLAIN\u2019S PLAY AREA",
+      "VILLAINOUS",
+      "WHEN DEFEATED ABILITIES"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "modes-of-play": {
+    "title": "MODES OF PLAY",
+    "anchor": "modes-of-play",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Campaign-Specific Card",
+      "Expert Set",
+      "Standard Set"
+    ],
+    "referenced_by": [
+      "CAMPAIGN MODE",
+      "CAMPAIGN-SPECIFIC CARD",
+      "CLASSIFICATIONS",
+      "EXPERT MODE",
+      "EXPERT SET",
+      "HEROIC MODE",
+      "ROOKIE MODE",
+      "SKIRMISH MODE",
+      "STANDARD MODE"
+    ],
+    "faqs": []
+  },
+  "modifiers": {
+    "title": "MODIFIERS",
+    "anchor": "modifiers",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Base Value",
+      "Dash (Value)",
+      "Printed"
+    ],
+    "referenced_by": [
+      "ALTERATION EFFECT",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "BASE VALUE",
+      "BASIC POWER",
+      "\u201cGETS\u201d",
+      "HAND SIZE",
+      "HIT POINTS",
+      "MAXIMUM HIT POINTS",
+      "PER PLAYER ICON ( [per-player])",
+      "PRINTED",
+      "SCHEME (ENEMY ACTIVATION)",
+      "THWART"
+    ],
+    "faqs": []
+  },
+  "modular-encounter-set": {
+    "title": "MODULAR ENCOUNTER SET",
+    "anchor": "modular-encounter-set",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Classifications",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "CLASSIFICATIONS",
+      "ENCOUNTER SET",
+      "EXPERT SET"
+    ],
+    "faqs": []
+  },
+  "move": {
+    "title": "MOVE",
+    "anchor": "move",
+    "file": "glossary/M.md",
+    "see_also": [
+      "Game Element"
+    ],
+    "referenced_by": [
+      "DAMAGE"
+    ],
+    "faqs": []
+  },
+  "nemesis-encounter-set": {
+    "title": "NEMESIS ENCOUNTER SET",
+    "anchor": "nemesis-encounter-set",
+    "file": "glossary/N.md",
+    "see_also": [
+      "Identity",
+      "Identity-Specific Card",
+      "In Play and Out of Play",
+      "Player"
+    ],
+    "referenced_by": [
+      "IDENTITY-SPECIFIC CARD"
+    ],
+    "faqs": []
+  },
+  "non-numerical-variable": {
+    "title": "NON-NUMERICAL VARIABLE",
+    "anchor": "non-numerical-variable",
+    "file": "glossary/N.md",
+    "see_also": [
+      "Base Value",
+      "Dash (Value)",
+      "Printed",
+      "Star Icon"
+    ],
+    "referenced_by": [
+      "DASH (VALUE)",
+      "\u201cX\u201d (VALUE)"
+    ],
+    "faqs": []
+  },
+  "obligation": {
+    "title": "OBLIGATION",
+    "anchor": "obligation",
+    "file": "glossary/O.md",
+    "see_also": [
+      "Card Types",
+      "Encounter Card",
+      "Encounter Deck",
+      "Enters Play",
+      "Form",
+      "Identity",
+      "Leaves Play",
+      "Player",
+      "Player Elimination",
+      "Removed from the Game"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "ENCOUNTER CARD",
+      "PLAYER\u2019S PLAY AREA",
+      "REVEAL",
+      "VILLAIN\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "otherwise": {
+    "title": "\u201cOTHERWISE\u201d",
+    "anchor": "otherwise",
+    "file": "glossary/O.md",
+    "see_also": [
+      "Replacement Effect",
+      "Target"
+    ],
+    "referenced_by": [
+      "REPLACEMENT EFFECT"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "overkill": {
+    "title": "OVERKILL",
+    "anchor": "overkill",
+    "file": "glossary/O.md",
+    "see_also": [
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Damage",
+      "Hit Points",
+      "Identity",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Villain"
+    ],
+    "referenced_by": [
+      "KEYWORDS",
+      "TOUGH"
+    ],
+    "faqs": []
+  },
+  "overpay": {
+    "title": "\u201cOVERPAY\u201d",
+    "anchor": "overpay",
+    "file": "glossary/O.md",
+    "see_also": [
+      "Cost"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "ownership-and-control": {
+    "title": "OWNERSHIP AND CONTROL",
+    "anchor": "ownership-and-control",
+    "file": "glossary/O.md",
+    "see_also": [
+      "Classifications",
+      "Encounter Card",
+      "Encounter Deck",
+      "In Play and Out of Play",
+      "Player",
+      "Player Card",
+      "Player Deck",
+      "Player\u2019s Play Area",
+      "Villain\u2019s Play Area"
+    ],
+    "referenced_by": [
+      "CONTROL",
+      "DISCARD",
+      "DISCARD PILE",
+      "DRAW, DRAWING CARDS",
+      "EVENT",
+      "LINKED (CARD TITLE)",
+      "PERMANENT",
+      "PLAYER TURN",
+      "RESTRICTED",
+      "UPGRADE"
+    ],
+    "faqs": []
+  },
+  "patrol": {
+    "title": "PATROL",
+    "anchor": "patrol",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Engage",
+      "Keywords",
+      "Main Scheme",
+      "Minion",
+      "Reminder Text",
+      "Thwart"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "pay": {
+    "title": "\u201cPAY\u201d",
+    "anchor": "pay",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Cost"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "per-player-icon": {
+    "title": "PER PLAYER ICON ( [per-player])",
+    "anchor": "per-player-icon",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Icons",
+      "Modifiers",
+      "Player Elimination"
+    ],
+    "referenced_by": [
+      "ICONS",
+      "PLAYER ELIMINATION"
+    ],
+    "faqs": []
+  },
+  "peril": {
+    "title": "PERIL",
+    "anchor": "peril",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ability",
+      "Keywords",
+      "Player",
+      "Reminder Text",
+      "Table Talk",
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "KEYWORDS",
+      "TABLE TALK"
+    ],
+    "faqs": []
+  },
+  "permanent": {
+    "title": "PERMANENT",
+    "anchor": "permanent",
+    "file": "glossary/P.md",
+    "see_also": [
+      "In Play and Out of Play",
+      "Keywords",
+      "Leaves Play",
+      "Ownership and Control",
+      "Reminder Text"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "physical-resource": {
+    "title": "PHYSICAL RESOURCE ( [physical])",
+    "anchor": "physical-resource",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Energy Resource",
+      "Icons",
+      "Mental Resource",
+      "Resource",
+      "Wild Resource"
+    ],
+    "referenced_by": [
+      "ENERGY RESOURCE ( [energy])",
+      "ICONS",
+      "MENTAL RESOURCE ( [mental])",
+      "RESOURCE",
+      "RESOURCE CARD",
+      "WILD RESOURCE ( [wild])"
+    ],
+    "faqs": []
+  },
+  "piercing": {
+    "title": "PIERCING",
+    "anchor": "piercing",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Damage",
+      "Keywords",
+      "Reminder Text",
+      "Status Cards",
+      "Target",
+      "Tough"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "play-put-into-play": {
+    "title": "PLAY, PUT INTO PLAY",
+    "anchor": "play-put-into-play",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Enters Play",
+      "In Play and Out of Play",
+      "Initiating Abilities",
+      "Leaves Play",
+      "Play Restrictions and Permissions"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "play-area": {
+    "title": "PLAY AREA",
+    "anchor": "play-area",
+    "file": "glossary/P.md",
+    "see_also": [
+      "In Play and Out of Play",
+      "Player\u2019s Play Area",
+      "Villain\u2019s Play Area"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "play-restrictions-and-permissions": {
+    "title": "PLAY RESTRICTIONS AND PERMISSIONS",
+    "anchor": "play-restrictions-and-permissions",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ability",
+      "Play",
+      "Player"
+    ],
+    "referenced_by": [
+      "IN PLAY AND OUT OF PLAY",
+      "INITIATING ABILITIES",
+      "PLAY, PUT INTO PLAY"
+    ],
+    "faqs": []
+  },
+  "player": {
+    "title": "PLAYER",
+    "anchor": "player",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Discard",
+      "Discard Pile",
+      "Find",
+      "Identity",
+      "In Play and Out of Play",
+      "Player Deck",
+      "Player Elimination",
+      "Player Phase",
+      "Player Turn",
+      "Player\u2019s Play Area",
+      "You"
+    ],
+    "referenced_by": [
+      "ACTIVE PLAYER",
+      "CHOOSE (GAME ELEMENT)",
+      "CHOOSE (OPTION)",
+      "DEAL, DEAL AN ENCOUNTER CARD",
+      "DEFEAT",
+      "DEFEND, DEFENSE",
+      "DISCARD PILE",
+      "DRAW, DRAWING CARDS",
+      "\u201cEACH PLAYER\u201d",
+      "END OF PLAYER PHASE",
+      "ENGAGE",
+      "EVENT",
+      "FIRST PLAYER",
+      "GAME ELEMENT",
+      "IDENTITY",
+      "IN PLAYER ORDER",
+      "INDIRECT DAMAGE",
+      "MAY",
+      "MINION",
+      "NEMESIS ENCOUNTER SET",
+      "OBLIGATION",
+      "OWNERSHIP AND CONTROL",
+      "PERIL",
+      "PLAY RESTRICTIONS AND PERMISSIONS",
+      "PLAYER ELIMINATION",
+      "PLAYER PHASE",
+      "PLAYER TURN",
+      "QUICKSTRIKE",
+      "RESOURCE CARD",
+      "RESTRICTED",
+      "REVEAL",
+      "TABLE TALK",
+      "UNIQUE ICON ( [unique])",
+      "VICTORY DISPLAY",
+      "VILLAIN PHASE",
+      "YOU, YOUR"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "player-card": {
+    "title": "PLAYER CARD",
+    "anchor": "player-card",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ally",
+      "Classifications",
+      "Event",
+      "Identity",
+      "Player Side Scheme",
+      "Resource Card",
+      "Support",
+      "Upgrade",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "DISCARD",
+      "DOUBLE-SIDED CARD",
+      "EVENT",
+      "IDENTITY",
+      "LIMIT",
+      "OWNERSHIP AND CONTROL",
+      "PLAYER ELIMINATION",
+      "PLAYER SIDE SCHEME",
+      "RESOURCE CARD",
+      "SUPPORT",
+      "UPGRADE",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "player-deck": {
+    "title": "PLAYER DECK",
+    "anchor": "player-deck",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Discard",
+      "Discard Pile",
+      "Draw",
+      "Encounter Deck",
+      "Shuffle"
+    ],
+    "referenced_by": [
+      "DECK",
+      "DRAW, DRAWING CARDS",
+      "EMPTY DECK",
+      "OWNERSHIP AND CONTROL",
+      "PLAYER",
+      "PLAYER ELIMINATION",
+      "PLAYER\u2019S PLAY AREA",
+      "RUNNING OUT OF CARDS",
+      "SEARCH",
+      "SHUFFLE",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "player-discard-pile": {
+    "title": "PLAYER DISCARD PILE",
+    "anchor": "player-discard-pile",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Discard Pile"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "player-elimination": {
+    "title": "PLAYER ELIMINATION",
+    "anchor": "player-elimination",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ability",
+      "Deal",
+      "Engage",
+      "Game Element",
+      "Hit Points",
+      "Identity",
+      "Minion",
+      "Per Player Icon",
+      "Player",
+      "Player Card",
+      "Player Deck",
+      "Player\u2019s Play Area",
+      "Winning the Game"
+    ],
+    "referenced_by": [
+      "DEFEAT",
+      "FIRST PLAYER",
+      "HIT POINTS",
+      "OBLIGATION",
+      "PER PLAYER ICON ( [per-player])",
+      "PLAYER",
+      "PLAYER\u2019S PLAY AREA"
+    ],
+    "faqs": []
+  },
+  "player-phase": {
+    "title": "PLAYER PHASE",
+    "anchor": "player-phase",
+    "file": "glossary/P.md",
+    "see_also": [
+      "End of Player Phase",
+      "In Player Order",
+      "Player",
+      "Player Turn"
+    ],
+    "referenced_by": [
+      "DRAW, DRAWING CARDS",
+      "END OF PLAYER PHASE",
+      "FIRST PLAYER",
+      "IN PLAYER ORDER",
+      "PLAYER",
+      "PLAYER TURN",
+      "ROUND STRUCTURE"
+    ],
+    "faqs": []
+  },
+  "player-side-scheme": {
+    "title": "PLAYER SIDE SCHEME",
+    "anchor": "player-side-scheme",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Card Types",
+      "Player Card",
+      "Player Side Scheme Limit",
+      "Scheme (Card Type)",
+      "Side Scheme",
+      "Victory X"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "PLAYER CARD",
+      "PLAYER SIDE SCHEME LIMIT",
+      "SCHEME (CARD TYPE)"
+    ],
+    "faqs": []
+  },
+  "player-side-scheme-limit": {
+    "title": "PLAYER SIDE SCHEME LIMIT",
+    "anchor": "player-side-scheme-limit",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Player Side Scheme"
+    ],
+    "referenced_by": [
+      "PLAYER SIDE SCHEME"
+    ],
+    "faqs": []
+  },
+  "player-turn": {
+    "title": "PLAYER TURN",
+    "anchor": "player-turn",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ally",
+      "Basic Power",
+      "Encounter Card",
+      "Event",
+      "Form",
+      "Ownership and Control",
+      "Play",
+      "Player",
+      "Player Phase",
+      "Support",
+      "Triggered Ability",
+      "Upgrade"
+    ],
+    "referenced_by": [
+      "ACTION",
+      "ACTIVE PLAYER",
+      "END OF PLAYER PHASE",
+      "IN PLAYER ORDER",
+      "PLAYER",
+      "PLAYER PHASE",
+      "ROUND STRUCTURE"
+    ],
+    "faqs": []
+  },
+  "player\u2019s-play-area": {
+    "title": "PLAYER\u2019S PLAY AREA",
+    "anchor": "player\u2019s-play-area",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ally",
+      "Discard Pile",
+      "Identity",
+      "In Play and Out of Play",
+      "Minion",
+      "Obligation",
+      "Player Deck",
+      "Player Elimination",
+      "Support",
+      "Upgrade"
+    ],
+    "referenced_by": [
+      "ENGAGE",
+      "MINION",
+      "OWNERSHIP AND CONTROL",
+      "PLAY AREA",
+      "PLAYER",
+      "PLAYER ELIMINATION",
+      "SUPPORT",
+      "UPGRADE",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "playing-cards": {
+    "title": "PLAYING CARDS",
+    "anchor": "playing-cards",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Initiating Abilities"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "prevent": {
+    "title": "PREVENT",
+    "anchor": "prevent",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Damage",
+      "Scheme (Card Type)",
+      "Target",
+      "Threat"
+    ],
+    "referenced_by": [
+      "\u201cAND\u201d",
+      "DAMAGE",
+      "THREAT"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "printed": {
+    "title": "PRINTED",
+    "anchor": "printed",
+    "file": "glossary/P.md",
+    "see_also": [
+      "Base Value",
+      "Modifiers"
+    ],
+    "referenced_by": [
+      "BASE VALUE",
+      "\u201cGAINS\u201d",
+      "\u201cLOSES\u201d",
+      "MODIFIERS",
+      "NON-NUMERICAL VARIABLE",
+      "TEXT BOX",
+      "TRAITS"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "qualifiers": {
+    "title": "QUALIFIERS",
+    "anchor": "qualifiers",
+    "file": "glossary/Q.md",
+    "see_also": [],
+    "referenced_by": [
+      "ABILITY"
+    ],
+    "faqs": []
+  },
+  "quickstrike": {
+    "title": "QUICKSTRIKE",
+    "anchor": "quickstrike",
+    "file": "glossary/Q.md",
+    "see_also": [
+      "Attack (Enemy Activation)",
+      "Engage",
+      "Form",
+      "Keywords",
+      "Minion",
+      "Player",
+      "Reminder Text",
+      "Reveal"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "ranged": {
+    "title": "RANGED",
+    "anchor": "ranged",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Keywords",
+      "Reminder Text",
+      "Retaliate X"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "ready": {
+    "title": "READY",
+    "anchor": "ready",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Enters Play",
+      "Exhausted"
+    ],
+    "referenced_by": [
+      "END OF PLAYER PHASE",
+      "EXHAUSTED"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "rec": {
+    "title": "REC",
+    "anchor": "rec",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Basic Power",
+      "Recover",
+      "Recovery"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "recover-recovery": {
+    "title": "RECOVER , RECOVERY",
+    "anchor": "recover-recovery",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Basic Power",
+      "Form",
+      "Heal",
+      "Hit Points",
+      "Identity"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "referential-ability": {
+    "title": "REFERENTIAL ABILITY",
+    "anchor": "referential-ability",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Ability",
+      "Character",
+      "Classifications",
+      "Identity",
+      "Identity-Specific Card"
+    ],
+    "referenced_by": [
+      "SELF-REFERENTIAL"
+    ],
+    "faqs": []
+  },
+  "remaining-hit-points": {
+    "title": "REMAINING HIT POINTS",
+    "anchor": "remaining-hit-points",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Hit Points",
+      "Identity",
+      "Sustained Damage",
+      "Villain"
+    ],
+    "referenced_by": [
+      "EXCESS DAMAGE",
+      "HIT POINTS",
+      "SUSTAINED DAMAGE"
+    ],
+    "faqs": []
+  },
+  "reminder-text": {
+    "title": "REMINDER TEXT",
+    "anchor": "reminder-text",
+    "file": "glossary/R.md",
+    "see_also": [],
+    "referenced_by": [
+      "GUARD",
+      "HINDER X",
+      "INCITE X",
+      "OVERKILL",
+      "PATROL",
+      "PERIL",
+      "PERMANENT",
+      "PIERCING",
+      "QUICKSTRIKE",
+      "RANGED",
+      "RESTRICTED",
+      "RETALIATE X",
+      "SETUP (KEYWORD)",
+      "STALWART",
+      "SURGE",
+      "TEAM-UP",
+      "TOUGHNESS",
+      "USES (X \u201cTYPE\u201d)",
+      "VICTORY X",
+      "VILLAINOUS"
+    ],
+    "faqs": []
+  },
+  "removed-from-the-game": {
+    "title": "REMOVED FROM THE GAME",
+    "anchor": "removed-from-the-game",
+    "file": "glossary/R.md",
+    "see_also": [
+      "In Play and Out of Play",
+      "Leaves Play"
+    ],
+    "referenced_by": [
+      "DEFEAT",
+      "FIND",
+      "LEAVES PLAY",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "OBLIGATION"
+    ],
+    "faqs": []
+  },
+  "replacement-effect": {
+    "title": "REPLACEMENT EFFECT",
+    "anchor": "replacement-effect",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Ability",
+      "Alteration Effect",
+      "Cancel",
+      "Interrupt",
+      "\u201cOtherwise\u201d",
+      "Triggered Ability",
+      "\u201cWould\u201d"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "ALTERATION EFFECT",
+      "CANCEL",
+      "\u201cINSTEAD\u201d",
+      "INTERRUPT",
+      "\u201cOTHERWISE\u201d",
+      "STATUS CARDS",
+      "\u201cWOULD\u201d"
+    ],
+    "faqs": []
+  },
+  "requirement-resources": {
+    "title": "REQUIREMENT (RESOURCES)",
+    "anchor": "requirement-resources",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Cost",
+      "Initiating Abilities",
+      "Keywords",
+      "Resource"
+    ],
+    "referenced_by": [
+      "IGNORE",
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "resolve": {
+    "title": "RESOLVE",
+    "anchor": "resolve",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Ability",
+      "Cancel",
+      "Event",
+      "Treachery"
+    ],
+    "referenced_by": [],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "resource": {
+    "title": "RESOURCE",
+    "anchor": "resource",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Cost",
+      "Energy Resource",
+      "Icons",
+      "Mental Resource",
+      "Physical Resource",
+      "Wild Resource"
+    ],
+    "referenced_by": [
+      "ENERGY RESOURCE ( [energy])",
+      "GENERATE",
+      "MENTAL RESOURCE ( [mental])",
+      "PHYSICAL RESOURCE ( [physical])",
+      "REQUIREMENT (RESOURCES)",
+      "RESOURCE ABILITY",
+      "RESOURCE CARD",
+      "RESOURCE TYPE",
+      "WILD RESOURCE ( [wild])",
+      "YOU, YOUR"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "resource-ability": {
+    "title": "RESOURCE ABILITY",
+    "anchor": "resource-ability",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Cost",
+      "Resource",
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "resource-card": {
+    "title": "RESOURCE CARD",
+    "anchor": "resource-card",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Card Types",
+      "Energy Resource",
+      "Enters Play",
+      "Icons",
+      "Identity",
+      "Leaves Play",
+      "Mental Resource",
+      "Physical Resource",
+      "Player",
+      "Player Card",
+      "Resource",
+      "Wild Resource"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "PLAYER CARD"
+    ],
+    "faqs": []
+  },
+  "resource-type": {
+    "title": "RESOURCE TYPE",
+    "anchor": "resource-type",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Resource"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "response": {
+    "title": "RESPONSE",
+    "anchor": "response",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Ability",
+      "Triggered Ability",
+      "Triggering Condition"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "\u201cAFTER\u201d",
+      "TIMING",
+      "TRIGGERED ABILITY",
+      "TRIGGERING CONDITION"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "restricted": {
+    "title": "RESTRICTED",
+    "anchor": "restricted",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Discard",
+      "Keywords",
+      "Ownership and Control",
+      "Player",
+      "Reminder Text"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "retaliate-x": {
+    "title": "RETALIATE X",
+    "anchor": "retaliate-x",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Damage",
+      "Identity",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Villain"
+    ],
+    "referenced_by": [
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "RANGED"
+    ],
+    "faqs": []
+  },
+  "reveal": {
+    "title": "REVEAL",
+    "anchor": "reveal",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Attachment",
+      "Choose (Game Element)",
+      "Choose (Option)",
+      "Deal",
+      "Encounter Card",
+      "Enters Play",
+      "Environment",
+      "In Player Order",
+      "Minion",
+      "Obligation",
+      "Player",
+      "Side Scheme",
+      "Treachery",
+      "Villain Phase"
+    ],
+    "referenced_by": [
+      "ENTERS PLAY",
+      "HINDER X",
+      "INCITE X",
+      "QUICKSTRIKE",
+      "TREACHERY",
+      "SURGE",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "rookie-mode": {
+    "title": "ROOKIE MODE",
+    "anchor": "rookie-mode",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "round-structure": {
+    "title": "ROUND STRUCTURE",
+    "anchor": "round-structure",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Overview - Round Overview",
+      "End of the Player Phase",
+      "Player Phase",
+      "Player Turn",
+      "Villain Phase"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "running-out-of-cards": {
+    "title": "RUNNING OUT OF CARDS",
+    "anchor": "running-out-of-cards",
+    "file": "glossary/R.md",
+    "see_also": [
+      "Encounter Deck",
+      "Player Deck"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "scenario-specific-card": {
+    "title": "SCENARIO-SPECIFIC CARD",
+    "anchor": "scenario-specific-card",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Classifications",
+      "Main Scheme Deck",
+      "Villain Deck",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "CLASSIFICATIONS",
+      "ENCOUNTER SET"
+    ],
+    "faqs": []
+  },
+  "sch": {
+    "title": "SCH",
+    "anchor": "sch",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Basic Power",
+      "Scheme (Enemy Activation)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "scheme-card-type": {
+    "title": "SCHEME (CARD TYPE)",
+    "anchor": "scheme-card-type",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Main Scheme",
+      "Player Side Scheme",
+      "Side Scheme"
+    ],
+    "referenced_by": [
+      "PLAYER SIDE SCHEME",
+      "PREVENT",
+      "THREAT"
+    ],
+    "faqs": []
+  },
+  "scheme-enemy-activation": {
+    "title": "SCHEME (ENEMY ACTIVATION)",
+    "anchor": "scheme-enemy-activation",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Activation",
+      "Boost",
+      "Minion",
+      "Modifiers",
+      "Villain",
+      "Villain Phase",
+      "Villainous"
+    ],
+    "referenced_by": [
+      "ACTIVATION",
+      "BASIC POWER",
+      "BOOST , BOOST ICON ( [boost])",
+      "ENEMY ACTIVATION",
+      "ENEMY SCHEMES",
+      "SCH",
+      "THREAT",
+      "VILLAIN, VILLAIN DECK",
+      "VILLAIN PHASE",
+      "VILLAINOUS"
+    ],
+    "faqs": []
+  },
+  "search": {
+    "title": "SEARCH",
+    "anchor": "search",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Encounter Deck",
+      "Find",
+      "Player Deck",
+      "Shuffle"
+    ],
+    "referenced_by": [
+      "FIND",
+      "SHUFFLE"
+    ],
+    "faqs": []
+  },
+  "self-referential": {
+    "title": "SELF-REFERENTIAL",
+    "anchor": "self-referential",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Referential Ability"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "set-aside-set-aside": {
+    "title": "SET ASIDE, SET-ASIDE",
+    "anchor": "set-aside-set-aside",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Ability",
+      "In Play and Out of Play",
+      "Appendix II: Setup"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "set-icon": {
+    "title": "SET ICON",
+    "anchor": "set-icon",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Appendix III: Card  Anatomy"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "setup-keyword": {
+    "title": "SETUP (KEYWORD)",
+    "anchor": "setup-keyword",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Keywords",
+      "Reminder Text",
+      "Appendix II: Setup"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "setup-triggered-ability": {
+    "title": "SETUP (TRIGGERED ABILITY)",
+    "anchor": "setup-triggered-ability",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Triggered Ability",
+      "Appendix II: Setup"
+    ],
+    "referenced_by": [
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "shuffle": {
+    "title": "SHUFFLE",
+    "anchor": "shuffle",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Encounter Deck",
+      "Player Deck",
+      "Search"
+    ],
+    "referenced_by": [
+      "DISCARD",
+      "DISCARD PILE",
+      "PLAYER DECK",
+      "SEARCH"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "side-scheme": {
+    "title": "SIDE SCHEME",
+    "anchor": "side-scheme",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Card Types",
+      "Defeat",
+      "Encounter Card",
+      "Enters Play",
+      "Leaves Play",
+      "Main Scheme",
+      "Threat",
+      "Thwart",
+      "Villain\u2019s Play Area"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "DEFEAT",
+      "ENCOUNTER CARD",
+      "ENCOUNTER DECK",
+      "PLAYER SIDE SCHEME",
+      "REVEAL",
+      "SCHEME (CARD TYPE)",
+      "THREAT",
+      "THWART",
+      "WHEN DEFEATED ABILITIES"
+    ],
+    "faqs": []
+  },
+  "simultaneous-resolution": {
+    "title": "SIMULTANEOUS RESOLUTION",
+    "anchor": "simultaneous-resolution",
+    "file": "glossary/S.md",
+    "see_also": [
+      "\u201cEach Player\u201d",
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "skirmish-mode": {
+    "title": "SKIRMISH MODE",
+    "anchor": "skirmish-mode",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "special": {
+    "title": "SPECIAL",
+    "anchor": "special",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "stalwart": {
+    "title": "STALWART",
+    "anchor": "stalwart",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Ally",
+      "Confuse",
+      "\u201cGains\u201d",
+      "Identity",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Status Cards",
+      "Stun",
+      "Villain"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "standard-mode": {
+    "title": "STANDARD MODE",
+    "anchor": "standard-mode",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Modes of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "standard-set": {
+    "title": "STANDARD SET",
+    "anchor": "standard-set",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Classifications",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "ENCOUNTER SET",
+      "MODES OF PLAY"
+    ],
+    "faqs": []
+  },
+  "star-icon": {
+    "title": "STAR ICON ( [star])",
+    "anchor": "star-icon",
+    "file": "glossary/S.md",
+    "see_also": [],
+    "referenced_by": [
+      "BOOST , BOOST ICON ( [boost])",
+      "ICONS",
+      "NON-NUMERICAL VARIABLE"
+    ],
+    "faqs": []
+  },
+  "treachery": {
+    "title": "TREACHERY",
+    "anchor": "treachery",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Card Types",
+      "Discard",
+      "Encounter Card",
+      "Encounter Deck",
+      "Reveal",
+      "Villain"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "ENCOUNTER CARD",
+      "ENCOUNTER DECK",
+      "RESOLVE",
+      "REVEAL"
+    ],
+    "faqs": []
+  },
+  "status-cards": {
+    "title": "STATUS CARDS",
+    "anchor": "status-cards",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Confuse",
+      "Confused",
+      "Stun",
+      "Stunned",
+      "Tough",
+      "Ally",
+      "Attack (Enemy Activation)",
+      "Attack (Player Ability Type)",
+      "Basic Power",
+      "Damage",
+      "Form",
+      "Identity",
+      "Minion",
+      "Replacement Effect",
+      "Triggered Ability",
+      "Villain"
+    ],
+    "referenced_by": [
+      "CONFUSE, CONFUSED",
+      "PIERCING",
+      "STALWART",
+      "STEADY",
+      "STUN, STUNNED",
+      "TOUGH",
+      "TOUGHNESS",
+      "VILLAIN DEFEAT"
+    ],
+    "faqs": []
+  },
+  "steady": {
+    "title": "STEADY",
+    "anchor": "steady",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Confuse",
+      "Keywords",
+      "Status Cards",
+      "Stun"
+    ],
+    "referenced_by": [
+      "KEYWORDS",
+      "VULNERABLE"
+    ],
+    "faqs": []
+  },
+  "stun-stunned": {
+    "title": "STUN, STUNNED",
+    "anchor": "stun-stunned",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Ally",
+      "Cancel",
+      "Identity",
+      "Minion",
+      "Status Cards",
+      "Target",
+      "Villain"
+    ],
+    "referenced_by": [
+      "STALWART",
+      "STATUS CARDS",
+      "STEADY",
+      "VULNERABLE"
+    ],
+    "faqs": []
+  },
+  "subtitle": {
+    "title": "SUBTITLE",
+    "anchor": "subtitle",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Unique Icon"
+    ],
+    "referenced_by": [
+      "COPY",
+      "UNIQUE ICON ( [unique])"
+    ],
+    "faqs": []
+  },
+  "support": {
+    "title": "SUPPORT",
+    "anchor": "support",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Card Types",
+      "Enters Play",
+      "In Play and Out of Play",
+      "Leaves Play",
+      "Player Card",
+      "Player\u2019s Play Area"
+    ],
+    "referenced_by": [
+      "CARD TYPES",
+      "PLAYER CARD",
+      "PLAYER TURN",
+      "PLAYER\u2019S PLAY AREA",
+      "YOU, YOUR"
+    ],
+    "faqs": []
+  },
+  "surge": {
+    "title": "SURGE",
+    "anchor": "surge",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Encounter Card",
+      "Encounter Deck",
+      "Keywords",
+      "Reminder Text",
+      "Reveal"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "sustained-damage": {
+    "title": "SUSTAINED DAMAGE",
+    "anchor": "sustained-damage",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Ally",
+      "Damage",
+      "Hit Points",
+      "Identity",
+      "Maximum Hit Points",
+      "Remaining Hit Points",
+      "Villain"
+    ],
+    "referenced_by": [
+      "HIT POINTS",
+      "REMAINING HIT POINTS"
+    ],
+    "faqs": []
+  },
+  "swap": {
+    "title": "\u201cSWAP\u201d",
+    "anchor": "swap",
+    "file": "glossary/S.md",
+    "see_also": [
+      "Ability",
+      "Target"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "table-talk": {
+    "title": "TABLE TALK",
+    "anchor": "table-talk",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Keywords",
+      "Peril",
+      "Player"
+    ],
+    "referenced_by": [
+      "PERIL"
+    ],
+    "faqs": []
+  },
+  "target": {
+    "title": "TARGET",
+    "anchor": "target",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ability",
+      "Choose (Game Element)",
+      "Cost",
+      "Game Element",
+      "Labeled Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "ALTERATION EFFECT",
+      "ATTACK (ENEMY ACTIVATION)",
+      "ATTACK (PLAYER ABILITY TYPE)",
+      "ATTACKS AGAINST ALLIES",
+      "CHOOSE (GAME ELEMENT)",
+      "CHOOSE (OPTION)",
+      "CONFUSE, CONFUSED",
+      "\u201cFOR EACH\u201d",
+      "FORCED",
+      "GAME ELEMENT",
+      "IN PLAY AND OUT OF PLAY",
+      "INITIATING ABILITIES",
+      "\u201cOTHERWISE\u201d",
+      "PIERCING",
+      "PREVENT",
+      "STUN, STUNNED",
+      "\u201cSWAP\u201d",
+      "\u201cTHAT\u201d",
+      "VALID TARGET"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "target-threat": {
+    "title": "TARGET THREAT",
+    "anchor": "target-threat",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Main Scheme",
+      "Threat"
+    ],
+    "referenced_by": [
+      "MAIN SCHEME, MAIN SCHEME DECK"
+    ],
+    "faqs": []
+  },
+  "team-up": {
+    "title": "TEAM-UP",
+    "anchor": "team-up",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ally",
+      "Identity",
+      "In Play and Out of Play",
+      "Keywords",
+      "Play",
+      "Reminder Text",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "teamwork-trait": {
+    "title": "TEAMWORK ( TRAIT )",
+    "anchor": "teamwork-trait",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Activation",
+      "Engage",
+      "Keywords"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "temporary": {
+    "title": "TEMPORARY",
+    "anchor": "temporary",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Keywords"
+    ],
+    "referenced_by": [
+      "KEYWORDS"
+    ],
+    "faqs": []
+  },
+  "text-box": {
+    "title": "TEXT BOX",
+    "anchor": "text-box",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ability",
+      "Printed",
+      "Traits",
+      "Appendix III: Card Anatomy"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "that": {
+    "title": "\u201cTHAT\u201d",
+    "anchor": "that",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Alteration Effect",
+      "Target"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "then": {
+    "title": "\u201cTHEN\u201d",
+    "anchor": "then",
+    "file": "glossary/T.md",
+    "see_also": [],
+    "referenced_by": [
+      "ABILITY"
+    ],
+    "faqs": []
+  },
+  "this": {
+    "title": "\u201cTHIS\u201d",
+    "anchor": "this",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Alteration Effect"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "threat": {
+    "title": "THREAT",
+    "anchor": "threat",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Component Limitations",
+      "Scheme (Card Type)",
+      "Scheme (Enemy Activation)",
+      "Main Scheme",
+      "Side Scheme",
+      "Prevent",
+      "Thwart"
+    ],
+    "referenced_by": [
+      "ACCELERATION ICON ( [acceleration])",
+      "CRISIS ICON ( [crisis])",
+      "HINDER X",
+      "INCITE X",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "PREVENT",
+      "SIDE SCHEME",
+      "TARGET THREAT",
+      "THWART",
+      "VILLAIN PHASE"
+    ],
+    "faqs": []
+  },
+  "thw": {
+    "title": "THW",
+    "anchor": "thw",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Basic Power",
+      "Thwart"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "thwart": {
+    "title": "THWART",
+    "anchor": "thwart",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ally",
+      "Basic Power",
+      "Consequential Damage",
+      "Exhausted",
+      "Labeled Ability",
+      "Main Scheme",
+      "Modifiers",
+      "Side Scheme",
+      "Threat"
+    ],
+    "referenced_by": [
+      "BASIC POWER",
+      "CONSEQUENTIAL DAMAGE ( [consequential-damage])",
+      "LABELED ABILITY",
+      "PATROL",
+      "SIDE SCHEME",
+      "THREAT",
+      "THW"
+    ],
+    "faqs": []
+  },
+  "timing": {
+    "title": "TIMING",
+    "anchor": "timing",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ability",
+      "Interrupt",
+      "Response",
+      "\u201cWould\u201d"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "tough": {
+    "title": "TOUGH",
+    "anchor": "tough",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Damage",
+      "Overkill",
+      "Status Cards",
+      "Toughness"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "toughness": {
+    "title": "TOUGHNESS",
+    "anchor": "toughness",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ally",
+      "Enters Play",
+      "Identity",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Status Cards",
+      "Villain"
+    ],
+    "referenced_by": [
+      "DAMAGE",
+      "KEYWORDS",
+      "PIERCING",
+      "STATUS CARDS",
+      "TOUGH"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "traits": {
+    "title": "TRAITS",
+    "anchor": "traits",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Printed",
+      "Appendix III: Card  Anatomy"
+    ],
+    "referenced_by": [
+      "\u201cGAINS\u201d",
+      "\u201cLOSES\u201d",
+      "TEXT BOX"
+    ],
+    "faqs": []
+  },
+  "triggered-ability": {
+    "title": "TRIGGERED ABILITY",
+    "anchor": "triggered-ability",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Ability",
+      "Action",
+      "Forced",
+      "Interrupt",
+      "Resource Ability",
+      "Response",
+      "Setup (Triggered Ability)",
+      "Simultaneous Resolution",
+      "Special",
+      "Triggering Condition",
+      "When Defeated Abilities",
+      "When Revealed Abilities"
+    ],
+    "referenced_by": [
+      "ACTION",
+      "INTERRUPT",
+      "PERIL",
+      "PLAYER TURN",
+      "REPLACEMENT EFFECT",
+      "RESOURCE ABILITY",
+      "RESPONSE",
+      "SETUP (TRIGGERED ABILITY)",
+      "SIMULTANEOUS RESOLUTION",
+      "SPECIAL",
+      "STATUS CARDS",
+      "WHEN DEFEATED ABILITIES",
+      "WHEN REVEALED ABILITIES",
+      "\u201cWOULD\u201d"
+    ],
+    "faqs": []
+  },
+  "triggering-condition": {
+    "title": "TRIGGERING CONDITION",
+    "anchor": "triggering-condition",
+    "file": "glossary/T.md",
+    "see_also": [
+      "Interrupt",
+      "Response"
+    ],
+    "referenced_by": [
+      "RESPONSE",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "tuck": {
+    "title": "TUCK",
+    "anchor": "tuck",
+    "file": "glossary/T.md",
+    "see_also": [
+      "In Play and Out of Play"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "undefended": {
+    "title": "UNDEFENDED",
+    "anchor": "undefended",
+    "file": "glossary/U.md",
+    "see_also": [
+      "Attack (Enemy Activation)"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "unique-icon": {
+    "title": "UNIQUE ICON ( [unique])",
+    "anchor": "unique-icon",
+    "file": "glossary/U.md",
+    "see_also": [
+      "Ally",
+      "Enters Play",
+      "Identity",
+      "Minion",
+      "Player",
+      "Subtitle",
+      "Villain",
+      "Appendix I: Deck Customization"
+    ],
+    "referenced_by": [
+      "ICONS",
+      "SUBTITLE"
+    ],
+    "faqs": []
+  },
+  "upgrade": {
+    "title": "UPGRADE",
+    "anchor": "upgrade",
+    "file": "glossary/U.md",
+    "see_also": [
+      "Attach To",
+      "Card Types",
+      "Enters Play",
+      "Identity",
+      "In Play and Out of Play",
+      "Leaves Play",
+      "Ownership and Control",
+      "Player Card",
+      "Player\u2019s Play Area"
+    ],
+    "referenced_by": [
+      "ATTACH TO",
+      "CARD TYPES",
+      "PLAYER CARD",
+      "PLAYER TURN",
+      "PLAYER\u2019S PLAY AREA",
+      "YOU, YOUR"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "uses-x-type": {
+    "title": "USES (X \u201cTYPE\u201d)",
+    "anchor": "uses-x-type",
+    "file": "glossary/U.md",
+    "see_also": [
+      "All-Purpose Counter",
+      "Discard",
+      "Enters Play",
+      "Keywords",
+      "Leaves Play",
+      "Reminder Text"
+    ],
+    "referenced_by": [
+      "ALL-PURPOSE COUNTER",
+      "KEYWORDS",
+      "VICTORY X"
+    ],
+    "faqs": []
+  },
+  "valid-target": {
+    "title": "VALID TARGET",
+    "anchor": "valid-target",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Target"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "victory-display": {
+    "title": "VICTORY DISPLAY",
+    "anchor": "victory-display",
+    "file": "glossary/V.md",
+    "see_also": [
+      "In Play and Out of Play",
+      "Player",
+      "Victory X"
+    ],
+    "referenced_by": [
+      "FIND",
+      "IN PLAY AND OUT OF PLAY",
+      "LEAVES PLAY",
+      "VICTORY X"
+    ],
+    "faqs": []
+  },
+  "victory-x": {
+    "title": "VICTORY X",
+    "anchor": "victory-x",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Defeat",
+      "Discard Pile",
+      "Keywords",
+      "Reminder Text",
+      "Uses (X \u201cType\u201d)",
+      "Victory Display"
+    ],
+    "referenced_by": [
+      "DOUBLE-SIDED CARD",
+      "KEYWORDS",
+      "PLAYER SIDE SCHEME",
+      "VICTORY DISPLAY"
+    ],
+    "faqs": []
+  },
+  "villain-villain-deck": {
+    "title": "VILLAIN, VILLAIN DECK",
+    "anchor": "villain-villain-deck",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Activation",
+      "Attack (Enemy Activation)",
+      "Scheme (Enemy Activation)",
+      "Villain Defeat"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "villain-defeat": {
+    "title": "VILLAIN DEFEAT",
+    "anchor": "villain-defeat",
+    "file": "glossary/V.md",
+    "see_also": [
+      "All-Purpose Counter",
+      "Attachment",
+      "Damage",
+      "Defeat",
+      "Excess Damage",
+      "Hit Points",
+      "Status Cards",
+      "Villain"
+    ],
+    "referenced_by": [
+      "DEFEAT",
+      "HIT POINTS",
+      "VILLAIN, VILLAIN DECK"
+    ],
+    "faqs": []
+  },
+  "villain-phase": {
+    "title": "VILLAIN PHASE",
+    "anchor": "villain-phase",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Acceleration Icon",
+      "Activation",
+      "Attack (Enemy Activation)",
+      "Deal",
+      "Engage",
+      "Find",
+      "Hazard Icon",
+      "In Player Order",
+      "Main Scheme",
+      "Minion",
+      "Player",
+      "Reveal",
+      "Scheme (Enemy Activation)",
+      "Threat",
+      "Villain"
+    ],
+    "referenced_by": [
+      "ACCELERATION ICON ( [acceleration])",
+      "ACTIVATION",
+      "DEAL, DEAL AN ENCOUNTER CARD",
+      "HAZARD ICON ( [hazard])",
+      "MAIN SCHEME, MAIN SCHEME DECK",
+      "MINION",
+      "REVEAL",
+      "ROUND STRUCTURE",
+      "SCHEME (ENEMY ACTIVATION)"
+    ],
+    "faqs": []
+  },
+  "villain\u2019s-play-area": {
+    "title": "VILLAIN\u2019S PLAY AREA",
+    "anchor": "villain\u2019s-play-area",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Attachment",
+      "Discard Pile",
+      "Encounter Deck",
+      "Environment",
+      "In Play and Out of Play",
+      "Main Scheme",
+      "Minion",
+      "Obligation",
+      "Villain"
+    ],
+    "referenced_by": [
+      "OWNERSHIP AND CONTROL",
+      "PLAY AREA",
+      "SIDE SCHEME"
+    ],
+    "faqs": []
+  },
+  "villainous": {
+    "title": "VILLAINOUS",
+    "anchor": "villainous",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Activation",
+      "Attack (Enemy Activation)",
+      "Boost",
+      "Discard",
+      "Keywords",
+      "Minion",
+      "Reminder Text",
+      "Scheme (Enemy Activation)"
+    ],
+    "referenced_by": [
+      "ATTACK (ENEMY ACTIVATION)",
+      "BOOST , BOOST ICON ( [boost])",
+      "KEYWORDS",
+      "SCHEME (ENEMY ACTIVATION)"
+    ],
+    "faqs": []
+  },
+  "vulnerable": {
+    "title": "VULNERABLE",
+    "anchor": "vulnerable",
+    "file": "glossary/V.md",
+    "see_also": [
+      "Confuse",
+      "Steady",
+      "Stun"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "when-completed-abilities": {
+    "title": "WHEN COMPLETED ABILITIES",
+    "anchor": "when-completed-abilities",
+    "file": "glossary/W.md",
+    "see_also": [
+      "Main Scheme"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "when-defeated-abilities": {
+    "title": "WHEN DEFEATED ABILITIES",
+    "anchor": "when-defeated-abilities",
+    "file": "glossary/W.md",
+    "see_also": [
+      "Ally",
+      "Defeat",
+      "Main Scheme",
+      "Minion",
+      "Side Scheme",
+      "Triggered Ability",
+      "Villain"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "when-revealed-abilities": {
+    "title": "WHEN REVEALED ABILITIES",
+    "anchor": "when-revealed-abilities",
+    "file": "glossary/W.md",
+    "see_also": [
+      "Choose (Game Element)",
+      "Encounter Card",
+      "Main Scheme",
+      "Triggered Ability",
+      "Villain",
+      "Appendix II: Setup"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "TRIGGERED ABILITY"
+    ],
+    "faqs": []
+  },
+  "wild-resource": {
+    "title": "WILD RESOURCE ( [wild])",
+    "anchor": "wild-resource",
+    "file": "glossary/W.md",
+    "see_also": [
+      "Ability",
+      "Cost",
+      "Energy Resource",
+      "Icons",
+      "Mental Resource",
+      "Physical Resource",
+      "Resource"
+    ],
+    "referenced_by": [
+      "ENERGY RESOURCE ( [energy])",
+      "ICONS",
+      "MENTAL RESOURCE ( [mental])",
+      "PHYSICAL RESOURCE ( [physical])",
+      "RESOURCE",
+      "RESOURCE CARD"
+    ],
+    "faqs": []
+  },
+  "winning-the-game": {
+    "title": "WINNING THE GAME",
+    "anchor": "winning-the-game",
+    "file": "glossary/W.md",
+    "see_also": [],
+    "referenced_by": [
+      "PLAYER ELIMINATION"
+    ],
+    "faqs": []
+  },
+  "would": {
+    "title": "\u201cWOULD\u201d",
+    "anchor": "would",
+    "file": "glossary/W.md",
+    "see_also": [
+      "Interrupt",
+      "Replacement Effect",
+      "Triggered Ability"
+    ],
+    "referenced_by": [
+      "ABILITY",
+      "INTERRUPT",
+      "REPLACEMENT EFFECT",
+      "TIMING"
+    ],
+    "faqs": [
+      {
+        "group": "APPENDIX IV: FAQAPPENDIX IV: FAQ",
+        "question": "Q: Will Pepper Potts generate 2 resources if a \u201cThe "
+      }
+    ]
+  },
+  "x-value": {
+    "title": "\u201cX\u201d (VALUE)",
+    "anchor": "x-value",
+    "file": "glossary/X.md",
+    "see_also": [
+      "Non-Numerical Variable"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  },
+  "you-your": {
+    "title": "YOU, YOUR",
+    "anchor": "you-your",
+    "file": "glossary/Y.md",
+    "see_also": [
+      "Ability",
+      "Ally",
+      "Event",
+      "Identity",
+      "Player",
+      "Player Card",
+      "Player Deck",
+      "Player\u2019s Play Area",
+      "Resource",
+      "Support",
+      "Upgrade"
+    ],
+    "referenced_by": [],
+    "faqs": []
+  }
+}

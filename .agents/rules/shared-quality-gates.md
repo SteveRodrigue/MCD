@@ -56,10 +56,10 @@ Run the narrowest relevant executable check first, then widen verification to ma
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Agent or Markdown documentation only                       | Markdown/link checks available in the repository, structural instruction audit, and `git diff --check`                      |
 | Local UI or data change                                    | Focused tests plus applicable lint and typecheck                                                                            |
-| Shared engine, schema, taxonomy, or cross-cutting behavior | `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `npm run report:declarations` |
+| Shared engine, schema, taxonomy, or cross-cutting behavior | Iterative dev: `npm run format:check`, `npm run lint`, `npm run typecheck`, `rtk vitest run <targeted>`, and `npm run report:declarations`. Delivery: full test suite and `npm run build`. |
 | Supplemental declarations or related primitives            | Also run `npm run report:declarations` after affected data is updated                                                       |
 
-Report unavailable commands rather than inventing results.
+Report unavailable commands rather than inventing results. Compress shell outputs with `rtk` where applicable.
 
 ## Delivery authorization
 

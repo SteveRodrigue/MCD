@@ -51,9 +51,9 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
 ### Step 1: Ingest Upstream Card & Existing Supplemental Baseline
 
 - **Log Format Convention:** Format card identifiers as `[{card_name}] ({card_code})` (e.g. `[The Break-In! (1A)] (01097a)`). **Avoid using `#` prefix** before 6-digit hex-like card codes (e.g. `#01097a`), which triggers false CSS color swatch decorators in IDE log viewers.
-- Fetch the exact printed card text from `data/upstream/pack/{pack_code}.json`.
-- Do not paraphrase, summarize, or alter the upstream text during analysis.
-- **Ingest Existing Supplemental Baseline (If Present):** If the card already exists in `src/data/supplemental/pack/{pack_code}.json`, load it strictly as a comparison baseline. **CRITICAL:** Do **NOT** assume the existing supplemental data is correct or complete. Treat it strictly as a snapshot that may be outdated or flawed relative to current specifications.
+- **Fast Targeted Extraction:** Run `npm run card:get -- <card_code_or_name>` to instantly fetch upstream and supplemental data for that single card without reading 3,000-line pack JSON files.
+- Fetch the exact printed card text from upstream. Do not paraphrase, summarize, or alter upstream text during analysis.
+- **Ingest Existing Supplemental Baseline (If Present):** Load existing supplemental data strictly as a comparison baseline. **CRITICAL:** Do **NOT** assume the existing supplemental data is correct or complete. Treat it strictly as a snapshot that may be outdated or flawed relative to current specifications.
 
 ### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
 

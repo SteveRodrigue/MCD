@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Align Villain Phase End Ordering & Rule-Step Labels with RR v1.8 ([Issue #145](https://github.com/SteveRodrigue/MCD/issues/145))**
+  - **First Player Token Rotation & Trigger Ordering:**
+    - Separated Step 5 (Pass First Player Token) and Step 6 (End of Villain Phase & Round Upkeep) in `round-upkeep.ts` and `villain-phase.ts`.
+    - Token passes clockwise in Step 5 (`step5_passFirstPlayerToken`) before end-of-phase/round triggers resolve.
+    - `VILLAIN_PHASE_ENDED` and `ROUND_ENDED` lifecycle triggers now dispatch in Step 6b in clockwise player turn order starting from the newly designated First Player.
+  - **Phase Duration Effects & Limits Expiration:**
+    - In Step 6a (`step6_endVillainPhaseAndRound`), active stat modifiers and cost reductions with `duration: 'PHASE'` or `'ROUND'`, and once-per-phase/round limits (`usedAbilitiesThisPhase`, `usedAbilitiesThisRound`), are expired/reset before Step 6b triggers fire.
+  - **Canonical Step Numbering & UI Stepper Labels:**
+    - Exported canonical step functions `step3_dealEncounterCards` and `step4_revealEncounterCards` alongside backward-compatible aliases `step4_dealEncounterCards` and `step5_revealEncounterCards`.
+    - Updated `VillainPhaseStepper.tsx` badge categories to `3. DEAL CARDS`, `4. REVEAL`, and `5. FIRST PLAYER`, aligning with RR v1.8 (p. 47).
+
 - **Changed (Developer Tooling): Durable Vite Dev-Server Diagnostics**
   - Routed `npm run dev` through `scripts/dev-server-with-log.ts`, which mirrors Vite startup and runtime output to the terminal and a timestamped local log under `logs/dev-server/` while preserving Vite's exit code.
   - Retains the newest 10 dev-server logs, making startup failures such as the strict port-3000 collision available after the terminal closes.

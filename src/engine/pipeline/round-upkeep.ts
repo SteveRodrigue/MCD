@@ -4,30 +4,77 @@ import { startPlayerPhase } from './player-phase';
 import { discardHostAttachmentsAndTuckedCards } from '../effects';
 
 /**
- * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32)
- * 1. Dispatches ROUND_ENDED triggers.
- * 2. Discards allies with round-end forced discard abilities (e.g. Nick Fury 01084).
- * 3. Readies all player cards (identities, allies, tableau upgrades/supports).
- * 4. Resets once-per-round limits and form change flags.
- * 5. Refills player hands up to effective hand size, handling player deck recycling.
- * 6. Passes the First Player token clockwise.
- * 7. Increments roundNumber, dispatches ROUND_BEGAN, and starts the new Player Phase.
+ * Step 5: Pass First Player Token (RR v1.8 p. 47)
+ * Passes the first player token to the next clockwise player.
  */
-export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState {
+export function step5_passFirstPlayerToken(state: GameState): GameState {
   state.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
-
-  // 1. Dispatch Round Ended triggers across players
-  for (const player of state.players) {
-    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
-  }
-
-  // 2. Pass First Player Token
   state.firstPlayerIndex = (state.firstPlayerIndex + 1) % state.players.length;
   state.activePlayerIndex = state.firstPlayerIndex;
 
-  // 3. Ready all player cards & reset round flags
+  state.log.push({
+    id: `log_${Date.now()}`,
+    timestamp: Date.now(),
+    key: 'first_player.passed',
+    params: { player: state.players[state.firstPlayerIndex]?.name },
+    onomatopoeia: 'TOKEN PASS!',
+  });
+
+  return state;
+}
+
+/**
+ * Step 6: End of Villain Phase and Round (RR v1.8 p. 47)
+ * 6a. Any effects that last “until the end of the [villain] phase” or “until the end of the round” end.
+ *     Reset phase & round limits (usedAbilitiesThisPhase, usedAbilitiesThisRound, form change flags).
+ * 6b. Resolve any “when/after the [villain] phase ends” (VILLAIN_PHASE_ENDED) or “when/after the round ends”
+ *     (ROUND_ENDED) effects in player turn order starting from the new First Player. Discard round-end allies.
+ * Round Transition: Increment roundNumber, dispatch ROUND_BEGAN in player turn order, and call startPlayerPhase.
+ */
+export function step6_endVillainPhaseAndRound(state: GameState): GameState {
+  // Step 6a: Expire PHASE & ROUND duration effects and limits across all players
   for (const player of state.players) {
-    // Discard allies with ROUND_ENDED / DISCARD_SELF abilities (e.g. Nick Fury - ADR-0018)
+    player.basicChangeFormUsedThisRound = false;
+    player.formChangedThisRound = false;
+    player.recoveryUsedThisRound = false;
+    player.usedAbilitiesThisRound = {};
+    player.usedAbilitiesThisPhase = {};
+
+    player.activeCostReductions = (player.activeCostReductions || []).filter(
+      (r) => r.duration !== 'ROUND' && r.duration !== 'PHASE',
+    );
+    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+
+    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
+      (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
+    );
+    for (const ally of player.allies) {
+      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
+      );
+      if (ally.tokens) {
+        delete (ally.tokens as any).thwBonus;
+        delete (ally.tokens as any).atkBonus;
+      }
+    }
+  }
+
+  // Step 6b: Dispatch VILLAIN_PHASE_ENDED triggers in player turn order starting from firstPlayerIndex
+  for (let i = 0; i < state.players.length; i++) {
+    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
+    const player = state.players[playerIdx];
+    dispatchTrigger(state, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
+  }
+
+  // Step 6b: Dispatch ROUND_ENDED triggers in player turn order starting from firstPlayerIndex
+  for (let i = 0; i < state.players.length; i++) {
+    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
+    const player = state.players[playerIdx];
+    dispatchTrigger(state, 'ROUND_ENDED', { targetPlayerId: player.id });
+  }
+
+  // Step 6b: Discard allies with round-end forced discard abilities (e.g. Nick Fury 01084 - ADR-0018)
+  for (const player of state.players) {
     const endRoundAllies = player.allies.filter((a) => {
       const abilities = a.card.enrichment?.abilities || [];
       return abilities.some(
@@ -57,27 +104,9 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
         });
       }
     }
-
-    // Reset round-level ability and form change limits
-    player.basicChangeFormUsedThisRound = false;
-    player.formChangedThisRound = false;
-    player.recoveryUsedThisRound = false;
-    player.usedAbilitiesThisRound = {};
-    player.activeCostReductions = (player.activeCostReductions || []).filter(
-      (r) => r.duration !== 'ROUND',
-    );
-    player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-    player.activeStatModifiers = (player.activeStatModifiers || []).filter(
-      (m) => m.duration !== 'ROUND',
-    );
-    for (const ally of player.allies) {
-      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
-        (m) => m.duration !== 'ROUND',
-      );
-    }
   }
 
-  // 5. Increment Round Number
+  // Round transition: Increment Round Number
   state.roundNumber += 1;
 
   state.log.push({
@@ -88,11 +117,22 @@ export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState
     onomatopoeia: 'NEW ROUND!',
   });
 
-  // 6. Dispatch Round Began triggers
-  for (const player of state.players) {
+  // Dispatch Round Began triggers in player turn order
+  for (let i = 0; i < state.players.length; i++) {
+    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
+    const player = state.players[playerIdx];
     dispatchTrigger(state, 'ROUND_BEGAN', { targetPlayerId: player.id });
   }
 
-  // 7. Transition to and initialize the new Player Phase
+  // Transition to and initialize the new Player Phase
   return startPlayerPhase(state);
+}
+
+/**
+ * Step 6: Pass First Player Token & End of Round Upkeep (RR v1.8 p. 32, p. 47)
+ * Composite wrapper retaining backward compatibility. Sequentially calls Step 5 followed by Step 6.
+ */
+export function step6_passFirstPlayerAndRoundUpkeep(state: GameState): GameState {
+  state = step5_passFirstPlayerToken(state);
+  return step6_endVillainPhaseAndRound(state);
 }

@@ -28,6 +28,10 @@ and the post-task procedure is in
 
 For source, test, supplemental-data, dependency, or configuration changes, create or update a reviewable implementation plan with rules/spec analysis, file changes, tests, and open decisions. State UI/Card Editor impact explicitly when relevant, then stop for user approval before implementation. The plan may use the host's user-facing artifact location or a repository-relative plan file; do not overwrite an unrelated existing plan.
 
+## Artifact presentation
+
+When creating or updating an artifact (plan, audit, report), provide a 2–3 sentence high-level summary and link in chat. Do not duplicate or paste the artifact markdown into the response.
+
 ## Delivery
 
 Commit and push only happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this"); the agent never initiates delivery on its own. Once requested, the delivery workflow stages the reviewed file set, runs quality gates, states the commit message, and proceeds through commit and push directly without a separate mid-flow approval round-trip, reporting the verification results and any issue-state discrepancies afterward.

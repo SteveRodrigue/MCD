@@ -330,6 +330,96 @@ export function processHostDefeated(
 }
 
 /**
+ * Defeats a side scheme (RR v1.8 p. 9, 25, 30, ADR-0034, ADR-0058).
+ * Slices it from state.sideSchemes, processes host attachments/tucked cards,
+ * dispatches DEFEATED and SCHEME_DEFEATED triggers, executes declared 'When Defeated'
+ * abilities, routes to Victory Display or the appropriate discard pile, and logs the event.
+ */
+export function defeatSideScheme(
+  state: GameState,
+  sideSchemeInstanceId: string,
+  defeatingPlayerId?: string,
+): boolean {
+  const schemeIndex = (state.sideSchemes || []).findIndex(
+    (s) => s.instanceId === sideSchemeInstanceId || s.card.code === sideSchemeInstanceId,
+  );
+  if (schemeIndex === -1) {
+    return false;
+  }
+
+  const sideScheme = state.sideSchemes[schemeIndex];
+  state.sideSchemes.splice(schemeIndex, 1);
+
+  const defeatedInstance: CardInstance = {
+    instanceId: sideScheme.instanceId,
+    card: sideScheme.card,
+    ownerId: sideScheme.ownerId,
+    attachments: sideScheme.attachments,
+    cardsUnderneath: sideScheme.cardsUnderneath,
+  };
+
+  const player = defeatingPlayerId
+    ? state.players.find((p) => p.id === defeatingPlayerId)
+    : (sideScheme.ownerId ? state.players.find((p) => p.id === sideScheme.ownerId) : undefined) ||
+      state.players[0];
+  const targetPlayerId = player?.id || state.players[0]?.id || 'p1';
+
+  // 1. Process host attachments and tucked cards
+  processHostDefeated(state, defeatedInstance, { player });
+
+  // 2. Dispatch canonical defeat triggers
+  const defeatContext = {
+    targetPlayerId,
+    sourceInstanceId: defeatedInstance.instanceId,
+    entityType: 'SCHEME' as const,
+  };
+  dispatchTrigger(state, 'DEFEATED', defeatContext);
+  dispatchTrigger(state, 'SCHEME_DEFEATED', defeatContext);
+
+  // 3. Resolve 'When Defeated' reward abilities declared on the scheme itself
+  const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
+  for (const ability of defeatedAbilities) {
+    const trigger = ability.trigger as string | undefined;
+    const timing = ability.timing as string | undefined;
+    if (
+      (trigger === 'DEFEATED' || trigger === 'WHEN_DEFEATED') &&
+      (timing === 'FORCED_RESPONSE' ||
+        timing === 'RESPONSE' ||
+        timing === 'WHEN_DEFEATED' ||
+        !timing)
+    ) {
+      executeEffect(state, ability, {
+        playerId: sideScheme.ownerId || targetPlayerId,
+        sourceCardInstance: defeatedInstance,
+      });
+    }
+  }
+
+  // 4. Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
+  const destinationPile = sideScheme.ownerId
+    ? state.players.find((p) => p.id === sideScheme.ownerId)?.discard || state.players[0]?.discard
+    : state.encounterDiscard;
+  moveDefeatedCardToPile(state, defeatedInstance, destinationPile);
+
+  // 5. Comic event log
+  state.log.push({
+    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    timestamp: Date.now(),
+    round: state.roundNumber,
+    phase: state.phase,
+    category: 'scheme',
+    key: 'scheme.defeated',
+    params: {
+      scheme: sideScheme.card.name,
+      player: player?.name || 'Player',
+    },
+    onomatopoeia: 'SCHEME DEFEATED!',
+  });
+
+  return true;
+}
+
+/**
  * Compiles eligible and ineligible distribution targets with dynamic capacity limits (ADR-0064).
  */
 export function compileDistributionTargets(
@@ -803,6 +893,7 @@ export function executeSequence(
     success: true,
     mutatedState: anyStepMutated,
     value: prevResult?.value,
+    conditionMet: prevResult?.conditionMet,
     onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE RESOLVED!',
   };
 }
@@ -2709,6 +2800,23 @@ export function executeStep(
         removed += rem;
         targetSchemeName = scheme.card?.name || 'Scheme';
         remainingThreat = scheme.threat;
+
+        if (remainingThreat === 0) {
+          dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO' as any, {
+            targetPlayerId: player.id,
+            sourceInstanceId: st.id,
+            entityType: 'SCHEME',
+            threatAmount: rem,
+          });
+        }
+
+        const isSideScheme =
+          st.entityType === 'side_scheme' ||
+          (state.sideSchemes || []).some((s) => s.instanceId === st.id || s.card.code === st.id);
+
+        if (isSideScheme && scheme.threat <= 0) {
+          defeatSideScheme(state, st.id, player.id);
+        }
       }
 
       const onomatopoeia = `-${removed} THREAT!`;
@@ -2726,15 +2834,6 @@ export function executeStep(
         },
         onomatopoeia,
       });
-
-      if (removed > 0 && remainingThreat === 0) {
-        dispatchTrigger(state, 'SCHEME_DEFEATED', {
-          targetPlayerId: player.id,
-          sourceInstanceId: context.targetInstanceId || state.mainScheme.instanceId,
-          entityType: 'SCHEME',
-          threatAmount: removed,
-        });
-      }
 
       const conditionMet = step.condition === 'SCHEME_EMPTY' ? remainingThreat === 0 : undefined;
 

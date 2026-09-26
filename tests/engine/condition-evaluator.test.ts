@@ -178,7 +178,9 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res = executeEffect(state, removeSideThreat as any, { playerId: 'p1' });
       expect(res.success).toBe(true);
-      expect(state.sideSchemes[0].threat).toBe(0);
+      // Side scheme with 0 threat is defeated and discarded (RR v1.8 p. 9, 25)
+      expect(state.sideSchemes.length).toBe(0);
+      expect(state.encounterDiscard.some((c) => c.instanceId === 'ss1')).toBe(true);
 
       const zeroThreatLog = state.log.find(
         (l) => l.key === 'card.effect.removeThreat' && l.params?.remainingThreat === 0,

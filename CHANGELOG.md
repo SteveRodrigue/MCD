@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Canonical Side Scheme Defeat & Discard Pipeline ([RR v1.8 p. 9, 25, 30](references/rules/glossary/S.md#side-scheme), [Issue #149](https://github.com/SteveRodrigue/MCD/issues/149))**
+  - **Canonical `defeatSideScheme` Primitive:**
+    - Implemented and exported `defeatSideScheme(state, sideSchemeInstanceId, defeatingPlayerId)` in `src/engine/effects/index.ts`, creating a single source of truth for side scheme defeat and discard.
+    - Slices defeated scheme from `state.sideSchemes`, cleans host attachments and tucked cards using `processHostDefeated`, dispatches canonical `DEFEATED` and `SCHEME_DEFEATED` triggers, resolves declared `When Defeated` abilities, and routes the card to the permanent Victory Display (if `Victory X` keyword present) or appropriate discard pile (`player.discard` for player side schemes with `ownerId`, `state.encounterDiscard` for encounter schemes).
+  - **Zero-Threat & Dual-Trigger Integration:**
+    - In `src/engine/effects/index.ts` (`case 'REMOVE_THREAT'`), threat reduction reaching 0 now dispatches `SCHEME_THREAT_REDUCED_TO_ZERO` and automatically triggers `defeatSideScheme` when targeting a side scheme.
+    - Preserved `conditionMet = remainingThreat === 0` for `SCHEME_EMPTY` step condition compatibility (*Clear the Area*, etc.) and propagated it through `executeSequence`.
+    - Main schemes reaching 0 threat dispatch `SCHEME_THREAT_REDUCED_TO_ZERO` without triggering defeat or leaves-play logic.
+    - Integrated `defeatSideScheme` in `wakanda-forever.ts` for Black Panther tactical threat removal.
+    - Deduplicated inline splice and routing logic in `action-dispatcher.ts` across `BASIC_THWART` (hero), `ALLY_THWART`, and `RESOLVE_DECISION_PROMPT` (`THREAT_REMOVAL`).
+  - **Automated Verification:**
+    - Added comprehensive unit and regression test suite in `tests/engine/side-scheme-defeat.test.ts` (5 tests) verifying card effect threat removal (*The Psyche-Magnitron* `01176`), Wakanda Forever threat reduction, When Defeated abilities, Victory display routing, and main scheme 0-threat non-defeat invariants.
+
+
 - **Fix (Engine & UI): Align Villain Phase End Ordering & Rule-Step Labels with RR v1.8 ([Issue #145](https://github.com/SteveRodrigue/MCD/issues/145))**
   - **First Player Token Rotation & Trigger Ordering:**
     - Separated Step 5 (Pass First Player Token) and Step 6 (End of Villain Phase & Round Upkeep) in `round-upkeep.ts` and `villain-phase.ts`.

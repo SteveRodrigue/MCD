@@ -38,7 +38,12 @@ import {
   checkAndDiscardZeroCounterCard,
   getApplicableCostReductions,
 } from './cost-engine';
-import { executeEffect, moveDefeatedCardToPile, processHostDefeated } from '../effects';
+import {
+  executeEffect,
+  moveDefeatedCardToPile,
+  processHostDefeated,
+  defeatSideScheme,
+} from '../effects';
 import {
   advanceVillainPhaseStep,
   continueVillainPhase,
@@ -886,38 +891,7 @@ export function dispatchAction(
           sideScheme.threat -= removed;
 
           if (sideScheme.threat <= 0) {
-            nextState.sideSchemes.splice(schemeIndex, 1);
-
-            const defeatedInstance: CardInstance = {
-              instanceId: sideScheme.instanceId,
-              card: sideScheme.card,
-            };
-            dispatchCanonicalDefeatTriggers(
-              nextState,
-              player.id,
-              defeatedInstance.instanceId,
-              'SCHEME',
-            );
-
-            // Resolve 'When Defeated' reward abilities declared on the scheme itself
-            const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
-            for (const ability of defeatedAbilities) {
-              if (
-                ability.trigger === 'DEFEATED' &&
-                (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE')
-              ) {
-                executeEffect(nextState, ability, {
-                  playerId: sideScheme.ownerId || player.id,
-                  sourceCardInstance: defeatedInstance,
-                });
-              }
-            }
-
-            // Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
-            const destinationPile = sideScheme.ownerId
-              ? getPlayer(nextState, sideScheme.ownerId)!.discard
-              : nextState.encounterDiscard;
-            moveDefeatedCardToPile(nextState, defeatedInstance, destinationPile);
+            defeatSideScheme(nextState, sideScheme.instanceId, player.id);
           }
         }
       }
@@ -1049,38 +1023,7 @@ export function dispatchAction(
         sideScheme.threat -= removed;
 
         if (sideScheme.threat <= 0) {
-          nextState.sideSchemes.splice(schemeIndex, 1);
-
-          const defeatedInstance: CardInstance = {
-            instanceId: sideScheme.instanceId,
-            card: sideScheme.card,
-          };
-          dispatchCanonicalDefeatTriggers(
-            nextState,
-            player.id,
-            defeatedInstance.instanceId,
-            'SCHEME',
-          );
-
-          // Resolve 'When Defeated' reward abilities declared on the scheme itself (e.g. Highway Robbery 01166)
-          const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
-          for (const ability of defeatedAbilities) {
-            if (
-              ability.trigger === 'DEFEATED' &&
-              (ability.timing === 'FORCED_RESPONSE' || ability.timing === 'RESPONSE')
-            ) {
-              executeEffect(nextState, ability, {
-                playerId: sideScheme.ownerId || player.id,
-                sourceCardInstance: defeatedInstance,
-              });
-            }
-          }
-
-          // Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
-          const destinationPile = sideScheme.ownerId
-            ? getPlayer(nextState, sideScheme.ownerId)!.discard
-            : nextState.encounterDiscard;
-          moveDefeatedCardToPile(nextState, defeatedInstance, destinationPile);
+          defeatSideScheme(nextState, sideScheme.instanceId, player.id);
 
           dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
 
@@ -2307,14 +2250,7 @@ export function dispatchAction(
                 const side = poppedState.sideSchemes![sideIdx];
                 side.threat = Math.max(0, (side.threat || 0) - amount);
                 if (side.threat <= 0) {
-                  poppedState.sideSchemes!.splice(sideIdx, 1);
-                  dispatchCanonicalDefeatTriggers(
-                    poppedState,
-                    player.id,
-                    side.instanceId,
-                    'SCHEME',
-                  );
-                  poppedState.encounterDiscard.push(side);
+                  defeatSideScheme(poppedState, side.instanceId, player.id);
                 }
               }
             }

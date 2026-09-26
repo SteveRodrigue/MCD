@@ -42,27 +42,26 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    S1["Step 1: Place Threat<br/>step1_placeThreat<br/>(escalation + acceleration tokens)"] --> S2["Step 2 & 3: Villain + Minion Activations<br/>step2_villainAndMinionActivations<br/>(interleaved per player, turn order)"]
-    S2 --> S4["Step 4: Deal Encounter Cards<br/>step4_dealEncounterCards<br/>(1 per player + Hazard icons, sequential)"]
-    S4 --> S5["Step 5: Reveal Encounter Cards<br/>step5_revealEncounterCards<br/>(WHEN_REVEALED / TREACHERY_REVEALED)"]
-    S5 --> S6["Step 6: Round Upkeep<br/>step6_passFirstPlayerAndRoundUpkeep<br/>(ready cards, draw to hand size, pass token)"]
+    S1["Step 1: Place Threat<br/>step1_placeThreat<br/>(escalation + acceleration tokens)"] --> S2["Step 2: Enemies Activate<br/>step2_villainAndMinionActivations<br/>(interleaved 2a villain + 2b minions per player)"]
+    S2 --> S3["Step 3: Deal Encounter Cards<br/>step3_dealEncounterCards<br/>(1 per player + Hazard icons, sequential)"]
+    S3 --> S4["Step 4: Reveal Encounter Cards<br/>step4_revealEncounterCards<br/>(WHEN_REVEALED / TREACHERY_REVEALED)"]
+    S4 --> S5["Step 5: Pass First Player Token<br/>step5_passFirstPlayerToken<br/>(rotate first player token clockwise)"]
+    S5 --> S6["Step 6: End of Phase & Round Upkeep<br/>step6_endVillainPhaseAndRound<br/>(6a expire phase/round effects, 6b phase/round ended triggers)"]
     S6 -->|roundNumber++| NextRound(["Next Player Phase"])
 ```
 
 > [!NOTE]
-> RR v1.8 p. 22 describes Steps 2 and 3 as a single interleaved player-by-player loop
-> (villain activates against a player, then each minion engaged with that player activates),
-> so the engine implements both as **one** function, `step2_villainAndMinionActivations`
-> (aliased as `step2_villainActivations` for backward compatibility). A standalone
-> `step3_minionActivations` helper and the `MINION_ACTIVATIONS` enum member previously
-> existed as an unreachable legacy path (the real runtime orchestrator never called them —
-> see proof below) and have since been **removed**; the corresponding standalone test block
-> was deleted since the same minion attack/scheme behavior is already covered by the
-> interleaved-order assertions in `step2_villainActivations`'s test suite.
+> RR v1.8 p. 47 describes Step 2 as "Enemies Activate" containing an interleaved player-by-player loop
+> (2a the villain activates against a player, then 2b each minion engaged with that player activates against them),
+> implemented by `step2_villainAndMinionActivations` (aliased as `step2_villainActivations` for backward compatibility).
+> Encounter cards are dealt in **Step 3** (`step3_dealEncounterCards`, aliased as `step4_dealEncounterCards`) and
+> revealed in **Step 4** (`step4_revealEncounterCards`, aliased as `step5_revealEncounterCards`).
+> In **Step 5**, the first player token passes clockwise (`step5_passFirstPlayerToken`).
+> In **Step 6** (`step6_endVillainPhaseAndRound`, composite wrapper `step6_passFirstPlayerAndRoundUpkeep`):
+> - **Step 6a:** Effects lasting until the end of the phase/round expire, and once-per-phase/round limits reset.
+> - **Step 6b:** Triggers for `VILLAIN_PHASE_ENDED` and `ROUND_ENDED` resolve in turn order starting with the newly designated first player, followed by round transition to the next Player Phase.
 >
-> Proof (retained for historical context): the real runtime orchestrator,
-> `continueVillainPhase` in `villain-phase.ts`, calls `step2_villainAndMinionActivations`
-> then jumps straight to `step4_dealEncounterCards`:
+> Runtime orchestrator in `continueVillainPhase` (`villain-phase.ts`):
 >
 > ```ts
 > // Step 2: Activations
@@ -71,13 +70,23 @@ flowchart TD
 >   ...
 >   state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
 > }
-> // Step 4: Deal Encounter Cards
+> // Step 3: Deal Encounter Cards
 > if (state.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
->   state = step4_dealEncounterCards(state);
+>   state = step3_dealEncounterCards(state);
 >   ...
+>   state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+> }
+> // Step 4: Reveal Encounter Cards
+> if (state.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
+>   state = step4_revealEncounterCards(state);
+>   ...
+> }
+> // Step 5 & 6: Pass First Player & Round Upkeep
+> state = step5_passFirstPlayerToken(state);
+> return step6_endVillainPhaseAndRound(state);
 > ```
 
-### Step 2/3 detail — per-player interleaving
+### Step 2 detail — per-player interleaving
 
 ```mermaid
 flowchart LR
@@ -96,7 +105,7 @@ flowchart LR
 
 > [!NOTE]
 > A `WHEN_REVEALED` ability on an encounter card you're authoring always resolves inside
-> **Step 5**, and never earlier — treachery text that reads "when revealed" should never be
+> **Step 4**, and never earlier — treachery text that reads "when revealed" should never be
 > modeled as a `RESPONSE`/`INTERRUPT`.
 
 ---

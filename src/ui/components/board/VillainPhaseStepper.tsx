@@ -63,15 +63,15 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
       }
       break;
     case VillainPhaseStep.DEAL_ENCOUNTER_CARDS:
-      categoryLabel = '4. DEAL CARDS';
+      categoryLabel = '3. DEAL CARDS';
       categoryColor = 'bg-sky-500 text-white';
       break;
     case VillainPhaseStep.REVEAL_ENCOUNTER_CARDS:
-      categoryLabel = '5. REVEAL';
+      categoryLabel = '4. REVEAL';
       categoryColor = 'bg-purple-600 text-white';
       break;
     case VillainPhaseStep.PASS_FIRST_PLAYER:
-      categoryLabel = '6. UPKEEP';
+      categoryLabel = '5. FIRST PLAYER';
       categoryColor = 'bg-emerald-500 text-white';
       break;
   }
@@ -87,7 +87,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
           ? 'Encounter cards are dealt to players.'
           : currentStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS
             ? 'Encounter cards are revealed and resolved.'
-            : 'Round upkeep and token pass.');
+            : 'Pass first player token and round upkeep.');
 
   const isPromptOpen = Boolean(gameState.pendingDecisionPrompt);
 

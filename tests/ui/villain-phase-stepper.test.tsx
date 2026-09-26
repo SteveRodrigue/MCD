@@ -73,6 +73,51 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       ).toBeDefined();
     });
 
+    it('renders category badges aligned with RR v1.8: 3. DEAL CARDS, 4. REVEAL, and 5. FIRST PLAYER (Issue #145)', () => {
+      // Step 3: Deal Cards
+      const dealState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+      };
+      const { rerender } = render(
+        <VillainPhaseStepper
+          gameState={dealState as GameState}
+          pacing="manual"
+          onNextStep={vi.fn()}
+        />,
+      );
+      expect(screen.getByText('3. DEAL CARDS')).toBeDefined();
+
+      // Step 4: Reveal
+      const revealState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.REVEAL_ENCOUNTER_CARDS,
+      };
+      rerender(
+        <VillainPhaseStepper
+          gameState={revealState as GameState}
+          pacing="manual"
+          onNextStep={vi.fn()}
+        />,
+      );
+      expect(screen.getByText('4. REVEAL')).toBeDefined();
+
+      // Step 5: First Player
+      const passState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.PASS_FIRST_PLAYER,
+      };
+      rerender(
+        <VillainPhaseStepper
+          gameState={passState as GameState}
+          pacing="manual"
+          onNextStep={vi.fn()}
+        />,
+      );
+      expect(screen.getByText('5. FIRST PLAYER')).toBeDefined();
+      expect(screen.getByText('Pass first player token and round upkeep.')).toBeDefined();
+    });
+
     it('triggers onNextStep when Next Step button is clicked', () => {
       const onNextStep = vi.fn();
 

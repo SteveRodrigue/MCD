@@ -23,8 +23,16 @@ import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
 export { drawEncounterCard };
-import { step6_passFirstPlayerAndRoundUpkeep } from './round-upkeep';
-export { step6_passFirstPlayerAndRoundUpkeep };
+import {
+  step5_passFirstPlayerToken,
+  step6_endVillainPhaseAndRound,
+  step6_passFirstPlayerAndRoundUpkeep,
+} from './round-upkeep';
+export {
+  step5_passFirstPlayerToken,
+  step6_endVillainPhaseAndRound,
+  step6_passFirstPlayerAndRoundUpkeep,
+};
 
 /**
  * Step 1: Place Threat on Main Scheme (RR v1.8 p. 31)
@@ -298,11 +306,11 @@ export function step2_villainAndMinionActivations(
 export const step2_villainActivations = step2_villainAndMinionActivations;
 
 /**
- * Step 4: Deal Encounter Cards (RR v1.8 p. 11, p. 22, p. 32 & FFG Heroic Mode)
+ * Step 3: Deal Encounter Cards (RR v1.8 p. 11, p. 22, p. 47 & FFG Heroic Mode)
  * 1. Pass 1 (Base & Heroic): Deal 1 + heroicLevel encounter cards to each player in player order, starting with First Player.
  * 2. Pass 2 (Hazard Icons): Deal 1 additional encounter card for each active Hazard icon sequentially in player order starting with First Player.
  */
-export function step4_dealEncounterCards(state: GameState): GameState {
+export function step3_dealEncounterCards(state: GameState): GameState {
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
 
@@ -354,14 +362,17 @@ export function step4_dealEncounterCards(state: GameState): GameState {
   return state;
 }
 
+// Backward-compatible alias for Step 3
+export const step4_dealEncounterCards = step3_dealEncounterCards;
+
 export interface RevealEncounterOptions {
   acceptOptionalTriggers?: boolean;
 }
 
 /**
- * Step 5: Reveal and Resolve Encounter Cards (RR v1.8 p. 32)
+ * Step 4: Reveal and Resolve Encounter Cards (RR v1.8 p. 32, p. 47)
  */
-export function step5_revealEncounterCards(
+export function step4_revealEncounterCards(
   state: GameState,
   options?: RevealEncounterOptions,
 ): GameState {
@@ -428,6 +439,9 @@ export function step5_revealEncounterCards(
 
   return state;
 }
+
+// Backward-compatible alias for Step 4
+export const step5_revealEncounterCards = step4_revealEncounterCards;
 
 /**
  * Resolves the effects and final destination of an active encounter card
@@ -915,12 +929,10 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
     nextState.villainPhaseStep = VillainPhaseStep.PASS_FIRST_PLAYER;
   }
 
-  // Case 5: PASS_FIRST_PLAYER & Round Upkeep
+  // Case 5: PASS_FIRST_PLAYER & Round Upkeep (RR v1.8 p. 47 Steps 5 and 6)
   if (nextState.villainPhaseStep === VillainPhaseStep.PASS_FIRST_PLAYER) {
-    for (const player of nextState.players) {
-      dispatchTrigger(nextState, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
-    }
-    const finalState = step6_passFirstPlayerAndRoundUpkeep(nextState);
+    let finalState = step5_passFirstPlayerToken(nextState);
+    finalState = step6_endVillainPhaseAndRound(finalState);
     finalState.villainPhaseStepEvent = {
       type: 'PASS_FIRST_PLAYER',
       step: VillainPhaseStep.PASS_FIRST_PLAYER,
@@ -950,25 +962,21 @@ export function continueVillainPhase(state: GameState, options?: CombatOptions):
     state.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
   }
 
-  // Step 4: Deal Encounter Cards
+  // Step 3: Deal Encounter Cards
   if (state.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
-    state = step4_dealEncounterCards(state);
+    state = step3_dealEncounterCards(state);
     if (state.winner) return state;
     state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
   }
 
-  // Step 5: Reveal Encounter Cards
+  // Step 4: Reveal Encounter Cards
   if (state.villainPhaseStep === VillainPhaseStep.REVEAL_ENCOUNTER_CARDS) {
-    state = step5_revealEncounterCards(state);
+    state = step4_revealEncounterCards(state);
     if (state.pendingDecisionPrompt || state.winner) return state;
   }
 
-  // Dispatch Villain Phase Ended triggers across all players
-  for (const player of state.players) {
-    dispatchTrigger(state, 'VILLAIN_PHASE_ENDED', { targetPlayerId: player.id });
-  }
-
-  return step6_passFirstPlayerAndRoundUpkeep(state);
+  state = step5_passFirstPlayerToken(state);
+  return step6_endVillainPhaseAndRound(state);
 }
 
 /**

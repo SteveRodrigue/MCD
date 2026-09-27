@@ -44,12 +44,21 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
 
   // Adjust position to stay on screen
   const menuWidth = 240;
-  const menuHeight = 200;
+  const menuHeight = 240;
   const adjustedX = Math.min(position.x, window.innerWidth - menuWidth - 10);
   const adjustedY = Math.min(position.y, window.innerHeight - menuHeight - 10);
 
   const handleOpenEditor = () => {
     window.open(`/editor?code=${card.code}`, '_blank');
+    onClose();
+  };
+
+  const handleOpenMarvelCdb = () => {
+    window.open(
+      `https://marvelcdb.com/card/${encodeURIComponent(card.code)}`,
+      '_blank',
+      'noopener,noreferrer',
+    );
     onClose();
   };
 
@@ -118,7 +127,17 @@ export const CardContextMenu: React.FC<CardContextMenuProps> = ({ card, position
               <span>Open in Supplemental Editor</span>
             </button>
 
-            {/* 2. Copy Card Code */}
+            {/* 2. Open in MarvelCDB */}
+            <button
+              type="button"
+              onClick={handleOpenMarvelCdb}
+              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-comic text-gray-800 hover:bg-comic-yellow/50 rounded text-left transition-colors cursor-pointer"
+            >
+              <ExternalLink className="w-4 h-4 text-comic-darkBlue shrink-0" />
+              <span>Open in MarvelCDB</span>
+            </button>
+
+            {/* 3. Copy Card Code */}
             <button
               type="button"
               onClick={handleCopyCode}

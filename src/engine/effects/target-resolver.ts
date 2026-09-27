@@ -5,9 +5,11 @@ import {
   VillainState,
   MainSchemeState,
   SideSchemeState,
+  StatusCard,
 } from '@engine/models';
 import { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
+import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
 
 export type EffectContext = Partial<EffectExecutionContext>;
 
@@ -96,7 +98,12 @@ export function resolveEntityByInstanceId(
 
   // 4. Players and their controlled/engaged entities
   for (const p of state.players) {
-    if (p.id === instanceId) {
+    if (
+      p.id === instanceId ||
+      p.hero?.code === instanceId ||
+      p.alterEgo?.code === instanceId ||
+      p.activeFormCard?.code === instanceId
+    ) {
       return {
         kind: 'character',
         entityType: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
@@ -344,11 +351,23 @@ export function resolveTargets(
 
     case 'CHOSEN_PLAYER': {
       if (context?.targetPlayerId) {
-        const p = state.players.find((pl) => pl.id === context.targetPlayerId);
+        const p = state.players.find(
+          (pl) =>
+            pl.id === context.targetPlayerId ||
+            pl.hero?.code === context.targetPlayerId ||
+            pl.alterEgo?.code === context.targetPlayerId ||
+            pl.activeFormCard?.code === context.targetPlayerId,
+        );
         if (p) return [{ kind: 'player', entity: p, id: p.id }];
       }
       if (context?.targetInstanceId) {
-        const p = state.players.find((pl) => pl.id === context.targetInstanceId);
+        const p = state.players.find(
+          (pl) =>
+            pl.id === context.targetInstanceId ||
+            pl.hero?.code === context.targetInstanceId ||
+            pl.alterEgo?.code === context.targetInstanceId ||
+            pl.activeFormCard?.code === context.targetInstanceId,
+        );
         if (p) return [{ kind: 'player', entity: p, id: p.id }];
       }
       return [{ kind: 'player', entity: resolvingPlayer, id: resolvingPlayer.id }];
@@ -1265,4 +1284,367 @@ export function resolveCardTargets(
   }
 
   return cards;
+}
+
+export interface TargetFilterOptions {
+  damaged?: boolean;
+  exhausted?: boolean;
+  traits?: string[];
+  status?: StatusCard | 'STUNNED' | 'CONFUSED' | 'TOUGH';
+  maxPerHost?: number;
+}
+
+/**
+ * Returns all live game entities structurally eligible for the given target selector,
+ * filtered by optional criteria (damaged, exhausted, traits, status).
+ * If no filters are provided, returns the complete unfiltered set of candidate entities.
+ */
+export function getEligibleTargets(
+  state: GameState,
+  resolvingPlayer: PlayerState,
+  targetScope: TargetSelector | string,
+  filterOptions?: TargetFilterOptions,
+): ResolvedTarget[] {
+  const candidates: ResolvedTarget[] = [];
+
+  switch (targetScope) {
+    case 'CHOSEN_CHARACTER': {
+      // 1. All players
+      for (const p of state.players) {
+        candidates.push({
+          kind: 'character',
+          entityType: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
+          entity: p,
+          id: p.id,
+          player: p,
+        });
+      }
+      // 2. All allies
+      for (const p of state.players) {
+        for (const a of p.allies || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'ally',
+            entity: a,
+            id: a.instanceId,
+            player: p,
+          });
+        }
+      }
+      // 3. Villain
+      if (state.villain) {
+        candidates.push({
+          kind: 'character',
+          entityType: 'villain',
+          entity: state.villain,
+          id: state.villain.instanceId || state.villain.card.code,
+        });
+      }
+      // 4. All minions
+      for (const p of state.players) {
+        for (const m of p.engagedMinions || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'minion',
+            entity: m,
+            id: m.instanceId,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'CHOSEN_FRIENDLY_CHARACTER': {
+      for (const p of state.players) {
+        candidates.push({
+          kind: 'character',
+          entityType: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
+          entity: p,
+          id: p.id,
+          player: p,
+        });
+        for (const a of p.allies || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'ally',
+            entity: a,
+            id: a.instanceId,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'CHOSEN_CONTROLLED_CHARACTER': {
+      candidates.push({
+        kind: 'character',
+        entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',
+        entity: resolvingPlayer,
+        id: resolvingPlayer.id,
+        player: resolvingPlayer,
+      });
+      for (const a of resolvingPlayer.allies || []) {
+        candidates.push({
+          kind: 'character',
+          entityType: 'ally',
+          entity: a,
+          id: a.instanceId,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
+    case 'CHOSEN_ALLY': {
+      for (const p of state.players) {
+        for (const a of p.allies || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'ally',
+            entity: a,
+            id: a.instanceId,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'CHOSEN_CONTROLLED_ALLY': {
+      for (const a of resolvingPlayer.allies || []) {
+        candidates.push({
+          kind: 'character',
+          entityType: 'ally',
+          entity: a,
+          id: a.instanceId,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
+    case 'CHOSEN_MINION': {
+      for (const p of state.players) {
+        for (const m of p.engagedMinions || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'minion',
+            entity: m,
+            id: m.instanceId,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'CHOSEN_ENGAGED_MINION': {
+      for (const m of resolvingPlayer.engagedMinions || []) {
+        candidates.push({
+          kind: 'character',
+          entityType: 'minion',
+          entity: m,
+          id: m.instanceId,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
+    case 'SELF':
+    case 'SELF_IDENTITY':
+    case 'IDENTITY':
+    case 'ACTIVE_IDENTITY': {
+      candidates.push({
+        kind: 'character',
+        entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',
+        entity: resolvingPlayer,
+        id: resolvingPlayer.id,
+        player: resolvingPlayer,
+      });
+      break;
+    }
+
+    case 'CHOSEN_HERO': {
+      for (const p of state.players) {
+        if (p.currentForm === 'hero') {
+          candidates.push({
+            kind: 'character',
+            entityType: 'hero',
+            entity: p,
+            id: p.id,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'HERO': {
+      if (resolvingPlayer.currentForm === 'hero') {
+        candidates.push({
+          kind: 'character',
+          entityType: 'hero',
+          entity: resolvingPlayer,
+          id: resolvingPlayer.id,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
+    case 'ALTER_EGO': {
+      if (resolvingPlayer.currentForm === 'alter_ego') {
+        candidates.push({
+          kind: 'character',
+          entityType: 'alter_ego',
+          entity: resolvingPlayer,
+          id: resolvingPlayer.id,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
+    case 'CHOSEN_ENEMY': {
+      if (state.villain) {
+        candidates.push({
+          kind: 'character',
+          entityType: 'villain',
+          entity: state.villain,
+          id: state.villain.instanceId || state.villain.card.code,
+        });
+      }
+      for (const p of state.players) {
+        for (const m of p.engagedMinions || []) {
+          candidates.push({
+            kind: 'character',
+            entityType: 'minion',
+            entity: m,
+            id: m.instanceId,
+            player: p,
+          });
+        }
+      }
+      break;
+    }
+
+    case 'CHOSEN_PLAYER': {
+      for (const p of state.players) {
+        candidates.push({
+          kind: 'player',
+          entity: p,
+          id: p.id,
+        });
+      }
+      break;
+    }
+
+    case 'CHOSEN_SCHEME': {
+      if (state.mainScheme) {
+        candidates.push({
+          kind: 'scheme',
+          entityType: 'main_scheme',
+          entity: state.mainScheme,
+          id: state.mainScheme.instanceId || state.mainScheme.card.code,
+        });
+      }
+      for (const s of state.sideSchemes || []) {
+        candidates.push({
+          kind: 'scheme',
+          entityType: 'side_scheme',
+          entity: s,
+          id: s.instanceId,
+        });
+      }
+      break;
+    }
+
+    case 'CHOSEN_SIDE_SCHEME': {
+      for (const s of state.sideSchemes || []) {
+        candidates.push({
+          kind: 'scheme',
+          entityType: 'side_scheme',
+          entity: s,
+          id: s.instanceId,
+        });
+      }
+      break;
+    }
+
+    default:
+      return [];
+  }
+
+  if (!filterOptions) {
+    return candidates;
+  }
+
+  return candidates.filter((target) => {
+    // 1. Damaged filter
+    if (filterOptions.damaged !== undefined) {
+      if (target.kind !== 'character') return false;
+      let isDamaged = false;
+      if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+        const p = target.entity as PlayerState;
+        isDamaged = p.health < getEffectiveMaxHealth(p, state);
+      } else if (target.entityType === 'ally' || target.entityType === 'minion') {
+        const c = target.entity as CardInstance;
+        isDamaged = (c.tokens?.damage || 0) > 0;
+      } else if (target.entityType === 'villain') {
+        const v = target.entity as VillainState;
+        isDamaged = v.health < v.maxHealth;
+      }
+      if (isDamaged !== filterOptions.damaged) return false;
+    }
+
+    // 2. Exhausted filter
+    if (filterOptions.exhausted !== undefined) {
+      let isExhausted = false;
+      if (target.kind === 'character') {
+        if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+          isExhausted = Boolean((target.entity as PlayerState).exhausted);
+        } else if (target.entityType === 'ally') {
+          isExhausted = Boolean((target.entity as CardInstance).exhausted);
+        }
+      }
+      if (isExhausted !== filterOptions.exhausted) return false;
+    }
+
+    // 3. Status filter
+    if (filterOptions.status) {
+      const statusToFind = String(filterOptions.status).toLowerCase();
+      let hasStatus = false;
+      if (target.kind === 'character') {
+        const statusCards =
+          target.entityType === 'hero' || target.entityType === 'alter_ego'
+            ? (target.entity as PlayerState).statusCards
+            : (target.entity as CardInstance | VillainState).statusCards || [];
+        hasStatus = statusCards.some((s) => String(s).toLowerCase() === statusToFind);
+      }
+      if (!hasStatus) return false;
+    }
+
+    // 4. Traits filter
+    if (filterOptions.traits && filterOptions.traits.length > 0) {
+      const requiredTraits = filterOptions.traits.map((t) => t.toLowerCase());
+      let entityTraits: string[] = [];
+      if (target.kind === 'character') {
+        if (target.entityType === 'hero' || target.entityType === 'alter_ego') {
+          entityTraits = (target.entity as PlayerState).activeFormCard?.traits || [];
+        } else if (target.entityType === 'ally' || target.entityType === 'minion') {
+          entityTraits = (target.entity as CardInstance).card?.traits || [];
+        } else if (target.entityType === 'villain') {
+          entityTraits = (target.entity as VillainState).card?.traits || [];
+        }
+      }
+      const lowerEntityTraits = entityTraits.map((t) => t.toLowerCase());
+      const hasAllTraits = requiredTraits.every((rt) => lowerEntityTraits.includes(rt));
+      if (!hasAllTraits) return false;
+    }
+
+    return true;
+  });
 }

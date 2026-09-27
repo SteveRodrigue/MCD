@@ -5015,8 +5015,9 @@ export function executeStep(
         (stepParams.target as string) || (step.effectParams?.target as string) || 'CHOSEN_PLAYER';
       const duration = (stepParams.duration as 'PHASE' | 'ROUND' | 'TURN') || 'PHASE';
       const cardFilter = stepParams.cardFilter || (stepParams.filter as any) || step.filter;
-      const targetPlayerId = (context.targetPlayerId || stepParams.targetPlayerId) as
-        string | undefined;
+      const targetPlayerId = (context.targetPlayerId ||
+        context.targetInstanceId ||
+        stepParams.targetPlayerId) as string | undefined;
 
       // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
       if (targetParam === 'CHOSEN_PLAYER' && state.players.length > 1 && !targetPlayerId) {

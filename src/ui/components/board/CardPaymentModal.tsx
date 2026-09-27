@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Shield, Swords, Zap, AlertTriangle } from 'lucide-react';
+import { X, Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
@@ -8,8 +8,13 @@ import {
   isAbilityPlayableInForm,
   getEffectiveCardCost,
 } from '../../../engine/pipeline/cost-engine';
+import { getEffectiveMaxHealth } from '../../../engine/pipeline/stat-calculator';
 import { matchesCardFilter } from '../../../engine/filters/card-filter';
-import type { UniversalCardFilter, CardLocationSelector } from '../../../data/supplemental/schema';
+import {
+  UniversalCardFilter,
+  CardLocationSelector,
+  getStepEffectParams,
+} from '../../../data/supplemental/schema';
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
@@ -85,12 +90,26 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       setSelectedGeneratorIds([]);
       setSelectedDiscardCardIds([]);
 
-      // Default target: villain for attacks, main scheme for thwarts
+      // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player
       // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
       // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
       const isEventCard =
         cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
       const abilities = isEventCard ? cardToPlay.card.enrichment?.abilities || [] : [];
+
+      let eventTargetScope: string | undefined;
+      for (const ab of abilities) {
+        for (const step of ab.steps || []) {
+          const stepParams = getStepEffectParams(step);
+          const tgt = stepParams.target as string | undefined;
+          if (tgt && tgt.startsWith('CHOSEN_')) {
+            eventTargetScope = tgt;
+            break;
+          }
+        }
+        if (eventTargetScope) break;
+      }
+
       const hasAttack = abilities.some((a) =>
         (a.steps || []).some((s) =>
           ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
@@ -99,11 +118,52 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const hasThwart = abilities.some((a) =>
         (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
       );
+      const hasHeal = abilities.some((a) =>
+        (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
+      );
+      const hasAllyTarget =
+        !hasAttack &&
+        !hasThwart &&
+        !hasHeal &&
+        (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
+      const hasPlayerTarget =
+        !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
 
       if (hasAttack) {
-        setSelectedTargetId(gameState.villain.card.code);
+        if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
+          const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
+          setSelectedTargetId(firstMinion?.instanceId);
+        } else {
+          setSelectedTargetId(gameState.villain.card.code);
+        }
       } else if (hasThwart) {
         setSelectedTargetId(gameState.mainScheme.card.code);
+      } else if (hasHeal) {
+        // Default to active player if damaged, otherwise first damaged character, otherwise active player
+        const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
+        if (activeDamaged) {
+          setSelectedTargetId(player.id);
+        } else {
+          const firstDamagedHero = gameState.players.find(
+            (p) => p.health < getEffectiveMaxHealth(p, gameState),
+          );
+          if (firstDamagedHero) {
+            setSelectedTargetId(firstDamagedHero.id);
+          } else {
+            const firstDamagedAlly = gameState.players
+              .flatMap((p) => p.allies || [])
+              .find((a) => (a.tokens?.damage || 0) > 0);
+            setSelectedTargetId(firstDamagedAlly ? firstDamagedAlly.instanceId : player.id);
+          }
+        }
+      } else if (hasAllyTarget) {
+        const firstExhausted = gameState.players
+          .flatMap((p) => p.allies || [])
+          .find((a) => a.exhausted);
+        const firstAlly = gameState.players.flatMap((p) => p.allies || [])[0];
+        setSelectedTargetId((firstExhausted || firstAlly)?.instanceId);
+      } else if (hasPlayerTarget) {
+        setSelectedTargetId(player.id);
       } else {
         setSelectedTargetId(undefined);
       }
@@ -399,6 +459,20 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   const isEventCard =
     !abilityCost && (card?.type === CardType.EVENT || (card as any)?.type_code === 'event');
   const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
+
+  let eventTargetScope: string | undefined;
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const stepParams = getStepEffectParams(step);
+      const tgt = stepParams.target as string | undefined;
+      if (tgt && tgt.startsWith('CHOSEN_')) {
+        eventTargetScope = tgt;
+        break;
+      }
+    }
+    if (eventTargetScope) break;
+  }
+
   const isAttack =
     isEventCard &&
     abilities.some((a) =>
@@ -408,6 +482,17 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     );
   const isThwart =
     isEventCard && abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
+  const isHeal =
+    isEventCard &&
+    abilities.some((a) => (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)));
+  const isAllyTarget =
+    isEventCard &&
+    !isAttack &&
+    !isThwart &&
+    !isHeal &&
+    (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
+  const isPlayerTarget =
+    isEventCard && !isAttack && !isThwart && !isHeal && eventTargetScope === 'CHOSEN_PLAYER';
 
   const enemyTargets = useMemo(() => {
     const targets: {
@@ -415,14 +500,17 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       name: string;
       type: 'villain' | 'minion';
       hp: number;
-    }[] = [
-      {
+    }[] = [];
+
+    if (eventTargetScope !== 'CHOSEN_MINION' && eventTargetScope !== 'CHOSEN_ENGAGED_MINION') {
+      targets.push({
         id: gameState.villain.card.code,
         name: `${gameState.villain.card.name} (Villain)`,
         type: 'villain',
         hp: gameState.villain.health,
-      },
-    ];
+      });
+    }
+
     // Engaged minions across all players (RR v1.8 p. 5, 10)
     gameState.players.forEach((p) => {
       (p.engagedMinions || []).forEach((m) => {
@@ -438,7 +526,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       });
     });
     return targets;
-  }, [gameState.villain, gameState.players, player.id]);
+  }, [gameState.villain, gameState.players, player.id, eventTargetScope]);
 
   const schemeTargets = useMemo(() => {
     const targets: {
@@ -464,6 +552,74 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     });
     return targets;
   }, [gameState.mainScheme, gameState.sideSchemes]);
+
+  const healTargets = useMemo(() => {
+    const targets: {
+      id: string;
+      name: string;
+      type: 'hero' | 'alter_ego' | 'ally';
+      hp: number;
+      maxHp: number;
+      damageTaken: number;
+    }[] = [];
+
+    gameState.players.forEach((p) => {
+      const maxHp = getEffectiveMaxHealth(p, gameState);
+      targets.push({
+        id: p.id,
+        name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
+        type: p.currentForm === 'hero' ? 'hero' : 'alter_ego',
+        hp: p.health,
+        maxHp,
+        damageTaken: Math.max(0, maxHp - p.health),
+      });
+    });
+
+    gameState.players.forEach((p) => {
+      (p.allies || []).forEach((a) => {
+        const allyCard = a.card as any;
+        const maxHp = allyCard.health || 0;
+        const damage = a.tokens?.damage || 0;
+        targets.push({
+          id: a.instanceId,
+          name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
+          type: 'ally',
+          hp: Math.max(0, maxHp - damage),
+          maxHp,
+          damageTaken: damage,
+        });
+      });
+    });
+
+    return targets;
+  }, [gameState, player.id]);
+
+  const allyTargets = useMemo(() => {
+    const targets: {
+      id: string;
+      name: string;
+      exhausted: boolean;
+    }[] = [];
+
+    gameState.players.forEach((p) => {
+      (p.allies || []).forEach((a) => {
+        targets.push({
+          id: a.instanceId,
+          name: p.id === player.id ? `${a.card.name} (Ally)` : `${a.card.name} (${p.name}'s Ally)`,
+          exhausted: Boolean(a.exhausted),
+        });
+      });
+    });
+
+    return targets;
+  }, [gameState.players, player.id]);
+
+  const playerTargets = useMemo(() => {
+    return gameState.players.map((p) => ({
+      id: p.id,
+      name: `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`,
+    }));
+  }, [gameState.players]);
 
   if (!isOpen || !cardToPlay || !card) return null;
 
@@ -954,6 +1110,103 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   >
                     <span>{t.name}</span>
                     <span>{t.threat} Threat</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isHeal && (
+            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
+              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
+                <Heart className="w-4 h-4 text-emerald-600" />
+                <span>Select Character to Heal:</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {healTargets.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedTargetId(t.id)}
+                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
+                      selectedTargetId === t.id
+                        ? 'bg-emerald-600 text-white border-comic-black shadow-comic-sm'
+                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
+                    }`}
+                  >
+                    <span className="truncate pr-2">{t.name}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                        selectedTargetId === t.id
+                          ? 'bg-black/20 text-white'
+                          : t.damageTaken > 0
+                            ? 'bg-rose-100 text-rose-800'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {t.hp}/{t.maxHp} HP {t.damageTaken > 0 ? `(-${t.damageTaken})` : '(Full)'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isAllyTarget && (
+            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
+              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
+                <Users className="w-4 h-4 text-comic-blue" />
+                <span>Select Ally Target:</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {allyTargets.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedTargetId(t.id)}
+                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
+                      selectedTargetId === t.id
+                        ? 'bg-comic-blue text-white border-comic-black shadow-comic-sm'
+                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
+                    }`}
+                  >
+                    <span className="truncate pr-2">{t.name}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 font-black ${
+                        selectedTargetId === t.id
+                          ? 'bg-black/20 text-white'
+                          : t.exhausted
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {t.exhausted ? 'Exhausted' : 'Ready'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isPlayerTarget && (
+            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
+              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
+                <Users className="w-4 h-4 text-purple-600" />
+                <span>Select Player Target:</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {playerTargets.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedTargetId(t.id)}
+                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
+                      selectedTargetId === t.id
+                        ? 'bg-purple-600 text-white border-comic-black shadow-comic-sm'
+                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
+                    }`}
+                  >
+                    <span>{t.name}</span>
                   </button>
                 ))}
               </div>

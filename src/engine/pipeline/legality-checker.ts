@@ -24,6 +24,7 @@ import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { locateCard, readCardResources } from '../queries/card-inspector';
+import { getEligibleTargets } from '../effects/target-resolver';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
@@ -641,12 +642,13 @@ export function evaluateMinionTargetRequirement(
  */
 export function evaluateAllyTargetRequirement(
   state: GameState,
-  _player: PlayerState,
+  player: PlayerState,
   card: NormalizedCard,
 ): { allowed: boolean; reason?: string } {
   const abilities = card.enrichment?.abilities || [];
 
   let requiresAlly = false;
+  let requiresExhaustedAlly = false;
   let maxPerHost: number | undefined;
 
   for (const ab of abilities) {
@@ -661,7 +663,25 @@ export function evaluateAllyTargetRequirement(
         if (stepParams.maxPerHost !== undefined) {
           maxPerHost = Number(stepParams.maxPerHost);
         }
+      } else if (
+        (step.effect === 'READY_CHARACTER' ||
+          step.effect === 'READY_ALLY' ||
+          step.effect === 'READY') &&
+        (target === 'CHOSEN_ALLY' || target === 'CHOSEN_CONTROLLED_ALLY' || target === 'ALLY')
+      ) {
+        requiresExhaustedAlly = true;
       }
+    }
+  }
+
+  if (requiresExhaustedAlly) {
+    const allAllies = getEligibleTargets(state, player, 'CHOSEN_ALLY');
+    if (allAllies.length === 0) {
+      return { allowed: false, reason: 'Cannot play this card: requires an ally in play.' };
+    }
+    const exhaustedAllies = getEligibleTargets(state, player, 'CHOSEN_ALLY', { exhausted: true });
+    if (exhaustedAllies.length === 0) {
+      return { allowed: false, reason: 'Cannot play this card: No ally is exhausted to ready.' };
     }
   }
 
@@ -688,11 +708,41 @@ export function evaluateAllyTargetRequirement(
         return attachedCount < maxPerHost!;
       });
 
-      if (eligibleAllies.length === 0) {
+      if (!eligibleAllies.length) {
         return {
           allowed: false,
           reason: `Cannot play this card: all in-play allies already have the maximum number (${maxPerHost}) of '${card.name}' attached.`,
         };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Evaluates whether a card requires character targets (RR v1.8 p. 3, 11)
+ * such as healing, and whether eligible damaged targets exist in play.
+ */
+export function evaluateCharacterTargetRequirement(
+  state: GameState,
+  player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  const abilities = card.enrichment?.abilities || [];
+
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const stepParams = getStepEffectParams(step);
+      if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+        const targetScope = (stepParams.target as string) || 'CHOSEN_CHARACTER';
+        const eligibleTargets = getEligibleTargets(state, player, targetScope, { damaged: true });
+        if (eligibleTargets.length === 0) {
+          return {
+            allowed: false,
+            reason: 'Cannot play this card: No character has sustained damage to heal.',
+          };
+        }
       }
     }
   }
@@ -990,6 +1040,53 @@ export function canInitiateAbility(
         return searchCheck;
       }
     }
+
+    // 5D. Heal / Character Target (RR v1.8 p. 3, 11)
+    if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+      const targetParam = (stepParams.target as string) || 'CHOSEN_CHARACTER';
+      const eligibleTargets = getEligibleTargets(state, player, targetParam, { damaged: true });
+      if (options?.targetInstanceId) {
+        const hasSpecificTarget = eligibleTargets.some((t) => t.id === options.targetInstanceId);
+        if (!hasSpecificTarget) {
+          return {
+            allowed: false,
+            reason: 'Cannot trigger ability: Target character has no damage to heal.',
+          };
+        }
+      } else if (eligibleTargets.length === 0) {
+        return {
+          allowed: false,
+          reason: 'Cannot trigger ability: No character has sustained damage to heal.',
+        };
+      }
+    }
+
+    // 5E. Ready / Ally Target (RR v1.8 p. 3, 16)
+    if (
+      (step.effect === 'READY_CHARACTER' ||
+        step.effect === 'READY_ALLY' ||
+        step.effect === 'READY') &&
+      (stepParams.target === 'CHOSEN_ALLY' ||
+        stepParams.target === 'CHOSEN_CONTROLLED_ALLY' ||
+        stepParams.target === 'ALLY')
+    ) {
+      const targetParam = (stepParams.target as string) || 'CHOSEN_ALLY';
+      const eligibleTargets = getEligibleTargets(state, player, targetParam, { exhausted: true });
+      if (options?.targetInstanceId) {
+        const hasSpecificTarget = eligibleTargets.some((t) => t.id === options.targetInstanceId);
+        if (!hasSpecificTarget) {
+          return {
+            allowed: false,
+            reason: 'Cannot trigger ability: Target ally is not exhausted.',
+          };
+        }
+      } else if (eligibleTargets.length === 0) {
+        return {
+          allowed: false,
+          reason: 'Cannot trigger ability: No ally is exhausted to ready.',
+        };
+      }
+    }
   }
 
   return { allowed: true };
@@ -1181,6 +1278,12 @@ export function canPlayCard(
   const allyCheck = evaluateAllyTargetRequirement(state, player, card);
   if (!allyCheck.allowed) {
     return allyCheck;
+  }
+
+  // Character target and heal requirement check (RR v1.8 p. 3, 11)
+  const characterCheck = evaluateCharacterTargetRequirement(state, player, card);
+  if (!characterCheck.allowed) {
+    return characterCheck;
   }
 
   // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)

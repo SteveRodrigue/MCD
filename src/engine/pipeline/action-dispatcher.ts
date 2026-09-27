@@ -15,6 +15,8 @@ import {
   DecisionPromptOption,
   PendingDecisionPrompt,
   PlayerState,
+  VillainState,
+  CardAbility,
   Keyword,
   getKeywordValue,
 } from '@engine/models';
@@ -75,6 +77,12 @@ import {
 import { getSpecialHandler } from '../specials/special-registry';
 import { attachCardToHost, initializeCardUses } from '../state/state-validator';
 import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import {
+  resolveEntityByInstanceId,
+  getEligibleTargets,
+  TargetFilterOptions,
+} from '../effects/target-resolver';
+import { getStepEffectParams } from '../../data/supplemental/schema';
 
 function dispatchCanonicalDefeatTriggers(
   state: GameState,
@@ -1382,24 +1390,30 @@ export function dispatchAction(
         onomatopoeia,
       });
 
-      // Target determination (villain/minion/main_scheme/side_scheme)
-      let targetType: 'villain' | 'minion' | 'main_scheme' | 'side_scheme' = 'villain';
+      // Target determination
+      let targetType:
+        | 'villain'
+        | 'minion'
+        | 'main_scheme'
+        | 'side_scheme'
+        | 'character'
+        | 'identity'
+        | 'ally'
+        | 'hero' = 'villain';
       if (action.targetInstanceId) {
-        const isMinion = nextState.players.some((p) =>
-          p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
-        );
-        const isSideScheme = (nextState.sideSchemes || []).some(
-          (s) => s.instanceId === action.targetInstanceId,
-        );
-        const isMainScheme = Boolean(
-          nextState.mainScheme &&
-          (action.targetInstanceId === nextState.mainScheme.card?.code ||
-            action.targetInstanceId === nextState.mainScheme.instanceId),
-        );
-        if (isMinion) targetType = 'minion';
-        else if (isSideScheme) targetType = 'side_scheme';
-        else if (isMainScheme) targetType = 'main_scheme';
-        else targetType = 'villain';
+        const resolved = resolveEntityByInstanceId(nextState, action.targetInstanceId);
+        if (resolved) {
+          if (resolved.kind === 'scheme') {
+            targetType = resolved.entityType;
+          } else if (resolved.kind === 'character') {
+            if (resolved.entityType === 'villain') targetType = 'villain';
+            else if (resolved.entityType === 'minion') targetType = 'minion';
+            else if (resolved.entityType === 'ally') targetType = 'ally';
+            else targetType = 'character';
+          } else if (resolved.kind === 'player') {
+            targetType = 'identity';
+          }
+        }
       }
 
       if (cardType === CardType.UPGRADE || cardType === CardType.SUPPORT) {
@@ -1653,12 +1667,113 @@ export function dispatchAction(
           resourcesSpent,
         });
       } else if (cardType === CardType.EVENT) {
+        let eventTargetId = action.targetInstanceId;
+
+        // Check if event has a CHOSEN_* target scope
+        let requiredTargetScope: string | undefined;
+        let filterOpts: TargetFilterOptions | undefined;
+
+        for (const ab of abilities) {
+          for (const step of ab.steps || []) {
+            const stepParams = getStepEffectParams(step);
+            const tgt = stepParams.target as string | undefined;
+            if (tgt && tgt.startsWith('CHOSEN_')) {
+              requiredTargetScope = tgt;
+              if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+                filterOpts = { damaged: true };
+              } else if (
+                step.effect === 'READY' ||
+                step.effect === 'READY_ALLY' ||
+                step.effect === 'READY_CHARACTER'
+              ) {
+                filterOpts = { exhausted: true };
+              }
+              break;
+            }
+          }
+          if (requiredTargetScope) break;
+        }
+
+        if (requiredTargetScope && !eventTargetId) {
+          const eligibleTargets = getEligibleTargets(
+            nextState,
+            player,
+            requiredTargetScope,
+            filterOpts,
+          );
+          if (eligibleTargets.length === 1) {
+            eventTargetId = eligibleTargets[0].id;
+            const resolved = resolveEntityByInstanceId(nextState, eventTargetId);
+            if (resolved) {
+              if (resolved.kind === 'scheme') targetType = resolved.entityType;
+              else if (resolved.kind === 'character') {
+                if (resolved.entityType === 'villain') targetType = 'villain';
+                else if (resolved.entityType === 'minion') targetType = 'minion';
+                else if (resolved.entityType === 'ally') targetType = 'ally';
+                else targetType = 'character';
+              } else if (resolved.kind === 'player') targetType = 'identity';
+            }
+          } else if (eligibleTargets.length > 1) {
+            const options: DecisionPromptOption[] = eligibleTargets.map((t) => {
+              let label = t.id;
+              if (t.kind === 'character') {
+                if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+                  const p = t.entity as PlayerState;
+                  label = `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`;
+                } else if (t.entityType === 'ally' || t.entityType === 'minion') {
+                  const cardName = (t.entity as CardInstance).card.name;
+                  label = t.player ? `${cardName} (${t.player.name})` : cardName;
+                } else if (t.entityType === 'villain') {
+                  label = `${(t.entity as VillainState).card.name} (Villain)`;
+                }
+              } else if (t.kind === 'player') {
+                label = (t.entity as PlayerState).name;
+              } else if (t.kind === 'scheme') {
+                label = (t.entity as any).card?.name || t.id;
+              }
+              return {
+                id: t.id,
+                label,
+                description: `Target ${label} with ${playedCardInstance.card.name}`,
+                effect: 'EVENT_CHOSEN_TARGET',
+                params: {
+                  isEventTargetChoice: true,
+                  playedCardInstance,
+                  ownerId: action.playerId,
+                  resourcesSpent,
+                },
+              };
+            });
+
+            const prompt: PendingDecisionPrompt = {
+              promptId: `prompt_event_target_${Date.now()}`,
+              playerId: action.playerId,
+              title: `Choose Target for ${playedCardInstance.card.name}`,
+              description: `Select target for ${playedCardInstance.card.name}:`,
+              sourceCardName: playedCardInstance.card.name,
+              options,
+              isVoluntary: false,
+            };
+
+            const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+            return {
+              state: enqueuedState,
+              result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
+            };
+          } else {
+            return {
+              state,
+              result: { success: false, error: 'No eligible targets found for card effect.' },
+            };
+          }
+        }
+
         // Execute declarative event abilities
         for (const ability of abilities) {
           executeEffect(nextState, ability, {
             playerId: action.playerId,
             targetType,
-            targetInstanceId: action.targetInstanceId,
+            targetInstanceId: eventTargetId,
             sourceCardInstance: playedCardInstance,
             resourcesSpent,
           });
@@ -1917,11 +2032,92 @@ export function dispatchAction(
         };
       }
 
+      let abilityTargetId = action.targetInstanceId;
+      let requiredAbilityScope: string | undefined;
+      let abilityFilterOpts: TargetFilterOptions | undefined;
+      for (const step of effectiveAbility.steps || []) {
+        const stepParams = getStepEffectParams(step);
+        const tgt = stepParams.target as string | undefined;
+        if (tgt && tgt.startsWith('CHOSEN_') && tgt !== 'CHOSEN_PLAYER') {
+          requiredAbilityScope = tgt;
+          if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
+            abilityFilterOpts = { damaged: true };
+          } else if (
+            step.effect === 'READY' ||
+            step.effect === 'READY_ALLY' ||
+            step.effect === 'READY_CHARACTER'
+          ) {
+            abilityFilterOpts = { exhausted: true };
+          }
+          break;
+        }
+      }
+
+      if (requiredAbilityScope && !abilityTargetId) {
+        const eligibleTargets = getEligibleTargets(
+          nextState,
+          player,
+          requiredAbilityScope,
+          abilityFilterOpts,
+        );
+        if (eligibleTargets.length === 1) {
+          abilityTargetId = eligibleTargets[0].id;
+        } else if (eligibleTargets.length > 1) {
+          const options: DecisionPromptOption[] = eligibleTargets.map((t) => {
+            let label = t.id;
+            if (t.kind === 'character') {
+              if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+                const p = t.entity as PlayerState;
+                label = `${p.name} (${p.currentForm === 'hero' ? p.hero.name : p.alterEgo.name})`;
+              } else if (t.entityType === 'ally' || t.entityType === 'minion') {
+                const cardName = (t.entity as CardInstance).card.name;
+                label = t.player ? `${cardName} (${t.player.name})` : cardName;
+              } else if (t.entityType === 'villain') {
+                label = `${(t.entity as VillainState).card.name} (Villain)`;
+              }
+            } else if (t.kind === 'player') {
+              label = (t.entity as PlayerState).name;
+            } else if (t.kind === 'scheme') {
+              label = (t.entity as any).card?.name || t.id;
+            }
+            return {
+              id: t.id,
+              label,
+              description: `Target ${label} with ${targetCardInst?.card.name || ability.id}`,
+              effect: 'ABILITY_CHOSEN_TARGET',
+              params: {
+                isAbilityTargetChoice: true,
+                effectiveAbility,
+                sourceCardInst: targetCardInst,
+                abilityKey,
+                playerId: action.playerId,
+              },
+            };
+          });
+
+          const prompt: PendingDecisionPrompt = {
+            promptId: `prompt_ability_target_${Date.now()}`,
+            playerId: action.playerId,
+            title: `Choose Target for ${targetCardInst?.card.name || 'Ability'}`,
+            description: `Select target for ${targetCardInst?.card.name || 'Ability'}:`,
+            sourceCardName: targetCardInst?.card.name || 'Ability',
+            options,
+            isVoluntary: false,
+          };
+
+          const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
+          return {
+            state: enqueuedState,
+            result: { success: true, onomatopoeia: 'CHOOSE TARGET!' },
+          };
+        }
+      }
+
       // Execute effect primitive
       const effectRes = executeEffect(nextState, effectiveAbility, {
         playerId: action.playerId,
         sourceCardInstance: targetCardInst,
-        targetInstanceId: action.targetInstanceId,
+        targetInstanceId: abilityTargetId,
       });
 
       if (effectRes.success) {
@@ -2498,6 +2694,106 @@ export function dispatchAction(
         });
 
         return { state: poppedState, result: { success: true, onomatopoeia: 'ATTACHED!' } };
+      }
+
+      if (activePrompt && activePrompt.options.some((o) => o.params?.isEventTargetChoice)) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const chosenTargetId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
+        const playedCardInstance = (selectedOption?.params?.playedCardInstance ||
+          activePrompt.options[0]?.params?.playedCardInstance) as CardInstance | undefined;
+        const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options[0]?.params?.ownerId ||
+          action.playerId) as string;
+        const resourcesSpent = (selectedOption?.params?.resourcesSpent ||
+          activePrompt.options[0]?.params?.resourcesSpent) as string[] | undefined;
+
+        if (playedCardInstance) {
+          const targetPlayer = getPlayer(poppedState, ownerId) || player;
+          const abilities = playedCardInstance.card.enrichment?.abilities || [];
+
+          let targetType:
+            | 'villain'
+            | 'minion'
+            | 'main_scheme'
+            | 'side_scheme'
+            | 'character'
+            | 'identity'
+            | 'ally' = 'villain';
+          const resolved = resolveEntityByInstanceId(poppedState, chosenTargetId);
+          if (resolved) {
+            if (resolved.kind === 'scheme') targetType = resolved.entityType;
+            else if (resolved.kind === 'character') {
+              if (resolved.entityType === 'villain') targetType = 'villain';
+              else if (resolved.entityType === 'minion') targetType = 'minion';
+              else if (resolved.entityType === 'ally') targetType = 'ally';
+              else targetType = 'character';
+            } else if (resolved.kind === 'player') targetType = 'identity';
+          }
+
+          for (const ability of abilities) {
+            executeEffect(poppedState, ability, {
+              playerId: ownerId,
+              targetType,
+              targetInstanceId: chosenTargetId,
+              sourceCardInstance: playedCardInstance,
+              resourcesSpent,
+            });
+          }
+          targetPlayer.discard.push(playedCardInstance);
+          dispatchTrigger(poppedState, 'CARD_PLAYED', {
+            targetPlayerId: ownerId,
+            sourceInstanceId: playedCardInstance.instanceId,
+            resourcesSpent,
+          });
+        }
+
+        return {
+          state: poppedState,
+          result: { success: true, onomatopoeia: 'TARGET RESOLVED!' },
+        };
+      }
+
+      if (activePrompt && activePrompt.options.some((o) => o.params?.isAbilityTargetChoice)) {
+        const { state: poppedState } = popDecisionPrompt(nextState);
+        const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const chosenTargetId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
+        const effectiveAbility = (selectedOption?.params?.effectiveAbility ||
+          activePrompt.options[0]?.params?.effectiveAbility) as CardAbility | undefined;
+        const sourceCardInst = (selectedOption?.params?.sourceCardInst ||
+          activePrompt.options[0]?.params?.sourceCardInst) as CardInstance | undefined;
+        const abilityKey = (selectedOption?.params?.abilityKey ||
+          activePrompt.options[0]?.params?.abilityKey) as string;
+        const executingPlayerId = (selectedOption?.params?.playerId ||
+          activePrompt.options[0]?.params?.playerId ||
+          action.playerId) as string;
+
+        if (effectiveAbility) {
+          const effectRes = executeEffect(poppedState, effectiveAbility, {
+            playerId: executingPlayerId,
+            sourceCardInstance: sourceCardInst,
+            targetInstanceId: chosenTargetId,
+          });
+
+          const actPlayer = getPlayer(poppedState, executingPlayerId);
+          if (actPlayer && effectRes.success && abilityKey) {
+            if (!actPlayer.usedAbilitiesThisRound) actPlayer.usedAbilitiesThisRound = {};
+            actPlayer.usedAbilitiesThisRound[abilityKey] =
+              (actPlayer.usedAbilitiesThisRound[abilityKey] || 0) + 1;
+            if (!actPlayer.usedAbilitiesThisPhase) actPlayer.usedAbilitiesThisPhase = {};
+            actPlayer.usedAbilitiesThisPhase[abilityKey] =
+              (actPlayer.usedAbilitiesThisPhase[abilityKey] || 0) + 1;
+          }
+
+          return {
+            state: effectRes.state,
+            result: {
+              success: effectRes.success,
+              error: effectRes.error,
+              onomatopoeia: effectRes.onomatopoeia || 'ABILITY ACTIVATED!',
+            },
+          };
+        }
       }
 
       if (

@@ -7,6 +7,7 @@ import {
   AbilityStep,
   CardType,
   SideSchemeCard,
+  SideSchemeState,
   ConditionGate,
   StepResolutionResult,
   DecisionPromptOption,
@@ -84,6 +85,7 @@ export interface EffectExecutionContext {
   triggerChain?: TriggerCallNode[];
   /** Host ability context for timing, trigger, and cost evaluation */
   ability?: CardAbility;
+  distinctFromId?: string;
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -111,6 +113,7 @@ import {
   resolvePlayerTargets,
   resolveEntityByInstanceId,
   type EffectContext,
+  type SchemeTarget,
 } from './target-resolver';
 
 /**
@@ -838,11 +841,18 @@ export function executeSequence(
       gateParams,
     };
 
+    const isDistinctFromPrevious =
+      step.distinctFrom === 'PREVIOUS_TARGET' || effectParams.distinctFrom === 'PREVIOUS_TARGET';
+
     const stepContext: EffectExecutionContext = {
       ...context,
       previousResult: prevResult,
-      targetInstanceId:
-        effectParams.target === 'PREVIOUS_TARGET'
+      distinctFromId: isDistinctFromPrevious
+        ? prevResult?.targetId || context.targetInstanceId
+        : context.distinctFromId,
+      targetInstanceId: isDistinctFromPrevious
+        ? undefined
+        : effectParams.target === 'PREVIOUS_TARGET'
           ? (prevResult?.targetId ?? context.targetInstanceId)
           : context.targetInstanceId,
     };
@@ -875,7 +885,7 @@ export function executeSequence(
       mutatedState: stepMutated,
       value: res.value,
       conditionMet: res.conditionMet,
-      targetId: res.selectedCardInstanceIds?.[0] || res.targetId,
+      targetId: res.targetId || res.selectedCardInstanceIds?.[0] || stepContext.targetInstanceId,
       discardedCards: res.discardedCards ?? prevResult?.discardedCards,
     };
 
@@ -2734,63 +2744,196 @@ export function executeStep(
       let targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
       let remainingThreat = state.mainScheme?.threat || 0;
 
-      if (
-        targetParam === 'CHOSEN_SCHEME' &&
-        !step.effectParams?.targetInstanceId &&
-        !context.targetInstanceId &&
-        (state.sideSchemes || []).length > 0
-      ) {
-        const sideSchemes = state.sideSchemes || [];
-        // Multiple schemes in play -> enqueue interactive decision prompt
-        const options: DecisionPromptOption[] = [
-          {
-            id: 'main_scheme',
-            label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
-            description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
-            cardCode: state.mainScheme.card.code,
-            effect: 'REMOVE_THREAT',
-            params: { amount, target: 'MAIN_SCHEME' },
-          },
-          ...sideSchemes.map((s) => ({
-            id: s.instanceId,
-            label: `${s.card.name} (${s.threat || 0} Threat)`,
-            description: `Remove ${amount} threat from ${s.card.name}`,
-            cardCode: s.card.code,
-            effect: 'REMOVE_THREAT',
-            params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
-          })),
-        ];
+      const isDistinct = Boolean(
+        step.distinctFrom === 'PREVIOUS_TARGET' ||
+        step.effectParams?.distinctFrom === 'PREVIOUS_TARGET' ||
+        step.effectParams?.distinctFrom ||
+        context.distinctFromId,
+      );
 
-        enqueueDecisionPrompt(state, {
-          promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-          playerId: player.id,
-          title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
-          description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
-          sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
-          sourceCardCode: context.sourceCardInstance?.card.code,
-          options,
-        });
+      let targetSchemes: SchemeTarget[];
 
-        return {
-          state,
-          success: true,
-          mutatedState: true,
-          onomatopoeia: 'CHOOSE SCHEME!',
-        };
+      if (isDistinct) {
+        const excludedId =
+          context.distinctFromId || context.previousResult?.targetId || context.targetInstanceId;
+
+        const isMainSchemeExcluded = Boolean(
+          excludedId &&
+          (excludedId === 'main_scheme' ||
+            (state.mainScheme?.instanceId && excludedId === state.mainScheme.instanceId) ||
+            (state.mainScheme?.card?.code && excludedId === state.mainScheme.card.code)),
+        );
+
+        const isSideSchemeExcluded = (s: SideSchemeState) =>
+          Boolean(
+            excludedId && (s.instanceId === excludedId || (s.card && s.card.code === excludedId)),
+          );
+
+        const eligibleSchemes: (
+          | { kind: 'main_scheme'; id: string; name: string; threat: number; code?: string }
+          | {
+              kind: 'side_scheme';
+              id: string;
+              instanceId: string;
+              name: string;
+              threat: number;
+              code?: string;
+              scheme: SideSchemeState;
+            }
+        )[] = [];
+
+        if (state.mainScheme && !isMainSchemeExcluded) {
+          eligibleSchemes.push({
+            kind: 'main_scheme',
+            id: state.mainScheme.instanceId || 'main_scheme',
+            name: state.mainScheme.card?.name || 'Main Scheme',
+            threat: state.mainScheme.threat || 0,
+            code: state.mainScheme.card?.code,
+          });
+        }
+        for (const s of state.sideSchemes || []) {
+          if (!isSideSchemeExcluded(s)) {
+            eligibleSchemes.push({
+              kind: 'side_scheme',
+              id: s.instanceId,
+              instanceId: s.instanceId,
+              name: s.card?.name || 'Side Scheme',
+              threat: s.threat || 0,
+              code: s.card?.code,
+              scheme: s,
+            });
+          }
+        }
+
+        if (eligibleSchemes.length === 0) {
+          return {
+            state,
+            success: true,
+            mutatedState: false,
+            value: 0,
+            onomatopoeia: 'NO DIFFERENT SCHEME!',
+          };
+        }
+
+        if (eligibleSchemes.length >= 2) {
+          const options: DecisionPromptOption[] = eligibleSchemes.map((es) => {
+            if (es.kind === 'main_scheme') {
+              return {
+                id: 'main_scheme',
+                label: `${es.name} (${es.threat} Threat)`,
+                description: `Remove ${amount} threat from ${es.name}`,
+                cardCode: es.code,
+                effect: 'REMOVE_THREAT',
+                params: { amount, target: 'MAIN_SCHEME' },
+              };
+            }
+            return {
+              id: es.instanceId,
+              label: `${es.name} (${es.threat || 0} Threat)`,
+              description: `Remove ${amount} threat from ${es.name}`,
+              cardCode: es.code,
+              effect: 'REMOVE_THREAT',
+              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: es.instanceId },
+            };
+          });
+
+          enqueueDecisionPrompt(state, {
+            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
+            description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
+            sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
+            sourceCardCode: context.sourceCardInstance?.card.code,
+            options,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: 'CHOOSE SCHEME!',
+          };
+        }
+
+        // Exactly 1 eligible different scheme remains -> auto-target that single different scheme without prompting
+        const singleTarget = eligibleSchemes[0];
+        targetSchemes =
+          singleTarget.kind === 'main_scheme'
+            ? [
+                {
+                  kind: 'scheme' as const,
+                  entityType: 'main_scheme' as const,
+                  entity: state.mainScheme,
+                  id: state.mainScheme.instanceId || 'main_scheme',
+                },
+              ]
+            : [
+                {
+                  kind: 'scheme' as const,
+                  entityType: 'side_scheme' as const,
+                  entity: singleTarget.scheme,
+                  id: singleTarget.id,
+                },
+              ];
+      } else {
+        if (
+          targetParam === 'CHOSEN_SCHEME' &&
+          !step.effectParams?.targetInstanceId &&
+          !context.targetInstanceId &&
+          (state.sideSchemes || []).length > 0
+        ) {
+          const sideSchemes = state.sideSchemes || [];
+          // Multiple schemes in play -> enqueue interactive decision prompt
+          const options: DecisionPromptOption[] = [
+            {
+              id: 'main_scheme',
+              label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
+              description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
+              cardCode: state.mainScheme.card.code,
+              effect: 'REMOVE_THREAT',
+              params: { amount, target: 'MAIN_SCHEME' },
+            },
+            ...sideSchemes.map((s) => ({
+              id: s.instanceId,
+              label: `${s.card.name} (${s.threat || 0} Threat)`,
+              description: `Remove ${amount} threat from ${s.card.name}`,
+              cardCode: s.card.code,
+              effect: 'REMOVE_THREAT',
+              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
+            })),
+          ];
+
+          enqueueDecisionPrompt(state, {
+            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            playerId: player.id,
+            title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
+            description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
+            sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
+            sourceCardCode: context.sourceCardInstance?.card.code,
+            options,
+          });
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            onomatopoeia: 'CHOOSE SCHEME!',
+          };
+        }
+
+        const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+        targetSchemes =
+          schemes.length > 0
+            ? schemes
+            : [
+                {
+                  kind: 'scheme' as const,
+                  entityType: 'main_scheme' as const,
+                  entity: state.mainScheme,
+                  id: state.mainScheme.instanceId || 'main_scheme',
+                },
+              ];
       }
-
-      const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
-      const targetSchemes =
-        schemes.length > 0
-          ? schemes
-          : [
-              {
-                kind: 'scheme' as const,
-                entityType: 'main_scheme' as const,
-                entity: state.mainScheme,
-                id: state.mainScheme.instanceId || 'main_scheme',
-              },
-            ];
 
       for (const st of targetSchemes) {
         const scheme = st.entity;
@@ -2844,6 +2987,7 @@ export function executeStep(
         value: removed,
         conditionMet,
         onomatopoeia,
+        targetId: targetSchemes[0]?.id || targetSchemes[0]?.entity?.instanceId || 'main_scheme',
       };
     }
 

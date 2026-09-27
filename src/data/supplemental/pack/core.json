@@ -436,7 +436,8 @@
               },
               "effectParams": {
                 "amount": 2,
-                "target": "CHOSEN_SCHEME"
+                "target": "CHOSEN_SCHEME",
+                "distinctFrom": "PREVIOUS_TARGET"
               }
             }
           ]

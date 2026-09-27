@@ -1,5 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { Skull, AlertTriangle, Layers, Flame, X, Eye, ArrowDownUp, Filter } from 'lucide-react';
+import {
+  Skull,
+  AlertTriangle,
+  Layers,
+  Flame,
+  X,
+  Eye,
+  ArrowDownUp,
+  Filter,
+  Heart,
+} from 'lucide-react';
 import {
   VillainState,
   MainSchemeState,
@@ -176,92 +186,126 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
             </div>
           </div>
 
-          {/* 2. Villain Panel & Attachments (Shrunk to exact width of card + borders) */}
+          {/* 2. Villain Panel & Attachments */}
           <div className="w-fit flex flex-col gap-2 bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm shrink-0">
-            {/* Header */}
-            <div className="flex items-center justify-between gap-2 w-full">
-              <div className="flex items-center gap-1">
-                <Skull className="w-4 h-4 text-comic-red shrink-0" />
-                <span className="font-comic text-sm text-comic-black truncate max-w-[130px]">
-                  {villain.card.name}
+            {/* Header: Villain Icon, Name, Stage Badge & Status Badges */}
+            <div className="flex flex-col gap-1 w-full">
+              <div className="flex items-center justify-between gap-2 w-full">
+                <div className="flex items-center gap-1 min-w-0">
+                  <Skull className="w-4 h-4 text-comic-red shrink-0" />
+                  <span
+                    className="font-comic text-sm text-comic-black truncate max-w-[130px]"
+                    title={villain.card.name}
+                  >
+                    {villain.card.name}
+                  </span>
+                </div>
+                <span className="bg-slate-950 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shrink-0">
+                  {villain.card.stage ? `STAGE ${villain.card.stage}` : 'VILLAIN'}
                 </span>
               </div>
-              <span className="bg-slate-950 text-white font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black shrink-0">
-                {villain.card.stage ? `STAGE ${villain.card.stage}` : 'VILLAIN'}
-              </span>
+              {/* Status Badges */}
+              {villain.statusCards.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1">
+                  {villain.statusCards.map((st, i) => (
+                    <span
+                      key={i}
+                      className={`font-comic text-[9px] px-1 py-0.2 rounded border border-comic-black uppercase shadow-comic-xs font-bold ${
+                        st === StatusCard.TOUGH
+                          ? 'bg-sky-400 text-slate-950'
+                          : st === StatusCard.STUNNED
+                            ? 'bg-amber-300 text-slate-950'
+                            : 'bg-fuchsia-300 text-slate-950'
+                      }`}
+                    >
+                      {st}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Health Bar (Exact width of card) */}
-            <div className="w-full space-y-0.5">
-              <div className="flex justify-between text-[11px] font-bold">
-                <span className="text-slate-600">Health:</span>
-                <span className="text-comic-red font-comic text-xs">
-                  {villain.health} / {villain.maxHealth} HP
-                </span>
-              </div>
-              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden border border-comic-black shadow-comic-sm">
+            {/* Center Tri-Column Row */}
+            <div className="flex items-center justify-center gap-2 w-full">
+              {/* Left Column (Stats) */}
+              <div
+                data-testid="villain-stats-column"
+                className="flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
+              >
+                {/* SCH */}
                 <div
-                  className="bg-comic-red h-full transition-all duration-300"
-                  style={{ width: `${healthPercent}%` }}
+                  className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-sky-50 border border-comic-black rounded shadow-comic-xs text-center"
+                  title={`Scheme: ${effectiveStats.scheme}${schBonus > 0 ? ` (+${schBonus})` : ''}`}
+                >
+                  <span className="text-[8px] font-bold text-sky-800 uppercase leading-none">
+                    SCH
+                  </span>
+                  <span className="font-comic text-xs font-black leading-tight text-comic-blue">
+                    {effectiveStats.scheme}
+                    {schBonus > 0 && (
+                      <span className="text-[8px] text-sky-600 font-bold ml-0.5">+{schBonus}</span>
+                    )}
+                  </span>
+                </div>
+                {/* ATK */}
+                <div
+                  className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-rose-50 border border-comic-black rounded shadow-comic-xs text-center"
+                  title={`Attack: ${effectiveStats.attack}${atkBonus > 0 ? ` (+${atkBonus})` : ''}`}
+                >
+                  <span className="text-[8px] font-bold text-rose-800 uppercase leading-none">
+                    ATK
+                  </span>
+                  <span className="font-comic text-xs font-black leading-tight text-comic-red">
+                    {effectiveStats.attack}
+                    {atkBonus > 0 && (
+                      <span className="text-[8px] text-rose-500 font-bold ml-0.5">+{atkBonus}</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {/* Center Column (Card) */}
+              <div className="flex flex-col justify-center items-center relative shrink-0">
+                <CardView card={villain.card} size="sm" showTokens={false} enableHoverZoom={true} />
+                <CardAttachmentFan
+                  attachments={villain.attachments}
+                  cardsUnderneath={villain.cardsUnderneath}
+                  onSelectAttachment={onSelectAttachment}
                 />
               </div>
-            </div>
 
-            {/* Villain Stats Bar (SCH & ATK) */}
-            <div className="flex items-center justify-around bg-white px-2 py-0.5 rounded border border-comic-black text-xs font-bold shadow-comic-xs">
-              <div className="flex flex-col items-center">
-                <span className="text-slate-500 text-[8px] uppercase">SCH</span>
-                <span
-                  className={`flex items-center ${schBonus > 0 ? 'text-amber-600 font-black' : 'text-comic-blue font-black'}`}
-                >
-                  {effectiveStats.scheme}
-                  {schBonus > 0 && (
-                    <span className="text-[8px] text-amber-500 ml-0.5">+{schBonus}</span>
-                  )}
-                </span>
-              </div>
-              <div className="h-3 w-px bg-slate-300" />
-              <div className="flex flex-col items-center">
-                <span className="text-slate-500 text-[8px] uppercase">ATK</span>
-                <span
-                  className={`flex items-center ${atkBonus > 0 ? 'text-rose-600 font-black' : 'text-comic-red font-black'}`}
-                >
-                  {effectiveStats.attack}
-                  {atkBonus > 0 && (
-                    <span className="text-[8px] text-rose-500 ml-0.5">+{atkBonus}</span>
-                  )}
-                </span>
-              </div>
-            </div>
-
-            {/* Status Overlay Badges */}
-            {villain.statusCards.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {villain.statusCards.map((st, i) => (
-                  <span
-                    key={i}
-                    className={`font-comic text-[10px] px-1.5 py-0.5 rounded border border-comic-black uppercase shadow-comic-sm font-bold ${
-                      st === StatusCard.TOUGH
-                        ? 'bg-sky-400 text-slate-950'
-                        : st === StatusCard.STUNNED
-                          ? 'bg-amber-300 text-slate-950'
-                          : 'bg-fuchsia-300 text-slate-950'
-                    }`}
-                  >
-                    {st}
+              {/* Right Column (Vertical HP Gauge) */}
+              <div
+                data-testid="villain-hp-column"
+                className="flex flex-col items-center justify-center gap-1 shrink-0"
+              >
+                <div className="flex items-center gap-0.5">
+                  <Heart className="w-2.5 h-2.5 text-comic-red fill-comic-red" />
+                  <span className="font-comic text-[10px] font-black text-slate-900 leading-none">
+                    {villain.health}/{villain.maxHealth}
                   </span>
-                ))}
+                </div>
+                <div
+                  role="progressbar"
+                  aria-valuenow={villain.health}
+                  aria-valuemin={0}
+                  aria-valuemax={villain.maxHealth}
+                  aria-label="Villain Health"
+                  className="h-36 w-3.5 bg-neutral-800 rounded-full border border-black overflow-hidden relative flex flex-col justify-end shadow-comic-xs"
+                >
+                  <div
+                    className="w-full transition-all duration-300 rounded-b-full"
+                    style={{
+                      height: `${healthPercent}%`,
+                      backgroundColor:
+                        healthPercent > 50 ? '#10b981' : healthPercent > 25 ? '#f59e0b' : '#ef4444',
+                    }}
+                  />
+                </div>
+                <span className="font-comic text-[9px] font-black text-slate-600 uppercase tracking-tighter">
+                  HP
+                </span>
               </div>
-            )}
-
-            {/* Villain Card & Attachments */}
-            <div className="flex flex-col items-center w-full pt-0.5">
-              <CardView card={villain.card} size="sm" showTokens={false} enableHoverZoom={true} />
-              <CardAttachmentFan
-                attachments={villain.attachments}
-                cardsUnderneath={villain.cardsUnderneath}
-                onSelectAttachment={onSelectAttachment}
-              />
             </div>
           </div>
 

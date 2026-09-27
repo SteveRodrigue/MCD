@@ -7,7 +7,11 @@ import {
   CardAbility,
 } from '../models';
 import { executeEffect } from '../effects';
-import { executeAbilityCost, AbilityPaymentOptions } from './cost-engine';
+import {
+  executeAbilityCost,
+  executeResourceCostPayment,
+  AbilityPaymentOptions,
+} from './cost-engine';
 import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
 
 /**
@@ -371,6 +375,35 @@ export function resolveDecisionPrompt(
       ? player?.allies.find((c) => c.card.code === prompt.sourceCardCode) ||
         player?.tableau.find((c) => c.card.code === prompt.sourceCardCode)
       : undefined;
+
+  // Process payment if paymentOptions were supplied for this choice prompt (ADR-0072)
+  if (
+    player &&
+    paymentOptions &&
+    ((paymentOptions.generatorInstanceIds && paymentOptions.generatorInstanceIds.length > 0) ||
+      (paymentOptions.paymentCardInstanceIds && paymentOptions.paymentCardInstanceIds.length > 0))
+  ) {
+    const optParams = selectedOption?.params as Record<string, any> | undefined;
+    const reqAmount =
+      optParams?.resourceCost?.amount ??
+      (typeof optParams?.resourceCost === 'number' ? optParams.resourceCost : undefined) ??
+      (typeof optParams?.amount === 'number' && optParams.requiresPayment
+        ? optParams.amount
+        : undefined) ??
+      1;
+    const reqType = optParams?.resourceCost?.resourceType;
+
+    executeResourceCostPayment(
+      nextState,
+      player,
+      reqAmount,
+      reqType,
+      false,
+      paymentOptions,
+      promptCardInst,
+      promptCardInst?.card?.faction,
+    );
+  }
 
   // Synthesize and execute ability
   const syntheticAbility: CardAbility = {

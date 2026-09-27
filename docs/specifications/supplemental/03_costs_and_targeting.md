@@ -39,6 +39,22 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |
 
+### Universal Resource Payment Engine (`executeResourceCostPayment`)
+
+Per [ADR-0072](../../decisions/0072-unified-payment-subsystem-across-actions-prompts-and-attachments.md), all resource cost fulfillment across the engine is centralized into `executeResourceCostPayment(...)` in [`src/engine/pipeline/cost-engine.ts`](../../../src/engine/pipeline/cost-engine.ts).
+
+This engine executes payments uniformly across:
+1. **Card Play Actions (`PLAY_CARD`)**: Paying to play events, allies, upgrades, and supports from hand or out-of-hand zones.
+2. **In-Play Card Abilities (`USE_CARD_ABILITY`)**: Paying action or interrupt resource costs on tableau cards.
+3. **Attachment Discards (`SPEND_RESOURCES_TO_DISCARD_ATTACHMENT`)**: Spending resources (including generators like *Web-Shooter* or *Helicarrier*) to discard attachments like *Caught in a Web* or *Ivory Horn*.
+4. **Decision Prompt Choices (`resolveDecisionPrompt`)**: Paying costs attached to queued decision prompts, interrupts, or voluntary reaction windows.
+
+#### Payment Invariants (RR v1.8 p. 10, 15–16, 23, 24)
+- **Generator Exhaustion & Decrement**: Selected tableau generator cards are set to `exhausted = true`, their counter uses are decremented via `checkAndDiscardZeroCounterCard`, and once-per-round limits are recorded.
+- **Persistent Exhaustion Across Boundaries**: Cards exhausted during the Villain Phase remain exhausted across round upkeep and into the subsequent Player Phase until that player's next End of Player Phase cleanup (Step 3).
+- **Aspect Doubling**: Payment cards with aspect doubling abilities (*The Power of Leadership*, etc.) correctly double when paying for matching aspect cards.
+- **Identity Generator Abilities**: Alter-ego or hero resource abilities (e.g., Peter Parker *Scientist*) are invoked and flagged with once-per-round usage.
+
 ---
 
 ## 2. Target Selectors (`TargetSelector`)

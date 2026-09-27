@@ -66,6 +66,14 @@ graph TD
     ADR48["ADR-0048: Timing vs Trigger Disambiguation"] --> ADR50["ADR-0050: In-Play Trigger Instance Binding"]
 ```
 
+### 6. Action Cost & Resource Payment Evolution
+
+```mermaid
+graph TD
+    ADR24["ADR-0024: Action Cost Engine & Pre-Checks"] --> ADR55["ADR-0055: Universal Ability Resource Payment"]
+    ADR55 --> ADR72["ADR-0072: Unified Payment Subsystem Across Actions, Prompts, and Attachments"]
+```
+
 ---
 
 ## Decision Log Table
@@ -143,6 +151,7 @@ graph TD
 | [ADR-0069](0069-card-editor-field-binding-completeness-and-trigger-filter-orphan-purge.md)         | 2026-09-19 | Card Editor Field Binding Completeness & Trigger Filter Orphan Purge                 | **Accepted**                                                                                                     | Expose 100% of active engine properties in Card Editor UI, purge 5 un-evaluated orphan fields from TriggerFilterSchema, and remove invalid resource cost on Powered Gauntlets (Fixes #139). |
 | [ADR-0070](0070-systemic-chosen-entity-targeting-and-decision-fallback-architecture.md)            | 2026-09-27 | Systemic Chosen Entity Targeting and Decision Fallback Architecture                  | **Accepted**                                                                                                     | Decouple structural target scopes from state predicates via getEligibleTargets, enforce two-layer pre-play gating and decision prompt fallbacks, and expose pre-play targeting in UI (Fixes #146). |
 | [ADR-0071](0071-nested-allies-and-two-tier-player-tableau-architecture.md)                          | 2026-09-27 | Nested Allies and Two-Tier Player Tableau Architecture                               | **Accepted**                                                                                                     | Group Hero Identity and Allies in top-row roster container, extract Upgrades and Supports into dedicated full-width second row with responsive wrapping (Fixes #156).                               |
+| [ADR-0072](0072-unified-payment-subsystem-across-actions-prompts-and-attachments.md)                | 2026-09-27 | Unified Payment Subsystem Across Actions, Prompts, and Attachments                   | **Accepted**                                                                                                     | Centralize resource payment, generator deduction/exhaustion, and aspect doubling into executeResourceCostPayment across PLAY_CARD, USE_CARD_ABILITY, SPEND_RESOURCES_TO_DISCARD_ATTACHMENT, and prompt queue (Fixes #155). |
 
 ---
 

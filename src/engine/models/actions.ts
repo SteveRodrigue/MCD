@@ -100,6 +100,7 @@ export interface SpendResourcesToDiscardAttachmentAction {
   playerId: string;
   attachmentInstanceId: string;
   paymentCardInstanceIds?: string[];
+  generatorInstanceIds?: string[];
 }
 
 export interface ResolveDecisionPromptAction {

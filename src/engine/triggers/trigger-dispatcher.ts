@@ -564,7 +564,13 @@ export function dispatchTrigger(
   if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && currentDamage > 0) {
     const handInterruptIdx = player.hand.findIndex((c) => {
       const abilities = c.card.enrichment?.abilities || [];
-      return abilities.some((a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND');
+      return abilities.some((a) => {
+        if (!triggersAreEquivalent(a.trigger, trigger) || a.zone !== 'HAND') return false;
+        if (a.timing.startsWith('HERO_') && player.currentForm !== 'hero') return false;
+        if (a.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') return false;
+        const costCheck = canPayAbilityCost(state, player, a, c);
+        return costCheck.allowed;
+      });
     });
 
     if (handInterruptIdx !== -1) {
@@ -606,10 +612,21 @@ export function dispatchTrigger(
           }
         } else {
           const cardName = interruptCard.card.name;
+          const resCost = extractResourceCost(ability.cost);
+          const reqAmount = resCost.hasCost
+            ? resCost.requiredAmount
+            : interruptCard.card.type === 'event'
+              ? (interruptCard.card.cost ?? 0)
+              : 0;
+          const hasCost = reqAmount > 0;
+          const costSuffix = hasCost
+            ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
+            : '';
+
           enqueueDecisionPrompt(state, {
             promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             playerId: player.id,
-            title: `Do you want to use the following ability from ${cardName}?`,
+            title: `Do you want to use the following ability from ${cardName}${costSuffix}?`,
             description: formatAbilityStepsSummary(trigger, ability.steps || []),
             sourceCardName: cardName,
             sourceCardCode: interruptCard.card.code,
@@ -627,7 +644,7 @@ export function dispatchTrigger(
             options: [
               {
                 id: `trigger_${ability.id}`,
-                label: 'Yes',
+                label: hasCost ? `Yes${costSuffix}` : 'Yes',
                 effect: 'EXECUTE_OPTIONAL_TRIGGER',
                 params: {
                   ability,
@@ -637,6 +654,11 @@ export function dispatchTrigger(
                     interceptedValue: currentDamage,
                   },
                   sourceCardInstanceId: interruptCard.instanceId,
+                  requiresPayment: hasCost,
+                  costCardInstanceId: interruptCard.instanceId,
+                  resourceCost: hasCost
+                    ? { amount: reqAmount, resourceType: resCost.requiredType }
+                    : undefined,
                 },
               },
               {
@@ -722,10 +744,21 @@ export function dispatchTrigger(
           }
         } else {
           const cardName = interruptCard.card.name;
+          const resCost = extractResourceCost(ability.cost);
+          const reqAmount = resCost.hasCost
+            ? resCost.requiredAmount
+            : interruptCard.card.type === 'event'
+              ? (interruptCard.card.cost ?? 0)
+              : 0;
+          const hasCost = reqAmount > 0;
+          const costSuffix = hasCost
+            ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
+            : '';
+
           enqueueDecisionPrompt(state, {
             promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             playerId: p.id,
-            title: `Do you want to use the following ability from ${cardName}?`,
+            title: `Do you want to use the following ability from ${cardName}${costSuffix}?`,
             description: formatAbilityStepsSummary(trigger, ability.steps || []),
             sourceCardName: cardName,
             sourceCardCode: interruptCard.card.code,
@@ -738,7 +771,7 @@ export function dispatchTrigger(
             options: [
               {
                 id: `trigger_${ability.id}`,
-                label: 'Yes',
+                label: hasCost ? `Yes${costSuffix}` : 'Yes',
                 effect: 'EXECUTE_OPTIONAL_TRIGGER',
                 params: {
                   ability,
@@ -748,6 +781,11 @@ export function dispatchTrigger(
                     interceptedValue: currentThreat,
                   },
                   sourceCardInstanceId: interruptCard.instanceId,
+                  requiresPayment: hasCost,
+                  costCardInstanceId: interruptCard.instanceId,
+                  resourceCost: hasCost
+                    ? { amount: reqAmount, resourceType: resCost.requiredType }
+                    : undefined,
                 },
               },
               {

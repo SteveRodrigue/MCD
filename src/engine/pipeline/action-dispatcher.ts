@@ -37,8 +37,10 @@ import {
 } from './legality-checker';
 import {
   executeAbilityCost,
+  executeResourceCostPayment,
   checkAndDiscardZeroCounterCard,
   getApplicableCostReductions,
+  getEffectiveCardCost,
 } from './cost-engine';
 import {
   executeEffect,
@@ -55,7 +57,6 @@ import {
 } from './villain-phase';
 import { initiatePlayerPhaseCleanup, executePlayerCleanup } from './player-phase-cleanup';
 import { handleVillainDefeat } from './scenario-helpers';
-import { locateCard, readCardResources } from '../queries/card-inspector';
 import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
@@ -1166,155 +1167,22 @@ export function dispatchAction(
         }
       }
 
-      // 1. Discard Payment Cards from Hand & Collect Spent Resources
-      const resourcesSpent: string[] = [];
-      for (const pId of action.paymentCardInstanceIds || []) {
-        const pIndex = player.hand.findIndex((c) => c.instanceId === pId);
-        if (pIndex !== -1) {
-          const [discarded] = player.hand.splice(pIndex, 1);
-          player.discard.push(discarded);
-
-          // Check aspect doubling cards (e.g. The Power of Leadership / Justice / Aggression / Protection)
-          const aspectDoubleStep = discarded.card.enrichment?.abilities
-            ?.flatMap((a) => a.steps || [])
-            .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
-          const isDoubled = Boolean(
-            aspectDoubleStep && aspectDoubleStep.effectParams?.aspect === targetCard.card.faction,
-          );
-          const multiplier = isDoubled ? 2 : 1;
-
-          const res = discarded.card.resources;
-          let added = false;
-          for (const type of ['physical', 'energy', 'mental', 'wild'] as const) {
-            const count = (res?.[type] || 0) * multiplier;
-            for (let i = 0; i < count; i++) {
-              resourcesSpent.push(type);
-              added = true;
-            }
-          }
-          if (!added) {
-            for (let i = 0; i < multiplier; i++) {
-              resourcesSpent.push('wild');
-            }
-          }
-        }
-      }
-
-      // 2. Process In-Play & Identity Generator Activations (e.g. Web-Shooter, Helicarrier, Scientist)
-      for (const gId of action.generatorInstanceIds || []) {
-        if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
-          const idAbility = player.activeFormCard.enrichment?.abilities?.find(
-            (a) =>
-              a.timing === 'RESOURCE' ||
-              a.timing === 'HERO_RESOURCE' ||
-              a.timing === 'ALTER_EGO_RESOURCE' ||
-              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
-          );
-          if (idAbility) {
-            const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
-            if (genStep?.effectParams?.fromCard) {
-              const target = locateCard(nextState, genStep.effectParams.fromCard, {
-                player,
-              });
-              if (target) {
-                const types = readCardResources(target);
-                for (const t of types) {
-                  resourcesSpent.push(t);
-                }
-              }
-            } else {
-              const resType = (genStep?.effectParams?.resource as string) || 'wild';
-              const amount = Number(genStep?.effectParams?.amount) || 1;
-              for (let i = 0; i < amount; i++) {
-                resourcesSpent.push(resType);
-              }
-            }
-
-            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-            player.usedAbilitiesThisRound[idAbility.id] =
-              (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
-
-            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-            player.usedAbilitiesThisPhase[idAbility.id] =
-              (player.usedAbilitiesThisPhase[idAbility.id] || 0) + 1;
-
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
-              category: 'ability',
-              actor: { name: player.name, type: player.currentForm },
-              key: 'identity.ability.used',
-              params: { ability: idAbility.id, hero: player.activeFormCard.name },
-              onomatopoeia: 'SCIENTIST!',
-            });
-          }
-          continue;
-        }
-
-        const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
-        if (gIdx !== -1) {
-          const gCard = player.tableau[gIdx];
-          gCard.exhausted = true;
-
-          // Track limits on table abilities if configured
-          const tableAbility = gCard.card.enrichment?.abilities?.find(
-            (a) =>
-              a.timing === 'RESOURCE' ||
-              a.timing === 'HERO_RESOURCE' ||
-              a.timing === 'ALTER_EGO_RESOURCE' ||
-              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
-          );
-          if (tableAbility) {
-            const genStep = tableAbility.steps?.find(
-              (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
-            );
-            if (genStep?.effectParams?.fromCard) {
-              const target = locateCard(nextState, genStep.effectParams.fromCard, {
-                player,
-                sourceCardInstance: gCard,
-              });
-              if (target) {
-                const types = readCardResources(target);
-                for (const t of types) {
-                  resourcesSpent.push(t);
-                }
-              }
-            } else {
-              const resType = (genStep?.effectParams?.resource as string) || 'wild';
-              const amount = Number(genStep?.effectParams?.amount) || 1;
-              for (let i = 0; i < amount; i++) {
-                resourcesSpent.push(resType);
-              }
-            }
-
-            const key = `${gCard.instanceId}_${tableAbility.id}`;
-            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-            player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
-            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-            player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
-          } else {
-            resourcesSpent.push('wild');
-          }
-
-          // Generic counter decrement and discardOnEmpty handling (ADR-0018, ADR-0057)
-          if (gCard.card.enrichment?.uses) {
-            const counterType = gCard.card.enrichment.uses.type;
-            if (counterType && gCard.counters && gCard.counters[counterType] !== undefined) {
-              gCard.counters[counterType] = Math.max(0, gCard.counters[counterType] - 1);
-            }
-            const currentCounters = gCard.tokens?.counters || 0;
-            gCard.tokens = { ...gCard.tokens, counters: Math.max(0, currentCounters - 1) };
-            checkAndDiscardZeroCounterCard(
-              nextState,
-              player,
-              gCard,
-              gCard.card.enrichment.uses.type,
-            );
-          }
-        }
-      }
+      // 1 & 2. Process Hand Payments & Generator Activations via Unified Payment Subsystem (ADR-0072)
+      const effectiveCost = getEffectiveCardCost(nextState, player, targetCard).effectiveCost;
+      const paymentRes = executeResourceCostPayment(
+        nextState,
+        player,
+        effectiveCost,
+        undefined,
+        false,
+        {
+          paymentCardInstanceIds: action.paymentCardInstanceIds,
+          generatorInstanceIds: action.generatorInstanceIds,
+        },
+        targetCard,
+        targetCard.card.faction,
+      );
+      const resourcesSpent = paymentRes.resourcesSpent;
 
       // 3. Play Target Card from Source Zone
       let playedCardInstance: CardInstance;
@@ -2290,6 +2158,7 @@ export function dispatchAction(
         cardInstanceId: action.attachmentInstanceId,
         abilityId: discardAbility ? discardAbility.id : 'ivory_horn_discard_action',
         paymentCardInstanceIds: action.paymentCardInstanceIds,
+        generatorInstanceIds: action.generatorInstanceIds,
       });
     }
 

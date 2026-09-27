@@ -45,6 +45,7 @@ import {
   moveDefeatedCardToPile,
   processHostDefeated,
   defeatSideScheme,
+  resetCardState,
 } from '../effects';
 import {
   advanceVillainPhaseStep,
@@ -849,6 +850,7 @@ export function dispatchAction(
         processHostDefeated(nextState, ally, { player });
         dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+        resetCardState(ally);
         owner.discard.push(ally);
       }
 
@@ -941,6 +943,7 @@ export function dispatchAction(
         processHostDefeated(nextState, ally, { player });
         dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
+        resetCardState(ally);
         owner.discard.push(ally);
       }
 
@@ -1347,6 +1350,12 @@ export function dispatchAction(
         playedCardInstance.ownerId = targetOwnerPlayer.id;
       } else if (!playedCardInstance.ownerId) {
         playedCardInstance.ownerId = player.id;
+      }
+
+      // Cards entering play enter ready with reset transient state (RR v1.8 p. 11, 24)
+      if (cardType !== CardType.EVENT) {
+        resetCardState(playedCardInstance);
+        playedCardInstance.exhausted = false;
       }
 
       // Initialize counters declaratively for cards with 'uses' definition (RR v1.8 p. 30)
@@ -2365,6 +2374,7 @@ export function dispatchAction(
                     (ally.ownerId
                       ? poppedState.players.find((pl) => pl.id === ally.ownerId)
                       : undefined) || allyController;
+                  resetCardState(ally);
                   owner.discard.push(ally);
                 } else {
                   ally.tokens = { ...ally.tokens, damage: newDmg };
@@ -3133,6 +3143,10 @@ export function dispatchAction(
 
           // Track owner for cross-player control per RR v1.8 p. 11
           chosenCard.ownerId = ownerPlayer.id;
+
+          // Reset transient gameplay state and ensure card enters ready (RR v1.8 p. 11, 24)
+          resetCardState(chosenCard);
+          chosenCard.exhausted = false;
 
           if (chosenCard.card.type === CardType.ALLY) {
             targetPlayer.allies.push(chosenCard);

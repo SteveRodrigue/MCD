@@ -11,6 +11,12 @@ description: 'Standard 8-step protocol for analyzing, translating, validating, a
 
 ## Refactor Guardrails & Card Authority
 
+- **Execution Modes:**
+  - **Single-Card Mode:** Focused, interactive 8-step pipeline for an individual card. Stop at Step 7 for user peer review before making any file modifications.
+  - **Batch Mode:** 3-phase structured pipeline across multiple cards, sets, or hero packs:
+    - **Phase 1 (Batch Evaluation & Drafting Loop):** Iterate through all cards (Steps 1–6) without mid-flight user stops. Automatically route <95% confidence and Tier 3 cards to `docs/ambiguities/` and strip their active abilities.
+    - **Phase 2 (Consolidated Peer Review Gate):** Consolidate all drafted/refactored supplemental changes into a single review artifact/plan containing the 4-point review format. Stop **once** for user approval before writing to disk.
+    - **Phase 3 (Batch Authoring & Verification):** Write approved cards into supplemental JSON, update audit stamps and specifications, prune resolved ambiguities, and execute the verification suite once at the conclusion of the batch.
 - **Blast-Radius Handling:** Apply the 3-Tier blast radius from `shared-quality-gates.md`.
   - **In Single-Card Mode:** If Tier 3 (structural refactor required), stop immediately, log to `docs/ambiguities/`, create `implementation_plan.md`, and wait for user approval.
   - **In Batch-Mode (Scanning multiple cards/sets):** Do not halt the batch. Log a dedicated ambiguity file to `docs/ambiguities/{pack}_{code}_{slug}.md` with `blocker_category: "TIER_3_STRUCTURAL_REFACTOR"`, skip the blocked card, continue scanning, and present a consolidated report at the end.
@@ -25,6 +31,7 @@ description: 'Standard 8-step protocol for analyzing, translating, validating, a
   2. **Original Supplemental Data** (existing JSON)
   3. **Proposed Supplemental Data** (new/refactored JSON)
   4. **The "Why?"** (rationale: spec evolution, gap resolution, or rule correction)
+  In Single-Card Mode, this halts execution immediately. In Batch Mode, this is presented as a consolidated artifact covering all ready cards in the batch before any disk mutations occur.
 
 ---
 
@@ -33,19 +40,34 @@ description: 'Standard 8-step protocol for analyzing, translating, validating, a
 
 ```mermaid
 flowchart TD
-    S1["1. Read Upstream Card Text (data/upstream/) & Existing Supplemental Baseline"] --> S2["2. Semantic Mapping & Spec Consultation (Zero Assumption)"]
-    S2 --> S3["3. Draft Supplemental JSON Schema & Differential Gap Analysis"]
-    S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
-    S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
-    S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
-    S5 -- "No (< 95%, Attempts < 3)" --> S3
-    S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
-Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
-    S6 --> S7{"7. User Peer Review Gate & Blast-Radius Check"}
-    S7 -- "Approved (Tier 1 / Tier 2)" --> S8["8. Author Composable Primitives, Stamp Audit & Prune Ambiguity"]
-    S7 -- "Tier 3 (Structural)" --> T3{"Single Card or Batch?"}
-    T3 -- "Single Card" --> T3S["Log Ambiguity, Write Implementation Plan & STOP for Approval"]
-    T3 -- "Batch Mode" --> T3B["Log Ambiguity in docs/ambiguities/, Skip & Continue Batch"]
+    subgraph P1 ["Phase 1: Evaluation & Drafting Loop"]
+        S1["1. Read Upstream Card Text & Existing Supplemental Baseline"] --> S2["2. Semantic Mapping & Spec Consultation (Zero Assumption)"]
+        S2 --> S3["3. Draft Supplemental JSON Schema & Differential Gap Analysis"]
+        S3 --> S4["4. Consult Ground Truth & MarvelCDB (references/links.md)"]
+        S4 --> S5{"5. Round-Trip Test (Confidence >= 95%)?"}
+        S5 -- "Yes (>= 95%)" --> S6["6. Engine Primitive & Trigger Reuse Check"]
+        S5 -- "No (< 95%, Attempts < 3)" --> S3
+        S5 -- "No (< 95%, Attempts >= 3)" --> CB["🚨 TRIGGER CIRCUIT-BREAKER:
+Log to docs/ambiguities/{pack}_{code}_{slug}.md & Strip Abilities"]
+        S6 --> T3{"Tier 3 Structural?"}
+        T3 -- "Yes" --> CB
+    end
+
+    CB -- "Single Card" --> CBSingle["Report Block to User & STOP"]
+    CB -- "Batch Mode" --> NextCard["Next Card in Batch"]
+    NextCard --> S1
+
+    T3 -- "No (Tier 1 / 2)" --> ModeChoice{"Execution Mode?"}
+    ModeChoice -- "Single Card" --> S7Single["7. User Peer Review Gate (STOP for Approval)"]
+    ModeChoice -- "Batch Mode" --> CollateBatch["Collate into Consolidated Batch Plan"]
+    CollateBatch --> MoreCards{"More Cards?"}
+    MoreCards -- "Yes" --> NextCard
+    MoreCards -- "No" --> S7Batch["7. Consolidated Peer Review Gate (STOP for Approval)"]
+
+    subgraph P3 ["Phase 3: Authoring & Verification"]
+        S7Single -- "Approved" --> S8Single["8. Author JSON, Stamp Audit, Spec Update & Full Verification"]
+        S7Batch -- "Approved" --> S8Batch["8. Batch Author JSON, Stamp Audits, Spec Update & Single Verification Run"]
+    end
 ```
 
 ### Step 1: Ingest Upstream Card & Existing Supplemental Baseline
@@ -205,10 +227,13 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
   2. **Original Supplemental Data:** The existing JSON entry in `src/data/supplemental/pack/{pack_code}.json` (or `None` if brand new).
   3. **Proposed Supplemental Data:** The newly drafted/refactored supplemental JSON entry conforming to current specifications.
   4. **The "Why?":** Explicit rationale explaining the motivation for the change (e.g. specification updates in `docs/specifications/`, gaps or ambiguities identified during differential comparison, rule corrections, or primitive refactoring).
-- Check change tier (Tier 1 vs Tier 2 vs Tier 3):
+- **Execution Mode Handling:**
+  - **Single-Card Mode:** Stop immediately at Step 7, present the 4-part review breakdown, and wait for user approval before modifying code or data files.
+  - **Batch Mode:** Do not stop card-by-card. Collate the 4-part review breakdown for all ready cards across the batch into a single consolidated implementation plan / peer review artifact. Stop **once** for user approval for the entire batch.
+- **Blast-Radius Tier Handling:**
   - **Tier 1 (No code change needed / Fast-track):** Card integrated or updated in supplemental JSON without engine code changes. Present the peer-review diff to the user.
-  - **Tier 2 (Additive helper added):** Implement generic reusable building block.
-  - **Tier 3 (Structural):** Isolate to `docs/ambiguities/{pack}_{code}_{slug}.md`. In single-card mode: stop and request approval; in batch mode: isolate and continue batch.
+  - **Tier 2 (Additive helper added):** Implement generic reusable building block and write a regression unit test.
+  - **Tier 3 (Structural):** Isolate to `docs/ambiguities/{pack}_{code}_{slug}.md` and strip `abilities: [...]`. In single-card mode: stop and request approval; in batch mode: isolate, continue batch, and include in the consolidated end-of-batch report.
 
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 
@@ -222,7 +247,9 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Isolate"]
      2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
-5. **Regenerate Usage Audit & Verification:** **ALWAYS** run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md) with up-to-date integration metrics, sequence telemetry, and pruned ambiguity counts. Run full verification suite: `npm test; npm run typecheck; npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
+5. **Regenerate Usage Audit & Verification:**
+   - **In Single-Card Mode:** Run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md). Run full verification suite: `npm test; npm run typecheck; npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
+   - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `npm run report:declarations` and the full verification suite (`npm test; npm run typecheck; npm run build`) **once as a single consolidated check** at the end of the batch.
 
 ---
 

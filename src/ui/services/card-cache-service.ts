@@ -12,7 +12,7 @@ const objectUrlMemoryCache = new Map<string, string>();
 // In-flight download promises map to deduplicate concurrent requests for the same card art
 const inFlightCardArtRequests = new Map<string, Promise<string>>();
 
-import { CardType } from '../../engine/models';
+import { CardType, NormalizedCard } from '../../engine/models';
 
 export interface CardArtIdentifier {
   code: string;
@@ -248,4 +248,54 @@ export async function clearCardArtCache(): Promise<void> {
       // Ignore cache deletion failure in restricted environments
     }
   }
+}
+
+export type CardBackType = 'player' | 'encounter' | 'villain';
+
+/**
+ * Returns the local URL for a card back (e.g. "/back/player.png").
+ */
+export function getCardBackUrl(type: CardBackType): string {
+  return `/back/${type}.png`;
+}
+
+/**
+ * Returns the primary fallback hex color when a card back image cannot be loaded.
+ */
+export function getCardBackFallbackColor(type: CardBackType): string {
+  switch (type) {
+    case 'player':
+      return '#0284c7';
+    case 'encounter':
+      return '#ea580c';
+    case 'villain':
+      return '#7c3aed';
+    default:
+      return '#0284c7';
+  }
+}
+
+/**
+ * Determines the appropriate card back type for a normalized card.
+ */
+export function getCardBackTypeForCard(card?: NormalizedCard | null): CardBackType {
+  if (!card) return 'player';
+  const type = (card.type || '').toLowerCase();
+  const faction = (card.faction || '').toLowerCase();
+
+  if (type === 'villain' || type === 'main_scheme') {
+    return 'villain';
+  }
+  if (
+    faction === 'encounter' ||
+    type === 'minion' ||
+    type === 'treachery' ||
+    type === 'side_scheme' ||
+    type === 'attachment' ||
+    type === 'obligation' ||
+    type === 'environment'
+  ) {
+    return 'encounter';
+  }
+  return 'player';
 }

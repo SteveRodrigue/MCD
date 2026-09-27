@@ -7,7 +7,120 @@ import { cardSupplementalEditorPlugin } from './src/tools/editor/api-middleware'
 
 function cardCachePlugin(): Plugin {
   const cacheDir = path.resolve(__dirname, 'cache', 'cards');
+  const cacheBackDir = path.resolve(__dirname, 'cache', 'back');
   const inFlightDownloads = new Map<string, Promise<boolean>>();
+
+  const cardBackRemoteUrls: Record<string, string> = {
+    'player.png': 'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-player-back.png',
+    'encounter.png':
+      'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-encounter-back.png',
+    'villain.png': 'https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-villain-back.png',
+  };
+
+  function downloadBackToCache(fileName: string, filePath: string): Promise<boolean> {
+    const remoteUrl = cardBackRemoteUrls[fileName];
+    if (!remoteUrl) return Promise.resolve(false);
+
+    const inFlightKey = `back:${fileName}`;
+    const existingPromise = inFlightDownloads.get(inFlightKey);
+    if (existingPromise) return existingPromise;
+
+    const downloadPromise = new Promise<boolean>((resolve) => {
+      if (!fs.existsSync(cacheBackDir)) {
+        fs.mkdirSync(cacheBackDir, { recursive: true });
+      }
+
+      const tempPath = `${filePath}.tmp.${Date.now()}`;
+      const fileStream = fs.createWriteStream(tempPath);
+
+      const downloadWithRedirect = (targetUrl: string, redirectsLeft: number) => {
+        if (redirectsLeft <= 0) {
+          fileStream.close();
+          if (fs.existsSync(tempPath)) {
+            try {
+              fs.unlinkSync(tempPath);
+            } catch {
+              // ignore
+            }
+          }
+          return resolve(false);
+        }
+
+        https
+          .get(
+            targetUrl,
+            {
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 MCD/1.0',
+              },
+            },
+            (response) => {
+              if (
+                response.statusCode &&
+                response.statusCode >= 300 &&
+                response.statusCode < 400 &&
+                response.headers.location
+              ) {
+                const redirectedUrl = new URL(response.headers.location, targetUrl).toString();
+                return downloadWithRedirect(redirectedUrl, redirectsLeft - 1);
+              }
+
+              if (response.statusCode === 200) {
+                response.pipe(fileStream);
+                fileStream.on('finish', () => {
+                  fileStream.close(() => {
+                    try {
+                      fs.renameSync(tempPath, filePath);
+                      resolve(true);
+                    } catch {
+                      if (fs.existsSync(tempPath)) {
+                        try {
+                          fs.unlinkSync(tempPath);
+                        } catch {
+                          // ignore cleanup error
+                        }
+                      }
+                      resolve(false);
+                    }
+                  });
+                });
+              } else {
+                fileStream.close(() => {
+                  if (fs.existsSync(tempPath)) {
+                    try {
+                      fs.unlinkSync(tempPath);
+                    } catch {
+                      // ignore cleanup error
+                    }
+                  }
+                  resolve(false);
+                });
+              }
+            },
+          )
+          .on('error', () => {
+            fileStream.close(() => {
+              if (fs.existsSync(tempPath)) {
+                try {
+                  fs.unlinkSync(tempPath);
+                } catch {
+                  // ignore cleanup error
+                }
+              }
+              resolve(false);
+            });
+          });
+      };
+
+      downloadWithRedirect(remoteUrl, 5);
+    }).finally(() => {
+      inFlightDownloads.delete(inFlightKey);
+    });
+
+    inFlightDownloads.set(inFlightKey, downloadPromise);
+    return downloadPromise;
+  }
 
   function downloadToCache(fileName: string, filePath: string): Promise<boolean> {
     const existingPromise = inFlightDownloads.get(fileName);
@@ -79,6 +192,41 @@ function cardCachePlugin(): Plugin {
   }
 
   const serveCardMiddleware = async (req: any, res: any, next: any) => {
+    if (req.url && (req.url.startsWith('/back/') || req.url.startsWith('/cache/back/'))) {
+      const rawFileName = req.url.replace(/^\/(?:cache\/)?back\//, '').split('?')[0];
+
+      // Validate filename to prevent directory traversal
+      if (!/^[a-zA-Z0-9_-]+\.png$/i.test(rawFileName)) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'text/plain');
+        res.end('Invalid card back image filename');
+        return;
+      }
+
+      const fileName = rawFileName;
+      const filePath = path.join(cacheBackDir, fileName);
+
+      // 1. Check if the image is in cache
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return fs.createReadStream(filePath).pipe(res);
+      }
+
+      // 2. If not, download the card back
+      const downloaded = await downloadBackToCache(fileName, filePath);
+      if (downloaded && fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        return fs.createReadStream(filePath).pipe(res);
+      }
+
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Card back image not found');
+      return;
+    }
+
     if (req.url && (req.url.startsWith('/cards/') || req.url.startsWith('/cache/cards/'))) {
       const rawFileName = req.url.replace(/^\/(?:cache\/)?cards\//, '').split('?')[0];
 
@@ -136,6 +284,18 @@ function cardCachePlugin(): Plugin {
         for (const file of files) {
           if (file.endsWith('.png')) {
             fs.copyFileSync(path.join(cacheDir, file), path.join(distCardsDir, file));
+          }
+        }
+      }
+
+      // Copy local cached card backs to dist/back for production offline play
+      const distBackDir = path.resolve(__dirname, 'dist', 'back');
+      if (fs.existsSync(cacheBackDir)) {
+        fs.mkdirSync(distBackDir, { recursive: true });
+        const files = fs.readdirSync(cacheBackDir);
+        for (const file of files) {
+          if (file.endsWith('.png')) {
+            fs.copyFileSync(path.join(cacheBackDir, file), path.join(distBackDir, file));
           }
         }
       }

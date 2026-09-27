@@ -23,6 +23,7 @@ import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { useGameSettings } from '../../context/useGameSettings';
 import { getEncounterSetName } from './villain-zone-utils';
 import { getEffectiveVillainStats } from '../../../engine/pipeline/stat-calculator';
+import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 
 interface VillainZoneProps {
   villain: VillainState;
@@ -61,6 +62,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
   const { devMode } = useGameSettings();
   const [showDeckModal, setShowDeckModal] = useState(false);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [deckImageError, setDeckImageError] = useState(false);
 
   // Inspector View Sort States
   const [sortMode, setSortMode] = useState<SortMode>('deck_order');
@@ -138,6 +140,7 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
           <div className="flex md:flex-col items-center justify-center gap-3 shrink-0">
             {/* Encounter Draw Pile (Face-Down Default • Click to Inspect in Dev Mode) */}
             <div
+              data-testid="encounter-deck-pile"
               onClick={() => devMode && setShowDeckModal(true)}
               className={`flex flex-col items-center group ${devMode ? 'cursor-pointer' : 'cursor-default'}`}
               title={
@@ -147,15 +150,31 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
               }
             >
               <div
-                className={`w-18 h-26 sm:w-20 sm:h-28 bg-slate-900 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden bg-bendy-dots transition-all ${
+                className={`w-18 h-26 sm:w-20 sm:h-28 border-2 border-comic-black rounded-lg shadow-comic-sm flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all ${
                   devMode ? 'group-hover:border-comic-yellow' : ''
                 }`}
+                style={{
+                  backgroundColor: getCardBackFallbackColor('encounter'),
+                }}
               >
-                <Layers className="w-5 h-5 text-comic-yellow mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-comic text-lg text-white leading-none">
+                {!deckImageError ? (
+                  <img
+                    src={getCardBackUrl('encounter')}
+                    alt="Encounter Deck"
+                    onError={() => setDeckImageError(true)}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    data-testid="encounter-deck-image"
+                  />
+                ) : (
+                  <div
+                    data-testid="encounter-deck-fallback"
+                    className="absolute inset-0 w-full h-full"
+                    style={{ backgroundColor: getCardBackFallbackColor('encounter') }}
+                  />
+                )}
+                <span className="absolute bottom-1 right-1 z-10 bg-slate-950/80 text-white font-comic text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
                   {encounterDeck.length}
                 </span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase">DECK</span>
               </div>
             </div>
 

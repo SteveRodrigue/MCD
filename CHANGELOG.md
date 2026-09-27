@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feature (UI): Official Card Backs for Decks & Facedown Piles ([Issue #141](https://github.com/SteveRodrigue/MCD/issues/141))**
+  - **Authentic Card Back Assets & Automated Pipeline:**
+    - Created `scripts/cache-card-backs.ts` to download official high-resolution Player, Encounter, and Villain card backs from Hall of Heroes (`references/links.md`) into `cache/back/{player.png, encounter.png, villain.png}`.
+    - Extended `vite.config.ts` (`cardCachePlugin`) with route handling for `/back/` and `/cache/back/` with on-demand fallback caching, and bundled into `dist/back/` during `closeBundle()` for offline play.
+    - Added `getCardBackUrl(type)` and `getCardBackFallbackColor(type)` in `card-cache-service.ts` with primary theme fallback colors (Blue `#0284c7` for Player, Orange `#ea580c` for Encounter, Purple `#7c3aed` for Villain).
+  - **Facedown & Deck Pile Component Upgrades:**
+    - In `PlayerHandTray.tsx`, upgraded the Player Draw Deck pile to display the Player Card Back with 3D stacked styling, bottom-right numeric count badge (leaving card art unobstructed), and graceful fallback.
+    - In `VillainZone.tsx`, upgraded the Encounter Draw Deck pile to display the Encounter Card Back with 3D stacked styling, bottom-right numeric count badge (leaving card art unobstructed), and graceful fallback.
+    - In `FacedownEncounterCard.tsx`, replaced CSS halftone placeholder with the official Encounter Card Back while preserving comic badge and peek controls.
+    - In `CardView.tsx`, added `isFacedown` support to render the appropriate card back with suppressed front badges when facedown.
+  - **Automated Verification:**
+    - Added comprehensive unit tests in `tests/ui/card-back-service.test.ts`, `tests/ui/board-deck-piles.test.tsx`, and updated `tests/ui/facedown-encounter-cards-display.test.tsx` (21 tests total) asserting card back rendering, error recovery, bottom-right numeric badge styling, and fallback color consistency.
+
+
 - **Test (Engine): Contract Test for Crowd Control (01108) Threat Scaling ([Issue #160](https://github.com/SteveRodrigue/MCD/issues/160))**
   - Added regression test in `tests/engine/keywords-crisis.test.ts` verifying that *Crowd Control* revealed in a 2-player game initializes with strictly $2 \times 2 = 4$ threat and has no phantom When Revealed ability additions.
 

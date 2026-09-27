@@ -6,6 +6,7 @@ import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider'
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
+import { getCardBackUrl, getCardBackFallbackColor } from '../../src/ui/services/card-cache-service';
 
 describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
   const heroes = [
@@ -74,6 +75,22 @@ describe('Facedown Encounter Card Display in Hero Zone (Issue #138)', () => {
 
       expect(screen.getByText('ENCOUNTER')).toBeDefined();
       expect(screen.getByText('For Spider-Man')).toBeDefined();
+
+      const img = screen.getByTestId('facedown-card-back-image') as HTMLImageElement;
+      expect(img).toBeDefined();
+      expect(img.getAttribute('src')).toBe(getCardBackUrl('encounter'));
+    });
+
+    it('falls back to encounter theme color when card back image fails to load', () => {
+      const cardA = createCardInstance(cardCatalog.getCard('01005')!);
+      render(<FacedownEncounterCard cards={[cardA]} heroName="Spider-Man" />);
+
+      const img = screen.getByTestId('facedown-card-back-image');
+      fireEvent.error(img);
+
+      const fallback = screen.getByTestId('facedown-card-back-fallback');
+      expect(fallback).toBeDefined();
+      expect(fallback.style.backgroundColor).toBe(getCardBackFallbackColor('encounter'));
     });
 
     it('renders correct count badge for multiple cards', () => {

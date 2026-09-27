@@ -14,6 +14,7 @@ import { CardPaymentModal } from './CardPaymentModal';
 import { evaluateCardPlayability } from '../../../engine/pipeline/legality-checker';
 import { useHandFanLayout } from '../../hooks/useHandFanLayout';
 import { getHeroColorPalette } from '../../utils/hero-theme';
+import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 
 interface PlayerHandTrayProps {
   hand: CardInstance[];
@@ -117,6 +118,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [showNemesisModal, setShowNemesisModal] = useState(false);
   const [playingCard, setPlayingCard] = useState<CardInstance | null>(null);
   const [turnWarning, setTurnWarning] = useState<string | null>(null);
+  const [deckImageError, setDeckImageError] = useState(false);
 
   const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
   const isActivePlayerTurn =
@@ -348,21 +350,37 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             {/* Draw Pile & Tutor */}
             <div className="flex flex-col items-stretch w-full gap-0.5">
               <div
+                data-testid="player-deck-pile"
                 onClick={() => devMode && setShowDeckModal(true)}
-                className={`flex items-center justify-center gap-1.5 px-2 py-1 rounded bg-comic-blue text-white border border-comic-black shadow-comic-sm ${
-                  devMode
-                    ? 'cursor-pointer hover:bg-sky-600 transition-transform hover:scale-[1.02]'
-                    : 'cursor-default'
-                }`}
+                className={`relative flex items-center justify-center rounded overflow-hidden border border-comic-black shadow-comic-sm transition-transform ${
+                  devMode ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'
+                } h-10 md:h-14`}
+                style={{
+                  backgroundColor: getCardBackFallbackColor('player'),
+                }}
                 title={
                   devMode
                     ? 'Inspect & Tutor from Player Deck (Dev Mode Active)'
                     : 'Player Draw Deck'
                 }
               >
-                <Layers className="w-3.5 h-3.5 text-comic-yellow shrink-0" />
-                <span className="font-comic text-[11px] font-bold whitespace-nowrap">
-                  DECK: {deck.length}
+                {!deckImageError ? (
+                  <img
+                    src={getCardBackUrl('player')}
+                    alt="Player Card Back"
+                    onError={() => setDeckImageError(true)}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    data-testid="player-deck-image"
+                  />
+                ) : (
+                  <div
+                    data-testid="player-deck-fallback"
+                    className="absolute inset-0 w-full h-full"
+                    style={{ backgroundColor: getCardBackFallbackColor('player') }}
+                  />
+                )}
+                <span className="absolute bottom-1 right-1 z-10 bg-slate-950/80 text-white font-comic text-xs font-bold px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs leading-none">
+                  {deck.length}
                 </span>
               </div>
 

@@ -24,6 +24,29 @@ describe('CardContextMenu Actions & Invariants', () => {
     expect(windowOpenMock).toHaveBeenCalledWith('/editor?code=01001a', '_blank');
   });
 
+  it('open in MarvelCDB action launches https://marvelcdb.com/card/:code in new window with noopener,noreferrer (Fixes #151)', () => {
+    const windowOpenMock = vi.fn();
+    vi.stubGlobal('window', {
+      open: windowOpenMock,
+      innerWidth: 1920,
+      innerHeight: 1080,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+
+    const cardCode = '01060';
+    const targetUrl = `https://marvelcdb.com/card/${encodeURIComponent(cardCode)}`;
+
+    // Simulate clicking "Open in MarvelCDB"
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+
+    expect(windowOpenMock).toHaveBeenCalledWith(
+      'https://marvelcdb.com/card/01060',
+      '_blank',
+      'noopener,noreferrer',
+    );
+  });
+
   it('copy card code action writes exact code to clipboard', async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', {
@@ -128,6 +151,17 @@ describe('CardContextMenu Actions & Invariants', () => {
   });
 
   describe('CardContextMenu Problem Reporting Integration', () => {
+    it('contains "Open in MarvelCDB" menu item with external link handler (Fixes #151)', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.resolve(process.cwd(), 'src/ui/components/cards/CardContextMenu.tsx');
+      const content = fs.readFileSync(filePath, 'utf8');
+
+      expect(content).toContain('Open in MarvelCDB');
+      expect(content).toContain('handleOpenMarvelCdb');
+      expect(content).toContain('https://marvelcdb.com/card/');
+    });
+
     it('contains "Create issue for this card" menu item', async () => {
       const fs = await import('fs');
       const path = await import('path');

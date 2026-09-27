@@ -22,8 +22,9 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
 }) => {
   if (gameState.phase !== 'VILLAIN_PHASE') return null;
 
-  const currentStep = gameState.villainPhaseStep || VillainPhaseStep.MAIN_SCHEME_THREAT;
   const stepEvent = gameState.villainPhaseStepEvent;
+  const currentStep =
+    stepEvent?.step || gameState.villainPhaseStep || VillainPhaseStep.MAIN_SCHEME_THREAT;
 
   // Determine Category Badge
   let categoryLabel = 'THREAT';

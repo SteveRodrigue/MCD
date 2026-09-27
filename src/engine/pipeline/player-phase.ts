@@ -10,6 +10,12 @@ import { dispatchTrigger } from '../triggers';
 export function startPlayerPhase(state: GameState): GameState {
   state.phase = GamePhase.PLAYER_PHASE;
   delete state.villainPhaseStep;
+  delete state.villainPhaseStepEvent;
+  delete state.lastCombatOutcome;
+  delete state.activeAttackContext;
+  delete state.activeEncounterContext;
+  delete state.activeBoostCard;
+  delete state.pendingActivations;
 
   // Reset phase-level ability limits and expire phase cost reductions for all players
   for (const player of state.players) {
@@ -91,6 +97,7 @@ export function endPlayerPhase(state: GameState): GameState {
     dispatchTrigger(state, 'PLAYER_PHASE_ENDED', { targetPlayerId: player.id });
   }
 
+  delete state.pendingCleanUpPlayerIds;
   state.phase = GamePhase.VILLAIN_PHASE;
   return state;
 }

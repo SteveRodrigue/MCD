@@ -130,4 +130,64 @@ describe('Phase & Round Lifecycle Triggers & Ability Resets (RR v1.8 p. 15, 22, 
     expect(logKeys).toContain('round.upkeep.complete');
     expect(logKeys).toContain('phase.player_phase.start');
   });
+
+  it('purges ephemeral villain phase states and queues on startPlayerPhase', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: [],
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: Array(10).fill(cardCatalog.getCard('01108')!),
+      skipScenarioPlugin: true,
+      skipMulligan: true,
+      shuffleFn: (arr) => arr,
+    });
+
+    // Populate mock ephemeral villain phase state
+    state.phase = 'VILLAIN_PHASE' as any;
+    state.villainPhaseStep = 'VILLAIN_ACTIVATIONS' as any;
+    state.lastCombatOutcome = {
+      id: 'combat_123',
+      attackerName: 'Rhino',
+      attackerType: 'VILLAIN',
+      targetHeroName: 'Spider-Man',
+      targetPlayerId: 'p1',
+      baseAttack: 2,
+      boostCards: [],
+      totalBoostIcons: 1,
+      defenseValue: 0,
+      finalDamage: 3,
+      hasOverkill: false,
+      hasPiercing: false,
+    };
+    state.villainPhaseStepEvent = {
+      type: 'VILLAIN_ATTACK',
+      step: 'VILLAIN_ACTIVATIONS' as any,
+      description: 'Rhino attacked Spider-Man for 3 damage.',
+      onomatopoeia: 'BANG!',
+    };
+    state.activeAttackContext = {} as any;
+    state.activeEncounterContext = {} as any;
+    state.activeBoostCard = {} as any;
+    state.pendingActivations = [{ type: 'VILLAIN', playerId: 'p1' }];
+
+    startPlayerPhase(state);
+
+    expect(state.phase).toBe('PLAYER_PHASE');
+    expect(state.villainPhaseStep).toBeUndefined();
+    expect(state.lastCombatOutcome).toBeUndefined();
+    expect(state.villainPhaseStepEvent).toBeUndefined();
+    expect(state.activeAttackContext).toBeUndefined();
+    expect(state.activeEncounterContext).toBeUndefined();
+    expect(state.activeBoostCard).toBeUndefined();
+    expect(state.pendingActivations).toBeUndefined();
+  });
 });

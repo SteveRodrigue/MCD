@@ -108,6 +108,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     if (gameState.phase !== 'VILLAIN_PHASE') return;
     if (gameState.winner) return;
     if (gameState.pendingDecisionPrompt) return;
+    if (isBoostModalOpen) return;
     if (!isAutoPlaying) return;
     if (villainPhasePacing === 'manual') return;
 
@@ -128,6 +129,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     gameState.pendingDecisionPrompt,
     gameState.villainPhaseStep,
     gameState.villainPhaseStepEvent,
+    isBoostModalOpen,
     isAutoPlaying,
     villainPhasePacing,
     handleNextVillainStep,
@@ -590,9 +592,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onContinue={() => {
           setIsBoostModalOpen(false);
           setActiveCombatOutcome(null);
-          if (villainPhasePacing === 'manual' || !isAutoPlaying) {
-            handleNextVillainStep();
-          }
+          handleNextVillainStep();
         }}
       />
     </div>

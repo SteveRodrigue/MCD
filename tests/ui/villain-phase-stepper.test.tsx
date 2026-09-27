@@ -118,6 +118,34 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       expect(screen.getByText('Pass first player token and round upkeep.')).toBeDefined();
     });
 
+    it('prioritizes stepEvent.step over upcoming villainPhaseStep for category badge (Issue #147)', () => {
+      // Scenario: Activation completed on Hero Seat 2, stepEvent records attack, while next step is DEAL_ENCOUNTER_CARDS
+      const transitionalState: Partial<GameState> = {
+        phase: GamePhase.VILLAIN_PHASE,
+        villainPhaseStep: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+        villainPhaseStepEvent: {
+          type: 'VILLAIN_ATTACK',
+          step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
+          targetName: 'Hero Seat 2',
+          description: 'Rhino attacked Hero Seat 2 for 2 damage.',
+          onomatopoeia: 'BANG!',
+        },
+      };
+
+      render(
+        <VillainPhaseStepper
+          gameState={transitionalState as GameState}
+          pacing="manual"
+          onNextStep={vi.fn()}
+        />,
+      );
+
+      // Badge must match the event (VILLAIN ➔ Hero Seat 2), NOT 3. DEAL CARDS
+      expect(screen.getByText('2. VILLAIN ➔ Hero Seat 2')).toBeDefined();
+      expect(screen.getByText('Rhino attacked Hero Seat 2 for 2 damage.')).toBeDefined();
+      expect(screen.queryByText('3. DEAL CARDS')).toBeNull();
+    });
+
     it('triggers onNextStep when Next Step button is clicked', () => {
       const onNextStep = vi.fn();
 

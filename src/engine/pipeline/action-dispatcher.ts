@@ -1981,6 +1981,7 @@ export function dispatchAction(
 
       // If all players have taken their turns in this round -> proceed to End of Player Phase Clean-Up (RR v1.8 p. 23)
       if (nextIndex === nextState.firstPlayerIndex) {
+        nextState.activePlayerIndex = nextState.firstPlayerIndex;
         const finalState = initiatePlayerPhaseCleanup(nextState);
         return {
           state: finalState,

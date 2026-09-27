@@ -10,6 +10,7 @@ import {
   PlayerState,
   Keyword,
   hasKeyword,
+  PendingActivation,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -253,12 +254,8 @@ export function step2_villainAndMinionActivations(
       ? { acceptOptionalTriggers: true, ...options }
       : options;
 
-  if (!(state as any).pendingActivations) {
-    const activations: {
-      type: 'VILLAIN' | 'MINION';
-      playerId: string;
-      minionInstanceId?: string;
-    }[] = [];
+  if (!state.pendingActivations) {
+    const activations: PendingActivation[] = [];
     for (let i = 0; i < state.players.length; i++) {
       const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
       const player = state.players[playerIdx];
@@ -272,11 +269,11 @@ export function step2_villainAndMinionActivations(
         });
       }
     }
-    (state as any).pendingActivations = activations;
+    state.pendingActivations = activations;
   }
 
-  while ((state as any).pendingActivations && (state as any).pendingActivations.length > 0) {
-    const act = (state as any).pendingActivations.shift()!;
+  while (state.pendingActivations && state.pendingActivations.length > 0) {
+    const act = state.pendingActivations.shift()!;
     const player = state.players.find((p) => p.id === act.playerId);
     if (!player) continue;
 
@@ -298,7 +295,7 @@ export function step2_villainAndMinionActivations(
     }
   }
 
-  delete (state as any).pendingActivations;
+  delete state.pendingActivations;
   return state;
 }
 
@@ -584,6 +581,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   if (state.pendingDecisionPrompt) return state;
 
   const nextState: GameState = JSON.parse(JSON.stringify(state));
+  if (!nextState.options) nextState.options = {};
+  nextState.options.villainPhaseStepping = true;
 
   // Case 0: Phase transition from PLAYER_PHASE to VILLAIN_PHASE
   if (nextState.phase !== GamePhase.VILLAIN_PHASE) {
@@ -641,25 +640,21 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
     if (nextState.winner) return nextState;
 
     nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
-    delete (nextState as any).pendingActivations;
+    delete nextState.pendingActivations;
     return nextState;
   }
 
   // Case 1: Currently on MAIN_SCHEME_THREAT -> advance to VILLAIN_ACTIVATIONS
   if (nextState.villainPhaseStep === VillainPhaseStep.MAIN_SCHEME_THREAT) {
     nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
-    delete (nextState as any).pendingActivations;
+    delete nextState.pendingActivations;
     return nextState;
   }
 
   // Case 2: Currently on VILLAIN_ACTIVATIONS
   if (nextState.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
-    if (!(nextState as any).pendingActivations) {
-      const activations: {
-        type: 'VILLAIN' | 'MINION';
-        playerId: string;
-        minionInstanceId?: string;
-      }[] = [];
+    if (!nextState.pendingActivations) {
+      const activations: PendingActivation[] = [];
       for (let i = 0; i < nextState.players.length; i++) {
         const playerIdx = (nextState.firstPlayerIndex + i) % nextState.players.length;
         const player = nextState.players[playerIdx];
@@ -673,14 +668,10 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           });
         }
       }
-      (nextState as any).pendingActivations = activations;
+      nextState.pendingActivations = activations;
     }
 
-    const pending = (nextState as any).pendingActivations as {
-      type: 'VILLAIN' | 'MINION';
-      playerId: string;
-      minionInstanceId?: string;
-    }[];
+    const pending = nextState.pendingActivations;
 
     if (pending && pending.length > 0) {
       const act = pending.shift()!;
@@ -730,8 +721,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           if (mutatedState.winner) {
             return mutatedState;
           }
-          if ((mutatedState as any).pendingActivations?.length === 0) {
-            delete (mutatedState as any).pendingActivations;
+          if (mutatedState.pendingActivations?.length === 0) {
+            delete mutatedState.pendingActivations;
             mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
           }
           return mutatedState;
@@ -752,8 +743,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           if (nextState.pendingDecisionPrompt || nextState.winner) {
             return nextState;
           }
-          if ((nextState as any).pendingActivations?.length === 0) {
-            delete (nextState as any).pendingActivations;
+          if (nextState.pendingActivations?.length === 0) {
+            delete nextState.pendingActivations;
             nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
           }
           return nextState;
@@ -797,8 +788,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             if (mutatedState.winner) {
               return mutatedState;
             }
-            if ((mutatedState as any).pendingActivations?.length === 0) {
-              delete (mutatedState as any).pendingActivations;
+            if (mutatedState.pendingActivations?.length === 0) {
+              delete mutatedState.pendingActivations;
               mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
             }
             return mutatedState;
@@ -819,8 +810,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             if (nextState.pendingDecisionPrompt || nextState.winner) {
               return nextState;
             }
-            if ((nextState as any).pendingActivations?.length === 0) {
-              delete (nextState as any).pendingActivations;
+            if (nextState.pendingActivations?.length === 0) {
+              delete nextState.pendingActivations;
               nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
             }
             return nextState;
@@ -829,13 +820,25 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
       }
     }
 
-    delete (nextState as any).pendingActivations;
-    nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
+    delete nextState.pendingActivations;
+    delete nextState.lastCombatOutcome;
+    step4_dealEncounterCards(nextState);
+    const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
+    nextState.villainPhaseStepEvent = {
+      type: 'DEAL_ENCOUNTER_CARD',
+      step: VillainPhaseStep.DEAL_ENCOUNTER_CARDS,
+      amount: totalDealt,
+      description: `${totalDealt} encounter card(s) dealt to player threat zone(s).`,
+      onomatopoeia: 'ENCOUNTER DEALT!',
+    };
+    nextState.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
+    if (nextState.winner) return nextState;
     return nextState;
   }
 
   // Case 3: DEAL_ENCOUNTER_CARDS
   if (nextState.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
+    delete nextState.lastCombatOutcome;
     step4_dealEncounterCards(nextState);
     const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
     nextState.villainPhaseStepEvent = {
@@ -1035,7 +1038,7 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   if (nextState.winner) return nextState;
 
   nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
-  delete (nextState as any).pendingActivations;
+  delete nextState.pendingActivations;
 
   return continueVillainPhase(nextState, options);
 }

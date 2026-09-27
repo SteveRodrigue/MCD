@@ -254,4 +254,81 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     expect(completedState.phase).toBe(GamePhase.PLAYER_PHASE);
     expect(completedState.roundNumber).toBe(2);
   });
+
+  it('handles 2-player interactive attacks cleanly and advances to dealing cards without getting stuck (Issue #147)', () => {
+    // Setup 2-player game
+    const identity1 = catalog.getHeroIdentity('spider_man')!;
+    const identity2 = catalog.getHeroIdentity('captain_marvel')!;
+    const villain = catalog.getCard('01094') as VillainCard;
+    const mainScheme = catalog.getCard('01097b') as MainSchemeCard;
+    const encounterCards = catalog.getCardsBySet('standard');
+
+    const twoPlayerGame = setupGame({
+      players: [
+        {
+          id: 'p1',
+          name: 'Hero Seat 1',
+          hero: identity1.hero,
+          alterEgo: identity1.alterEgo,
+          deckCards: [],
+        },
+        {
+          id: 'p2',
+          name: 'Hero Seat 2',
+          hero: identity2.hero,
+          alterEgo: identity2.alterEgo,
+          deckCards: [],
+        },
+      ],
+      villain,
+      mainScheme,
+      encounterCards,
+      shuffleFn: (arr) => arr,
+    });
+
+    twoPlayerGame.phase = GamePhase.PLAYER_PHASE;
+    twoPlayerGame.players[0].currentForm = 'hero';
+    twoPlayerGame.players[0].activeFormCard = twoPlayerGame.players[0].hero;
+    twoPlayerGame.players[1].currentForm = 'hero';
+    twoPlayerGame.players[1].activeFormCard = twoPlayerGame.players[1].hero;
+
+    // Stack encounter deck with boost cards and encounter cards
+    const boost1 = createCardInstance({ ...catalog.getCard('01107')!, boostIcons: 0 });
+    const boost2 = createCardInstance({ ...catalog.getCard('01107')!, boostIcons: 0 });
+    const enc1 = createCardInstance(catalog.getCard('01112')!);
+    const enc2 = createCardInstance(catalog.getCard('01112')!);
+    twoPlayerGame.encounterDeck = [boost1, boost2, enc1, enc2];
+
+    // 1. Advance to VILLAIN_PHASE -> Step 1 (threat placed)
+    let state = advanceVillainPhaseStep(twoPlayerGame, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    expect(state.phase).toBe(GamePhase.VILLAIN_PHASE);
+    expect(state.villainPhaseStep).toBe(VillainPhaseStep.VILLAIN_ACTIVATIONS);
+
+    // 2. Advance to Step 2 -> Rhino attacks Seat 1
+    state = advanceVillainPhaseStep(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    expect(state.villainPhaseStepEvent?.type).toBe('VILLAIN_ATTACK');
+    expect(state.villainPhaseStepEvent?.targetPlayerId).toBe('p1');
+    expect(state.lastCombatOutcome?.targetPlayerId).toBe('p1');
+    // pendingActivations still has p2
+    expect(state.pendingActivations?.length).toBe(1);
+
+    // 3. Advance -> Rhino attacks Seat 2
+    state = advanceVillainPhaseStep(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    expect(state.villainPhaseStepEvent?.type).toBe('VILLAIN_ATTACK');
+    expect(state.villainPhaseStepEvent?.targetPlayerId).toBe('p2');
+    expect(state.lastCombatOutcome?.targetPlayerId).toBe('p2');
+    // pendingActivations is now empty/deleted
+    expect(state.pendingActivations).toBeUndefined();
+
+    // 4. Advance -> Must cleanly transition to DEAL_ENCOUNTER_CARDS without getting stuck
+    state = advanceVillainPhaseStep(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+    expect(state.villainPhaseStepEvent?.type).toBe('DEAL_ENCOUNTER_CARD');
+    // 2 base cards + 1 extra card from Breakin' & Takin' hazard icon
+    expect(state.villainPhaseStepEvent?.amount).toBe(3);
+    expect(state.players[0].dealtEncounterCards.length).toBe(2);
+    expect(state.players[1].dealtEncounterCards.length).toBe(1);
+    expect(state.villainPhaseStep).toBe(VillainPhaseStep.REVEAL_ENCOUNTER_CARDS);
+    // lastCombatOutcome must be cleared
+    expect(state.lastCombatOutcome).toBeUndefined();
+  });
 });

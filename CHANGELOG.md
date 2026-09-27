@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Data): Generic `distinctFrom` Relational Targeting & Crisis Interdiction (`01012`) Different-Scheme Support ([RR v1.8 Appendix IV: FAQ p. 43](references/rules/appendices/04_faq.md), [Issue #150](https://github.com/SteveRodrigue/MCD/issues/150))**
+  - **Generic `distinctFrom` Targeting Modifier:**
+    - Added `distinctFrom: z.enum(['PREVIOUS_TARGET']).or(z.string()).optional()` to `AbilityStepSchema` and engine `AbilityStep` models, providing a generic, reusable primitive across all card abilities requiring a "different" entity without proliferating bespoke target selector enums.
+    - Updated *Crisis Interdiction* (`01012`) Step 2 in supplemental data with `distinctFrom: "PREVIOUS_TARGET"`.
+  - **Resolution & Prompt Exclusion Pipeline:**
+    - In `src/engine/effects/index.ts`, `executeSequence` propagates `res.targetId` into `prevResult.targetId` and supplies `stepContext.distinctFromId` when `distinctFrom === 'PREVIOUS_TARGET'`.
+    - In `REMOVE_THREAT`, resolving a distinct target excludes the previously targeted scheme ID:
+      - **Solo Scheme Fizzle:** If 0 eligible different schemes remain, the step completes without mutating state (onomatopoeia: `NO DIFFERENT SCHEME!`).
+      - **Auto-Target:** If exactly 1 eligible different scheme remains, removes threat directly without an unnecessary modal prompt.
+      - **Decision Prompt:** If $\ge 2$ eligible different schemes remain, enqueues an interactive decision prompt containing strictly the non-excluded schemes.
+  - **Automated Verification:**
+    - Added 7-test contract suite in `tests/engine/crisis-interdiction-different-scheme.test.ts` verifying solo-scheme fizzle, auto-targeting, multi-scheme prompt exclusion, prompt resolution, and non-Aerial gating.
+
+
 - **Fix (Engine): Canonical Side Scheme Defeat & Discard Pipeline ([RR v1.8 p. 9, 25, 30](references/rules/glossary/S.md#side-scheme), [Issue #149](https://github.com/SteveRodrigue/MCD/issues/149))**
   - **Canonical `defeatSideScheme` Primitive:**
     - Implemented and exported `defeatSideScheme(state, sideSchemeInstanceId, defeatingPlayerId)` in `src/engine/effects/index.ts`, creating a single source of truth for side scheme defeat and discard.

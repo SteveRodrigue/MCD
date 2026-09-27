@@ -445,6 +445,19 @@
                           "TRIGGERING_ENEMY"
                         ]
                       },
+                      "distinctFrom": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "PREVIOUS_TARGET"
+                            ]
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
                       "gateParams": {
                         "type": "object",
                         "propertyNames": {

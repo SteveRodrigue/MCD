@@ -741,6 +741,9 @@ export const ReduceNextCardCostParamsSchema = z
 
 export type ReduceNextCardCostParams = z.infer<typeof ReduceNextCardCostParamsSchema>;
 
+export const DistinctFromSchema = z.enum(['PREVIOUS_TARGET']).or(z.string());
+export type DistinctFrom = z.infer<typeof DistinctFromSchema>;
+
 /**
  * Ability Execution Step Interface (Operational Primitive)
  */
@@ -748,6 +751,7 @@ export interface AbilityStep {
   id?: string;
   effect: EffectType;
   target?: TargetSelector;
+  distinctFrom?: DistinctFrom;
   gateParams?: Record<string, any>;
   effectParams?: Record<string, any>;
   gate?: z.infer<typeof ConditionGateSchema>;
@@ -771,6 +775,7 @@ export const AbilityStepSchema = z
     id: z.string().optional(),
     effect: EffectTypeSchema,
     target: TargetSelectorSchema.optional(),
+    distinctFrom: DistinctFromSchema.optional(),
     gateParams: z.record(z.string(), z.any()).optional(),
     effectParams: z.record(z.string(), z.any()).optional(),
     gate: ConditionGateSchema.optional(),

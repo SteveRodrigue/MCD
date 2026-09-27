@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Zap, X, Layers } from 'lucide-react';
 import { CardInstance, PlayerState, GameState, CardAbility } from '../../../engine/models';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
+import { evaluateTableauCardLegality } from './tableau-card-legality';
 
 interface TableauActionModalProps {
   isOpen: boolean;
@@ -29,13 +30,17 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
       gameState.players[gameState.activePlayerIndex]?.id === player.id
     : true;
 
+  const legality = evaluateTableauCardLegality(cardInstance, player.currentForm);
+
   const abilities = cardInstance.card.enrichment?.abilities || [];
   const actionableAbilities = abilities.filter(
     (ab) =>
       ab.timing === 'ACTION' ||
       (isHero && ab.timing === 'HERO_ACTION') ||
       (!isHero && ab.timing === 'ALTER_EGO_ACTION') ||
-      ab.timing === 'RESOURCE',
+      ab.timing === 'RESOURCE' ||
+      (isHero && ab.timing === 'HERO_RESOURCE') ||
+      (!isHero && ab.timing === 'ALTER_EGO_RESOURCE'),
   );
 
   const cardType = (cardInstance.card.type || 'UPGRADE').toUpperCase();
@@ -180,8 +185,18 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
             })}
 
             {actionableAbilities.length === 0 && (
-              <div className="p-4 border-2 border-dashed border-slate-300 rounded-lg text-center text-slate-500 text-xs">
-                This card has no activated abilities that can be triggered right now.
+              <div className="p-4 border-2 border-dashed rounded-lg text-center text-xs space-y-1 bg-amber-50/70 border-amber-300 text-amber-900">
+                <div className="font-bold">
+                  {legality.isUsable
+                    ? 'This card has no activated abilities that can be triggered right now.'
+                    : `⚠️ ${legality.reason || 'Cannot be triggered in this form'}`}
+                </div>
+                {!legality.isUsable && (
+                  <div className="text-[10px] text-slate-600">
+                    Flip your identity card to {isHero ? 'Alter-Ego' : 'Hero'} form to use this
+                    card.
+                  </div>
+                )}
               </div>
             )}
           </div>

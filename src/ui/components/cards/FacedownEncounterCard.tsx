@@ -3,6 +3,7 @@ import { Skull, AlertTriangle, Eye, X } from 'lucide-react';
 import { CardInstance } from '../../../engine/models';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardView } from './CardView';
+import { getCardBackUrl, getCardBackFallbackColor } from '../../services/card-cache-service';
 
 export interface FacedownEncounterCardProps {
   cards: CardInstance[];
@@ -16,6 +17,7 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
   devMode: devModeProp,
 }) => {
   const [isPeekOpen, setIsPeekOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   let isDevMode = devModeProp ?? false;
   try {
@@ -57,7 +59,10 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
 
         <div
           onClick={handleCardClick}
-          className={`w-28 h-40 rounded-lg border-2 border-comic-black shadow-comic-sm bg-gradient-to-b from-rose-950 via-slate-900 to-rose-950 text-white flex flex-col justify-between p-2 relative overflow-hidden transition-transform ${
+          style={{
+            backgroundColor: getCardBackFallbackColor('encounter'),
+          }}
+          className={`w-28 h-40 rounded-lg border-2 border-comic-black shadow-comic-sm text-white flex flex-col justify-between p-2 relative overflow-hidden transition-transform ${
             isDevMode
               ? 'cursor-pointer hover:scale-[1.02] hover:border-amber-400 active:scale-[0.98]'
               : 'cursor-default'
@@ -72,11 +77,25 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
             }
           }}
         >
-          {/* Halftone / texture comic dots effect overlay */}
-          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ED1D24_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none" />
+          {/* Card Back Image or Fallback Background */}
+          {!imageError ? (
+            <img
+              src={getCardBackUrl('encounter')}
+              alt="Encounter Card Back"
+              onError={() => setImageError(true)}
+              className="absolute inset-0 w-full h-full object-cover"
+              data-testid="facedown-card-back-image"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 w-full h-full"
+              style={{ backgroundColor: getCardBackFallbackColor('encounter') }}
+              data-testid="facedown-card-back-fallback"
+            />
+          )}
 
           {/* Top: Header & Icons */}
-          <div className="flex items-center justify-between z-10">
+          <div className="flex items-center justify-between z-10 bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black shadow-comic-xs backdrop-blur-xs">
             <div className="flex items-center gap-1">
               <Skull className="w-3.5 h-3.5 text-comic-red" />
               <span className="font-comic text-[10px] tracking-wider text-rose-300 font-bold uppercase">
@@ -98,10 +117,10 @@ export const FacedownEncounterCard: React.FC<FacedownEncounterCardProps> = ({
 
           {/* Center: Comic Emblem */}
           <div className="flex flex-col items-center justify-center my-auto z-10">
-            <div className="w-12 h-12 rounded-full border-2 border-comic-black bg-rose-700/80 flex items-center justify-center shadow-comic-xs">
-              <Skull className="w-7 h-7 text-amber-300 drop-shadow-md" />
+            <div className="w-10 h-10 rounded-full border-2 border-comic-black bg-rose-700/90 flex items-center justify-center shadow-comic-xs">
+              <Skull className="w-6 h-6 text-amber-300 drop-shadow-md" />
             </div>
-            <span className="text-[9px] font-sans font-bold text-rose-200 mt-1 tracking-tight uppercase">
+            <span className="text-[9px] font-sans font-bold text-rose-100 mt-1 tracking-tight uppercase bg-slate-950/80 px-1.5 py-0.5 rounded border border-comic-black">
               {heroName ? `For ${heroName}` : 'Dealt'}
             </span>
           </div>

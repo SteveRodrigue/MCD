@@ -23,13 +23,6 @@ When referencing specific card discussions or FAQs during development, use the f
 https://marvelcdb.com/card/{card_code}
 ```
 
-- **Spider-Man:** `https://marvelcdb.com/card/01001a`
-- **Peter Parker:** `https://marvelcdb.com/card/01001b`
-- **Black Cat:** `https://marvelcdb.com/card/01002`
-- **Emergency:** `https://marvelcdb.com/card/01085`
-- **Tenacity:** `https://marvelcdb.com/card/01093`
-- **Rhino (Stage I):** `https://marvelcdb.com/card/01094`
-
 Card back source
 https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-player-back.png
 https://hallofheroeslcg.com/wp-content/uploads/2021/02/marvel-encounter-back.png

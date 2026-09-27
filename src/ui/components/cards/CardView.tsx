@@ -2,7 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NormalizedCard, CardInstance, StatusCard, CardType } from '../../../engine/models';
 import { getEffectiveCardTraitsDetails } from '../../../engine/pipeline/stat-calculator';
 import { useCardArt } from '../../hooks/useCardArt';
-import { getRemoteMarvelCdbUrl } from '../../services/card-cache-service';
+import {
+  getRemoteMarvelCdbUrl,
+  getCardBackUrl,
+  getCardBackFallbackColor,
+  getCardBackTypeForCard,
+  CardBackType,
+} from '../../services/card-cache-service';
 import { FormattedCardText } from './FormattedCardText';
 import { useGameSettings } from '../../context/useGameSettings';
 import { CardContextMenu } from './CardContextMenu';
@@ -10,6 +16,8 @@ import { CardContextMenu } from './CardContextMenu';
 export interface CardViewProps {
   card: NormalizedCard;
   instance?: CardInstance;
+  isFacedown?: boolean;
+  cardBackType?: CardBackType;
   dynamicTraits?: string[];
   effectiveTraits?: string[];
   isExhausted?: boolean;
@@ -42,6 +50,8 @@ export interface CardViewProps {
 export const CardView: React.FC<CardViewProps> = ({
   card,
   instance,
+  isFacedown: isFacedownProp,
+  cardBackType,
   dynamicTraits,
   effectiveTraits: _effectiveTraits,
   isExhausted = false,
@@ -64,6 +74,15 @@ export const CardView: React.FC<CardViewProps> = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+
+  const isFacedown = Boolean(
+    isFacedownProp ??
+    (instance as any)?.isFacedown ??
+    (instance as any)?.facedown ??
+    (card as any)?.isFacedown,
+  );
+  const resolvedBackType = cardBackType || getCardBackTypeForCard(card);
+  const [cardBackError, setCardBackError] = useState(false);
 
   const { artUrl, loading, error } = useCardArt(card);
   const [imageSrc, setImageSrc] = useState<string | null>(artUrl);
@@ -253,7 +272,7 @@ export const CardView: React.FC<CardViewProps> = ({
         )}
 
         {/* Unplayable / Inactive Form Indicator Tag */}
-        {(isPlayable === false || isUsable === false) && (
+        {!isFacedown && (isPlayable === false || isUsable === false) && (
           <div
             className="absolute top-1.5 right-1.5 z-20 bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
             title={
@@ -267,7 +286,7 @@ export const CardView: React.FC<CardViewProps> = ({
         )}
 
         {/* Dynamic Traits Pop-Art Badge Row */}
-        {activeDynamicTraits.length > 0 && (
+        {!isFacedown && activeDynamicTraits.length > 0 && (
           <div
             data-testid="dynamic-traits-row"
             className="absolute top-1.5 left-1/2 -translate-x-1/2 z-20 flex flex-wrap justify-center items-center gap-1 pointer-events-none max-w-[95%]"
@@ -285,8 +304,37 @@ export const CardView: React.FC<CardViewProps> = ({
           </div>
         )}
 
+        {/* Facedown Card Back */}
+        {isFacedown && (
+          <div
+            className="w-full h-full relative overflow-hidden flex items-center justify-center"
+            style={{ backgroundColor: getCardBackFallbackColor(resolvedBackType) }}
+            data-testid="card-view-facedown"
+          >
+            {!cardBackError ? (
+              <img
+                src={getCardBackUrl(resolvedBackType)}
+                alt={`${resolvedBackType} card back`}
+                onError={() => setCardBackError(true)}
+                className="w-full h-full object-cover"
+                data-testid="card-back-image"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex flex-col items-center justify-center p-2 text-center"
+                style={{ backgroundColor: getCardBackFallbackColor(resolvedBackType) }}
+                data-testid="card-back-fallback"
+              >
+                <span className="font-comic text-xs uppercase tracking-wider text-white bg-slate-950/70 px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                  {resolvedBackType}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 1. Real Card Art Image */}
-        {!showFallback && (
+        {!isFacedown && !showFallback && (
           <div className="relative w-full h-full bg-slate-900 flex items-center justify-center">
             {loading && (
               <div className="absolute inset-0 bg-amber-50 flex flex-col items-center justify-center p-2 text-center bg-bendy-dots animate-pulse">
@@ -309,7 +357,7 @@ export const CardView: React.FC<CardViewProps> = ({
         )}
 
         {/* 2. Fallback 60s Comic Pop-Art Vector Card Layout */}
-        {showFallback && (
+        {!isFacedown && showFallback && (
           <div className="w-full h-full bg-white flex flex-col justify-between p-3 relative bg-bendy-dots">
             {/* Top Bar: Cost & Type */}
             <div>

@@ -15,6 +15,9 @@ export interface CardViewProps {
   isExhausted?: boolean;
   isPlayable?: boolean;
   unplayableReason?: string;
+  isUsable?: boolean;
+  unusableBadge?: string;
+  unusableReason?: string;
   isSelected?: boolean;
   isMulliganSelected?: boolean;
   isKeepSelected?: boolean;
@@ -44,6 +47,9 @@ export const CardView: React.FC<CardViewProps> = ({
   isExhausted = false,
   isPlayable,
   unplayableReason,
+  isUsable,
+  unusableBadge,
+  unusableReason,
   isSelected = false,
   isMulliganSelected = false,
   isKeepSelected = false,
@@ -226,7 +232,7 @@ export const CardView: React.FC<CardViewProps> = ({
             ? 'group-hover:scale-[var(--card-zoom-scale)] group-hover:-translate-y-4 group-hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.85)] group-hover:border-4'
             : 'group-hover:-translate-y-1'
         } ${sizeClasses} ${
-          isPlayable === false
+          isPlayable === false || isUsable === false
             ? 'filter grayscale contrast-75 brightness-90 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100'
             : ''
         } ${
@@ -246,13 +252,17 @@ export const CardView: React.FC<CardViewProps> = ({
           </div>
         )}
 
-        {/* Unplayable Indicator Tag */}
-        {isPlayable === false && (
+        {/* Unplayable / Inactive Form Indicator Tag */}
+        {(isPlayable === false || isUsable === false) && (
           <div
             className="absolute top-1.5 right-1.5 z-20 bg-slate-900/90 text-white font-comic text-[8px] px-1.5 py-0.5 rounded border border-comic-black shadow-sm font-bold uppercase pointer-events-none group-hover:hidden"
-            title={unplayableReason ? `Cannot play: ${unplayableReason}` : undefined}
+            title={
+              unusableReason || unplayableReason
+                ? `Cannot use: ${unusableReason || unplayableReason}`
+                : undefined
+            }
           >
-            CANNOT PLAY
+            {unusableBadge || (isPlayable === false ? 'CANNOT PLAY' : 'UNUSABLE')}
           </div>
         )}
 

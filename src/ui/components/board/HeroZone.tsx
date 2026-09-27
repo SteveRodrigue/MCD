@@ -33,6 +33,7 @@ import { ComicDamageSplash } from './ComicDamageSplash';
 import { AttackTargetModal } from './AttackTargetModal';
 import { AllyActionModal } from './AllyActionModal';
 import { TableauActionModal } from './TableauActionModal';
+import { evaluateTableauCardLegality } from './tableau-card-legality';
 import { ThwartTargetModal } from './ThwartTargetModal';
 import { EnemyTarget, getValidAttackTargets } from './attack-target-utils';
 import { SchemeTarget, getValidThwartTargets } from './thwart-target-utils';
@@ -867,6 +868,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     (isHero && ab.timing === 'HERO_ACTION') ||
                     (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
                 );
+                const legality = evaluateTableauCardLegality(cardInst, player.currentForm);
 
                 return (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
@@ -875,6 +877,9 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       instance={cardInst}
                       size="sm"
                       enableHoverZoom={true}
+                      isUsable={legality.isUsable}
+                      unusableBadge={legality.badge}
+                      unusableReason={legality.reason}
                       onClick={() => setSelectedTableauCardForModal(cardInst)}
                     />
                     {activeAbilities.map((ab) => {

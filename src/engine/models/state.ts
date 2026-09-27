@@ -336,6 +336,12 @@ export interface EncounterExecutionContext {
   cancellationReason?: string;
 }
 
+export interface PendingActivation {
+  type: 'VILLAIN' | 'MINION';
+  playerId: string;
+  minionInstanceId?: string;
+}
+
 export interface GameOptions {
   /**
    * When true (default), abilities and actions with only 1 legal choice resolve automatically
@@ -360,6 +366,10 @@ export interface GameState {
 
   /** Legacy / direct pointer to head of pendingDecisionQueue for backwards-compatibility */
   pendingDecisionPrompt?: PendingDecisionPrompt;
+  /** Ordered enemy activation queue for Villain Phase (ADR-0068) */
+  pendingActivations?: PendingActivation[];
+  /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
+  pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;
   scenarioCardCode?: string;
   difficulty?: DifficultyMode;

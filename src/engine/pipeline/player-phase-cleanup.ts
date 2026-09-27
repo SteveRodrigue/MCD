@@ -29,7 +29,7 @@ export function initiatePlayerPhaseCleanup(
     queue.push(nextState.players[idx].id);
   }
 
-  (nextState as any).pendingCleanUpPlayerIds = queue;
+  nextState.pendingCleanUpPlayerIds = queue;
 
   return processNextPlayerInCleanupQueue(nextState, options);
 }
@@ -41,10 +41,10 @@ export function processNextPlayerInCleanupQueue(
   state: GameState,
   options?: PlayerPhaseCleanupOptions,
 ): GameState {
-  const queue = (state as any).pendingCleanUpPlayerIds as string[] | undefined;
+  const queue = state.pendingCleanUpPlayerIds;
 
   if (!queue || queue.length === 0) {
-    delete (state as any).pendingCleanUpPlayerIds;
+    delete state.pendingCleanUpPlayerIds;
     // All players cleaned up -> proceed to Villain Phase!
     return executeVillainPhase(state);
   }
@@ -159,7 +159,7 @@ export function executePlayerCleanup(
   });
 
   // Remove player from pending clean-up queue
-  const queue = (state as any).pendingCleanUpPlayerIds as string[] | undefined;
+  const queue = state.pendingCleanUpPlayerIds;
   if (queue) {
     const pIdx = queue.indexOf(playerId);
     if (pIdx !== -1) {

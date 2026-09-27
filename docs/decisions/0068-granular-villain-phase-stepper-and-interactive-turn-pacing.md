@@ -90,3 +90,31 @@ Option 2 strictly upholds ADR-0002 by keeping the rules engine 100% headless, sy
 ### Negative Consequences / Risks & Mitigations
 - *Risk:* If an interactive decision prompt opens during an activation or reveal, auto-advance timers might clash with player input.
   - *Mitigation:* `GameBoard` pauses any auto-advance timer whenever `pendingDecisionPrompt` is non-empty.
+
+---
+
+## Addendum (2026-09-27): Closed-Loop Lifecycle Tracking & Phase Boundary Hygiene (Issue #147)
+
+### Context & Problem Statement
+During multi-hero villain phase execution, when the final hero completed defense declaration, the stepper entered an intermediate state where `pendingActivations` was deleted and `villainPhaseStep` transitioned to `DEAL_ENCOUNTER_CARDS` without dealing encounter cards, without emitting a step event, and without clearing `lastCombatOutcome`. In the UI, the auto-advance timer competed with the open `CombatBoostModal`, and modal dismissal skipped stepper advancement in auto mode, causing the game to sit permanently halted on stale combat descriptions. Furthermore, ephemeral combat state leaked across phase boundaries into the Player Phase.
+
+### Architectural Decisions
+
+1. **Strictly Typed Ephemeral Queues:**
+   - Formalized `PendingActivation` interface in `src/engine/models/state.ts` (`type: 'VILLAIN' | 'MINION'`, `playerId`, optional `minionInstanceId`).
+   - Added typed `pendingActivations?: PendingActivation[];` and `pendingCleanUpPlayerIds?: string[];` to `GameState`. Replaced all untyped `(state as any)` casts across engine pipelines.
+
+2. **Atomic Stepper Transitions & Ephemeral Purging:**
+   - In `advanceVillainPhaseStep`, when `pendingActivations` queue reaches length 0, the engine atomically executes `step4_dealEncounterCards`, emits the canonical `DEAL_ENCOUNTER_CARD` event, advances `villainPhaseStep` to `REVEAL_ENCOUNTER_CARDS`, and purges `lastCombatOutcome`.
+   - Purged premature mutation of `villainPhaseStep` during individual activation returns to prevent category badge and description mismatch.
+   - Enforced `state.options.villainPhaseStepping = true` inside `advanceVillainPhaseStep` to ensure decision prompt resolution respects interactive stepping.
+
+3. **Phase Boundary Hygiene Hooks:**
+   - `startPlayerPhase`: Systematically sweeps all ephemeral villain phase state (`lastCombatOutcome`, `villainPhaseStep`, `villainPhaseStepEvent`, `activeAttackContext`, `activeEncounterContext`, `activeBoostCard`, `pendingActivations`).
+   - `endPlayerPhase`: Systematically sweeps `pendingCleanUpPlayerIds`.
+   - `END_TURN`: Synchronizes `activePlayerIndex = firstPlayerIndex` when cleanup initiates.
+
+4. **UI Modal & Timer Synchronization:**
+   - `GameBoard.tsx`: Auto-advance timer unconditionally halts while `isBoostModalOpen` is true. `CombatBoostModal.onContinue` always invokes `handleNextVillainStep()` so modal dismissal deterministically advances the stepper across all pacing modes.
+   - `VillainPhaseStepper.tsx`: Category badges prioritize `stepEvent.step` over upcoming `villainPhaseStep` to guarantee visual narrative consistency.
+

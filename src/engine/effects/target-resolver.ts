@@ -10,6 +10,7 @@ import {
 import { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
 import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
+import { hasCrisisInPlay } from '../pipeline/legality-checker';
 
 export type EffectContext = Partial<EffectExecutionContext>;
 
@@ -990,12 +991,21 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_SCHEME': {
+      const ignoresCrisis = Boolean(
+        context?.ignoresCrisis || (context as any)?.step?.effectParams?.ignoresCrisis,
+      );
+      const isPlayerSource = context?.sourceCardInstance?.card?.faction !== 'encounter';
+      const isMainBlocked = !ignoresCrisis && isPlayerSource && hasCrisisInPlay(state);
+
       if (context?.targetInstanceId) {
         if (
           state.mainScheme &&
           (context.targetInstanceId === state.mainScheme.instanceId ||
             context.targetInstanceId === 'main_scheme')
         ) {
+          if (isMainBlocked) {
+            return [];
+          }
           return [
             {
               kind: 'scheme',
@@ -1019,13 +1029,25 @@ export function resolveTargets(
           ];
         }
       }
-      if (state.mainScheme) {
+      if (state.mainScheme && !isMainBlocked) {
         return [
           {
             kind: 'scheme',
             entityType: 'main_scheme',
             entity: state.mainScheme,
             id: state.mainScheme.instanceId || 'main_scheme',
+          },
+        ];
+      }
+      const sideWithThreat =
+        (state.sideSchemes || []).find((s) => (s.threat || 0) > 0) || (state.sideSchemes || [])[0];
+      if (sideWithThreat) {
+        return [
+          {
+            kind: 'scheme',
+            entityType: 'side_scheme',
+            entity: sideWithThreat,
+            id: sideWithThreat.instanceId,
           },
         ];
       }

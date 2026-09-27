@@ -110,7 +110,14 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   if (text.includes('patrol.') || text.includes('<b>patrol</b>') || text.includes('patrol <i>')) {
     keywords.add(Keyword.PATROL);
   }
-  if (text.includes('crisis.') || text.includes('<b>crisis</b>') || text.includes('crisis <i>') || raw.scheme_crisis) {
+  if (
+    text.includes('crisis.') ||
+    text.includes('<b>crisis</b>') ||
+    text.includes('crisis <i>') ||
+    text.includes('crisis icon') ||
+    text.includes('[crisis]') ||
+    raw.scheme_crisis
+  ) {
     keywords.add(Keyword.CRISIS);
   }
   if (text.includes('hazard.') || text.includes('<b>hazard</b>') || text.includes('hazard <i>') || raw.scheme_hazard) {
@@ -206,6 +213,8 @@ export function normalizeRawCard(
     traits: enrichment?.traits !== undefined ? enrichment.traits : parseTraits(raw.traits),
     printedTraits: raw.traits,
     keywords: parseKeywords(raw, enrichment),
+    hasCrisis: Boolean(((raw.scheme_crisis || 0) > 0) || parseKeywords(raw, enrichment).includes(Keyword.CRISIS)),
+    scheme_crisis: raw.scheme_crisis ?? undefined,
     resources: parseResources(raw),
     setCode: raw.set_code,
     setPosition: raw.set_position,
@@ -299,6 +308,7 @@ export function normalizeRawCard(
         type: CardType.PLAYER_SIDE_SCHEME,
         baseThreat: raw.base_threat ?? 0,
         baseThreatFixed: !!raw.base_threat_fixed,
+        hasCrisis: base.hasCrisis ?? false,
       } as PlayerSideSchemeCard;
     }
     case CardType.ALLY: {

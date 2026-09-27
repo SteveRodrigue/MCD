@@ -51,6 +51,7 @@ import {
   initializeCardUses,
 } from '../state/state-validator';
 import { locateCard, readCardResources } from '../queries/card-inspector';
+import { hasCrisisInPlay } from '../pipeline/legality-checker';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -86,6 +87,7 @@ export interface EffectExecutionContext {
   /** Host ability context for timing, trigger, and cost evaluation */
   ability?: CardAbility;
   distinctFromId?: string;
+  ignoresCrisis?: boolean;
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -2744,6 +2746,13 @@ export function executeStep(
       let targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
       let remainingThreat = state.mainScheme?.threat || 0;
 
+      const ignoresCrisis = Boolean(
+        step.effectParams?.ignoresCrisis || (step as any).ignoresCrisis || context.ignoresCrisis,
+      );
+      const isPlayerSource = context.sourceCardInstance?.card?.faction !== 'encounter';
+      const isMainSchemeBlockedByCrisis =
+        !ignoresCrisis && isPlayerSource && hasCrisisInPlay(state);
+
       const isDistinct = Boolean(
         step.distinctFrom === 'PREVIOUS_TARGET' ||
         step.effectParams?.distinctFrom === 'PREVIOUS_TARGET' ||
@@ -2758,10 +2767,11 @@ export function executeStep(
           context.distinctFromId || context.previousResult?.targetId || context.targetInstanceId;
 
         const isMainSchemeExcluded = Boolean(
-          excludedId &&
-          (excludedId === 'main_scheme' ||
-            (state.mainScheme?.instanceId && excludedId === state.mainScheme.instanceId) ||
-            (state.mainScheme?.card?.code && excludedId === state.mainScheme.card.code)),
+          isMainSchemeBlockedByCrisis ||
+          (excludedId &&
+            (excludedId === 'main_scheme' ||
+              (state.mainScheme?.instanceId && excludedId === state.mainScheme.instanceId) ||
+              (state.mainScheme?.card?.code && excludedId === state.mainScheme.card.code))),
         );
 
         const isSideSchemeExcluded = (s: SideSchemeState) =>
@@ -2883,59 +2893,112 @@ export function executeStep(
           (state.sideSchemes || []).length > 0
         ) {
           const sideSchemes = state.sideSchemes || [];
-          // Multiple schemes in play -> enqueue interactive decision prompt
-          const options: DecisionPromptOption[] = [
-            {
+          const isMainEligible = Boolean(state.mainScheme) && !isMainSchemeBlockedByCrisis;
+
+          const options: DecisionPromptOption[] = [];
+          if (isMainEligible) {
+            options.push({
               id: 'main_scheme',
               label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
               description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
               cardCode: state.mainScheme.card.code,
               effect: 'REMOVE_THREAT',
               params: { amount, target: 'MAIN_SCHEME' },
-            },
-            ...sideSchemes.map((s) => ({
+            });
+          }
+          for (const s of sideSchemes) {
+            options.push({
               id: s.instanceId,
               label: `${s.card.name} (${s.threat || 0} Threat)`,
               description: `Remove ${amount} threat from ${s.card.name}`,
               cardCode: s.card.code,
               effect: 'REMOVE_THREAT',
               params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
-            })),
-          ];
+            });
+          }
 
-          enqueueDecisionPrompt(state, {
-            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            playerId: player.id,
-            title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
-            description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
-            sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
-            sourceCardCode: context.sourceCardInstance?.card.code,
-            options,
-          });
+          if (options.length >= 2) {
+            enqueueDecisionPrompt(state, {
+              promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              playerId: player.id,
+              title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
+              description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
+              sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
+              sourceCardCode: context.sourceCardInstance?.card.code,
+              options,
+            });
 
-          return {
-            state,
-            success: true,
-            mutatedState: true,
-            onomatopoeia: 'CHOOSE SCHEME!',
-          };
+            return {
+              state,
+              success: true,
+              mutatedState: true,
+              onomatopoeia: 'CHOOSE SCHEME!',
+            };
+          }
+
+          if (options.length === 1) {
+            const single = options[0];
+            targetSchemes =
+              single.id === 'main_scheme'
+                ? [
+                    {
+                      kind: 'scheme' as const,
+                      entityType: 'main_scheme' as const,
+                      entity: state.mainScheme,
+                      id: state.mainScheme.instanceId || 'main_scheme',
+                    },
+                  ]
+                : [
+                    {
+                      kind: 'scheme' as const,
+                      entityType: 'side_scheme' as const,
+                      entity: (state.sideSchemes || []).find((s) => s.instanceId === single.id)!,
+                      id: single.id,
+                    },
+                  ];
+          } else {
+            return {
+              state,
+              success: true,
+              mutatedState: false,
+              value: 0,
+              onomatopoeia: isMainSchemeBlockedByCrisis ? 'CRISIS BLOCKS!' : 'NO SCHEME THREAT!',
+            };
+          }
+        } else {
+          const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+          targetSchemes =
+            schemes.length > 0
+              ? schemes
+              : [
+                  {
+                    kind: 'scheme' as const,
+                    entityType: 'main_scheme' as const,
+                    entity: state.mainScheme,
+                    id: state.mainScheme.instanceId || 'main_scheme',
+                  },
+                ];
         }
-
-        const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
-        targetSchemes =
-          schemes.length > 0
-            ? schemes
-            : [
-                {
-                  kind: 'scheme' as const,
-                  entityType: 'main_scheme' as const,
-                  entity: state.mainScheme,
-                  id: state.mainScheme.instanceId || 'main_scheme',
-                },
-              ];
       }
 
       for (const st of targetSchemes) {
+        if (st.entityType === 'main_scheme' && isMainSchemeBlockedByCrisis) {
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'ability',
+            key: 'card.effect.threatBlockedByCrisis',
+            params: {
+              player: player.name,
+              scheme: st.entity.card?.name || 'Main Scheme',
+            },
+            onomatopoeia: 'CRISIS BLOCKS!',
+          });
+          continue;
+        }
+
         const scheme = st.entity;
         const current = scheme.threat || 0;
         const rem = Math.min(current, amount);

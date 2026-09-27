@@ -107,6 +107,8 @@ export interface NormalizedCard {
   errata?: string;
   isLandscape: boolean;
   orientation: 'portrait' | 'landscape';
+  hasCrisis?: boolean;
+  scheme_crisis?: number;
   enrichment?: import('./abilities').CardEnrichment;
   meta?: Record<string, unknown>;
   raw: RawUpstreamCard;

@@ -114,7 +114,7 @@ flowchart TD
 
 1. Parse scope, mode, and depth. State exclusions.
 2. Read `AGENTS.md`, the shared quality gates, relevant accepted ADRs, and the local coding guide.
-3. Capture `git status --short`; preserve all pre-existing changes and distinguish them from audit output.
+3. Capture `rtk git status --short`; preserve all pre-existing changes and distinguish them from audit output.
 4. Inventory first-party source, tests, scripts, tools, and declared dependencies within scope.
 5. Record the current branch or comparison base for `diff` mode. Do not assume `main`; verify it.
 6. Reserve a new report path using
@@ -139,14 +139,14 @@ registry, and call site. Use `git log` or `git blame` only when current code can
 
 ### Step 3 - Run Native Static and Test Checks
 
-Use repository-native commands before proposing new tooling:
+Use repository-native commands with `rtk` to filter and condense output:
 
 ```powershell
-npm run lint
-npm run typecheck
-npm test
-npm run test:coverage
-npm run build
+rtk npm run lint
+rtk npm run typecheck
+rtk npm test
+rtk npm run test:coverage
+rtk npm run build
 ```
 
 Run the narrowest relevant command first. For a focused audit, prefer a targeted Vitest run and

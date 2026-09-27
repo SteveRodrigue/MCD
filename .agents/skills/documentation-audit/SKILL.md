@@ -343,15 +343,15 @@ Editing standards:
 
 ### Step 7 — Verify
 
-1. **Blast-radius gate (run first, non-negotiable).** `git status --short` must list `.md` paths
+1. **Blast-radius gate (run first, non-negotiable).** `rtk git status --short` must list `.md` paths
    only. Any dirty
    `.ts`/`.tsx`/`.json`/config file is a protocol violation: revert it with
    `git checkout -- <path>`, and report it to the user.
 2. Re-grep every relative link and ADR reference you touched; confirm targets exist.
 3. Re-read each modified Mermaid block for parse validity (balanced brackets/quotes, unique nodes).
 4. Re-run the code-truth extraction for any section you rewrote and confirm a 1:1 match.
-5. If schema or supplemental docs changed: `npm run report:declarations` (read-only reporting) and
-   confirm zero schema violations. `npm test` / `npm run typecheck` may be run to _confirm an
+5. If schema or supplemental docs changed: `rtk npm run report:declarations` (read-only reporting) and
+   confirm zero schema violations. `rtk npm test` / `rtk npm run typecheck` may be run to _confirm an
    observation_, never to green-light a code change — there are none.
 
 ---

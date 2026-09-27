@@ -16,20 +16,20 @@ A commit and push only ever happen in response to the user's explicit request in
 
 ```mermaid
 flowchart TD
-    S1["1. Inspect Working Tree & Status (git status, git diff)"] --> S2["2. Stage Changes & Clean Working Tree (git add)"]
-    S2 --> S3["3. Execute Quality Gates (format, lint, typecheck, tests)"]
+    S1["1. Inspect Working Tree & Status (rtk git status, rtk git diff)"] --> S2["2. Stage Changes & Clean Working Tree (rtk git add)"]
+    S2 --> S3["3. Execute Quality Gates (rtk npm run format/lint/typecheck/test)"]
     S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
-    S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
-      S5 --> S6["6. Validate issue references, then commit"]
-      S6 --> S7["7. Push and run final verification"]
+    S5 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
+      S5 --> S6["6. Validate issue references, then commit (rtk git commit)"]
+      S6 --> S7["7. Push and run final verification (rtk git push)"]
 ```
 
 ---
 
 ## 🔍 Step 1: Inspect Working Tree & Changes
 
-1. Run `git status` to detect staged, unstaged, and untracked files.
-2. Run `git diff` and `git diff --cached` to inspect the exact lines of code changed.
+1. Run `rtk git status` to detect staged, unstaged, and untracked files.
+2. Run `rtk git diff` and `rtk git diff --cached` to inspect the exact lines of code changed.
 3. Verify that no unwanted files (e.g. debug scripts in `scratch/`, OS artifacts, temporary logs) are inadvertently staged.
 4. Record the intended file set. Do not silently absorb unrelated staged or unstaged changes.
 
@@ -39,23 +39,23 @@ flowchart TD
 
 1. If files are unstaged, stage intentional changes:
    - For complete feature/fix deliveries: stage the reviewed file list explicitly.
-   - For selective commits: `git add <file1> <file2> ...`
+   - For selective commits: `rtk git add <file1> <file2> ...`
 2. If supplemental card data (`src/data/supplemental/`) was modified:
-   - **Always run:** `npm run report:declarations`
-   - Stage the updated report: `git add docs/reports/supplemental_declarations_usage_report.md`
-3. Re-run `git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
+   - **Always run:** `rtk npm run report:declarations`
+   - Stage the updated report: `rtk git add docs/reports/supplemental_declarations_usage_report.md`
+3. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
 4. Never use `git add .` or a formatter's broad staging command as automatic recovery; review and stage only the files intentionally changed by this task.
 
 ---
 
 ## 🛡️ Step 3: Run Automated Quality Gates
 
-Before committing, run the project's quality verification pipeline:
+Before committing, run the project's quality verification pipeline using `rtk` to condense output:
 
 1. **Prettier Format Check:**
 
    ```sh
-   npm run format:check
+   rtk npm run format:check
    ```
 
    _Recovery:_ If formatting issues are found, format only the reviewed file set, inspect the diff, and stage only the intended files.
@@ -63,7 +63,7 @@ Before committing, run the project's quality verification pipeline:
 2. **ESLint Static Analysis:**
 
    ```sh
-   npm run lint
+   rtk npm run lint
    ```
 
    _Requirement:_ Must exit with 0 errors and 0 warnings (`--max-warnings 0`).
@@ -71,14 +71,14 @@ Before committing, run the project's quality verification pipeline:
 3. **TypeScript Typecheck:**
 
    ```sh
-   npm run typecheck
+   rtk npm run typecheck
    ```
 
    _Requirement:_ Must compile cleanly with 0 TypeScript diagnostics (`tsc --noEmit`).
 
 4. **Automated Test Suite (Zero Skipped Tests Invariant):**
    ```sh
-   npm test
+   rtk npm test
    ```
    _Requirement:_ All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). Any skipped test (`it.skip`, `describe.skip`, `test.skip`, `it.todo`) is tech debt and strictly blocks commit and push until resolved or pruned. Tests must strictly pass or fail: no lingering code, no lingering problems.
 
@@ -165,7 +165,7 @@ Before committing, inspect issue references in the staged diff and commit messag
 7. Once quality gates (Step 3) and issue validation pass, commit directly without a separate approval round-trip:
 
 ```sh
-git commit -m "<category>(<scope>): <description>"
+rtk git commit -m "<category>(<scope>): <description>"
 ```
 
 _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute `format:check`, `lint`, and `typecheck`. Verify that it passes with code 0.
@@ -176,16 +176,16 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 1. Since the user's request already authorized commit and push together, push to the remote tracking branch directly after a successful commit:
    ```sh
-   git push origin main
+   rtk git push origin main
    ```
 2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`).
 3. Re-query every referenced issue after push:
    ```sh
-   gh issue view <NUM> --json number,state,closedAt,title,url
+   rtk gh issue view <NUM> --json number,state,closedAt,title,url
    ```
    - For `Fixes` and `Closes`, verify the issue is now `CLOSED`.
    - For `Refs` and informational references, report the current state and URL; do not claim the issue was closed.
    - If the expected state is not reached, report the post-push discrepancy explicitly instead of treating the delivery as fully verified.
-4. Run `git status` to verify:
+4. Run `rtk git status` to verify:
    - Working tree is clean (`nothing to commit, working tree clean`).
    - Branch is up to date with remote (`Your branch is up to date with 'origin/main'`).

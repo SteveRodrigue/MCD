@@ -52,14 +52,14 @@ The plan may live in the host's user-facing artifact location or a repository-re
 
 Run the narrowest relevant executable check first, then widen verification to match the blast radius.
 
-| Change surface                                             | Minimum verification                                                                                                        |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Agent or Markdown documentation only                       | Markdown/link checks available in the repository, structural instruction audit, and `git diff --check`                      |
-| Local UI or data change                                    | Focused tests plus applicable lint and typecheck                                                                            |
-| Shared engine, schema, taxonomy, or cross-cutting behavior | Iterative dev: `npm run format:check`, `npm run lint`, `npm run typecheck`, `rtk vitest run <targeted>`, and `npm run report:declarations`. Delivery: full test suite and `npm run build`. |
-| Supplemental declarations or related primitives            | Also run `npm run report:declarations` after affected data is updated                                                       |
+| Change surface                                             | Minimum verification                                                                                                                                                                             |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Agent or Markdown documentation only                       | Markdown/link checks available in the repository, structural instruction audit, and `rtk git diff --check`                                                                                       |
+| Local UI or data change                                    | Focused tests plus applicable lint and typecheck (`rtk npm run lint`, `rtk npm run typecheck`)                                                                                                    |
+| Shared engine, schema, taxonomy, or cross-cutting behavior | Iterative dev: `rtk npm run format:check`, `rtk npm run lint`, `rtk npm run typecheck`, `rtk vitest run <targeted>`, and `rtk npm run report:declarations`. Delivery: `rtk npm test` and `rtk npm run build`. |
+| Supplemental declarations or related primitives            | Also run `rtk npm run report:declarations` after affected data is updated                                                                                                                        |
 
-Report unavailable commands rather than inventing results. Compress shell outputs with `rtk` where applicable.
+Report unavailable commands rather than inventing results. Compress shell outputs with `rtk` across all `git`, `npm`, `vitest`, and `npx` commands per [`antigravity-rtk-rules.md`](antigravity-rtk-rules.md).
 
 ## Delivery authorization
 

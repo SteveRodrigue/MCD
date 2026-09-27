@@ -138,7 +138,7 @@ flowchart TD
    - Update `src/engine/models/abilities.ts` or `src/engine/models/state.ts`.
    - Trace the change into the Card Supplemental Editor and its specification. Identify every affected editor descriptor, builder control, validation path, persistence shape, and editor test before implementation.
    - Identify confirmed legacy/orphan code and references that the feature supersedes. Record the cleanup targets in the implementation plan; flag uncertain ownership or usage as an explicit user decision instead of inferring deletion.
-   - Run schema tests: `npm test tests/data/supplemental-validation.test.ts`.
+   - Run schema tests: `rtk vitest run tests/data/supplemental-validation.test.ts`.
 
 ---
 
@@ -203,7 +203,7 @@ flowchart TD
      - `"reviewedAt"`: Current ISO timestamp with `HH:MM`.
      - `"reviewedBy"`: `"antigravity"` (or current agent identity).
   4. **Card Promotion & Ambiguity Pruning:** If previously blocked, promote `audit.confidence: 1.0` and prune resolved ambiguity files in `docs/ambiguities/` (Inbox Zero).
-  5. **Run Declarations Analyzer:** Execute `npm run report:declarations` to ensure zero schema violations.
+   5. **Run Declarations Analyzer:** Execute `rtk npm run report:declarations` to ensure zero schema violations.
 
 ---
 
@@ -212,7 +212,7 @@ flowchart TD
 Execute the full multi-tier verification suite:
 
 ```bash
-npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
+rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
 ```
 
 - **Vitest Suite:** All test files and suites pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail; never introduce `it.skip` or commented-out assertions.
@@ -225,14 +225,14 @@ npm run format:check && npm run lint && npm run typecheck && npm test && npm run
 ### Step 8: Post-Task Hygiene & Delivery Recap
 
 1. **Execute Post-Task Protocol:**
-   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: update CHANGELOG, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `npm run report:declarations`.
+   Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist.md) scoped to Tier 2/3: update CHANGELOG, synchronize specs and docs, verify Card Editor alignment, check off roadmap tasks in `docs/roadmap_and_milestones.md`, and run `rtk npm run report:declarations`.
 2. **Present Verification & Solution Recap:**
    Present the completed feature, verification logs, and proposed diff to the user.
 3. **Delivery Authorization:**
    Per `AGENTS.md`, commit and push occur only upon explicit user request in the current message. When authorized, follow `commit-and-push`:
-   - Stage reviewed files (`git add <files>`).
-   - Commit with auto-closing syntax: `feat(<scope>): <description> (Closes #<NUM>)`.
-   - Push to remote and confirm issue closure.
+   - Stage reviewed files (`rtk git add <files>`).
+   - Commit with auto-closing syntax: `rtk git commit -m "feat(<scope>): <description> (Closes #<NUM>)"`.
+   - Push to remote and confirm issue closure (`rtk git push`).
 
 
 ---

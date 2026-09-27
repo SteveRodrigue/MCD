@@ -157,7 +157,7 @@ gh issue create \
 Execute the full verification suite across engine, tests, schemas, build, lint, and formatting:
 
 ```bash
-npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run report:declarations
+rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
 ```
 
 - **Enforce Zero Skipped Tests Invariant:** Confirm all tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail. Never use `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions to mask or defer failing tests.
@@ -177,10 +177,10 @@ Execute [`.agents/rules/post-task-checklist.md`](../../rules/post-task-checklist
 ### Step 8: Present Fix & Verification Recap
 
 Present the solution, verification results, and diff summary to the user. Per `AGENTS.md`, delivery (commit and push) is only executed upon the user's explicit request in the conversation. When requested, follow the `commit-and-push` protocol:
-1. Stage the intentionally changed files (e.g. `git add <files>`).
-2. Run quality gates.
-3. Commit with Conventional Commits syntax (e.g. `fix(<scope>): <description> (Fixes #<NUM>)`).
-4. Push to remote and verify issue closure.
+1. Stage the intentionally changed files (e.g. `rtk git add <files>`).
+2. Run quality gates with `rtk`.
+3. Commit with Conventional Commits syntax (e.g. `rtk git commit -m "fix(<scope>): <description> (Fixes #<NUM>)"`).
+4. Push to remote and verify issue closure (`rtk git push`).
 
 
 ---

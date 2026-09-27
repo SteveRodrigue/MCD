@@ -3,6 +3,8 @@
 The canonical shared policies and quality gates are in
 [`.agents/rules/shared-quality-gates.md`](.agents/rules/shared-quality-gates.md).
 The shell policy is in [`.agents/rules/command-execution.md`](.agents/rules/command-execution.md),
+the RTK token reduction policy is in
+[`.agents/rules/antigravity-rtk-rules.md`](.agents/rules/antigravity-rtk-rules.md),
 and the post-task procedure is in
 [`.agents/rules/post-task-checklist.md`](.agents/rules/post-task-checklist.md).
 
@@ -15,6 +17,7 @@ and the post-task procedure is in
   2. Follow and inspect all direct `See also:` and `Referenced by:` links, plus any linked FAQ/errata items.
   3. Verify against the relevant operational cluster in `references/rules/TOPIC_MAP.md` (e.g. Combat & Damage, Timing & Triggers, Card Economy) to ensure all interrelated mechanics are satisfied.
   4. If ambiguity remains across entries, run a targeted ripgrep (`rg -i "<term>" references/rules/`).
+- **Shell Execution & RTK Policy:** Execute commands directly in native PowerShell (no `powershell -Command` wrappers). Always prefix shell commands (`git`, `npm`, `vitest`, `npx`) with `rtk` (e.g. `rtk git status`, `rtk git diff`, `rtk npm test`, `rtk vitest run`, `rtk npm run lint`) to compress outputs by 60–90% per [`.agents/rules/antigravity-rtk-rules.md`](.agents/rules/antigravity-rtk-rules.md).
 - Keep `src/engine/` headless and decoupled from React, DOM, and CSS.
 - Keep card-specific behavior declarative in `src/data/supplemental/`; engine primitives must be generic.
 - Align implementation work with the currently active roadmap and milestone gates unless the user

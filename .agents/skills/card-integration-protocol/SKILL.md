@@ -73,7 +73,7 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Strip Abilities"]
 ### Step 1: Ingest Upstream Card & Existing Supplemental Baseline
 
 - **Log Format Convention:** Format card identifiers as `[{card_name}] ({card_code})` (e.g. `[The Break-In! (1A)] (01097a)`). **Avoid using `#` prefix** before 6-digit hex-like card codes (e.g. `#01097a`), which triggers false CSS color swatch decorators in IDE log viewers.
-- **Fast Targeted Extraction:** Run `npm run card:get -- <card_code_or_name>` to instantly fetch upstream and supplemental data for that single card without reading 3,000-line pack JSON files.
+- **Fast Targeted Extraction:** Run `rtk npm run card:get -- <card_code_or_name>` to instantly fetch upstream and supplemental data for that single card without reading 3,000-line pack JSON files.
 - Fetch the exact printed card text from upstream. Do not paraphrase, summarize, or alter upstream text during analysis.
 - **Ingest Existing Supplemental Baseline (If Present):** Load existing supplemental data strictly as a comparison baseline. **CRITICAL:** Do **NOT** assume the existing supplemental data is correct or complete. Treat it strictly as a snapshot that may be outdated or flawed relative to current specifications.
 
@@ -244,12 +244,12 @@ Log to docs/ambiguities/{pack}_{code}_{slug}.md & Strip Abilities"]
 2. **Synchronous Specification Feedback Loop:**
    - Whenever an engine primitive, trigger, or parameter is implemented or refactored:
      1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
-     2. Run `npx vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
+     2. Run `rtk vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
 5. **Regenerate Usage Audit & Verification:**
-   - **In Single-Card Mode:** Run `npm run report:declarations` (or `npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md). Run full verification suite: `npm test; npm run typecheck; npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
-   - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `npm run report:declarations` and the full verification suite (`npm test; npm run typecheck; npm run build`) **once as a single consolidated check** at the end of the batch.
+   - **In Single-Card Mode:** Run `rtk npm run report:declarations` (or `rtk npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md). Run full verification suite: `rtk npm test; rtk npm run typecheck; rtk npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
+   - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations` and the full verification suite (`rtk npm test; rtk npm run typecheck; rtk npm run build`) **once as a single consolidated check** at the end of the batch.
 
 ---
 

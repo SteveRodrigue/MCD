@@ -79,10 +79,10 @@ invoke_subagent({
       Prompt: `Execute the approved implementation plan exactly as written:
 1. Apply the file modifications specified in the implementation plan:
    - Target files and changes from the plan.
-2. Run the automated verification commands:
-   - npm test -- <relevant_tests> (enforcing 0 failures and 0 skipped tests)
-   - npm run typecheck
-   - npm run lint
+2. Run the automated verification commands using `rtk` to condense output:
+   - rtk npm test -- <relevant_tests> (enforcing 0 failures and 0 skipped tests)
+   - rtk npm run typecheck
+   - rtk npm run lint
     3. Do not infer missing requirements, select between plausible designs, expand scope, or modify files not explicitly authorized by the plan. If ambiguity, a conflict, or a missing decision is discovered, stop before editing the affected work and report the precise blocker using "Why This Is Blocking" and "What I Need From You" headings.
     4. Conclude with a concise diff summary and verification pass/fail status. Avoid meta-analysis or multi-step retrospectives.`,
     },
@@ -97,7 +97,7 @@ _Note: Stop calling tools immediately after launching the subagent to end the tu
 The subagent executes the plan:
 
 1. Applies code changes using `replace_file_content` and `write_to_file`.
-2. Executes the test suite and typechecks via `run_command` (confirming 0 failed and 0 skipped tests).
+2. Executes the test suite and typechecks via `run_command` using `rtk` (confirming 0 failed and 0 skipped tests).
 3. Reports completion and test logs back to the primary agent.
 
 ### Step 4: Post-Task Hygiene & Walkthrough (Primary Agent)
@@ -106,7 +106,7 @@ Upon receiving the subagent's completion message:
 
 1. Verify that all tests succeeded with **0 failures and 0 skipped tests** (Zero Skipped Tests Invariant).
 2. Update `CHANGELOG.md` under `[Unreleased]` with what was implemented.
-3. If card supplemental JSON was modified, run `npm run report:declarations`.
+3. If card supplemental JSON was modified, run `rtk npm run report:declarations`.
 4. Create or update the walkthrough/recap in the host's user-facing artifact location when available.
 5. Present the walkthrough and verification results to the user. If the user's original request already authorized delivery (e.g. "implement and commit/push this plan"), proceed directly through commit and push; otherwise wait for an explicit commit/push request before delivering.
 

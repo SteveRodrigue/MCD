@@ -26,7 +26,7 @@ Use this skill to turn GitHub Dependabot alerts into evidence-backed remediation
 ### 1. Establish Scope and Repository State
 
 1. Read the requested scope. Default to all open alerts if no scope is provided.
-2. Confirm the repository root and current branch with `git status --short` and `git branch --show-current`.
+2. Confirm the repository root and current branch with `rtk git status --short` and `rtk git branch --show-current`.
 3. Record whether the worktree is clean. Do not include unrelated changes in a future remediation commit.
 4. If open alerts remain after retrieval, read `package.json`, `package-lock.json`, `vite.config.ts`, CI workflow files, and relevant workspace scripts before drawing conclusions.
 
@@ -141,12 +141,12 @@ After approval:
 5. Run the approved verification commands:
 
 ```text
-npm ci
-npm run format:check
-npm run lint
-npm run typecheck
-npm test
-npm run build
+rtk npm ci
+rtk npm run format:check
+rtk npm run lint
+rtk npm run typecheck
+rtk npm test
+rtk npm run build
 ```
 
 6. Re-query Dependabot alerts and report whether the alert closed, remains open, or changed state.

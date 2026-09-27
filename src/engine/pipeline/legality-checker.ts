@@ -4,7 +4,6 @@ import {
   CardType,
   CardInstance,
   NormalizedCard,
-  SideSchemeCard,
   GamePhase,
   Keyword,
   hasKeyword,
@@ -28,6 +27,82 @@ import { getEligibleTargets } from '../effects/target-resolver';
 
 export function getPlayer(state: GameState, playerId: string): PlayerState | undefined {
   return state.players.find((p) => p.id === playerId);
+}
+
+/**
+ * Checks if a specific card has an active Crisis icon (RR v1.8 p. 11).
+ */
+export function cardHasCrisisIcon(card?: NormalizedCard): boolean {
+  if (!card) return false;
+  return Boolean(
+    card.hasCrisis || (card.scheme_crisis || 0) > 0 || hasKeyword(card, Keyword.CRISIS),
+  );
+}
+
+/**
+ * Checks whether at least one Crisis icon is currently in play across ALL in-play cards
+ * (RR v1.8 p. 11 "Crisis", p. 15 "In Play and Out of Play").
+ *
+ * In-play zones evaluated:
+ * - Side schemes and their attachments
+ * - Main scheme and its attachments
+ * - Environments
+ * - Villain and villain attachments
+ * - Players' tableaus (supports, upgrades), allies (+ attachments), engaged minions (+ attachments), and identity attachments.
+ */
+export function hasCrisisInPlay(state: GameState): boolean {
+  // 1. Side schemes & attachments
+  for (const s of state.sideSchemes || []) {
+    if (cardHasCrisisIcon(s.card)) return true;
+    for (const att of s.attachments || []) {
+      if (cardHasCrisisIcon(att.card)) return true;
+    }
+  }
+
+  // 2. Main scheme & attachments
+  if (state.mainScheme) {
+    if (cardHasCrisisIcon(state.mainScheme.card)) return true;
+    for (const att of state.mainScheme.attachments || []) {
+      if (cardHasCrisisIcon(att.card)) return true;
+    }
+  }
+
+  // 3. Environments
+  for (const env of state.environments || []) {
+    if (cardHasCrisisIcon(env.card)) return true;
+  }
+
+  // 4. Villain & attachments
+  if (state.villain) {
+    if (cardHasCrisisIcon(state.villain.card)) return true;
+    for (const att of state.villain.attachments || []) {
+      if (cardHasCrisisIcon(att.card)) return true;
+    }
+  }
+
+  // 5. Players: tableaus, allies, engaged minions, identity attachments
+  for (const p of state.players || []) {
+    for (const t of p.tableau || []) {
+      if (cardHasCrisisIcon(t.card)) return true;
+    }
+    for (const a of p.allies || []) {
+      if (cardHasCrisisIcon(a.card)) return true;
+      for (const att of a.attachments || []) {
+        if (cardHasCrisisIcon(att.card)) return true;
+      }
+    }
+    for (const m of p.engagedMinions || []) {
+      if (cardHasCrisisIcon(m.card)) return true;
+      for (const att of m.attachments || []) {
+        if (cardHasCrisisIcon(att.card)) return true;
+      }
+    }
+    for (const att of p.attachments || []) {
+      if (cardHasCrisisIcon(att.card)) return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -267,16 +342,11 @@ export function canBasicThwart(
       };
     }
 
-    // 2. Crisis Icon Check: Any side scheme with Crisis in play prevents removing threat from main scheme
-    const hasCrisisScheme = state.sideSchemes.some((s) => {
-      const sideCard = s.card as SideSchemeCard;
-      return sideCard.hasCrisis || hasKeyword(s.card, Keyword.CRISIS);
-    });
-
-    if (hasCrisisScheme) {
+    // 2. Crisis Icon Check: Any card with Crisis in play prevents removing threat from main scheme (RR v1.8 p. 11)
+    if (hasCrisisInPlay(state)) {
       return {
         allowed: false,
-        reason: 'Cannot thwart the main scheme while a side scheme with a Crisis icon is in play.',
+        reason: 'Cannot thwart the main scheme while a Crisis icon is in play.',
       };
     }
   }
@@ -340,15 +410,11 @@ export function canAllyThwart(
       };
     }
 
-    const hasCrisisScheme = state.sideSchemes.some((s) => {
-      const sideCard = s.card as SideSchemeCard;
-      return sideCard.hasCrisis || hasKeyword(s.card, Keyword.CRISIS);
-    });
-
-    if (hasCrisisScheme) {
+    // 2. Crisis Icon Check: Any card with Crisis in play prevents removing threat from main scheme (RR v1.8 p. 11)
+    if (hasCrisisInPlay(state)) {
       return {
         allowed: false,
-        reason: 'Cannot thwart the main scheme while a side scheme with a Crisis icon is in play.',
+        reason: 'Cannot thwart the main scheme while a Crisis icon is in play.',
       };
     }
   }
@@ -765,10 +831,7 @@ export function hasEligibleThreatRemovalTarget(
 ): boolean {
   const player = getPlayer(state, playerId);
 
-  const hasCrisisScheme = (state.sideSchemes || []).some((s) => {
-    const sideCard = s.card as SideSchemeCard;
-    return Boolean(sideCard?.hasCrisis || hasKeyword(s.card, Keyword.CRISIS));
-  });
+  const crisisInPlay = hasCrisisInPlay(state);
 
   const hasPatrolMinion = (player?.engagedMinions || []).some((m) =>
     hasKeyword(m.card, Keyword.PATROL),
@@ -777,7 +840,7 @@ export function hasEligibleThreatRemovalTarget(
   const isMainSchemeEligible =
     Boolean(state.mainScheme) &&
     (state.mainScheme.threat || 0) > 0 &&
-    !hasCrisisScheme &&
+    !crisisInPlay &&
     !hasPatrolMinion;
 
   if (targetType === 'MAIN_SCHEME') {

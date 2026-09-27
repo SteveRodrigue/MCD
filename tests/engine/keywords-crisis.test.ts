@@ -1,9 +1,18 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  SideSchemeCard,
+  CardType,
+  Keyword,
+  CardInstance,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { canBasicThwart } from '@engine/pipeline/legality-checker';
+import { canBasicThwart, hasCrisisInPlay } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline';
+import { executeSequence } from '@engine/effects';
 
 describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
   let state: GameState;
@@ -35,7 +44,15 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     state.players[0].activeFormCard = spiderManHero;
   });
 
-  it('Crowd Control (01108) with Crisis icon prevents removing threat from main scheme', () => {
+  it('1) Crowd Control (01108) data invariant: base threat 2, hasCrisis true, no When Revealed ability', () => {
+    const crowdControl = cardCatalog.getCard('01108') as SideSchemeCard;
+    expect(crowdControl).toBeDefined();
+    expect(crowdControl.baseThreat).toBe(2);
+    expect(crowdControl.hasCrisis).toBe(true);
+    expect(crowdControl.enrichment?.abilities).toEqual([]);
+  });
+
+  it('2) Crowd Control (01108) with Crisis icon prevents basic thwart on main scheme', () => {
     const sideSchemeCard = cardCatalog.getCard('01108') as SideSchemeCard;
     const sideSchemeInstance = createCardInstance(sideSchemeCard);
 
@@ -70,5 +87,250 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     state.sideSchemes = [];
     const unlockedCheck = canBasicThwart(state, 'p1', 'main_scheme');
     expect(unlockedCheck.allowed).toBe(true);
+  });
+
+  it('3) Generic In-Play: Crisis icon on an attachment on Villain blocks main scheme threat removal', () => {
+    // Attachment with scheme_crisis: 1 (or crisis keyword) attached to Villain
+    const crisisAttachment: CardInstance = {
+      instanceId: 'crisis-att-1',
+      card: {
+        code: 'test-att-crisis',
+        name: 'Team Leader',
+        type: CardType.ATTACHMENT,
+        hasCrisis: true,
+        scheme_crisis: 1,
+        keywords: [Keyword.CRISIS],
+        traits: ['Title'],
+        resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
+      } as any,
+      ownerId: 'encounter',
+      exhausted: false,
+    };
+
+    state.villain.attachments = [crisisAttachment];
+    state.mainScheme.threat = 5;
+
+    expect(hasCrisisInPlay(state)).toBe(true);
+
+    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    expect(check.allowed).toBe(false);
+    expect(check.reason).toContain('Crisis');
+  });
+
+  it('4) Generic In-Play: Crisis icon on an Environment card blocks main scheme threat removal', () => {
+    const crisisEnv: CardInstance = {
+      instanceId: 'crisis-env-1',
+      card: {
+        code: 'test-env-crisis',
+        name: 'Crisis Zone',
+        type: CardType.ENVIRONMENT,
+        hasCrisis: true,
+        scheme_crisis: 1,
+        keywords: [Keyword.CRISIS],
+        traits: ['Location'],
+        resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
+      } as any,
+      ownerId: 'encounter',
+      exhausted: false,
+    };
+
+    state.environments = [crisisEnv];
+    state.mainScheme.threat = 5;
+
+    expect(hasCrisisInPlay(state)).toBe(true);
+
+    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    expect(check.allowed).toBe(false);
+    expect(check.reason).toContain('Crisis');
+  });
+
+  it('5) Generic In-Play: Crisis icon on a player tableau card blocks main scheme threat removal', () => {
+    const crisisUpgrade: CardInstance = {
+      instanceId: 'crisis-upg-1',
+      card: {
+        code: '44051',
+        name: 'Ambush',
+        type: CardType.UPGRADE,
+        hasCrisis: true,
+        scheme_crisis: 1,
+        keywords: [Keyword.CRISIS],
+        traits: ['Condition'],
+        resources: { physical: 0, energy: 0, mental: 0, wild: 0 },
+      } as any,
+      ownerId: 'p1',
+      exhausted: false,
+    };
+
+    state.players[0].tableau = [crisisUpgrade];
+    state.mainScheme.threat = 5;
+
+    expect(hasCrisisInPlay(state)).toBe(true);
+
+    const check = canBasicThwart(state, 'p1', 'main_scheme');
+    expect(check.allowed).toBe(false);
+    expect(check.reason).toContain('Crisis');
+  });
+
+  it('6) CHOSEN_SCHEME with Crisis icon and 1 side scheme: automatically removes threat from side scheme, never Main Scheme', () => {
+    const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
+    state.sideSchemes = [
+      {
+        instanceId: 'side-cc',
+        card: crowdControlCard,
+        threat: 2,
+      },
+    ];
+    state.mainScheme.threat = 5;
+
+    // Execute REMOVE_THREAT with target: CHOSEN_SCHEME (like For Justice!)
+    const result = executeSequence(
+      state,
+      [
+        {
+          effect: 'REMOVE_THREAT',
+          effectParams: { amount: 2, target: 'CHOSEN_SCHEME' },
+        },
+      ],
+      {
+        playerId: 'p1',
+        sourceCardInstance: {
+          instanceId: 'for-justice-inst',
+          card: { code: '01060', name: 'For Justice!', faction: 'justice' } as any,
+          ownerId: 'p1',
+          exhausted: false,
+        },
+      },
+    );
+
+    expect(result.success).toBe(true);
+    // Decision prompt must NOT be enqueued because Main Scheme is blocked by Crisis and only 1 side scheme exists
+    expect(result.state.pendingDecisionPrompt).toBeUndefined();
+    // Threat was removed from Crowd Control, defeating it!
+    expect(result.state.sideSchemes.length).toBe(0);
+    // Main Scheme threat was untouched
+    expect(result.state.mainScheme.threat).toBe(5);
+  });
+
+  it('7) CHOSEN_SCHEME with Crisis icon and multiple side schemes: prompt contains ONLY side schemes, NEVER Main Scheme', () => {
+    const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
+    const bombScareCard = cardCatalog.getCard('01109') as SideSchemeCard;
+
+    state.sideSchemes = [
+      {
+        instanceId: 'side-cc',
+        card: crowdControlCard,
+        threat: 2,
+      },
+      {
+        instanceId: 'side-bs',
+        card: bombScareCard,
+        threat: 3,
+      },
+    ];
+    state.mainScheme.threat = 5;
+
+    const result = executeSequence(
+      state,
+      [
+        {
+          effect: 'REMOVE_THREAT',
+          effectParams: { amount: 1, target: 'CHOSEN_SCHEME' },
+        },
+      ],
+      {
+        playerId: 'p1',
+        sourceCardInstance: {
+          instanceId: 'surveillance-team-inst',
+          card: { code: '01064', name: 'Surveillance Team', faction: 'justice' } as any,
+          ownerId: 'p1',
+          exhausted: false,
+        },
+      },
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.state.pendingDecisionPrompt).toBeDefined();
+
+    const prompt = result.state.pendingDecisionPrompt!;
+    const optionIds = prompt.options.map((o) => o.id);
+
+    // Must NOT contain main scheme
+    expect(optionIds).not.toContain('main_scheme');
+    // Must contain both side schemes
+    expect(optionIds).toContain('side-cc');
+    expect(optionIds).toContain('side-bs');
+    expect(prompt.options.length).toBe(2);
+  });
+
+  it('8) Direct Main Scheme player threat removal is blocked when Crisis is active', () => {
+    const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
+    state.sideSchemes = [
+      {
+        instanceId: 'side-cc',
+        card: crowdControlCard,
+        threat: 2,
+      },
+    ];
+    state.mainScheme.threat = 5;
+
+    const result = executeSequence(
+      state,
+      [
+        {
+          effect: 'REMOVE_THREAT',
+          effectParams: { amount: 2, target: 'MAIN_SCHEME' },
+        },
+      ],
+      {
+        playerId: 'p1',
+        sourceCardInstance: {
+          instanceId: 'test-player-card',
+          card: { code: 'test-card', name: 'Test Player Event', faction: 'hero' } as any,
+          ownerId: 'p1',
+          exhausted: false,
+        },
+      },
+    );
+
+    expect(result.success).toBe(true);
+    // Main Scheme threat remains untouched
+    expect(result.state.mainScheme.threat).toBe(5);
+    // Crisis block logged
+    expect(result.state.log.some((l) => l.onomatopoeia === 'CRISIS BLOCKS!')).toBe(true);
+  });
+
+  it('9) Ability with ignoresCrisis: true can remove threat from Main Scheme even while Crisis is active', () => {
+    const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
+    state.sideSchemes = [
+      {
+        instanceId: 'side-cc',
+        card: crowdControlCard,
+        threat: 2,
+      },
+    ];
+    state.mainScheme.threat = 5;
+
+    const result = executeSequence(
+      state,
+      [
+        {
+          effect: 'REMOVE_THREAT',
+          effectParams: { amount: 2, target: 'MAIN_SCHEME', ignoresCrisis: true },
+        },
+      ],
+      {
+        playerId: 'p1',
+        sourceCardInstance: {
+          instanceId: 'test-vision-card',
+          card: { code: 'vision-card', name: 'Vision Event', faction: 'protection' } as any,
+          ownerId: 'p1',
+          exhausted: false,
+        },
+      },
+    );
+
+    expect(result.success).toBe(true);
+    // Main Scheme threat was reduced (5 -> 3)
+    expect(result.state.mainScheme.threat).toBe(3);
   });
 });

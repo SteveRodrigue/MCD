@@ -487,30 +487,15 @@
       }
     },
     "01108": {
-      "abilities": [
-        {
-          "id": "crowd_control_when_revealed",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ADD_THREAT",
-              "effectParams": {
-                "amount": 1,
-                "target": "THIS_SIDE_SCHEME",
-                "perPlayer": true
-              }
-            }
-          ]
-        }
-      ],
+      "noSupplementalNeeded": true,
+      "abilities": [],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-27T12:00:00Z",
+        "reviewedAt": "2026-09-27T12:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<i>(Crisis Icon: While this scheme is in play, you cannot remove threat from the main scheme.)</i>"
       }
     },

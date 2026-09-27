@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Test (Engine): Contract Test for Crowd Control (01108) Threat Scaling ([Issue #160](https://github.com/SteveRodrigue/MCD/issues/160))**
+  - Added regression test in `tests/engine/keywords-crisis.test.ts` verifying that *Crowd Control* revealed in a 2-player game initializes with strictly $2 \times 2 = 4$ threat and has no phantom When Revealed ability additions.
+
 - **Fix (Engine): Universal Card State Reset on Discard / Leaves Play & Ready Entry State ([RR v1.8 p. 11, 15, 24](references/rules/glossary/L.md#leaves-play), [Issue #157](https://github.com/SteveRodrigue/MCD/issues/157))**
   - **Universal `resetCardState` Primitive:**
     - Introduced and exported `resetCardState(card: CardInstance): void` in `src/engine/effects/index.ts` to strictly enforce the RR v1.8 *Leaves Play* invariant ("When a card leaves play, there is no memory of its previous state and it is considered to be a new copy of the card").

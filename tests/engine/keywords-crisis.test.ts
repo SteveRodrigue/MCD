@@ -13,6 +13,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { canBasicThwart, hasCrisisInPlay } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline';
 import { executeSequence } from '@engine/effects';
+import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';
 
 describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
   let state: GameState;
@@ -332,5 +333,49 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     expect(result.success).toBe(true);
     // Main Scheme threat was reduced (5 -> 3)
     expect(result.state.mainScheme.threat).toBe(3);
+  });
+
+  it('10) Issue #160: Crowd Control (01108) revealed in a 2-player game initializes with strictly 4 threat (2 * 2 players)', () => {
+    const captainMarvelHero = cardCatalog.getCard('01010a') as HeroCard;
+    const carolDanversAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+    const twoPlayerState = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Player 1',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+        {
+          id: 'p2',
+          name: 'Player 2',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const crowdControlCard = cardCatalog.getCard('01108') as SideSchemeCard;
+    const crowdControlInstance = createCardInstance(crowdControlCard);
+
+    resolveActiveEncounterCardAfterInterrupt(
+      twoPlayerState,
+      crowdControlInstance,
+      twoPlayerState.players[0],
+      false,
+    );
+
+    expect(twoPlayerState.sideSchemes.length).toBe(1);
+    expect(twoPlayerState.sideSchemes[0].card.code).toBe('01108');
+    // Exactly 2 threat per player * 2 players = 4 threat (no phantom When Revealed addition)
+    expect(twoPlayerState.sideSchemes[0].threat).toBe(4);
   });
 });

@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Universal Card State Reset on Discard / Leaves Play & Ready Entry State ([RR v1.8 p. 11, 15, 24](references/rules/glossary/L.md#leaves-play), [Issue #157](https://github.com/SteveRodrigue/MCD/issues/157))**
+  - **Universal `resetCardState` Primitive:**
+    - Introduced and exported `resetCardState(card: CardInstance): void` in `src/engine/effects/index.ts` to strictly enforce the RR v1.8 *Leaves Play* invariant ("When a card leaves play, there is no memory of its previous state and it is considered to be a new copy of the card").
+    - Cleanses `exhausted` (`false`), `tokens` (`{}`), `counters` (`{}`), `statusCards` (`[]`), `activeStatModifiers` (`[]`), `attachments` (`[]`), and `cardsUnderneath` (`[]`) while strictly preserving immutable identity attributes (`instanceId`, `card`, `ownerId`).
+  - **Discard & Defeat Integration:**
+    - Integrated `resetCardState` across `discardCardInstance`, `moveDefeatedCardToPile`, and all ally defeat/dismissal paths in `action-dispatcher.ts`, `combat-pipeline.ts`, and `round-upkeep.ts`.
+    - Updated `executeEffect` when paying `cost.discardSelf` to snapshot the triggering card's pre-discard counters/tokens for ability resolution before discarding and resetting the instance in the discard pile.
+  - **Ready Enters-Play Invariant:**
+    - Ensured all cards entering play via `PLAY_CARD`, `PUT_INTO_PLAY`, and `PLAY_FROM_ZONE` (*Make the Call* `01071`) enter play in a Ready state (`exhausted: false`) with reset state and initialized uses counters.
+  - **Automated Verification:**
+    - Added 6-test regression suite in `tests/engine/card-discard-leaves-play.test.ts` verifying ally defeat from consequential damage, *Make the Call* replay from discard in ready state, enemy attack defense defeat, upgrade/support discard, cross-player ownership preservation, and `PUT_INTO_PLAY` state reset.
+
+- **Feature (UI): Two-Tier Player Tableau Architecture & Compact Identity Station ([ADR-0071](docs/decisions/0071-nested-allies-and-two-tier-player-tableau-architecture.md), [Issue #156](https://github.com/SteveRodrigue/MCD/issues/156))**
+  - **Two-Tier Player Tableau Layout:**
+    - Restructured `HeroZone.tsx` into a 2-tier layout:
+      - **Row 1 (`hero-allies-roster`):** Consolidates the Player Identity Station alongside a nested Allies roster, giving allies dedicated visual prominence beside their leader.
+      - **Row 2 (`tableau-section`):** Full-width upgrades and supports showcase with categorized tabs (All, Upgrades, Supports) and responsive card scaling.
+  - **Compact Identity Station Architecture:**
+    - Drastically reduced vertical footprint (from ~360px down to ~220px) to prevent vertical overflow and scrolling on compact screens:
+      - **Header:** Hero/Alter-Ego name, form badge, and compact status tags (Tough, Confused, Stunned).
+      - **Tri-Column Center Row:** Left column for comic stat pills (`REC`/`HS` or `THW`/`ATK`/`DEF`/`HS`), center column for Identity `CardView` (`size="sm"`), and right column for a vertical HP gauge (`role="progressbar"`).
+      - **Single-Row Action Bar:** 2-column grid in Alter-Ego (`[SUIT UP]` + `[RECOVER]`) and 3-column grid in Hero (`[FLIP]` + `[ATTACK]` + `[THWART]`).
+  - **Compact Villain Panel Architecture:**
+    - Refactored the Villain Panel in `VillainZone.tsx` to match the compact tri-column layout, reducing vertical height by ~70px (from ~265px down to ~195px):
+      - **Header:** Villain name, skull icon, stage badge, and compact status badge row (Tough, Stunned, Confused).
+      - **Tri-Column Center Row:** Left column for comic stat pills (`SCH` and `ATK` with active bonus modifiers), center column for Villain `CardView` (`size="sm"`), and right column for a vertical HP gauge (`role="progressbar"`, aria attributes, color-coded health percentage fill).
+  - **Stat & Action Color Scheme Alignment:**
+    - Standardized stat pill and action button styling across `HeroZone.tsx`, `VillainZone.tsx`, and `IdentityActionModal.tsx`:
+      - **Attack (ATK):** Red (`bg-rose-50`, `text-comic-red`, red action button).
+      - **Scheme / Thwart (SCH / THW):** Blue (`bg-sky-50`, `text-comic-blue`, blue action button).
+      - **Defense (DEF):** Green (`bg-emerald-50`, `text-emerald-600`).
+      - **Recovery (REC):** Yellow (`bg-amber-50`, `text-amber-600`, yellow action button and modal card).
+      - **Hand Size (HS):** Light Gray (`bg-slate-100`, `text-slate-800`).
+  - **Automated Verification:**
+    - Added comprehensive unit tests in `tests/ui/hero-zone-tableau-layout.test.tsx` (9 tests) and `tests/ui/villain-zone-layout.test.tsx` (5 tests) verifying two-tier layout hierarchy, compact tri-column identity and villain components, vertical HP progressbar attributes, and status tags.
+
+
+
+
 - **Fix (Engine & Data): Generic `distinctFrom` Relational Targeting & Crisis Interdiction (`01012`) Different-Scheme Support ([RR v1.8 Appendix IV: FAQ p. 43](references/rules/appendices/04_faq.md), [Issue #150](https://github.com/SteveRodrigue/MCD/issues/150))**
   - **Generic `distinctFrom` Targeting Modifier:**
     - Added `distinctFrom: z.enum(['PREVIOUS_TARGET']).or(z.string()).optional()` to `AbilityStepSchema` and engine `AbilityStep` models, providing a generic, reusable primitive across all card abilities requiring a "different" entity without proliferating bespoke target selector enums.

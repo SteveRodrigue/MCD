@@ -191,14 +191,14 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
               }}
               className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${
                 canRecover
-                  ? 'bg-emerald-100 hover:bg-emerald-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
+                  ? 'bg-amber-100 hover:bg-amber-200 cursor-pointer hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]'
                   : 'bg-slate-200/70 text-slate-500 cursor-not-allowed opacity-60 border-dashed'
               }`}
             >
               <div className="flex items-center gap-2">
                 <div
                   className={`p-1.5 rounded-full border border-comic-black ${
-                    canRecover ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-slate-500'
+                    canRecover ? 'bg-comic-yellow text-slate-950' : 'bg-slate-300 text-slate-500'
                   }`}
                 >
                   <Heart className="w-4 h-4 fill-current" />

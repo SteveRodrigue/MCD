@@ -12,7 +12,7 @@ import {
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
-import { executeEffect, processHostDefeated } from '../effects';
+import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
@@ -730,6 +730,7 @@ export function applyCalculatedAttackDamage(
           processHostDefeated(state, ally, { player });
           const owner =
             (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
+          resetCardState(ally);
           owner.discard.push(ally);
 
           state.log.push({

@@ -1,7 +1,7 @@
 import { GameState, VillainPhaseStep } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { startPlayerPhase } from './player-phase';
-import { discardHostAttachmentsAndTuckedCards } from '../effects';
+import { discardHostAttachmentsAndTuckedCards, resetCardState } from '../effects';
 
 /**
  * Step 5: Pass First Player Token (RR v1.8 p. 47)
@@ -94,6 +94,7 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
         discardHostAttachmentsAndTuckedCards(state, ally, player.id);
         const owner =
           (ally.ownerId ? state.players.find((p) => p.id === ally.ownerId) : undefined) || player;
+        resetCardState(ally);
         owner.discard.push(ally);
         state.log.push({
           id: `log_${Date.now()}_${ally.instanceId}`,

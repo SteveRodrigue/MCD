@@ -158,6 +158,22 @@ export interface EffectResult {
 }
 
 /**
+ * Universal helper to reset transient gameplay state when a card leaves play or is discarded (RR v1.8 p. 15).
+ * Resets exhausted, tokens, counters, statusCards, activeStatModifiers, attachments, and cardsUnderneath
+ * while strictly preserving immutable identity attributes (instanceId, card, ownerId).
+ */
+export function resetCardState(card: CardInstance): void {
+  if (!card) return;
+  card.exhausted = false;
+  card.tokens = {};
+  card.counters = {};
+  card.statusCards = [];
+  card.activeStatModifiers = [];
+  card.attachments = [];
+  card.cardsUnderneath = [];
+}
+
+/**
  * Routes a defeated card to the permanent Victory Display if it carries the printed
  * 'Victory X' keyword, or to its normal discard pile otherwise (RR v1.8 p. 30, ADR-0034).
  * Reusable across every defeat path (minions, side schemes, player side schemes).
@@ -167,6 +183,7 @@ export function moveDefeatedCardToPile(
   cardInstance: CardInstance,
   discardPile: CardInstance[],
 ): void {
+  resetCardState(cardInstance);
   if (hasEntityKeyword(cardInstance, 'Victory')) {
     state.victoryDisplay.push(cardInstance);
   } else {
@@ -270,7 +287,10 @@ export function discardCardInstance(
   // 2. Atomic remove from all zones
   removeCardFromAllZones(state, card.instanceId);
 
-  // 3. Proper destination routing based on encounter vs. player card ownership
+  // 3. Reset card state (leaves play / discard invariant per RR v1.8 p. 15)
+  resetCardState(card);
+
+  // 4. Proper destination routing based on encounter vs. player card ownership
   if (isEncounterCard(card.card)) {
     state.encounterDiscard.push(card);
   } else {
@@ -929,7 +949,15 @@ export function executeEffect(
     (abilityOrStep as CardAbility).cost?.discardSelf &&
     context.sourceCardInstance
   ) {
-    discardCardInstance(state, context.sourceCardInstance, context.playerId);
+    const cardToDiscard = context.sourceCardInstance;
+    // Snapshot source card's pre-discard transient state for ability resolution (RR v1.8 p. 15, e.g. Energy Channel 01018)
+    context.sourceCardInstance = {
+      ...cardToDiscard,
+      tokens: { ...(cardToDiscard.tokens || {}) },
+      counters: { ...(cardToDiscard.counters || {}) },
+      activeStatModifiers: [...(cardToDiscard.activeStatModifiers || [])],
+    };
+    discardCardInstance(state, cardToDiscard, context.playerId);
   }
 
   if (
@@ -3870,6 +3898,10 @@ export function executeStep(
       }
 
       for (const cardInst of matches) {
+        // Cards entering play enter ready with reset transient state (RR v1.8 p. 11, 24)
+        resetCardState(cardInst);
+        cardInst.exhausted = false;
+
         // Initialize counters for cards with 'uses' keyword (RR v1.8 p. 30)
         initializeCardUses(cardInst);
 
@@ -3896,7 +3928,11 @@ export function executeStep(
           toZone === 'TABLEAU' ||
           [CardType.ALLY, CardType.SUPPORT, CardType.UPGRADE].includes(cardInst.card.type)
         ) {
-          player.tableau.push(cardInst);
+          if (cardInst.card.type === CardType.ALLY || toZone === 'ALLIES') {
+            player.allies.push(cardInst);
+          } else {
+            player.tableau.push(cardInst);
+          }
         } else if (toZone === 'ENGAGED_WITH_PLAYER' || cardInst.card.type === CardType.MINION) {
           const hasToughness = hasKeyword(cardInst.card, Keyword.TOUGH);
           if (hasToughness) {
@@ -5246,6 +5282,10 @@ export function executeStep(
 
           // Track owner for cross-player control per RR v1.8 p. 11
           chosenCard.ownerId = ownerPlayer.id;
+
+          // Reset transient gameplay state and ensure card enters ready (RR v1.8 p. 11, 24)
+          resetCardState(chosenCard);
+          chosenCard.exhausted = false;
 
           // Move into controller's tableau / allies
           if (chosenCard.card.type === CardType.ALLY) {

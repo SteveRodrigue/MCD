@@ -159,6 +159,27 @@ The headless engine grounds target evaluation to [`src/engine/effects/target-res
   - `resolveCardTargets`: Card instances for attachment, exhaustion, readiness.
 - **Liveness & Spatial Conservation**: Only active entities in live zones are returned. Defeated minions, discarded allies, or cleared schemes in discard piles or the victory display are strictly excluded (RR v1.8 p. 28).
 
+### 5. Candidate Discovery & Two-Layer Legality/Safety Architecture (ADR-0070)
+
+Target evaluation implements a systemic two-layer architecture separating structural scope discovery from optional state filtering:
+
+1. **Candidate Discovery Engine (`getEligibleTargets`)**:
+   - `getEligibleTargets(state, player, targetScope, filterOptions)` decouples structural scope selection (`CHOSEN_CHARACTER`, `CHOSEN_FRIENDLY_CHARACTER`, `CHOSEN_ALLY`, `CHOSEN_MINION`, `CHOSEN_PLAYER`, `CHOSEN_SCHEME`, `CHOSEN_ENEMY`) from optional predicate constraints (`damaged?: boolean`, `exhausted?: boolean`, `traits?: string[]`, `status?: StatusCard`).
+   - Unfiltered scopes (e.g. `CHOSEN_CHARACTER` with no filter) return all live characters across both teams for buffs, attachments, or general targeting.
+
+2. **Layer 1: Pre-Play Legality Gate (`canPlayCard`, `canInitiateAbility`)**:
+   - Enforces the RR v1.8 p. 3 rule ("Potential to change the game state") before payments, actions, or triggers can be committed.
+   - For healing effects (e.g. _First Aid_), checks if at least 1 eligible target has sustained damage. If 0 eligible targets exist, play is strictly blocked with a descriptive error.
+   - For readying effects (e.g. _Get Ready_), checks if at least 1 eligible ally is exhausted.
+
+3. **Layer 2: Action Execution & Decision Prompt Fallbacks (`action-dispatcher.ts`)**:
+   - When an explicit `targetInstanceId` is provided by the UI: resolves and executes directly.
+   - When target is omitted and exactly 1 eligible candidate exists: automatically binds the target without user friction.
+   - When target is omitted and multiple candidates exist: enqueues a `PendingDecisionPrompt` into `state.pendingDecisionQueue` allowing the user to select the recipient entity.
+
+4. **Pre-Play Targeting UI (`CardPaymentModal.tsx`)**:
+   - Displays comic badge target selectors directly inside the payment modal for cards requiring heal targets, ally targets, scheme targets, or minion targets, avoiding unexpected mid-action prompts.
+
 ---
 
 ## 4. Universal Card Filter (`UniversalCardFilterSchema`)

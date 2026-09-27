@@ -1,23 +1,55 @@
 import { describe, it, expect } from 'vitest';
 import { CardType } from '../../src/engine/models';
 import { CardCatalog } from '../../src/data/importer/card-loader';
+import { getStepEffectParams } from '../../src/data/supplemental/schema';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
 
-describe('CardPaymentModal Targeting Invariants (Issue #94)', () => {
+describe('CardPaymentModal Targeting Invariants (Issue #94 & Issue #146)', () => {
   const catalog = new CardCatalog([...corePack, ...coreEncounterPack]);
 
   function evaluatePaymentModalTargeting(card: any) {
     const isEventCard = card?.type === CardType.EVENT || (card as any)?.type_code === 'event';
     const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
+
+    let eventTargetScope: string | undefined;
+    for (const ab of abilities) {
+      for (const step of ab.steps || []) {
+        const stepParams = getStepEffectParams(step);
+        const tgt = stepParams.target as string | undefined;
+        if (tgt && tgt.startsWith('CHOSEN_')) {
+          eventTargetScope = tgt;
+          break;
+        }
+      }
+      if (eventTargetScope) break;
+    }
+
     const isAttack =
       isEventCard &&
-      abilities.some((a: any) => (a.steps || []).some((s: any) => s.effect === 'DEAL_DAMAGE'));
+      abilities.some((a: any) =>
+        (a.steps || []).some((s: any) =>
+          ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
+        ),
+      );
     const isThwart =
       isEventCard &&
       abilities.some((a: any) => (a.steps || []).some((s: any) => s.effect === 'REMOVE_THREAT'));
+    const isHeal =
+      isEventCard &&
+      abilities.some((a: any) =>
+        (a.steps || []).some((s: any) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
+      );
+    const isAllyTarget =
+      isEventCard &&
+      !isAttack &&
+      !isThwart &&
+      !isHeal &&
+      (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
+    const isPlayerTarget =
+      isEventCard && !isAttack && !isThwart && !isHeal && eventTargetScope === 'CHOSEN_PLAYER';
 
-    return { isAttack, isThwart };
+    return { isAttack, isThwart, isHeal, isAllyTarget, isPlayerTarget };
   }
 
   it('Support card (Interrogation Room 01063) does NOT trigger scheme target prompt in payment modal', () => {
@@ -97,6 +129,40 @@ describe('CardPaymentModal Targeting Invariants (Issue #94)', () => {
 
     const { isAttack, isThwart } = evaluatePaymentModalTargeting(relentlessAssault);
     expect(isAttack).toBe(true);
+    expect(isThwart).toBe(false);
+  });
+
+  it('Heal Event (First Aid 01086) DOES trigger heal target prompt in payment modal', () => {
+    const firstAid = catalog.getCard('01086');
+    expect(firstAid).toBeDefined();
+    expect(firstAid?.type).toBe(CardType.EVENT);
+
+    const { isAttack, isThwart, isHeal } = evaluatePaymentModalTargeting(firstAid);
+    expect(isHeal).toBe(true);
+    expect(isAttack).toBe(false);
+    expect(isThwart).toBe(false);
+  });
+
+  it('Ally-targeting Event (Get Ready 01069) DOES trigger ally target prompt in payment modal', () => {
+    const getReady = catalog.getCard('01069');
+    expect(getReady).toBeDefined();
+    expect(getReady?.type).toBe(CardType.EVENT);
+
+    const { isAttack, isThwart, isHeal, isAllyTarget } = evaluatePaymentModalTargeting(getReady);
+    expect(isAllyTarget).toBe(true);
+    expect(isHeal).toBe(false);
+    expect(isAttack).toBe(false);
+    expect(isThwart).toBe(false);
+  });
+
+  it('Support card with heal ability (Medical Team 01064) does NOT trigger heal prompt upon playing from hand', () => {
+    const medicalTeam = catalog.getCard('01064');
+    expect(medicalTeam).toBeDefined();
+    expect(medicalTeam?.type).toBe(CardType.SUPPORT);
+
+    const { isHeal, isAttack, isThwart } = evaluatePaymentModalTargeting(medicalTeam);
+    expect(isHeal).toBe(false);
+    expect(isAttack).toBe(false);
     expect(isThwart).toBe(false);
   });
 

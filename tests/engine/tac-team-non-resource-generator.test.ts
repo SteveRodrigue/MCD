@@ -26,6 +26,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     // Flip to Hero form
     const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
     const player = heroState.players[0];
+    player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 
     // Put Tac Team in play (Attack counters, Action: Deal 2 damage)
     const tacTeam = createCardInstance(cardCatalog.getCard('01056')!);
@@ -75,6 +76,7 @@ describe('Resource Payment Generator Validation (RR v1.8 p. 25, Issue #43)', () 
     // Flip to Hero form
     const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
     const player = heroState.players[0];
+    player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 
     // Put Web-Shooter in play (Hero Resource: Exhaust & spend 1 counter -> generate 1 wild resource)
     const webShooter = createCardInstance(cardCatalog.getCard('01008')!);

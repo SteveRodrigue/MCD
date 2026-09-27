@@ -68,6 +68,7 @@ describe('Resource Abilities Timing, Stance Isolation & Form Gating (RR v1.8 p. 
     // Flip to Hero form
     const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
     const player = heroState.players[0];
+    player.health = 8; // Sustain damage so First Aid has an eligible heal target per RR v1.8 p. 3
 
     const webShooter = createCardInstance(cardCatalog.getCard('01008')!);
     webShooter.tokens = { damage: 0, threat: 0, counters: 3 };

@@ -540,38 +540,53 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
             const cardInstanceId =
               (optParams?.costCardInstanceId as string | undefined) ||
               (optParams?.sourceCardInstanceId as string | undefined);
-            const cardInst =
-              promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
-              promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId);
+            const inPlayCard =
+              (cardInstanceId
+                ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
+                  promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId)
+                : undefined) ||
+              (activePrompt.sourceCardCode
+                ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||
+                  promptPlayer.tableau.find((c) => c.card.code === activePrompt.sourceCardCode)
+                : undefined);
 
-            if (cardInst) {
-              const resCost = optParams?.resourceCost;
-              const ability = optParams?.ability;
-              const costAmount =
-                resCost?.amount ??
-                (typeof ability?.cost?.resourceCost === 'number'
-                  ? ability.cost.resourceCost
-                  : (cardInst.card.cost ?? 1));
-              const resourceType =
-                resCost?.resourceType ??
-                (typeof ability?.cost?.resourceCost === 'object' &&
-                ability.cost.resourceCost !== null
-                  ? Object.keys(ability.cost.resourceCost)[0]
-                  : undefined);
+            const resCost = optParams?.resourceCost;
+            const ability = optParams?.ability;
+            const costAmount =
+              resCost?.amount ??
+              (typeof ability?.cost?.resourceCost === 'number'
+                ? ability.cost.resourceCost
+                : (inPlayCard?.card?.cost ?? 1));
+            const resourceType =
+              resCost?.resourceType ??
+              (typeof ability?.cost?.resourceCost === 'object' && ability.cost.resourceCost !== null
+                ? Object.keys(ability.cost.resourceCost)[0]
+                : undefined);
 
-              setPendingPromptPayment({
-                optionId,
-                playerId: activePrompt.playerId,
-                card: cardInst,
-                abilityCost: {
-                  amount: costAmount,
-                  resourceType: resourceType as any,
-                  requirePrinted: ability?.cost?.requirePrinted,
-                },
-              });
-              setPaymentModalCard(cardInst);
-              return;
-            }
+            // Fallback synthetic card if prompt is from an encounter card or villain attachment
+            const paymentCard = inPlayCard || {
+              instanceId: cardInstanceId || activePrompt.promptId,
+              card: activePrompt.triggerSourceCard || {
+                code: activePrompt.sourceCardCode || 'encounter_cost',
+                name: activePrompt.sourceCardName || 'Card Cost',
+                type: 'encounter' as any,
+                cost: costAmount,
+              },
+              ownerId: activePrompt.playerId,
+            };
+
+            setPendingPromptPayment({
+              optionId,
+              playerId: activePrompt.playerId,
+              card: paymentCard as CardInstance,
+              abilityCost: {
+                amount: costAmount,
+                resourceType: resourceType as any,
+                requirePrinted: ability?.cost?.requirePrinted,
+              },
+            });
+            setPaymentModalCard(paymentCard as CardInstance);
+            return;
           }
 
           if (onDispatchAction) {

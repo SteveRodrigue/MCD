@@ -740,12 +740,114 @@ export function executeAbilityCost(
   }
   if (resCost.hasCost) {
     const { requiredType, requiredAmount, requirePrinted } = resCost;
-    const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
-    const specifiedGeneratorIds = options?.generatorInstanceIds || [];
+    const paymentRes = executeResourceCostPayment(
+      state,
+      player,
+      requiredAmount,
+      requiredType,
+      requirePrinted,
+      options,
+      sourceCardInst,
+      sourceCardInst?.card?.faction,
+    );
+    resourcesPaid += paymentRes.resourcesPaid;
+    discardedCount += paymentRes.discardedCount;
+  }
 
-    // Process generator activations
-    for (const gId of specifiedGeneratorIds) {
-      if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+  return { state, discardedCount, resourcesPaid };
+}
+
+export interface ResourceCostPaymentResult {
+  state: GameState;
+  resourcesPaid: number;
+  discardedCount: number;
+  resourcesSpent: string[];
+}
+
+/**
+ * Authoritative payment execution engine (Proposition A / ADR-0072).
+ * Unifies generator exhaustion, use counter decrements, and hand card resource consumption
+ * across PLAY_CARD, USE_CARD_ABILITY, DISCARD_ATTACHMENT_ACTION, and decision prompts.
+ */
+export function executeResourceCostPayment(
+  state: GameState,
+  player: PlayerState,
+  requiredAmount: number,
+  requiredType?: string,
+  requirePrinted: boolean = false,
+  options?: AbilityPaymentOptions,
+  sourceCardInst?: CardInstance,
+  targetFaction?: string,
+): ResourceCostPaymentResult {
+  let resourcesPaid = 0;
+  let discardedCount = 0;
+  const resourcesSpent: string[] = [];
+  const specifiedPaymentIds = options?.paymentCardInstanceIds || [];
+  const specifiedGeneratorIds = options?.generatorInstanceIds || [];
+
+  // 1. Process Generator Activations (Identity + Tableau)
+  for (const gId of specifiedGeneratorIds) {
+    if (gId === 'identity_ability' || gId === player.activeFormCard.code) {
+      const genAmt = getGeneratorProvidedResources(
+        state,
+        player,
+        gId,
+        requiredType,
+        requirePrinted,
+      );
+      resourcesPaid += genAmt;
+
+      const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+        (a) =>
+          a.timing === 'RESOURCE' ||
+          a.timing === 'HERO_RESOURCE' ||
+          a.timing === 'ALTER_EGO_RESOURCE' ||
+          a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
+      );
+      if (idAbility) {
+        const genStep = idAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
+        if (genStep?.effectParams?.fromCard) {
+          const target = locateCard(state, genStep.effectParams.fromCard, {
+            player,
+          });
+          if (target) {
+            const types = readCardResources(target);
+            for (const t of types) {
+              resourcesSpent.push(t);
+            }
+          }
+        } else {
+          const resType = (genStep?.effectParams?.resource as string) || 'wild';
+          const amount = Number(genStep?.effectParams?.amount) || genAmt || 1;
+          for (let i = 0; i < amount; i++) {
+            resourcesSpent.push(resType);
+          }
+        }
+
+        if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
+        player.usedAbilitiesThisRound[idAbility.id] =
+          (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
+        if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
+        player.usedAbilitiesThisPhase[idAbility.id] =
+          (player.usedAbilitiesThisPhase[idAbility.id] || 0) + 1;
+      } else {
+        for (let i = 0; i < genAmt; i++) {
+          resourcesSpent.push('wild');
+        }
+      }
+      state.log.push({
+        id: `log_${Date.now()}_id_res`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'identity.ability.used',
+        params: { ability: idAbility?.id || 'resource', hero: player.activeFormCard.name },
+        onomatopoeia: 'RESOURCE GENERATED!',
+      });
+    } else {
+      const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
+      if (gIdx !== -1) {
+        const gCard = player.tableau[gIdx];
         const genAmt = getGeneratorProvidedResources(
           state,
           player,
@@ -755,126 +857,147 @@ export function executeAbilityCost(
         );
         resourcesPaid += genAmt;
 
-        const idAbility = player.activeFormCard.enrichment?.abilities?.find(
+        gCard.exhausted = true;
+        const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
+        const abilities = enrichment?.abilities || [];
+        const tableAbility = abilities.find(
           (a) =>
-            a.timing === 'RESOURCE' ||
-            a.timing === 'HERO_RESOURCE' ||
-            a.timing === 'ALTER_EGO_RESOURCE' ||
-            a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
+            isResourceAbility(a.timing) ||
+            a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
         );
-        if (idAbility) {
+        if (tableAbility) {
+          const genStep = tableAbility.steps?.find(
+            (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
+          );
+          if (genStep?.effectParams?.fromCard) {
+            const target = locateCard(state, genStep.effectParams.fromCard, {
+              player,
+              sourceCardInstance: gCard,
+            });
+            if (target) {
+              const types = readCardResources(target);
+              for (const t of types) {
+                resourcesSpent.push(t);
+              }
+            }
+          } else {
+            const resType = (genStep?.effectParams?.resource as string) || 'wild';
+            const amount = Number(genStep?.effectParams?.amount) || genAmt || 1;
+            for (let i = 0; i < amount; i++) {
+              resourcesSpent.push(resType);
+            }
+          }
+
+          const key = `${gCard.instanceId}_${tableAbility.id}`;
           if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-          player.usedAbilitiesThisRound[idAbility.id] =
-            (player.usedAbilitiesThisRound[idAbility.id] || 0) + 1;
+          player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
           if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-          player.usedAbilitiesThisPhase[idAbility.id] =
-            (player.usedAbilitiesThisPhase[idAbility.id] || 0) + 1;
+          player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
+        } else {
+          for (let i = 0; i < genAmt; i++) {
+            resourcesSpent.push('wild');
+          }
+        }
+        if (enrichment?.uses) {
+          const counterType = enrichment.uses.type;
+          if (
+            gCard.tokens &&
+            typeof gCard.tokens.counters === 'number' &&
+            gCard.tokens.counters > 0
+          ) {
+            gCard.tokens.counters = Math.max(0, gCard.tokens.counters - 1);
+          }
+          if (
+            counterType &&
+            gCard.counters &&
+            typeof gCard.counters[counterType] === 'number' &&
+            gCard.counters[counterType] > 0
+          ) {
+            gCard.counters[counterType] = Math.max(0, gCard.counters[counterType] - 1);
+          }
+          checkAndDiscardZeroCounterCard(state, player, gCard, counterType);
         }
         state.log.push({
-          id: `log_${Date.now()}_id_res`,
+          id: `log_${Date.now()}_gen_res`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
-          key: 'identity.ability.used',
-          params: { ability: idAbility?.id || 'resource', hero: player.activeFormCard.name },
-          onomatopoeia: 'RESOURCE GENERATED!',
+          key: 'card.ability.used',
+          params: { card: gCard.card.name },
+          onomatopoeia: 'GENERATED RESOURCE!',
         });
-      } else {
-        const gIdx = player.tableau.findIndex((c) => c.instanceId === gId);
-        if (gIdx !== -1) {
-          const gCard = player.tableau[gIdx];
-          const genAmt = getGeneratorProvidedResources(
-            state,
-            player,
-            gId,
-            requiredType,
-            requirePrinted,
-          );
-          resourcesPaid += genAmt;
-
-          gCard.exhausted = true;
-          const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
-          const abilities = enrichment?.abilities || [];
-          const tableAbility = abilities.find(
-            (a) =>
-              isResourceAbility(a.timing) ||
-              a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
-          );
-          if (tableAbility) {
-            const key = `${gCard.instanceId}_${tableAbility.id}`;
-            if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
-            player.usedAbilitiesThisRound[key] = (player.usedAbilitiesThisRound[key] || 0) + 1;
-            if (!player.usedAbilitiesThisPhase) player.usedAbilitiesThisPhase = {};
-            player.usedAbilitiesThisPhase[key] = (player.usedAbilitiesThisPhase[key] || 0) + 1;
-          }
-          if (enrichment?.uses) {
-            const counterType = enrichment.uses.type;
-            if (
-              gCard.tokens &&
-              typeof gCard.tokens.counters === 'number' &&
-              gCard.tokens.counters > 0
-            ) {
-              gCard.tokens.counters = Math.max(0, gCard.tokens.counters - 1);
-            }
-            if (
-              counterType &&
-              gCard.counters &&
-              typeof gCard.counters[counterType] === 'number' &&
-              gCard.counters[counterType] > 0
-            ) {
-              gCard.counters[counterType] = Math.max(0, gCard.counters[counterType] - 1);
-            }
-            checkAndDiscardZeroCounterCard(state, player, gCard, counterType);
-          }
-          state.log.push({
-            id: `log_${Date.now()}_gen_res`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.ability.used',
-            params: { card: gCard.card.name },
-            onomatopoeia: 'GENERATED RESOURCE!',
-          });
-        }
-      }
-    }
-
-    // Process payment cards from hand
-    if (specifiedPaymentIds.length > 0) {
-      for (const id of specifiedPaymentIds) {
-        if (sourceCardInst && id === sourceCardInst.instanceId) continue;
-        const idx = player.hand.findIndex((c) => c.instanceId === id);
-        if (idx !== -1) {
-          const [discarded] = player.hand.splice(idx, 1);
-          player.discard.push(discarded);
-          discardedCount++;
-          const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
-          resourcesPaid += cardAmt;
-        }
-      }
-    } else if (specifiedGeneratorIds.length === 0) {
-      // Auto-consume cards from hand until requiredAmount is satisfied
-      while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
-        let cardIdx = -1;
-        for (let i = 0; i < player.hand.length; i++) {
-          if (sourceCardInst && player.hand[i].instanceId === sourceCardInst.instanceId) continue;
-          if (getCardProvidedResources(player.hand[i], requiredType, requirePrinted) > 0) {
-            cardIdx = i;
-            break;
-          }
-        }
-        if (cardIdx === -1) break;
-
-        const [discarded] = player.hand.splice(cardIdx, 1);
-        player.discard.push(discarded);
-        discardedCount++;
-        const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
-        resourcesPaid += cardAmt;
       }
     }
   }
 
-  return { state, discardedCount, resourcesPaid };
+  // 2. Process Hand Payment Cards
+  if (specifiedPaymentIds.length > 0) {
+    for (const id of specifiedPaymentIds) {
+      if (sourceCardInst && id === sourceCardInst.instanceId) continue;
+      const idx = player.hand.findIndex((c) => c.instanceId === id);
+      if (idx !== -1) {
+        const [discarded] = player.hand.splice(idx, 1);
+        player.discard.push(discarded);
+        discardedCount++;
+
+        // Aspect doubling check (The Power of...)
+        const aspectDoubleStep = discarded.card.enrichment?.abilities
+          ?.flatMap((a) => a.steps || [])
+          .find((s) => s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT');
+        const isDoubled = Boolean(
+          aspectDoubleStep &&
+          targetFaction &&
+          aspectDoubleStep.effectParams?.aspect === targetFaction,
+        );
+        const multiplier = isDoubled ? 2 : 1;
+
+        const res = discarded.card.resources;
+        let added = false;
+        for (const type of ['physical', 'energy', 'mental', 'wild'] as const) {
+          const count = (res?.[type] || 0) * multiplier;
+          for (let i = 0; i < count; i++) {
+            resourcesSpent.push(type);
+            added = true;
+          }
+        }
+        if (!added) {
+          for (let i = 0; i < multiplier; i++) {
+            resourcesSpent.push('wild');
+          }
+        }
+
+        const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
+        resourcesPaid += cardAmt;
+      }
+    }
+  } else if (specifiedGeneratorIds.length === 0 && requiredAmount > 0) {
+    // Auto-consume cards from hand until requiredAmount is satisfied
+    while (player.hand.length > 0 && resourcesPaid < requiredAmount) {
+      let cardIdx = -1;
+      for (let i = 0; i < player.hand.length; i++) {
+        if (sourceCardInst && player.hand[i].instanceId === sourceCardInst.instanceId) continue;
+        if (getCardProvidedResources(player.hand[i], requiredType, requirePrinted) > 0) {
+          cardIdx = i;
+          break;
+        }
+      }
+      if (cardIdx === -1) break;
+
+      const [discarded] = player.hand.splice(cardIdx, 1);
+      player.discard.push(discarded);
+      discardedCount++;
+      const cardAmt = getCardProvidedResources(discarded, requiredType, requirePrinted);
+      resourcesPaid += cardAmt;
+      const res = discarded.card.resources;
+      for (const type of ['physical', 'energy', 'mental', 'wild'] as const) {
+        for (let i = 0; i < (res?.[type] || 0); i++) {
+          resourcesSpent.push(type);
+        }
+      }
+    }
+  }
+
+  return { state, resourcesPaid, discardedCount, resourcesSpent };
 }
 
 /**

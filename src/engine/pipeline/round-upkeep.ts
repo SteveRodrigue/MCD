@@ -48,13 +48,13 @@ export function step6_endVillainPhaseAndRound(state: GameState): GameState {
     player.activeStatModifiers = (player.activeStatModifiers || []).filter(
       (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
     );
-    for (const ally of player.allies) {
-      ally.activeStatModifiers = (ally.activeStatModifiers || []).filter(
+    for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
+      card.activeStatModifiers = (card.activeStatModifiers || []).filter(
         (m) => m.duration !== 'ROUND' && m.duration !== 'PHASE',
       );
-      if (ally.tokens) {
-        delete (ally.tokens as any).thwBonus;
-        delete (ally.tokens as any).atkBonus;
+      if (card.tokens) {
+        delete (card.tokens as any).thwBonus;
+        delete (card.tokens as any).atkBonus;
       }
     }
   }

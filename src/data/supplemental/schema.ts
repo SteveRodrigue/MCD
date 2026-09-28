@@ -728,13 +728,19 @@ export type SearchAndSelectParams = z.infer<typeof SearchAndSelectParamsSchema>;
 export type PlayCardFromZoneParams = z.infer<typeof PlayCardFromZoneParamsSchema>;
 
 /**
+ * Canonical Duration Schema (RR v1.8 - PHASE, ROUND, TURN)
+ */
+export const DurationSchema = z.enum(['PHASE', 'ROUND', 'TURN']);
+export type Duration = z.infer<typeof DurationSchema>;
+
+/**
  * Reduce Next Card Cost Params Schema (RR v1.8 p. 7, 17, Issue #46)
  */
 export const ReduceNextCardCostParamsSchema = z
   .object({
     amount: z.number().int().positive().default(1),
     target: TargetSelectorSchema.optional().default('CHOSEN_PLAYER'),
-    duration: z.enum(['PHASE', 'ROUND', 'TURN']).optional().default('PHASE'),
+    duration: DurationSchema.optional().default('PHASE'),
     cardFilter: UniversalCardFilterSchema.optional(),
   })
   .strict();

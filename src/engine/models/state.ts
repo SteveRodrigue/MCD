@@ -74,11 +74,13 @@ export interface PlayerState {
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }
 
+export type Duration = 'PHASE' | 'ROUND' | 'TURN';
+
 export interface ActiveStatModifier {
   id?: string;
   stat: 'THW' | 'ATK' | 'DEF' | 'REC' | 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVER' | 'RECOVERY';
   amount: number;
-  duration: 'PHASE' | 'ROUND';
+  duration: Duration;
   sourceCardName?: string;
   sourceCardCode?: string;
 }
@@ -89,7 +91,7 @@ export interface ActiveCostReduction {
   sourceCardCode?: string;
   amount: number;
   cardFilter?: any;
-  duration: 'PHASE' | 'ROUND' | 'TURN';
+  duration: Duration;
   appliesTo: 'NEXT_CARD';
 }
 

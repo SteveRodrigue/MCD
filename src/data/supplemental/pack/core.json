@@ -1419,7 +1419,7 @@
               "effect": "GRANT_KEYWORD",
               "effectParams": {
                 "keyword": "Aerial",
-                "duration": "END_OF_PHASE"
+                "duration": "PHASE"
               }
             }
           ]
@@ -1427,8 +1427,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-28T13:55:00Z",
+        "reviewedAt": "2026-09-28T13:55:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2513,7 +2513,7 @@
               "effectParams": {
                 "atkBonus": 1,
                 "thwBonus": 1,
-                "duration": "PHASE_END",
+                "duration": "PHASE",
                 "target": "ALL_FRIENDLY_CHARACTERS"
               }
             }
@@ -2522,8 +2522,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-28T13:55:00Z",
+        "reviewedAt": "2026-09-28T13:55:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

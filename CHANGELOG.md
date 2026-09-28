@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- **Fix (Engine & UI): Allow Playing Supports & Upgrades with Heal/Action Abilities at Full Health ([RR v1.8 p. 12, 15](references/rules/glossary/P.md#play-put-into-play), [Issue #166](https://github.com/SteveRodrigue/MCD/issues/166))**
+- **Fix (Engine & Data): Helicarrier Cost Reduction Clearance & Canonical State Duration Cleanup ([RR v1.8 pp. 7, 11, 17, 23](references/rules/glossary/C.md#cost), [Issue #165](https://github.com/SteveRodrigue/MCD/issues/165))**
+  - **Immediate Cost Reduction Consumption on Payment (`action-dispatcher.ts`):**
+    - Relocated `applicableReductions` consumption directly to the payment finalization step in `PLAY_CARD`, ensuring active cost reductions (e.g. Helicarrier `01092`) are consumed immediately regardless of subsequent target, ally-host, or player-control decision prompts.
+  - **TURN-Duration Lifecycle Expiration (`action-dispatcher.ts`):**
+    - Added `TURN`-scoped active cost reduction and active stat modifier cleanup upon `END_PLAYER_TURN` across the active player and controlled cards (`allies`, `tableau`, `attachments`).
+  - **Canonical Duration Enforcement (`state.ts`, `schema.ts`, `core.json`):**
+    - Defined canonical `Duration = 'PHASE' | 'ROUND' | 'TURN'` across engine models and supplemental Zod schemas with zero legacy shims.
+    - Updated `core.json` for Lead from the Front (`01070`) and Rocket Boots (`01016`) to canonical `"duration": "PHASE"`.
+    - Extended phase and round cleanup routines (`player-phase.ts`, `villain-phase.ts`, `round-upkeep.ts`) to clean temporary stat modifiers across all in-play card zones (`allies`, `tableau`, `attachments`).
+  - **Automated Verification:**
+    - Added `tests/engine/helicarrier-multiplayer-lifecycle.test.ts` verifying 2-player Helicarrier discount persistence across turn pass and immediate clearance upon card play and prompt resolution.
+    - Added `tests/engine/state-lifecycle-cleanup.test.ts` verifying canonical duration contract compliance across all pack files, TURN-scoped modifier clearance on turn end, and tableau card modifier expiration on phase end.
+
   - **Legality Checker Permanent Invariant (`legality-checker.ts`):**
     - Enforced RR v1.8 p. 15 invariant: non-attachment permanents (`SUPPORT`, `UPGRADE`, `ALLY`, `PLAYER_SIDE_SCHEME`) always change game state by entering play and their action abilities are never evaluated at play time.
     - Restricted `evaluateCharacterTargetRequirement` strictly to `card.type === CardType.EVENT` and action timings, resolving play block on Aunt May (`01006`) and Med Team (`01080`) when characters are at full health.

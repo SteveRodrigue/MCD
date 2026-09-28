@@ -1184,6 +1184,34 @@ export function dispatchAction(
       );
       const resourcesSpent = paymentRes.resourcesSpent;
 
+      // Consume applicable active cost reductions immediately upon payment (RR v1.8 p. 7, 17, 23, Issue #46, Issue #165)
+      const applicableReductions = getApplicableCostReductions(player, targetCard, nextState);
+      if (applicableReductions.length > 0) {
+        const consumedIds = new Set(applicableReductions.map((r) => r.id));
+        player.activeCostReductions = (player.activeCostReductions || []).filter(
+          (r) => !consumedIds.has(r.id),
+        );
+        player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
+
+        for (const r of applicableReductions) {
+          nextState.log.push({
+            id: `log_${Date.now()}_cost_consumed`,
+            timestamp: Date.now(),
+            round: nextState.roundNumber,
+            phase: nextState.phase,
+            category: 'ability',
+            key: 'cost.reduction.consumed',
+            params: {
+              player: player.name,
+              source: r.sourceCardName,
+              card: targetCard.card.name,
+              amount: r.amount,
+            },
+            onomatopoeia: `${r.sourceCardName.toUpperCase()} DISCOUNT APPLIED!`,
+          });
+        }
+      }
+
       // 3. Play Target Card from Source Zone
       let playedCardInstance: CardInstance;
       if (sourceZone === 'PLAYER_DISCARD') {
@@ -1836,38 +1864,6 @@ export function dispatchAction(
         });
       }
 
-      // Consume applicable active cost reductions (RR v1.8 p. 7, 17, Issue #46)
-      const applicableReductions = getApplicableCostReductions(
-        player,
-        playedCardInstance,
-        nextState,
-      );
-      if (applicableReductions.length > 0) {
-        const consumedIds = new Set(applicableReductions.map((r) => r.id));
-        player.activeCostReductions = (player.activeCostReductions || []).filter(
-          (r) => !consumedIds.has(r.id),
-        );
-        player.costReductions = player.activeCostReductions.reduce((sum, r) => sum + r.amount, 0);
-
-        for (const r of applicableReductions) {
-          nextState.log.push({
-            id: `log_${Date.now()}_cost_consumed`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'ability',
-            key: 'cost.reduction.consumed',
-            params: {
-              player: player.name,
-              source: r.sourceCardName,
-              card: playedCardInstance.card.name,
-              amount: r.amount,
-            },
-            onomatopoeia: `${r.sourceCardName.toUpperCase()} DISCOUNT APPLIED!`,
-          });
-        }
-      }
-
       return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
@@ -2186,6 +2182,27 @@ export function dispatchAction(
         },
         onomatopoeia: 'PASS',
       });
+
+      // Expire TURN-duration cost reductions and stat modifiers on current player and controlled cards (RR v1.8)
+      currentPlayer.activeCostReductions = (currentPlayer.activeCostReductions || []).filter(
+        (r) => r.duration !== 'TURN',
+      );
+      currentPlayer.costReductions = currentPlayer.activeCostReductions.reduce(
+        (sum, r) => sum + r.amount,
+        0,
+      );
+      currentPlayer.activeStatModifiers = (currentPlayer.activeStatModifiers || []).filter(
+        (m) => m.duration !== 'TURN',
+      );
+      for (const card of [
+        ...currentPlayer.allies,
+        ...currentPlayer.tableau,
+        ...(currentPlayer.attachments || []),
+      ]) {
+        card.activeStatModifiers = (card.activeStatModifiers || []).filter(
+          (m) => m.duration !== 'TURN',
+        );
+      }
 
       // If all players have taken their turns in this round -> proceed to End of Player Phase Clean-Up (RR v1.8 p. 23)
       if (nextIndex === nextState.firstPlayerIndex) {

@@ -718,7 +718,8 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         expect(backflipStatus.isPlayable).toBe(false);
         expect(backflipStatus.reasons.some((r) => r.includes('Interrupt/Response'))).toBe(true);
 
-        // First Aid (Action) must be playable
+        // First Aid (Action) must be playable when a character has damage to heal
+        p1.health = 8;
         const firstAidStatus = evaluateCardPlayability(gameState, 'p1', firstAidInst);
         expect(firstAidStatus.isPlayable).toBe(true);
       });

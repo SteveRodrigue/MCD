@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Allow Playing Supports & Upgrades with Heal/Action Abilities at Full Health ([RR v1.8 p. 12, 15](references/rules/glossary/P.md#play-put-into-play), [Issue #166](https://github.com/SteveRodrigue/MCD/issues/166))**
+  - **Legality Checker Permanent Invariant (`legality-checker.ts`):**
+    - Enforced RR v1.8 p. 15 invariant: non-attachment permanents (`SUPPORT`, `UPGRADE`, `ALLY`, `PLAYER_SIDE_SCHEME`) always change game state by entering play and their action abilities are never evaluated at play time.
+    - Restricted `evaluateCharacterTargetRequirement` strictly to `card.type === CardType.EVENT` and action timings, resolving play block on Aunt May (`01006`) and Med Team (`01080`) when characters are at full health.
+    - Guarded `requiresExhaustedAlly` in `evaluateAllyTargetRequirement` strictly to `card.type === CardType.EVENT`.
+    - Restricted non-attachment minion requirements (`CHOSEN_MINION`, `ALL_MINIONS`, `CHOSEN_ENGAGED_MINION`) in `evaluateMinionTargetRequirement` strictly to `card.type === CardType.EVENT`.
+    - Synchronized `evaluateCardPlayability` with `canPlayCard` by adding `evaluateCharacterTargetRequirement`, `card.maxPerPlayer`, and `isCardRestricted` checks, eliminating pre-play vs confirmation parity gaps.
+  - **Card Payment Modal Clean Target Scoping (`CardPaymentModal.tsx`):**
+    - Guarded default action target detection in `useEffect` with `isEventCard`, preventing extraneous target assignments when playing permanent cards.
+  - **Automated Verification:**
+    - Expanded Aunt May tests in `tests/engine/spider-man-cards.test.ts` verifying play from hand at 10/10 health, tableau entry, `USE_CARD_ABILITY` rejection when undamaged, and heal resolution when damaged.
+    - Added tests in `tests/engine/target-legality-requirements.test.ts` verifying First Aid event playability gating vs Med Team support playability at full health.
+    - Updated `tests/engine/player-actions.test.ts` and `tests/engine/attachments-player.test.ts` aligning mock cards with the RR v1.8 event invariant.
+
+
 - **Fix (UI & Tools): Supplemental Card Editor Route Freeze, Re-render Loop & Pagination ([Issue #168](https://github.com/SteveRodrigue/MCD/issues/168))**
   - **Dev Server Watcher Stability (`vite.config.ts`):**
     - Configured `server.watch.ignored: ['**/logs/**', '**/cache/**']` in `vite.config.ts`, preventing uncaught Windows `EBUSY: resource busy or locked` file watcher crashes during rolling gamestate writes.

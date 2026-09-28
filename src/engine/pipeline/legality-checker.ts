@@ -674,9 +674,12 @@ export function evaluateMinionTargetRequirement(
         (target === 'CHOSEN_ENGAGED_MINION' || target === 'ENGAGED_MINIONS')
       ) {
         requiresLocalMinion = true;
-      } else if (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS') {
+      } else if (
+        card.type === CardType.EVENT &&
+        (target === 'CHOSEN_MINION' || target === 'MINION' || target === 'ALL_MINIONS')
+      ) {
         requiresTablewideMinion = true;
-      } else if (target === 'CHOSEN_ENGAGED_MINION') {
+      } else if (card.type === CardType.EVENT && target === 'CHOSEN_ENGAGED_MINION') {
         requiresLocalMinion = true;
       }
     }
@@ -730,6 +733,7 @@ export function evaluateAllyTargetRequirement(
           maxPerHost = Number(stepParams.maxPerHost);
         }
       } else if (
+        card.type === CardType.EVENT &&
         (step.effect === 'READY_CHARACTER' ||
           step.effect === 'READY_ALLY' ||
           step.effect === 'READY') &&
@@ -795,9 +799,22 @@ export function evaluateCharacterTargetRequirement(
   player: PlayerState,
   card: NormalizedCard,
 ): { allowed: boolean; reason?: string } {
+  // Only events execute their abilities immediately upon being played (RR v1.8 p. 12, 15)
+  if (card.type !== CardType.EVENT) {
+    return { allowed: true };
+  }
+
   const abilities = card.enrichment?.abilities || [];
 
   for (const ab of abilities) {
+    // Only check action / play abilities, not reactive interrupt/response
+    const isAction =
+      ab.timing === 'ACTION' ||
+      ab.timing === 'HERO_ACTION' ||
+      ab.timing === 'ALTER_EGO_ACTION' ||
+      !ab.timing;
+    if (!isAction) continue;
+
     for (const step of ab.steps || []) {
       const stepParams = getStepEffectParams(step);
       if (step.effect === 'HEAL' || step.effect === 'HEAL_DAMAGE') {
@@ -1742,6 +1759,12 @@ export function evaluateCardPlayability(
     reasons.push(allyPlayabilityCheck.reason);
   }
 
+  // Character target and heal requirement check (RR v1.8 p. 3, 11)
+  const characterPlayabilityCheck = evaluateCharacterTargetRequirement(state, player, card);
+  if (!characterPlayabilityCheck.allowed && characterPlayabilityCheck.reason) {
+    reasons.push(characterPlayabilityCheck.reason);
+  }
+
   // Scheme threat requirement check (RR v1.8 p. 15, 29, 30; Issue #101)
   const schemePlayabilityCheck = evaluateSchemeTargetRequirement(state, player, card);
   if (!schemePlayabilityCheck.allowed && schemePlayabilityCheck.reason) {
@@ -1784,6 +1807,53 @@ export function evaluateCardPlayability(
     const maxAllies = getPlayerAllyLimit(state, playerId);
     if (player.allies.length >= maxAllies) {
       reasons.push(`Ally limit reached (${maxAllies} allies max)`);
+    }
+  }
+
+  // Restricted Keyword Limit Check (RR v1.8 p. 25, ADR-0018)
+  if (isCardRestricted(card)) {
+    const cardWeight = getCardRestrictedWeight(card);
+    const currentRestricted = getPlayerRestrictedCount(player);
+    const maxRestricted = getPlayerRestrictedLimit(state, playerId);
+
+    if (currentRestricted + cardWeight > maxRestricted) {
+      const neededSlots = currentRestricted + cardWeight - maxRestricted;
+      if (currentRestricted < neededSlots) {
+        reasons.push(`Restricted card limit reached (${maxRestricted} restricted cards max).`);
+      }
+    }
+  }
+
+  // Max [X] per player Constraint Check (RR v1.8 p. 17 "Max")
+  if (card.maxPerPlayer !== undefined && card.maxPerPlayer > 0) {
+    const getControlledCount = (p: PlayerState) =>
+      p.tableau.filter(
+        (c) =>
+          c.card.code === card.code ||
+          c.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+      ).length +
+      (card.type === CardType.ALLY
+        ? p.allies.filter(
+            (a) =>
+              a.card.code === card.code ||
+              a.card.name.toLowerCase().trim() === card.name.toLowerCase().trim(),
+          ).length
+        : 0);
+
+    if (card.enrichment?.playUnderAnyPlayerControl) {
+      const allReached = state.players.every((p) => getControlledCount(p) >= card.maxPerPlayer!);
+      if (allReached) {
+        reasons.push(
+          state.players.length > 1
+            ? 'All players have reached max per player limit for this card.'
+            : `Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`,
+        );
+      }
+    } else {
+      const controlledCount = getControlledCount(player);
+      if (controlledCount >= card.maxPerPlayer) {
+        reasons.push(`Max ${card.maxPerPlayer} per player limit reached for '${card.name}'.`);
+      }
     }
   }
 

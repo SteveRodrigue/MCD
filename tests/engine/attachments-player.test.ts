@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard, SideSchemeState } from '@engine/models';
+import {
+  GameState,
+  HeroCard,
+  AlterEgoCard,
+  StatusCard,
+  SideSchemeState,
+  CardType,
+} from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { step2_villainActivations } from '@engine/pipeline/villain-phase';
@@ -417,6 +424,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // Mock card requiring tablewide minion (CHOSEN_MINION)
     const tablewideCard = {
       ...cardCatalog.getCard('01007')!,
+      type: CardType.EVENT,
       enrichment: {
         abilities: [
           {
@@ -431,6 +439,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     // Mock card requiring local minion (CHOSEN_ENGAGED_MINION)
     const localCard = {
       ...cardCatalog.getCard('01007')!,
+      type: CardType.EVENT,
       enrichment: {
         abilities: [
           {

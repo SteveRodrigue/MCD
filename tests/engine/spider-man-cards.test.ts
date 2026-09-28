@@ -138,6 +138,74 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
   });
 
   describe('Aunt May Alter-Ego Action (01006)', () => {
+    it('can be played from hand to tableau at full health, but ability is rejected until damaged', () => {
+      gameState.players[0].currentForm = 'alter_ego';
+      gameState.players[0].health = 10; // Full health (10/10)
+
+      const auntMayCard = catalog.getCard('01006')!;
+      const paymentCard = catalog.getCard('01003')!;
+
+      const auntMayInst = createCardInstance(auntMayCard);
+      const payInst = createCardInstance(paymentCard);
+
+      gameState.players[0].hand = [auntMayInst, payInst];
+
+      // 1. Verify playing Aunt May from hand with PLAY_CARD when Peter Parker is at 10/10 full health
+      const playRes = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: auntMayInst.instanceId,
+        paymentCardInstanceIds: [payInst.instanceId],
+      });
+
+      expect(playRes.result.success).toBe(true);
+
+      // 2. Verify Aunt May successfully transitions from hand to player.tableau
+      expect(
+        playRes.state.players[0].hand.some((c) => c.instanceId === auntMayInst.instanceId),
+      ).toBe(false);
+      const inPlayAuntMay = playRes.state.players[0].tableau.find(
+        (c) => c.instanceId === auntMayInst.instanceId,
+      );
+      expect(inPlayAuntMay).toBeDefined();
+      expect(inPlayAuntMay?.exhausted).toBeFalsy();
+
+      // 3. Verify USE_CARD_ABILITY is rejected with error when Peter Parker has 0 damage
+      const abilityResAtFullHealth = dispatchAction(playRes.state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: 'p1',
+        cardInstanceId: auntMayInst.instanceId,
+        abilityId: 'aunt_may',
+      });
+
+      expect(abilityResAtFullHealth.result.success).toBe(false);
+      expect(abilityResAtFullHealth.result.error).toMatch(/damage to heal/i);
+      expect(
+        abilityResAtFullHealth.state.players[0].tableau.find(
+          (c) => c.instanceId === auntMayInst.instanceId,
+        )?.exhausted,
+      ).toBeFalsy();
+
+      // 4. Verify USE_CARD_ABILITY succeeds, exhausts Aunt May, and heals Peter Parker once damaged
+      abilityResAtFullHealth.state.players[0].health = 5;
+
+      const abilityResDamaged = dispatchAction(abilityResAtFullHealth.state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: 'p1',
+        cardInstanceId: auntMayInst.instanceId,
+        abilityId: 'aunt_may',
+      });
+
+      expect(abilityResDamaged.result.success).toBe(true);
+      // 5 + 4 = 9 HP
+      expect(abilityResDamaged.state.players[0].health).toBe(9);
+      expect(
+        abilityResDamaged.state.players[0].tableau.find(
+          (c) => c.instanceId === auntMayInst.instanceId,
+        )?.exhausted,
+      ).toBe(true);
+    });
+
     it('heals 4 damage from Peter Parker via USE_CARD_ABILITY action', () => {
       gameState.players[0].currentForm = 'alter_ego';
       gameState.players[0].health = 5; // Damaged to 5/10

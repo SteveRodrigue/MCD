@@ -171,10 +171,14 @@ Full serialized `gameState` trees are debugging evidence and must remain local u
 gh issue list --search "<key terms from report.title/description> in:title,body" --state all --limit 15
 ```
 
-Compare each candidate against the current report using **title similarity, overlapping key terms (card names, scenario names, phase/action names), and matching report type** — never rely on title string equality alone, and never guess when evidence is thin.
+Compare each candidate against the current report. **Card name, card code, and issue title similarity alone are NOT enough to declare a duplicate.** A single card can have multiple independent bugs across its various abilities, costs, keywords, stat calculations, or choice options (e.g., an error in damage target selection vs. an error in threat placement, or a missing trigger prompt vs. an incorrect exhaust cost).
 
-- **Confidence ≥ 80% match (same underlying problem, same card/mechanic/scenario):** Treat as a **duplicate** and proceed to Step 3a (Merge) instead of Step 4 (File New).
-- **Confidence < 80% or no plausible candidate:** Treat as **not a duplicate** and proceed to Step 4 (File New).
+To declare a duplicate, you must verify that the **underlying root problem and failure mode** are identical:
+
+- **Inspect the specific mechanic / trigger / branch:** Does the new report describe the exact same effect branch, timing window, interaction, or rule calculation as the existing issue?
+- **Separate different symptoms on the same card:** If the existing issue targets a damage calculation bug on Card X and the new report describes a scheming/threat, cost, or trigger bug on Card X, they are **separate bugs** and must NOT be merged.
+- **Confidence ≥ 80% match (same root problem, same specific mechanic/branch on the card/scenario):** Treat as a **duplicate** and proceed to Step 3a (Merge) instead of Step 4 (File New).
+- **Confidence < 80% (different failure mode, different ability branch, or uncertain):** Treat as **not a duplicate** and proceed to Step 4 (File New) to ensure every distinct defect has its own isolated TDD lifecycle.
 
 Log the outcome either way: `[DUPLICATE]` with the matched issue number and confidence when merging, or a note in `[SCAN]` that no match was found.
 
@@ -269,8 +273,7 @@ Repeat Steps 2–5 for every pending report, then confirm `logs/reports/` contai
 - **Never publish GameState JSON on GitHub:** Do not put GameState JSON, full or abbreviated, into an issue body or comment. Reference only the verified local `logs/gamestates/` path and local-only availability warning.
 - **Atomic local persistence gate:** Write to a temporary sibling file and rename only after complete serialization. Verify the final file parses as JSON before pruning the report.
 - **Never fabricate or paraphrase the reporter's words.** The `### 📝 Original User Report (Verbatim — Preserved for Review)` section must always contain `report.description` character-for-character. Any restatement elsewhere in the body (e.g. "Describe the Bug") must be clearly a _summary of the section below_, never a substitute for it — a later triager must be able to trust the verbatim block as ground truth.
-- If a report's `description` is empty or the file is malformed, skip it, log a `[SCAN]` warning, and leave it in place for manual review rather than guessing at intent.
-- **Never guess at a duplicate match.** If duplicate-detection confidence is below the 80% threshold, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread.
+- **Never guess at a duplicate match:** Card name, card code, and issue title similarity alone are NEVER sufficient to declare a duplicate. Multiple independent bugs can affect the same card. If the reported symptom, ability branch, rule calculation, or mechanic differs, always file a new issue rather than risk silently burying a distinct problem inside an unrelated thread. Every distinct bug requires its own isolated TDD lifecycle and reproduction test.
 - Deleting a local report file is irreversible; always confirm the outcome first — either the new Issue exists (Step 4a) or the merge comment/label was applied (Step 3a) — before Step 5.
 - **Historic issues #129–#139:** Retain the 291 GameState comments already published. Exact local reconstruction is not proven, so do not delete or claim local replacement snapshots. Add a transparent policy note that future reports retain GameState only locally.
 

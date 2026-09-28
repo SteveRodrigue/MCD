@@ -41,6 +41,8 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
 
   const [cards, setCards] = useState<CardSummary[]>([]);
   const [totalCards, setTotalCards] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const PAGE_SIZE = 50;
   const [loadingList, setLoadingList] = useState<boolean>(true);
 
   // Selected card code
@@ -60,21 +62,19 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
       .catch((err) => console.error('Failed to load metadata:', err));
   }, []);
 
-  // 2. Fetch cards when filters change
+  // 2. Fetch cards when filters or page change
   const loadCards = useCallback(() => {
     setLoadingList(true);
-    fetchCards(filters)
+    fetchCards({ ...filters, page, limit: PAGE_SIZE })
       .then((res) => {
         setCards(res.cards);
         setTotalCards(res.total);
         // If selected card not in list, select first available card
-        if (!selectedCode && res.cards.length > 0) {
-          setSelectedCode(res.cards[0].code);
-        }
+        setSelectedCode((curr) => curr || (res.cards.length > 0 ? res.cards[0].code : null));
       })
       .catch((err) => console.error('Failed to load cards:', err))
       .finally(() => setLoadingList(false));
-  }, [filters, selectedCode]);
+  }, [filters, page]);
 
   useEffect(() => {
     loadCards();
@@ -136,6 +136,11 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
       console.error('Failed to save supplemental:', err);
       return false;
     }
+  };
+
+  const handleFiltersChange = (newFilters: CardFilters) => {
+    setFilters(newFilters);
+    setPage(1);
   };
 
   return (
@@ -207,7 +212,7 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
       {/* FILTER TOOLBAR */}
       <CardFilterToolbar
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         metadata={metadata}
         totalCards={totalCards}
         filteredCards={cards.length}
@@ -243,6 +248,10 @@ export const SupplementalEditorScreen: React.FC<SupplementalEditorScreenProps> =
             selectedCode={selectedCode}
             onSelectCard={handleSelectCard}
             loading={loadingList}
+            page={page}
+            pageSize={PAGE_SIZE}
+            totalCards={totalCards}
+            onPageChange={setPage}
           />
         </div>
 

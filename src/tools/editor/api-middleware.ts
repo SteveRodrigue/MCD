@@ -122,7 +122,9 @@ export class CardSupplementalService {
     hero?: string;
     status?: string;
     search?: string;
-  }): { total: number; cards: CardSummary[] } {
+    page?: number;
+    limit?: number;
+  }): { total: number; cards: CardSummary[]; page?: number; limit?: number } {
     const allUpstream = this.loadAllUpstreamCards();
     const supplementalCache = new Map<string, Record<string, any> | null>();
 
@@ -244,7 +246,16 @@ export class CardSupplementalService {
       return a.code.localeCompare(b.code, undefined, { numeric: true });
     });
 
-    return { total: results.length, cards: results };
+    const total = results.length;
+    let paginatedCards = results;
+    if (filters.limit !== undefined && filters.limit > 0) {
+      const page = Math.max(1, filters.page ?? 1);
+      const start = (page - 1) * filters.limit;
+      paginatedCards = results.slice(start, start + filters.limit);
+      return { total, cards: paginatedCards, page, limit: filters.limit };
+    }
+
+    return { total, cards: paginatedCards };
   }
 
   public getCardDetails(code: string): CardDetailsResponse | null {
@@ -409,6 +420,8 @@ export function createCardSupplementalMiddleware(
     if (pathname === '/api/supplemental/cards' && req.method === 'GET') {
       try {
         const searchParams = new URLSearchParams(queryString || '');
+        const pageParam = searchParams.get('page');
+        const limitParam = searchParams.get('limit');
         const filters = {
           pack: searchParams.get('pack') || undefined,
           packFile: searchParams.get('packFile') || undefined,
@@ -417,6 +430,8 @@ export function createCardSupplementalMiddleware(
           hero: searchParams.get('hero') || undefined,
           status: searchParams.get('status') || undefined,
           search: searchParams.get('search') || undefined,
+          page: pageParam ? parseInt(pageParam, 10) : undefined,
+          limit: limitParam ? parseInt(limitParam, 10) : undefined,
         };
         const data = service.getCards(filters);
         res.statusCode = 200;

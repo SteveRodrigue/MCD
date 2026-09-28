@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Engine): Premature End-Turn Confirmation Prompt on Phase, Round & Player Transitions ([Issue #169](https://github.com/SteveRodrigue/MCD/issues/169))**
+  - **Scoped Action-Exhaustion Detection (`GameBoard.tsx`):**
+    - Tracked `prevPlayerIdRef`, `prevRoundRef`, and `prevPhaseRef` in `GameBoard.tsx` to detect turn and phase boundaries.
+    - Suppressed `EndTurnConfirmationModal` prompts across phase transitions (Villain Phase to Player Phase), round upkeep, and player turn switches.
+    - Guaranteed `isEndTurnPromptOpen` resets to `false` on round, phase, or active player transitions, preventing turn skips when players enter a turn with 0 immediate actions (e.g. exhausted hero from defending in the villain phase).
+  - **Active Player Index Guarantee (`player-phase.ts`):**
+    - Explicitly set `state.activePlayerIndex = state.firstPlayerIndex` in `startPlayerPhase`, ensuring synchronized active player state whenever the Player Phase begins.
+  - **Automated Verification:**
+    - Added `tests/ui/end-turn-prompt-lifecycle.test.tsx` verifying no premature modal triggers across round, phase, or player switches with 0 actions, while preserving legitimate auto-prompts when actions drop to 0 during an ongoing turn.
+    - Added `tests/engine/round-phase-sync.test.ts` verifying First Player and active player index synchronization on `startPlayerPhase`.
+
 - **Fix (Engine & Data): Helicarrier Cost Reduction Clearance & Canonical State Duration Cleanup ([RR v1.8 pp. 7, 11, 17, 23](references/rules/glossary/C.md#cost), [Issue #165](https://github.com/SteveRodrigue/MCD/issues/165))**
   - **Immediate Cost Reduction Consumption on Payment (`action-dispatcher.ts`):**
     - Relocated `applicableReductions` consumption directly to the payment finalization step in `PLAY_CARD`, ensuring active cost reductions (e.g. Helicarrier `01092`) are consumed immediately regardless of subsequent target, ally-host, or player-control decision prompts.

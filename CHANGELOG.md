@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Tableau Generator Filtering & Card Playability Resource Calculation ([RR v1.8 p. 4, 24](references/rules/glossary/R.md#resource-ability), [Issue #153](https://github.com/SteveRodrigue/MCD/issues/153))**
+  - **Purged Invalid Action Timings in Generator Discovery:**
+    - Purged non-resource action timings (`ACTION`, `HERO_ACTION`, `ALTER_EGO_ACTION`) and obsolete `COST_REDUCER` tokens from tableau generator filtering in `evaluateCardPlayability`.
+    - Enforced strict `isResourceAbility(a.timing)` and active form gating, preventing cards with standalone Actions (e.g. *Helicarrier*, *Avengers Mansion*) from inflating `maxPotentialResources`.
+    - In-play cost reducers like *Helicarrier* (`01092`) must now be triggered as actions beforehand, applying an `ActiveCostReduction` aura that lowers the card's effective cost via `getEffectiveCardCost`.
+    - Enforced `limit: 'ONCE_PER_ROUND'` and `limit: 'ONCE_PER_PHASE'` usage limits on tableau generator abilities in both `evaluateCardPlayability` and `canPlayCard`.
+  - **Automated Verification:**
+    - Added regression tests in `tests/engine/card-playability-resource-calculation.test.ts` verifying that ready Helicarrier in tableau does not mark *Surveillance Team* (cost 2) as playable when player has 1 resource in hand, and that triggering Helicarrier's action correctly enables playability.
+
+- **Fix (Engine): Unified Payment Subsystem Across Actions, Prompts, and Attachments ([ADR-0072](docs/decisions/0072-unified-payment-subsystem-across-actions-prompts-and-attachments.md), [Issue #155](https://github.com/SteveRodrigue/MCD/issues/155))**
+  - **Authoritative Payment Subsystem:**
+    - Centralized resource cost fulfillment across card plays, abilities, attachments, and decision prompts into `executeResourceCostPayment` in `src/engine/pipeline/cost-engine.ts`.
+    - De-duplicated 134 lines of hand payment and generator loops in `action-dispatcher.ts` (`PLAY_CARD`).
+    - Added `generatorInstanceIds` to `SpendResourcesToDiscardAttachmentAction`, allowing generators like *Web-Shooter* or *Helicarrier* to pay to discard villain attachments.
+    - Updated `resolveDecisionPrompt` and `trigger-dispatcher.ts` to execute payments and exhaust generators for prompt options and interrupts.
+    - Upgraded `GameBoard.tsx` to synthesize fallback card instances for encounter card and attachment prompts, allowing `CardPaymentModal` to open cleanly.
+
 - **Feature (UI): Official Card Backs for Decks & Facedown Piles ([Issue #141](https://github.com/SteveRodrigue/MCD/issues/141))**
   - **Authentic Card Back Assets & Automated Pipeline:**
     - Created `scripts/cache-card-backs.ts` to download official high-resolution Player, Encounter, and Villain card backs from Hall of Heroes (`references/links.md`) into `cache/back/{player.png, encounter.png, villain.png}`.

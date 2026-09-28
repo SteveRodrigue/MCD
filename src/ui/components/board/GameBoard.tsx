@@ -5,6 +5,7 @@ import {
   GameAction,
   CardInstance,
   CombatResolutionSummary,
+  GamePhase,
 } from '../../../engine/models';
 import { VillainPhaseStepper } from './VillainPhaseStepper';
 import { CombatBoostModal } from './CombatBoostModal';
@@ -145,9 +146,30 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     [gameState, activePlayer.id],
   );
 
-  // Auto-detect when active actions drop from >0 to 0 to prompt End Turn confirmation
+  // Auto-detect when active actions drop from >0 to 0 during an active turn to prompt End Turn confirmation (ADR-0026 / Issue #169)
   const prevActionCountRef = useRef<number>(legalReport.activeActionCount);
+  const prevPlayerIdRef = useRef<string>(activePlayer.id);
+  const prevRoundRef = useRef<number>(gameState.roundNumber);
+  const prevPhaseRef = useRef<GamePhase>(gameState.phase);
+
   useEffect(() => {
+    const isSamePlayerTurn =
+      prevPhaseRef.current === GamePhase.PLAYER_PHASE &&
+      gameState.phase === GamePhase.PLAYER_PHASE &&
+      prevRoundRef.current === gameState.roundNumber &&
+      prevPlayerIdRef.current === activePlayer.id;
+
+    // Reset prompt and suppress auto-prompting when transitioning round, phase, or active player
+    if (!isSamePlayerTurn) {
+      setIsEndTurnPromptOpen(false);
+      prevActionCountRef.current = legalReport.activeActionCount;
+      prevPlayerIdRef.current = activePlayer.id;
+      prevRoundRef.current = gameState.roundNumber;
+      prevPhaseRef.current = gameState.phase;
+      return;
+    }
+
+    // Only prompt when actions drop from >0 to 0 during an ongoing turn
     if (
       prevActionCountRef.current > 0 &&
       legalReport.activeActionCount === 0 &&
@@ -156,8 +178,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     ) {
       setIsEndTurnPromptOpen(true);
     }
+
     prevActionCountRef.current = legalReport.activeActionCount;
-  }, [legalReport.activeActionCount, legalReport.isPlayerTurn, gameState.winner]);
+    prevPlayerIdRef.current = activePlayer.id;
+    prevRoundRef.current = gameState.roundNumber;
+    prevPhaseRef.current = gameState.phase;
+  }, [
+    legalReport.activeActionCount,
+    legalReport.isPlayerTurn,
+    gameState.winner,
+    gameState.phase,
+    gameState.roundNumber,
+    activePlayer.id,
+  ]);
 
   // Horizontal Panoramic Track Edge-Scroll Hook (ADR-0017)
   const { containerRef, canScrollLeft, canScrollRight, scrollToChild, scrollByAmount } =

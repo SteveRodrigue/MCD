@@ -9,6 +9,7 @@ import { dispatchTrigger } from '../triggers';
  */
 export function startPlayerPhase(state: GameState): GameState {
   state.phase = GamePhase.PLAYER_PHASE;
+  state.activePlayerIndex = state.firstPlayerIndex;
   delete state.villainPhaseStep;
   delete state.villainPhaseStepEvent;
   delete state.lastCombatOutcome;

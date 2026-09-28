@@ -127,38 +127,43 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         if (eventTargetScope) break;
       }
 
-      const hasAttack = abilities.some((a) =>
-        (a.steps || []).some((s) =>
-          ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
-        ),
-      );
-      const hasThwart = abilities.some((a) =>
-        (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'),
-      );
-      const hasHeal = abilities.some((a) =>
-        (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
-      );
+      const hasAttack =
+        isEventCard &&
+        abilities.some((a) =>
+          (a.steps || []).some((s) =>
+            ['DEAL_DAMAGE', 'REPULSOR_BLAST', 'EXPLOSION'].includes(s.effect),
+          ),
+        );
+      const hasThwart =
+        isEventCard &&
+        abilities.some((a) => (a.steps || []).some((s) => s.effect === 'REMOVE_THREAT'));
+      const hasHeal =
+        isEventCard &&
+        abilities.some((a) =>
+          (a.steps || []).some((s) => ['HEAL', 'HEAL_DAMAGE'].includes(s.effect)),
+        );
       const hasAllyTarget =
+        isEventCard &&
         !hasAttack &&
         !hasThwart &&
         !hasHeal &&
         (eventTargetScope === 'CHOSEN_ALLY' || eventTargetScope === 'CHOSEN_CONTROLLED_ALLY');
       const hasPlayerTarget =
-        !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
+        isEventCard && !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
 
       if (isMinionAttachmentCard) {
         const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
         setSelectedTargetId(firstMinion?.instanceId);
-      } else if (hasAttack) {
+      } else if (isEventCard && hasAttack) {
         if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
           const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
           setSelectedTargetId(firstMinion?.instanceId);
         } else {
           setSelectedTargetId(gameState.villain.card.code);
         }
-      } else if (hasThwart) {
+      } else if (isEventCard && hasThwart) {
         setSelectedTargetId(gameState.mainScheme.card.code);
-      } else if (hasHeal) {
+      } else if (isEventCard && hasHeal) {
         // Default to active player if damaged, otherwise first damaged character, otherwise active player
         const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
         if (activeDamaged) {
@@ -176,13 +181,13 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             setSelectedTargetId(firstDamagedAlly ? firstDamagedAlly.instanceId : player.id);
           }
         }
-      } else if (hasAllyTarget) {
+      } else if (isEventCard && hasAllyTarget) {
         const firstExhausted = gameState.players
           .flatMap((p) => p.allies || [])
           .find((a) => a.exhausted);
         const firstAlly = gameState.players.flatMap((p) => p.allies || [])[0];
         setSelectedTargetId((firstExhausted || firstAlly)?.instanceId);
-      } else if (hasPlayerTarget) {
+      } else if (isEventCard && hasPlayerTarget) {
         setSelectedTargetId(player.id);
       } else {
         setSelectedTargetId(undefined);

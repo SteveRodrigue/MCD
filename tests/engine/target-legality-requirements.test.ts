@@ -351,4 +351,135 @@ describe('Target Legality & Game State Potential Requirements (RR v1.8 p. 15, 29
     expect(abilityCheck.allowed).toBe(false);
     expect(abilityCheck.reason).toMatch(/guard/i);
   });
+
+  it('9. First Aid (01086, Event) is unplayable when no character is damaged, and playable when damaged', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: smHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      skipMulligan: true,
+    });
+
+    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const player = heroState.players[0];
+    player.health = 10; // Full health (10/10)
+
+    const firstAid = createCardInstance(cardCatalog.getCard('01086')!);
+    const payment = createCardInstance(cardCatalog.getCard('01005')!);
+    player.hand = [firstAid, payment];
+
+    // 1. Unplayable in hand when no characters are damaged
+    const playabilityUndamaged = evaluateCardPlayability(heroState, player.id, firstAid);
+    expect(playabilityUndamaged.isPlayable).toBe(false);
+    expect(playabilityUndamaged.reasons.some((r) => /damage to heal/i.test(r))).toBe(true);
+
+    const playCheckUndamaged = canPlayCard(heroState, player.id, firstAid.instanceId, [
+      payment.instanceId,
+    ]);
+    expect(playCheckUndamaged.allowed).toBe(false);
+    expect(playCheckUndamaged.reason).toMatch(/damage to heal/i);
+
+    // 2. Playable and accepted when a character has sustained damage
+    player.health = 8; // Sustained 2 damage (8/10)
+
+    const playabilityDamaged = evaluateCardPlayability(heroState, player.id, firstAid);
+    expect(playabilityDamaged.isPlayable).toBe(true);
+
+    const playCheckDamaged = canPlayCard(heroState, player.id, firstAid.instanceId, [
+      payment.instanceId,
+    ]);
+    expect(playCheckDamaged.allowed).toBe(true);
+
+    const playRes = dispatchAction(heroState, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: firstAid.instanceId,
+      paymentCardInstanceIds: [payment.instanceId],
+    });
+    expect(playRes.result.success).toBe(true);
+    expect(playRes.state.players[0].health).toBe(10);
+  });
+
+  it('10. Med Team (01080, Support) is playable from hand at full health, enters tableau with 3 counters, and its action is rejected when undamaged', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Spider-Man',
+          hero: smHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      skipMulligan: true,
+    });
+
+    const heroState = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' }).state;
+    const player = heroState.players[0];
+    player.health = 10; // Full health (10/10)
+
+    const medTeam = createCardInstance(cardCatalog.getCard('01080')!);
+    const p1 = createCardInstance(cardCatalog.getCard('01005')!);
+    const p2 = createCardInstance(cardCatalog.getCard('01005')!);
+    const p3 = createCardInstance(cardCatalog.getCard('01005')!);
+    player.hand = [medTeam, p1, p2, p3];
+
+    // 1. Playable from hand at full health
+    const playability = evaluateCardPlayability(heroState, player.id, medTeam);
+    expect(playability.isPlayable).toBe(true);
+
+    const playCheck = canPlayCard(heroState, player.id, medTeam.instanceId, [
+      p1.instanceId,
+      p2.instanceId,
+      p3.instanceId,
+    ]);
+    expect(playCheck.allowed).toBe(true);
+
+    // 2. Enters tableau with 3 counters
+    const playRes = dispatchAction(heroState, {
+      type: 'PLAY_CARD',
+      playerId: 'p1',
+      cardInstanceId: medTeam.instanceId,
+      paymentCardInstanceIds: [p1.instanceId, p2.instanceId, p3.instanceId],
+    });
+    expect(playRes.result.success).toBe(true);
+
+    const inPlayMedTeam = playRes.state.players[0].tableau.find(
+      (c) => c.instanceId === medTeam.instanceId,
+    )!;
+    expect(inPlayMedTeam).toBeDefined();
+    expect(inPlayMedTeam.tokens?.counters).toBe(3);
+    expect(inPlayMedTeam.counters?.medical).toBe(3);
+    expect(inPlayMedTeam.exhausted).toBeFalsy();
+
+    // 3. Ability is rejected when undamaged
+    const medTeamAbility = inPlayMedTeam.card.enrichment!.abilities![0];
+    const abilityCheck = canInitiateAbility(
+      playRes.state,
+      player.id,
+      medTeamAbility,
+      inPlayMedTeam,
+    );
+    expect(abilityCheck.allowed).toBe(false);
+    expect(abilityCheck.reason).toMatch(/damage to heal/i);
+
+    const actionRes = dispatchAction(playRes.state, {
+      type: 'USE_CARD_ABILITY',
+      playerId: 'p1',
+      cardInstanceId: inPlayMedTeam.instanceId,
+      abilityId: 'med_team_heal',
+    });
+    expect(actionRes.result.success).toBe(false);
+    expect(actionRes.result.error).toMatch(/damage to heal/i);
+    expect(inPlayMedTeam.exhausted).toBeFalsy();
+    expect(inPlayMedTeam.tokens?.counters).toBe(3);
+  });
 });

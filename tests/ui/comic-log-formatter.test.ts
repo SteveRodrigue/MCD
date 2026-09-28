@@ -616,6 +616,32 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
           'Black Cat a récupéré Web-Shooter dans la main de Spider-Man !',
         );
       });
+
+      it('formats card.attached.to_host into UPGRADE_ATTACHED narrative in English and French', () => {
+        const attachEntry: GameLogEntry = {
+          id: 'log-attach-host',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'card.attached.to_host',
+          actor: { name: 'Spider-Man', type: 'hero' },
+          params: {
+            player: 'Spider-Man',
+            card: 'Spider-Tracer',
+            host: 'Hydra Soldier (Spider-Man)',
+            target: 'Hydra Soldier (Spider-Man)',
+          },
+        };
+
+        const enAttach = formatComicLogEntry(attachEntry, 'en', mockGameState);
+        expect(enAttach.narrativeAction).toBe(
+          'Spider-Man equips Spider-Tracer to Hydra Soldier (Spider-Man).',
+        );
+
+        const frAttach = formatComicLogEntry(attachEntry, 'fr', mockGameState);
+        expect(frAttach.narrativeAction).toBe(
+          'Spider-Man équipe Spider-Tracer sur Hydra Soldier (Spider-Man).',
+        );
+      });
     });
   });
 });

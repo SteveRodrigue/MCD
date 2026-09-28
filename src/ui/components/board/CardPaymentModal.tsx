@@ -1,6 +1,16 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Shield, Swords, Zap, AlertTriangle, Heart, Users } from 'lucide-react';
+import {
+  X,
+  Sparkles,
+  Shield,
+  Swords,
+  Zap,
+  AlertTriangle,
+  Heart,
+  Users,
+  Target,
+} from 'lucide-react';
 import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
@@ -90,12 +100,19 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       setSelectedGeneratorIds([]);
       setSelectedDiscardCardIds([]);
 
-      // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player
+      // Default target: villain for attacks, main scheme for thwarts, character for heals, ally, player, or minion attachment
+      const cardAbilities = cardToPlay.card.enrichment?.abilities || [];
+      const attachStep = cardAbilities
+        .flatMap((a) => a.steps || [])
+        .find((s) => s.effect === 'ATTACH_TO_HOST');
+      const attachTarget = attachStep?.effectParams?.target as string | undefined;
+      const isMinionAttachmentCard = attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION';
+
       // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
       // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
       const isEventCard =
         cardToPlay.card.type === CardType.EVENT || (cardToPlay.card as any).type_code === 'event';
-      const abilities = isEventCard ? cardToPlay.card.enrichment?.abilities || [] : [];
+      const abilities = isEventCard ? cardAbilities : [];
 
       let eventTargetScope: string | undefined;
       for (const ab of abilities) {
@@ -129,7 +146,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       const hasPlayerTarget =
         !hasAttack && !hasThwart && !hasHeal && eventTargetScope === 'CHOSEN_PLAYER';
 
-      if (hasAttack) {
+      if (isMinionAttachmentCard) {
+        const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
+        setSelectedTargetId(firstMinion?.instanceId);
+      } else if (hasAttack) {
         if (eventTargetScope === 'CHOSEN_MINION' || eventTargetScope === 'CHOSEN_ENGAGED_MINION') {
           const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
           setSelectedTargetId(firstMinion?.instanceId);
@@ -453,12 +473,43 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     });
   }, [abilityCost?.discardCount, abilityCost?.discardFilter, player, gameState]);
 
-  // Potential Targets (Enemies or Schemes)
+  // Potential Targets (Enemies, Schemes, or Minion Hosts)
+  const cardAbilities = card?.enrichment?.abilities || [];
+  const attachStep = cardAbilities
+    .flatMap((a) => a.steps || [])
+    .find((s) => s.effect === 'ATTACH_TO_HOST');
+  const attachTarget = attachStep?.effectParams?.target as string | undefined;
+  const isMinionAttachment =
+    !abilityCost && (attachTarget === 'CHOSEN_MINION' || attachTarget === 'MINION');
+
+  const minionAttachmentTargets = useMemo(() => {
+    const targets: {
+      id: string;
+      name: string;
+      hp: number;
+    }[] = [];
+
+    // Engaged minions across all players (RR v1.8 p. 5, 10)
+    gameState.players.forEach((p) => {
+      (p.engagedMinions || []).forEach((m) => {
+        targets.push({
+          id: m.instanceId,
+          name:
+            p.id === player.id ? `${m.card.name} (Minion)` : `${m.card.name} (${p.name}'s Minion)`,
+          hp: (m.card as MinionCard).health
+            ? (m.card as MinionCard).health - (m.tokens?.damage || 0)
+            : 0,
+        });
+      });
+    });
+    return targets;
+  }, [gameState.players, player.id]);
+
   // ONLY event cards execute their abilities immediately upon being played from hand (RR v1.8 p. 12, 23; Issue #94).
   // Supports, Upgrades, Allies, and Resource cards enter play without targets; their abilities trigger/activate later.
   const isEventCard =
     !abilityCost && (card?.type === CardType.EVENT || (card as any)?.type_code === 'event');
-  const abilities = isEventCard ? card?.enrichment?.abilities || [] : [];
+  const abilities = isEventCard ? cardAbilities : [];
 
   let eventTargetScope: string | undefined;
   for (const ab of abilities) {
@@ -1063,7 +1114,33 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
             </div>
           )}
 
-          {/* Target Selector (if Attack or Thwart) */}
+          {/* Target Selector (if Minion Attachment, Attack or Thwart) */}
+          {isMinionAttachment && (
+            <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
+              <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">
+                <Target className="w-4 h-4 text-comic-red" />
+                <span>Select Minion to Attach To:</span>
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {minionAttachmentTargets.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedTargetId(t.id)}
+                    className={`flex items-center justify-between p-2.5 rounded border-2 text-xs font-bold ${
+                      selectedTargetId === t.id
+                        ? 'bg-comic-red text-white border-comic-black shadow-comic-sm'
+                        : 'bg-white text-comic-black border-comic-black/40 hover:border-comic-black'
+                    }`}
+                  >
+                    <span>{t.name}</span>
+                    <span>{t.hp} HP</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {isAttack && (
             <div className="space-y-2 pt-2 border-t-2 border-comic-black/20">
               <label className="text-xs font-black uppercase text-comic-black flex items-center space-x-1">

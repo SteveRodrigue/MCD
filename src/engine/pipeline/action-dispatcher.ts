@@ -1216,8 +1216,8 @@ export function dispatchAction(
       // Track owner for cross-player control and attachments per RR v1.8 p. 11
       if (sourceZone === 'ANY_PLAYER_DISCARD') {
         playedCardInstance.ownerId = targetOwnerPlayer.id;
-      } else if (!playedCardInstance.ownerId) {
-        playedCardInstance.ownerId = player.id;
+      } else {
+        playedCardInstance.ownerId = action.playerId;
       }
 
       // Cards entering play enter ready with reset transient state (RR v1.8 p. 11, 24)
@@ -1351,9 +1351,68 @@ export function dispatchAction(
                 targetHost,
                 allMinions[0].minion.instanceId,
               );
+              const hostName = `${allMinions[0].minion.card.name} (${allMinions[0].player.name})`;
+              nextState.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: nextState.roundNumber,
+                phase: nextState.phase,
+                category: 'ability',
+                actor: { name: player.name, type: player.currentForm },
+                key: 'card.attached.to_host',
+                params: {
+                  player: player.name,
+                  card: playedCardInstance.card.name,
+                  host: hostName,
+                  target: hostName,
+                },
+                onomatopoeia: 'ATTACHED!',
+              });
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+              nextState.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: nextState.roundNumber,
+                phase: nextState.phase,
+                category: 'ability',
+                actor: { name: player.name, type: player.currentForm },
+                key: 'card.attached.to_host',
+                params: {
+                  player: player.name,
+                  card: playedCardInstance.card.name,
+                  host: 'Minion',
+                  target: 'Minion',
+                },
+                onomatopoeia: 'ATTACHED!',
+              });
             }
+          } else if (targetHost === 'CHOSEN_MINION' || targetHost === 'MINION') {
+            attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+            let hostName = action.targetInstanceId || 'Minion';
+            for (const p of nextState.players) {
+              const m = p.engagedMinions?.find((min) => min.instanceId === action.targetInstanceId);
+              if (m) {
+                hostName = `${m.card.name} (${p.name})`;
+                break;
+              }
+            }
+            nextState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: nextState.roundNumber,
+              phase: nextState.phase,
+              category: 'ability',
+              actor: { name: player.name, type: player.currentForm },
+              key: 'card.attached.to_host',
+              params: {
+                player: player.name,
+                card: playedCardInstance.card.name,
+                host: hostName,
+                target: hostName,
+              },
+              onomatopoeia: 'ATTACHED!',
+            });
           } else if (
             (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') &&
             !action.targetInstanceId
@@ -1415,11 +1474,87 @@ export function dispatchAction(
                 targetHost,
                 allAllies[0].ally.instanceId,
               );
+              const hostName = `${allAllies[0].ally.card.name} (${allAllies[0].player.name})`;
+              nextState.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: nextState.roundNumber,
+                phase: nextState.phase,
+                category: 'ability',
+                actor: { name: player.name, type: player.currentForm },
+                key: 'card.attached.to_host',
+                params: {
+                  player: player.name,
+                  card: playedCardInstance.card.name,
+                  host: hostName,
+                  target: hostName,
+                },
+                onomatopoeia: 'ATTACHED!',
+              });
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+              nextState.log.push({
+                id: `log_${Date.now()}`,
+                timestamp: Date.now(),
+                round: nextState.roundNumber,
+                phase: nextState.phase,
+                category: 'ability',
+                actor: { name: player.name, type: player.currentForm },
+                key: 'card.attached.to_host',
+                params: {
+                  player: player.name,
+                  card: playedCardInstance.card.name,
+                  host: 'Ally',
+                  target: 'Ally',
+                },
+                onomatopoeia: 'ATTACHED!',
+              });
             }
+          } else if (targetHost === 'CHOSEN_ALLY' || targetHost === 'ALLY') {
+            attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+            let hostName = action.targetInstanceId || 'Ally';
+            for (const p of nextState.players) {
+              const a = p.allies?.find((al) => al.instanceId === action.targetInstanceId);
+              if (a) {
+                hostName = `${a.card.name} (${p.name})`;
+                break;
+              }
+            }
+            nextState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: nextState.roundNumber,
+              phase: nextState.phase,
+              category: 'ability',
+              actor: { name: player.name, type: player.currentForm },
+              key: 'card.attached.to_host',
+              params: {
+                player: player.name,
+                card: playedCardInstance.card.name,
+                host: hostName,
+                target: hostName,
+              },
+              onomatopoeia: 'ATTACHED!',
+            });
           } else {
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
+            const villainName = nextState.villain.card.name;
+            nextState.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: nextState.roundNumber,
+              phase: nextState.phase,
+              category: 'ability',
+              actor: { name: player.name, type: player.currentForm },
+              key: 'card.attached.to_host',
+              params: {
+                player: player.name,
+                card: playedCardInstance.card.name,
+                host: villainName,
+                target: villainName,
+              },
+              onomatopoeia: 'ATTACHED!',
+            });
           }
         } else if (playedCardInstance.card.enrichment?.playUnderAnyPlayerControl) {
           if (action.targetPlayerId) {
@@ -2535,6 +2670,7 @@ export function dispatchAction(
             player: player.name,
             card: activePrompt.sourceCardName,
             host: selectedOption?.label || chosenMinionId,
+            target: selectedOption?.label || chosenMinionId,
           },
           onomatopoeia: 'ATTACHED!',
         });
@@ -2568,6 +2704,7 @@ export function dispatchAction(
             player: player.name,
             card: activePrompt.sourceCardName,
             host: selectedOption?.label || chosenAllyId,
+            target: selectedOption?.label || chosenAllyId,
           },
           onomatopoeia: 'ATTACHED!',
         });

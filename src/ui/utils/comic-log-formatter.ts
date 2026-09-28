@@ -349,6 +349,10 @@ export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): s
     case 'encounter.whenRevealed.cancelled':
       return 'CANCEL_WHEN_REVEALED';
 
+    case 'card.attached.to_host':
+    case 'UPGRADE_ATTACHED':
+      return 'UPGRADE_ATTACHED';
+
     case 'PLAY_CARD':
     case 'CARD_PLAYED':
     case 'player.action.playCard':
@@ -527,6 +531,7 @@ export function normalizeLogParams(
   const explicitTarget =
     (p.who_is_taking_damage !== undefined ? String(p.who_is_taking_damage) : undefined) ??
     (p.target !== undefined ? String(p.target) : undefined) ??
+    (p.host !== undefined ? String(p.host) : undefined) ??
     (p.defender !== undefined ? String(p.defender) : undefined) ??
     (p.victim !== undefined ? String(p.victim) : undefined);
 
@@ -561,13 +566,20 @@ export function normalizeLogParams(
     amount = p.boostIcons;
   else if (typeof p.boost === 'number' || typeof p.boost === 'string') amount = p.boost;
 
-  // 6. Resolve 'card'
+  // 6. Resolve 'card' and 'upgrade'
   const card =
     (p.card !== undefined ? String(p.card) : undefined) ??
     (p.cardName !== undefined ? String(p.cardName) : undefined) ??
     (p.sourceCard !== undefined ? String(p.sourceCard) : undefined) ??
     (p.attachment !== undefined ? String(p.attachment) : undefined) ??
     'Card';
+
+  const upgrade =
+    (p.upgrade !== undefined ? String(p.upgrade) : undefined) ??
+    (p.card !== undefined ? String(p.card) : undefined) ??
+    (p.cardName !== undefined ? String(p.cardName) : undefined) ??
+    (p.attachment !== undefined ? String(p.attachment) : undefined) ??
+    card;
 
   // 7. Resolve 'scheme'
   const scheme =
@@ -631,12 +643,24 @@ export function normalizeLogParams(
   }
 
   normalized.who = who;
+  if (p.actor !== undefined) {
+    normalized.actor = String(p.actor);
+  } else if (
+    entry.key === 'card.attached.to_host' ||
+    entry.key === 'UPGRADE_ATTACHED' ||
+    mapToCanonicalTemplateKey(entry.key, entry) === 'UPGRADE_ATTACHED'
+  ) {
+    normalized.actor =
+      (p.player !== undefined ? cleanCharacterName(String(p.player)) : undefined) ?? who;
+  }
   normalized.who_attacks = who_attacks;
   normalized.who_is_taking_damage = who_is_taking_damage;
   normalized.target = target;
+  normalized.host = (p.host !== undefined ? String(p.host) : undefined) ?? target;
   normalized.who_defends = who_defends;
   normalized.amount = amount;
   normalized.card = card;
+  normalized.upgrade = upgrade;
   normalized.scheme = scheme;
   normalized.status = status;
   normalized.source = source;

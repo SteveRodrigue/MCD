@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Engine): Engaged Minion Attachment Visibility & Spider-Tracer Lifecycle ([RR v1.8 p. 5, 9, 11, 23, 25](references/rules/glossary/A.md#attachment), [Issue #134](https://github.com/SteveRodrigue/MCD/issues/134))**
+  - **Board Minion Attachment Rendering:**
+    - Rendered `<CardAttachmentFan attachments={minion.attachments} cardsUnderneath={minion.cardsUnderneath} mode="staircase" />` on engaged minions in `HeroZone.tsx`, with dynamic vertical/horizontal spacing to prevent overlap.
+  - **Cross-Player Attachment Target Selector:**
+    - Added minion attachment target selector to `CardPaymentModal.tsx` for cards with `ATTACH_TO_HOST` targeting `CHOSEN_MINION` or `MINION`, querying minions across all players and passing `selectedTargetId` to `PLAY_CARD`.
+  - **Action Dispatcher Logging & Ownership Invariants:**
+    - Stamped `ownerId = action.playerId` on cards played from hand and discard.
+    - Emitted `card.attached.to_host` log event across all attachment execution paths (single minion, target minion, single ally, target ally, villain).
+    - Mapped `card.attached.to_host` to `UPGRADE_ATTACHED` in `comic-log-formatter.ts`.
+  - **Automated Verification:**
+    - Added unit test in `tests/ui/HeroZone-minion-attachments.test.tsx` verifying attachment rendering on engaged minions.
+    - Added comprehensive engine test suite in `tests/engine/spider-tracer-attachment.test.ts` (6 scenarios) verifying multi-minion selection, minion on another player only, minions on both players, cross-player owner discard retention, Crisis side scheme gating, and multi-scheme prompts.
+
 - **Fix (UI & Engine): Explicit Combat Log Details & Defense Prompt Clarity ([RR v1.8 p. 6-7, 10-11](references/rules/glossary/D.md#discard-pile), [Issue #130](https://github.com/SteveRodrigue/MCD/issues/130))**
   - **Explicit Discard and Draw Logging:**
     - Emitted card names in `executeDiscard` for player deck, hand, and encounter deck discards, along with dedicated logging for retrieved cards (e.g. Black Cat's `black_cat.fetch`).

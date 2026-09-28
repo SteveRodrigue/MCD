@@ -28,8 +28,14 @@ function dispatchCanonicalCharacterDefeat(
   state: GameState,
   targetPlayerId: string,
   sourceInstanceId: string,
+  targetType?: 'ALLY' | 'HERO' | 'MINION' | 'VILLAIN',
 ): void {
-  const context = { targetPlayerId, sourceInstanceId, entityType: 'CHARACTER' as const };
+  const context = {
+    targetPlayerId,
+    sourceInstanceId,
+    entityType: 'CHARACTER' as const,
+    targetType,
+  };
   dispatchTrigger(state, 'DEFEATED', context);
   dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
 }
@@ -744,7 +750,7 @@ export function applyCalculatedAttackDamage(
             onomatopoeia: 'DEFEATED!',
           });
 
-          dispatchCanonicalCharacterDefeat(state, player.id, ally.instanceId);
+          dispatchCanonicalCharacterDefeat(state, player.id, ally.instanceId, 'ALLY');
 
           // Overkill Check
           if (attackContext.hasOverkill && excessDamage > 0) {
@@ -808,7 +814,7 @@ export function applyCalculatedAttackDamage(
       });
 
       if (player.health <= 0) {
-        dispatchCanonicalCharacterDefeat(state, player.id, player.id);
+        dispatchCanonicalCharacterDefeat(state, player.id, player.id, 'HERO');
         state.winner = 'VILLAIN';
       }
     }

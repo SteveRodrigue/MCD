@@ -223,6 +223,9 @@
           "id": "spider_tracer_defeat_trigger",
           "timing": "FORCED_INTERRUPT",
           "trigger": "CHARACTER_DEFEATED",
+          "triggerFilter": {
+            "targetType": "MINION"
+          },
           "steps": [
             {
               "effect": "REMOVE_THREAT",
@@ -1917,6 +1920,9 @@
           "id": "tigra_defeat_heal",
           "timing": "RESPONSE",
           "trigger": "CHARACTER_DEFEATED",
+          "triggerFilter": {
+            "targetType": "MINION"
+          },
           "steps": [
             {
               "effect": "HEAL_DAMAGE",
@@ -1944,6 +1950,9 @@
           "id": "chase_them_down",
           "timing": "RESPONSE",
           "trigger": "DEFEATED",
+          "triggerFilter": {
+            "targetType": "MINION"
+          },
           "steps": [
             {
               "effect": "REMOVE_THREAT",
@@ -2263,6 +2272,10 @@
           "id": "interrogation_room_response",
           "timing": "RESPONSE",
           "trigger": "CHARACTER_DEFEATED",
+          "triggerFilter": {
+            "targetType": "MINION",
+            "targetPlayerScope": "SELF"
+          },
           "cost": {
             "exhaustSelf": true
           },

@@ -91,8 +91,9 @@ function dispatchCanonicalDefeatTriggers(
   targetPlayerId: string,
   sourceInstanceId: string,
   entityType: 'CHARACTER' | 'SCHEME',
+  targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'SCHEME',
 ): void {
-  const context = { targetPlayerId, sourceInstanceId, entityType };
+  const context = { targetPlayerId, sourceInstanceId, entityType, targetType };
   dispatchTrigger(state, 'DEFEATED', context);
   if (entityType === 'CHARACTER') {
     dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
@@ -541,6 +542,7 @@ export function dispatchAction(
             player.id,
             nextState.villain.instanceId || 'villain',
             'CHARACTER',
+            'VILLAIN',
           );
           const defeatedState = handleVillainDefeat(nextState, nextState.villain.instanceId);
           return { state: defeatedState, result: { success: true, onomatopoeia: 'POW!' } };
@@ -636,9 +638,10 @@ export function dispatchAction(
           moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
           dispatchCanonicalDefeatTriggers(
             nextState,
-            targetMinionPlayer.id,
+            player.id,
             minion.instanceId,
             'CHARACTER',
+            'MINION',
           );
 
           dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
@@ -756,6 +759,7 @@ export function dispatchAction(
                 player.id,
                 nextState.villain.instanceId || 'villain',
                 'CHARACTER',
+                'VILLAIN',
               );
               handleVillainDefeat(nextState, nextState.villain.instanceId);
             } else {
@@ -809,9 +813,10 @@ export function dispatchAction(
               moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
               dispatchCanonicalDefeatTriggers(
                 nextState,
-                targetMinionPlayer.id,
+                player.id,
                 minion.instanceId,
                 'CHARACTER',
+                'MINION',
               );
             } else {
               minion.tokens = { ...minion.tokens, damage: newDamage };
@@ -849,7 +854,7 @@ export function dispatchAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
-        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
+        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER', 'ALLY');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         resetCardState(ally);
         owner.discard.push(ally);
@@ -942,7 +947,7 @@ export function dispatchAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
-        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER');
+        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER', 'ALLY');
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         resetCardState(ally);
         owner.discard.push(ally);
@@ -2390,6 +2395,7 @@ export function dispatchAction(
                     allyController.id,
                     ally.instanceId,
                     'CHARACTER',
+                    'ALLY',
                   );
                   const owner =
                     (ally.ownerId
@@ -2450,9 +2456,10 @@ export function dispatchAction(
                         moveDefeatedCardToPile(poppedState, minion, poppedState.encounterDiscard);
                         dispatchCanonicalDefeatTriggers(
                           poppedState,
-                          p.id,
+                          player.id,
                           minion.instanceId,
                           'CHARACTER',
+                          'MINION',
                         );
                       } else {
                         minion.tokens = { ...minion.tokens, damage: newDmg };

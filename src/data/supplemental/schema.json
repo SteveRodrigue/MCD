@@ -127,7 +127,8 @@
                         "VILLAIN",
                         "MINION",
                         "SCHEME",
-                        "CHARACTER"
+                        "CHARACTER",
+                        "ALLY"
                       ]
                     },
                     "isEngaged": {

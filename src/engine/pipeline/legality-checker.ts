@@ -1594,10 +1594,7 @@ export function canPlayCard(
         (a) =>
           isResourceAbility(a.timing) ||
           a.steps?.some(
-            (s) =>
-              s.effect === 'GENERATE_RESOURCE' ||
-              s.effect === 'COST_REDUCER' ||
-              s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+            (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
       );
 
@@ -1617,6 +1614,32 @@ export function canPlayCard(
           allowed: false,
           reason: `${gCard.card.name} ability requires ${requiredForm} form.`,
         };
+      }
+
+      const activeAbility = generatorAbilities.find((a) =>
+        isAbilityPlayableInForm(a.timing as any, player.currentForm),
+      );
+
+      if (activeAbility) {
+        const abilityKey = `${gCard.instanceId}_${activeAbility.id}`;
+        if (
+          activeAbility.limit === 'ONCE_PER_ROUND' &&
+          (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1
+        ) {
+          return {
+            allowed: false,
+            reason: `Resource generator ${gCard.card.name} has already been used this round (Limit: once per round).`,
+          };
+        }
+        if (
+          activeAbility.limit === 'ONCE_PER_PHASE' &&
+          (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1
+        ) {
+          return {
+            allowed: false,
+            reason: `Resource generator ${gCard.card.name} has already been used this phase (Limit: once per phase).`,
+          };
+        }
       }
 
       const genStep = generatorAbilities
@@ -1649,7 +1672,7 @@ export function canPlayCard(
         }
         generatedResources += 1;
       } else {
-        // Generic generator / cost reducer
+        // Generic generator
         const amt = genStep ? Number(getStepEffectParams(genStep).amount) || 1 : 1;
         generatedResources += amt;
       }
@@ -1819,20 +1842,28 @@ export function evaluateCardPlayability(
     const abilities = enrichment?.abilities || [];
     const generatorAbilities = abilities.filter(
       (a) =>
-        isResourceAbility(a.timing) ||
-        a.timing === 'HERO_ACTION' ||
-        a.timing === 'ALTER_EGO_ACTION' ||
-        a.timing === 'ACTION' ||
-        a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+        isResourceAbility(a.timing) &&
+        (a.steps?.some(
+          (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+        ) ||
+          Boolean(uses)),
     );
     if (generatorAbilities.length === 0) continue;
 
-    const canUseInForm = generatorAbilities.some((a) =>
-      isAbilityPlayableInForm(a.timing as any, player.currentForm),
-    );
-    if (!canUseInForm) continue;
+    const availableAbilities = generatorAbilities.filter((a) => {
+      if (!isAbilityPlayableInForm(a.timing as any, player.currentForm)) return false;
+      const abilityKey = `${t.instanceId}_${a.id}`;
+      if (a.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1) {
+        return false;
+      }
+      if (a.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1) {
+        return false;
+      }
+      return true;
+    });
+    if (availableAbilities.length === 0) continue;
 
-    const genStep = generatorAbilities
+    const genStep = availableAbilities
       .flatMap((a) => a.steps || [])
       .find((s) => s.effect === 'GENERATE_RESOURCE');
 
@@ -1847,7 +1878,9 @@ export function evaluateCardPlayability(
         maxPotentialResources += res.length;
       }
     } else if (uses) {
-      if ((t.tokens?.counters || 0) > 0) {
+      const uType = uses.type;
+      const count = t.tokens?.counters ?? (uType ? t.counters?.[uType] : undefined) ?? 0;
+      if (count > 0) {
         maxPotentialResources += 1;
       }
     } else {

@@ -47,6 +47,7 @@ import {
   getEffectiveCardTraitsDetails,
 } from '../../../engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '../../../engine/pipeline/legality-checker';
+import { getAvailableResources } from '../../../engine/pipeline/cost-engine';
 
 interface HeroZoneProps {
   player: PlayerState;
@@ -109,6 +110,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const effectiveHandSize = getEffectiveHandSize(player, gameState);
   const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
   const identityTraitsDetails = getEffectivePlayerTraitsDetails(player);
+  const availableResources = getAvailableResources(player, gameState);
 
   const baseAtk = isHero ? heroCard.attack || 0 : 0;
   const baseThw = isHero ? heroCard.thwart || 0 : 0;
@@ -261,6 +263,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const handleSelectTableauAbility = (ability: CardAbility, cardInst: CardInstance) => {
     const hasPaymentCost =
       ability.cost?.resourceCost ||
+      (ability.cost?.resources && ability.cost.resources.length > 0) ||
       (ability.cost?.discardCard && ability.cost.discardCard.from === 'HAND');
 
     if (hasPaymentCost && onInitiateAction) {
@@ -582,6 +585,19 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       )}
                     </span>
                   </div>
+                  {/* RES */}
+                  <div
+                    className="flex flex-col items-center justify-center w-full px-1 py-0.5 bg-indigo-50 border border-comic-black rounded shadow-comic-xs text-center"
+                    title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
+                    data-testid="hero-available-resources-counter"
+                  >
+                    <span className="text-[8px] font-bold text-indigo-700 uppercase leading-none">
+                      RES
+                    </span>
+                    <span className="font-comic text-xs font-black leading-tight text-indigo-950">
+                      {availableResources.total}
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <div
@@ -626,11 +642,28 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       )}
                     </span>
                   </div>
+                  {/* RES */}
+                  <div
+                    className="flex flex-col items-center justify-center w-full px-1 py-1 bg-indigo-50 border border-comic-black rounded shadow-comic-xs text-center"
+                    title={`Available Resources: ${availableResources.total} (${availableResources.breakdown})`}
+                    data-testid="hero-available-resources-counter"
+                  >
+                    <span className="text-[8px] font-bold text-indigo-700 uppercase leading-none">
+                      RES
+                    </span>
+                    <span className="font-comic text-xs font-black leading-tight text-indigo-950">
+                      {availableResources.total}
+                    </span>
+                  </div>
                 </div>
               )}
 
               {/* Center Column (Card) */}
-              <div className="flex flex-col justify-center items-center relative shrink-0">
+              <div
+                className="flex flex-col justify-center items-center relative shrink-0 cursor-pointer"
+                data-testid="hero-identity-card"
+                onClick={() => setIsIdentityModalOpen(true)}
+              >
                 <CardView
                   card={player.activeFormCard}
                   dynamicTraits={identityTraitsDetails.dynamicTraits}
@@ -639,7 +672,6 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   size="sm"
                   showTokens={false}
                   enableHoverZoom={true}
-                  onClick={() => setIsIdentityModalOpen(true)}
                 />
                 {isTargetOfDamageEvent && (
                   <ComicDamageSplash
@@ -1101,6 +1133,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
         gameState={gameState}
         onClose={() => setIsIdentityModalOpen(false)}
         onDispatchAction={onDispatchAction}
+        onInitiateAction={onInitiateAction}
         onInitiateHeroAttack={() => handleInitiateAttack('hero')}
         onInitiateHeroThwart={() => handleInitiateThwart('hero')}
       />

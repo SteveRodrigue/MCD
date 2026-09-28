@@ -198,13 +198,76 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     }
   }, [isMultiHero, gameState.activePlayerIndex, handleSelectSeat]);
 
+  // Centralized Action Dispatcher with Payment Interception (Option A / Issue #162)
+  const handleDispatchAction = (action: GameAction) => {
+    if (!onDispatchAction) return;
+
+    if (action.type === 'USE_CARD_ABILITY') {
+      const hasPaymentCards = (action.paymentCardInstanceIds?.length || 0) > 0;
+      const hasGenerators = (action.generatorInstanceIds?.length || 0) > 0;
+      const hasDiscardCards = (action.discardCardInstanceIds?.length || 0) > 0;
+
+      // Find the player executing this action
+      const player = gameState.players.find((p) => p.id === action.playerId) || activePlayer;
+
+      // Locate the card and ability
+      let targetCardInstance: CardInstance | undefined;
+      if (player.activeFormCard.code === action.cardInstanceId) {
+        targetCardInstance = {
+          instanceId: player.activeFormCard.code,
+          card: player.activeFormCard,
+          exhausted: player.exhausted,
+        };
+      } else {
+        targetCardInstance =
+          player.tableau.find((c) => c.instanceId === action.cardInstanceId) ||
+          player.allies?.find((a) => a.instanceId === action.cardInstanceId) ||
+          player.attachments?.find((a) => a.instanceId === action.cardInstanceId) ||
+          gameState.villain.attachments?.find((a) => a.instanceId === action.cardInstanceId) ||
+          gameState.mainScheme.attachments?.find((a) => a.instanceId === action.cardInstanceId);
+      }
+
+      const ability = targetCardInstance?.card.enrichment?.abilities?.find(
+        (a) => a.id === action.abilityId,
+      );
+
+      if (ability?.cost) {
+        const needsResourcePayment =
+          Boolean(ability.cost.resourceCost) ||
+          Boolean(ability.cost.resources && ability.cost.resources.length > 0);
+        const needsDiscardPayment =
+          ability.cost.discardCard?.from === 'HAND' && ability.cost.discardCard.mode !== 'RANDOM';
+
+        const missingResourcePayment = needsResourcePayment && !hasPaymentCards && !hasGenerators;
+        const missingDiscardPayment = needsDiscardPayment && !hasDiscardCards;
+
+        if (missingResourcePayment || missingDiscardPayment) {
+          const item: LegalActionItem = {
+            id: `pending_payment_${action.cardInstanceId}_${action.abilityId}`,
+            category: 'board',
+            headline: `Action: ${ability.id.replace(/_/g, ' ').toUpperCase()}`,
+            subtext: `Pay costs for ${targetCardInstance?.card.name || 'card'}`,
+            action,
+            requiresModal: 'payment',
+            targetCardInstance,
+          };
+          setPendingPaymentAction(item);
+          setPaymentModalCard(targetCardInstance || null);
+          return;
+        }
+      }
+    }
+
+    onDispatchAction(action);
+  };
+
   // Execute action from Daily Bugle or interactive tabletop element
   const handleSelectNewspaperAction = (item: LegalActionItem) => {
     if (item.requiresModal === 'payment' && item.targetCardInstance) {
       setPendingPaymentAction(item);
       setPaymentModalCard(item.targetCardInstance);
-    } else if (onDispatchAction) {
-      onDispatchAction(item.action);
+    } else {
+      handleDispatchAction(item.action);
     }
   };
 
@@ -316,7 +379,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                         isFocused={isFocused}
                         isMultiHero={true}
                         onFocus={() => handleSelectSeat(idx)}
-                        onDispatchAction={onDispatchAction}
+                        onDispatchAction={handleDispatchAction}
                         onInitiateAction={handleSelectNewspaperAction}
                       />
 
@@ -333,7 +396,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
                         isMultiHero={true}
                         player={player}
                         gameState={gameState}
-                        onDispatchAction={onDispatchAction}
+                        onDispatchAction={handleDispatchAction}
                         onFocus={() => handleSelectSeat(idx)}
                       />
                     </div>
@@ -351,7 +414,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               seatNumber={1}
               isFocused={true}
               isMultiHero={false}
-              onDispatchAction={onDispatchAction}
+              onDispatchAction={handleDispatchAction}
               onInitiateAction={handleSelectNewspaperAction}
             />
             <PlayerHandTray
@@ -366,7 +429,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               isMultiHero={false}
               player={singlePlayer}
               gameState={gameState}
-              onDispatchAction={onDispatchAction}
+              onDispatchAction={handleDispatchAction}
             />
           </div>
         )}

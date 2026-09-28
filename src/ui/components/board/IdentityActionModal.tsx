@@ -1,7 +1,15 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { RefreshCw, Heart, Zap, Swords, Target, X, Sparkles } from 'lucide-react';
-import { PlayerState, GameState, GameAction, HeroCard, AlterEgoCard } from '../../../engine/models';
+import {
+  PlayerState,
+  GameState,
+  GameAction,
+  HeroCard,
+  AlterEgoCard,
+  CardInstance,
+} from '../../../engine/models';
+import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 import {
   getEffectiveMaxHealth,
   getEffectiveHeroStats,
@@ -22,6 +30,7 @@ interface IdentityActionModalProps {
   gameState?: GameState;
   onClose: () => void;
   onDispatchAction?: (action: GameAction) => void;
+  onInitiateAction?: (item: LegalActionItem) => void;
   onInitiateHeroAttack?: () => void;
   onInitiateHeroThwart?: () => void;
 }
@@ -32,6 +41,7 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
   gameState,
   onClose,
   onDispatchAction,
+  onInitiateAction,
   onInitiateHeroAttack,
   onInitiateHeroThwart,
 }) => {
@@ -240,12 +250,39 @@ export const IdentityActionModal: React.FC<IdentityActionModalProps> = ({
                 key={ab.id}
                 disabled={!canTrigger}
                 onClick={() => {
-                  onDispatchAction?.({
-                    type: 'USE_CARD_ABILITY',
-                    playerId: player.id,
-                    cardInstanceId: player.activeFormCard.code,
-                    abilityId: ab.id,
-                  });
+                  const hasPaymentCost =
+                    ab.cost?.resourceCost ||
+                    (ab.cost?.resources && ab.cost.resources.length > 0) ||
+                    (ab.cost?.discardCard && ab.cost.discardCard.from === 'HAND');
+
+                  if (hasPaymentCost && onInitiateAction) {
+                    onInitiateAction({
+                      id: `action_id_ability_${ab.id}`,
+                      category: 'identity',
+                      headline: `Action: ${ab.id.replace(/_/g, ' ').toUpperCase()}`,
+                      subtext: `Trigger ${player.activeFormCard.name}'s special ability`,
+                      action: {
+                        type: 'USE_CARD_ABILITY',
+                        playerId: player.id,
+                        cardInstanceId: player.activeFormCard.code,
+                        abilityId: ab.id,
+                      },
+                      requiresModal: 'payment',
+                      targetCardInstance: {
+                        instanceId: player.activeFormCard.code,
+                        card: player.activeFormCard,
+                        exhausted: player.exhausted,
+                      } as CardInstance,
+                      cardCode: player.activeFormCard.code,
+                    });
+                  } else {
+                    onDispatchAction?.({
+                      type: 'USE_CARD_ABILITY',
+                      playerId: player.id,
+                      cardInstanceId: player.activeFormCard.code,
+                      abilityId: ab.id,
+                    });
+                  }
                   onClose();
                 }}
                 className={`w-full text-left p-2.5 rounded-lg border-2 border-comic-black transition-all flex items-center justify-between gap-2 shadow-comic-sm ${

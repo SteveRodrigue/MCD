@@ -1199,3 +1199,97 @@ export function getEffectiveCardCost(
     totalReduction,
   };
 }
+
+export interface AvailableResourcesResult {
+  total: number;
+  breakdown: string;
+  hand: number;
+  generators: number;
+  identity: number;
+}
+
+/**
+ * Computes dynamic total available resources for a player (hand cards, ready tableau generators, and identity abilities).
+ */
+export function getAvailableResources(
+  player: PlayerState,
+  _state?: GameState,
+): AvailableResourcesResult {
+  // 1. Hand resources: Sum resources across all cards currently in player's hand
+  let hand = 0;
+  for (const cardInst of player.hand || []) {
+    const resTypes = readCardResources(cardInst);
+    hand += resTypes.length > 0 ? resTypes.length : cardInst.card?.resources?.total || 1;
+  }
+
+  // 2. Ready Tableau Generators (excluding cost reducers like Helicarrier or card draw like Avengers Mansion)
+  let generators = 0;
+  for (const item of player.tableau || []) {
+    if (item.exhausted) continue;
+    const enrichment = item.card?.enrichment || getCardEnrichment(item.card?.code);
+    const uses = enrichment?.uses;
+    const abilities = enrichment?.abilities || [];
+    const genAbilities = abilities.filter(
+      (a) =>
+        isResourceAbility(a.timing) &&
+        (a.steps?.some(
+          (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+        ) ||
+          Boolean(uses)),
+    );
+    if (genAbilities.length === 0) continue;
+
+    // Check if counter card with 0 counters
+    if (
+      uses &&
+      (item.tokens?.counters ?? (item.counters as any)?.[uses.type || 'counters'] ?? 0) <= 0
+    ) {
+      continue;
+    }
+
+    // Check form compatibility & limits
+    const valid = genAbilities.some((a) => {
+      if (!isAbilityPlayableInForm(a.timing as any, player.currentForm)) return false;
+      const abilityKey = `${item.instanceId}_${a.id}`;
+      if (a.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[abilityKey] || 0) >= 1)
+        return false;
+      if (a.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[abilityKey] || 0) >= 1)
+        return false;
+      return true;
+    });
+
+    if (valid) {
+      generators += 1;
+    }
+  }
+
+  // 3. Identity Resource Abilities
+  let identity = 0;
+  const idAbilities = player.activeFormCard?.enrichment?.abilities || [];
+  for (const ab of idAbilities) {
+    if (
+      ab.timing === 'RESOURCE' ||
+      (player.currentForm === 'hero' && ab.timing === 'HERO_RESOURCE') ||
+      (player.currentForm === 'alter_ego' && ab.timing === 'ALTER_EGO_RESOURCE') ||
+      ab.steps?.some((s) => s.effect === 'GENERATE_RESOURCE')
+    ) {
+      if (!isAbilityPlayableInForm(ab.timing as any, player.currentForm)) continue;
+      const isUsedRound =
+        ab.limit === 'ONCE_PER_ROUND' && (player.usedAbilitiesThisRound?.[ab.id] || 0) >= 1;
+      const isUsedPhase =
+        ab.limit === 'ONCE_PER_PHASE' && (player.usedAbilitiesThisPhase?.[ab.id] || 0) >= 1;
+      if (!isUsedRound && !isUsedPhase) {
+        identity += 1;
+      }
+    }
+  }
+
+  const total = hand + generators + identity;
+  const breakdownParts: string[] = [];
+  if (hand > 0) breakdownParts.push(`${hand} Hand`);
+  if (generators > 0) breakdownParts.push(`${generators} Generator${generators > 1 ? 's' : ''}`);
+  if (identity > 0) breakdownParts.push(`${identity} Identity`);
+  const breakdown = breakdownParts.length > 0 ? breakdownParts.join(', ') : '0 Available';
+
+  return { total, breakdown, hand, generators, identity };
+}

@@ -57,6 +57,26 @@ describe('supplemental-editor-service', () => {
     expect(calledUrl).toContain('search=spider');
   });
 
+  it('fetchCards builds pagination query params correctly', async () => {
+    const mockData = { total: 100, cards: [], page: 2, limit: 25 };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockData,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await fetchCards({
+      page: 2,
+      limit: 25,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const calledUrl = fetchMock.mock.calls[0][0] as string;
+    expect(calledUrl).toContain('/api/supplemental/cards?');
+    expect(calledUrl).toContain('page=2');
+    expect(calledUrl).toContain('limit=25');
+  });
+
   it('fetchCardDetails invokes /api/supplemental/card/:code', async () => {
     const mockDetails = {
       code: '01001a',

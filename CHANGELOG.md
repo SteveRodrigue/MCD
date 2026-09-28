@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Tools): Supplemental Card Editor Route Freeze, Re-render Loop & Pagination ([Issue #168](https://github.com/SteveRodrigue/MCD/issues/168))**
+  - **Dev Server Watcher Stability (`vite.config.ts`):**
+    - Configured `server.watch.ignored: ['**/logs/**', '**/cache/**']` in `vite.config.ts`, preventing uncaught Windows `EBUSY: resource busy or locked` file watcher crashes during rolling gamestate writes.
+  - **Infinite Fetch Loop Decoupling (`SupplementalEditorScreen.tsx`):**
+    - Removed `selectedCode` from `loadCards` callback dependencies and used functional state updater for `setSelectedCode`, eliminating recursive re-fetching on card selection.
+    - Added page tracking state (default 1, 50 cards per page) and reset page to 1 upon filter changes.
+  - **Backend & Client Service Pagination (`api-middleware.ts`, `supplemental-editor-service.ts`):**
+    - Supported `page` and `limit` query parameters in `GET /api/supplemental/cards`, returning sliced card results with total match counts.
+    - Updated `fetchCards` in `supplemental-editor-service.ts` to serialize pagination params while maintaining backward compatibility.
+  - **Comic Pop-Art Pagination UI (`CardGalleryList.tsx`):**
+    - Added a docked pagination footer with `First`, `Prev`, `Next`, and `Last` buttons, current page/total indicators, and boundary disable logic.
+  - **Automated Verification:**
+    - Added pagination API tests in `tests/tools/supplemental-editor-api.test.ts`.
+    - Added pagination query parameter tests in `tests/ui/supplemental-editor-service.test.ts`.
+    - Added pagination controls and render stability tests in `tests/ui/EditorLayoutAndContrast.test.tsx`.
+
 - **Fix (UI & Engine): Engaged Minion Attachment Visibility & Spider-Tracer Lifecycle ([RR v1.8 p. 5, 9, 11, 23, 25](references/rules/glossary/A.md#attachment), [Issue #134](https://github.com/SteveRodrigue/MCD/issues/134))**
   - **Board Minion Attachment Rendering:**
     - Rendered `<CardAttachmentFan attachments={minion.attachments} cardsUnderneath={minion.cardsUnderneath} mode="staircase" />` on engaged minions in `HeroZone.tsx`, with dynamic vertical/horizontal spacing to prevent overlap.

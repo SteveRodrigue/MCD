@@ -12,6 +12,8 @@ export interface CardFilters {
   hero?: string;
   status?: string;
   search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export async function fetchPacksMetadata(): Promise<PackMetadataResponse> {
@@ -24,7 +26,7 @@ export async function fetchPacksMetadata(): Promise<PackMetadataResponse> {
 
 export async function fetchCards(
   filters: CardFilters = {},
-): Promise<{ total: number; cards: CardSummary[] }> {
+): Promise<{ total: number; cards: CardSummary[]; page?: number; limit?: number }> {
   const params = new URLSearchParams();
   if (filters.pack) params.set('pack', filters.pack);
   if (filters.packFile) params.set('packFile', filters.packFile);
@@ -33,6 +35,8 @@ export async function fetchCards(
   if (filters.hero) params.set('hero', filters.hero);
   if (filters.status) params.set('status', filters.status);
   if (filters.search) params.set('search', filters.search);
+  if (filters.page !== undefined) params.set('page', String(filters.page));
+  if (filters.limit !== undefined) params.set('limit', String(filters.limit));
 
   const qs = params.toString();
   const url = `/api/supplemental/cards${qs ? `?${qs}` : ''}`;

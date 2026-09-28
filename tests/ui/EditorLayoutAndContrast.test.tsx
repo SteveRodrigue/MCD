@@ -7,7 +7,9 @@ import { DynamicValueBuilder } from '../../src/ui/components/editor/DynamicValue
 import { CardAttributesSection } from '../../src/ui/components/editor/CardAttributesSection';
 import { SupplementalEditorScreen } from '../../src/ui/components/editor/SupplementalEditorScreen';
 import { DualCardInspector } from '../../src/ui/components/editor/DualCardInspector';
+import { CardGalleryList } from '../../src/ui/components/editor/CardGalleryList';
 import type { CardDetailsResponse } from '../../src/tools/editor/api-middleware';
+import { fetchCards } from '../../src/ui/services/supplemental-editor-service';
 
 // Mock API service for SupplementalEditorScreen
 vi.mock('../../src/ui/services/supplemental-editor-service', () => ({
@@ -172,5 +174,81 @@ describe('Editor UI Contrast & Layout Ergonomics (Issue #116)', () => {
     expect(rulesEditor?.classList.contains('flex-1')).toBe(true);
     expect(rulesEditor?.classList.contains('w-full')).toBe(true);
     expect(rulesEditor?.classList.contains('md:w-1/2')).toBe(false);
+  });
+
+  it('renders CardGalleryList pagination controls and responds to page change', async () => {
+    const user = userEvent.setup();
+    const handlePageChange = vi.fn();
+    const sampleCards = [
+      {
+        code: '01001a',
+        name: 'Spider-Man',
+        packCode: 'core',
+        packFile: 'core.json',
+        factionCode: 'hero',
+        typeCode: 'hero',
+        hasSupplemental: true,
+        isValid: true,
+      },
+    ];
+
+    render(
+      <CardGalleryList
+        cards={sampleCards}
+        selectedCode="01001a"
+        onSelectCard={vi.fn()}
+        loading={false}
+        page={2}
+        pageSize={10}
+        totalCards={35}
+        onPageChange={handlePageChange}
+      />,
+    );
+
+    const pagination = screen.getByTestId('gallery-pagination');
+    expect(pagination).toBeDefined();
+    expect(screen.getByText('Page 2 of 4')).toBeDefined();
+    expect(screen.getByText('11–20 of 35')).toBeDefined();
+
+    const prevBtn = screen.getByTestId('pagination-prev-btn');
+    const nextBtn = screen.getByTestId('pagination-next-btn');
+    const firstBtn = screen.getByTestId('pagination-first-btn');
+    const lastBtn = screen.getByTestId('pagination-last-btn');
+
+    expect((prevBtn as HTMLButtonElement).disabled).toBe(false);
+    expect((nextBtn as HTMLButtonElement).disabled).toBe(false);
+
+    await user.click(prevBtn);
+    expect(handlePageChange).toHaveBeenCalledWith(1);
+
+    await user.click(nextBtn);
+    expect(handlePageChange).toHaveBeenCalledWith(3);
+
+    await user.click(firstBtn);
+    expect(handlePageChange).toHaveBeenCalledWith(1);
+
+    await user.click(lastBtn);
+    expect(handlePageChange).toHaveBeenCalledWith(4);
+  });
+
+  it('SupplementalEditorScreen does not trigger infinite fetchCards calls on mount', async () => {
+    vi.mocked(fetchCards).mockClear();
+
+    await act(async () => {
+      render(<SupplementalEditorScreen />);
+    });
+
+    // Exactly 1 fetchCards call for initial load, not an infinite loop
+    expect(vi.mocked(fetchCards)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(fetchCards)).toHaveBeenCalledWith({
+      pack: undefined,
+      set: undefined,
+      faction: undefined,
+      hero: undefined,
+      status: undefined,
+      search: undefined,
+      page: 1,
+      limit: 50,
+    });
   });
 });

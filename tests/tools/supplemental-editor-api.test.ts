@@ -75,6 +75,25 @@ describe('CardSupplementalService & Editor API Middleware', () => {
       expect(spidey).toBeDefined();
       expect(spidey?.name).toBe('Spider-Man');
     });
+
+    it('paginates cards by page and limit', () => {
+      const page1 = service.getCards({ page: 1, limit: 10 });
+      expect(page1.total).toBeGreaterThan(10);
+      expect(page1.cards).toHaveLength(10);
+      expect(page1.page).toBe(1);
+      expect(page1.limit).toBe(10);
+
+      const page2 = service.getCards({ page: 2, limit: 10 });
+      expect(page2.cards).toHaveLength(10);
+      expect(page2.page).toBe(2);
+      expect(page2.limit).toBe(10);
+
+      // Verify page 1 and page 2 have distinct items
+      const page1Codes = new Set(page1.cards.map((c) => c.code));
+      for (const card of page2.cards) {
+        expect(page1Codes.has(card.code)).toBe(false);
+      }
+    });
   });
 
   describe('Card Details Inspection', () => {
@@ -233,6 +252,38 @@ describe('CardSupplementalService & Editor API Middleware', () => {
       expect(status).toBe(200);
       const parsed = JSON.parse(bodyData);
       expect(parsed.packs).toBeDefined();
+    });
+
+    it('dispatches GET /api/supplemental/cards with pagination', async () => {
+      const middleware = createCardSupplementalMiddleware(service);
+
+      const req: any = {
+        url: '/api/supplemental/cards?page=1&limit=5',
+        method: 'GET',
+      };
+
+      let status = 0;
+      let bodyData = '';
+      const res: any = {
+        setHeader: () => {},
+        end: (data: string) => {
+          bodyData = data;
+        },
+      };
+      Object.defineProperty(res, 'statusCode', {
+        set: (code: number) => {
+          status = code;
+        },
+        get: () => status,
+      });
+
+      await middleware(req, res, () => {});
+      expect(status).toBe(200);
+      const parsed = JSON.parse(bodyData);
+      expect(parsed.cards).toHaveLength(5);
+      expect(parsed.total).toBeGreaterThan(5);
+      expect(parsed.page).toBe(1);
+      expect(parsed.limit).toBe(5);
     });
 
     it('dispatches GET /api/supplemental/card/:code', async () => {

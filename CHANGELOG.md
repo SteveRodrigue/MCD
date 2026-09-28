@@ -7,20 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Engine): Centralized Ability Payment Interceptor & Available Resources Counter ([RR v1.8 p. 4, 25](references/rules/glossary/R.md#resource), [Issue #162](https://github.com/SteveRodrigue/MCD/issues/162))**
+  - **Centralized Action Interceptor in `GameBoard.tsx`:**
+    - Wrapped child component action dispatches with `handleDispatchAction`, automatically intercepting `USE_CARD_ABILITY` when resource or hand-discard costs are unfulfilled.
+    - Prevents silent action rejection in the engine by seamlessly routing through `CardPaymentModal` with `pendingPaymentAction` and `paymentModalCard`.
+    - Supports interactive multi-resource card selection and table generator toggling before dispatching to the engine.
+  - **Identity Action Modal Payment Routing:**
+    - Added `onInitiateAction` prop to `IdentityActionModalProps` and routed paid abilities (e.g. Captain Marvel's _Rechannel_ `01010a`) to `onInitiateAction` with `requiresModal: 'payment'`.
+    - Wired `onInitiateAction={onInitiateAction}` in `HeroZone.tsx` and aligned `hasPaymentCost` to check `resources` arrays alongside `resourceCost`.
+  - **Available Resources Counter ("RES"):**
+    - Implemented `getAvailableResources(player, state)` in `cost-engine.ts`, computing dynamic available resources across hand cards (accounting for double resources), ready in-form tableau generators, and unused identity resource abilities.
+    - Added a comic pop-art **RES** stat badge in `HeroZone.tsx` positioned directly below the **HS** (Hand Size) counter in both Hero and Alter-Ego columns, with dynamic hover tooltip breakdowns.
+  - **Automated Verification:**
+    - Added unit test suite in `tests/engine/available-resources.test.ts` (14 tests) verifying hand resources, double resources, counter-based generators, static generators, form gates, and once-per-round limits.
+    - Added UI integration regression test suite in `tests/ui/identity-action-payment.test.tsx` (8 tests) verifying _Rechannel_ routing, centralized interceptor fallback, multi-choice payment selection, and RES counter badge rendering.
+
 - **Fix (Engine): Tableau Generator Filtering & Card Playability Resource Calculation ([RR v1.8 p. 4, 24](references/rules/glossary/R.md#resource-ability), [Issue #153](https://github.com/SteveRodrigue/MCD/issues/153))**
   - **Purged Invalid Action Timings in Generator Discovery:**
     - Purged non-resource action timings (`ACTION`, `HERO_ACTION`, `ALTER_EGO_ACTION`) and obsolete `COST_REDUCER` tokens from tableau generator filtering in `evaluateCardPlayability`.
-    - Enforced strict `isResourceAbility(a.timing)` and active form gating, preventing cards with standalone Actions (e.g. *Helicarrier*, *Avengers Mansion*) from inflating `maxPotentialResources`.
-    - In-play cost reducers like *Helicarrier* (`01092`) must now be triggered as actions beforehand, applying an `ActiveCostReduction` aura that lowers the card's effective cost via `getEffectiveCardCost`.
+    - Enforced strict `isResourceAbility(a.timing)` and active form gating, preventing cards with standalone Actions (e.g. _Helicarrier_, _Avengers Mansion_) from inflating `maxPotentialResources`.
+    - In-play cost reducers like _Helicarrier_ (`01092`) must now be triggered as actions beforehand, applying an `ActiveCostReduction` aura that lowers the card's effective cost via `getEffectiveCardCost`.
     - Enforced `limit: 'ONCE_PER_ROUND'` and `limit: 'ONCE_PER_PHASE'` usage limits on tableau generator abilities in both `evaluateCardPlayability` and `canPlayCard`.
   - **Automated Verification:**
-    - Added regression tests in `tests/engine/card-playability-resource-calculation.test.ts` verifying that ready Helicarrier in tableau does not mark *Surveillance Team* (cost 2) as playable when player has 1 resource in hand, and that triggering Helicarrier's action correctly enables playability.
+    - Added regression tests in `tests/engine/card-playability-resource-calculation.test.ts` verifying that ready Helicarrier in tableau does not mark _Surveillance Team_ (cost 2) as playable when player has 1 resource in hand, and that triggering Helicarrier's action correctly enables playability.
 
 - **Fix (Engine): Unified Payment Subsystem Across Actions, Prompts, and Attachments ([ADR-0072](docs/decisions/0072-unified-payment-subsystem-across-actions-prompts-and-attachments.md), [Issue #155](https://github.com/SteveRodrigue/MCD/issues/155))**
   - **Authoritative Payment Subsystem:**
     - Centralized resource cost fulfillment across card plays, abilities, attachments, and decision prompts into `executeResourceCostPayment` in `src/engine/pipeline/cost-engine.ts`.
     - De-duplicated 134 lines of hand payment and generator loops in `action-dispatcher.ts` (`PLAY_CARD`).
-    - Added `generatorInstanceIds` to `SpendResourcesToDiscardAttachmentAction`, allowing generators like *Web-Shooter* or *Helicarrier* to pay to discard villain attachments.
+    - Added `generatorInstanceIds` to `SpendResourcesToDiscardAttachmentAction`, allowing generators like _Web-Shooter_ or _Helicarrier_ to pay to discard villain attachments.
     - Updated `resolveDecisionPrompt` and `trigger-dispatcher.ts` to execute payments and exhaust generators for prompt options and interrupts.
     - Upgraded `GameBoard.tsx` to synthesize fallback card instances for encounter card and attachment prompts, allowing `CardPaymentModal` to open cleanly.
 
@@ -37,21 +52,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Automated Verification:**
     - Added comprehensive unit tests in `tests/ui/card-back-service.test.ts`, `tests/ui/board-deck-piles.test.tsx`, and updated `tests/ui/facedown-encounter-cards-display.test.tsx` (21 tests total) asserting card back rendering, error recovery, bottom-right numeric badge styling, and fallback color consistency.
 
-
 - **Test (Engine): Contract Test for Crowd Control (01108) Threat Scaling ([Issue #160](https://github.com/SteveRodrigue/MCD/issues/160))**
-  - Added regression test in `tests/engine/keywords-crisis.test.ts` verifying that *Crowd Control* revealed in a 2-player game initializes with strictly $2 \times 2 = 4$ threat and has no phantom When Revealed ability additions.
+  - Added regression test in `tests/engine/keywords-crisis.test.ts` verifying that _Crowd Control_ revealed in a 2-player game initializes with strictly $2 \times 2 = 4$ threat and has no phantom When Revealed ability additions.
 
 - **Fix (Engine): Universal Card State Reset on Discard / Leaves Play & Ready Entry State ([RR v1.8 p. 11, 15, 24](references/rules/glossary/L.md#leaves-play), [Issue #157](https://github.com/SteveRodrigue/MCD/issues/157))**
   - **Universal `resetCardState` Primitive:**
-    - Introduced and exported `resetCardState(card: CardInstance): void` in `src/engine/effects/index.ts` to strictly enforce the RR v1.8 *Leaves Play* invariant ("When a card leaves play, there is no memory of its previous state and it is considered to be a new copy of the card").
+    - Introduced and exported `resetCardState(card: CardInstance): void` in `src/engine/effects/index.ts` to strictly enforce the RR v1.8 _Leaves Play_ invariant ("When a card leaves play, there is no memory of its previous state and it is considered to be a new copy of the card").
     - Cleanses `exhausted` (`false`), `tokens` (`{}`), `counters` (`{}`), `statusCards` (`[]`), `activeStatModifiers` (`[]`), `attachments` (`[]`), and `cardsUnderneath` (`[]`) while strictly preserving immutable identity attributes (`instanceId`, `card`, `ownerId`).
   - **Discard & Defeat Integration:**
     - Integrated `resetCardState` across `discardCardInstance`, `moveDefeatedCardToPile`, and all ally defeat/dismissal paths in `action-dispatcher.ts`, `combat-pipeline.ts`, and `round-upkeep.ts`.
     - Updated `executeEffect` when paying `cost.discardSelf` to snapshot the triggering card's pre-discard counters/tokens for ability resolution before discarding and resetting the instance in the discard pile.
   - **Ready Enters-Play Invariant:**
-    - Ensured all cards entering play via `PLAY_CARD`, `PUT_INTO_PLAY`, and `PLAY_FROM_ZONE` (*Make the Call* `01071`) enter play in a Ready state (`exhausted: false`) with reset state and initialized uses counters.
+    - Ensured all cards entering play via `PLAY_CARD`, `PUT_INTO_PLAY`, and `PLAY_FROM_ZONE` (_Make the Call_ `01071`) enter play in a Ready state (`exhausted: false`) with reset state and initialized uses counters.
   - **Automated Verification:**
-    - Added 6-test regression suite in `tests/engine/card-discard-leaves-play.test.ts` verifying ally defeat from consequential damage, *Make the Call* replay from discard in ready state, enemy attack defense defeat, upgrade/support discard, cross-player ownership preservation, and `PUT_INTO_PLAY` state reset.
+    - Added 6-test regression suite in `tests/engine/card-discard-leaves-play.test.ts` verifying ally defeat from consequential damage, _Make the Call_ replay from discard in ready state, enemy attack defense defeat, upgrade/support discard, cross-player ownership preservation, and `PUT_INTO_PLAY` state reset.
 
 - **Feature (UI): Two-Tier Player Tableau Architecture & Compact Identity Station ([ADR-0071](docs/decisions/0071-nested-allies-and-two-tier-player-tableau-architecture.md), [Issue #156](https://github.com/SteveRodrigue/MCD/issues/156))**
   - **Two-Tier Player Tableau Layout:**
@@ -77,13 +91,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Automated Verification:**
     - Added comprehensive unit tests in `tests/ui/hero-zone-tableau-layout.test.tsx` (9 tests) and `tests/ui/villain-zone-layout.test.tsx` (5 tests) verifying two-tier layout hierarchy, compact tri-column identity and villain components, vertical HP progressbar attributes, and status tags.
 
-
-
-
 - **Fix (Engine & Data): Generic `distinctFrom` Relational Targeting & Crisis Interdiction (`01012`) Different-Scheme Support ([RR v1.8 Appendix IV: FAQ p. 43](references/rules/appendices/04_faq.md), [Issue #150](https://github.com/SteveRodrigue/MCD/issues/150))**
   - **Generic `distinctFrom` Targeting Modifier:**
     - Added `distinctFrom: z.enum(['PREVIOUS_TARGET']).or(z.string()).optional()` to `AbilityStepSchema` and engine `AbilityStep` models, providing a generic, reusable primitive across all card abilities requiring a "different" entity without proliferating bespoke target selector enums.
-    - Updated *Crisis Interdiction* (`01012`) Step 2 in supplemental data with `distinctFrom: "PREVIOUS_TARGET"`.
+    - Updated _Crisis Interdiction_ (`01012`) Step 2 in supplemental data with `distinctFrom: "PREVIOUS_TARGET"`.
   - **Resolution & Prompt Exclusion Pipeline:**
     - In `src/engine/effects/index.ts`, `executeSequence` propagates `res.targetId` into `prevResult.targetId` and supplies `stepContext.distinctFromId` when `distinctFrom === 'PREVIOUS_TARGET'`.
     - In `REMOVE_THREAT`, resolving a distinct target excludes the previously targeted scheme ID:
@@ -93,20 +104,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Automated Verification:**
     - Added 7-test contract suite in `tests/engine/crisis-interdiction-different-scheme.test.ts` verifying solo-scheme fizzle, auto-targeting, multi-scheme prompt exclusion, prompt resolution, and non-Aerial gating.
 
-
 - **Fix (Engine): Canonical Side Scheme Defeat & Discard Pipeline ([RR v1.8 p. 9, 25, 30](references/rules/glossary/S.md#side-scheme), [Issue #149](https://github.com/SteveRodrigue/MCD/issues/149))**
   - **Canonical `defeatSideScheme` Primitive:**
     - Implemented and exported `defeatSideScheme(state, sideSchemeInstanceId, defeatingPlayerId)` in `src/engine/effects/index.ts`, creating a single source of truth for side scheme defeat and discard.
     - Slices defeated scheme from `state.sideSchemes`, cleans host attachments and tucked cards using `processHostDefeated`, dispatches canonical `DEFEATED` and `SCHEME_DEFEATED` triggers, resolves declared `When Defeated` abilities, and routes the card to the permanent Victory Display (if `Victory X` keyword present) or appropriate discard pile (`player.discard` for player side schemes with `ownerId`, `state.encounterDiscard` for encounter schemes).
   - **Zero-Threat & Dual-Trigger Integration:**
     - In `src/engine/effects/index.ts` (`case 'REMOVE_THREAT'`), threat reduction reaching 0 now dispatches `SCHEME_THREAT_REDUCED_TO_ZERO` and automatically triggers `defeatSideScheme` when targeting a side scheme.
-    - Preserved `conditionMet = remainingThreat === 0` for `SCHEME_EMPTY` step condition compatibility (*Clear the Area*, etc.) and propagated it through `executeSequence`.
+    - Preserved `conditionMet = remainingThreat === 0` for `SCHEME_EMPTY` step condition compatibility (_Clear the Area_, etc.) and propagated it through `executeSequence`.
     - Main schemes reaching 0 threat dispatch `SCHEME_THREAT_REDUCED_TO_ZERO` without triggering defeat or leaves-play logic.
     - Integrated `defeatSideScheme` in `wakanda-forever.ts` for Black Panther tactical threat removal.
     - Deduplicated inline splice and routing logic in `action-dispatcher.ts` across `BASIC_THWART` (hero), `ALLY_THWART`, and `RESOLVE_DECISION_PROMPT` (`THREAT_REMOVAL`).
   - **Automated Verification:**
-    - Added comprehensive unit and regression test suite in `tests/engine/side-scheme-defeat.test.ts` (5 tests) verifying card effect threat removal (*The Psyche-Magnitron* `01176`), Wakanda Forever threat reduction, When Defeated abilities, Victory display routing, and main scheme 0-threat non-defeat invariants.
-
+    - Added comprehensive unit and regression test suite in `tests/engine/side-scheme-defeat.test.ts` (5 tests) verifying card effect threat removal (_The Psyche-Magnitron_ `01176`), Wakanda Forever threat reduction, When Defeated abilities, Victory display routing, and main scheme 0-threat non-defeat invariants.
 
 - **Fix (Engine & UI): Align Villain Phase End Ordering & Rule-Step Labels with RR v1.8 ([Issue #145](https://github.com/SteveRodrigue/MCD/issues/145))**
   - **First Player Token Rotation & Trigger Ordering:**

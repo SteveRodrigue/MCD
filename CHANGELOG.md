@@ -7,7 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- **Fix (UI & Engine): Centralized Ability Payment Interceptor & Available Resources Counter ([RR v1.8 p. 4, 25](references/rules/glossary/R.md#resource), [Issue #162](https://github.com/SteveRodrigue/MCD/issues/162))**
+- **Fix (UI & Engine): Explicit Combat Log Details & Defense Prompt Clarity ([RR v1.8 p. 6-7, 10-11](references/rules/glossary/D.md#discard-pile), [Issue #130](https://github.com/SteveRodrigue/MCD/issues/130))**
+  - **Explicit Discard and Draw Logging:**
+    - Emitted card names in `executeDiscard` for player deck, hand, and encounter deck discards, along with dedicated logging for retrieved cards (e.g. Black Cat's `black_cat.fetch`).
+    - Added drawn card names to `card.effect.drawCards` and end-of-round `player.phase.cleanup.complete` logs.
+  - **Combat Log Formatting & Villain Scheme Attribution:**
+    - Added localized templates (`VILLAIN_ATTACK_HIT`, `MINION_ATTACK_HIT`, `CARDS_DISCARDED_NAMES`, `CARDS_DRAWN_NAMES`, `BLACK_CAT_FETCH`) in both English and French.
+    - Fixed scheme actor normalization in `comic-log-formatter.ts` so villain scheme actions correctly attribute the scheme to the villain instead of the active hero.
+    - Enhanced attack hit logs to include attacker, target, damage dealt, and remaining HP.
+  - **Defense Prompt Incoming Damage Indicators:**
+    - Attached `incomingDamage` metadata and formatted prompt descriptions during `DAMAGE_WOULD_BE_TAKEN` interrupts (e.g. Backflip).
+    - Rendered an incoming damage callout badge in `DecisionPromptModal.tsx` so players have full visibility before choosing defense interrupts.
+  - **Automated Verification:**
+    - Added unit tests in `tests/ui/comic-log-formatter.test.ts` and `tests/ui/DecisionPromptModal.test.tsx`.
+    - Updated and verified engine tests in `combat-damage-prevention-and-overkill.test.ts`, `universal-discard-engine.test.ts`, `end-of-player-phase-cleanup.test.ts`, and `optional-triggers.test.ts`.
+
   - **Centralized Action Interceptor in `GameBoard.tsx`:**
     - Wrapped child component action dispatches with `handleDispatchAction`, automatically intercepting `USE_CARD_ABILITY` when resource or hand-discard costs are unfulfilled.
     - Prevents silent action rejection in the engine by seamlessly routing through `CardPaymentModal` with `pendingPaymentAction` and `paymentModalCard`.

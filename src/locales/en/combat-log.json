@@ -74,7 +74,12 @@
     "ENCOUNTER_REVEALED": "Encounter revealed: {{card}} ({{type}}).",
     "STATUS_APPLIED": "{{target}} is now afflicted with {{status}}!",
     "CARD_DRAWN": "{{player}} draws {{count}} card(s) into hand.",
-    "CARD_DISCARDED": "{{player}} discards {{card}}."
+    "CARD_DISCARDED": "{{player}} discards {{card}}.",
+    "VILLAIN_ATTACK_HIT": "{{who_attacks}} attacked {{who_is_taking_damage}} for {{amount}} damage!",
+    "MINION_ATTACK_HIT": "{{who_attacks}} attacked {{who_is_taking_damage}} for {{amount}} damage!",
+    "CARDS_DISCARDED_NAMES": "{{who}} discarded {{count}} card(s) from {{source}}: {{cards}}.",
+    "CARDS_DRAWN_NAMES": "{{who}} drew {{count}} card(s): {{cards}}.",
+    "BLACK_CAT_FETCH": "Black Cat retrieved {{card}} into {{who}}'s hand!"
   },
   "dialogue": {
     "spider_man": {

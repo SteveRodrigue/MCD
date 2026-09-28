@@ -74,7 +74,12 @@
     "ENCOUNTER_REVEALED": "Rencontre révélée : {{card}} ({{type}}).",
     "STATUS_APPLIED": "{{target}} reçoit l'état {{status}} !",
     "CARD_DRAWN": "{{player}} pioche {{count}} carte(s) en main.",
-    "CARD_DISCARDED": "{{player}} défausse {{card}}."
+    "CARD_DISCARDED": "{{player}} défausse {{card}}.",
+    "VILLAIN_ATTACK_HIT": "{{who_attacks}} a attaqué {{who_is_taking_damage}} pour {{amount}} dégâts !",
+    "MINION_ATTACK_HIT": "{{who_attacks}} a attaqué {{who_is_taking_damage}} pour {{amount}} dégâts !",
+    "CARDS_DISCARDED_NAMES": "{{who}} a défaussé {{count}} carte(s) de {{source}} : {{cards}}.",
+    "CARDS_DRAWN_NAMES": "{{who}} a pioché {{count}} carte(s) : {{cards}}.",
+    "BLACK_CAT_FETCH": "Black Cat a récupéré {{card}} dans la main de {{who}} !"
   },
   "dialogue": {
     "spider_man": {

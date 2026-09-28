@@ -173,5 +173,45 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
     const updatedPlayer = afterCleanup.players[0];
     expect(updatedPlayer.hand.length).toBe(5); // 2 kept + 3 drawn = 5
     expect(updatedPlayer.exhausted).toBe(false);
+
+    // Issue #130: Verify drawn card names in player cleanup log entry
+    const cleanupLog = afterCleanup.log.find((l) => l.key === 'player.phase.cleanup.complete');
+    expect(cleanupLog).toBeDefined();
+    expect(cleanupLog?.params?.drawnCards).toHaveLength(3);
+    expect(cleanupLog?.params?.discardedCards).toHaveLength(0);
+  });
+
+  it('records discarded and drawn card names in cleanup log when cards are voluntarily discarded', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Captain Marvel',
+          hero: captainMarvelHero,
+          alterEgo: carolDanversAlterEgo,
+          deckCards: Array(10).fill(cardCatalog.getCard('01013')!),
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    const player = state.players[0];
+    player.currentForm = 'hero';
+    player.activeFormCard = captainMarvelHero; // Hand Size = 5
+
+    const discardCard = createCardInstance(cardCatalog.getCard('01013')!);
+    player.hand = [discardCard];
+
+    const afterCleanup = executePlayerCleanup(state, 'p1', [discardCard.instanceId]);
+    const cleanupLog = afterCleanup.log.find((l) => l.key === 'player.phase.cleanup.complete');
+
+    expect(cleanupLog).toBeDefined();
+    expect(cleanupLog?.params?.discardedCards).toContain(discardCard.card.name);
+    expect(cleanupLog?.params?.drawnCount).toBe(5);
+    expect(cleanupLog?.params?.drawnCards).toHaveLength(5);
   });
 });

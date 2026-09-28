@@ -1052,6 +1052,8 @@ export function executeDiscard(
     }
 
     let discardedCount = 0;
+    const discardedCards: CardInstance[] = [];
+    const discardedCardNames: string[] = [];
     const toDiscardCount = isCountAll
       ? targetPlayer.hand.length
       : Math.min(count, targetPlayer.hand.length);
@@ -1059,6 +1061,8 @@ export function executeDiscard(
       if (targetPlayer.hand.length > 0) {
         const [discarded] = targetPlayer.hand.splice(0, 1);
         targetPlayer.discard.push(discarded);
+        discardedCards.push(discarded);
+        discardedCardNames.push(discarded.card.name);
         discardedCount++;
         dispatchTrigger(state, 'CARD_DISCARDED', {
           targetPlayerId: targetPlayer.id,
@@ -1067,11 +1071,30 @@ export function executeDiscard(
         });
       }
     }
+    if (discardedCount > 0) {
+      state.log.push({
+        id: `log_${Date.now()}_discard_hand`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'card.discarded.fromHand',
+        params: {
+          who: targetPlayer.name,
+          player: targetPlayer.name,
+          count: discardedCount,
+          source: 'hand',
+          cards: discardedCardNames.join(', '),
+        },
+        onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+      });
+    }
     return {
       state,
       success: true,
       mutatedState: discardedCount > 0,
       value: discardedCount,
+      discardedCards,
       onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
     };
   }
@@ -1080,6 +1103,7 @@ export function executeDiscard(
   if (source === 'DECK') {
     let discardedCount = 0;
     const discardedCards: CardInstance[] = [];
+    const addedToHandCards: CardInstance[] = [];
     const matchingDestination = params.matchingDestination as string | undefined;
     for (let i = 0; i < count; i++) {
       const card = drawPlayerCard(state, player.id);
@@ -1087,6 +1111,7 @@ export function executeDiscard(
         if (matchingDestination && filter && matchCardFilter(card.card, filter, player)) {
           if (matchingDestination === 'HAND') {
             player.hand.push(card);
+            addedToHandCards.push(card);
           } else if (matchingDestination === 'PLAY') {
             player.tableau.push(card);
           } else {
@@ -1105,6 +1130,40 @@ export function executeDiscard(
         });
       }
     }
+    if (discardedCards.length > 0) {
+      state.log.push({
+        id: `log_${Date.now()}_discard_deck`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'card.discarded.fromDeck',
+        params: {
+          who: player.name,
+          player: player.name,
+          count: discardedCards.length,
+          source: 'deck',
+          cards: discardedCards.map((c) => c.card.name).join(', '),
+        },
+        onomatopoeia: `DISCARDED ${discardedCards.length} CARDS!`,
+      });
+    }
+    for (const card of addedToHandCards) {
+      state.log.push({
+        id: `log_${Date.now()}_black_cat_${card.instanceId}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'ability',
+        key: 'black_cat.fetch',
+        params: {
+          who: player.name,
+          player: player.name,
+          card: card.card.name,
+        },
+        onomatopoeia: 'RETRIEVED!',
+      });
+    }
     return {
       state,
       success: true,
@@ -1118,18 +1177,38 @@ export function executeDiscard(
   // 3. DISCARD FROM ENCOUNTER DECK
   if (source === 'ENCOUNTER_DECK') {
     let discardedCount = 0;
+    const discardedCards: CardInstance[] = [];
     for (let i = 0; i < count; i++) {
       const card = drawEncounterCard(state);
       if (card) {
         state.encounterDiscard.push(card);
+        discardedCards.push(card);
         discardedCount++;
       }
+    }
+    if (discardedCount > 0) {
+      state.log.push({
+        id: `log_${Date.now()}_discard_encounter`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'card.discarded.fromDeck',
+        params: {
+          who: 'Encounter',
+          count: discardedCount,
+          source: 'encounter deck',
+          cards: discardedCards.map((c) => c.card.name).join(', '),
+        },
+        onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
+      });
     }
     return {
       state,
       success: true,
       mutatedState: discardedCount > 0,
       value: discardedCount,
+      discardedCards,
       onomatopoeia: `DISCARDED ${discardedCount} ENCOUNTER CARDS!`,
     };
   }
@@ -1329,6 +1408,7 @@ export function executeStep(
         if (targetP) {
           const targetLimit = getPlayerTargetLimit(targetP);
           let drawnForP = 0;
+          const drawnCardsForP: CardInstance[] = [];
           while (
             (count === undefined || drawnForP < count) &&
             (targetLimit === undefined || targetP.hand.length < targetLimit)
@@ -1336,6 +1416,7 @@ export function executeStep(
             const drawn = drawPlayerCard(state, targetP.id);
             if (!drawn) break;
             targetP.hand.push(drawn);
+            drawnCardsForP.push(drawn);
             drawnForP += 1;
           }
           state.log.push({
@@ -1345,9 +1426,12 @@ export function executeStep(
             phase: state.phase,
             key: 'card.effect.drawCards',
             params: {
+              who: targetP.name,
               player: targetP.name,
               count: drawnForP,
               handSize: targetP.hand.length,
+              cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
+              drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
               ...(targetLimit !== undefined ? { targetLimit } : {}),
             },
             onomatopoeia: `DRAW +${drawnForP}!`,
@@ -1412,11 +1496,13 @@ export function executeStep(
       for (const p of targetPlayers) {
         const targetLimit = getPlayerTargetLimit(p);
         let drawnForP = 0;
+        const drawnCardsForP: CardInstance[] = [];
         const maxDraw = count !== undefined ? count : limit ? Infinity : 1;
         while (drawnForP < maxDraw && (targetLimit === undefined || p.hand.length < targetLimit)) {
           const drawn = drawPlayerCard(state, p.id);
           if (!drawn) break;
           p.hand.push(drawn);
+          drawnCardsForP.push(drawn);
           drawnForP += 1;
           totalDrawn += 1;
         }
@@ -1427,9 +1513,12 @@ export function executeStep(
           phase: state.phase,
           key: 'card.effect.drawCards',
           params: {
+            who: p.name,
             player: p.name,
             count: drawnForP,
             handSize: p.hand.length,
+            cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
+            drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
             ...(targetLimit !== undefined ? { targetLimit } : {}),
           },
           onomatopoeia: `DRAW +${drawnForP}!`,

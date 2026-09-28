@@ -150,6 +150,8 @@ export function classifyDialogueType(entry: GameLogEntry): ComicDialogueType {
     actorType === 'minion' ||
     key.startsWith('VILLAIN_') ||
     key.startsWith('MINION_') ||
+    key.startsWith('villain.') ||
+    key.startsWith('minion.') ||
     key === 'BOOST_REVEALED' ||
     key === 'TREACHERY_SURGED'
   ) {
@@ -402,6 +404,27 @@ export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): s
     case 'SIDE_SCHEME_DEFEATED':
       return 'SIDE_SCHEME_DEFEATED';
 
+    case 'villain.attack.hit':
+    case 'VILLAIN_ATTACK_HIT':
+      return 'VILLAIN_ATTACK_HIT';
+
+    case 'minion.attack.hit':
+    case 'MINION_ATTACK_HIT':
+      return 'MINION_ATTACK_HIT';
+
+    case 'card.discarded.fromDeck':
+    case 'card.discarded.fromHand':
+    case 'CARDS_DISCARDED_NAMES':
+      return 'CARDS_DISCARDED_NAMES';
+
+    case 'card.effect.drawCards':
+    case 'CARDS_DRAWN_NAMES':
+      return 'CARDS_DRAWN_NAMES';
+
+    case 'black_cat.fetch':
+    case 'BLACK_CAT_FETCH':
+      return 'BLACK_CAT_FETCH';
+
     default:
       return key;
   }
@@ -422,6 +445,8 @@ export function normalizeLogParams(
   const paramWho = p.who !== undefined ? cleanCharacterName(String(p.who)) : undefined;
   const paramPlayer = p.player !== undefined ? cleanCharacterName(String(p.player)) : undefined;
   const paramActor = p.actor !== undefined ? cleanCharacterName(String(p.actor)) : undefined;
+  const paramVillain = p.villain !== undefined ? cleanCharacterName(String(p.villain)) : undefined;
+  const paramMinion = p.minion !== undefined ? cleanCharacterName(String(p.minion)) : undefined;
 
   const matchedPlayer =
     gameState?.players?.find(
@@ -444,10 +469,17 @@ export function normalizeLogParams(
   let who =
     paramWho ??
     actorName ??
+    (entry.actor?.type === 'villain' || entry.key?.startsWith('villain')
+      ? (paramVillain ?? defaultVillainName)
+      : undefined) ??
+    (entry.actor?.type === 'minion' || entry.key?.startsWith('minion')
+      ? (paramMinion ?? 'Minion')
+      : undefined) ??
     (p.card !== undefined && entry.key?.startsWith('card.effect') ? String(p.card) : undefined) ??
     paramActor ??
     paramPlayer ??
     (p.hero !== undefined ? cleanCharacterName(String(p.hero)) : undefined) ??
+    paramVillain ??
     defaultHeroName;
   who = cleanCharacterName(who, matchedPlayer);
 
@@ -458,7 +490,9 @@ export function normalizeLogParams(
     (entry.actor?.type === 'villain' || entry.actor?.type === 'minion'
       ? entry.actor.name
       : undefined) ??
-    (entry.key?.startsWith('villain') ? defaultVillainName : undefined) ??
+    (entry.key?.startsWith('villain') ? (paramVillain ?? defaultVillainName) : undefined) ??
+    (entry.key?.startsWith('minion') ? (paramMinion ?? 'Minion') : undefined) ??
+    paramVillain ??
     actorName ??
     paramActor ??
     paramPlayer ??
@@ -561,10 +595,38 @@ export function normalizeLogParams(
     (p.newForm !== undefined ? String(p.newForm) : undefined) ??
     (entry.actor?.type === 'alter_ego' ? 'alter-ego' : 'hero');
 
+  // Format card arrays into comma-separated strings
+  let cardsStr = '';
+  if (Array.isArray(p.cards)) {
+    cardsStr = p.cards
+      .map((c: any) => (typeof c === 'string' ? c : c?.name || c?.card?.name || String(c)))
+      .join(', ');
+  } else if (typeof p.cards === 'string') {
+    cardsStr = p.cards;
+  } else if (Array.isArray(p.discardedCards)) {
+    cardsStr = p.discardedCards
+      .map((c: any) => (typeof c === 'string' ? c : c?.name || c?.card?.name || String(c)))
+      .join(', ');
+  } else if (Array.isArray(p.drawnCards)) {
+    cardsStr = p.drawnCards
+      .map((c: any) => (typeof c === 'string' ? c : c?.name || c?.card?.name || String(c)))
+      .join(', ');
+  } else if (p.card !== undefined) {
+    cardsStr = String(p.card);
+  }
+
   const normalized: Record<string, string | number | boolean> = {};
   for (const [k, v] of Object.entries(p)) {
     if (v !== undefined && v !== null) {
-      normalized[k] = v;
+      if (Array.isArray(v)) {
+        normalized[k] = v
+          .map((item: any) =>
+            typeof item === 'string' ? item : item?.name || item?.card?.name || String(item),
+          )
+          .join(', ');
+      } else {
+        normalized[k] = v as any;
+      }
     }
   }
 
@@ -579,6 +641,14 @@ export function normalizeLogParams(
   normalized.status = status;
   normalized.source = source;
   normalized.form = form;
+  if (cardsStr) {
+    normalized.cards = cardsStr;
+  }
+  if (normalized.count === undefined) {
+    if (Array.isArray(p.cards)) normalized.count = p.cards.length;
+    else if (Array.isArray(p.discardedCards)) normalized.count = p.discardedCards.length;
+    else if (Array.isArray(p.drawnCards)) normalized.count = p.drawnCards.length;
+  }
 
   return normalized;
 }
@@ -691,7 +761,13 @@ export function formatComicLogEntry(
 
   const speakerName = cleanCharacterName(rawSpeakerName, matchedPlayer);
 
-  const speakerRole = entry.actor?.type;
+  const speakerRole =
+    entry.actor?.type ||
+    (dialogueType === 'villain_shout'
+      ? normalizedParams.minion
+        ? 'minion'
+        : 'villain'
+      : undefined);
   const speakerAvatar = getSpeakerAvatar(speakerName, speakerRole);
   const speakerKey = getSpeakerDialogueKey(speakerName);
 
@@ -710,11 +786,14 @@ export function formatComicLogEntry(
   } else if (!onomatopoeia) {
     if (
       canonicalKey === 'DEAL_DAMAGE' ||
+      canonicalKey === 'VILLAIN_ATTACK_HIT' ||
+      canonicalKey === 'MINION_ATTACK_HIT' ||
       entry.key === 'BASIC_ATTACK' ||
       entry.key === 'VILLAIN_ATTACK'
     )
       onomatopoeia = dict.onomatopoeia.POW;
-    else if (canonicalKey === 'CARD_PLAYED') onomatopoeia = dict.onomatopoeia.ZAP;
+    else if (canonicalKey === 'CARD_PLAYED' || canonicalKey === 'BLACK_CAT_FETCH')
+      onomatopoeia = dict.onomatopoeia.ZAP;
     else if (canonicalKey === 'HEAL_DAMAGE') onomatopoeia = dict.onomatopoeia.HEAL;
     else if (canonicalKey === 'REMOVE_THREAT') onomatopoeia = dict.onomatopoeia.SWOOSH;
     else if (
@@ -822,7 +901,10 @@ export function formatComicLogEntry(
   if (typeof normalizedParams.damage === 'number') stats.damage = Number(normalizedParams.damage);
   else if (
     typeof normalizedParams.amount === 'number' &&
-    (canonicalKey === 'DEAL_DAMAGE' || entry.key === 'BASIC_ATTACK')
+    (canonicalKey === 'DEAL_DAMAGE' ||
+      canonicalKey === 'VILLAIN_ATTACK_HIT' ||
+      canonicalKey === 'MINION_ATTACK_HIT' ||
+      entry.key === 'BASIC_ATTACK')
   )
     stats.damage = Number(normalizedParams.amount);
 

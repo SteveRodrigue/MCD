@@ -82,6 +82,15 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
 
   const headerBadgeLabel = isEncounterCard ? 'TRIGGERING ENCOUNTER CARD' : 'TRIGGERING CARD';
 
+  const incomingDamage =
+    prompt.incomingDamage ??
+    (() => {
+      const match =
+        prompt.description?.match(/Incoming Damage:\s*(\d+)/i) ||
+        prompt.title?.match(/Incoming Damage:\s*(\d+)/i);
+      return match ? parseInt(match[1], 10) : undefined;
+    })();
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-comic-black/80 backdrop-blur-xs animate-in fade-in zoom-in-95 duration-200">
       <div className="relative w-full max-w-xl bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl overflow-hidden flex flex-col font-comic">
@@ -183,6 +192,19 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               <HelpCircle className="w-5 h-5 text-comic-black shrink-0" />
               <span>{prompt.title}</span>
             </h3>
+            {incomingDamage !== undefined && (
+              <div className="flex items-center gap-2.5 p-3 bg-red-100 border-2 border-comic-red rounded-lg shadow-comic-xs text-comic-red">
+                <ShieldAlert className="w-5 h-5 shrink-0 text-comic-red animate-pulse" />
+                <div className="flex-1 flex items-center justify-between">
+                  <span className="font-comic font-black uppercase text-xs tracking-wider">
+                    Incoming Attack Damage:
+                  </span>
+                  <span className="font-mono font-black text-sm bg-comic-red text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                    {incomingDamage} DMG
+                  </span>
+                </div>
+              </div>
+            )}
             {prompt.description && (
               <p className="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 border-2 border-comic-black/30 p-2.5 rounded-lg shadow-xs">
                 {prompt.description}

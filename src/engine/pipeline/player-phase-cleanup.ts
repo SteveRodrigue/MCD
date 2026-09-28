@@ -108,22 +108,26 @@ export function executePlayerCleanup(
   if (!player) return state;
 
   // 1. Discard chosen cards from hand
+  const discardedCardNames: string[] = [];
   for (const cardId of discardedCardInstanceIds) {
     const cardIdx = player.hand.findIndex((c) => c.instanceId === cardId);
     if (cardIdx !== -1) {
       const [discarded] = player.hand.splice(cardIdx, 1);
       player.discard.push(discarded);
+      discardedCardNames.push(discarded.card.name);
     }
   }
 
   // 2. Draw up to effective hand size
   const targetHandSize = getEffectiveHandSize(player, state);
   const cardsToDraw = Math.max(0, targetHandSize - player.hand.length);
+  const drawnCardNames: string[] = [];
 
   for (let i = 0; i < cardsToDraw; i++) {
     const drawn = drawPlayerCard(state, player.id);
     if (drawn) {
       player.hand.push(drawn);
+      drawnCardNames.push(drawn.card.name);
     }
   }
 
@@ -150,10 +154,14 @@ export function executePlayerCleanup(
     actor: { name: player.name, type: player.currentForm },
     key: 'player.phase.cleanup.complete',
     params: {
+      who: player.name,
       player: player.name,
       discardedCount: discardedCardInstanceIds.length,
       drawnCount: cardsToDraw,
       handSize: player.hand.length,
+      discardedCards: discardedCardNames,
+      drawnCards: drawnCardNames,
+      cards: drawnCardNames.join(', '),
     },
     onomatopoeia: 'CLEAN-UP COMPLETE!',
   });

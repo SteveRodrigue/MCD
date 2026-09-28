@@ -305,5 +305,88 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
     expect(player.hand.map((c) => c.instanceId)).toContain(mentalCard.instanceId);
     // Non-mental card discarded to discard pile
     expect(player.discard.map((c) => c.instanceId)).toContain(nonMentalCard.instanceId);
+
+    // Issue #130: Verify explicit log entries for discarded cards and fetched cards
+    const discardLog = res.state.log.find((l) => l.key === 'card.discarded.fromDeck');
+    expect(discardLog).toBeDefined();
+    expect(discardLog?.params?.cards).toContain('Aunt May');
+
+    const fetchLog = res.state.log.find((l) => l.key === 'black_cat.fetch');
+    expect(fetchLog).toBeDefined();
+    expect(fetchLog?.params?.card).toBe(mentalCard.card.name);
+  });
+
+  it('records discarded card names in state.log for deck milling (e.g. Repulsor Blast)', () => {
+    const state = createTestGame();
+    const player = state.players[0];
+    const card1 = createCardInstance(cardCatalog.getCard('01005')!);
+    const card2 = createCardInstance(cardCatalog.getCard('01006')!);
+    player.deck = [card1, card2];
+
+    const res = executeEffect(
+      state,
+      {
+        effect: 'DISCARD',
+        effectParams: {
+          source: 'DECK',
+          count: 2,
+        },
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(res.success).toBe(true);
+    const discardLog = res.state.log.find((l) => l.key === 'card.discarded.fromDeck');
+    expect(discardLog).toBeDefined();
+    expect(discardLog?.params?.cards).toContain(card1.card.name);
+    expect(discardLog?.params?.cards).toContain(card2.card.name);
+    expect(discardLog?.params?.source).toBe('deck');
+  });
+
+  it('records discarded card names in state.log when discarding from HAND', () => {
+    const state = createTestGame();
+    const player = state.players[0];
+    const cardToDiscard = player.hand[0];
+
+    const res = executeEffect(
+      state,
+      {
+        effect: 'DISCARD',
+        effectParams: {
+          source: 'HAND',
+          count: 1,
+        },
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(res.success).toBe(true);
+    const discardLog = res.state.log.find((l) => l.key === 'card.discarded.fromHand');
+    expect(discardLog).toBeDefined();
+    expect(discardLog?.params?.cards).toBe(cardToDiscard.card.name);
+    expect(discardLog?.params?.source).toBe('hand');
+  });
+
+  it('records drawn card names in state.log when executing DRAW effect', () => {
+    const state = createTestGame();
+    const player = state.players[0];
+    const cardToDraw = createCardInstance(cardCatalog.getCard('01005')!);
+    player.deck = [cardToDraw];
+
+    const res = executeEffect(
+      state,
+      {
+        effect: 'DRAW',
+        effectParams: {
+          count: 1,
+        },
+      },
+      { playerId: 'p1' },
+    );
+
+    expect(res.success).toBe(true);
+    const drawLog = res.state.log.find((l) => l.key === 'card.effect.drawCards');
+    expect(drawLog).toBeDefined();
+    expect(drawLog?.params?.cards).toContain(cardToDraw.card.name);
   });
 });

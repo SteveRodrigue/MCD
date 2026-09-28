@@ -108,4 +108,27 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByAltText('The Break-In (4 Threat)')).toBeDefined();
     expect(screen.getByAltText('Crowd Control (2 Threat)')).toBeDefined();
   });
+
+  it('renders incoming damage badge callout when incomingDamage is present (Issue #130)', () => {
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_damage',
+      playerId: 'p1',
+      title: 'Do you want to use the following ability from Backflip? (Incoming Damage: 4)',
+      description: 'Prevent all damage from this attack. [Incoming Damage: 4]',
+      incomingDamage: 4,
+      sourceCardName: 'Backflip',
+      sourceCardCode: '01003',
+      triggerType: 'DAMAGE_WOULD_BE_TAKEN',
+      options: [
+        { id: 'trigger_backflip', label: 'Yes', effect: 'EXECUTE_OPTIONAL_TRIGGER' },
+        { id: 'pass', label: 'No', effect: 'PASS' },
+      ],
+      isVoluntary: true,
+    };
+
+    render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+
+    expect(screen.getByText(/INCOMING ATTACK DAMAGE:/i)).toBeDefined();
+    expect(screen.getByText(/4 DMG/i)).toBeDefined();
+  });
 });

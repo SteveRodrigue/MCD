@@ -162,8 +162,10 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       // Now at damage step: Backflip prompt enqueued
       const prompt = gameState.pendingDecisionPrompt;
       expect(prompt).toBeDefined();
-      expect(prompt?.title).toBe('Do you want to use the following ability from Backflip?');
-      expect(prompt?.description).toBe('DAMAGE_WOULD_BE_TAKEN -> PREVENT_DAMAGE (ALL)');
+      expect(prompt?.title).toContain('Do you want to use the following ability from Backflip?');
+      expect(prompt?.title).toContain('Incoming Damage: 2');
+      expect(prompt?.description).toContain('DAMAGE_WOULD_BE_TAKEN -> PREVENT_DAMAGE (ALL)');
+      expect(prompt?.incomingDamage).toBe(2);
 
       // Select 'Yes'
       const yesOption = prompt!.options.find((o) => o.label === 'Yes')!;
@@ -208,7 +210,9 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       // Pass Backflip
       const prompt = gameState.pendingDecisionPrompt;
-      expect(prompt?.title).toBe('Do you want to use the following ability from Backflip?');
+      expect(prompt?.title).toContain('Do you want to use the following ability from Backflip?');
+      expect(prompt?.title).toContain('Incoming Damage: 2');
+      expect(prompt?.incomingDamage).toBe(2);
 
       const res = dispatchAction(gameState, {
         type: 'RESOLVE_DECISION_PROMPT',

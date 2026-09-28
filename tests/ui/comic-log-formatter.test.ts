@@ -438,5 +438,184 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
       const frFormatted = formatComicLogEntry(rawEntry, 'fr', mockGameState);
       expect(frFormatted.narrativeAction).toBe('Le tour de Spider-Man est terminé.');
     });
+
+    describe('Issue #130: Explicit Combat Log Details & Transparent Card Discards/Draws', () => {
+      it('formats villain.attack.hit with attacker, target, damage, and remaining HP', () => {
+        const attackHitEntry: GameLogEntry = {
+          id: 'log-villain-hit',
+          timestamp: Date.now(),
+          round: 1,
+          phase: GamePhase.VILLAIN_PHASE,
+          key: 'villain.attack.hit',
+          params: {
+            who_attacks: 'Rhino',
+            who_is_taking_damage: 'Iron-Man',
+            villain: 'Rhino',
+            player: 'Iron-Man',
+            damage: 3,
+            amount: 3,
+            remainingHp: 6,
+          },
+        };
+
+        const enFormatted = formatComicLogEntry(attackHitEntry, 'en', mockGameState);
+        expect(enFormatted.type).toBe('villain_shout');
+        expect(enFormatted.speakerName).toBe('Rhino');
+        expect(enFormatted.speakerAvatar).toBe('🦏');
+        expect(enFormatted.narrativeAction).toBe('Rhino attacked Iron-Man for 3 damage!');
+        expect(enFormatted.stats?.damage).toBe(3);
+        expect(enFormatted.stats?.remainingHp).toBe(6);
+
+        const frFormatted = formatComicLogEntry(attackHitEntry, 'fr', mockGameState);
+        expect(frFormatted.narrativeAction).toBe('Rhino a attaqué Iron-Man pour 3 dégâts !');
+      });
+
+      it('formats minion.attack.hit with minion name, target, and damage', () => {
+        const minionHitEntry: GameLogEntry = {
+          id: 'log-minion-hit',
+          timestamp: Date.now(),
+          round: 1,
+          phase: GamePhase.VILLAIN_PHASE,
+          key: 'minion.attack.hit',
+          params: {
+            who_attacks: 'Hydra Soldier',
+            who_is_taking_damage: 'Iron-Man',
+            minion: 'Hydra Soldier',
+            player: 'Iron-Man',
+            damage: 2,
+            amount: 2,
+          },
+        };
+
+        const enFormatted = formatComicLogEntry(minionHitEntry, 'en', mockGameState);
+        expect(enFormatted.type).toBe('villain_shout');
+        expect(enFormatted.speakerName).toBe('Hydra Soldier');
+        expect(enFormatted.narrativeAction).toBe('Hydra Soldier attacked Iron-Man for 2 damage!');
+        expect(enFormatted.stats?.damage).toBe(2);
+
+        const frFormatted = formatComicLogEntry(minionHitEntry, 'fr', mockGameState);
+        expect(frFormatted.narrativeAction).toBe(
+          'Hydra Soldier a attaqué Iron-Man pour 2 dégâts !',
+        );
+      });
+
+      it('formats villain.scheme.threat attributing the scheme to the villain (not hero)', () => {
+        const schemeEntry: GameLogEntry = {
+          id: 'log-scheme-threat',
+          timestamp: Date.now(),
+          round: 1,
+          phase: GamePhase.VILLAIN_PHASE,
+          key: 'villain.scheme.threat',
+          params: {
+            who: 'Rhino',
+            villain: 'Rhino',
+            threat: 2,
+            amount: 2,
+            boost: 1,
+            scheme: 'The Break-In!',
+          },
+        };
+
+        const enFormatted = formatComicLogEntry(schemeEntry, 'en', mockGameState);
+        expect(enFormatted.type).toBe('villain_shout');
+        expect(enFormatted.speakerName).toBe('Rhino');
+        expect(enFormatted.speakerAvatar).toBe('🦏');
+        expect(enFormatted.narrativeAction).toBe(
+          'Rhino schemed on The Break-In!, placing 2 threat.',
+        );
+        expect(enFormatted.stats?.threat).toBe(2);
+
+        const frFormatted = formatComicLogEntry(schemeEntry, 'fr', mockGameState);
+        expect(frFormatted.narrativeAction).toBe(
+          'Rhino a manigancé sur The Break-In!, plaçant 2 menace.',
+        );
+      });
+
+      it('formats card discards from deck and hand with explicit card names', () => {
+        const discardDeckEntry: GameLogEntry = {
+          id: 'log-discard-deck',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'card.discarded.fromDeck',
+          params: {
+            who: 'Iron-Man',
+            count: 2,
+            source: 'deck',
+            cards: 'Repulsor Blast, Haymaker',
+          },
+        };
+
+        const enDeck = formatComicLogEntry(discardDeckEntry, 'en', mockGameState);
+        expect(enDeck.narrativeAction).toBe(
+          'Iron-Man discarded 2 card(s) from deck: Repulsor Blast, Haymaker.',
+        );
+
+        const frDeck = formatComicLogEntry(discardDeckEntry, 'fr', mockGameState);
+        expect(frDeck.narrativeAction).toBe(
+          'Iron-Man a défaussé 2 carte(s) de deck : Repulsor Blast, Haymaker.',
+        );
+
+        const discardHandEntry: GameLogEntry = {
+          id: 'log-discard-hand',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'card.discarded.fromHand',
+          params: {
+            who: 'Iron-Man',
+            count: 1,
+            source: 'hand',
+            cards: 'Genius',
+          },
+        };
+
+        const enHand = formatComicLogEntry(discardHandEntry, 'en', mockGameState);
+        expect(enHand.narrativeAction).toBe('Iron-Man discarded 1 card(s) from hand: Genius.');
+      });
+
+      it('formats card draws with explicit card names (handling both string and array params)', () => {
+        const drawArrayEntry: GameLogEntry = {
+          id: 'log-draw-array',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'card.effect.drawCards',
+          params: {
+            who: 'Iron-Man',
+            count: 2,
+            cards: ['Web-Shooter', 'Backflip'] as any,
+          },
+        };
+
+        const enDraw = formatComicLogEntry(drawArrayEntry, 'en', mockGameState);
+        expect(enDraw.narrativeAction).toBe('Iron-Man drew 2 card(s): Web-Shooter, Backflip.');
+
+        const frDraw = formatComicLogEntry(drawArrayEntry, 'fr', mockGameState);
+        expect(frDraw.narrativeAction).toBe(
+          'Iron-Man a pioché 2 carte(s) : Web-Shooter, Backflip.',
+        );
+      });
+
+      it('formats Black Cat fetch retrieval into hand', () => {
+        const fetchEntry: GameLogEntry = {
+          id: 'log-black-cat-fetch',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'black_cat.fetch',
+          params: {
+            who: 'Spider-Man',
+            card: 'Web-Shooter',
+          },
+        };
+
+        const enFetch = formatComicLogEntry(fetchEntry, 'en', mockGameState);
+        expect(enFetch.narrativeAction).toBe(
+          "Black Cat retrieved Web-Shooter into Spider-Man's hand!",
+        );
+
+        const frFetch = formatComicLogEntry(fetchEntry, 'fr', mockGameState);
+        expect(frFetch.narrativeAction).toBe(
+          'Black Cat a récupéré Web-Shooter dans la main de Spider-Man !',
+        );
+      });
+    });
   });
 });

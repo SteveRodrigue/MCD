@@ -130,9 +130,12 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     timestamp: Date.now(),
     key: 'villain.scheme.threat',
     params: {
+      who: state.villain.card.name,
       villain: state.villain.card.name,
       threat: finalThreat,
+      amount: finalThreat,
       boost: boostIcons,
+      scheme: state.mainScheme.card.name,
     },
     onomatopoeia: 'SCHEME!',
   });

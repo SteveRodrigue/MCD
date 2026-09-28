@@ -380,11 +380,17 @@ export function dispatchTrigger(
         }
 
         const cardName = player.activeFormCard.name;
+        const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
+        const damageSuffix =
+          isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+        const damageDescSuffix =
+          isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
         enqueueDecisionPrompt(state, {
           promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           playerId: player.id,
-          title: `Do you want to use the following ability from ${cardName}?`,
-          description: formatAbilityStepsSummary(trigger, ability.steps || []),
+          title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
+          description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
+          incomingDamage: isDamageTrigger ? currentDamage : undefined,
           sourceCardName: cardName,
           sourceCardCode: player.activeFormCard.code,
           triggerSourceName:
@@ -515,11 +521,17 @@ export function dispatchTrigger(
             }
 
             const cardName = cardInst.card.name;
+            const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
+            const damageSuffix =
+              isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+            const damageDescSuffix =
+              isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
             enqueueDecisionPrompt(state, {
               promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
               playerId: controller.id,
-              title: `Do you want to use the following ability from ${cardName}?`,
-              description: formatAbilityStepsSummary(trigger, ability.steps || []),
+              title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
+              description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
+              incomingDamage: isDamageTrigger ? currentDamage : undefined,
               sourceCardName: cardName,
               sourceCardCode: cardInst.card.code,
               triggerSourceName:
@@ -623,11 +635,18 @@ export function dispatchTrigger(
             ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
             : '';
 
+          const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
+          const damageSuffix =
+            isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
+          const damageDescSuffix =
+            isDamageTrigger && currentDamage > 0 ? ` [Incoming Damage: ${currentDamage}]` : '';
+
           enqueueDecisionPrompt(state, {
             promptId: `prompt_trigger_${ability.id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             playerId: player.id,
-            title: `Do you want to use the following ability from ${cardName}${costSuffix}?`,
-            description: formatAbilityStepsSummary(trigger, ability.steps || []),
+            title: `Do you want to use the following ability from ${cardName}${costSuffix}?${damageSuffix}`,
+            description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
+            incomingDamage: isDamageTrigger ? currentDamage : undefined,
             sourceCardName: cardName,
             sourceCardCode: interruptCard.card.code,
             triggerSourceName:

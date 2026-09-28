@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline';
 import { executeEffect, dealDirectDamage } from '@engine/effects';
+import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 
 describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant', () => {
   let state: GameState;
@@ -219,6 +220,39 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       // Deals 10 damage to Villain!
       expect(state.villain.health).toBe(initialVillainHp - 10);
+    });
+  });
+
+  describe('Issue #130: Explicit Attack Hit Logging & Incoming Damage Prompt Clarity', () => {
+    it('records explicit villain.attack.hit log entry with who_attacks, target, damage, and remainingHp', () => {
+      state.encounterDeck = []; // 0 boost icons
+      const initialHp = state.players[0].health;
+
+      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
+
+      const hitLog = state.log.find((l) => l.key === 'villain.attack.hit');
+      expect(hitLog).toBeDefined();
+      expect(hitLog?.params?.who_attacks).toBe('Rhino');
+      expect(hitLog?.params?.who_is_taking_damage).toBe('Spider-Man');
+      expect(hitLog?.params?.damage).toBe(2);
+      expect(hitLog?.params?.remainingHp).toBe(initialHp - 2);
+    });
+
+    it('enqueues DAMAGE_WOULD_BE_TAKEN prompt with incomingDamage metadata and formatted title/desc', () => {
+      // Put Backflip (01003) into player hand
+      state.players[0].hand = [createCardInstance(cardCatalog.getCard('01003')!)];
+
+      // Dispatch DAMAGE_WOULD_BE_TAKEN with 5 damage (interactive / optional prompt)
+      dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
+        targetPlayerId: 'p1',
+        damageAmount: 5,
+        targetType: 'hero',
+      });
+
+      expect(state.pendingDecisionPrompt).toBeDefined();
+      expect(state.pendingDecisionPrompt?.incomingDamage).toBe(5);
+      expect(state.pendingDecisionPrompt?.title).toContain('Incoming Damage: 5');
+      expect(state.pendingDecisionPrompt?.description).toContain('Incoming Damage: 5');
     });
   });
 });

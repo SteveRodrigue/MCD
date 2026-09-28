@@ -157,7 +157,7 @@ export interface GameLogEntry {
     type: 'hero' | 'alter_ego' | 'villain' | 'minion' | 'ally' | 'environment';
   };
   key: string;
-  params?: Record<string, string | number | boolean>;
+  params?: Record<string, string | number | boolean | string[]>;
   onomatopoeia?: string; // e.g. "POW!", "BAM!", "THWIP!", "CLANG!"
   text?: string;
 }
@@ -326,6 +326,7 @@ export interface PendingDecisionPrompt {
   totalQueued?: number;
   kind?: DecisionPromptKind;
   distributionConfig?: DistributionPromptConfig;
+  incomingDamage?: number;
 }
 
 export interface EncounterExecutionContext {

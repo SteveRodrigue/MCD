@@ -791,10 +791,17 @@ export function applyCalculatedAttackDamage(
         category: 'combat',
         key: attackContext.attackerType === 'VILLAIN' ? 'villain.attack.hit' : 'minion.attack.hit',
         params: {
+          who_attacks:
+            attackContext.attackerType === 'VILLAIN'
+              ? state.villain.card.name
+              : attackContext.attackerCard?.card.name || 'Minion',
+          who_is_taking_damage: player.name,
           villain: state.villain.card.name,
           minion: attackContext.attackerCard?.card.name || 'Minion',
           player: player.name,
           damage: rawDamage,
+          amount: rawDamage,
+          remainingHp: player.health,
           defended: attackContext.heroDefended ? 'true' : 'false',
         },
         onomatopoeia: 'WHAM!',

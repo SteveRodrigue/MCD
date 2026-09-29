@@ -66,6 +66,35 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     expect(res.state.players[0].health).toBe(initialHp - 2);
   });
 
+  it('01110 Hydra Bomber: PLAYER_CHOICE modal resolves "Place 1 Threat on Main Scheme"', () => {
+    state.mainScheme.threat = 2;
+
+    const bomberCard = cardCatalog.getCard('01110')!;
+    const bomberInstance = createCardInstance(bomberCard);
+
+    // Execute When Revealed ability on Hydra Bomber
+    const ability = bomberCard.enrichment!.abilities![0];
+
+    executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: bomberInstance,
+    });
+
+    // Verify Decision Prompt is opened
+    expect(state.pendingDecisionPrompt).toBeDefined();
+
+    // Player resolves decision: chooses "place_threat"
+    const res = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: 'place_threat',
+    });
+
+    expect(res.result.success).toBe(true);
+    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(res.state.mainScheme.threat).toBe(3);
+  });
+
   it('01191 Exhaustion: PLAYER_CHOICE resolves "Exhaust Identity"', () => {
     const exhaustionCard = cardCatalog.getCard('01191')!;
     const exhaustionInstance = createCardInstance(exhaustionCard);

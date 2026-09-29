@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): Hydra Bomber When Revealed Threat Placement ([RR v1.8 p. 33](references/rules/glossary/W.md#when-revealed), [Issue #171](https://github.com/SteveRodrigue/MCD/issues/171))**
+  - **Canonical Primitive Alignment (`core_encounter.json`):**
+    - Corrected Hydra Bomber (`01110`) When Revealed option `place_threat` from obsolete `"effect": "PLACE_THREAT"` to canonical `"effect": "ADD_THREAT"`.
+    - Updated card audit metadata (`updatedAt`, `reviewedAt`).
+  - **Schema & Regression Invariant Enforcement:**
+    - Added invariant test in `tests/data/supplemental-schema.test.ts` scanning all pack files to guarantee that no card ability step or nested `PLAYER_CHOICE` option uses obsolete `PLACE_THREAT`.
+    - Added functional regression test in `tests/engine/decision-prompts.test.ts` verifying that choosing `place_threat` on Hydra Bomber successfully adds 1 threat to the active main scheme.
+  - **Declarations Audit:**
+    - Regenerated `docs/reports/supplemental_declarations_usage_report.md`.
+
 - **Fix (UI & Dev Mode): Problem Report Modal Layering & Form Reset on Submit ([ADR-0042](docs/decisions/0042-local-first-developer-problem-reporting.md), [Issue #164](https://github.com/SteveRodrigue/MCD/issues/164))**
   - **Portal & Topmost Z-Index Layering (`ReportProblemModal.tsx`):**
     - Mounted the modal into `document.body` using React `createPortal` with an SSR guard to escape parent stacking contexts and CSS transform containers.

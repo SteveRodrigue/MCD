@@ -137,6 +137,15 @@ export interface TriggerContext {
   acceptOptionalTriggers?: boolean;
   encounterCardInstance?: any;
   resourcesSpent?: string[];
+  attackerCardCode?: string;
+  attackerName?: string;
+  defenderCardCode?: string;
+  defenderName?: string;
+  defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  targetCardCode?: string;
+  targetName?: string;
+  targetCurrentHp?: number;
+  targetMaxHp?: number;
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   triggerDepth?: number;
@@ -310,6 +319,18 @@ export function dispatchTrigger(
   const identityAbilities = player ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (triggersAreEquivalent(ability.trigger, trigger)) {
+      if (
+        (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
+        player.currentForm !== 'hero'
+      ) {
+        continue;
+      }
+      if (
+        (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
+        player.currentForm !== 'alter_ego'
+      ) {
+        continue;
+      }
       if (!matchesTriggerFilter(ability.triggerFilter, context, player)) {
         continue;
       }
@@ -447,6 +468,18 @@ export function dispatchTrigger(
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
         if (triggersAreEquivalent(ability.trigger, trigger)) {
+          if (
+            (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
+            controller.currentForm !== 'hero'
+          ) {
+            continue;
+          }
+          if (
+            (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
+            controller.currentForm !== 'alter_ego'
+          ) {
+            continue;
+          }
           if (!matchesTriggerFilter(ability.triggerFilter, context, controller)) {
             continue;
           }
@@ -504,6 +537,9 @@ export function dispatchTrigger(
             });
           } else {
             // Optional In-Play Ability: Check cost & limits before prompting
+            if (triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') && currentDamage <= 0) {
+              continue;
+            }
             const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
             if (!costCheck.allowed) continue;
 
@@ -520,6 +556,15 @@ export function dispatchTrigger(
               continue;
             }
 
+            const preventStep = ability.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
+            const preventParams = preventStep?.effectParams as any;
+            const preventAmount: number | 'ALL' | undefined =
+              preventParams?.amount ??
+              (preventParams?.preventAll ||
+              ability.steps?.some((s: any) => s.effect === 'CANCEL_ATTACK')
+                ? 'ALL'
+                : undefined);
+
             const cardName = cardInst.card.name;
             const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
             const damageSuffix =
@@ -532,6 +577,20 @@ export function dispatchTrigger(
               title: `Do you want to use the following ability from ${cardName}?${damageSuffix}`,
               description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
               incomingDamage: isDamageTrigger ? currentDamage : undefined,
+              attackerCardCode: context.attackerCardCode as string | undefined,
+              attackerName: context.attackerName as string | undefined,
+              defenderCardCode: context.defenderCardCode as string | undefined,
+              defenderName: context.defenderName as string | undefined,
+              defenderType: context.defenderType as any,
+              targetCardCode:
+                (context.targetCardCode as string | undefined) || controller.activeFormCard?.code,
+              targetName:
+                (context.targetName as string | undefined) ||
+                controller.activeFormCard?.name ||
+                controller.name,
+              targetCurrentHp: (context.targetCurrentHp as number | undefined) ?? controller.health,
+              targetMaxHp: (context.targetMaxHp as number | undefined) ?? controller.maxHealth,
+              preventAmount,
               sourceCardName: cardName,
               sourceCardCode: cardInst.card.code,
               triggerSourceName:
@@ -552,7 +611,10 @@ export function dispatchTrigger(
                   effect: 'EXECUTE_OPTIONAL_TRIGGER',
                   params: {
                     ability,
-                    context,
+                    context: {
+                      ...context,
+                      damageAmount: currentDamage,
+                    },
                     sourceCardInstanceId: cardInst.instanceId,
                   },
                 },
@@ -578,8 +640,18 @@ export function dispatchTrigger(
       const abilities = c.card.enrichment?.abilities || [];
       return abilities.some((a) => {
         if (!triggersAreEquivalent(a.trigger, trigger) || a.zone !== 'HAND') return false;
-        if (a.timing.startsWith('HERO_') && player.currentForm !== 'hero') return false;
-        if (a.timing.startsWith('ALTER_EGO_') && player.currentForm !== 'alter_ego') return false;
+        if (
+          (a.timing === 'HERO_INTERRUPT' || a.timing === 'HERO_RESPONSE') &&
+          player.currentForm !== 'hero'
+        ) {
+          return false;
+        }
+        if (
+          (a.timing === 'ALTER_EGO_INTERRUPT' || a.timing === 'ALTER_EGO_RESPONSE') &&
+          player.currentForm !== 'alter_ego'
+        ) {
+          return false;
+        }
         const costCheck = canPayAbilityCost(state, player, a, c);
         return costCheck.allowed;
       });
@@ -591,7 +663,17 @@ export function dispatchTrigger(
         (a) => triggersAreEquivalent(a.trigger, trigger) && a.zone === 'HAND',
       )!;
 
-      if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
+      if (
+        (ability.timing === 'HERO_INTERRUPT' || ability.timing === 'HERO_RESPONSE') &&
+        player.currentForm !== 'hero'
+      ) {
+        // Form timing requirement not met
+      } else if (
+        (ability.timing === 'ALTER_EGO_INTERRUPT' || ability.timing === 'ALTER_EGO_RESPONSE') &&
+        player.currentForm !== 'alter_ego'
+      ) {
+        // Form timing requirement not met
+      } else if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
           const node: TriggerCallNode = {
@@ -635,6 +717,15 @@ export function dispatchTrigger(
             ? ` (Cost: ${reqAmount} resource${reqAmount === 1 ? '' : 's'})`
             : '';
 
+          const preventStep = ability.steps?.find((s: any) => s.effect === 'PREVENT_DAMAGE');
+          const preventParams = preventStep?.effectParams as any;
+          const preventAmount: number | 'ALL' | undefined =
+            preventParams?.amount ??
+            (preventParams?.preventAll ||
+            ability.steps?.some((s: any) => s.effect === 'CANCEL_ATTACK')
+              ? 'ALL'
+              : undefined);
+
           const isDamageTrigger = triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN');
           const damageSuffix =
             isDamageTrigger && currentDamage > 0 ? ` (Incoming Damage: ${currentDamage})` : '';
@@ -647,6 +738,20 @@ export function dispatchTrigger(
             title: `Do you want to use the following ability from ${cardName}${costSuffix}?${damageSuffix}`,
             description: `${formatAbilityStepsSummary(trigger, ability.steps || [])}${damageDescSuffix}`,
             incomingDamage: isDamageTrigger ? currentDamage : undefined,
+            attackerCardCode: context.attackerCardCode as string | undefined,
+            attackerName: context.attackerName as string | undefined,
+            defenderCardCode: context.defenderCardCode as string | undefined,
+            defenderName: context.defenderName as string | undefined,
+            defenderType: context.defenderType as any,
+            targetCardCode:
+              (context.targetCardCode as string | undefined) || player.activeFormCard?.code,
+            targetName:
+              (context.targetName as string | undefined) ||
+              player.activeFormCard?.name ||
+              player.name,
+            targetCurrentHp: (context.targetCurrentHp as number | undefined) ?? player.health,
+            targetMaxHp: (context.targetMaxHp as number | undefined) ?? player.maxHealth,
+            preventAmount,
             sourceCardName: cardName,
             sourceCardCode: interruptCard.card.code,
             triggerSourceName:

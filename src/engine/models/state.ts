@@ -329,6 +329,16 @@ export interface PendingDecisionPrompt {
   kind?: DecisionPromptKind;
   distributionConfig?: DistributionPromptConfig;
   incomingDamage?: number;
+  attackerCardCode?: string;
+  attackerName?: string;
+  defenderCardCode?: string;
+  defenderName?: string;
+  defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  targetCardCode?: string;
+  targetName?: string;
+  targetCurrentHp?: number;
+  targetMaxHp?: number;
+  preventAmount?: number | 'ALL';
 }
 
 export interface EncounterExecutionContext {

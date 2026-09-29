@@ -131,4 +131,47 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
     expect(screen.getByText(/INCOMING ATTACK DAMAGE:/i)).toBeDefined();
     expect(screen.getByText(/4 DMG/i)).toBeDefined();
   });
+
+  it('renders combat matchup panel with attacker, target, HP counter, and damage prevented badge (Issue #152)', async () => {
+    const prompt: PendingDecisionPrompt = {
+      promptId: 'prompt_test_matchup',
+      playerId: 'p1',
+      title: 'Do you want to use the following ability from Cosmic Flight? (Incoming Damage: 4)',
+      description:
+        'When Captain Marvel would take damage, discard Cosmic Flight -> prevent 3 of that damage.',
+      incomingDamage: 4,
+      preventAmount: 3,
+      attackerName: 'Rhino',
+      attackerCardCode: '01094',
+      targetName: 'Captain Marvel',
+      targetCardCode: '01010a',
+      targetCurrentHp: 12,
+      targetMaxHp: 12,
+      defenderType: 'UNDEFENDED',
+      sourceCardName: 'Cosmic Flight',
+      sourceCardCode: '01017',
+      triggerType: 'HERO_INTERRUPT',
+      options: [
+        { id: 'trigger_cosmic_flight', label: 'Yes', effect: 'EXECUTE_OPTIONAL_TRIGGER' },
+        { id: 'pass', label: 'No', effect: 'PASS' },
+      ],
+      isVoluntary: true,
+    };
+
+    await act(async () => {
+      render(<DecisionPromptModal prompt={prompt} onSelectOption={vi.fn()} />);
+    });
+
+    // Verify attacker name and label
+    expect(screen.getByText('Rhino')).toBeDefined();
+    expect(screen.getByText('ATTACKER')).toBeDefined();
+
+    // Verify target / defender name & HP
+    expect(screen.getByText('Captain Marvel')).toBeDefined();
+    expect(screen.getByText('TARGET')).toBeDefined();
+    expect(screen.getByText('12 / 12 HP')).toBeDefined();
+
+    // Verify damage prevented badge
+    expect(screen.getByText('Prevents: 3 DMG')).toBeDefined();
+  });
 });

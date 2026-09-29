@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Cosmic Flight Damage Prevention Timing & Decision Modal Matchup Thumbnails ([RR v1.8 pp. 11, 19](references/rules/glossary/D.md#damage), [Issue #152](https://github.com/SteveRodrigue/MCD/issues/152))**
+  - **Damage Prevention Window & Ally Defense Scoping (`combat-pipeline.ts`):**
+    - Corrected `DAMAGE_WOULD_BE_TAKEN` interrupt dispatching in Step 6 to verify that the hero is taking damage (`attackContext.defender?.type !== 'ALLY'`) and `rawDamage > 0`.
+    - Eliminated duplicate trigger dispatching and prevented hero interrupts (e.g. Cosmic Flight `01017`, Backflip `01003`) from firing when an ally defended or when damage was reduced to 0 by DEF.
+    - Extended trigger context with full combat provenance (`attackerCardCode`, `attackerName`, `defenderType`, `defenderCardCode`, `defenderName`, `targetCardCode`, `targetName`, `targetCurrentHp`, `targetMaxHp`).
+  - **Hero / Alter-Ego Form Timing Gates (`trigger-dispatcher.ts`):**
+    - Gated `HERO_INTERRUPT` and `HERO_RESPONSE` abilities to `player.currentForm === 'hero'`, and `ALTER_EGO_INTERRUPT` and `ALTER_EGO_RESPONSE` to `player.currentForm === 'alter_ego'`.
+    - Enforced `currentDamage > 0` before triggering in-play damage prevention interrupts.
+    - Propagated combat matchup provenance and calculated `preventAmount` into `PendingDecisionPrompt`.
+  - **Combat Matchup Thumbnails & HP Indicator (`DecisionPromptModal.tsx`):**
+    - Rendered square `CardArtThumbnail` components for both the Attacker and the Target/Defender in the damage callout banner.
+    - Displayed declared defender badges (`DEFENDER (HERO)`, `DEFENDER (ALLY)`, or `TARGET`), target character HP (`{current} / {max} HP`), damage prevented amount, and projected HP after prevention.
+  - **Automated Verification:**
+    - Added tests in `tests/engine/combat-damage-prevention-and-overkill.test.ts` verifying Cosmic Flight damage reduction, prompt bypass on 0 damage or ally defense, and Alter-Ego form gating.
+    - Added unit tests in `tests/ui/DecisionPromptModal.test.tsx` verifying combat matchup thumbnails, defender badges, and HP rendering.
+
 - **Fix (Data): Hydra Bomber When Revealed Threat Placement ([RR v1.8 p. 33](references/rules/glossary/W.md#when-revealed), [Issue #171](https://github.com/SteveRodrigue/MCD/issues/171))**
   - **Canonical Primitive Alignment (`core_encounter.json`):**
     - Corrected Hydra Bomber (`01110`) When Revealed option `place_threat` from obsolete `"effect": "PLACE_THREAT"` to canonical `"effect": "ADD_THREAT"`.

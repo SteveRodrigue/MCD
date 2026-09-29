@@ -147,10 +147,20 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       });
 
       expect(res.result.success).toBe(true);
-      // Villain was stunned by Mockingbird
-      expect(res.state.villain.statusCards).toContain(StatusCard.STUNNED);
       // Mockingbird is in player's allies zone
       expect(res.state.players[0].allies.some((a) => a.card.code === '01083')).toBe(true);
+      expect(res.state.pendingDecisionPrompt).toBeDefined();
+
+      const yesOption = res.state.pendingDecisionPrompt!.options.find((o) => o.label === 'Yes')!;
+      const resolveRes = dispatchAction(res.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: yesOption.id,
+      });
+
+      expect(resolveRes.result.success).toBe(true);
+      // Villain was stunned by Mockingbird
+      expect(resolveRes.state.villain.statusCards).toContain(StatusCard.STUNNED);
     });
 
     it('Surveillance Team exhausts and removes snoop counters to remove threat', () => {

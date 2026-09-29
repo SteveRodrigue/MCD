@@ -303,6 +303,82 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
     });
   });
 
+  describe('Core Set Response: Mockingbird (01083) on ENTERS_PLAY (Issue #170)', () => {
+    it('prompts the player and stuns enemy when player chooses Yes', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      const mockingbirdCard = catalog.getCard('01083')!;
+      const mockingbirdInstance = createCardInstance(mockingbirdCard);
+
+      const res1 = createCardInstance(catalog.getCard('01004')!);
+      const res2 = createCardInstance(catalog.getCard('01005')!);
+      const res3 = createCardInstance(catalog.getCard('01007')!);
+
+      gameState.players[0].hand = [mockingbirdInstance, res1, res2, res3];
+
+      const playRes = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: mockingbirdInstance.instanceId,
+        paymentCardInstanceIds: [res1.instanceId, res2.instanceId, res3.instanceId],
+      });
+
+      expect(playRes.result.success).toBe(true);
+
+      // Prompt should be open for Mockingbird
+      const prompt = playRes.state.pendingDecisionPrompt;
+      expect(prompt).toBeDefined();
+      expect(prompt?.title).toBe('Do you want to use the following ability from Mockingbird?');
+      expect(prompt?.description).toBe('ENTERS_PLAY -> ADD_STATUS (STUNNED)');
+
+      // Select 'Yes'
+      const yesOption = prompt!.options.find((o) => o.label === 'Yes')!;
+      const promptRes = dispatchAction(playRes.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: yesOption.id,
+      });
+
+      expect(promptRes.result.success).toBe(true);
+      expect(promptRes.state.villain.statusCards).toContain(StatusCard.STUNNED);
+    });
+
+    it('does not stun enemy when player chooses No / Pass', () => {
+      gameState.players[0].currentForm = 'hero';
+      gameState.players[0].activeFormCard = gameState.players[0].hero;
+
+      const mockingbirdCard = catalog.getCard('01083')!;
+      const mockingbirdInstance = createCardInstance(mockingbirdCard);
+
+      const res1 = createCardInstance(catalog.getCard('01004')!);
+      const res2 = createCardInstance(catalog.getCard('01005')!);
+      const res3 = createCardInstance(catalog.getCard('01007')!);
+
+      gameState.players[0].hand = [mockingbirdInstance, res1, res2, res3];
+
+      const playRes = dispatchAction(gameState, {
+        type: 'PLAY_CARD',
+        playerId: 'p1',
+        cardInstanceId: mockingbirdInstance.instanceId,
+        paymentCardInstanceIds: [res1.instanceId, res2.instanceId, res3.instanceId],
+      });
+
+      expect(playRes.result.success).toBe(true);
+      const prompt = playRes.state.pendingDecisionPrompt;
+      expect(prompt).toBeDefined();
+
+      const promptRes = dispatchAction(playRes.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'pass',
+      });
+
+      expect(promptRes.result.success).toBe(true);
+      expect(promptRes.state.villain.statusCards).not.toContain(StatusCard.STUNNED);
+    });
+  });
+
   describe('Core Set Response 2: Daredevil (01058) on THWART_RESOLVED', () => {
     it('prompts the player and deals 1 damage to enemy when choosing Yes', () => {
       gameState.players[0].currentForm = 'hero';

@@ -117,6 +117,9 @@ export function canChangeForm(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -155,6 +158,9 @@ export function canBasicRecover(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -186,6 +192,9 @@ export function canBasicAttack(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -242,6 +251,9 @@ export function canAllyAttack(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -295,6 +307,9 @@ export function canBasicThwart(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -367,6 +382,9 @@ export function canAllyThwart(
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
 
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return { allowed: false, reason: 'Actions can only be taken during the Player Phase.' };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -1022,17 +1040,24 @@ export function canInitiateAbility(
 
   // 1. Player Turn Validation for Actions
   if (
-    state.phase === GamePhase.PLAYER_PHASE &&
-    (ability.timing === 'ACTION' ||
-      ability.timing === 'HERO_ACTION' ||
-      ability.timing === 'ALTER_EGO_ACTION')
+    ability.timing === 'ACTION' ||
+    ability.timing === 'HERO_ACTION' ||
+    ability.timing === 'ALTER_EGO_ACTION'
   ) {
-    const activePlayer = state.players[state.activePlayerIndex];
-    if (activePlayer && activePlayer.id !== playerId) {
+    if (state.phase === GamePhase.VILLAIN_PHASE) {
       return {
         allowed: false,
-        reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
+        reason: 'Action abilities can only be used during the Player Phase.',
       };
+    }
+    if (state.phase === GamePhase.PLAYER_PHASE) {
+      const activePlayer = state.players[state.activePlayerIndex];
+      if (activePlayer && activePlayer.id !== playerId) {
+        return {
+          allowed: false,
+          reason: `Not your turn (Currently ${activePlayer.name}'s turn).`,
+        };
+      }
     }
   }
 
@@ -1375,6 +1400,12 @@ export function canPlayCard(
   const abilities = card.enrichment?.abilities || [];
 
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    return {
+      allowed: false,
+      reason: 'Cannot play cards during the Villain Phase.',
+    };
+  }
   if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
@@ -1733,7 +1764,9 @@ export function evaluateCardPlayability(
   const abilities = card.enrichment?.abilities || [];
 
   // 1. Player Turn Validation (RR v1.8 p. 19)
-  if (state.phase === GamePhase.PLAYER_PHASE) {
+  if (state.phase === GamePhase.VILLAIN_PHASE) {
+    reasons.push('Cannot play cards during the Villain Phase');
+  } else if (state.phase === GamePhase.PLAYER_PHASE) {
     const activePlayer = state.players[state.activePlayerIndex];
     if (activePlayer && activePlayer.id !== playerId) {
       reasons.push(`Not your turn (Currently ${activePlayer.name}'s turn)`);

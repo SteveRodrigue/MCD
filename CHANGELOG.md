@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Restrict Playing Cards and Player Actions from Hand to Player Phase ([RR v1.8 pp. 2, 22-23](references/rules/glossary/P.md#player-turn), [Issue #182](https://github.com/SteveRodrigue/MCD/issues/182))**
+  - **Engine Legality Checker Enforcement (`legality-checker.ts`):**
+    - Enforced `state.phase === GamePhase.VILLAIN_PHASE` restrictions in `evaluateCardPlayability` (`"Cannot play cards during the Villain Phase"`), preventing proactive hand card plays and UI active halos during the Villain Phase.
+    - Added phase rejection in `canPlayCard` (`"Cannot play cards during the Villain Phase."`), blocking illegal card plays via action dispatch.
+    - Restricted `ACTION`, `HERO_ACTION`, and `ALTER_EGO_ACTION` timings in `canInitiateAbility` to `PLAYER_PHASE` (`"Action abilities can only be used during the Player Phase."`).
+    - Guarded basic player powers (`canBasicAttack`, `canBasicThwart`, `canBasicRecover`, `canChangeForm`, `canAllyAttack`, `canAllyThwart`) against `VILLAIN_PHASE` (`"Actions can only be taken during the Player Phase."`).
+    - Verified that reactive triggers (`DAMAGE_WOULD_BE_TAKEN` with Backflip, `TREACHERY_REVEALED` with Enhanced Spider-Sense) remain fully triggerable via prompt during the Villain Phase.
+  - **Player Hand Tray UI Alignment (`PlayerHandTray.tsx`):**
+    - Corrected `isActivePlayerTurn` to strictly require `gameState?.phase === 'PLAYER_PHASE' && activePlayer?.id === player?.id` instead of defaulting to true outside `PLAYER_PHASE`.
+    - Added `(VILLAIN PHASE)` header status badge when the game is in the Villain Phase.
+    - Hidden the "End Turn" button when not in `PLAYER_PHASE`.
+  - **Automated Verification:**
+    - Added engine test suite `tests/engine/villain-phase-card-play-restriction.test.ts` (7 tests) verifying hand card playability rejection, action ability rejection, basic power rejection, and reactive prompt preservation.
+    - Added UI test suite `tests/ui/player-hand-tray-villain-phase.test.tsx` (3 tests) verifying hand tray status badge, hidden End Turn button, and card click warning toasts during the Villain Phase.
+
 - **Fix (Engine & UI): Cosmic Flight Damage Prevention Timing & Decision Modal Matchup Thumbnails ([RR v1.8 pp. 11, 19](references/rules/glossary/D.md#damage), [Issue #152](https://github.com/SteveRodrigue/MCD/issues/152))**
   - **Damage Prevention Window & Ally Defense Scoping (`combat-pipeline.ts`):**
     - Corrected `DAMAGE_WOULD_BE_TAKEN` interrupt dispatching in Step 6 to verify that the hero is taking damage (`attackContext.defender?.type !== 'ALLY'`) and `rawDamage > 0`.

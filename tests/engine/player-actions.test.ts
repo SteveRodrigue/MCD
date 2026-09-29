@@ -62,6 +62,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
       mainScheme,
       encounterCards,
       shuffleFn: (arr) => arr,
+      skipMulligan: true,
     });
   });
 

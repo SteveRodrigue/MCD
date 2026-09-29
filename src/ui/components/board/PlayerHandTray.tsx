@@ -121,8 +121,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
   const [deckImageError, setDeckImageError] = useState(false);
 
   const activePlayer = gameState?.players[gameState?.activePlayerIndex ?? 0];
-  const isActivePlayerTurn =
-    gameState?.phase === 'PLAYER_PHASE' ? activePlayer?.id === player?.id : true;
+  const isActivePlayerTurn = gameState?.phase === 'PLAYER_PHASE' && activePlayer?.id === player?.id;
 
   const handleCardClick = (cardInst: CardInstance) => {
     if (player && gameState) {
@@ -300,7 +299,11 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
               <span>
                 {seatNumber && isMultiHero ? `SEAT ${seatNumber}: ` : ''}
                 {heroName}'s HAND ({hand.length} / {handSizeLimit})
-                {isActivePlayerTurn ? ' • (ACTIVE TURN)' : ' • (WAITING)'}
+                {gameState?.phase === 'VILLAIN_PHASE'
+                  ? ' • (VILLAIN PHASE)'
+                  : isActivePlayerTurn
+                    ? ' • (ACTIVE TURN)'
+                    : ' • (WAITING)'}
               </span>
             </div>
 
@@ -314,7 +317,7 @@ export const PlayerHandTray: React.FC<PlayerHandTrayProps> = ({
             )}
           </div>
 
-          {isActivePlayerTurn && (
+          {gameState?.phase === 'PLAYER_PHASE' && isActivePlayerTurn && (
             <button
               onClick={handleEndTurn}
               className={`bg-comic-yellow hover:bg-yellow-400 text-comic-black font-comic text-xs px-3 py-0.5 rounded border border-comic-black shadow-comic-sm cursor-pointer font-black flex items-center gap-1 transition-all hover:scale-105 ${

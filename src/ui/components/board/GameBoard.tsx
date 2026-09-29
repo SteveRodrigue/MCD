@@ -550,6 +550,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           }
           gameState={gameState}
           onClose={() => {
+            if (pendingPromptPayment && onDispatchAction) {
+              const activePrompt =
+                gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
+              const passOption = activePrompt?.options?.find(
+                (o) => o.id === 'pass_play_from_zone' || o.effect === 'PLAY_CARD_FROM_ZONE_PASS',
+              );
+              if (passOption) {
+                onDispatchAction({
+                  type: 'RESOLVE_DECISION_PROMPT',
+                  playerId: pendingPromptPayment.playerId,
+                  selectedOptionId: passOption.id,
+                });
+              }
+            }
             setPaymentModalCard(null);
             setPendingPaymentAction(null);
             setPendingPromptPayment(null);
@@ -637,9 +651,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
               (optParams?.costCardInstanceId as string | undefined) ||
               (optParams?.sourceCardInstanceId as string | undefined);
             const inPlayCard =
+              (optParams?.cardInstance as CardInstance | undefined) ||
               (cardInstanceId
                 ? promptPlayer.hand.find((c) => c.instanceId === cardInstanceId) ||
-                  promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId)
+                  promptPlayer.tableau.find((c) => c.instanceId === cardInstanceId) ||
+                  promptPlayer.discard.find((c) => c.instanceId === cardInstanceId) ||
+                  gameState.players
+                    .flatMap((p) => p.discard)
+                    .find((c) => c.instanceId === cardInstanceId)
                 : undefined) ||
               (activePrompt.sourceCardCode
                 ? promptPlayer.hand.find((c) => c.card.code === activePrompt.sourceCardCode) ||

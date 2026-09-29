@@ -51,7 +51,11 @@ import {
   initializeCardUses,
 } from '../state/state-validator';
 import { locateCard, readCardResources } from '../queries/card-inspector';
-import { hasCrisisInPlay } from '../pipeline/legality-checker';
+import {
+  hasCrisisInPlay,
+  getPlayerAllyLimit,
+  checkUniqueCardPlayable,
+} from '../pipeline/legality-checker';
 
 export interface EffectExecutionContext {
   playerId: string;
@@ -201,7 +205,7 @@ export function matchCardFilter(card: NormalizedCard, filter?: any, player?: Pla
   return matchesCardFilter(card, filter, { player });
 }
 
-import { checkAndDiscardZeroCounterCard } from '../pipeline/cost-engine';
+import { checkAndDiscardZeroCounterCard, getAvailableResources } from '../pipeline/cost-engine';
 export { checkAndDiscardZeroCounterCard };
 
 /**
@@ -5418,21 +5422,61 @@ export function executeStep(
       }
 
       // Option A: If only 1 candidate or no pre-supplied target, enqueue a Decision Prompt
-      const options: DecisionPromptOption[] = candidates.map(({ instance: c, owner }) => ({
-        id: c.instanceId,
-        label: `${c.card.name} (Cost: ${c.card.cost ?? 0}${owner.id !== player.id ? `, Owner: ${owner.name}` : ''})`,
-        description: c.card.text || `Play ${c.card.name} from ${owner.name}'s discard`,
-        effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
-        params: {
-          chosenInstanceId: c.instanceId,
-          ownerId: owner.id,
-          source,
-          destination,
-          control,
-          costMode,
-          costReduction,
-        },
-      }));
+      const available = getAvailableResources(player, state).total;
+      const allyLimit = getPlayerAllyLimit(state, player.id);
+      const isAllyLimitReached = player.allies.length >= allyLimit;
+
+      const filteredCandidates = candidates.filter((c) => {
+        const cost = c.instance.card.cost ?? 0;
+        if (cost > available) return false;
+
+        if (c.instance.card.type === CardType.ALLY && isAllyLimitReached) {
+          return false;
+        }
+
+        if (c.instance.card.isUnique) {
+          for (const p of state.players || []) {
+            for (const inPlay of [...(p.allies || []), ...(p.tableau || [])]) {
+              if (
+                inPlay.card.code === c.instance.card.code ||
+                inPlay.card.name.toLowerCase().trim() === c.instance.card.name.toLowerCase().trim()
+              ) {
+                return false;
+              }
+            }
+          }
+          if (!checkUniqueCardPlayable(state, c.instance.card).allowed) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      const options: DecisionPromptOption[] = filteredCandidates.map((c) => {
+        const cost = c.instance.card.cost ?? 0;
+        return {
+          id: c.instance.instanceId,
+          label: `${c.instance.card.name} (Cost: ${cost}${c.owner.id !== player.id ? `, Owner: ${c.owner.name}` : ''})`,
+          description:
+            c.instance.card.text || `Play ${c.instance.card.name} from ${c.owner.name}'s discard`,
+          effect: 'PLAY_CARD_FROM_ZONE_RESOLUTION',
+          requiresPayment: cost > 0,
+          params: {
+            chosenInstanceId: c.instance.instanceId,
+            ownerId: c.owner.id,
+            source,
+            destination,
+            control,
+            costMode,
+            costReduction,
+            requiresPayment: cost > 0,
+            resourceCost: { amount: cost },
+            costCardInstanceId: c.instance.instanceId,
+            cardInstance: c.instance,
+          },
+        };
+      });
 
       options.push({
         id: 'pass_play_from_zone',
@@ -5448,6 +5492,8 @@ export function executeStep(
         title: promptTitle,
         description: 'Choose a card to pay for and play into your tableau:',
         sourceCardName: context.sourceCardInstance?.card.name || 'Make the Call',
+        sourceCardCode: context.sourceCardInstance?.card.code,
+        sourceCardInstanceId: context.sourceCardInstance?.instanceId,
         options,
         isVoluntary: true,
       };

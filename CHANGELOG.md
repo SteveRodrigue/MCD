@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Make the Call Resource Payment Subsystem & Legality Requirements ([RR v1.8 pp. 19, 24](references/rules/glossary/P.md#play), [Issue #173](https://github.com/SteveRodrigue/MCD/issues/173))**
+  - **Legality & Playability Gates (`legality-checker.ts`):**
+    - Added `evaluatePlayFromZoneRequirement` to `canPlayCard` and `evaluateCardPlayability`:
+      - Disallows playing Make the Call if no eligible allies reside in any discard pile (`"No eligible allies in any discard pile"`).
+      - Enforces unicity against in-play cards and disallows play if player is at ally limit.
+      - Calculates effective available resources (subtracting the printed resource contribution of Make the Call from hand) and disallows play if the player cannot afford the minimum cost among eligible allies in discard (`"Not enough resources to pay for any ally in discard"`).
+  - **Affordable Candidate Selection (`effects/index.ts`):**
+    - Filtered `PLAY_FROM_ZONE` candidate allies to those strictly legal and affordable given current available resources (`getAvailableResources`).
+    - Attached `requiresPayment: cost > 0` and full payment parameters (`resourceCost`, `cardInstance`, `sourceCardInstanceId`, `sourceCardCode`) to prompt options.
+  - **Card Payment Modal Integration (`GameBoard.tsx`):**
+    - Extended payment card resolution in `onResolveDecisionPrompt` to look up cards in discard zones (`optParams.cardInstance`, `promptPlayer.discard`, or any player's discard).
+    - Opened `CardPaymentModal` when choosing an ally option with `requiresPayment: true`, allowing interactive selection of resource cards and ready generators.
+    - Wired modal cancel/close to refund Make the Call back to the player's hand via `'pass_play_from_zone'`.
+  - **Action Dispatcher & Payment Execution (`action-dispatcher.ts`):**
+    - Routed `paymentCardInstanceIds` and `generatorInstanceIds` through `executeResourceCostPayment`.
+    - Implemented card refund from discard back to hand when passing or cancelling `PLAY_CARD_FROM_ZONE_RESOLUTION`.
+  - **Automated Verification:**
+    - Added engine test suite `tests/engine/make-the-call-payment.test.ts` (5 tests) verifying empty discard rejection, insufficient resources rejection, affordable-only candidate selection, payment card + generator exhaustion, and cancellation refund.
+    - Added UI test suite `tests/ui/make-the-call-payment-ui.test.tsx` (2 tests) verifying DecisionPrompt to CardPaymentModal flow, generator usage, and cancel refund.
+
 - **Fix (Engine & UI): Restrict Playing Cards and Player Actions from Hand to Player Phase ([RR v1.8 pp. 2, 22-23](references/rules/glossary/P.md#player-turn), [Issue #182](https://github.com/SteveRodrigue/MCD/issues/182))**
   - **Engine Legality Checker Enforcement (`legality-checker.ts`):**
     - Enforced `state.phase === GamePhase.VILLAIN_PHASE` restrictions in `evaluateCardPlayability` (`"Cannot play cards during the Villain Phase"`), preventing proactive hand card plays and UI active halos during the Villain Phase.

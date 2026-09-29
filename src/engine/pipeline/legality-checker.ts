@@ -18,6 +18,7 @@ import {
   canPayAbilityCost,
   AbilityPaymentOptions,
   getEffectiveCardCost,
+  getAvailableResources,
 } from './cost-engine';
 import { matchesCardFilter } from '../filters/card-filter';
 import { getEffectiveAllyLimit, hasPlayerTrait } from './stat-calculator';
@@ -554,15 +555,15 @@ export function checkUniqueCardPlayable(
 
   // 1. Check against active Hero & Alter-Ego identities in the game
   for (const p of state.players) {
-    const heroName = p.hero.name.toLowerCase().trim();
+    const heroName = p.hero?.name ? p.hero.name.toLowerCase().trim() : '';
     // In Marvel Champions, a hero identity's persona is defined by their alter-ego persona (RR v1.8 p. 29)
-    const heroSubname = p.hero.subname
+    const heroSubname = p.hero?.subname
       ? p.hero.subname.toLowerCase().trim()
-      : p.alterEgo.name
+      : p.alterEgo?.name
         ? p.alterEgo.name.toLowerCase().trim()
         : undefined;
-    const alterEgoName = p.alterEgo.name.toLowerCase().trim();
-    const alterEgoSubname = p.alterEgo.subname
+    const alterEgoName = p.alterEgo?.name ? p.alterEgo.name.toLowerCase().trim() : '';
+    const alterEgoSubname = p.alterEgo?.subname
       ? p.alterEgo.subname.toLowerCase().trim()
       : undefined;
 
@@ -634,7 +635,7 @@ export function checkUniqueCardPlayable(
   }
 
   // 3. Check against active Villain
-  if (state.villain?.card.isUnique) {
+  if (state.villain?.card?.isUnique) {
     const villainName = state.villain.card.name.toLowerCase().trim();
     const villainSubname = state.villain.card.subname
       ? state.villain.card.subname.toLowerCase().trim()
@@ -659,6 +660,93 @@ export function getPlayerAllyLimit(state: GameState, playerId: string): number {
   const player = getPlayer(state, playerId);
   if (!player) return 3;
   return getEffectiveAllyLimit(player, state);
+}
+
+/**
+ * Evaluates play requirements for cards with PLAY_FROM_ZONE effects (e.g. Make the Call)
+ * (Issue #173, ADR-0047, RR v1.8 p. 16, 21).
+ */
+export function evaluatePlayFromZoneRequirement(
+  state: GameState,
+  player: PlayerState,
+  card: NormalizedCard,
+): { allowed: boolean; reason?: string } {
+  let playFromZoneStep: AbilityStep | undefined;
+  for (const ability of card.enrichment?.abilities || []) {
+    for (const step of ability.steps || []) {
+      if (step.effect === 'PLAY_FROM_ZONE') {
+        playFromZoneStep = step;
+        break;
+      }
+    }
+    if (playFromZoneStep) break;
+  }
+
+  if (!playFromZoneStep) {
+    return { allowed: true };
+  }
+
+  const stepParams = (getStepEffectParams(playFromZoneStep) || playFromZoneStep.effectParams) as
+    Record<string, any> | undefined;
+  const source =
+    ((stepParams?.source || playFromZoneStep.effectParams?.source) as string) || 'PLAYER_DISCARD';
+  const filter = (stepParams?.filter ||
+    playFromZoneStep.effectParams?.filter ||
+    playFromZoneStep.filter) as Record<string, any> | undefined;
+
+  let candidates: CardInstance[] = [];
+  if (source === 'ANY_PLAYER_DISCARD') {
+    candidates = (state.players || []).flatMap((p) => p.discard || []);
+  } else if (source === 'PLAYER_DISCARD') {
+    candidates = player.discard || [];
+  }
+
+  if (filter) {
+    candidates = candidates.filter(
+      (c) => Boolean(c?.card) && matchesCardFilter(c.card, filter, { state, player }),
+    );
+  }
+
+  if (candidates.length === 0) {
+    return { allowed: false, reason: 'No eligible allies in any discard pile.' };
+  }
+
+  if (player.allies.length >= getPlayerAllyLimit(state, player.id)) {
+    return { allowed: false, reason: 'Ally limit reached.' };
+  }
+
+  // Filter out candidates that violate unicity (if c.card.isUnique, verify no card with matching code or name is in play across all players' allies or tableaus).
+  candidates = candidates.filter((c) => {
+    if (!c.card.isUnique) return true;
+    for (const p of state.players || []) {
+      for (const inPlay of [...(p.allies || []), ...(p.tableau || [])]) {
+        if (
+          inPlay.card.code === c.card.code ||
+          inPlay.card.name.toLowerCase().trim() === c.card.name.toLowerCase().trim()
+        ) {
+          return false;
+        }
+      }
+    }
+    return checkUniqueCardPlayable(state, c.card).allowed;
+  });
+
+  if (candidates.length === 0) {
+    return {
+      allowed: false,
+      reason: 'All eligible allies in discard are unique cards already in play.',
+    };
+  }
+
+  const available = getAvailableResources(player, state).total;
+  const effectiveAvailable = Math.max(0, available - (card.resources?.total || 1));
+  const minCost = Math.min(...candidates.map((c) => c.card.cost ?? 0));
+
+  if (effectiveAvailable < minCost) {
+    return { allowed: false, reason: 'Not enough resources to pay for any ally in discard.' };
+  }
+
+  return { allowed: true };
 }
 
 /**
@@ -1397,6 +1485,12 @@ export function canPlayCard(
     return schemeCheck;
   }
 
+  // Play-from-zone requirement check (Issue #173)
+  const playFromZoneCheck = evaluatePlayFromZoneRequirement(state, player, card);
+  if (!playFromZoneCheck.allowed) {
+    return playFromZoneCheck;
+  }
+
   const abilities = card.enrichment?.abilities || [];
 
   // Player Turn Validation (RR v1.8 p. 19 "Player Turn" & "Ask for an Action")
@@ -1802,6 +1896,12 @@ export function evaluateCardPlayability(
   const schemePlayabilityCheck = evaluateSchemeTargetRequirement(state, player, card);
   if (!schemePlayabilityCheck.allowed && schemePlayabilityCheck.reason) {
     reasons.push(schemePlayabilityCheck.reason);
+  }
+
+  // Play-from-zone requirement check (Issue #173)
+  const playFromZoneCheck = evaluatePlayFromZoneRequirement(state, player, card);
+  if (!playFromZoneCheck.allowed && playFromZoneCheck.reason) {
+    reasons.push(playFromZoneCheck.reason);
   }
 
   // 2. Reactive Event Validation (RR v1.8 p. 12, 16, 19)

@@ -55,6 +55,46 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     });
   }
 
+  it('Enforces that no pack file uses obsolete PLACE_THREAT primitive in steps or choice options', () => {
+    const violations: string[] = [];
+
+    for (const file of packFiles) {
+      const filePath = path.join(packDir, file);
+      const rawContent = fs.readFileSync(filePath, 'utf8');
+      const pack = JSON.parse(rawContent);
+
+      if (!pack.cards) continue;
+
+      for (const [cardCode, enrichment] of Object.entries<any>(pack.cards)) {
+        if (!enrichment.abilities) continue;
+
+        for (const ability of enrichment.abilities) {
+          if (!ability.steps) continue;
+
+          for (const step of ability.steps) {
+            if (step.effect === 'PLACE_THREAT') {
+              violations.push(
+                `${file} card ${cardCode} ability ${ability.id || 'unnamed'} step has obsolete effect 'PLACE_THREAT'`,
+              );
+            }
+
+            if (step.effect === 'PLAYER_CHOICE' && step.effectParams?.options) {
+              for (const option of step.effectParams.options) {
+                if (option.effect === 'PLACE_THREAT') {
+                  violations.push(
+                    `${file} card ${cardCode} ability ${ability.id || 'unnamed'} option ${option.id || 'unnamed'} has obsolete effect 'PLACE_THREAT'`,
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
   describe('Negative & Boundary Validation Tests', () => {
     it('Rejects invalid ISO timestamp in audit', () => {
       const invalidAudit = {

@@ -554,7 +554,7 @@
                     "id": "place_threat",
                     "label": "Place 1 Threat on Main Scheme",
                     "description": "Place 1 threat on the active main scheme.",
-                    "effect": "PLACE_THREAT",
+                    "effect": "ADD_THREAT",
                     "params": {
                       "target": "MAIN_SCHEME",
                       "amount": 1
@@ -568,8 +568,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-28T20:35:00Z",
+        "reviewedAt": "2026-09-28T20:35:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

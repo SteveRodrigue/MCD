@@ -649,27 +649,44 @@ export function step6_calculateAndApplyAttackDamage(
     rawDamage = Math.max(0, totalAttack - (attackContext.defenseValue || 0));
   }
 
-  // Damage Prevention Interrupt Window (e.g. Backflip 01003)
-  if (attackContext.attackerType === 'VILLAIN' || attackContext.heroDefended) {
+  const defenderAlly =
+    attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId
+      ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)
+      : undefined;
+
+  const attackerCardCode = attackContext.attackerCard?.card?.code || state.villain?.card?.code;
+  const attackerName =
+    attackContext.attackerCard?.card?.name || state.villain?.card?.name || 'Enemy';
+  const defenderType =
+    attackContext.defender?.type || (attackContext.heroDefended ? 'HERO' : 'UNDEFENDED');
+  const defenderCardCode =
+    defenderAlly?.card?.code ||
+    (attackContext.heroDefended ? player.activeFormCard?.code : undefined);
+  const defenderName =
+    defenderAlly?.card?.name ||
+    (attackContext.heroDefended ? player.activeFormCard?.name || player.name : undefined);
+  const targetCardCode = player.activeFormCard?.code || player.hero?.code;
+  const targetName = player.activeFormCard?.name || player.hero?.name || player.name;
+  const targetCurrentHp = player.health;
+  const targetMaxHp = player.maxHealth;
+
+  if (attackContext.defender?.type !== 'ALLY' && rawDamage > 0) {
     const defenseResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
       targetPlayerId: player.id,
       damageAmount: rawDamage,
+      attackerCardCode,
+      attackerName,
+      defenderType,
+      defenderCardCode,
+      defenderName,
+      targetCardCode,
+      targetName,
+      targetCurrentHp,
+      targetMaxHp,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
     rawDamage = defenseResult.damageAmount ?? rawDamage;
-
     if (defenseResult.hasPendingPrompt) {
-      attackContext.pendingDamage = rawDamage;
-      return;
-    }
-
-    const canonicalResult = dispatchTrigger(state, 'DAMAGE_WOULD_BE_TAKEN', {
-      targetPlayerId: player.id,
-      damageAmount: rawDamage,
-      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
-    });
-    rawDamage = canonicalResult.damageAmount ?? rawDamage;
-    if (canonicalResult.hasPendingPrompt) {
       attackContext.pendingDamage = rawDamage;
       return;
     }

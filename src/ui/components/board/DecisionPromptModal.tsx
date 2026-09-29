@@ -193,16 +193,100 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               <span>{prompt.title}</span>
             </h3>
             {incomingDamage !== undefined && (
-              <div className="flex items-center gap-2.5 p-3 bg-red-100 border-2 border-comic-red rounded-lg shadow-comic-xs text-comic-red">
-                <ShieldAlert className="w-5 h-5 shrink-0 text-comic-red animate-pulse" />
-                <div className="flex-1 flex items-center justify-between">
-                  <span className="font-comic font-black uppercase text-xs tracking-wider">
-                    Incoming Attack Damage:
-                  </span>
-                  <span className="font-mono font-black text-sm bg-comic-red text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
-                    {incomingDamage} DMG
-                  </span>
+              <div className="bg-red-50 border-2 border-comic-red rounded-lg p-3 shadow-comic-xs space-y-2.5">
+                <div className="flex items-center justify-between border-b border-comic-red/30 pb-1.5 flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-comic-red">
+                    <ShieldAlert className="w-4 h-4 shrink-0 text-comic-red animate-pulse" />
+                    <span className="font-comic font-black uppercase text-xs tracking-wider">
+                      Incoming Attack Damage:
+                    </span>
+                  </div>
+                  {prompt.preventAmount !== undefined && (
+                    <span className="font-mono font-black text-xs bg-emerald-600 text-white px-2 py-0.5 rounded border border-comic-black shadow-comic-xs">
+                      Prevents:{' '}
+                      {prompt.preventAmount === 'ALL' ? 'ALL DMG' : `${prompt.preventAmount} DMG`}
+                    </span>
+                  )}
                 </div>
+
+                {/* Combat Matchup Panel */}
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  {/* Attacker box */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1 bg-white/80 border border-comic-black/30 rounded p-1.5">
+                    <CardArtThumbnail
+                      cardCode={prompt.attackerCardCode}
+                      cardName={prompt.attackerName}
+                      size="sm"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
+                        ATTACKER
+                      </div>
+                      <div className="font-comic font-black text-xs text-comic-black truncate">
+                        {prompt.attackerName || 'Enemy'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Middle: Direction arrow + incoming damage */}
+                  <div className="flex flex-col items-center justify-center shrink-0 px-1">
+                    <div className="text-[10px] font-mono font-black text-comic-red">
+                      {incomingDamage} DMG
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-comic-red" />
+                  </div>
+
+                  {/* Target / Defender box */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1 bg-white/80 border border-comic-black/30 rounded p-1.5">
+                    <CardArtThumbnail
+                      cardCode={prompt.defenderCardCode || prompt.targetCardCode}
+                      cardName={prompt.defenderName || prompt.targetName}
+                      size="sm"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
+                        {prompt.defenderType === 'ALLY'
+                          ? 'DEFENDER (ALLY)'
+                          : prompt.defenderType === 'HERO'
+                            ? 'DEFENDER (HERO)'
+                            : 'TARGET'}
+                      </div>
+                      <div className="font-comic font-black text-xs text-comic-black truncate">
+                        {prompt.defenderName || prompt.targetName || 'Hero'}
+                      </div>
+                      {prompt.targetCurrentHp !== undefined && (
+                        <div className="text-[10px] font-mono font-bold text-slate-700">
+                          {prompt.targetMaxHp !== undefined
+                            ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
+                            : `${prompt.targetCurrentHp} HP`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Projected HP */}
+                {prompt.targetCurrentHp !== undefined && (
+                  <div className="flex items-center justify-between text-[11px] font-bold bg-white/60 rounded px-2 py-1 border border-comic-black/20 text-slate-800">
+                    <span>Projected HP After Attack:</span>
+                    <span className="font-mono font-black text-comic-black">
+                      {(() => {
+                        const prevented =
+                          prompt.preventAmount === 'ALL'
+                            ? incomingDamage
+                            : typeof prompt.preventAmount === 'number'
+                              ? prompt.preventAmount
+                              : 0;
+                        const unmitigated = Math.max(0, incomingDamage - prevented);
+                        const hpWithoutCard = Math.max(0, prompt.targetCurrentHp - incomingDamage);
+                        const hpWithCard = Math.max(0, prompt.targetCurrentHp - unmitigated);
+                        return prompt.preventAmount !== undefined
+                          ? `${hpWithCard} HP (vs ${hpWithoutCard} HP without prevention)`
+                          : `${hpWithoutCard} HP`;
+                      })()}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
             {prompt.description && (

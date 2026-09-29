@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { executeEnemyAttackSynchronously } from '@engine/pipeline';
+import { executeEnemyAttackSynchronously, dispatchAction } from '@engine/pipeline';
 import { executeEffect, dealDirectDamage } from '@engine/effects';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 
@@ -253,6 +253,132 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       expect(state.pendingDecisionPrompt?.incomingDamage).toBe(5);
       expect(state.pendingDecisionPrompt?.title).toContain('Incoming Damage: 5');
       expect(state.pendingDecisionPrompt?.description).toContain('Incoming Damage: 5');
+    });
+  });
+
+  describe('Issue #152: In-Play Damage Prevention & Provenance (Cosmic Flight 01017)', () => {
+    let cmHero: HeroCard;
+    let cmAlterEgo: AlterEgoCard;
+    let cmState: GameState;
+
+    beforeEach(() => {
+      cmHero = cardCatalog.getCard('01010a') as HeroCard;
+      cmAlterEgo = cardCatalog.getCard('01010b') as AlterEgoCard;
+
+      cmState = setupGame({
+        scenarioId: 'rhino',
+        players: [
+          {
+            id: 'p1',
+            name: 'Captain Marvel',
+            hero: cmHero,
+            alterEgo: cmAlterEgo,
+            deckCards: Array(10).fill(cardCatalog.getCard('01017')!),
+          },
+        ],
+        villain: cardCatalog.getCard('01094') as any,
+        mainScheme: cardCatalog.getCard('01097b') as any,
+        encounterCards: cardCatalog.getCardsBySet('rhino'),
+        skipMulligan: true,
+      });
+
+      cmState.players[0].currentForm = 'hero';
+      cmState.players[0].activeFormCard = cmHero;
+      cmState.players[0].hand = [];
+      cmState.players[0].tableau = [createCardInstance(cardCatalog.getCard('01017')!)];
+    });
+
+    it('prompts Cosmic Flight with full combat provenance when Villain attacks Captain Marvel undefended for 4 damage', () => {
+      // Put a 2-boost card on top of encounter deck (Rhino base ATK 2 + 2 = 4)
+      cmState.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!)];
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
+        acceptOptionalTriggers: false,
+      });
+
+      expect(cmState.pendingDecisionPrompt).toBeDefined();
+      expect(cmState.pendingDecisionPrompt?.incomingDamage).toBe(4);
+      expect(cmState.pendingDecisionPrompt?.preventAmount).toBe(3);
+      expect(cmState.pendingDecisionPrompt?.attackerName).toBe('Rhino');
+      expect(cmState.pendingDecisionPrompt?.targetCurrentHp).toBe(cmState.players[0].health);
+      expect(cmState.pendingDecisionPrompt?.targetCardCode).toBe('01010a');
+    });
+
+    it("choosing 'Yes' discards Cosmic Flight and applies 1 remaining damage", () => {
+      cmState.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!)];
+      const initialHp = cmState.players[0].health;
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
+        acceptOptionalTriggers: false,
+      });
+
+      const yesOptionId = cmState.pendingDecisionPrompt?.options.find((o) => o.label === 'Yes')?.id;
+      expect(yesOptionId).toBeDefined();
+
+      const res = dispatchAction(cmState, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: yesOptionId!,
+      });
+
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01017')).toBe(false);
+      expect(res.state.players[0].discard.some((c) => c.card.code === '01017')).toBe(true);
+      expect(res.state.players[0].health).toBe(initialHp - 1);
+    });
+
+    it("choosing 'No' retains Cosmic Flight in tableau and applies 4 damage", () => {
+      cmState.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!)];
+      const initialHp = cmState.players[0].health;
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
+        acceptOptionalTriggers: false,
+      });
+
+      const res = dispatchAction(cmState, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p1',
+        selectedOptionId: 'pass',
+      });
+
+      expect(res.state.players[0].tableau.some((c) => c.card.code === '01017')).toBe(true);
+      expect(res.state.players[0].health).toBe(initialHp - 4);
+    });
+
+    it('does NOT prompt Cosmic Flight when an Ally defends the attack', () => {
+      const ally = createCardInstance(cardCatalog.getCard('01002')!);
+      cmState.players[0].allies.push(ally);
+      cmState.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!)];
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'ALLY_CHUMP_BLOCK', {
+        acceptOptionalTriggers: false,
+      });
+
+      expect(cmState.pendingDecisionPrompt).toBeUndefined();
+    });
+
+    it('does NOT prompt Cosmic Flight when incoming damage is 0 (DEF >= total attack)', () => {
+      // Captain Marvel defends with Armored Vest (+1 DEF -> DEF 2)
+      cmState.players[0].tableau.push(createCardInstance(cardCatalog.getCard('01081')!));
+      cmState.encounterDeck = []; // 0 boost cards (Rhino total attack = 2)
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'HERO_IF_READY', {
+        acceptOptionalTriggers: false,
+      });
+
+      expect(cmState.pendingDecisionPrompt).toBeUndefined();
+    });
+
+    it('does NOT prompt Cosmic Flight when in Alter-Ego form', () => {
+      cmState.players[0].currentForm = 'alter_ego';
+      cmState.players[0].activeFormCard = cmAlterEgo;
+
+      cmState.encounterDeck = [createCardInstance(cardCatalog.getCard('01103')!)];
+
+      executeEnemyAttackSynchronously(cmState, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED', {
+        acceptOptionalTriggers: false,
+      });
+
+      expect(cmState.pendingDecisionPrompt).toBeUndefined();
     });
   });
 });

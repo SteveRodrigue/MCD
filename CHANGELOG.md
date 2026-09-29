@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): Mockingbird Enters-Play Optional Response Prompting ([RR v1.8 p. 28](references/rules/glossary/R.md#response), [Issue #170](https://github.com/SteveRodrigue/MCD/issues/170))**
+  - **Reclassified Ability Timing (`core.json`):**
+    - Corrected Mockingbird (`01083`) enters-play ability `timing` from `"FORCED_RESPONSE"` to `"RESPONSE"` in `src/data/supplemental/pack/core.json` to match printed card text and RR v1.8 rules.
+    - Updated card audit metadata (`updatedAt`, `reviewedAt`).
+  - **Automated Verification:**
+    - Added regression tests in `tests/engine/optional-triggers.test.ts` verifying that playing Mockingbird prompts the player with an optional decision modal (`Yes`/`No`), stunning an enemy when accepted and passing cleanly when declined.
+    - Updated `tests/engine/advanced-mechanics.test.ts` to resolve the prompted response decision modal when playing Mockingbird.
+
 - **Fix (UI & Engine): Premature End-Turn Confirmation Prompt on Phase, Round & Player Transitions ([Issue #169](https://github.com/SteveRodrigue/MCD/issues/169))**
   - **Scoped Action-Exhaustion Detection (`GameBoard.tsx`):**
     - Tracked `prevPlayerIdRef`, `prevRoundRef`, and `prevPhaseRef` in `GameBoard.tsx` to detect turn and phase boundaries.

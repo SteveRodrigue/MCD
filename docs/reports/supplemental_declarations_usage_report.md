@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-28T20:06:41.932Z`  
+> **Generated:** `2026-09-29T00:13:13.404Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -246,12 +246,12 @@ These primitives are declared in schema types or specifications but have **0 act
 ### Ability Timings:
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `FORCED_RESPONSE` | **29** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+23 more)* |
+| `FORCED_RESPONSE` | **28** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+22 more)* |
 | `HERO_ACTION` | **26** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01010a` Captain Marvel (hero), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event) *(+21 more)* |
 | `WHEN_REVEALED` | **24** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment), `01099` Charge (attachment), `01100` Enhanced Ivory Horn (attachment) *(+19 more)* |
 | `CONSTANT` | **21** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+14 more)* |
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01015` Alpha Flight Station (support), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event) *(+11 more)* |
-| `RESPONSE` | **10** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+5 more)* |
+| `RESPONSE` | **11** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+6 more)* |
 | `ALTER_EGO_ACTION` | **8** | `01006` Aunt May (support), `01010b` Carol Danvers (alter_ego), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01029b` Tony Stark (alter_ego) *(+3 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
 | `HERO_INTERRUPT` | **5** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01061` Great Responsibility (event), `01078` Get Behind Me! (event), `01082` Indomitable (upgrade) |

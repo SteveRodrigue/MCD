@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Bug, X, Check, Send, ExternalLink, AlertTriangle } from 'lucide-react';
 import { GameState } from '../../../engine/models';
 import { getLatestGameStateSnapshot } from '../../services/gamestate-logger-service';
@@ -41,28 +42,52 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
   const [description, setDescription] = useState(initialDescription || '');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [githubUrl, setGithubUrl] = useState<string | null>(null);
+  const autoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const activeGameState = gameState || getLatestGameStateSnapshot();
 
   useEffect(() => {
     if (isOpen) {
       setDescription(initialDescription || '');
+      setType('bug');
+      setPriority('P2-medium');
       setStatus('idle');
       setGithubUrl(null);
+    } else {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
     }
   }, [isOpen, initialDescription]);
 
+  useEffect(() => {
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+        autoCloseTimerRef.current = null;
+      }
+    };
+  }, []);
+
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleClose = () => {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+      autoCloseTimerRef.current = null;
+    }
     setStatus('idle');
-    setDescription(initialDescription || '');
     setGithubUrl(null);
+    setDescription(initialDescription || '');
+    setType('bug');
+    setPriority('P2-medium');
     onClose();
   };
 
   const handleSubmit = async () => {
-    if (!description.trim()) return;
+    if (!description.trim() || status === 'submitting' || status === 'success') return;
     setStatus('submitting');
     const firstLine = description.trim().split('\n')[0] || '';
     const title = `[${type.toUpperCase()}] ${firstLine.slice(0, 80)}`;
@@ -76,11 +101,24 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
     setGithubUrl(
       buildGithubIssueUrl({ title, description, labels: mapReportToLabels(type, priority) }),
     );
-    setStatus(result.success ? 'success' : 'error');
+    if (result.success) {
+      setStatus('success');
+      setDescription('');
+      setType('bug');
+      setPriority('P2-medium');
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+      autoCloseTimerRef.current = setTimeout(() => {
+        onClose();
+      }, 1500);
+    } else {
+      setStatus('error');
+    }
   };
 
-  return (
-    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-comic-black/80 backdrop-blur-xs z-[100000] flex items-center justify-center p-4">
       <div className="bg-comic-paper border-4 border-comic-black rounded-xl shadow-comic-xl max-w-lg w-full flex flex-col max-h-[90vh] overflow-hidden font-comic">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-comic-red text-white border-b-4 border-comic-black select-none">
@@ -99,6 +137,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
           </div>
           <button
             onClick={handleClose}
+            aria-label="Close"
             className="p-1.5 rounded-lg border-2 border-comic-black bg-comic-black hover:bg-slate-800 text-white transition-all cursor-pointer shadow-comic-sm"
           >
             <X className="w-5 h-5" />
@@ -174,11 +213,17 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!description.trim() || status === 'submitting'}
+          disabled={!description.trim() || status === 'submitting' || status === 'success'}
           className="w-full py-2.5 font-black uppercase text-sm bg-comic-yellow hover:bg-yellow-400 text-comic-black rounded-lg border-2 border-comic-black shadow-comic transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.01] active:scale-[0.99]"
         >
           <Send className="w-4 h-4" />
-          <span>{status === 'submitting' ? 'Saving...' : 'Save Report'}</span>
+          <span>
+            {status === 'submitting'
+              ? 'Saving...'
+              : status === 'success'
+                ? 'Saved!'
+                : 'Save Report'}
+          </span>
         </button>
 
         {status === 'success' && (
@@ -224,7 +269,8 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI & Dev Mode): Problem Report Modal Layering & Form Reset on Submit ([ADR-0042](docs/decisions/0042-local-first-developer-problem-reporting.md), [Issue #164](https://github.com/SteveRodrigue/MCD/issues/164))**
+  - **Portal & Topmost Z-Index Layering (`ReportProblemModal.tsx`):**
+    - Mounted the modal into `document.body` using React `createPortal` with an SSR guard to escape parent stacking contexts and CSS transform containers.
+    - Set the modal overlay z-index to `z-[100000]` so it always displays above all other game modals and context menus (including `CardContextMenu` at `z-[10000]`).
+  - **Post-Submission Form Reset & Auto-Close (`ReportProblemModal.tsx`):**
+    - Cleared `description` and reset `type`/`priority` to defaults upon successful report submission.
+    - Disabled duplicate submission by replacing the submission button with a confirmation badge ("Saved!") while in success state.
+    - Added an auto-close timer (1500ms) with proper unmount/close cleanup, and ensured manual close resets all form state cleanly.
+  - **Automated Verification:**
+    - Added `tests/ui/report-problem-modal.test.tsx` verifying portal mounting to `document.body` with `z-[100000]`, form clearing and duplicate prevention on submit, auto-close invocation after 1500ms, and state reset on reopen.
+
 - **Fix (Data): Mockingbird Enters-Play Optional Response Prompting ([RR v1.8 p. 28](references/rules/glossary/R.md#response), [Issue #170](https://github.com/SteveRodrigue/MCD/issues/170))**
   - **Reclassified Ability Timing (`core.json`):**
     - Corrected Mockingbird (`01083`) enters-play ability `timing` from `"FORCED_RESPONSE"` to `"RESPONSE"` in `src/data/supplemental/pack/core.json` to match printed card text and RR v1.8 rules.

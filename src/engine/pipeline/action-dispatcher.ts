@@ -3130,12 +3130,27 @@ export function dispatchAction(
       ) {
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId) || player;
 
         if (
           !selectedOption ||
+          action.selectedOptionId === 'pass_play_from_zone' ||
           selectedOption.id === 'pass_play_from_zone' ||
           selectedOption.effect === 'PLAY_CARD_FROM_ZONE_PASS'
         ) {
+          if (activePrompt.sourceCardInstanceId || activePrompt.sourceCardCode) {
+            const discardIdx = targetPlayer.discard.findIndex(
+              (c) =>
+                (activePrompt.sourceCardInstanceId &&
+                  c.instanceId === activePrompt.sourceCardInstanceId) ||
+                (activePrompt.sourceCardCode && c.card.code === activePrompt.sourceCardCode),
+            );
+            if (discardIdx !== -1) {
+              const [refunded] = targetPlayer.discard.splice(discardIdx, 1);
+              targetPlayer.hand.push(refunded);
+            }
+          }
+
           poppedState.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
@@ -3155,16 +3170,35 @@ export function dispatchAction(
         const chosenInstanceId = params.chosenInstanceId;
         const ownerId = params.ownerId;
         const ownerPlayer = poppedState.players.find((p) => p.id === ownerId) || player;
-        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId) || player;
 
         // Splice from owner discard
         const matchIdx = ownerPlayer.discard.findIndex((c) => c.instanceId === chosenInstanceId);
         if (matchIdx !== -1) {
           const [chosenCard] = ownerPlayer.discard.splice(matchIdx, 1);
 
-          // Deduct cost if resources available in hand
+          // Deduct cost
           const cost = chosenCard.card.cost ?? 0;
-          if (cost > 0) {
+          const paymentOptions =
+            (action.paymentCardInstanceIds && action.paymentCardInstanceIds.length > 0) ||
+            (action.generatorInstanceIds && action.generatorInstanceIds.length > 0)
+              ? {
+                  paymentCardInstanceIds: action.paymentCardInstanceIds,
+                  generatorInstanceIds: action.generatorInstanceIds,
+                }
+              : undefined;
+
+          if (paymentOptions && cost > 0) {
+            executeResourceCostPayment(
+              poppedState,
+              targetPlayer,
+              cost,
+              undefined,
+              false,
+              paymentOptions,
+              chosenCard,
+              chosenCard.card.faction,
+            );
+          } else if (cost > 0) {
             // Deduct up to cost cards from player hand if present
             const countToDiscard = Math.min(cost, targetPlayer.hand.length);
             const discarded = targetPlayer.hand.splice(0, countToDiscard);

@@ -527,14 +527,25 @@ export function dispatchTrigger(
               if (!costCheck.allowed) continue;
               executeAbilityCost(state, controller, ability, cardInst);
             }
-            executeEffect(state, ability, {
+            const effCtx = {
               playerId: controller.id,
               sourceCardInstance: cardInst,
               targetType: context.targetType as any,
               targetInstanceId: context.targetInstanceId,
               resourcesSpent: context.resourcesSpent,
+              threatAmount: currentThreat,
+              damageAmount: currentDamage,
+              interceptedValue: currentThreat || currentDamage,
               triggerChain: nextChain,
-            });
+            };
+            executeEffect(state, ability, effCtx);
+            if (trigger === 'THREAT_WOULD_BE_PLACED' && effCtx.threatAmount !== undefined) {
+              currentThreat = effCtx.threatAmount;
+            }
+            if (trigger === 'DAMAGE_WOULD_BE_TAKEN' && effCtx.damageAmount !== undefined) {
+              currentDamage = effCtx.damageAmount;
+              if (currentDamage === 0) isPrevented = true;
+            }
           } else {
             // Optional In-Play Ability: Check cost & limits before prompting
             if (triggersAreEquivalent(trigger, 'DAMAGE_WOULD_BE_TAKEN') && currentDamage <= 0) {

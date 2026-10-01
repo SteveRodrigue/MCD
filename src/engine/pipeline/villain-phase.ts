@@ -14,7 +14,7 @@ import {
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
-import { handleMainSchemeCompletion } from './scenario-helpers';
+import { applyThreatPlacement } from './threat-pipeline';
 import {
   getEffectiveVillainStats,
   hasEntityKeyword,
@@ -53,27 +53,13 @@ export function step1_placeThreat(state: GameState): GameState {
     }
   }
 
-  state.mainScheme.threat += totalThreatToAdd;
-
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    key: 'villainPhase.step1.threatPlaced',
-    params: {
-      amount: totalThreatToAdd,
-      scheme: state.mainScheme.card.name,
-      currentThreat: state.mainScheme.threat,
-      targetThreat: state.mainScheme.targetThreat,
-    },
-    onomatopoeia: 'SCHEME GROWS!',
+  const res = applyThreatPlacement(state, {
+    targetType: 'main_scheme',
+    amount: totalThreatToAdd,
+    sourceType: 'VILLAIN_PHASE_STEP_1',
   });
 
-  // Check Villain Victory condition (Main scheme threat overflow)
-  if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-    return handleMainSchemeCompletion(state, state.mainScheme.instanceId);
-  }
-
-  return state;
+  return res.state;
 }
 
 /**
@@ -90,9 +76,6 @@ export function executeVillainAttackAgainstPlayer(
 /**
  * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
  */
-/**
- * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
- */
 export function executeVillainSchemeAgainstPlayer(state: GameState, player: PlayerState): void {
   // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
   if (consumeEntityStatusCards(state.villain, StatusCard.CONFUSED)) {
@@ -100,7 +83,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
       key: 'villain.confused.cancelled',
-      params: { villain: state.villain.card.name },
+      params: { villain: state.villain.card?.name || 'Villain' },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
     return;
@@ -108,7 +91,9 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
 
   // Draw Boost Card
   const boostCard = drawEncounterCard(state);
-  const boostIcons = boostCard ? boostCard.card.boostIcons || 0 : 0;
+  const boostIcons = boostCard
+    ? (boostCard.card.boostIcons ?? (boostCard.card as any).boost ?? 0)
+    : 0;
   const villainStats = getEffectiveVillainStats(state, state.villain);
   const baseScheme = villainStats.scheme;
   const totalScheme = baseScheme + boostIcons;
@@ -117,32 +102,14 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     state.encounterDiscard.push(boostCard);
   }
 
-  // Threat Placement Trigger (e.g. Emergency 01085 Interrupt)
-  const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
-    targetPlayerId: player.id,
-    threatAmount: totalScheme,
+  applyThreatPlacement(state, {
+    targetType: 'main_scheme',
+    amount: totalScheme,
+    sourceType: 'VILLAIN_SCHEME',
+    sourceEntityName: state.villain.card?.name || 'Villain',
+    sourcePlayerId: player.id,
+    boostIcons,
   });
-  const finalThreat = triggerRes.threatAmount ?? totalScheme;
-
-  state.mainScheme.threat += finalThreat;
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    key: 'villain.scheme.threat',
-    params: {
-      who: state.villain.card.name,
-      villain: state.villain.card.name,
-      threat: finalThreat,
-      amount: finalThreat,
-      boost: boostIcons,
-      scheme: state.mainScheme.card.name,
-    },
-    onomatopoeia: 'SCHEME!',
-  });
-
-  if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-    state.winner = 'VILLAIN';
-  }
 }
 
 /**
@@ -185,40 +152,25 @@ export function executeMinionSchemeAgainstPlayer(
   }
 
   const minionCard = minion.card as MinionCard;
-  let schemeThreat = minionCard.scheme || 1;
+  let schemeThreat = minionCard.scheme ?? (minionCard as any).sch ?? 1;
 
   // Villainous minion deals and resolves a facedown boost card (RR v1.8 p. 30)
   if (hasEntityKeyword(minion, 'Villainous')) {
     const boostCard = drawEncounterCard(state);
     if (boostCard) {
-      const icons = boostCard.card.boostIcons || 0;
+      const icons = boostCard.card.boostIcons ?? (boostCard.card as any).boost ?? 0;
       schemeThreat += icons;
       state.encounterDiscard.push(boostCard);
     }
   }
 
-  const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
-    targetPlayerId: player.id,
-    threatAmount: schemeThreat,
+  applyThreatPlacement(state, {
+    targetType: 'main_scheme',
+    amount: schemeThreat,
+    sourceType: 'MINION_SCHEME',
+    sourceEntityName: minion.card?.name || 'Minion',
+    sourcePlayerId: player.id,
   });
-  const finalThreat = triggerRes.threatAmount ?? schemeThreat;
-
-  state.mainScheme.threat += finalThreat;
-  state.log.push({
-    id: `log_${Date.now()}`,
-    timestamp: Date.now(),
-    key: 'minion.scheme.threat',
-    params: {
-      minion: minion.card.name,
-      player: player.name,
-      threat: finalThreat,
-    },
-    onomatopoeia: 'MINION SCHEMES!',
-  });
-
-  if (state.mainScheme.threat >= state.mainScheme.targetThreat) {
-    state.winner = 'VILLAIN';
-  }
 }
 
 /**

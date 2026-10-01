@@ -35,6 +35,7 @@ import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { applyDamageToTarget } from '../pipeline/damage-pipeline';
+import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
@@ -2798,6 +2799,15 @@ export function executeStep(
       if (context.isFinalStep && step.effectParams?.finisherBonus) {
         amount += (step.effectParams.finisherBonus as number) || 0;
       }
+      if (
+        step.effectParams?.bonusWithMental &&
+        context.resourcesSpent?.some((r) => {
+          const lower = String(r).toLowerCase();
+          return lower === 'mental' || lower === 'wild';
+        })
+      ) {
+        amount += (step.effectParams.bonusWithMental as number) || 1;
+      }
       const targetParam =
         (step.effectParams?.target as string) ||
         (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
@@ -3047,47 +3057,23 @@ export function executeStep(
       }
 
       for (const st of targetSchemes) {
-        if (st.entityType === 'main_scheme' && isMainSchemeBlockedByCrisis) {
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'ability',
-            key: 'card.effect.threatBlockedByCrisis',
-            params: {
-              player: player.name,
-              scheme: st.entity.card?.name || 'Main Scheme',
-            },
-            onomatopoeia: 'CRISIS BLOCKS!',
-          });
-          continue;
-        }
-
-        const scheme = st.entity;
-        const current = scheme.threat || 0;
-        const rem = Math.min(current, amount);
-        scheme.threat = Math.max(0, current - amount);
-        removed += rem;
-        targetSchemeName = scheme.card?.name || 'Scheme';
-        remainingThreat = scheme.threat;
-
-        if (remainingThreat === 0) {
-          dispatchTrigger(state, 'SCHEME_THREAT_REDUCED_TO_ZERO' as any, {
-            targetPlayerId: player.id,
-            sourceInstanceId: st.id,
-            entityType: 'SCHEME',
-            threatAmount: rem,
-          });
-        }
-
-        const isSideScheme =
+        const isSide =
           st.entityType === 'side_scheme' ||
           (state.sideSchemes || []).some((s) => s.instanceId === st.id || s.card.code === st.id);
 
-        if (isSideScheme && scheme.threat <= 0) {
-          defeatSideScheme(state, st.id, player.id);
-        }
+        const thwartRes = applyThwart(state, {
+          thwarterType: 'CARD_EFFECT',
+          thwarterEntity: context.sourceCardInstance,
+          playerId: player.id,
+          targetType: isSide ? 'side_scheme' : 'main_scheme',
+          targetInstanceId: isSide ? st.id : undefined,
+          thwartValue: amount,
+          ignoresCrisis,
+        });
+
+        removed += thwartRes.result.threatRemoved;
+        targetSchemeName = thwartRes.result.targetSchemeName || targetSchemeName;
+        remainingThreat = thwartRes.result.remainingThreat;
       }
 
       const onomatopoeia = `-${removed} THREAT!`;
@@ -4171,14 +4157,23 @@ export function executeStep(
 
       if (targetParam === 'ALL_SIDE_SCHEMES') {
         if (state.sideSchemes.length > 0) {
+          let totalPlaced = 0;
           for (const s of state.sideSchemes) {
-            s.threat = (s.threat || 0) + amount;
+            const { result } = applyThreatPlacement(state, {
+              targetType: 'side_scheme',
+              targetInstanceId: s.instanceId,
+              amount,
+              sourceType: 'CARD_EFFECT',
+              sourceEntityName: context.sourceCardInstance?.card?.name,
+              sourcePlayerId: player.id,
+            });
+            totalPlaced += result.threatPlaced;
           }
           return {
             state,
             success: true,
-            mutatedState: amount > 0,
-            value: amount,
+            mutatedState: totalPlaced > 0,
+            value: totalPlaced,
             onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!`,
           };
         } else {
@@ -4222,54 +4217,37 @@ export function executeStep(
       if (cardCode) {
         const sideScheme = (state.sideSchemes || []).find((s) => s.card?.code === cardCode);
         if (sideScheme) {
-          sideScheme.threat = (sideScheme.threat || 0) + amount;
-          const onomatopoeia = `SCHEME THREAT +${amount}!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'scheme.threat.added',
-            params: {
-              target: sideScheme.card?.name || 'Side Scheme',
-              cardCode,
-              amount,
-              total: sideScheme.threat,
-            },
-            onomatopoeia,
+          const { result } = applyThreatPlacement(state, {
+            targetType: 'side_scheme',
+            targetInstanceId: sideScheme.instanceId,
+            amount,
+            sourceType: 'CARD_EFFECT',
+            sourceEntityName: context.sourceCardInstance?.card?.name,
+            sourcePlayerId: player.id,
           });
           return {
             state,
             success: true,
-            mutatedState: amount > 0,
-            value: amount,
-            onomatopoeia,
+            mutatedState: result.threatPlaced > 0,
+            value: result.threatPlaced,
+            onomatopoeia: result.onomatopoeia,
           };
         }
 
         if (state.mainScheme?.card?.code === cardCode) {
-          state.mainScheme.threat = (state.mainScheme.threat || 0) + amount;
-          const onomatopoeia = `SCHEME THREAT +${amount}!`;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'scheme.threat.added',
-            params: {
-              target: state.mainScheme.card?.name || 'Main Scheme',
-              cardCode,
-              amount,
-              total: state.mainScheme.threat,
-            },
-            onomatopoeia,
+          const { result } = applyThreatPlacement(state, {
+            targetType: 'main_scheme',
+            amount,
+            sourceType: 'CARD_EFFECT',
+            sourceEntityName: context.sourceCardInstance?.card?.name,
+            sourcePlayerId: player.id,
           });
           return {
             state,
             success: true,
-            mutatedState: amount > 0,
-            value: amount,
-            onomatopoeia,
+            mutatedState: result.threatPlaced > 0,
+            value: result.threatPlaced,
+            onomatopoeia: result.onomatopoeia,
           };
         }
 
@@ -4292,29 +4270,30 @@ export function executeStep(
 
       const targetSchemes = resolveSchemeTargets(state, targetParam as any, targetContext);
       if (targetSchemes.length > 0) {
+        let totalPlaced = 0;
+        let lastResult: any;
         for (const st of targetSchemes) {
-          st.entity.threat = (st.entity.threat || 0) + amount;
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'scheme.threat.added',
-            params: {
-              target: st.entity.card?.name || 'Scheme',
-              instanceId: st.entity.instanceId || 'scheme',
-              amount,
-              total: st.entity.threat,
-            },
-            onomatopoeia: `SCHEME THREAT +${amount}!`,
+          const isSide =
+            st.entityType === 'side_scheme' ||
+            (state.sideSchemes || []).some((s) => s.instanceId === st.id || s.card.code === st.id);
+
+          const { result } = applyThreatPlacement(state, {
+            targetType: isSide ? 'side_scheme' : 'main_scheme',
+            targetInstanceId: isSide ? st.id : undefined,
+            amount,
+            sourceType: 'CARD_EFFECT',
+            sourceEntityName: context.sourceCardInstance?.card?.name,
+            sourcePlayerId: player.id,
           });
+          totalPlaced += result.threatPlaced;
+          lastResult = result;
         }
         return {
           state,
           success: true,
-          mutatedState: amount > 0,
-          value: amount,
-          onomatopoeia: `SCHEME THREAT +${amount}!`,
+          mutatedState: totalPlaced > 0,
+          value: totalPlaced,
+          onomatopoeia: lastResult?.onomatopoeia || `SCHEME THREAT +${totalPlaced}!`,
         };
       }
 

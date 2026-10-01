@@ -4,7 +4,6 @@ import {
   ActionResult,
   StatusCard,
   CardType,
-  HeroCard,
   AlterEgoCard,
   MinionCard,
   AllyCard,
@@ -85,6 +84,7 @@ import {
 } from '../effects/target-resolver';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { applyDamageToTarget } from './damage-pipeline';
+import { applyThwart, applyThreatPlacement } from './threat-pipeline';
 
 function dispatchCanonicalDefeatTriggers(
   state: GameState,
@@ -704,37 +704,13 @@ export function dispatchAction(
       const allyStats = getEffectiveAllyStats(nextState, ally);
       const thwValue = allyStats.thwart;
 
-      if (action.targetType === 'main_scheme') {
-        const removed = Math.min(nextState.mainScheme.threat, thwValue);
-        nextState.mainScheme.threat = Math.max(0, nextState.mainScheme.threat - removed);
-      } else if (action.targetType === 'side_scheme' && action.targetInstanceId) {
-        const schemeIndex = nextState.sideSchemes.findIndex(
-          (s) => s.instanceId === action.targetInstanceId,
-        );
-        if (schemeIndex !== -1) {
-          const sideScheme = nextState.sideSchemes[schemeIndex];
-          const removed = Math.min(sideScheme.threat, thwValue);
-          sideScheme.threat -= removed;
-
-          if (sideScheme.threat <= 0) {
-            defeatSideScheme(nextState, sideScheme.instanceId, player.id);
-          }
-        }
-      }
-
-      nextState.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: nextState.roundNumber,
-        phase: nextState.phase,
-        key: 'player.action.allyThwart',
-        params: {
-          player: player.name,
-          ally: allyCard.name,
-          threatRemoved: thwValue,
-          target: action.targetType,
-        },
-        onomatopoeia: 'ALLY THWART!',
+      const thwartRes = applyThwart(nextState, {
+        thwarterType: 'ALLY',
+        thwarterEntity: ally,
+        playerId: player.id,
+        targetType: action.targetType,
+        targetInstanceId: action.targetInstanceId,
+        thwartValue: thwValue,
       });
 
       nextState.log.push({
@@ -763,14 +739,7 @@ export function dispatchAction(
         owner.discard.push(ally);
       }
 
-      dispatchTrigger(nextState, 'THWART_RESOLVED', {
-        targetPlayerId: player.id,
-        targetType: action.targetType,
-        targetInstanceId: action.targetInstanceId,
-        sourceInstanceId: ally.instanceId,
-      });
-
-      const onomatopoeia = 'ALLY THWART!';
+      const onomatopoeia = thwartRes.result.onomatopoeia || 'ALLY THWART!';
       return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
@@ -788,83 +757,31 @@ export function dispatchAction(
       const player = getPlayer(nextState, action.playerId)!;
       player.exhausted = true;
 
-      // 1. Confused Status Replacement Check (RR v1.8 p. 28, taking into account Steady)
-      if (consumeEntityStatusCards(player, StatusCard.CONFUSED)) {
-        const onomatopoeia = 'CONFUSION CLEARED!';
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
-          key: 'status.confused.cleared',
-          params: { player: player.name },
-          onomatopoeia,
-        });
-        return { state: nextState, result: { success: true, onomatopoeia } };
-      }
+      const heroStats = getEffectiveHeroStats(nextState, player);
+      const thwartValue = heroStats.thwart;
 
-      const thwartValue = (player.activeFormCard as HeroCard).thwart || 0;
+      const thwartRes = applyThwart(nextState, {
+        thwarterType: 'HERO',
+        thwarterEntity: player,
+        playerId: player.id,
+        targetType: action.targetType,
+        targetInstanceId: action.targetInstanceId,
+        thwartValue,
+      });
 
-      if (action.targetType === 'main_scheme') {
-        const removed = Math.min(nextState.mainScheme.threat, thwartValue);
-        nextState.mainScheme.threat -= removed;
+      nextState.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'status',
+        key: 'card.state.exhausted',
+        params: { card: player.activeFormCard.name },
+        onomatopoeia: 'EXHAUST',
+      });
 
-        const onomatopoeia = 'FOILED!';
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
-          key: 'player.action.thwartMainScheme',
-          params: {
-            player: player.name,
-            removed,
-            remainingThreat: nextState.mainScheme.threat,
-          },
-          onomatopoeia,
-        });
-
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
-          category: 'status',
-          key: 'card.state.exhausted',
-          params: { card: player.activeFormCard.name },
-          onomatopoeia: 'EXHAUST',
-        });
-
-        dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
-
-        return { state: nextState, result: { success: true, onomatopoeia } };
-      }
-
-      if (action.targetType === 'side_scheme' && action.targetInstanceId) {
-        const schemeIndex = nextState.sideSchemes.findIndex(
-          (s) => s.instanceId === action.targetInstanceId,
-        );
-        const sideScheme = nextState.sideSchemes[schemeIndex];
-
-        const removed = Math.min(sideScheme.threat, thwartValue);
-        sideScheme.threat -= removed;
-
-        if (sideScheme.threat <= 0) {
-          defeatSideScheme(nextState, sideScheme.instanceId, player.id);
-
-          dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
-
-          const onomatopoeia = 'SCHEME DEFEATED!';
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        }
-
-        dispatchTrigger(nextState, 'THWART_RESOLVED', { targetPlayerId: player.id });
-
-        const onomatopoeia = 'THWART!';
-        return { state: nextState, result: { success: true, onomatopoeia } };
-      }
-
-      return { state: nextState, result: { success: true } };
+      const onomatopoeia = thwartRes.result.onomatopoeia || 'FOILED!';
+      return { state: nextState, result: { success: true, onomatopoeia } };
     }
 
     case 'PLAY_CARD': {
@@ -3191,18 +3108,12 @@ export function dispatchAction(
         getKeywordValue(encounterCard.card, Keyword.INCITE) ||
         0;
       if (inciteAmount > 0) {
-        nextState.mainScheme.threat += inciteAmount;
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          category: 'scheme',
-          key: 'card.effect.incite',
-          params: {
-            scheme: nextState.mainScheme.card.name,
-            amount: inciteAmount,
-            source: encounterCard.card.name,
-          },
-          onomatopoeia: `INCITE ${inciteAmount}!`,
+        applyThreatPlacement(nextState, {
+          targetType: 'main_scheme',
+          amount: inciteAmount,
+          sourceType: 'INCITE',
+          sourceEntityName: encounterCard.card?.name || 'Encounter Card',
+          sourcePlayerId: targetPlayer.id,
         });
       }
 

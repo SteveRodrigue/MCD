@@ -3593,8 +3593,7 @@ export function executeStep(
 
     case 'GRANT_KEYWORD':
     case 'ATTACHMENT_DAMAGE_SHIELD':
-    case 'INTERCEPT_ATTACK':
-    case 'WHEN_ATTACHED_HOST_DEFEATED': {
+    case 'INTERCEPT_ATTACK': {
       // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
       return { state, success: true };
     }

@@ -7,9 +7,18 @@ description: 'Translate and generate minimal supplemental card data for a single
 
 This skill defines the canonical methodology to analyze a single Marvel Champions card and generate its schema-compliant supplemental data into a minimal markdown file at `temp/supp_<card-id>.md`.
 
+> [!IMPORTANT]
+> **Strict File Isolation Policy (`temp/` Only):**
+> Agents executing this skill must **exclusively write files to the `temp/` directory** (specifically `temp/supp_<card-id>.md`).
+>
+> - **DO NOT** modify, create, or touch files in `src/`, `data/`, `docs/`, or `scripts/`.
+> - **DO NOT** create scratch or temporary files in the repository root.
+> - **DO NOT** edit or append to supplemental pack files in `src/data/supplemental/pack/`.
+>   Any files written outside `temp/` violate this skill and risk breaking active quality gates.
+
 ---
 
-## The 4-Step Methodology
+## The 5-Step Methodology
 
 ### Step 1: Extract Upstream Card Data
 
@@ -70,7 +79,7 @@ Consult the authoritative schema and modular specifications to ensure exact para
 
 ### Step 4: Write Minimal Output File to `temp/supp_<card-id>.md`
 
-Write the resulting translation to `temp/supp_<card-id>.md` (e.g. `temp/supp_08004.md`).
+Write the resulting translation strictly to `temp/supp_<card-id>.md` (e.g. `temp/supp_08004.md`). **Never write to `src/data/supplemental/pack/` or the repository root.**
 
 **The output file must be minimal.** Follow this exact format:
 

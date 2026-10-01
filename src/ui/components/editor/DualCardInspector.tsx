@@ -515,7 +515,12 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
         {/* TAB 1: Visual Form Builder */}
         {activeTab === 'form' && (
           <div className="bg-comic-panel border-3 border-black p-4 shadow-comic-sm">
-            <AbilityFormBuilder supplemental={editedSupplemental} onChange={handleFormChange} />
+            <AbilityFormBuilder
+              supplemental={editedSupplemental}
+              onChange={handleFormChange}
+              typeCode={upstream?.type_code}
+              cardCode={code}
+            />
           </div>
         )}
 
@@ -642,7 +647,7 @@ export const DualCardInspector: React.FC<DualCardInspectorProps> = ({
                           Uses
                         </span>
                         <span className="font-bold">
-                          {editedSupplemental.uses.count} {editedSupplemental.uses.type}
+                          {editedSupplemental.uses.count} {editedSupplemental.uses.counterType}
                         </span>
                       </div>
                     )}

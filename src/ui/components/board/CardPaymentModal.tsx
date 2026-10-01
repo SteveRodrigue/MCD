@@ -352,7 +352,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           list.push({
             id: c.instanceId,
             name: c.card.name,
-            sublabel: `${c.tokens?.counters || 0} ${uses.type || 'Counters'} Remaining`,
+            sublabel: `${c.tokens?.counters || 0} ${uses.counterType || 'Counters'} Remaining`,
             resourceType: 'wild',
             amount: 1,
           });

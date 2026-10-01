@@ -135,7 +135,7 @@ describe('Card Text Parser', () => {
       expect(result.confidence).toBe(100);
       expect(result.enrichment.uses).toEqual({
         count: 3,
-        type: 'web',
+        counterType: 'web',
         discardOnEmpty: true,
       });
 

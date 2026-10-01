@@ -76,6 +76,9 @@ describe('TriggerFilterSection', () => {
     const targetTypeSelect = screen.getByTestId('trigger-target-type-0');
     await user.selectOptions(targetTypeSelect, 'CHARACTER');
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'CHARACTER' }));
+
+    await user.selectOptions(targetTypeSelect, 'ALLY');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'ALLY' }));
   });
 
   it('configures sourceCardCode and sourceInstanceId', async () => {

@@ -1,4 +1,4 @@
-﻿import type { UniversalCardFilter } from '../../../data/supplemental/schema';
+import type { UniversalCardFilter } from '../../../data/supplemental/schema';
 
 /**
  * Strips empty arrays, blank strings, and undefined keys to strictly conform
@@ -11,12 +11,26 @@ export function sanitizeCardFilter(
 
   const result: Record<string, any> = {};
 
-  if (Array.isArray(filter.codes) && filter.codes.length > 0) {
-    const cleaned = filter.codes.map((s) => s.trim()).filter(Boolean);
+  const rawCodes =
+    filter.codes ||
+    ((filter as any).code
+      ? [(filter as any).code as string]
+      : (filter as any).targetCardCode
+        ? [(filter as any).targetCardCode as string]
+        : undefined);
+  if (Array.isArray(rawCodes) && rawCodes.length > 0) {
+    const cleaned = rawCodes.map((s) => s.trim()).filter(Boolean);
     if (cleaned.length > 0) result.codes = cleaned;
   }
-  if (Array.isArray(filter.names) && filter.names.length > 0) {
-    const cleaned = filter.names.map((s) => s.trim()).filter(Boolean);
+  const rawNames =
+    filter.names ||
+    ((filter as any).name
+      ? [(filter as any).name as string]
+      : (filter as any).targetCardName
+        ? [(filter as any).targetCardName as string]
+        : undefined);
+  if (Array.isArray(rawNames) && rawNames.length > 0) {
+    const cleaned = rawNames.map((s) => s.trim()).filter(Boolean);
     if (cleaned.length > 0) result.names = cleaned;
   }
   if (Array.isArray(filter.types) && filter.types.length > 0) {

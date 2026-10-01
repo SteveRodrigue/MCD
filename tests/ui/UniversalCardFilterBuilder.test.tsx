@@ -206,4 +206,14 @@ describe('UniversalCardFilterBuilder Interactive UI Component', () => {
 
     expect(handleChange).toHaveBeenCalledWith(undefined);
   });
+
+  it('displays legacy targetCardCode in codes input and normalizes to codes array (Bug #174 regression)', () => {
+    render(
+      <UniversalCardFilterBuilder filter={{ targetCardCode: '01107' } as any} onChange={vi.fn()} />,
+    );
+
+    const codesInput = screen.getByTestId('filter-codes-input') as HTMLInputElement;
+    expect(codesInput.value).toBe('01107');
+    expect(screen.getByText('1 criterion')).toBeDefined();
+  });
 });

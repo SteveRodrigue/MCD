@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- **Feat (Engine & UI): Add All Selected Destination Options for Search & Ancestral Knowledge ([RR v1.8 p. 26](references/rules/glossary/S.md#search), [Issue #189](https://github.com/SteveRodrigue/MCD/issues/189))**
+- **Feat (UI & Data): Card Editor UI Revamp (Phases 1–5)**
+  - **Collapsible Architecture & Progressive Disclosure (`CollapsibleSection.tsx`, `CardAttributesSection.tsx`):**
+    - Created reusable `CollapsibleSection` component with comic pop-art styling, ARIA compliance (`role="button"`, `role="region"`, `aria-expanded`, `aria-controls`), keyboard navigation (Enter/Space), and `framer-motion` height transitions.
+    - Partitioned `CardAttributesSection` into 5 collapsible sub-panels: Audit & Metadata, Card Mechanics, Combat Properties, Layout & Display, and Play Requirements.
+    - Added data-driven auto-expansion and reactive field counter badges for configured sections.
+    - Implemented type-aware field visibility with complete DOM removal (overridden by "Show All / Smart View" toolbar toggle).
+  - **Schema Parity & Deep Forms (`CardLocationSelectorForm.tsx`, `DynamicValueBuilder.tsx`, `StepPipelineEditor.tsx`):**
+    - Added `ALLY` option to `TriggerFilterSection` targetType dropdown.
+    - Added ability-level `errata` field in `AbilityFormBuilder`.
+    - Added `distinctFrom` (hybrid selector & custom step ID) to `StepPipelineEditor`.
+    - Deprecated `uses.type` across schema, engine, and supplemental card packs, standardizing strictly on `uses.counterType`.
+    - Added read-only timestamp badges (`createdAt`, `updatedAt`, `reviewedAt`) and editable `ambiguityFile` in Audit & Metadata.
+    - Created reusable `CardLocationSelectorForm` supporting all 5 location parameters (`zone`, `player`, `relativeIndex`, `cardId`, `sourceCardZone`).
+    - Integrated `DynamicValueSource.targetCard` sub-form for `CARD_ATTRIBUTE`, `COUNTERS`, and `STAT_VALUE` sources.
+    - Filled effect parameter registry gaps (`PLAY_FROM_ZONE`, `DRAW`, `DISCARD`, `GENERATE_RESOURCE`, `SPEND_COUNTERS`, `REMOVE_COUNTERS_MATCHING_FILTER`, `SEARCH`) and pruned dead parameters (`bonusWithMental`, `aerialAllSchemes`).
+    - Added compact step pipeline summary rows with auto-generated step descriptions and accordion expansion.
+  - **Bug Fixes & Performance Optimization (`App.tsx`, `UniversalCardFilterBuilder.tsx`, `CardAttributesSection.tsx`):**
+    - Fixed Bug #143: rendered `audit.originalText` using `<FormattedCardText />` instead of raw HTML markup.
+    - Fixed Bug #174: normalized side scheme targeting filter parsing in `UniversalCardFilterBuilder` and updated Rhino II (`01095`) supplemental pack definition.
+    - Code-split `SupplementalEditorScreen` route with `React.lazy()` and `React.Suspense` fallback, reducing initial bundle size.
+
   - **Schema & Parameter Registry (`schema.ts`, `effect-parameter-registry.ts`):**
     - Expanded `selectedDestination` enum in `SearchAndSelectParamsSchema` to include `'DECK_BOTTOM'` and `'DECK_SHUFFLE'`.
     - Added `'DECK_BOTTOM'` and `'DECK_SHUFFLE'` to `SELECTED_DESTINATION_OPTIONS` in Card Editor parameter registry.

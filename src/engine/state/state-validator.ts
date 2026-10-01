@@ -282,7 +282,7 @@ export function initializeCardUses(cardInstance: CardInstance): void {
   const usesDef = cardInstance.card.enrichment?.uses;
   if (!usesDef || usesDef.count <= 0) return;
 
-  const counterType = usesDef.type || usesDef.counterType || 'all_purpose';
+  const counterType = usesDef.counterType || 'all_purpose';
 
   cardInstance.tokens = {
     ...cardInstance.tokens,

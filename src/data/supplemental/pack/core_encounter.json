@@ -28,7 +28,9 @@
                   "ENCOUNTER_DISCARD"
                 ],
                 "filter": {
-                  "targetCardCode": "01107"
+                  "codes": [
+                    "01107"
+                  ]
                 },
                 "takeCount": 1,
                 "selectedDestination": "REVEAL",

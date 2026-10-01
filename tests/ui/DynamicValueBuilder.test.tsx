@@ -266,4 +266,96 @@ describe('DynamicValueBuilder Interactive UI Component', () => {
       }).success,
     ).toBe(true);
   });
+
+  it('renders targetCard sub-form for relevant sources and hides for others', () => {
+    const handleChange = vi.fn();
+
+    // CARD_ATTRIBUTE renders targetCard sub-form
+    const { rerender } = render(
+      <DynamicValueBuilder
+        label="Target Card Test"
+        value={{ from: 'CARD_ATTRIBUTE', attribute: 'THREAT' }}
+        onChange={handleChange}
+      />,
+    );
+    expect(screen.getByTestId('dynamic-value-target-card-form')).toBeDefined();
+
+    // COUNTERS renders targetCard sub-form
+    rerender(
+      <DynamicValueBuilder
+        label="Target Card Test"
+        value={{ from: 'COUNTERS', counterType: 'all-purpose' }}
+        onChange={handleChange}
+      />,
+    );
+    expect(screen.getByTestId('dynamic-value-target-card-form')).toBeDefined();
+
+    // STAT_VALUE renders targetCard sub-form
+    rerender(
+      <DynamicValueBuilder
+        label="Target Card Test"
+        value={{ from: 'STAT_VALUE', stat: 'ATTACK' }}
+        onChange={handleChange}
+      />,
+    );
+    expect(screen.getByTestId('dynamic-value-target-card-form')).toBeDefined();
+
+    // DISCARDED_CARDS hides targetCard sub-form
+    rerender(
+      <DynamicValueBuilder
+        label="Target Card Test"
+        value={{ from: 'DISCARDED_CARDS' }}
+        onChange={handleChange}
+      />,
+    );
+    expect(screen.queryByTestId('dynamic-value-target-card-form')).toBeNull();
+  });
+
+  it('configures and clears targetCard in DynamicValueBuilder', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    const { rerender } = render(
+      <DynamicValueBuilder
+        label="Target Card Config"
+        value={{
+          from: 'CARD_ATTRIBUTE',
+          attribute: 'DAMAGE',
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const zoneSelect = screen.getByTestId('dynamic-value-target-card-zone-select');
+    await user.selectOptions(zoneSelect, 'IN_PLAY');
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'CARD_ATTRIBUTE',
+        targetCard: { zone: 'IN_PLAY' },
+      }),
+    );
+
+    // Rerender with targetCard populated
+    rerender(
+      <DynamicValueBuilder
+        label="Target Card Config"
+        value={{
+          from: 'CARD_ATTRIBUTE',
+          attribute: 'DAMAGE',
+          targetCard: { zone: 'IN_PLAY' },
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const clearZoneSelect = screen.getByTestId('dynamic-value-target-card-zone-select');
+    await user.selectOptions(clearZoneSelect, '');
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        targetCard: expect.anything(),
+      }),
+    );
+  });
 });

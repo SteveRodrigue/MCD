@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- **Fix (Engine & UI): Make the Call Resource Payment Subsystem & Legality Requirements ([RR v1.8 pp. 19, 24](references/rules/glossary/P.md#play), [Issue #173](https://github.com/SteveRodrigue/MCD/issues/173))**
+- **Feat (Engine & UI): Add All Selected Destination Options for Search & Ancestral Knowledge ([RR v1.8 p. 26](references/rules/glossary/S.md#search), [Issue #189](https://github.com/SteveRodrigue/MCD/issues/189))**
+  - **Schema & Parameter Registry (`schema.ts`, `effect-parameter-registry.ts`):**
+    - Expanded `selectedDestination` enum in `SearchAndSelectParamsSchema` to include `'DECK_BOTTOM'` and `'DECK_SHUFFLE'`.
+    - Added `'DECK_BOTTOM'` and `'DECK_SHUFFLE'` to `SELECTED_DESTINATION_OPTIONS` in Card Editor parameter registry.
+    - Updated card `01042` (Ancestral Knowledge) in `core.json` to use `"selectedDestination": "DECK_SHUFFLE"`.
+  - **Engine Card Routing (`effects/index.ts`, `action-dispatcher.ts`):**
+    - Added complete routing for `ATTACH_TO_TARGET` destination across synchronous effect resolution and prompt resolution, attaching cards to specified target hosts via `attachCardToHost`.
+    - Maintained end-to-end support for all 8 destinations: `HAND`, `TABLEAU`, `DECK_TOP`, `DECK_BOTTOM`, `DECK_SHUFFLE`, `DISCARD`, `ATTACH_TO_TARGET`, and `REVEAL`.
+  - **Automated Verification:**
+    - Added `tests/engine/search-destination-routing.test.ts` (17 tests) validating all 8 routing choices for direct auto-select and decision prompts.
+    - Added `tests/engine/ancestral-knowledge-shuffle.test.ts` (4 tests) validating Ancestral Knowledge Alter-Ego Action play, discard selection, and deck shuffle.
+
   - **Legality & Playability Gates (`legality-checker.ts`):**
     - Added `evaluatePlayFromZoneRequirement` to `canPlayCard` and `evaluateCardPlayability`:
       - Disallows playing Make the Call if no eligible allies reside in any discard pile (`"No eligible allies in any discard pile"`).

@@ -4929,6 +4929,15 @@ export function executeStep(
               targetPlayer.deck.sort(() => Math.random() - 0.5);
             }
           }
+        } else if (destination === 'ATTACH_TO_TARGET') {
+          for (const card of cards) {
+            attachCardToHost(
+              state,
+              card,
+              (step.effectParams?.target as string) || 'VILLAIN',
+              context.targetInstanceId || context.targetPlayerId || targetPlayer.id,
+            );
+          }
         }
       };
 
@@ -5011,6 +5020,7 @@ export function executeStep(
           unselectedDestination,
           shuffleAfter: shuffleAfter && sourceZones.some((z) => z.includes('DECK')),
           isLookCountSpliced,
+          target: step.effectParams?.target,
         },
       }));
 

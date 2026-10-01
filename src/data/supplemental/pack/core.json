@@ -1559,7 +1559,7 @@
                 "takeCount": 3,
                 "autoSelectIfUnambiguous": true,
                 "lookCount": "ALL",
-                "selectedDestination": "DECK_TOP",
+                "selectedDestination": "DECK_SHUFFLE",
                 "unselectedDestination": "DISCARD"
               }
             }
@@ -1568,8 +1568,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-29T18:21:36Z",
-        "reviewedAt": "2026-09-29T18:21:36Z",
+        "updatedAt": "2026-10-01T01:36:00Z",
+        "reviewedAt": "2026-10-01T01:36:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

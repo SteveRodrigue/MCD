@@ -175,6 +175,7 @@ export function routeCardInstances(
   cards: CardInstance[],
   destination: string | null | undefined,
   sourceZone: string,
+  targetHost?: string,
 ) {
   if (cards.length === 0) return;
 
@@ -258,6 +259,10 @@ export function routeCardInstances(
     } else {
       player.deck.push(...cards);
       player.deck.sort(() => Math.random() - 0.5);
+    }
+  } else if (destination === 'ATTACH_TO_TARGET') {
+    for (const card of cards) {
+      attachCardToHost(state, card, targetHost || 'VILLAIN', player.id);
     }
   }
 }
@@ -3080,6 +3085,7 @@ export function dispatchAction(
             [chosenCard],
             selectedDestination,
             chosenCardZone,
+            params?.target,
           );
         }
 

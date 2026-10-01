@@ -47,8 +47,8 @@ export function getEffectiveVillainStats(
   _state: GameState,
   villain: VillainState,
 ): EffectiveVillainStats {
-  let attack = villain.card.attack || 0;
-  let scheme = villain.card.scheme || 0;
+  let attack = villain.card?.attack ?? (villain.card as any)?.atk ?? 0;
+  let scheme = villain.card?.scheme ?? (villain.card as any)?.sch ?? 0;
   const keywords: string[] = [];
 
   for (const attachment of villain.attachments || []) {
@@ -82,8 +82,8 @@ export function getEffectiveVillainStats(
  */
 export function getEffectiveAllyStats(state: GameState, ally: CardInstance): EffectiveAllyStats {
   const allyCard = ally.card as AllyCard;
-  let thwart = allyCard.thwart || 0;
-  let attack = allyCard.attack || 0;
+  let thwart = allyCard.thwart ?? (allyCard as any).thw ?? 0;
+  let attack = allyCard.attack ?? (allyCard as any).atk ?? 0;
   const keywords: string[] = [];
 
   // Check constant abilities on the ally itself
@@ -308,10 +308,30 @@ export function hasPlayerTrait(player: PlayerState, trait: string): boolean {
  */
 export function getEffectiveHeroStats(_state: GameState, player: PlayerState): EffectiveHeroStats {
   const isHero = player.currentForm === 'hero';
-  let thwart = isHero ? (player.hero as HeroCard).thwart || 0 : 0;
-  let attack = isHero ? (player.hero as HeroCard).attack || 0 : 0;
-  let defense = isHero ? (player.hero as HeroCard).defense || 0 : 0;
-  let recovery = !isHero ? (player.alterEgo as AlterEgoCard).recover || 0 : 0;
+  let thwart = isHero
+    ? ((player.hero as HeroCard).thwart ??
+      (player.hero as any)?.thw ??
+      (player.activeFormCard as any)?.thw ??
+      0)
+    : 0;
+  let attack = isHero
+    ? ((player.hero as HeroCard).attack ??
+      (player.hero as any)?.atk ??
+      (player.activeFormCard as any)?.atk ??
+      0)
+    : 0;
+  let defense = isHero
+    ? ((player.hero as HeroCard).defense ??
+      (player.hero as any)?.def ??
+      (player.activeFormCard as any)?.def ??
+      0)
+    : 0;
+  let recovery = !isHero
+    ? ((player.alterEgo as AlterEgoCard).recover ??
+      (player.alterEgo as any)?.rec ??
+      (player.activeFormCard as any)?.rec ??
+      0)
+    : 0;
   const keywords: string[] = [];
 
   // Inspect in-play upgrades in player tableau

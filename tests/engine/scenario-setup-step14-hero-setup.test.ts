@@ -21,7 +21,7 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     cardCatalog.getCard('01049')!, // Panther Suit (Upgrade)
   ];
 
-  it("automatically resolves T'Challa setup ability (01040b) putting 1 Black Panther upgrade into tableau", () => {
+  it("automatically resolves T'Challa setup ability (01040b) putting 1 Black Panther upgrade into hand", () => {
     const state = setupGame({
       scenarioId: 'rhino',
       players: [
@@ -40,15 +40,15 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     const player = state.players[0];
 
     // 1. T'Challa Alter-Ego hand size is 6. Hand took 6 cards from the 15-card deck.
-    // 2. Step 14 searched deck for 1 Black Panther upgrade and put it into tableau.
-    // Therefore, tableau should contain exactly 1 Black Panther upgrade!
-    expect(player.tableau.length).toBe(1);
-    const tableauCard = player.tableau[0];
-    expect(tableauCard.card.traits).toContain('Black Panther');
-    expect(['01046', '01047', '01048', '01049']).toContain(tableauCard.card.code);
+    // 2. Step 14 searched deck for 1 Black Panther upgrade and put it into hand (RR v1.8 Foresight).
+    // Therefore, hand should contain 7 cards including exactly 1 Black Panther upgrade!
+    expect(player.tableau.length).toBe(0);
+    const bpUpgrade = player.hand.find((c) => c.card.traits?.includes('Black Panther'));
+    expect(bpUpgrade).toBeDefined();
+    expect(['01046', '01047', '01048', '01049']).toContain(bpUpgrade!.card.code);
 
-    // Total cards accounted for = hand (6) + tableau (1) + deck (8) = 15 total cards
-    expect(player.hand.length).toBe(6);
+    // Total cards accounted for = hand (7) + tableau (0) + deck (8) = 15 total cards
+    expect(player.hand.length).toBe(7);
     expect(player.deck.length).toBe(8);
   });
 
@@ -70,9 +70,10 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     });
 
     const player = state.players[0];
-    expect(player.tableau.length).toBe(1);
-    expect(player.tableau[0].card.code).toBe('01047');
-    expect(player.tableau[0].card.name).toBe('Panther Claws');
+    expect(player.tableau.length).toBe(0);
+    const chosenCard = player.hand.find((c) => c.card.code === '01047');
+    expect(chosenCard).toBeDefined();
+    expect(chosenCard!.card.name).toBe('Panther Claws');
   });
 
   it('resolves canonical SEARCH setup abilities during Step 14', () => {
@@ -172,8 +173,9 @@ describe('Scenario Setup Step 14: Resolve Character Setup Abilities (RR v1.8 p. 
     // Player 1 (Spider-Man): 0 tableau
     expect(state.players[0].tableau.length).toBe(0);
 
-    // Player 2 (Black Panther): 1 Energy Daggers in tableau
-    expect(state.players[1].tableau.length).toBe(1);
-    expect(state.players[1].tableau[0].card.code).toBe('01046');
+    // Player 2 (Black Panther): 1 Energy Daggers in hand
+    expect(state.players[1].tableau.length).toBe(0);
+    const bpCard = state.players[1].hand.find((c) => c.card.code === '01046');
+    expect(bpCard).toBeDefined();
   });
 });

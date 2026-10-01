@@ -1036,17 +1036,19 @@
           "steps": [
             {
               "effect": "MODIFY_HAND_SIZE",
-              "filter": {
-                "traits": [
-                  "Tech"
-                ],
-                "types": [
-                  "upgrade"
-                ]
-              },
               "effectParams": {
                 "scaling": "PER_MATCHING_CARD",
-                "multiplier": 1
+                "filter": {
+                  "types": [
+                    "upgrade"
+                  ],
+                  "traits": [
+                    "Tech"
+                  ]
+                },
+                "multiplier": 1,
+                "maxHandSize": 7,
+                "applicableForm": "hero"
               }
             }
           ]
@@ -1054,8 +1056,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-29T20:49:04Z",
+        "reviewedAt": "2026-09-29T20:49:04Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1414,15 +1416,15 @@
           "cost": {
             "exhaustSelf": true,
             "resources": [
-              "energy"
+              "mental"
             ]
           },
           "steps": [
             {
-              "effect": "GRANT_KEYWORD",
+              "effect": "ADD_TRAIT",
               "effectParams": {
-                "keyword": "Aerial",
-                "duration": "PHASE"
+                "target": "SELF",
+                "trait": "Aerial"
               }
             }
           ]
@@ -1430,8 +1432,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-28T13:55:00Z",
-        "reviewedAt": "2026-09-28T13:55:00Z",
+        "updatedAt": "2026-09-29T18:28:09Z",
+        "reviewedAt": "2026-09-29T18:28:09Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -1483,8 +1485,8 @@
                   ]
                 },
                 "takeCount": 1,
-                "selectedDestination": "TABLEAU",
-                "unselectedDestination": null,
+                "selectedDestination": "HAND",
+                "unselectedDestination": "DECK_SHUFFLE",
                 "shuffleAfter": true,
                 "promptTitle": "King of Wakanda: Choose 1 Black Panther upgrade",
                 "autoSelectIfUnambiguous": true
@@ -1495,8 +1497,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-29T18:07:54Z",
+        "reviewedAt": "2026-09-29T18:07:54Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,
@@ -1547,11 +1549,18 @@
           "timing": "ALTER_EGO_ACTION",
           "steps": [
             {
-              "effect": "SHUFFLE_INTO_DECK",
+              "effect": "SEARCH",
               "effectParams": {
-                "from": "DISCARD",
-                "toDeck": "PLAYER_DECK",
-                "count": 3
+                "source": [
+                  "PLAYER_DISCARD"
+                ],
+                "target": "SELF",
+                "fromTop": false,
+                "takeCount": 3,
+                "autoSelectIfUnambiguous": true,
+                "lookCount": "ALL",
+                "selectedDestination": "DECK_TOP",
+                "unselectedDestination": "DISCARD"
               }
             }
           ]
@@ -1559,8 +1568,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-09-29T18:21:36Z",
+        "reviewedAt": "2026-09-29T18:21:36Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

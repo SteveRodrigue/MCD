@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data & Engine): Flat Conditional Step Execution via `gate: "IF_FORM"` for Cards 01187, 01189, and 01106 ([Issue #190](https://github.com/SteveRodrigue/MCD/issues/190))**
+  - **Schema & Engine (`schema.ts`, `effects/index.ts`):**
+    - Added `'IF_FORM'` to `ConditionGateSchema` and implemented form gate resolution in `shouldExecuteStep()` (`player.currentForm === gateParams.form`).
+    - Decoupled `VILLAIN_ATTACKS` and `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` by removing card-specific Alter-Ego branching heuristics from generic effect primitives.
+  - **Card Editor UI (`StepPipelineEditor.tsx`, `step-pipeline-utils.ts`):**
+    - Added dedicated Form Gate parameter controls (`HERO` / `ALTER_EGO` dropdown) when `gate === 'IF_FORM'`.
+    - Formatted `IF_FORM` step summaries with `[IF_FORM: ${form}]` badge indicator.
+  - **Supplemental Pack Declarations (`core_encounter.json`):**
+    - Updated **01187** (*Assault*) and **01189** (*Gang-Up*) to flat 2-step pipelines with `gate: "IF_FORM"` and `form: "HERO"` / `"ALTER_EGO"` (`SURGE`).
+    - Migrated **01106** (*Stampede*) to the flat `IF_FORM` pattern for catalog consistency.
+  - **Automated Verification:**
+    - Updated `tests/engine/treacheries-activations.test.ts` to test Hero and Alter-Ego resolutions for 01187, 01189, and 01106.
+    - Updated `tests/ui/StepPipelineEditor.test.tsx` and `tests/ui/step-pipeline-summaries.test.tsx` for `IF_FORM` controls and summary rendering.
+
 - **Feat (UI & Data): Card Editor UI Revamp (Phases 1–5)**
   - **Collapsible Architecture & Progressive Disclosure (`CollapsibleSection.tsx`, `CardAttributesSection.tsx`):**
     - Created reusable `CollapsibleSection` component with comic pop-art styling, ARIA compliance (`role="button"`, `role="region"`, `aria-expanded`, `aria-controls`), keyboard navigation (Enter/Space), and `framer-motion` height transitions.

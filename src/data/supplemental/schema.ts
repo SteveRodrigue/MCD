@@ -177,6 +177,7 @@ export const ConditionGateSchema = z.enum([
   'IF_CONDITION_MET',
   'IF_CARD_IN_PLAY',
   'IF_CARD_NOT_IN_PLAY',
+  'IF_FORM',
 ]);
 
 /**
@@ -209,13 +210,11 @@ export const EffectTypeSchema = z.enum([
   'EXECUTE_WAKANDA_FOREVER',
   'EXHAUST',
   'FLIP_FORM',
-  'FORM_BRANCH',
   'GENERATE_RESOURCE',
   'GIVE_ADDITIONAL_BOOST_CARD',
   'GRANT_KEYWORD',
   'HEAL_DAMAGE',
   'HEAL_DAMAGE_WITH_SURGE',
-  'HERO_FORM_BRANCH',
   'INTERCEPT_ATTACK',
   'MODIFY_ALLY_LIMIT',
   'MODIFY_RESTRICTED_LIMIT',

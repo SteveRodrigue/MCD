@@ -1228,11 +1228,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Trigger Black Panther suit upgrades in player-selected sequence.',
     parameters: [],
   },
-  HERO_FORM_BRANCH: {
-    effect: 'HERO_FORM_BRANCH',
-    description: 'Branch based on hero form state.',
-    parameters: [],
-  },
   PLAYER_CHOICE: {
     effect: 'PLAYER_CHOICE',
     description: 'Prompt player to choose between multiple options.',
@@ -1275,11 +1270,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         description: 'Dynamic bonus card draw calculated from identity, traits, or game state',
       },
     ],
-  },
-  FORM_BRANCH: {
-    effect: 'FORM_BRANCH',
-    description: 'Execute steps based on the current identity form.',
-    parameters: [{ key: 'steps', label: 'Branch Steps', type: 'json' }],
   },
   MODIFY_RESTRICTED_LIMIT: {
     effect: 'MODIFY_RESTRICTED_LIMIT',

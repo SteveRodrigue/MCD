@@ -360,4 +360,39 @@ describe('StepPipelineEditor', () => {
       }),
     ]);
   });
+
+  it('renders IF_FORM gate controls and updates target form in state', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            id: 'assault_hero_attack',
+            gate: 'IF_FORM',
+            gateParams: { form: 'HERO' },
+            effect: 'VILLAIN_ATTACKS',
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    // Form parameter dropdown is rendered
+    const formSelect = screen.getByTestId('gate-param-form') as HTMLSelectElement;
+    expect(formSelect).toBeDefined();
+    expect(formSelect.value).toBe('HERO');
+
+    // Change to ALTER_EGO
+    await user.selectOptions(formSelect, 'ALTER_EGO');
+    expect(handleChange).toHaveBeenCalledWith([
+      expect.objectContaining({
+        gate: 'IF_FORM',
+        gateParams: expect.objectContaining({
+          form: 'ALTER_EGO',
+        }),
+      }),
+    ]);
+  });
 });

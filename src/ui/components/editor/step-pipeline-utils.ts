@@ -25,7 +25,11 @@ export function generateStepSummary(step: any, index: number): string {
 
   // Gate prefix
   if (step?.gate && step.gate !== 'ALWAYS') {
-    parts.unshift(`[${step.gate}]`);
+    if (step.gate === 'IF_FORM') {
+      parts.unshift(`[IF_FORM: ${step.gateParams?.form || 'HERO'}]`);
+    } else {
+      parts.unshift(`[${step.gate}]`);
+    }
   }
 
   return parts.join(' ');

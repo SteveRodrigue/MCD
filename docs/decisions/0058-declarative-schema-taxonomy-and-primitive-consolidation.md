@@ -130,10 +130,8 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 | **`MODIFY_STAT`**             | `{ stat: 'ATK' \| 'THW' \| 'DEF' \| 'REC' \| 'SCHEME', amount: number \| DynamicValueSource, target: TargetSelector, duration?: 'UNTIL_END_OF_PHASE' \| 'UNTIL_END_OF_ROUND' }` | `MODIFY_STAT`, `BOOST_STAT_CHOICE`, `BUFF_ALL_FRIENDLY_CHARACTERS` |
 | **`MODIFY_ALLY_LIMIT`**       | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_ALLY_LIMIT`, `ALLY_LIMIT_BONUS`                            |
 | **`MODIFY_RESTRICTED_LIMIT`** | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `RESTRICTED_LIMIT_BONUS`                                           |
-| **`MODIFY_HAND_SIZE`**        | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_HAND_SIZE`                                                 |
-| **`MODIFY_MAX_HEALTH`**       | `{ amount: number, target?: TargetSelector }`                                                                                                                                   | `MODIFY_MAX_HEALTH`                                                |
 | **`PLAYER_CHOICE`**           | `{ options: Array<{ label: string, steps: AbilityStep[] }> }`                                                                                                                   | `PLAYER_CHOICE`, `NICK_FURY_CHOICE`                                |
-| **`FORM_BRANCH`**             | `{ heroSteps?: AbilityStep[], alterEgoSteps?: AbilityStep[] }`                                                                                                                  | `HERO_FORM_BRANCH`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`          |
+| *(Superseded)* `FORM_BRANCH`  | *Replaced with flat `gate: "IF_FORM"` steps (`gateParams: { form: "HERO" \| "ALTER_EGO" }`)*                                                                                    | `HERO_FORM_BRANCH`, `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`          |
 
 #### E. Retirement of Bespoke Legacy Primitives (Tech Debt Decomposition)
 
@@ -142,7 +140,7 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 | `NICK_FURY_CHOICE`                        | `PLAYER_CHOICE` with 3 options: (1) `DRAW` count 3, (2) `REMOVE_THREAT` amount 2, (3) `DEAL_DAMAGE` amount 4          |
 | `EXPLOSION`                               | `DEAL_DAMAGE` (`target: 'ALL_CHARACTERS'`, `amount: 3`) + `DISCARD` (`target: 'SELF'`)                                |
 | `HULK_DISCARD_RESOLUTION`                 | `DISCARD` (`count: 1`, `source: 'HAND'`) + `DynamicValueSource` (`attribute: 'PRINTED_RESOURCES'`)                    |
-| `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`     | `FORM_BRANCH` (`heroSteps: [VILLAIN_ATTACKS]`, `alterEgoSteps: [TRIGGER_SURGE]`)                                      |
+| `FORM_BRANCH_VILLAIN_ATTACK_OR_SURGE`     | Flat steps using `gate: "IF_FORM"` (`hero` step + `alter_ego` step)                                                   |
 | `REPULSOR_BLAST`, `REPULSOR_BLAST_DAMAGE` | `DISCARD` (`count: 3`, `source: 'DECK'`) + `DEAL_DAMAGE` (`amount: DynamicValueSource from DISCARDED_RESOURCE_COUNT`) |
 
 ### 3. Target Selector Types (`TargetSelectorSchema`)

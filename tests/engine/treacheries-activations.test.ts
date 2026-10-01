@@ -124,6 +124,56 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
 
     // Both villain and minion attacked
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
+
+    // 2. In Alter-Ego Form -> Surges (deals encounter card), no attacks
+    delete state.pendingDecisionPrompt;
+    delete (state as any).pendingActivations;
+    state.players[0].engagedMinions = [];
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = peterParkerAlterEgo;
+    const initialDealtCount = state.players[0].dealtEncounterCards.length;
+
+    const resAlterEgo = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: gangUpInst,
+    });
+    expect(resAlterEgo.success).toBe(true);
+    expect(resAlterEgo.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1);
+    expect(resAlterEgo.state.pendingDecisionPrompt).toBeUndefined();
+  });
+
+  it('01106 Stampede: Causes villain to attack hero; surges if in alter-ego', () => {
+    const stampedeCard = cardCatalog.getCard('01106')!;
+    const stampedeInst = createCardInstance(stampedeCard);
+    const initialHp = state.players[0].health;
+
+    // 1. In Hero Form -> Villain attacks
+    const ability = stampedeCard.enrichment!.abilities![0];
+    const resHero = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: stampedeInst,
+    });
+    expect(resHero.success).toBe(true);
+    expect(resHero.state.pendingDecisionPrompt).toBeDefined();
+
+    // Resolve defender declaration to complete attack
+    const resolvedHeroState = resolveDefenderDeclaration(resHero.state, {
+      type: 'UNDEFENDED',
+      playerId: 'p1',
+    });
+    expect(resolvedHeroState.players[0].health).toBeLessThan(initialHp);
+
+    // 2. In Alter-Ego Form -> Surges (deals encounter card)
+    state.players[0].currentForm = 'alter_ego';
+    state.players[0].activeFormCard = peterParkerAlterEgo;
+    const initialDealtCount = state.players[0].dealtEncounterCards.length;
+
+    const resAlterEgo = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: stampedeInst,
+    });
+    expect(resAlterEgo.success).toBe(true);
+    expect(resAlterEgo.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1);
   });
 
   it('01111 Explosion: has active conditional When Revealed abilities', () => {

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Global Unicity Enforcement Across Players & Card Ingress (RR v1.8 pp. 28–29, [Issue #187](https://github.com/SteveRodrigue/MCD/issues/187))**
+  - **Legality Checker (`legality-checker.ts`):**
+    - Synchronized `evaluateCardPlayability` with `canPlayCard` to call canonical `checkUniqueCardPlayable(state, card)`.
+    - Enforced cross-player unicity across all player tableaus, in-play allies, hero/alter-ego identities, and villain/minion cards.
+  - **Card Ingress Protection (`effects/index.ts`):**
+    - Enforced `checkUniqueCardPlayable` filtering in `PUT_INTO_PLAY` to prevent unique cards from entering play via abilities if a matching unique card is already in play.
+  - **UI Hand Tray (`PlayerHandTray.tsx`):**
+    - Hand cards violating unicity immediately display disabled unplayable state (`isPlayable: false`), suppress the active play halo, and surface unicity violation reasons in tooltips and warning banners.
+  - **Architecture & Specifications:**
+    - Authored ADR-0073 (`0073-global-unicity-enforcement-across-players-and-card-ingress.md`).
+    - Updated `11_play_requirements.md` documenting built-in engine play legality gates vs declarative requirements.
+  - **Automated Verification:**
+    - Added `tests/engine/cross-player-unicity.test.ts` (cross-player ally collision, identity persona matching, support/upgrade collision, `PUT_INTO_PLAY` ingress prevention, resource spending legality).
+    - Added `tests/ui/player-hand-tray-unicity.test.tsx` (hand tray rendering without active play halo and with unicity violation tooltip).
+
 - **Fix (Data & Engine): Flat Conditional Step Execution via `gate: "IF_FORM"` for Cards 01187, 01189, and 01106 ([Issue #190](https://github.com/SteveRodrigue/MCD/issues/190))**
   - **Schema & Engine (`schema.ts`, `effects/index.ts`):**
     - Added `'IF_FORM'` to `ConditionGateSchema` and implemented form gate resolution in `shouldExecuteStep()` (`player.currentForm === gateParams.form`).

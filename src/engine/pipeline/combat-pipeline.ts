@@ -272,36 +272,104 @@ export function step3_openDefenderDeclarationPrompt(
 
   const options: DecisionPromptOption[] = [];
 
-  // 1. Basic Hero Defend option (if Hero form and ready)
+  // 1. Target Player: Basic Hero Defend option (if Hero form and ready)
   if (player.currentForm === 'hero' && !player.exhausted) {
     const heroStats = getEffectiveHeroStats(state, player);
+    const heroRetaliate = getEffectiveRetaliate(player, state);
+    const isTough = player.statusCards.includes(StatusCard.TOUGH);
     options.push({
       id: 'defend_hero',
       label: `Defend with ${player.hero.name} (DEF: ${heroStats.defense})`,
-      description: `Exhaust ${player.hero.name} to mitigate incoming damage by ${heroStats.defense}.`,
+      description: `Exhaust ${player.hero.name} to mitigate incoming damage by ${heroStats.defense}.${heroRetaliate > 0 ? ` Retaliate ${heroRetaliate} on survival.` : ''}`,
+      cardCode: player.hero.code,
+      cardName: player.hero.name,
+      statusBadges: {
+        isTough,
+        retaliate: heroRetaliate > 0 ? heroRetaliate : undefined,
+      },
       effect: 'DECLARE_DEFENDER',
       params: { defenderType: 'HERO', playerId: player.id },
     });
   }
 
-  // 2. Ready Allies Defend options
+  // 2. Target Player: Ready Allies Defend options
   for (const ally of player.allies) {
     if (!ally.exhausted) {
+      const allyRetaliate = getEffectiveRetaliate(ally, state);
+      const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
+      const allyCard = ally.card as any;
+      const allyHp = allyCard.health || 2;
+      const currentDmg = ally.tokens?.damage || 0;
+      const remHp = Math.max(0, allyHp - currentDmg);
       options.push({
         id: `defend_ally_${ally.instanceId}`,
         label: `Block with ${ally.card.name} (Ally)`,
-        description: `Exhaust ${ally.card.name} to absorb incoming attack.`,
+        description: `Exhaust ${ally.card.name} to absorb incoming attack (HP: ${remHp}).${allyRetaliate > 0 ? ` Retaliate ${allyRetaliate} on survival.` : ''}`,
+        cardCode: ally.card.code,
+        cardName: ally.card.name,
+        statusBadges: {
+          isTough,
+          retaliate: allyRetaliate > 0 ? allyRetaliate : undefined,
+        },
         effect: 'DECLARE_DEFENDER',
         params: { defenderType: 'ALLY', playerId: player.id, allyInstanceId: ally.instanceId },
       });
     }
   }
 
-  // 3. Take Undefended option
+  // 3. Other Players: Ready Heroes and Allies (Cross-Table Defense - RR v1.8 p. 209)
+  const otherPlayers = (state.players || []).filter((p) => p.id !== player.id);
+  for (const other of otherPlayers) {
+    if (other.currentForm === 'hero' && !other.exhausted) {
+      const otherStats = getEffectiveHeroStats(state, other);
+      const otherRetaliate = getEffectiveRetaliate(other, state);
+      const isTough = other.statusCards.includes(StatusCard.TOUGH);
+      options.push({
+        id: `defend_hero_${other.id}`,
+        label: `Defend with ${other.hero.name} (${other.name}) (DEF: ${otherStats.defense})`,
+        description: `Exhaust ${other.hero.name} to defend for ${player.hero.name}. Retargets attack to ${other.name}.`,
+        cardCode: other.hero.code,
+        cardName: other.hero.name,
+        statusBadges: {
+          isTough,
+          retaliate: otherRetaliate > 0 ? otherRetaliate : undefined,
+        },
+        effect: 'DECLARE_DEFENDER',
+        params: { defenderType: 'HERO', playerId: other.id },
+      });
+    }
+
+    for (const ally of other.allies) {
+      if (!ally.exhausted) {
+        const allyRetaliate = getEffectiveRetaliate(ally, state);
+        const isTough = (ally.statusCards || []).includes(StatusCard.TOUGH);
+        const allyCard = ally.card as any;
+        const allyHp = allyCard.health || 2;
+        const currentDmg = ally.tokens?.damage || 0;
+        const remHp = Math.max(0, allyHp - currentDmg);
+        options.push({
+          id: `defend_ally_${ally.instanceId}`,
+          label: `Block with ${ally.card.name} (${other.hero?.name || other.name}'s Ally)`,
+          description: `Exhaust ${ally.card.name} to block for ${player.hero.name} (HP: ${remHp}). Retargets attack to ${other.name}.`,
+          cardCode: ally.card.code,
+          cardName: ally.card.name,
+          statusBadges: {
+            isTough,
+            retaliate: allyRetaliate > 0 ? allyRetaliate : undefined,
+          },
+          effect: 'DECLARE_DEFENDER',
+          params: { defenderType: 'ALLY', playerId: other.id, allyInstanceId: ally.instanceId },
+        });
+      }
+    }
+  }
+
+  // 4. Take Undefended option
   options.push({
     id: 'undefended',
     label: 'Take Undefended',
-    description: 'Do not exhaust any character. Target identity takes full attack damage.',
+    description: `Do not exhaust any character. ${player.hero?.name || player.name} takes full attack damage.`,
+    icon: 'punch',
     effect: 'DECLARE_DEFENDER',
     params: { defenderType: 'UNDEFENDED', playerId: player.id },
   });
@@ -310,6 +378,8 @@ export function step3_openDefenderDeclarationPrompt(
     attackContext.attackerType === 'VILLAIN'
       ? state.villain.card.name
       : attackContext.attackerCard?.card.name || 'Minion';
+
+  const targetRetaliate = getEffectiveRetaliate(player, state);
 
   state = enqueueDecisionPrompt(state, {
     promptId: `prompt_defend_${attackContext.attackId}`,
@@ -325,6 +395,21 @@ export function step3_openDefenderDeclarationPrompt(
       attackContext.attackerType === 'VILLAIN'
         ? state.villain.card
         : attackContext.attackerCard?.card,
+    attackerName,
+    attackerCardCode:
+      attackContext.attackerType === 'VILLAIN'
+        ? state.villain.card.code
+        : attackContext.attackerCard?.card.code,
+    hasOverkill: attackContext.hasOverkill,
+    hasPiercing: attackContext.hasPiercing,
+    targetName: player.hero?.name || player.name,
+    targetPlayerName: player.name,
+    targetHeroName: player.hero?.name || player.name,
+    targetCardCode: player.hero?.code,
+    targetCurrentHp: player.health,
+    targetMaxHp: player.maxHealth,
+    targetHasTough: player.statusCards.includes(StatusCard.TOUGH),
+    targetRetaliate: targetRetaliate > 0 ? targetRetaliate : undefined,
     options,
   });
 
@@ -384,6 +469,14 @@ export function resolveDefenderDeclaration(
 
   state.activeAttackContext = attackContext;
   attackContext.defender = declaration;
+
+  // Cross-table defense retargeting (RR v1.8 p. 209-213)
+  if (
+    (declaration.type === 'HERO' || declaration.type === 'ALLY') &&
+    declaration.playerId !== attackContext.targetPlayerId
+  ) {
+    attackContext.targetPlayerId = declaration.playerId;
+  }
 
   const attackerName =
     attackContext.attackerType === 'VILLAIN'
@@ -649,10 +742,34 @@ export function step6_calculateAndApplyAttackDamage(
     rawDamage = Math.max(0, totalAttack - (attackContext.defenseValue || 0));
   }
 
-  const defenderAlly =
+  // Verify defending ally is still alive (RR v1.8 p. 226-228: if ally was defeated by boost, revert to UNDEFENDED)
+  let defenderAlly =
     attackContext.defender?.type === 'ALLY' && attackContext.defender.allyInstanceId
       ? player.allies.find((a) => a.instanceId === attackContext.defender?.allyInstanceId)
       : undefined;
+
+  if (attackContext.defender?.type === 'ALLY' && !defenderAlly) {
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'combat',
+      key: 'ally.defeated.boost.undefended',
+      params: {
+        player: player.name,
+        who_attacks:
+          attackContext.attackerType === 'VILLAIN'
+            ? state.villain.card.name
+            : attackContext.attackerCard?.card.name || 'Minion',
+        target: player.hero?.name || player.name,
+      },
+      onomatopoeia: 'DEFENDER DEFEATED! ATTACK UNDEFENDED!',
+    });
+    attackContext.defender = { type: 'UNDEFENDED', playerId: attackContext.targetPlayerId };
+    attackContext.heroDefended = false;
+    attackContext.defenseValue = 0;
+  }
 
   const attackerCardCode = attackContext.attackerCard?.card?.code || state.villain?.card?.code;
   const attackerName =
@@ -685,7 +802,14 @@ export function step6_calculateAndApplyAttackDamage(
       targetMaxHp,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
-    rawDamage = defenseResult.damageAmount ?? rawDamage;
+    const modifiedDamage = defenseResult.damageAmount ?? rawDamage;
+    if (modifiedDamage < rawDamage) {
+      attackContext.heroDefended = true;
+      if (attackContext.defender?.type !== 'HERO') {
+        attackContext.defender = { type: 'HERO', playerId: player.id };
+      }
+    }
+    rawDamage = modifiedDamage;
     if (defenseResult.hasPendingPrompt) {
       attackContext.pendingDamage = rawDamage;
       return;
@@ -718,18 +842,35 @@ export function applyCalculatedAttackDamage(
 
       const toughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
       if (toughIdx !== -1 && rawDamage > 0) {
-        ally.statusCards!.splice(toughIdx, 1);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'ally.tough.absorbed',
-          params: { ally: ally.card.name },
-          onomatopoeia: 'CLANG! (ALLY TOUGH)',
-        });
-      } else if (rawDamage > 0) {
+        if (attackContext.hasPiercing) {
+          ally.statusCards!.splice(toughIdx, 1);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'ally.piercing.tough.discarded',
+            params: { ally: ally.card.name },
+            onomatopoeia: 'PIERCING SHRED! (ALLY TOUGH LOST)',
+          });
+        } else {
+          ally.statusCards!.splice(toughIdx, 1);
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'combat',
+            key: 'ally.tough.absorbed',
+            params: { ally: ally.card.name },
+            onomatopoeia: 'CLANG! (ALLY TOUGH)',
+          });
+          rawDamage = 0;
+        }
+      }
+
+      if (rawDamage > 0) {
         const damageToAlly = Math.min(rawDamage, remainingHp);
         const excessDamage = rawDamage - damageToAlly;
 
@@ -793,18 +934,35 @@ export function applyCalculatedAttackDamage(
     // Hero or Undefended Identity Takes Attack Damage
     const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
     if (toughIndex !== -1 && rawDamage > 0) {
-      player.statusCards.splice(toughIndex, 1);
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'combat',
-        key: 'hero.tough.absorbed',
-        params: { player: player.name },
-        onomatopoeia: 'CLANG! (TOUGH)',
-      });
-    } else if (rawDamage > 0) {
+      if (attackContext.hasPiercing) {
+        player.statusCards.splice(toughIndex, 1);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'hero.piercing.tough.discarded',
+          params: { player: player.name },
+          onomatopoeia: 'PIERCING SHRED! (TOUGH LOST)',
+        });
+      } else {
+        player.statusCards.splice(toughIndex, 1);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'hero.tough.absorbed',
+          params: { player: player.name },
+          onomatopoeia: 'CLANG! (TOUGH)',
+        });
+        rawDamage = 0;
+      }
+    }
+
+    if (rawDamage > 0) {
       player.health = Math.max(0, player.health - rawDamage);
       state.log.push({
         id: `log_${Date.now()}`,
@@ -887,6 +1045,12 @@ export function finishAttackDamageAndPostResolution(
   let rawDamage = attackContext.pendingDamage ?? 0;
   if (preventedDamageAmount !== undefined) {
     rawDamage = Math.max(0, rawDamage - preventedDamageAmount);
+    if (preventedDamageAmount > 0 && attackContext.defender?.type !== 'ALLY') {
+      attackContext.heroDefended = true;
+      if (attackContext.defender?.type !== 'HERO') {
+        attackContext.defender = { type: 'HERO', playerId: player.id };
+      }
+    }
   }
   delete attackContext.pendingDamage;
 
@@ -921,12 +1085,21 @@ export function step7_resolvePostAttackAndRetaliate(
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: player.id,
       sourceInstanceId: attackContext.attackerCard?.instanceId,
+      damageAmount: attackContext.finalDamage,
+      acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
+    });
+  } else if (attackContext.defender?.type === 'ALLY' && player) {
+    dispatchTrigger(state, 'ATTACK_DEFENDED', {
+      targetPlayerId: player.id,
+      sourceInstanceId: attackContext.attackerCard?.instanceId,
+      damageAmount: attackContext.finalDamage,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
     });
   }
 
   dispatchTrigger(state, 'ATTACK_RESOLVED', {
     targetPlayerId: attackContext.targetPlayerId,
+    damageAmount: attackContext.finalDamage,
     acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
   });
 

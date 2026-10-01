@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Zap,
   ShieldAlert,
+  Swords,
 } from 'lucide-react';
 import { PendingDecisionPrompt } from '../../../engine/models';
 import { cardCatalog } from '../../../data/importer/card-loader';
@@ -192,13 +193,17 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
               <HelpCircle className="w-5 h-5 text-comic-black shrink-0" />
               <span>{prompt.title}</span>
             </h3>
-            {incomingDamage !== undefined && (
+            {(incomingDamage !== undefined ||
+              prompt.promptId.startsWith('prompt_defend') ||
+              prompt.attackerName) && (
               <div className="bg-red-50 border-2 border-comic-red rounded-lg p-3 shadow-comic-xs space-y-2.5">
                 <div className="flex items-center justify-between border-b border-comic-red/30 pb-1.5 flex-wrap gap-2">
                   <div className="flex items-center gap-2 text-comic-red">
                     <ShieldAlert className="w-4 h-4 shrink-0 text-comic-red animate-pulse" />
                     <span className="font-comic font-black uppercase text-xs tracking-wider">
-                      Incoming Attack Damage:
+                      {incomingDamage !== undefined
+                        ? 'Incoming Attack Damage:'
+                        : 'Enemy Attack Declaration:'}
                     </span>
                   </div>
                   {prompt.preventAmount !== undefined && (
@@ -225,14 +230,28 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                       <div className="font-comic font-black text-xs text-comic-black truncate">
                         {prompt.attackerName || 'Enemy'}
                       </div>
+                      <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                        {prompt.hasOverkill && (
+                          <span className="bg-comic-red text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                            OVERKILL
+                          </span>
+                        )}
+                        {prompt.hasPiercing && (
+                          <span className="bg-purple-600 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                            PIERCING
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {/* Middle: Direction arrow + incoming damage */}
                   <div className="flex flex-col items-center justify-center shrink-0 px-1">
-                    <div className="text-[10px] font-mono font-black text-comic-red">
-                      {incomingDamage} DMG
-                    </div>
+                    {incomingDamage !== undefined && (
+                      <div className="text-[10px] font-mono font-black text-comic-red">
+                        {incomingDamage} DMG
+                      </div>
+                    )}
                     <ArrowRight className="w-4 h-4 text-comic-red" />
                   </div>
 
@@ -252,21 +271,36 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                             : 'TARGET'}
                       </div>
                       <div className="font-comic font-black text-xs text-comic-black truncate">
-                        {prompt.defenderName || prompt.targetName || 'Hero'}
+                        {prompt.defenderName ||
+                          prompt.targetName ||
+                          prompt.targetHeroName ||
+                          'Hero'}
                       </div>
-                      {prompt.targetCurrentHp !== undefined && (
-                        <div className="text-[10px] font-mono font-bold text-slate-700">
-                          {prompt.targetMaxHp !== undefined
-                            ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
-                            : `${prompt.targetCurrentHp} HP`}
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                        {prompt.targetHasTough && (
+                          <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                            TOUGH
+                          </span>
+                        )}
+                        {prompt.targetRetaliate !== undefined && prompt.targetRetaliate > 0 && (
+                          <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                            RETALIATE {prompt.targetRetaliate}
+                          </span>
+                        )}
+                        {prompt.targetCurrentHp !== undefined && (
+                          <span className="text-[10px] font-mono font-bold text-slate-700">
+                            {prompt.targetMaxHp !== undefined
+                              ? `${prompt.targetCurrentHp} / ${prompt.targetMaxHp} HP`
+                              : `${prompt.targetCurrentHp} HP`}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Projected HP */}
-                {prompt.targetCurrentHp !== undefined && (
+                {incomingDamage !== undefined && prompt.targetCurrentHp !== undefined && (
                   <div className="flex items-center justify-between text-[11px] font-bold bg-white/60 rounded px-2 py-1 border border-comic-black/20 text-slate-800">
                     <span>Projected HP After Attack:</span>
                     <span className="font-mono font-black text-comic-black">
@@ -447,14 +481,29 @@ export const DecisionPromptModal: React.FC<DecisionPromptModalProps> = ({
                       >
                         {index + 1}
                       </span>
-                      {optionCardCode && (
+                      {optionCardCode ? (
                         <CardArtThumbnail
                           cardCode={optionCardCode}
                           cardName={option.label}
                           size="sm"
                         />
-                      )}
+                      ) : option.icon === 'punch' || option.id === 'undefended' ? (
+                        <div className="p-1 bg-comic-red text-white rounded border border-comic-black shadow-comic-xs flex items-center justify-center">
+                          <Swords className="w-4 h-4 text-white" />
+                        </div>
+                      ) : null}
                       <span>{option.label}</span>
+                      {option.statusBadges?.isTough && (
+                        <span className="bg-amber-400 text-slate-950 text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                          TOUGH
+                        </span>
+                      )}
+                      {option.statusBadges?.retaliate !== undefined &&
+                        option.statusBadges.retaliate > 0 && (
+                          <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-1.5 py-0.2 rounded border border-comic-black shadow-comic-xs">
+                            RETALIATE {option.statusBadges.retaliate}
+                          </span>
+                        )}
                       {requiresPayment && costAmount !== undefined && costAmount > 0 && (
                         <span className="inline-flex items-center gap-1 font-comic text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-300 border border-comic-black text-slate-950 shadow-xs">
                           ⚡ COST: {costAmount} {costAmount === 1 ? 'RESOURCE' : 'RESOURCES'}

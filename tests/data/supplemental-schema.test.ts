@@ -387,6 +387,26 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           effect: 'SEARCH',
           effectParams: {
             source: 'PLAYER_DECK',
+            selectedDestination: 'DECK_BOTTOM',
+          },
+        }).success,
+      ).toBe(true);
+
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'SEARCH',
+          effectParams: {
+            source: 'PLAYER_DISCARD',
+            selectedDestination: 'DECK_SHUFFLE',
+          },
+        }).success,
+      ).toBe(true);
+
+      expect(
+        AbilityStepSchema.safeParse({
+          effect: 'SEARCH',
+          effectParams: {
+            source: 'PLAYER_DECK',
             targetCardCode: '01046',
             trait: 'Black Panther',
             type: 'upgrade',

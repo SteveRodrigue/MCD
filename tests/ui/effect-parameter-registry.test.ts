@@ -82,6 +82,10 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(paramKeys).toContain('unselectedDestination');
     expect(paramKeys).toContain('autoSelectIfUnambiguous');
 
+    const selectedDestParam = desc.parameters.find((p) => p.key === 'selectedDestination');
+    expect(selectedDestParam?.options).toContain('DECK_BOTTOM');
+    expect(selectedDestParam?.options).toContain('DECK_SHUFFLE');
+
     const targetParam = desc.parameters.find((p) => p.key === 'target');
     expect(targetParam?.type).toBe('select');
     expect(targetParam?.defaultValue).toBe('SELF');

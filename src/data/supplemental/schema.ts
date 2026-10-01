@@ -685,7 +685,16 @@ export const SearchAndSelectParamsSchema = z
       .default(1),
     filter: UniversalCardFilterSchema.optional(),
     selectedDestination: z
-      .enum(['HAND', 'TABLEAU', 'DECK_TOP', 'DISCARD', 'ATTACH_TO_TARGET', 'REVEAL'])
+      .enum([
+        'HAND',
+        'TABLEAU',
+        'DECK_TOP',
+        'DECK_BOTTOM',
+        'DECK_SHUFFLE',
+        'DISCARD',
+        'ATTACH_TO_TARGET',
+        'REVEAL',
+      ])
       .default('HAND'),
     unselectedDestination: z
       .enum(['DISCARD', 'DECK_BOTTOM', 'DECK_SHUFFLE', 'DECK_TOP', 'LEAVE_IN_PLACE'])

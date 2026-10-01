@@ -822,6 +822,18 @@ export function shouldExecuteStep(
     return !!evaluatedResult && evaluatedResult.conditionMet === true;
   }
 
+  if (gate === 'IF_FORM') {
+    const targetForm = ((gateParams.form as string) || '').toLowerCase();
+    const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
+    if (!player || !targetForm) return false;
+    const currentForm = (player.currentForm || 'hero').toLowerCase();
+    return (
+      currentForm === targetForm ||
+      (targetForm === 'alter_ego' && currentForm === 'alter-ego') ||
+      (targetForm === 'alter-ego' && currentForm === 'alter_ego')
+    );
+  }
+
   return true;
 }
 
@@ -3861,77 +3873,38 @@ export function executeStep(
     }
 
     case 'VILLAIN_ATTACKS': {
-      if (player.currentForm === 'alter_ego') {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      } else {
-        executeVillainAttackAgainstPlayer(state, player);
-        return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
-      }
+      executeVillainAttackAgainstPlayer(state, player);
+      return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
     }
 
     case 'VILLAIN_AND_ENGAGED_MINIONS_ATTACK': {
-      if (player.currentForm === 'alter_ego') {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      } else {
-        const activations: {
-          type: 'VILLAIN' | 'MINION';
-          playerId: string;
-          minionInstanceId?: string;
-        }[] = [
-          { type: 'VILLAIN', playerId: player.id },
-          ...player.engagedMinions.map((m) => ({
-            type: 'MINION' as const,
-            playerId: player.id,
-            minionInstanceId: m.instanceId,
-          })),
-        ];
-        (state as any).pendingActivations = [
-          ...((state as any).pendingActivations || []),
-          ...activations,
-        ];
+      const activations: {
+        type: 'VILLAIN' | 'MINION';
+        playerId: string;
+        minionInstanceId?: string;
+      }[] = [
+        { type: 'VILLAIN', playerId: player.id },
+        ...player.engagedMinions.map((m) => ({
+          type: 'MINION' as const,
+          playerId: player.id,
+          minionInstanceId: m.instanceId,
+        })),
+      ];
+      (state as any).pendingActivations = [
+        ...((state as any).pendingActivations || []),
+        ...activations,
+      ];
 
-        if ((state as any).pendingActivations.length > 0) {
-          const act = (state as any).pendingActivations.shift()!;
-          if (act.type === 'VILLAIN') {
-            executeVillainAttackAgainstPlayer(state, player);
-          } else {
-            const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
-            if (minion) executeMinionAttackAgainstPlayer(state, minion, player);
-          }
+      if ((state as any).pendingActivations.length > 0) {
+        const act = (state as any).pendingActivations.shift()!;
+        if (act.type === 'VILLAIN') {
+          executeVillainAttackAgainstPlayer(state, player);
+        } else {
+          const minion = player.engagedMinions.find((m) => m.instanceId === act.minionInstanceId);
+          if (minion) executeMinionAttackAgainstPlayer(state, minion, player);
         }
-        return { state, success: true, onomatopoeia: 'GANG UP!' };
       }
-    }
-
-    case 'FORM_BRANCH': {
-      const branchSteps =
-        player.currentForm === 'hero'
-          ? step.effectParams?.heroSteps
-          : step.effectParams?.alterEgoSteps;
-      if (!Array.isArray(branchSteps) || branchSteps.length === 0) {
-        return { state, success: true, mutatedState: false, onomatopoeia: 'FORM BRANCH EMPTY' };
-      }
-      return executeSequence(state, branchSteps as AbilityStep[], context);
-    }
-
-    case 'HERO_FORM_BRANCH': {
-      const bombScare = state.sideSchemes.find(
-        (s) => s.card.code === '01109' || (s.card.name || '').includes('Bomb Scare'),
-      );
-      if (bombScare) {
-        const damage = bombScare.threat || 1;
-        player.health = Math.max(0, player.health - damage);
-        if (player.health <= 0) state.winner = 'VILLAIN';
-        return { state, success: true, onomatopoeia: 'EXPLOSION!' };
-      } else {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      }
+      return { state, success: true, onomatopoeia: 'GANG UP!' };
     }
 
     case 'REVEAL_ENCOUNTER_CARD_WITH_SURGE': {

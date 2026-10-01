@@ -756,7 +756,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         'SEARCH',
         'REMOVE_STATUS',
         'MODIFY_RESTRICTED_LIMIT',
-        'FORM_BRANCH',
       ];
       const canonicalTargets = [
         'CHOSEN_CONTROLLED_ALLY',

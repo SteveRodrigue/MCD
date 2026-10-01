@@ -560,6 +560,28 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
+              {step.gate === 'IF_FORM' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Form Gate Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Target Form
+                    </label>
+                    <select
+                      data-testid="gate-param-form"
+                      value={gateParams.form || 'HERO'}
+                      onChange={(e) => updateGateParam('form', e.target.value)}
+                      className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                    >
+                      <option value="HERO">HERO</option>
+                      <option value="ALTER_EGO">ALTER_EGO</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {(step.gate === 'IF_CARD_IN_PLAY' || step.gate === 'IF_CARD_NOT_IN_PLAY') && (
                 <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
                   <span className="text-[9px] uppercase font-bold text-yellow-800 block">

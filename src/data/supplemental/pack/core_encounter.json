@@ -429,34 +429,36 @@
       "abilities": [
         {
           "id": "stampede_attack",
-          "timing": "FORCED_RESPONSE",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "FORM_BRANCH",
-              "effectParams": {
-                "heroSteps": [
-                  {
-                    "effect": "VILLAIN_ATTACKS"
-                  }
-                ],
-                "alterEgoSteps": [
-                  {
-                    "effect": "SURGE"
-                  }
-                ]
-              }
+              "id": "stampede_hero_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
+              "effect": "VILLAIN_ATTACKS",
+              "effectParams": {}
+            },
+            {
+              "id": "stampede_alter_ego_surge",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "SURGE"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-01T07:50:00Z",
+        "reviewedAt": "2026-10-01T07:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: Rhino attacks you. If a character is damaged by this attack, that character is stunned."
       }
     },
@@ -1383,19 +1385,32 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
+              "id": "assault_hero_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
               "effect": "VILLAIN_ATTACKS",
               "effectParams": {}
+            },
+            {
+              "id": "assault_alter_ego_surge",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "SURGE"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-01T07:50:00Z",
+        "reviewedAt": "2026-10-01T07:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain attacks you."
       }
     },
@@ -1441,19 +1456,32 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
+              "id": "gang_up_hero_attack",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "HERO"
+              },
               "effect": "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
               "effectParams": {}
+            },
+            {
+              "id": "gang_up_alter_ego_surge",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "ALTER_EGO"
+              },
+              "effect": "SURGE"
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-01T07:50:00Z",
+        "reviewedAt": "2026-10-01T07:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 98,
+        "confidence": 100,
         "originalText": "<b>When Revealed (Alter-Ego)</b>: This card gains surge.\n<b>When Revealed (Hero)</b>: The villain and each minion engaged with you attacks you."
       }
     },

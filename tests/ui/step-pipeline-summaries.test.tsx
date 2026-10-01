@@ -71,6 +71,26 @@ describe('Compact Step Pipeline Summaries (Task 4.3)', () => {
       expect(
         generateStepSummary({ effect: 'DRAW', gate: 'ALWAYS', effectParams: { count: 2 } }, 0),
       ).toBe('#1 DRAW (2)');
+
+      // 7. IF_FORM gate formats with target form
+      expect(
+        generateStepSummary(
+          { effect: 'VILLAIN_ATTACKS', gate: 'IF_FORM', gateParams: { form: 'HERO' } },
+          0,
+        ),
+      ).toBe('[IF_FORM: HERO] #1 VILLAIN_ATTACKS');
+
+      expect(
+        generateStepSummary(
+          { effect: 'SURGE', gate: 'IF_FORM', gateParams: { form: 'ALTER_EGO' } },
+          1,
+        ),
+      ).toBe('[IF_FORM: ALTER_EGO] #2 SURGE');
+
+      // Defaults to HERO if gateParams.form is omitted
+      expect(generateStepSummary({ effect: 'VILLAIN_ATTACKS', gate: 'IF_FORM' }, 0)).toBe(
+        '[IF_FORM: HERO] #1 VILLAIN_ATTACKS',
+      );
     });
   });
 

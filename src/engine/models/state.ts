@@ -169,6 +169,14 @@ export interface DecisionPromptOption {
   label: string;
   description?: string;
   cardCode?: string;
+  cardName?: string;
+  statusBadges?: {
+    isTough?: boolean;
+    retaliate?: number;
+    hasOverkill?: boolean;
+    hasPiercing?: boolean;
+  };
+  icon?: 'punch' | 'shield' | 'attack' | 'zap';
   effect: string;
   params?: Record<string, unknown>;
   requiresPayment?: boolean;
@@ -332,13 +340,19 @@ export interface PendingDecisionPrompt {
   incomingDamage?: number;
   attackerCardCode?: string;
   attackerName?: string;
+  hasOverkill?: boolean;
+  hasPiercing?: boolean;
   defenderCardCode?: string;
   defenderName?: string;
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
   targetCardCode?: string;
   targetName?: string;
+  targetPlayerName?: string;
+  targetHeroName?: string;
   targetCurrentHp?: number;
   targetMaxHp?: number;
+  targetHasTough?: boolean;
+  targetRetaliate?: number;
   preventAmount?: number | 'ALL';
 }
 

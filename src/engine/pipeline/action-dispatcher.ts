@@ -61,7 +61,6 @@ import {
   getEffectiveAllyStats,
   getEffectiveHeroStats,
   getEffectiveMaxHealth,
-  getEffectiveRetaliate,
   hasEntityKeyword,
   consumeEntityStatusCards,
 } from './stat-calculator';
@@ -85,6 +84,7 @@ import {
   TargetFilterOptions,
 } from '../effects/target-resolver';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { applyDamageToTarget } from './damage-pipeline';
 
 function dispatchCanonicalDefeatTriggers(
   state: GameState,
@@ -473,103 +473,20 @@ export function dispatchAction(
 
       // 2. Resolve Attack on Target
       if (action.targetType === 'villain') {
-        const toughIndex = nextState.villain.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIndex !== -1) {
-          nextState.villain.statusCards.splice(toughIndex, 1);
-          const onomatopoeia = 'CLANG! (TOUGH)';
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            key: 'player.action.attackVillain',
-            params: {
-              player: player.name,
-              damage: 0,
-              remainingHealth: nextState.villain.health,
-            },
-            onomatopoeia,
-          });
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'status',
-            key: 'card.state.exhausted',
-            params: { card: player.activeFormCard.name },
-            onomatopoeia: 'EXHAUST',
-          });
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        }
-
-        // Check Villain Attachments for Damage Shield (e.g. Armored Rhino Suit 01098)
-        const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
-          const abs = att.card.enrichment?.abilities || [];
-          return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
-        });
-        if (armorIdx !== -1) {
-          const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
-          nextState.encounterDiscard.push(armor);
-          const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'combat',
-            key: 'attachment.damageShield.absorbed',
-            params: {
-              villain: nextState.villain.card.name,
-              attachment: armor.card.name,
-              damage: attackDamage,
-            },
-            onomatopoeia,
-          });
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'status',
-            key: 'card.state.exhausted',
-            params: { card: player.activeFormCard.name },
-            onomatopoeia: 'EXHAUST',
-          });
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        }
-
-        nextState.villain.health = Math.max(0, nextState.villain.health - attackDamage);
-
-        if (nextState.villain.health <= 0) {
-          dispatchCanonicalDefeatTriggers(
-            nextState,
-            player.id,
-            nextState.villain.instanceId || 'villain',
-            'CHARACTER',
-            'VILLAIN',
-          );
-          const defeatedState = handleVillainDefeat(nextState, nextState.villain.instanceId);
-          return { state: defeatedState, result: { success: true, onomatopoeia: 'POW!' } };
-        }
-
-        const onomatopoeia = 'POW!';
-        nextState.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: nextState.roundNumber,
-          phase: nextState.phase,
-          key: 'player.action.attackVillain',
-          params: {
-            player: player.name,
-            who_attacks: player.hero?.name || player.name,
-            who_is_taking_damage: nextState.villain.card.name,
-            amount: attackDamage,
-            damage: attackDamage,
-            remainingHealth: nextState.villain.health,
+        const damageRes = applyDamageToTarget(nextState, {
+          target: {
+            type: 'villain',
+            entity: nextState.villain,
+            name: nextState.villain.card?.name || (nextState.villain as any).name || 'Villain',
+            attachments: nextState.villain.attachments,
+            statusCards: nextState.villain.statusCards,
           },
-          onomatopoeia,
+          amount: attackDamage,
+          sourceType: 'HERO',
+          sourcePlayerId: player.id,
+          isAttack: true,
         });
+
         nextState.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
@@ -587,31 +504,12 @@ export function dispatchAction(
           targetType: 'villain',
         });
 
-        // Retaliate check: If villain survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
-        const villainRetaliate = getEffectiveRetaliate(nextState.villain, nextState);
-        if (villainRetaliate > 0) {
-          player.health = Math.max(0, player.health - villainRetaliate);
-          nextState.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: nextState.roundNumber,
-            phase: nextState.phase,
-            category: 'combat',
-            key: 'retaliate.hit',
-            params: {
-              damage: villainRetaliate,
-              source: nextState.villain.card.name,
-              player: player.name,
-            },
-            onomatopoeia: 'RETALIATE!',
-          });
-        }
-
+        const onomatopoeia = damageRes.result.onomatopoeia || 'POW!';
         return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
       if (action.targetType === 'minion' && action.targetInstanceId) {
-        let targetMinionPlayer = nextState.players.find((p) =>
+        const targetMinionPlayer = nextState.players.find((p) =>
           p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
         );
 
@@ -624,73 +522,42 @@ export function dispatchAction(
         );
         const minion = targetMinionPlayer.engagedMinions[minionIndex];
 
-        // Check Tough on Minion
-        const toughIndex = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-        if (toughIndex !== -1) {
-          minion.statusCards!.splice(toughIndex, 1);
-          const onomatopoeia = 'CLANG!';
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        }
+        const damageRes = applyDamageToTarget(nextState, {
+          target: {
+            type: 'minion',
+            entity: minion,
+            instanceId: minion.instanceId,
+            name: minion.card.name,
+            targetPlayerId: targetMinionPlayer.id,
+            attachments: minion.attachments,
+            statusCards: minion.statusCards,
+          },
+          amount: attackDamage,
+          sourceType: 'HERO',
+          sourcePlayerId: player.id,
+          isAttack: true,
+        });
 
-        const currentDamage = minion.tokens?.damage || 0;
-        const newDamage = currentDamage + attackDamage;
-        const minionHealth = (minion.card as MinionCard).health || 1;
+        nextState.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: nextState.roundNumber,
+          phase: nextState.phase,
+          category: 'status',
+          key: 'card.state.exhausted',
+          params: { card: player.activeFormCard.name },
+          onomatopoeia: 'EXHAUST',
+        });
 
-        if (newDamage >= minionHealth) {
-          // Defeated minion -> trigger attachments & discard (or Victory Display, RR v1.8 p. 30)
-          processHostDefeated(nextState, minion, { player: targetMinionPlayer });
-          targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
-          moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
-          dispatchCanonicalDefeatTriggers(
-            nextState,
-            player.id,
-            minion.instanceId,
-            'CHARACTER',
-            'MINION',
-          );
+        dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
+        dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
+          targetPlayerId: player.id,
+          targetType: 'minion',
+          targetInstanceId: action.targetInstanceId,
+        });
 
-          dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
-          dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
-            targetPlayerId: player.id,
-            targetType: 'minion',
-            targetInstanceId: action.targetInstanceId,
-          });
-
-          const onomatopoeia = 'KAPOW! DEFEATED!';
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        } else {
-          minion.tokens = { ...minion.tokens, damage: newDamage };
-
-          dispatchTrigger(nextState, 'BASIC_ATTACK_PERFORMED', { targetPlayerId: player.id });
-          dispatchTrigger(nextState, 'ATTACK_RESOLVED', {
-            targetPlayerId: player.id,
-            targetType: 'minion',
-            targetInstanceId: action.targetInstanceId,
-          });
-
-          // Retaliate check: If minion survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
-          const minionRetaliate = getEffectiveRetaliate(minion, nextState);
-          if (minionRetaliate > 0) {
-            player.health = Math.max(0, player.health - minionRetaliate);
-            nextState.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: nextState.roundNumber,
-              phase: nextState.phase,
-              category: 'combat',
-              key: 'retaliate.hit',
-              params: {
-                damage: minionRetaliate,
-                source: minion.card.name,
-                player: player.name,
-              },
-              onomatopoeia: 'RETALIATE!',
-            });
-          }
-
-          const onomatopoeia = 'BAM!';
-          return { state: nextState, result: { success: true, onomatopoeia } };
-        }
+        const onomatopoeia = damageRes.result.onomatopoeia || 'POW!';
+        return { state: nextState, result: { success: true, onomatopoeia } };
       }
 
       return { state: nextState, result: { success: true } };
@@ -744,53 +611,20 @@ export function dispatchAction(
 
       // Deal damage to target
       if (action.targetType === 'villain') {
-        const toughIdx = nextState.villain.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          nextState.villain.statusCards.splice(toughIdx, 1);
-        } else {
-          // Check damage shield on villain
-          const armorIdx = (nextState.villain.attachments || []).findIndex((att) => {
-            const abs = att.card.enrichment?.abilities || [];
-            return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
-          });
-          if (armorIdx !== -1) {
-            const armor = nextState.villain.attachments.splice(armorIdx, 1)[0];
-            nextState.encounterDiscard.push(armor);
-          } else {
-            nextState.villain.health = Math.max(0, nextState.villain.health - attackDmg);
-            if (nextState.villain.health <= 0) {
-              dispatchCanonicalDefeatTriggers(
-                nextState,
-                player.id,
-                nextState.villain.instanceId || 'villain',
-                'CHARACTER',
-                'VILLAIN',
-              );
-              handleVillainDefeat(nextState, nextState.villain.instanceId);
-            } else {
-              // Retaliate check: If villain survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
-              const villainRetaliate = getEffectiveRetaliate(nextState.villain, nextState);
-              if (villainRetaliate > 0) {
-                if (!ally.tokens) ally.tokens = {};
-                ally.tokens.damage = (ally.tokens.damage || 0) + villainRetaliate;
-                nextState.log.push({
-                  id: `log_${Date.now()}`,
-                  timestamp: Date.now(),
-                  round: nextState.roundNumber,
-                  phase: nextState.phase,
-                  category: 'combat',
-                  key: 'retaliate.hit',
-                  params: {
-                    damage: villainRetaliate,
-                    source: nextState.villain.card.name,
-                    player: allyCard.name,
-                  },
-                  onomatopoeia: 'RETALIATE!',
-                });
-              }
-            }
-          }
-        }
+        applyDamageToTarget(nextState, {
+          target: {
+            type: 'villain',
+            entity: nextState.villain,
+            name: nextState.villain.card?.name || (nextState.villain as any).name || 'Villain',
+            attachments: nextState.villain.attachments,
+            statusCards: nextState.villain.statusCards,
+          },
+          amount: attackDmg,
+          sourceType: 'ALLY',
+          sourceCardInstance: ally,
+          sourcePlayerId: player.id,
+          isAttack: true,
+        });
       } else if (action.targetType === 'minion' && action.targetInstanceId) {
         const targetMinionPlayer = nextState.players.find((p) =>
           p.engagedMinions.some((m) => m.instanceId === action.targetInstanceId),
@@ -802,51 +636,22 @@ export function dispatchAction(
           );
           const minion = targetMinionPlayer.engagedMinions[minionIndex];
 
-          // Check Tough on Minion
-          const toughIndex = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-          if (toughIndex !== -1) {
-            minion.statusCards!.splice(toughIndex, 1);
-          } else {
-            const currentDamage = minion.tokens?.damage || 0;
-            const newDamage = currentDamage + attackDmg;
-            const minionHealth = (minion.card as MinionCard).health || 1;
-
-            if (newDamage >= minionHealth) {
-              // Defeated minion -> trigger attachments & discard (or Victory Display, RR v1.8 p. 30)
-              processHostDefeated(nextState, minion, { player: targetMinionPlayer });
-              targetMinionPlayer.engagedMinions.splice(minionIndex, 1);
-              moveDefeatedCardToPile(nextState, minion, nextState.encounterDiscard);
-              dispatchCanonicalDefeatTriggers(
-                nextState,
-                player.id,
-                minion.instanceId,
-                'CHARACTER',
-                'MINION',
-              );
-            } else {
-              minion.tokens = { ...minion.tokens, damage: newDamage };
-              // Retaliate check: If minion survived and has Retaliate X (RR v1.8 p. 24, ADR-0054)
-              const minionRetaliate = getEffectiveRetaliate(minion, nextState);
-              if (minionRetaliate > 0) {
-                if (!ally.tokens) ally.tokens = {};
-                ally.tokens.damage = (ally.tokens.damage || 0) + minionRetaliate;
-                nextState.log.push({
-                  id: `log_${Date.now()}`,
-                  timestamp: Date.now(),
-                  round: nextState.roundNumber,
-                  phase: nextState.phase,
-                  category: 'combat',
-                  key: 'retaliate.hit',
-                  params: {
-                    damage: minionRetaliate,
-                    source: minion.card.name,
-                    player: allyCard.name,
-                  },
-                  onomatopoeia: 'RETALIATE!',
-                });
-              }
-            }
-          }
+          applyDamageToTarget(nextState, {
+            target: {
+              type: 'minion',
+              entity: minion,
+              instanceId: minion.instanceId,
+              name: minion.card.name,
+              targetPlayerId: targetMinionPlayer.id,
+              attachments: minion.attachments,
+              statusCards: minion.statusCards,
+            },
+            amount: attackDmg,
+            sourceType: 'ALLY',
+            sourceCardInstance: ally,
+            sourcePlayerId: player.id,
+            isAttack: true,
+          });
         }
       }
 

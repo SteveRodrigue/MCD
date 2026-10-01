@@ -34,6 +34,7 @@ import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
+import { applyDamageToTarget } from '../pipeline/damage-pipeline';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
@@ -2209,101 +2210,32 @@ export function executeStep(
       }
 
       // 2. Default: Deal damage to Villain
-      const toughIndex = state.villain.statusCards.indexOf(StatusCard.TOUGH);
-      if (toughIndex !== -1) {
-        state.villain.statusCards.splice(toughIndex, 1);
-        const onomatopoeia = 'CLANG! (TOUGH)';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          key: 'card.effect.dealDamage',
-          params: {
-            player: player.name,
-            target: 'villain',
-            amount: 0,
-            toughAbsorbed: true,
-          },
-          onomatopoeia,
-        });
-        return { state, success: true, onomatopoeia };
-      }
-
-      // Check damage shield on villain (e.g. Armored Rhino Suit 01098)
-      const armorIdx = (state.villain.attachments || []).findIndex((att) => {
-        const abs = att.card.enrichment?.abilities || [];
-        return abs.some((a) => a.steps?.some((s) => s.effect === 'ATTACHMENT_DAMAGE_SHIELD'));
-      });
-      if (armorIdx !== -1) {
-        const armor = state.villain.attachments.splice(armorIdx, 1)[0];
-        state.encounterDiscard.push(armor);
-        const onomatopoeia = 'ARMORED SUIT ABSORBS DAMAGE!';
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'attachment.damageShield.absorbed',
-          params: {
-            villain: state.villain.card.name,
-            attachment: armor.card.name,
-            damage: amount,
-          },
-          onomatopoeia,
-        });
-        return { state, success: true, onomatopoeia };
-      }
-
-      state.villain.health = Math.max(0, state.villain.health - amount);
-      if (state.villain.health <= 0) {
-        const defeatedState = handleVillainDefeat(state, state.villain.instanceId);
-        return {
-          state: defeatedState,
-          success: true,
-          onomatopoeia: `KAPOW! ${amount} DAMAGE!`,
-        };
-      }
-
-      const onomatopoeia = `KAPOW! ${amount} DAMAGE!`;
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'card.effect.dealDamage',
-        params: {
-          player: player.name,
-          target: 'villain',
-          amount,
-          remainingHealth: state.villain.health,
-        },
-        onomatopoeia,
-      });
-
-      // Retaliate check if villain survives an attack (RR v1.8 p. 24, ADR-0054)
       const isAttack = Boolean(step.effectParams?.isAttack || context.isAttack);
-      if (isAttack && state.villain.health > 0) {
-        const villainRetaliate = getEffectiveRetaliate(state.villain, state);
-        if (villainRetaliate > 0) {
-          player.health = Math.max(0, player.health - villainRetaliate);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'retaliate.hit',
-            params: {
-              damage: villainRetaliate,
-              source: state.villain.card.name,
-              player: player.name,
-            },
-            onomatopoeia: 'RETALIATE!',
-          });
-        }
-      }
+      const hasPiercing = Boolean(
+        step.effectParams?.piercing ||
+        step.effectParams?.keyword === 'Piercing' ||
+        (context.sourceCardInstance?.card as any)?.keywords?.includes('Piercing') ||
+        (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Piercing'),
+      );
+
+      const damageRes = applyDamageToTarget(state, {
+        target: {
+          type: 'villain',
+          entity: state.villain,
+          name: state.villain.card.name,
+          attachments: state.villain.attachments,
+          statusCards: state.villain.statusCards,
+        },
+        amount,
+        sourceType: 'CARD_EFFECT',
+        sourceCardInstance: context.sourceCardInstance,
+        sourcePlayerId: player.id,
+        isAttack,
+        hasPiercing,
+      });
+
+      state = damageRes.state;
+      const onomatopoeia = damageRes.result.onomatopoeia || `KAPOW! ${amount} DAMAGE!`;
 
       return {
         state,

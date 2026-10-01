@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-09-29T00:42:55.055Z`  
+> **Generated:** `2026-10-01T00:46:42.045Z`  
 > **Source Packs Scanned:** `core, core_encounter`
 
 ---
@@ -98,9 +98,8 @@ Changing these primitives will affect many cards across the entire game engine:
 | **Effect** | `ADD_THREAT` | **9** | `01107` Breakin' & Takin' (side_scheme), `01109` Bomb Scare (side_scheme), `01161` Personal Challenge (side_scheme) *(+5 more)* |
 | **Effect** | `HEAL_DAMAGE` | **6** | `01006` Aunt May (support), `01051` Tigra (ally), `01080` Med Team (support) *(+3 more)* |
 | **Effect** | `ATTACH_TO_HOST` | **6** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01074` Inspired (upgrade) *(+3 more)* |
+| **Effect** | `SEARCH` | **6** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+3 more)* |
 | **Effect** | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
-| **Effect** | `SEARCH` | **5** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+2 more)* |
-| **Effect** | `GRANT_KEYWORD` | **5** | `01039` Rocket Boots (upgrade), `01040a` Black Panther (hero), `01099` Charge (attachment) *(+2 more)* |
 | **Effect** | `SURGE` | **5** | `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery), `01111` Explosion (treachery) *(+2 more)* |
 | **Trigger** | `WHEN_REVEALED` | **43** | `01095` Rhino (villain), `01096` Rhino (villain), `01098` Armored Rhino Suit (attachment) *(+40 more)* |
 | **Trigger** | `ENTERS_PLAY` | **5** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally) *(+2 more)* |
@@ -114,7 +113,6 @@ These primitives are only declared on a single card. They represent high special
 | Category | Primitive Name | Card Code | Card Name & Pack | Ability ID |
 | :--- | :--- | :--- | :--- | :--- |
 | **Effect** | `ADD_COUNTERS` | `01018` | Energy Channel (upgrade) (core) | `energy_channel_add` |
-| **Effect** | `ADD_TRAIT` | `01017` | Cosmic Flight (upgrade) (core) | `cosmic_flight_aerial` |
 | **Effect** | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | `01166` | Highway Robbery (side_scheme) (core_encounter) | `highway_robbery_when_revealed` |
 | **Effect** | `ATTACHMENT_DAMAGE_SHIELD` | `01098` | Armored Rhino Suit (attachment) (core_encounter) | `armored_rhino_suit_shield` |
 | **Effect** | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
@@ -127,6 +125,7 @@ These primitives are only declared on a single card. They represent high special
 | **Effect** | `PLAY_FROM_ZONE` | `01071` | Make the Call (event) (core) | `make_the_call` |
 | **Effect** | `REDUCE_NEXT_CARD_COST` | `01092` | Helicarrier (support) (core) | `helicarrier_action` |
 | **Effect** | `REVEAL_ENCOUNTER_CARD` | `01193` | Under Fire (treachery) (core_encounter) | `under_fire_when_revealed` |
+| **Effect** | `SHUFFLE_INTO_DECK` | `01190` | Shadow of the Past (treachery) (core_encounter) | `shadow_of_the_past_when_revealed` |
 | **Effect** | `TRANSFER_DAMAGE` | `01049` | Vibranium Suit (upgrade) (core) | `vibranium_suit_special` |
 | **Effect** | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | `01189` | Gang-Up (treachery) (core_encounter) | `gang_up_when_revealed` |
 | **Effect** | `VILLAIN_SCHEMES` | `01186` | Advance (treachery) (core_encounter) | `advance_when_revealed` |
@@ -179,10 +178,10 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ADD_THREAT` | **9** | `01107` (Breakin' & Takin' (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)), `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)), `01192` (Masterplan (treachery)) |
 | `HEAL_DAMAGE` | **6** | `01006` (Aunt May (support)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01158` (Heart-Shaped Herb (treachery)) |
 | `ATTACH_TO_HOST` | **6** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)), `01098` (Armored Rhino Suit (attachment)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
+| `SEARCH` | **6** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01042` (Ancestral Knowledge (event)), `01095` (Rhino (villain)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
-| `SEARCH` | **5** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01095` (Rhino (villain)) |
-| `GRANT_KEYWORD` | **5** | `01039` (Rocket Boots (upgrade)), `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
 | `SURGE` | **5** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01111` (Explosion (treachery)), `01190` (Shadow of the Past (treachery)), `01193` (Under Fire (treachery)) |
+| `GRANT_KEYWORD` | **4** | `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
 | `EXECUTE_WAKANDA_FOREVER` | **4** | `01043a` (Wakanda Forever! (event)), `01043b` (Wakanda Forever! (event)), `01043c` (Wakanda Forever! (event)), `01043d` (Wakanda Forever! (event)) |
 | `DOUBLE_RESOURCE_FOR_ASPECT` | **4** | `01055` (The Power of Aggression (resource)), `01062` (The Power of Justice (resource)), `01072` (The Power of Leadership (resource)), `01079` (The Power of Protection (resource)) |
 | `PLAYER_CHOICE` | **4** | `01068` (Vision (ally)), `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01191` (Exhaustion (treachery)) |
@@ -190,13 +189,12 @@ These primitives are declared in schema types or specifications but have **0 act
 | `PREVENT_THREAT` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
+| `ADD_TRAIT` | **2** | `01017` (Cosmic Flight (upgrade)), `01039` (Rocket Boots (upgrade)) |
 | `RETURN_TO_HAND` | **2** | `01020` (Hellcat (ally)), `01166` (Highway Robbery (side_scheme)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
-| `SHUFFLE_INTO_DECK` | **2** | `01042` (Ancestral Knowledge (event)), `01190` (Shadow of the Past (treachery)) |
 | `VILLAIN_ATTACKS` | **2** | `01078` (Get Behind Me! (event)), `01187` (Assault (treachery)) |
 | `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
 | `INTERCEPT_ATTACK` | **1** | `01009` (Webbed Up (upgrade)) |
-| `ADD_TRAIT` | **1** | `01017` (Cosmic Flight (upgrade)) |
 | `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
 | `MODIFY_HAND_SIZE` | **1** | `01029a` (Iron Man (hero)) |
@@ -211,6 +209,7 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `VILLAIN_SCHEMES` | **1** | `01186` (Advance (treachery)) |
 | `VILLAIN_AND_ENGAGED_MINIONS_ATTACK` | **1** | `01189` (Gang-Up (treachery)) |
+| `SHUFFLE_INTO_DECK` | **1** | `01190` (Shadow of the Past (treachery)) |
 | `REVEAL_ENCOUNTER_CARD` | **1** | `01193` (Under Fire (treachery)) |
 
 ---

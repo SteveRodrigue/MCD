@@ -47,6 +47,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
 
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = spiderManHero;
+    state.options = { villainPhaseStepping: true };
   });
 
   describe('Card Play Restrictions during Villain Phase', () => {

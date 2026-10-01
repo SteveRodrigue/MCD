@@ -17,6 +17,8 @@
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",
     "audit:schema-engine": "tsx tools/audit/schema-engine-coverage.ts",
     "card:get": "tsx tools/audit/get-card-data.ts",
+    "card:extract": "tsx scripts/extract-card.ts",
+    "card:validate": "tsx scripts/validate-card.ts",
     "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",
     "rule": "python scripts/lookup-rule.py",

@@ -108,7 +108,7 @@
 | :------------------- | :-------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Rules Reference**  | **"Discard" (p. 10)**                                                                   | **"Search" (p. 26)** & **"Look at" (p. 19)**                                                                                                         |
 | **Primary Intent**   | Destruction, penalty, or milling into discard pile.                                     | Inspection, drafting, or tutoring cards to keep/play.                                                                                                |
-| **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`).                        | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
+| **Card Destination** | **Always Discard Pile** (`player.discard` / `encounterDiscard`).                        | **Two-Pile Split**: selected cards go to `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`), remainder to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`). |
 | **Example Cards**    | _Caught Off Guard_, _Black Cat_ (01002), _Charge_, Obligations, Treachery hand discard. | _Tony Stark_ (Futurist `01029b`), _Make the Call_, _Ancestral Knowledge_.                                                                            |
 
 - **Rule of Thumb:** If any card is kept, drawn into hand, or put into play, use **`SEARCH`**. If all cards are destroyed, milled, or sacrificed, use **`DISCARD`**.
@@ -148,7 +148,7 @@ Supported `discardAttribute` inspection modes:
 ### `SEARCH`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts) / ADR-0030, ADR-0058 / _Tony Stark_ `01029b` Futurist / _T'Challa_ `01040b` Foresight / _Shuri_ `01041`)
-- **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`) and automatic resolution for unambiguous matches (`autoSelectIfUnambiguous`).
+- **Description:** Universal declarative search and card discovery primitive. Inspects cards from a source zone (`PLAYER_DECK`, `PLAYER_DISCARD`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `PLAYER_HAND`), filters candidates matching criteria (`targetCardCode`, `trait`, `type`, etc.), and presents an interactive `PendingDecisionPrompt` allowing the player to select up to `takeCount` cards into `selectedDestination` (`HAND`, `TABLEAU`, `DECK_SHUFFLE`, etc.), routing unselected looked cards to `unselectedDestination` (`DISCARD`, `DECK_BOTTOM`, etc.) with optional post-search shuffle (`shuffleAfter`) and automatic resolution for unambiguous matches (`autoSelectIfUnambiguous`).
 
 #### Parameters
 
@@ -158,7 +158,7 @@ Supported `discardAttribute` inspection modes:
 | `lookCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `undefined`                             | Number of top cards to look at. If `0`, `"ALL"`, or omitted (`undefined`), searches the **entire source zone/pile**. If `1+`, slices top $X$ cards. Cannot be negative.      |
 | `takeCount`               | `number \| "ALL" \| DynamicValueSource` | No       | `1`                                     | Number of matching cards to select. If `0` or `"ALL"`, takes **all matching cards** without a prompt. If `1+`, takes up to $X$ cards with selection prompt if choices exist. |
 | `filter`                  | `UniversalCardFilter`                   | No       | `undefined`                             | Canonical filter predicate. See [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "traits": ["Tech"], "types": ["upgrade"] }`, `{ "codes": ["01046"] }`). |
-| `selectedDestination`     | `enum`                                  | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`, `"REVEAL"`).                                                         |
+| `selectedDestination`     | `enum`                                  | No       | `"HAND"`                                | Destination zone for chosen cards (`"HAND"`, `"TABLEAU"`, `"DECK_TOP"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DISCARD"`, `"ATTACH_TO_TARGET"`, `"REVEAL"`).                                                         |
 | `unselectedDestination`   | `enum`                                  | No       | `null`                                  | Destination for remaining looked cards (`"DISCARD"`, `"DECK_BOTTOM"`, `"DECK_SHUFFLE"`, `"DECK_TOP"`, `"LEAVE_IN_PLACE"`).                                                      |
 | `shuffleAfter`            | `boolean`                               | No       | `true` (if lookCount omitted) / `false` | Whether to shuffle the searched deck(s) after search completion. Automatically shuffles all decks included in `source`.                                                        |
 | `autoSelectIfUnambiguous` | `boolean`                               | No       | `true`                                  | When `true`, automatically resolves without a decision prompt when matching candidate count $\le$ `takeCount`.                                                                  |
@@ -218,6 +218,24 @@ Supported `discardAttribute` inspection modes:
     "selectedDestination": "REVEAL",
     "shuffleAfter": true,
     "autoSelectIfUnambiguous": true
+  }
+}
+```
+
+#### Example 4: Discard Retrieval & Deck Shuffle (Ancestral Knowledge `01042`)
+
+```json
+{
+  "effect": "SEARCH",
+  "effectParams": {
+    "source": ["PLAYER_DISCARD"],
+    "target": "SELF",
+    "fromTop": false,
+    "takeCount": 3,
+    "autoSelectIfUnambiguous": true,
+    "lookCount": "ALL",
+    "selectedDestination": "DECK_SHUFFLE",
+    "unselectedDestination": "DISCARD"
   }
 }
 ```

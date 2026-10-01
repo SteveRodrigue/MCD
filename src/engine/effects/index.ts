@@ -3935,10 +3935,11 @@ export function executeStep(
         sourceList = player.hand || [];
       }
 
-      const matches =
+      const matches = (
         step.effectParams?.target === 'SELF' && context.sourceCardInstance
           ? [context.sourceCardInstance]
-          : sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }));
+          : sourceList.filter((c) => matchesCardFilter(c.card, filter, { player, state }))
+      ).filter((c) => !c.card.isUnique || checkUniqueCardPlayable(state, c.card).allowed);
 
       if (matches.length === 0) {
         return {

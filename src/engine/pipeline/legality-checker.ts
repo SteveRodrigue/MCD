@@ -1990,14 +1990,10 @@ export function evaluateCardPlayability(
     }
   }
 
-  // 4. Unicity Constraint Check (RR v1.8 p. 28)
-  if (card.isUnique) {
-    const alreadyInPlay =
-      player.allies.some((a) => a.card.name === card.name) ||
-      player.tableau.some((t) => t.card.name === card.name);
-    if (alreadyInPlay) {
-      reasons.push(`A unique copy of '${card.name}' is already in play`);
-    }
+  // 4. Global Unicity Constraint Check (RR v1.8 p. 28-29)
+  const unicityCheck = checkUniqueCardPlayable(state, card);
+  if (!unicityCheck.allowed && unicityCheck.reason) {
+    reasons.push(unicityCheck.reason);
   }
 
   // 5. Maximum Potential Resource Affordability Check

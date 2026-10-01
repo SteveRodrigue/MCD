@@ -126,3 +126,25 @@ export const PlayRequirementsSchema = z
 5. `identityNames` against `player.hero.name`, `player.alterEgo.name`, and active form titles.
 
 Both `canPlayCard` and `evaluateCardPlayability` call `evaluatePlayRequirements` synchronously before evaluating resource costs or target validation.
+
+---
+
+## 🛡️ Built-in Engine Play Legality Gates vs. Declarative Play Requirements
+
+Not all play restrictions are declared in supplemental `playRequirements`. Universal rules defined in the Marvel Champions Rules Reference v1.8 are evaluated automatically as engine-level invariants across all cards:
+
+1. **Global Unicity (RR v1.8 pp. 28–29 / ADR-0073):**
+   - Evaluated automatically for any card where `is_unique: true` (`checkUniqueCardPlayable`).
+   - Checks against all active hero and alter-ego identity titles and subtitles across all players.
+   - Checks against all in-play allies and tableaus across all player seats.
+   - Checks against all in-play encounter cards (villains, unique minions).
+   - If a matching unique card is already in play or shares an identity persona, the card cannot be played or enter play.
+   - Supplemental data files do not need to declare unicity restrictions; the engine enforces this globally across both `canPlayCard` and `evaluateCardPlayability`.
+
+2. **Board Capacity & Slots (RR v1.8 p. 3, 25 / ADR-0018):**
+   - Ally limit (base 3, modified by cards like *Avengers Tower* or *Triskelion*).
+   - Restricted card limit (base 2 slots, modified by cards like *Side Holster*).
+
+3. **Per-Player Limits:**
+   - Evaluated dynamically via `maxPerPlayer` / `max_per_player`.
+

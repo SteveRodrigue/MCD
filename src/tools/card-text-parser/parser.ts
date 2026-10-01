@@ -46,7 +46,7 @@ export function parseCardText(rawText: string, cardCode?: string): ParseCardResu
     const discardOnEmpty = /when those are gone, discard this card/i.test(normalizedText);
     const uses: CardUses = {
       count,
-      type,
+      counterType: type,
       discardOnEmpty: discardOnEmpty || undefined,
     };
     enrichment.uses = uses;

@@ -155,6 +155,7 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
               <option value="MINION">Minion</option>
               <option value="SCHEME">Scheme</option>
               <option value="CHARACTER">Character</option>
+              <option value="ALLY">Ally</option>
             </select>
           </div>
 

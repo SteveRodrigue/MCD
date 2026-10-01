@@ -17,7 +17,12 @@ import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
-import { SupplementalEditorScreen } from './components/editor/SupplementalEditorScreen';
+
+const SupplementalEditorScreen = React.lazy(() =>
+  import('./components/editor/SupplementalEditorScreen').then((m) => ({
+    default: m.SupplementalEditorScreen,
+  })),
+);
 
 export const AppContent: React.FC = () => {
   const { settings } = useGameSettings();
@@ -220,14 +225,24 @@ export const AppContent: React.FC = () => {
         )}
 
         {stage === 'EDITOR' && (
-          <SupplementalEditorScreen
-            onBackToGame={() => {
-              if (window.location.pathname.startsWith('/editor')) {
-                window.history.pushState({}, '', '/');
-              }
-              setStage(gameState ? 'IN_GAME' : 'SETUP');
-            }}
-          />
+          <React.Suspense
+            fallback={
+              <div className="flex items-center justify-center h-screen bg-comic-paper">
+                <div className="font-bangers text-2xl text-black animate-pulse">
+                  Loading Editor...
+                </div>
+              </div>
+            }
+          >
+            <SupplementalEditorScreen
+              onBackToGame={() => {
+                if (window.location.pathname.startsWith('/editor')) {
+                  window.history.pushState({}, '', '/');
+                }
+                setStage(gameState ? 'IN_GAME' : 'SETUP');
+              }}
+            />
+          </React.Suspense>
         )}
 
         {/* Infinite Loop Detected Modal (ADR-0053, Issue #48) */}

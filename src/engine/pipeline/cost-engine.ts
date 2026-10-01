@@ -169,7 +169,7 @@ export function getGeneratorProvidedResources(
 
   if (!tableAbility) {
     if (enrichment?.uses) {
-      const uType = enrichment.uses.type;
+      const uType = enrichment.uses.counterType;
       const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
       if (count <= 0) return 0;
       if (requirePrinted) return 0;
@@ -195,7 +195,7 @@ export function getGeneratorProvidedResources(
   }
 
   if (enrichment?.uses) {
-    const uType = enrichment.uses.type;
+    const uType = enrichment.uses.counterType;
     const count = gCard.tokens?.counters ?? (uType ? gCard.counters?.[uType] : undefined) ?? 0;
     if (count <= 0) return 0;
   }
@@ -899,7 +899,7 @@ export function executeResourceCostPayment(
           }
         }
         if (enrichment?.uses) {
-          const counterType = enrichment.uses.type;
+          const counterType = enrichment.uses.counterType;
           if (
             gCard.tokens &&
             typeof gCard.tokens.counters === 'number' &&
@@ -1242,7 +1242,7 @@ export function getAvailableResources(
     // Check if counter card with 0 counters
     if (
       uses &&
-      (item.tokens?.counters ?? (item.counters as any)?.[uses.type || 'counters'] ?? 0) <= 0
+      (item.tokens?.counters ?? (item.counters as any)?.[uses.counterType || 'counters'] ?? 0) <= 0
     ) {
       continue;
     }

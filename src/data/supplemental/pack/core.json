@@ -272,7 +272,7 @@
       ],
       "uses": {
         "count": 3,
-        "type": "web",
+        "counterType": "web",
         "discardOnEmpty": true
       },
       "audit": {
@@ -631,7 +631,7 @@
     "01018": {
       "maxPerPlayer": 1,
       "uses": {
-        "type": "energy",
+        "counterType": "energy",
         "count": 0,
         "max": 5
       },
@@ -2066,7 +2066,7 @@
     },
     "01056": {
       "uses": {
-        "type": "attack",
+        "counterType": "attack",
         "count": 3,
         "discardOnEmpty": true
       },
@@ -2312,7 +2312,7 @@
     },
     "01064": {
       "uses": {
-        "type": "snoop",
+        "counterType": "snoop",
         "count": 3,
         "discardOnEmpty": true
       },
@@ -2378,7 +2378,7 @@
     },
     "01066": {
       "uses": {
-        "type": "arrow",
+        "counterType": "arrow",
         "count": 4,
         "discardOnEmpty": false
       },
@@ -2842,7 +2842,7 @@
     },
     "01080": {
       "uses": {
-        "type": "medical",
+        "counterType": "medical",
         "count": 3,
         "discardOnEmpty": true
       },

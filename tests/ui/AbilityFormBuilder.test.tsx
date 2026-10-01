@@ -23,12 +23,14 @@ const StatefulAbilityFormBuilder: React.FC<{
 };
 
 describe('AbilityFormBuilder Card-Level Attributes', () => {
-  it('renders top-level card metadata fields', () => {
+  it('renders top-level card metadata fields', async () => {
+    const user = userEvent.setup();
     render(
       <AbilityFormBuilder supplemental={{ audit: { comment: 'Test card' } }} onChange={vi.fn()} />,
     );
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
+    await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
     expect(screen.getByTestId('card-traits-input')).toBeDefined();
     expect(screen.getByTestId('card-restricted-slots-input')).toBeDefined();
     expect(screen.getByTestId('card-additional-boost-cards-input')).toBeDefined();
@@ -61,6 +63,9 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
       }),
     );
 
+    // Expand Layout & Display for victoryPoints and isLandscape
+    await user.click(screen.getByTestId('section-layout-display-toggle'));
+
     const vpInput = screen.getByTestId('card-victory-points-input');
     fireEvent.change(vpInput, { target: { value: '2' } });
     expect(handleChange).toHaveBeenCalledWith(
@@ -89,13 +94,16 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
       />,
     );
 
+    // Expand Card Mechanics to configure uses
+    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
+
     // Click Configure Uses
     const toggleBtn = screen.getByTestId('toggle-uses-btn');
     await user.click(toggleBtn);
 
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        uses: { count: 3, type: 'charge', discardOnEmpty: true },
+        uses: { count: 3, counterType: 'charge', discardOnEmpty: true },
       }),
     );
 
@@ -121,6 +129,9 @@ describe('AbilityFormBuilder Card-Level Attributes', () => {
     const handleChange = vi.fn();
 
     render(<StatefulAbilityFormBuilder initial={{ keywords: [] }} onChange={handleChange} />);
+
+    // Expand Card Mechanics to access keywords
+    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
 
     // Toggle Guard
     const guardBtn = screen.getByText('Guard');
@@ -441,7 +452,7 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
 
     const fullCard = {
       audit: { comment: 'Valid upgraded card' },
-      uses: { count: 3, type: 'shield', discardOnEmpty: false },
+      uses: { count: 3, counterType: 'shield', discardOnEmpty: false },
       keywords: [{ keyword: 'Retaliate', amount: 1 }, 'Guard'],
       restrictedSlots: 1,
       isLandscape: false,
@@ -450,6 +461,54 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
 
     const cardParsed = CardEnrichmentSchema.safeParse(fullCard);
     expect(cardParsed.success).toBe(true);
+  });
+
+  it('renders and updates ability-level errata field and removes key when cleared', async () => {
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulAbilityFormBuilder
+        initial={{
+          audit: { comment: 'Test' },
+          abilities: [
+            {
+              id: 'test_errata_ab',
+              timing: 'ACTION',
+              errata: 'Official errata ruling',
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
+            },
+          ],
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const errataInput = screen.getByTestId('ability-errata-0') as HTMLInputElement;
+    expect(errataInput.value).toBe('Official errata ruling');
+
+    // Update errata
+    fireEvent.change(errataInput, { target: { value: 'New ruling text' } });
+
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        abilities: [
+          expect.objectContaining({
+            id: 'test_errata_ab',
+            errata: 'New ruling text',
+          }),
+        ],
+      }),
+    );
+
+    // Clear errata
+    fireEvent.change(errataInput, { target: { value: '' } });
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(lastCall.abilities[0].errata).toBeUndefined();
+    expect('errata' in lastCall.abilities[0]).toBe(false);
+
+    // Validate with CardAbilitySchema
+    const parsed = CardAbilitySchema.safeParse(lastCall.abilities[0]);
+    expect(parsed.success).toBe(true);
   });
 
   describe('Real-Time Live Zod Validation', () => {

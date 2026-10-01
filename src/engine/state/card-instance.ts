@@ -15,7 +15,7 @@ export function createCardInstance(card: NormalizedCard, ownerId?: string): Card
   const initialCounters: Record<string, number> = {};
   let totalCounters = 0;
   if (uses) {
-    const counterType = uses.type || 'all_purpose';
+    const counterType = uses.counterType || 'all_purpose';
     initialCounters[counterType] = uses.count;
     totalCounters = uses.count;
   }

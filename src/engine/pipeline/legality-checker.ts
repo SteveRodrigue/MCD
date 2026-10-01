@@ -2081,7 +2081,7 @@ export function evaluateCardPlayability(
         maxPotentialResources += res.length;
       }
     } else if (uses) {
-      const uType = uses.type;
+      const uType = uses.counterType;
       const count = t.tokens?.counters ?? (uType ? t.counters?.[uType] : undefined) ?? 0;
       if (count > 0) {
         maxPotentialResources += 1;

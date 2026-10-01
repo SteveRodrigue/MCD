@@ -364,7 +364,7 @@ describe('Universal Card State Reset on Discard / Leaves Play (Issue #157, RR v1
     );
     webShooter.card.enrichment = {
       abilities: [],
-      uses: { type: 'web', count: 3 } as any,
+      uses: { counterType: 'web', count: 3 } as any,
     };
     webShooter.exhausted = true;
     webShooter.tokens = { damage: 3, counters: 10 };

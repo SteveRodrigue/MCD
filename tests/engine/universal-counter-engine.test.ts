@@ -453,7 +453,7 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
       enrichment: {
         uses: {
           count: 3,
-          type: 'attack',
+          counterType: 'attack',
           discardOnEmpty: true,
         },
       },

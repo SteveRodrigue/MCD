@@ -16,11 +16,9 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
-import {
-  getEffectDescriptor,
-  CARD_ZONE_OPTIONS,
-  CARD_POSITION_OPTIONS,
-} from './effect-parameter-registry';
+import { getEffectDescriptor } from './effect-parameter-registry';
+import { CardLocationSelectorForm } from './CardLocationSelectorForm';
+import { generateStepSummary } from './step-pipeline-utils';
 
 export interface StepPipelineEditorProps {
   steps: any[];
@@ -37,6 +35,7 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
   hasErrors = false,
   stepErrors = {},
 }) => {
+  const [expandedStep, setExpandedStep] = React.useState<number | null>(0);
   const [expandedFilterIndices, setExpandedFilterIndices] = React.useState<Record<number, boolean>>(
     {},
   );
@@ -44,16 +43,24 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
   const toggleFilterExpanded = (idx: number) => {
     setExpandedFilterIndices((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
+
   const handleAddStep = () => {
     const newStep = {
       effect: 'DRAW',
       effectParams: { count: 1 },
     };
-    onChange([...steps, newStep]);
+    const updated = [...steps, newStep];
+    onChange(updated);
+    setExpandedStep(updated.length - 1);
   };
 
   const handleRemoveStep = (stepIndex: number) => {
     onChange(steps.filter((_: any, sI: number) => sI !== stepIndex));
+    if (expandedStep === stepIndex) {
+      setExpandedStep(null);
+    } else if (expandedStep !== null && expandedStep > stepIndex) {
+      setExpandedStep(expandedStep - 1);
+    }
   };
 
   const handleMoveStep = (stepIndex: number, direction: 'up' | 'down') => {
@@ -64,13 +71,24 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
     const temp = updated[stepIndex];
     updated[stepIndex] = updated[targetIndex];
     updated[targetIndex] = temp;
+    if (expandedStep === stepIndex) {
+      setExpandedStep(targetIndex);
+    } else if (expandedStep === targetIndex) {
+      setExpandedStep(stepIndex);
+    }
     onChange(updated);
   };
 
   const handleUpdateStep = (stepIndex: number, updatedStepFields: Record<string, any>) => {
     const updated = steps.map((st: any, sI: number) => {
       if (sI === stepIndex) {
-        return { ...st, ...updatedStepFields };
+        const next = { ...st, ...updatedStepFields };
+        for (const [key, val] of Object.entries(updatedStepFields)) {
+          if (val === undefined) {
+            delete next[key];
+          }
+        }
+        return next;
       }
       return st;
     });
@@ -154,6 +172,82 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
             });
           };
 
+          const isExpanded = expandedStep === sIdx || errorsForStep.length > 0;
+          const summary = generateStepSummary(step, sIdx);
+
+          if (!isExpanded) {
+            return (
+              <div
+                key={sIdx}
+                data-testid={`step-item-${abilityIndex}-${sIdx}`}
+                className={`bg-comic-paper border-2 ${
+                  errorsForStep.length > 0 ? 'border-comic-red ring-1 ring-red-300' : 'border-black'
+                } p-2 rounded shadow-comic-xs transition-colors hover:bg-yellow-50/40 cursor-pointer select-none`}
+                onClick={() => setExpandedStep(sIdx)}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[10px] font-bold bg-gray-300 text-black px-1.5 py-0.5 rounded border border-gray-400 shrink-0">
+                      Step #{sIdx + 1}
+                    </span>
+                    <span
+                      data-testid={`step-summary-${abilityIndex}-${sIdx}`}
+                      className="font-bangers tracking-wide text-xs text-black truncate"
+                    >
+                      {summary}
+                    </span>
+                  </div>
+
+                  <div
+                    className="flex items-center gap-1 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      data-testid={`step-move-up-${abilityIndex}-${sIdx}`}
+                      disabled={sIdx === 0}
+                      onClick={() => handleMoveStep(sIdx, 'up')}
+                      className={`p-0.5 border border-black rounded transition-transform ${
+                        sIdx === 0
+                          ? 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed'
+                          : 'bg-white hover:bg-gray-100 text-black cursor-pointer active:scale-95'
+                      }`}
+                      title="Move step up"
+                    >
+                      <ArrowUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`step-move-down-${abilityIndex}-${sIdx}`}
+                      disabled={sIdx === steps.length - 1}
+                      onClick={() => handleMoveStep(sIdx, 'down')}
+                      className={`p-0.5 border border-black rounded transition-transform ${
+                        sIdx === steps.length - 1
+                          ? 'bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed'
+                          : 'bg-white hover:bg-gray-100 text-black cursor-pointer active:scale-95'
+                      }`}
+                      title="Move step down"
+                    >
+                      <ArrowDown className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      data-testid={`step-remove-${abilityIndex}-${sIdx}`}
+                      onClick={() => handleRemoveStep(sIdx)}
+                      className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded hover:bg-red-50 transition-colors"
+                      title="Remove step"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                    <div className="text-gray-600 pl-1">
+                      <ChevronRight className="w-4 h-4 text-black" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
           return (
             <div
               key={sIdx}
@@ -162,11 +256,26 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 errorsForStep.length > 0 ? 'border-comic-red ring-1 ring-red-300' : 'border-black'
               } p-2.5 rounded shadow-comic-xs flex flex-col gap-2.5 transition-colors`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-[10px] font-bold bg-gray-300 px-1.5 py-0.5 rounded border border-gray-400">
+              <div
+                className="flex items-center justify-between gap-2 cursor-pointer select-none"
+                onClick={() => setExpandedStep(expandedStep === sIdx ? null : sIdx)}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-mono text-[10px] font-bold bg-comic-yellow text-black px-1.5 py-0.5 rounded border border-black shrink-0">
                     Step #{sIdx + 1}
                   </span>
+                  <span
+                    data-testid={`step-summary-${abilityIndex}-${sIdx}`}
+                    className="font-bangers tracking-wide text-xs text-black truncate"
+                  >
+                    {summary}
+                  </span>
+                </div>
+
+                <div
+                  className="flex items-center gap-1 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {/* Reordering buttons */}
                   <button
                     type="button"
@@ -196,17 +305,19 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                   >
                     <ArrowDown className="w-3 h-3" />
                   </button>
+                  <button
+                    type="button"
+                    data-testid={`step-remove-${abilityIndex}-${sIdx}`}
+                    onClick={() => handleRemoveStep(sIdx)}
+                    className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded hover:bg-red-50 transition-colors"
+                    title="Remove step"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                  <div className="text-gray-600 pl-1">
+                    <ChevronDown className="w-4 h-4 text-black" />
+                  </div>
                 </div>
-
-                <button
-                  type="button"
-                  data-testid={`step-remove-${abilityIndex}-${sIdx}`}
-                  onClick={() => handleRemoveStep(sIdx)}
-                  className="text-gray-400 hover:text-comic-red cursor-pointer p-0.5 rounded hover:bg-red-50 transition-colors"
-                  title="Remove step"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
               </div>
 
               {errorsForStep.length > 0 && (
@@ -252,6 +363,45 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Distinct From (choose different target) */}
+              <div>
+                <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                  Distinct From (choose different target)
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    data-testid={`step-distinct-from-${abilityIndex}-${sIdx}`}
+                    value={step.distinctFrom === 'PREVIOUS_TARGET' ? 'PREVIOUS_TARGET' : ''}
+                    onChange={(e) =>
+                      handleUpdateStep(sIdx, {
+                        distinctFrom: e.target.value || undefined,
+                      })
+                    }
+                    className="flex-1 bg-white border border-black p-1 text-[11px] font-mono font-bold rounded"
+                  >
+                    <option value="">None</option>
+                    <option value="PREVIOUS_TARGET">PREVIOUS_TARGET</option>
+                  </select>
+                  <input
+                    type="text"
+                    data-testid={`step-distinct-from-input-${abilityIndex}-${sIdx}`}
+                    placeholder="Or custom step ID..."
+                    value={
+                      typeof step.distinctFrom === 'string' &&
+                      step.distinctFrom !== 'PREVIOUS_TARGET'
+                        ? step.distinctFrom
+                        : ''
+                    }
+                    onChange={(e) =>
+                      handleUpdateStep(sIdx, {
+                        distinctFrom: e.target.value.trim() || undefined,
+                      })
+                    }
+                    className="flex-1 bg-white border border-black p-1 text-xs rounded font-mono"
+                  />
                 </div>
               </div>
 
@@ -542,61 +692,20 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                             </div>
 
                             {isFromCard && (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-yellow-50/60 border border-yellow-300 rounded shadow-comic-xs">
-                                <div>
-                                  <label className="block text-[9px] uppercase font-bold text-gray-700 mb-0.5">
-                                    Card Location Zone
-                                  </label>
-                                  <select
-                                    data-testid={`step-param-fromCard-zone-${abilityIndex}-${sIdx}`}
-                                    value={effectParams.fromCard?.zone || 'PLAYER_DISCARD'}
-                                    onChange={(e) => {
-                                      const next = {
-                                        ...effectParams,
-                                        fromCard: {
-                                          ...effectParams.fromCard,
-                                          zone: e.target.value,
-                                        },
-                                      };
-                                      handleUpdateStep(sIdx, { effectParams: next });
-                                    }}
-                                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                                  >
-                                    {CARD_ZONE_OPTIONS.map((z) => (
-                                      <option key={z} value={z}>
-                                        {z}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div>
-                                  <label className="block text-[9px] uppercase font-bold text-gray-700 mb-0.5">
-                                    Card Position
-                                  </label>
-                                  <select
-                                    data-testid={`step-param-fromCard-position-${abilityIndex}-${sIdx}`}
-                                    value={effectParams.fromCard?.position || 'TOP'}
-                                    onChange={(e) => {
-                                      const next = {
-                                        ...effectParams,
-                                        fromCard: {
-                                          ...effectParams.fromCard,
-                                          position: e.target.value,
-                                        },
-                                      };
-                                      handleUpdateStep(sIdx, { effectParams: next });
-                                    }}
-                                    className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                                  >
-                                    {CARD_POSITION_OPTIONS.map((p) => (
-                                      <option key={p} value={p}>
-                                        {p}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </div>
+                              <CardLocationSelectorForm
+                                value={effectParams.fromCard}
+                                onChange={(val) => {
+                                  const next = { ...effectParams };
+                                  if (val) {
+                                    next.fromCard = val;
+                                  } else {
+                                    delete next.fromCard;
+                                  }
+                                  handleUpdateStep(sIdx, { effectParams: next });
+                                }}
+                                label="Resource Source Card"
+                                testIdPrefix={`generate-resource-from-card-${abilityIndex}-${sIdx}`}
+                              />
                             )}
                           </div>
                         );

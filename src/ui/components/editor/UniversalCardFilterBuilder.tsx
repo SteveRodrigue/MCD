@@ -55,10 +55,19 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
-    emitChange({
+    const updated: Record<string, any> = {
       ...currentFilter,
       [key]: items.length > 0 ? items : undefined,
-    });
+    };
+    if (key === 'codes') {
+      delete updated.code;
+      delete updated.targetCardCode;
+    }
+    if (key === 'names') {
+      delete updated.name;
+      delete updated.targetCardName;
+    }
+    emitChange(updated as UniversalCardFilter);
   };
 
   const handleCostChange = (bound: 'min' | 'max' | 'equals', rawVal: string) => {
@@ -120,10 +129,26 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
     }
   };
 
+  const effectiveCodes =
+    currentFilter.codes ||
+    ((currentFilter as any).code
+      ? [(currentFilter as any).code as string]
+      : (currentFilter as any).targetCardCode
+        ? [(currentFilter as any).targetCardCode as string]
+        : []);
+
+  const effectiveNames =
+    currentFilter.names ||
+    ((currentFilter as any).name
+      ? [(currentFilter as any).name as string]
+      : (currentFilter as any).targetCardName
+        ? [(currentFilter as any).targetCardName as string]
+        : []);
+
   // Count active criteria for visual badge
   const criteriaCount = [
-    currentFilter.codes?.length,
-    currentFilter.names?.length,
+    effectiveCodes.length > 0 ? 1 : undefined,
+    effectiveNames.length > 0 ? 1 : undefined,
     currentFilter.types?.length,
     currentFilter.traits?.length,
     currentFilter.aspects?.length,
@@ -179,7 +204,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
           <input
             type="text"
             data-testid="filter-codes-input"
-            value={(currentFilter.codes || []).join(', ')}
+            value={effectiveCodes.join(', ')}
             placeholder="e.g. 01002, 01046"
             onChange={(e) => handleCsvChange('codes', e.target.value)}
             className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"
@@ -193,7 +218,7 @@ export const UniversalCardFilterBuilder: React.FC<UniversalCardFilterBuilderProp
           <input
             type="text"
             data-testid="filter-names-input"
-            value={(currentFilter.names || []).join(', ')}
+            value={effectiveNames.join(', ')}
             placeholder="e.g. Captain America, Hulk"
             onChange={(e) => handleCsvChange('names', e.target.value)}
             className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black focus:ring-1 focus:ring-black"

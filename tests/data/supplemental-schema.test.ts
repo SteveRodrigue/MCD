@@ -478,7 +478,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         audit: { comment: 'Web-Shooter' },
         uses: {
           count: 3,
-          type: 'web',
+          counterType: 'web',
           discardOnEmpty: true,
         },
         abilities: [
@@ -493,7 +493,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(res.success).toBe(true);
       if (res.success) {
         expect(res.data.uses?.count).toBe(3);
-        expect(res.data.uses?.type).toBe('web');
+        expect(res.data.uses?.counterType).toBe('web');
         expect(res.data.uses?.discardOnEmpty).toBe(true);
       }
     });
@@ -501,9 +501,18 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
     it('Rejects invalid card uses with negative or non-integer count', () => {
       const invalidUses = {
         count: -1,
-        type: 'web',
+        counterType: 'web',
       };
       const res = CardUsesSchema.safeParse(invalidUses);
+      expect(res.success).toBe(false);
+    });
+
+    it('Rejects uses declaration with deprecated type property', () => {
+      const usesWithDeprecatedType = {
+        count: 3,
+        type: 'web',
+      };
+      const res = CardUsesSchema.safeParse(usesWithDeprecatedType);
       expect(res.success).toBe(false);
     });
 

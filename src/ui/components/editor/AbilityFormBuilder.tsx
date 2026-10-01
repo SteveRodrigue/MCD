@@ -22,11 +22,17 @@ import {
 export interface AbilityFormBuilderProps {
   supplemental: any;
   onChange: (updatedSupplemental: any) => void;
+  typeCode?: string;
+  cardCode?: string;
+  showAllFields?: boolean;
 }
 
 export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
   supplemental,
   onChange,
+  typeCode,
+  cardCode,
+  showAllFields,
 }) => {
   const [expandedAbility, setExpandedAbility] = React.useState<number | null>(0);
   const [expandedTriggerFilter, setExpandedTriggerFilter] = React.useState<number | null>(null);
@@ -97,7 +103,13 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
   const handleUpdateAbility = (index: number, updatedFields: Record<string, any>) => {
     const updated = abilities.map((ab: any, i: number) => {
       if (i === index) {
-        return { ...ab, ...updatedFields };
+        const next = { ...ab, ...updatedFields };
+        for (const [key, val] of Object.entries(updatedFields)) {
+          if (val === undefined) {
+            delete next[key];
+          }
+        }
+        return next;
       }
       return ab;
     });
@@ -194,6 +206,9 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
         onNoSupplementalNeededChange={handleNoSupplementalNeededChange}
         hasErrors={topLevelErrors.length > 0}
         errors={topLevelErrors}
+        typeCode={typeCode}
+        cardCode={cardCode}
+        showAllFields={showAllFields}
       />
 
       {/* 2. Declarative Abilities List */}
@@ -264,6 +279,7 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
             >
               {/* Accordion Header */}
               <div
+                data-testid={`ability-accordion-toggle-${aIdx}`}
                 onClick={() => setExpandedAbility(isExpanded ? null : aIdx)}
                 className="bg-comic-paper px-3 py-2 border-b border-black flex items-center justify-between cursor-pointer hover:bg-yellow-50 select-none"
               >
@@ -451,6 +467,25 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                         <option value="DISCARD">From Discard (DISCARD)</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Ability Errata Field */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                      Ability Errata (Official FFG Ruling)
+                    </label>
+                    <input
+                      type="text"
+                      data-testid={`ability-errata-${aIdx}`}
+                      value={ability.errata || ''}
+                      placeholder="e.g. This ability resolves before..."
+                      onChange={(e) =>
+                        handleUpdateAbility(aIdx, {
+                          errata: e.target.value || undefined,
+                        })
+                      }
+                      className="w-full bg-white border border-black p-1.5 text-xs rounded"
+                    />
                   </div>
 
                   {/* Ability Cost Section */}

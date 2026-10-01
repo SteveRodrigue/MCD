@@ -9,13 +9,15 @@ const StatefulCardAttributesSection: React.FC<{
   onChange?: (val: any) => void;
   hasErrors?: boolean;
   errors?: string[];
-}> = ({ initial, onChange, hasErrors, errors }) => {
+  cardCode?: string;
+}> = ({ initial, onChange, hasErrors, errors, cardCode }) => {
   const [data, setData] = React.useState(initial);
   return (
     <CardAttributesSection
       supplemental={data}
       hasErrors={hasErrors}
       errors={errors}
+      cardCode={cardCode}
       onChange={(updated) => {
         setData(updated);
         onChange?.(updated);
@@ -25,15 +27,28 @@ const StatefulCardAttributesSection: React.FC<{
 };
 
 describe('CardAttributesSection', () => {
-  it('renders all card metadata and attribute inputs', () => {
-    render(
-      <CardAttributesSection
-        supplemental={{ audit: { comment: 'Test card' } }}
-        onChange={vi.fn()}
-      />,
-    );
+  it('renders section headers and reveals all inputs when Show All is activated', async () => {
+    const user = userEvent.setup();
+    render(<CardAttributesSection supplemental={{}} onChange={vi.fn()} />);
 
     expect(screen.getByText(/CARD-LEVEL ATTRIBUTES & AUDIT/i)).toBeDefined();
+    expect(screen.getByTestId('no-supplemental-needed-checkbox')).toBeDefined();
+
+    // Verify all 5 section headers exist
+    expect(screen.getByTestId('section-audit-metadata')).toBeDefined();
+    expect(screen.getByTestId('section-card-mechanics')).toBeDefined();
+    expect(screen.getByTestId('section-combat-properties')).toBeDefined();
+    expect(screen.getByTestId('section-layout-display')).toBeDefined();
+    expect(screen.getByTestId('section-play-requirements')).toBeDefined();
+
+    // In default Smart View, collapsed sections do not render inputs
+    expect(screen.queryByPlaceholderText(/e\.g\. Hero attack/i)).toBeNull();
+
+    // Toggle Show All
+    const toggleShowAllBtn = screen.getByTestId('toggle-show-all-fields-btn');
+    await user.click(toggleShowAllBtn);
+
+    // Now all inputs across all 5 sections should be accessible
     expect(screen.getByPlaceholderText(/e\.g\. Hero attack/i)).toBeDefined();
     expect(screen.getByPlaceholderText(/Leave empty if unrestricted/i)).toBeDefined();
     expect(screen.getByTestId('card-traits-input')).toBeDefined();
@@ -42,19 +57,16 @@ describe('CardAttributesSection', () => {
     expect(screen.getByTestId('card-victory-points-input')).toBeDefined();
     expect(screen.getByTestId('card-is-landscape-checkbox')).toBeDefined();
     expect(screen.getByTestId('toggle-uses-btn')).toBeDefined();
-    expect(screen.getByTestId('no-supplemental-needed-checkbox')).toBeDefined();
     expect(screen.getByTestId('play-req-identity-form-select')).toBeDefined();
   });
 
-  it('updates basic card metadata (comment, limits, confidence, attribution)', () => {
+  it('updates basic card metadata (comment, limits, confidence, attribution)', async () => {
+    const user = userEvent.setup();
     const handleChange = vi.fn();
-    render(
-      <StatefulCardAttributesSection
-        initial={{ audit: { comment: 'Initial' } }}
-        onChange={handleChange}
-      />,
-    );
+    render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
 
+    // Expand Audit & Metadata to edit comments
+    await user.click(screen.getByTestId('section-audit-metadata-toggle'));
     const commentInput = screen.getByPlaceholderText(/e\.g\. Hero attack/i);
     fireEvent.change(commentInput, { target: { value: 'Updated comment' } });
     expect(handleChange).toHaveBeenCalledWith(
@@ -63,6 +75,8 @@ describe('CardAttributesSection', () => {
       }),
     );
 
+    // Expand Card Mechanics to edit maxPerPlayer
+    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
     const maxInput = screen.getByPlaceholderText(/Leave empty if unrestricted/i);
     fireEvent.change(maxInput, { target: { value: '2' } });
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ maxPerPlayer: 2 }));
@@ -76,6 +90,7 @@ describe('CardAttributesSection', () => {
       <StatefulCardAttributesSection initial={{ traits: ['Avenger'] }} onChange={handleChange} />,
     );
 
+    // Card Mechanics auto-expanded due to traits
     const traitsInput = screen.getByTestId('card-traits-input');
     fireEvent.change(traitsInput, { target: { value: 'Avenger, Spy' } });
     expect(handleChange).toHaveBeenCalledWith(
@@ -86,10 +101,14 @@ describe('CardAttributesSection', () => {
     fireEvent.change(slotsInput, { target: { value: '2' } });
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ restrictedSlots: 2 }));
 
+    // Expand Combat Properties
+    await user.click(screen.getByTestId('section-combat-properties-toggle'));
     const boostInput = screen.getByTestId('card-additional-boost-cards-input');
     fireEvent.change(boostInput, { target: { value: '1' } });
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ additionalBoostCards: 1 }));
 
+    // Expand Layout & Display
+    await user.click(screen.getByTestId('section-layout-display-toggle'));
     const vpInput = screen.getByTestId('card-victory-points-input');
     fireEvent.change(vpInput, { target: { value: '3' } });
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ victoryPoints: 3 }));
@@ -110,12 +129,15 @@ describe('CardAttributesSection', () => {
       />,
     );
 
+    // Expand Card Mechanics
+    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
+
     // Toggle Configure Uses
     const toggleBtn = screen.getByTestId('toggle-uses-btn');
     await user.click(toggleBtn);
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        uses: { count: 3, type: 'charge', discardOnEmpty: true },
+        uses: { count: 3, counterType: 'charge', discardOnEmpty: true },
       }),
     );
 
@@ -132,7 +154,7 @@ describe('CardAttributesSection', () => {
     });
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
-        uses: expect.objectContaining({ type: 'web' }),
+        uses: expect.objectContaining({ counterType: 'web' }),
       }),
     );
 
@@ -163,6 +185,9 @@ describe('CardAttributesSection', () => {
 
     render(<StatefulCardAttributesSection initial={{ keywords: [] }} onChange={handleChange} />);
 
+    // Expand Card Mechanics
+    await user.click(screen.getByTestId('section-card-mechanics-toggle'));
+
     // Toggle Guard
     await user.click(screen.getByText('Guard'));
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ keywords: ['Guard'] }));
@@ -183,6 +208,9 @@ describe('CardAttributesSection', () => {
     const handleChange = vi.fn();
 
     render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
+
+    // Expand Play Requirements
+    await user.click(screen.getByTestId('section-play-requirements-toggle'));
 
     // Select identity form
     const formSelect = screen.getByTestId('play-req-identity-form-select');
@@ -219,7 +247,7 @@ describe('CardAttributesSection', () => {
     expect(screen.getByText(/Required Controlled Card Criteria/i)).toBeDefined();
   });
 
-  it('renders validation error callout when errors are provided', () => {
+  it('renders validation error callout and auto-expands section with errors', () => {
     render(
       <CardAttributesSection
         supplemental={{}}
@@ -233,6 +261,9 @@ describe('CardAttributesSection', () => {
     expect(screen.getByTestId('card-attributes-errors')).toBeDefined();
     expect(screen.getByText(/restrictedSlots must be a positive integer/i)).toBeDefined();
     expect(screen.getByText(/traits is required/i)).toBeDefined();
+
+    // Card Mechanics should auto-expand because errors routed to it
+    expect(screen.getByTestId('card-restricted-slots-input')).toBeDefined();
   });
 
   it('configures attackCost, thwartCost, playUnderAnyPlayerControl, and errata', async () => {
@@ -240,6 +271,9 @@ describe('CardAttributesSection', () => {
     const handleChange = vi.fn();
 
     render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
+
+    // Expand Combat Properties
+    await user.click(screen.getByTestId('section-combat-properties-toggle'));
 
     // attackCost
     fireEvent.change(screen.getByTestId('card-attack-cost-input'), { target: { value: '0' } });
@@ -257,7 +291,8 @@ describe('CardAttributesSection', () => {
       }),
     );
 
-    // playUnderAnyPlayerControl
+    // Expand Play Requirements for cross-player control
+    await user.click(screen.getByTestId('section-play-requirements-toggle'));
     await user.click(screen.getByTestId('card-play-under-any-player-control-checkbox'));
     expect(handleChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -265,7 +300,8 @@ describe('CardAttributesSection', () => {
       }),
     );
 
-    // errata
+    // Expand Audit & Metadata for errata
+    await user.click(screen.getByTestId('section-audit-metadata-toggle'));
     fireEvent.change(screen.getByTestId('card-errata-input'), {
       target: { value: 'Official errata text' },
     });
@@ -281,6 +317,9 @@ describe('CardAttributesSection', () => {
     const handleChange = vi.fn();
 
     render(<StatefulCardAttributesSection initial={{}} onChange={handleChange} />);
+
+    // Expand Play Requirements
+    await user.click(screen.getByTestId('section-play-requirements-toggle'));
 
     // identityNames
     fireEvent.change(screen.getByTestId('play-req-identity-names-input'), {
@@ -328,8 +367,159 @@ describe('CardAttributesSection', () => {
     );
 
     expect(screen.getByTestId('card-audit-rules-version')).toBeDefined();
+
+    // Audit & Metadata auto-expands due to originalText
     expect(screen.getByTestId('card-audit-original-text').textContent).toContain(
       'Hero Action: Exhaust to do something.',
     );
+  });
+
+  it('renders originalText formatted without raw HTML tags (Bug #143 regression)', () => {
+    render(
+      <CardAttributesSection
+        supplemental={{
+          audit: {
+            rulesVersion: 'v1.8',
+            confidence: 90,
+            originalText: '<b>Hero Action</b>: Deal 3 [physical] damage to an enemy.',
+          },
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    // Audit & Metadata auto-expands due to originalText and confidence
+    const originalTextContainer = screen.getByTestId('card-audit-original-text');
+    expect(originalTextContainer.innerHTML).toContain('<b>Hero Action</b>');
+    expect(originalTextContainer.textContent).not.toContain('<b>');
+    expect(originalTextContainer.textContent).toContain('Hero Action');
+    expect(originalTextContainer.textContent).toContain('Physical');
+  });
+
+  it('auto-expands sections when data is present on initial load', () => {
+    render(
+      <CardAttributesSection
+        supplemental={{
+          traits: ['Avenger'],
+          attackCost: 2,
+          playRequirements: { identityForm: 'HERO' },
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    // Card Mechanics auto-expanded
+    expect(screen.getByTestId('card-traits-input')).toBeDefined();
+    // Combat Properties auto-expanded
+    expect(screen.getByTestId('card-attack-cost-input')).toBeDefined();
+    // Play Requirements auto-expanded
+    expect(screen.getByTestId('play-req-identity-form-select')).toBeDefined();
+    // Layout & Display remains collapsed
+    expect(screen.queryByTestId('card-is-landscape-checkbox')).toBeNull();
+  });
+
+  it('resets showAllFields state when cardCode changes', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <CardAttributesSection cardCode="01001a" supplemental={{}} onChange={vi.fn()} />,
+    );
+
+    // Turn on Show All
+    await user.click(screen.getByTestId('toggle-show-all-fields-btn'));
+    expect(screen.getByText('Smart View')).toBeDefined();
+    expect(screen.getByTestId('card-traits-input')).toBeDefined();
+
+    // Switch card
+    rerender(<CardAttributesSection cardCode="01002a" supplemental={{}} onChange={vi.fn()} />);
+
+    // State reset to Show All (Smart View active)
+    expect(screen.getByText('Show All')).toBeDefined();
+    expect(screen.queryByTestId('card-traits-input')).toBeNull();
+  });
+
+  it('renders read-only audit timestamp badges when present, and omits them when absent', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <CardAttributesSection
+        supplemental={{
+          audit: {
+            createdAt: '2026-08-27T23:00:00Z',
+            updatedAt: '2026-09-14T18:37:00Z',
+            reviewedAt: '2026-09-30T12:00:00Z',
+          },
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    // Expand Audit & Metadata
+    await user.click(screen.getByTestId('section-audit-metadata-toggle'));
+
+    const createdBadge = screen.getByTestId('audit-created-at');
+    const updatedBadge = screen.getByTestId('audit-updated-at');
+    const reviewedBadge = screen.getByTestId('audit-reviewed-at');
+
+    expect(createdBadge.textContent).toContain('Created:');
+    expect(updatedBadge.textContent).toContain('Updated:');
+    expect(reviewedBadge.textContent).toContain('Reviewed:');
+
+    // Verify badges are non-editable (spans, not inputs)
+    expect(createdBadge.tagName.toLowerCase()).toBe('span');
+    expect(updatedBadge.tagName.toLowerCase()).toBe('span');
+    expect(reviewedBadge.tagName.toLowerCase()).toBe('span');
+
+    // Rerender without timestamps
+    rerender(
+      <CardAttributesSection
+        supplemental={{
+          audit: {
+            comment: 'No timestamps',
+          },
+        }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByTestId('audit-created-at')).toBeNull();
+    expect(screen.queryByTestId('audit-updated-at')).toBeNull();
+    expect(screen.queryByTestId('audit-reviewed-at')).toBeNull();
+  });
+
+  it('reads, writes, and clears audit.ambiguityFile correctly', () => {
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulCardAttributesSection
+        initial={{
+          audit: {
+            comment: 'Spider-Sense',
+            ambiguityFile: 'docs/ambiguities/spider-sense.md',
+          },
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    // Audit & Metadata is auto-expanded due to comment and ambiguityFile
+    const ambiguityInput = screen.getByTestId('audit-ambiguity-file') as HTMLInputElement;
+    expect(ambiguityInput.value).toBe('docs/ambiguities/spider-sense.md');
+
+    // Update value
+    fireEvent.change(ambiguityInput, {
+      target: { value: 'docs/ambiguities/spider-sense-timing.md' },
+    });
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        audit: expect.objectContaining({
+          ambiguityFile: 'docs/ambiguities/spider-sense-timing.md',
+        }),
+      }),
+    );
+
+    // Clear value
+    fireEvent.change(ambiguityInput, { target: { value: '' } });
+    const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(lastCall.audit.ambiguityFile).toBeUndefined();
+    expect('ambiguityFile' in lastCall.audit).toBe(false);
   });
 });

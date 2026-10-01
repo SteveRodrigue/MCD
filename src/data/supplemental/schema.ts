@@ -836,7 +836,6 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
 export const CardUsesSchema = z
   .object({
     count: z.number().int().nonnegative(),
-    type: z.string().optional(),
     counterType: z.string().optional(),
     max: z.number().int().positive().optional(),
     discardOnEmpty: z.boolean().optional(),

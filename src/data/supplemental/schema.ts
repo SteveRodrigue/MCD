@@ -88,7 +88,6 @@ export const TriggerTypeSchema = z.enum([
   'THREAT_PLACED',
   'FORM_CHANGED',
   'STATUS_REMOVED',
-  'PHASE_START',
   'BOOST',
 ]);
 

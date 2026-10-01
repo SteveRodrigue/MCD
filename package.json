@@ -15,6 +15,7 @@
     "simulate": "tsx scripts/simulate-games.ts",
     "cache:cards": "tsx scripts/cache-card-images.ts",
     "report:declarations": "tsx tools/audit/supplemental-declarations-analyzer.ts",
+    "audit:schema-engine": "tsx tools/audit/schema-engine-coverage.ts",
     "card:get": "tsx tools/audit/get-card-data.ts",
     "parse:card": "tsx tools/audit/card-text-parser.ts",
     "schema:generate": "tsx tools/generate-supplemental-schema.ts",

@@ -71,7 +71,6 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'PLAYER_PHASE_ENDED'`     | All players have ended their turns.                                                                                                                    | `player-phase.ts`                                    |
 | `'VILLAIN_PHASE_BEGAN'`    | Villain phase begins (Step 1 place threat).                                                                                                            | `villain-phase.ts`                                   |
 | `'VILLAIN_PHASE_ENDED'`    | Villain phase completes (Step 6b after Step 5 token pass).                                                                                             | `round-upkeep.ts` (`step6_endVillainPhaseAndRound`)  |
-| `'PHASE_START'`            | A new game phase begins.                                                                                                                               | `pipeline.ts`                             |
 | `'DEFEATED'`               | Side/Player Side Scheme reduced to 0 threat - resolves 'When Defeated' rewards declared on the scheme card (e.g. _Highway Robbery_ `01166`, ADR-0034). | `action-dispatcher.ts` (`BASIC_THWART`)   |
 
 ---

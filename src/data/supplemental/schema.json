@@ -82,7 +82,6 @@
                     "THREAT_PLACED",
                     "FORM_CHANGED",
                     "STATUS_REMOVED",
-                    "PHASE_START",
                     "BOOST"
                   ]
                 },

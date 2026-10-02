@@ -2102,7 +2102,7 @@ export function dispatchAction(
         };
       }
 
-      if (nextState.pendingDecisionPrompt) {
+      if (peekDecisionPrompt(nextState)) {
         return {
           state,
           result: {
@@ -3204,10 +3204,7 @@ export function dispatchAction(
       }
 
       // If in villain phase and no decision prompts are pending, continue villain phase sequence
-      if (
-        resultingState.phase === GamePhase.VILLAIN_PHASE &&
-        !resultingState.pendingDecisionPrompt
-      ) {
+      if (resultingState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(resultingState)) {
         if (resultingState.options?.villainPhaseStepping && resultingState.lastCombatOutcome) {
           // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
         } else {
@@ -3231,7 +3228,7 @@ export function dispatchAction(
         allyInstanceId: action.allyInstanceId,
       });
 
-      if (updatedState.phase === GamePhase.VILLAIN_PHASE && !updatedState.pendingDecisionPrompt) {
+      if (updatedState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(updatedState)) {
         if (updatedState.options?.villainPhaseStepping && updatedState.lastCombatOutcome) {
           // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
         } else {

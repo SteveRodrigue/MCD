@@ -1,6 +1,7 @@
 import React from 'react';
 import { FastForward, Play, Pause, ChevronRight, AlertTriangle } from 'lucide-react';
 import { GameState, VillainPhaseStep } from '../../../engine/models';
+import { peekDecisionPrompt } from '../../../engine/pipeline';
 import { VillainPhasePacing } from '../../context/game-settings-context';
 
 export interface VillainPhaseStepperProps {
@@ -90,7 +91,7 @@ export const VillainPhaseStepper: React.FC<VillainPhaseStepperProps> = ({
             ? 'Encounter cards are revealed and resolved.'
             : 'Pass first player token and round upkeep.');
 
-  const isPromptOpen = Boolean(gameState.pendingDecisionPrompt);
+  const isPromptOpen = Boolean(peekDecisionPrompt(gameState));
 
   return (
     <div

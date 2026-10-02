@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
-import { resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import {
   resolveDefenderDeclaration,
   continueAttackAfterInitiation,
@@ -72,7 +72,7 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
 
       let attackState = triggerRes.state;
       // If Spider-Sense optional interrupt prompts on VILLAIN_INITIATES_ATTACK, pass it and continue attack
-      if (attackState.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      if (peekDecisionPrompt(attackState)?.title?.includes('Spider-Man')) {
         const passRes = resolveDecisionPrompt(attackState, 'p1', 'pass');
         attackState = passRes.state;
         if (attackState.activeAttackContext?.phase === 'INITIATION') {
@@ -81,8 +81,8 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
       }
 
       // Villain attack initiated - pending decision prompt for defender declaration
-      expect(attackState.pendingDecisionPrompt).toBeDefined();
-      expect(attackState.pendingDecisionPrompt?.title).toContain('Enemy Attack: Rhino');
+      expect(peekDecisionPrompt(attackState)).toBeDefined();
+      expect(peekDecisionPrompt(attackState)?.title).toContain('Enemy Attack: Rhino');
 
       // Resolve defender declaration as UNDEFENDED
       const resolvedState = resolveDefenderDeclaration(attackState, {
@@ -176,12 +176,10 @@ describe('Feature #26 Contract Tests: Interrupt Replacement Effects (01078 & 010
         threatAmount: 4,
       });
 
-      expect(triggerRes.state.pendingDecisionPrompt).toBeDefined();
-      expect(triggerRes.state.pendingDecisionPrompt?.sourceCardName).toBe('Great Responsibility');
+      expect(peekDecisionPrompt(triggerRes.state)).toBeDefined();
+      expect(peekDecisionPrompt(triggerRes.state)?.sourceCardName).toBe('Great Responsibility');
 
-      const option = triggerRes.state.pendingDecisionPrompt!.options.find(
-        (o) => o.label === 'Yes',
-      )!;
+      const option = peekDecisionPrompt(triggerRes.state)!.options.find((o) => o.label === 'Yes')!;
       const promptRes = resolveDecisionPrompt(triggerRes.state, 'p1', option.id);
 
       expect(promptRes.state.players[0].health).toBe(initialHp - 4);

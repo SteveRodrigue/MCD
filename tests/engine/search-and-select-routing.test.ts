@@ -3,7 +3,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, NormalizedCard } from '@engine/models';
 import { executeEffect } from '@engine/effects';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking (RR v1.8 p. 19, 26, ADR-0030, ADR-0032)', () => {
   let spiderManHero: any;
@@ -102,9 +102,9 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     expect(effectRes.success).toBe(true);
     // instTech is presented alongside Pass option on voluntary action (Issue #115)
     expect(
-      effectRes.state.pendingDecisionPrompt?.options.some((o) => o.id === instTech.instanceId),
+      peekDecisionPrompt(effectRes.state)?.options.some((o) => o.id === instTech.instanceId),
     ).toBe(true);
-    expect(effectRes.state.pendingDecisionPrompt?.options.some((o) => o.id === 'pass_search')).toBe(
+    expect(peekDecisionPrompt(effectRes.state)?.options.some((o) => o.id === 'pass_search')).toBe(
       true,
     );
 
@@ -116,7 +116,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
 
     // 1. Chosen Tech card is in hand
     expect(resolveRes.state.players[0].hand.length).toBe(1);
@@ -209,7 +209,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
 
     expect(effectRes.success).toBe(true);
     // No prompt is enqueued since 0 cards matched
-    expect(effectRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(effectRes.state)).toBeUndefined();
 
     // Hand remains empty
     expect(effectRes.state.players[0].hand.length).toBe(0);
@@ -295,7 +295,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     );
 
     let finalState = effectRes.state;
-    if (finalState.pendingDecisionPrompt) {
+    if (peekDecisionPrompt(finalState)) {
       const res = dispatchAction(finalState, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
@@ -376,7 +376,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       { playerId: 'p1' },
     );
 
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(effectRes.state)).toBeDefined();
 
     const resolveRes = dispatchAction(effectRes.state, {
       type: 'RESOLVE_DECISION_PROMPT',
@@ -456,7 +456,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
       { playerId: 'p1' },
     );
 
-    expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(effectRes.state)).toBeDefined();
 
     const resolveRes = dispatchAction(effectRes.state, {
       type: 'RESOLVE_DECISION_PROMPT',
@@ -612,7 +612,7 @@ describe('SEARCH_AND_SELECT Two-Pile Destination Routing & Specific Card Picking
     );
 
     expect(result.success).toBe(true);
-    expect(result.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(result.state)).toBeUndefined();
     expect(result.state.players[0].hand.map((card) => card.instanceId)).toEqual([
       targetInstance.instanceId,
     ]);

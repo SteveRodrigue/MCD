@@ -25,6 +25,7 @@ import {
   LegalActionItem,
 } from '../../../engine/pipeline/legal-actions-generator';
 import { getEffectiveHandSize } from '../../../engine/pipeline/stat-calculator';
+import { peekDecisionPrompt } from '../../../engine/pipeline';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -62,15 +63,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     null,
   );
   const [isBoostModalOpen, setIsBoostModalOpen] = useState<boolean>(false);
+  const decisionPrompt = peekDecisionPrompt(gameState);
 
   const handleNextVillainStep = useCallback(() => {
     if (gameState.phase !== 'VILLAIN_PHASE') return;
-    if (gameState.pendingDecisionPrompt) return;
+    if (decisionPrompt) return;
     setIsBoostModalOpen(false);
     if (onDispatchAction) {
       onDispatchAction({ type: 'ADVANCE_VILLAIN_PHASE' });
     }
-  }, [gameState.phase, gameState.pendingDecisionPrompt, onDispatchAction]);
+  }, [gameState.phase, decisionPrompt, onDispatchAction]);
 
   const handleSkipVillainPacing = useCallback(() => {
     setIsBoostModalOpen(false);
@@ -90,25 +92,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
       outcome.id &&
       outcome.id !== prevOutcomeIdRef.current &&
       gameState.phase === 'VILLAIN_PHASE' &&
-      !gameState.pendingDecisionPrompt &&
+      !decisionPrompt &&
       villainPhasePacing !== 'instant'
     ) {
       setActiveCombatOutcome(outcome);
       setIsBoostModalOpen(true);
       prevOutcomeIdRef.current = outcome.id;
     }
-  }, [
-    gameState.lastCombatOutcome,
-    gameState.phase,
-    gameState.pendingDecisionPrompt,
-    villainPhasePacing,
-  ]);
+  }, [gameState.lastCombatOutcome, gameState.phase, decisionPrompt, villainPhasePacing]);
 
   // Auto-advance timer during VILLAIN_PHASE
   useEffect(() => {
     if (gameState.phase !== 'VILLAIN_PHASE') return;
     if (gameState.winner) return;
-    if (gameState.pendingDecisionPrompt) return;
+    if (decisionPrompt) return;
     if (isBoostModalOpen) return;
     if (!isAutoPlaying) return;
     if (villainPhasePacing === 'manual') return;
@@ -127,7 +124,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
   }, [
     gameState.phase,
     gameState.winner,
-    gameState.pendingDecisionPrompt,
+    decisionPrompt,
     gameState.villainPhaseStep,
     gameState.villainPhaseStepEvent,
     isBoostModalOpen,
@@ -551,8 +548,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           gameState={gameState}
           onClose={() => {
             if (pendingPromptPayment && onDispatchAction) {
-              const activePrompt =
-                gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
+              const activePrompt = peekDecisionPrompt(gameState);
               const passOption = activePrompt?.options?.find(
                 (o) => o.id === 'pass_play_from_zone' || o.effect === 'PLAY_CARD_FROM_ZONE_PASS',
               );
@@ -619,10 +615,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
 
       {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
       <DecisionPromptModal
-        prompt={gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt}
+        prompt={decisionPrompt}
         onSelectOption={(optionId, payload) => {
-          const activePrompt =
-            gameState.pendingDecisionQueue?.[0] || gameState.pendingDecisionPrompt;
+          const activePrompt = decisionPrompt;
           if (!activePrompt) return;
 
           const isDecline =

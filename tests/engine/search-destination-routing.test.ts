@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)', () => {
   let spiderManHero: any;
@@ -88,7 +88,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -190,7 +190,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -261,7 +261,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -331,7 +331,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -404,7 +404,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -478,7 +478,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -551,7 +551,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',
@@ -624,7 +624,7 @@ describe('SEARCH selectedDestination Routing - All 8 Choices (RR v1.8 p. 19, 26)
         { playerId: 'p1' },
       );
 
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
 
       const resolved = dispatchAction(result.state, {
         type: 'RESOLVE_DECISION_PROMPT',

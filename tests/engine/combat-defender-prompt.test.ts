@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, CardType } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { dispatchAction } from '@engine/pipeline';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Attacks', () => {
   let state: GameState;
@@ -45,7 +45,7 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     });
 
     // If Spider-Sense optional interrupt prompts first, pass it
-    if (res.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+    if (peekDecisionPrompt(res.state)?.title?.includes('Spider-Man')) {
       res = dispatchAction(res.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
@@ -54,11 +54,11 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     }
 
     // The game must pause and present a decision prompt to declare a defender!
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt?.playerId).toBe('p1');
-    expect(res.state.pendingDecisionPrompt?.title).toContain('Enemy Attack: Rhino');
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)?.playerId).toBe('p1');
+    expect(peekDecisionPrompt(res.state)?.title).toContain('Enemy Attack: Rhino');
 
-    const options = res.state.pendingDecisionPrompt!.options;
+    const options = peekDecisionPrompt(res.state)!.options;
     expect(options.some((o) => o.id === 'defend_hero')).toBe(true);
     expect(options.some((o) => o.id === 'undefended')).toBe(true);
   });
@@ -76,10 +76,10 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
       playerId: 'p1',
     });
 
-    expect(endTurnRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(endTurnRes.state)).toBeDefined();
 
     // If Spider-Sense optional interrupt prompts first, pass it
-    if (endTurnRes.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+    if (peekDecisionPrompt(endTurnRes.state)?.title?.includes('Spider-Man')) {
       endTurnRes = dispatchAction(endTurnRes.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
@@ -120,7 +120,7 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     });
 
     // If Spider-Sense optional interrupt prompts first, pass it
-    if (endTurnRes.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+    if (peekDecisionPrompt(endTurnRes.state)?.title?.includes('Spider-Man')) {
       endTurnRes = dispatchAction(endTurnRes.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
@@ -129,9 +129,9 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     }
 
     // Prompt for villain attack opens first
-    expect(endTurnRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(endTurnRes.state)).toBeDefined();
     expect(
-      endTurnRes.state.pendingDecisionPrompt?.options.some(
+      peekDecisionPrompt(endTurnRes.state)?.options.some(
         (o) => o.id === `defend_ally_${allyInstance.instanceId}`,
       ),
     ).toBe(true);
@@ -144,10 +144,10 @@ describe('Bug #28 Regression: Interactive Defender Declaration during Enemy Atta
     });
 
     // Next, the engaged minion attack triggers and opens a defender prompt for minion!
-    expect(afterVillainAttack.state.pendingDecisionPrompt).toBeDefined();
-    expect(afterVillainAttack.state.pendingDecisionPrompt?.title).toContain(minionCard.name);
+    expect(peekDecisionPrompt(afterVillainAttack.state)).toBeDefined();
+    expect(peekDecisionPrompt(afterVillainAttack.state)?.title).toContain(minionCard.name);
     expect(
-      afterVillainAttack.state.pendingDecisionPrompt?.options.some(
+      peekDecisionPrompt(afterVillainAttack.state)?.options.some(
         (o) => o.id === `defend_ally_${allyInstance.instanceId}`,
       ),
     ).toBe(true);

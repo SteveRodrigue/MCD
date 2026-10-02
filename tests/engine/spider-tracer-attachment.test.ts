@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, SideSchemeState } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
-import { dispatchAction } from '../../src/engine/pipeline';
+import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 
 describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #134)', () => {
   let state: GameState;
@@ -64,8 +64,8 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     });
 
     expect(playRes.result.success).toBe(true);
-    expect(playRes.state.pendingDecisionPrompt).toBeDefined();
-    const prompt = playRes.state.pendingDecisionPrompt!;
+    expect(peekDecisionPrompt(playRes.state)).toBeDefined();
+    const prompt = peekDecisionPrompt(playRes.state)!;
     expect(prompt.options.some((o) => o.id === minionA.instanceId)).toBe(true);
     expect(prompt.options.some((o) => o.id === minionB.instanceId)).toBe(true);
 
@@ -165,7 +165,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     });
 
     expect(playRes.result.success).toBe(true);
-    const prompt = playRes.state.pendingDecisionPrompt;
+    const prompt = peekDecisionPrompt(playRes.state);
     expect(prompt).toBeDefined();
     expect(prompt!.options.map((o) => o.id)).toEqual(
       expect.arrayContaining([minionA.instanceId, minionB.instanceId]),
@@ -304,7 +304,7 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
 
     expect(res.result.success).toBe(true);
     // Both schemes eligible -> queues decision prompt to choose scheme
-    const prompt = res.state.pendingDecisionPrompt;
+    const prompt = peekDecisionPrompt(res.state);
     expect(prompt).toBeDefined();
     expect(prompt?.title).toContain('Choose a Scheme');
     expect(prompt?.options.map((o) => o.id)).toEqual(

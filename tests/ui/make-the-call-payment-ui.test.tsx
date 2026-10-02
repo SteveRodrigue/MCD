@@ -11,7 +11,7 @@ import type {
   PendingDecisionPrompt,
 } from '../../src/engine/models';
 import { GamePhase } from '../../src/engine/models';
-import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
+import { dispatchAction, enqueueDecisionPrompt } from '../../src/engine/pipeline';
 
 describe('Make the Call Payment UI Flow (Issue #173)', () => {
   const spiderManHero = cardCatalog.getCard('01001a') as HeroCard;
@@ -76,7 +76,7 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
   });
 
   it("opens CardPaymentModal when selecting an ally in Make the Call's Decision Prompt and resolves with pass when cancelled", () => {
-    const { state, player } = createTestGame();
+    let { state, player } = createTestGame();
     const onDispatchAction = vi.fn();
 
     const mtcInst = createInstance(mtcCard, 'mtc_inst_1', 'p1');
@@ -128,7 +128,7 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
       isVoluntary: true,
     };
 
-    state.pendingDecisionPrompt = prompt;
+    state = enqueueDecisionPrompt(state, prompt);
 
     render(
       <GameSettingsProvider>
@@ -174,7 +174,7 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
   });
 
   it('allows completing payment in CardPaymentModal and dispatches RESOLVE_DECISION_PROMPT with paymentCardInstanceIds', () => {
-    const { state, player } = createTestGame();
+    let { state, player } = createTestGame();
     const onDispatchAction = vi.fn();
 
     const mtcInst = createInstance(mtcCard, 'mtc_inst_1', 'p1');
@@ -224,7 +224,7 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
       isVoluntary: true,
     };
 
-    state.pendingDecisionPrompt = prompt;
+    state = enqueueDecisionPrompt(state, prompt);
 
     render(
       <GameSettingsProvider>

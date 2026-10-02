@@ -13,7 +13,7 @@ import {
   canAllyAttack,
   canAllyThwart,
 } from '../../src/engine/pipeline/legality-checker';
-import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 import {
   step2_villainActivations,
   step5_revealEncounterCards,
@@ -177,7 +177,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
       });
 
       // Pass Spider-Sense if triggered on attack declaration
-      if (state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      if (peekDecisionPrompt(state)?.title?.includes('Spider-Man')) {
         state = dispatchAction(state, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',
@@ -186,7 +186,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
       }
 
       // Backflip prompt should be enqueued at damage step
-      const prompt = state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(state);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toContain('Backflip');
       expect(prompt?.description).toContain('DAMAGE_WOULD_BE_TAKEN');
@@ -223,7 +223,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
       });
 
       // Enhanced Spider-Sense prompt should be pending
-      const prompt = intermediateState.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(intermediateState);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toContain('Enhanced Spider-Sense');
 

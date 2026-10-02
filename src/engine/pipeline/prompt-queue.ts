@@ -36,7 +36,6 @@ export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionP
     queue[i].totalQueued = total;
   }
 
-  state.pendingDecisionPrompt = queue[0];
   return state;
 }
 
@@ -122,10 +121,9 @@ export function enqueueDistributionPrompt(
  * Peek at the active head decision prompt waiting for player response.
  */
 export function peekDecisionPrompt(state: GameState): PendingDecisionPrompt | undefined {
-  if (state.pendingDecisionQueue && state.pendingDecisionQueue.length > 0) {
-    return state.pendingDecisionQueue[0];
-  }
-  return state.pendingDecisionPrompt;
+  return state.pendingDecisionQueue && state.pendingDecisionQueue.length > 0
+    ? state.pendingDecisionQueue[0]
+    : undefined;
 }
 
 /**
@@ -148,7 +146,6 @@ export function popDecisionPrompt(state: GameState): {
     queue[i].totalQueued = total;
   }
 
-  state.pendingDecisionPrompt = queue.length > 0 ? queue[0] : undefined;
   return { state, prompt: popped };
 }
 

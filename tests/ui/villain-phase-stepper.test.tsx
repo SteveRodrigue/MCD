@@ -167,14 +167,16 @@ describe('Villain Phase UI Suite (ADR-0068 / Issue #140)', () => {
       const onNextStep = vi.fn();
       const stateWithPrompt: Partial<GameState> = {
         ...mockState,
-        pendingDecisionPrompt: {
-          promptId: 'prompt_1',
-          playerId: 'p1',
-          title: 'Defend?',
-          description: 'Choose defender',
-          sourceCardName: 'Rhino',
-          options: [],
-        },
+        pendingDecisionQueue: [
+          {
+            promptId: 'prompt_1',
+            playerId: 'p1',
+            title: 'Defend?',
+            description: 'Choose defender',
+            sourceCardName: 'Rhino',
+            options: [],
+          },
+        ],
       };
 
       render(

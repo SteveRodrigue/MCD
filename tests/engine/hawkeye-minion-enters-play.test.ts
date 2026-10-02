@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
-import { resolveDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
+import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { GamePhase, GameState, PlayerState, SideSchemeState } from '../../src/engine/models';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
@@ -120,14 +120,12 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     expect(nextState.players[0].engagedMinions[0].instanceId).toBe(minionInstance.instanceId);
 
     // Decision prompt must be queued for Hawkeye's Response
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
-    expect(nextState.pendingDecisionPrompt?.sourceCardName).toContain('Hawkeye');
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
+    expect(peekDecisionPrompt(nextState)?.sourceCardName).toContain('Hawkeye');
     expect(
-      nextState.pendingDecisionPrompt?.options.some(
-        (o) => o.id === 'trigger_hawkeye_arrow_response',
-      ),
+      peekDecisionPrompt(nextState)?.options.some((o) => o.id === 'trigger_hawkeye_arrow_response'),
     ).toBe(true);
-    expect(nextState.pendingDecisionPrompt?.options.some((o) => o.id === 'pass')).toBe(true);
+    expect(peekDecisionPrompt(nextState)?.options.some((o) => o.id === 'pass')).toBe(true);
   });
 
   it('removes 1 arrow counter from Hawkeye and deals 2 damage to the entering minion when "Yes" is chosen', () => {
@@ -141,7 +139,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
 
     let nextState = step5_revealEncounterCards(state);
 
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player accepts the prompt
     nextState = resolveDecisionPrompt(nextState, 'p1', 'trigger_hawkeye_arrow_response').state;
@@ -170,7 +168,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     player1.dealtEncounterCards = [weaponsRunner];
 
     let nextState = step5_revealEncounterCards(state);
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player triggers Hawkeye
     nextState = resolveDecisionPrompt(nextState, 'p1', 'trigger_hawkeye_arrow_response').state;
@@ -190,7 +188,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     player1.dealtEncounterCards = [hydraMercenary];
 
     let nextState = step5_revealEncounterCards(state);
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player passes
     nextState = resolveDecisionPrompt(nextState, 'p1', 'pass').state;
@@ -219,9 +217,9 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const nextState = step5_revealEncounterCards(state);
 
     // Prompt should be addressed to Player 2 (who controls Hawkeye)
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
-    expect(nextState.pendingDecisionPrompt?.playerId).toBe('p2');
-    expect(nextState.pendingDecisionPrompt?.sourceCardName).toContain('Hawkeye');
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
+    expect(peekDecisionPrompt(nextState)?.playerId).toBe('p2');
+    expect(peekDecisionPrompt(nextState)?.sourceCardName).toContain('Hawkeye');
   });
 
   it('does NOT prompt when Hawkeye has 0 arrow counters', () => {
@@ -237,6 +235,6 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const nextState = step5_revealEncounterCards(state);
 
     // No prompt should be queued since cost cannot be paid
-    expect(nextState.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(nextState)).toBeUndefined();
   });
 });

@@ -8,6 +8,7 @@ import {
   PlayerState,
 } from '../../src/engine/models';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { canPlayCard } from '../../src/engine/pipeline/legality-checker';
 
 describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
@@ -297,8 +298,8 @@ describe('Make the Call & PLAY_FROM_ZONE (ADR-0047)', () => {
       paymentCardInstanceIds: [],
     });
 
-    expect(promptState.pendingDecisionPrompt).toBeDefined();
-    expect(promptState.pendingDecisionPrompt?.options.some((o) => o.id === 'hawk_inst')).toBe(true);
+    expect(peekDecisionPrompt(promptState)).toBeDefined();
+    expect(peekDecisionPrompt(promptState)?.options.some((o) => o.id === 'hawk_inst')).toBe(true);
 
     // Resolve decision prompt selecting Hawkeye
     const { state: resolvedState, result: resolveResult } = dispatchAction(promptState, {

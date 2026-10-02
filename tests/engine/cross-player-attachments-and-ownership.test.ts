@@ -4,6 +4,7 @@ import { HeroCard, AlterEgoCard, GameState, GamePhase } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { discardCardInstance } from '@engine/effects';
 import { assertCardConservation } from '@engine/state/state-validator';
 import { getEffectiveHeroStats, getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
@@ -72,9 +73,9 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
 
-    const prompt = res.state.pendingDecisionPrompt!;
+    const prompt = peekDecisionPrompt(res.state)!;
     expect(prompt.title).toBe('Choose Player Control');
     expect(prompt.options).toHaveLength(2);
 
@@ -145,7 +146,7 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
 
     expect(res.result.success).toBe(false);
     expect(res.result.error).toBe('All players have reached max per player limit for this card.');
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     // Payment cards and card to play remain in hand
     expect(res.state.players[0].hand.some((c) => c.instanceId === ct3.instanceId)).toBe(true);
     expect(res.state.players[0].hand.some((c) => c.instanceId === pay1.instanceId)).toBe(true);
@@ -173,7 +174,7 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
     });
 
     expect(res1.result.success).toBe(true);
-    expect(res1.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(res1.state)).toBeDefined();
 
     // Player 1 assigns control to Player 2
     const res2 = dispatchAction(res1.state, {
@@ -325,7 +326,7 @@ describe('Cross-Player Attachments & Card Ownership Invariants (RR v1.8 p. 23, A
 
     expect(res.result.success).toBe(true);
     // In solo play, no prompt should be enqueued
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     // Card placed directly in p1's tableau
     expect(res.state.players[0].tableau.some((c) => c.instanceId === ct.instanceId)).toBe(true);
     expect(res.state.players[0].tableau.find((c) => c.instanceId === ct.instanceId)!.ownerId).toBe(

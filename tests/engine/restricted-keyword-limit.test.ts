@@ -8,7 +8,7 @@ import {
   getPlayerRestrictedCount,
   getCardRestrictedWeight,
 } from '@engine/pipeline/legality-checker';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, ADR-0018, ADR-0032)', () => {
   let spiderManHero: any;
@@ -86,7 +86,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     expect(res2.result.success).toBe(true);
     expect(res2.state.players[0].tableau.length).toBe(2);
     expect(getPlayerRestrictedCount(res2.state.players[0])).toBe(2);
-    expect(res2.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res2.state)).toBeUndefined();
   });
 
   it('enqueues an interactive DISCARD_RESTRICTED decision prompt when playing a 3rd restricted card at limit 2', () => {
@@ -133,11 +133,11 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     });
 
     expect(playRes.result.success).toBe(true);
-    expect(playRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(playRes.state.pendingDecisionPrompt?.sourceCardName).toBe('Plasma Gun');
-    expect(playRes.state.pendingDecisionPrompt?.options.length).toBe(3); // 2 in-play cards + 1 Cancel
+    expect(peekDecisionPrompt(playRes.state)).toBeDefined();
+    expect(peekDecisionPrompt(playRes.state)?.sourceCardName).toBe('Plasma Gun');
+    expect(peekDecisionPrompt(playRes.state)?.options.length).toBe(3); // 2 in-play cards + 1 Cancel
 
-    const optionIds = playRes.state.pendingDecisionPrompt!.options.map((o) => o.id);
+    const optionIds = peekDecisionPrompt(playRes.state)!.options.map((o) => o.id);
     expect(optionIds).toContain(existingR1.instanceId);
     expect(optionIds).toContain(existingR2.instanceId);
     expect(optionIds).toContain('cancel_play');
@@ -189,7 +189,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
 
     // existingR1 should be in discard pile
     expect(
@@ -250,7 +250,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     });
 
     expect(cancelRes.result.success).toBe(true);
-    expect(cancelRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(cancelRes.state)).toBeUndefined();
 
     // Both cards should remain in hand
     expect(
@@ -333,7 +333,7 @@ describe('Restricted Keyword Limit & Replacement Prompt Engine (RR v1.8 p. 25, A
     });
 
     expect(playRes.result.success).toBe(true);
-    expect(playRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(playRes.state)).toBeUndefined();
     expect(getPlayerRestrictedCount(playRes.state.players[0])).toBe(3);
   });
 

@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
-import { resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { canPayAbilityCost } from '@engine/pipeline/cost-engine';
 
 describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', () => {
@@ -68,11 +68,11 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     // Reveal encounter cards without auto-accept -> should enqueue decision prompt
     const nextState = step5_revealEncounterCards(state);
 
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
-    expect(nextState.pendingDecisionPrompt?.sourceCardName).toBe('Enhanced Spider-Sense');
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
+    expect(peekDecisionPrompt(nextState)?.sourceCardName).toBe('Enhanced Spider-Sense');
 
     // Confirm using the trigger
-    const yesOption = nextState.pendingDecisionPrompt?.options.find((o) => o.id !== 'pass');
+    const yesOption = peekDecisionPrompt(nextState)?.options.find((o) => o.id !== 'pass');
     expect(yesOption).toBeDefined();
 
     const { state: resolvedState } = resolveDecisionPrompt(nextState, 'p1', yesOption!.id);
@@ -94,7 +94,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
 
     // Reveal encounter cards without auto-accept -> should enqueue decision prompt
     const nextState = step5_revealEncounterCards(state);
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player chooses "pass"
     const { state: resolvedState } = resolveDecisionPrompt(nextState, 'p1', 'pass');
@@ -165,7 +165,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     const nextState = step5_revealEncounterCards(state);
 
     // Prompt is suppressed: cannot afford cost
-    expect(nextState.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(nextState)).toBeUndefined();
     // Treachery executed normally: player is confused
     expect(nextState.players[0].statusCards).toContain(StatusCard.CONFUSED);
   });
@@ -206,9 +206,9 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
     const nextState = step5_revealEncounterCards(state);
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
-    const yesOption = nextState.pendingDecisionPrompt!.options.find((o) => o.id !== 'pass')!;
+    const yesOption = peekDecisionPrompt(nextState)!.options.find((o) => o.id !== 'pass')!;
     expect(yesOption).toBeDefined();
 
     const { state: resolvedState } = resolveDecisionPrompt(nextState, 'p1', yesOption.id, {
@@ -244,9 +244,9 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
     const nextState = step5_revealEncounterCards(state);
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
 
-    const yesOption = nextState.pendingDecisionPrompt!.options.find((o) => o.id !== 'pass')!;
+    const yesOption = peekDecisionPrompt(nextState)!.options.find((o) => o.id !== 'pass')!;
     expect(yesOption).toBeDefined();
 
     const { state: resolvedState } = resolveDecisionPrompt(nextState, 'p1', yesOption.id, {

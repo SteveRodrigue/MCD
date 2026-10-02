@@ -12,6 +12,7 @@ import {
   SideSchemeCard,
   canBasicThwart,
   step6_passFirstPlayerAndRoundUpkeep,
+  peekDecisionPrompt,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -149,9 +150,9 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(res.result.success).toBe(true);
       // Mockingbird is in player's allies zone
       expect(res.state.players[0].allies.some((a) => a.card.code === '01083')).toBe(true);
-      expect(res.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(res.state)).toBeDefined();
 
-      const yesOption = res.state.pendingDecisionPrompt!.options.find((o) => o.label === 'Yes')!;
+      const yesOption = peekDecisionPrompt(res.state)!.options.find((o) => o.label === 'Yes')!;
       const resolveRes = dispatchAction(res.state, {
         type: 'RESOLVE_DECISION_PROMPT',
         playerId: 'p1',
@@ -234,7 +235,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       expect(playRes.result.success).toBe(true);
       // Nick Fury entered play in allies
       expect(playRes.state.players[0].allies.some((a) => a.card.code === '01084')).toBe(true);
-      expect(playRes.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(playRes.state)).toBeDefined();
 
       // Resolve decision prompt: Draw 3 cards
       const resolveRes = dispatchAction(playRes.state, {

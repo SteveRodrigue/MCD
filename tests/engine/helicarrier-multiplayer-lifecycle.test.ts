@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard, VillainCard, MainSchemeCard, GamePhase } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { getEffectiveCardCost } from '@engine/pipeline/cost-engine';
 
 describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
@@ -160,7 +161,7 @@ describe('Helicarrier Multiplayer Lifecycle & Prompt Clearance (#165)', () => {
       paymentCardInstanceIds: [resCard.instanceId],
     });
     expect(playRes.result.success).toBe(true);
-    expect(playRes.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(playRes.state)).toBeDefined();
 
     // Discount MUST already be consumed upon payment / play, NOT left active!
     const stateDuringPrompt = playRes.state;

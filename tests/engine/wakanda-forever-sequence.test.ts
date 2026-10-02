@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { executeEffect } from '@engine/effects';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { canPlayCard } from '@engine/pipeline/legality-checker';
 
 describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0038, RR v1.8 p. 28)', () => {
@@ -270,7 +270,7 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
     expect(execRes.success).toBe(true);
     // Prompt was queued
     expect(execRes.state.pendingDecisionQueue?.length).toBe(1);
-    expect(execRes.state.pendingDecisionPrompt?.sourceCardName).toBe('Wakanda Forever!');
+    expect(peekDecisionPrompt(execRes.state)?.sourceCardName).toBe('Wakanda Forever!');
 
     // Player resolves prompt choosing [daggers, claws]
     const dispatchRes = dispatchAction(execRes.state, {

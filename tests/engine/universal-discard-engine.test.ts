@@ -3,6 +3,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { CardType, NormalizedCard } from '@engine/models';
 import { executeEffect } from '@engine/effects';
+import { peekDecisionPrompt } from '@engine/pipeline';
 
 describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => {
   let spiderManHero: any;
@@ -298,7 +299,7 @@ describe('Universal DISCARD Primitive Engine (RR v1.8 p. 10, Issue #66)', () => 
 
     expect(res.success).toBe(true);
     // Universal DISCARD resolves immediately without opening decision prompt
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
 
     // Mental card added to hand
     expect(player.hand.length).toBe(initialHandCount + 1);

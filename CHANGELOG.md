@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine & UI): Complete ADR-0032 Decision Prompt Migration ([Issue #203](https://github.com/SteveRodrigue/MCD/issues/203))**
+  - **Prompt Queue & State (`prompt-queue.ts`, `state.ts`):**
+    - Removed dual-sync assignments in `enqueueDecisionPrompt` and `popDecisionPrompt`.
+    - Simplified `peekDecisionPrompt(state)` to strictly inspect `state.pendingDecisionQueue?.[0]`.
+    - Marked `state.pendingDecisionPrompt` as `@deprecated`.
+  - **Engine Pipelines & UI (`action-dispatcher.ts`, `combat-pipeline.ts`, `villain-phase.ts`, `GameBoard.tsx`, `VillainPhaseStepper.tsx`):**
+    - Migrated all direct reads of `state.pendingDecisionPrompt` to `peekDecisionPrompt(state)`.
+  - **Test Suites (44 Files):**
+    - Migrated all direct reads and assertions across 44 test files to `peekDecisionPrompt(state)` and synthetic prompt setups to `enqueueDecisionPrompt(state, prompt)`.
+
 - **Feat (Engine & Data): Refactor Webbed Up (`01009`) & Generic Host Attack Interception (RR v1.8 pp. 5, 8, 23, 28, [Issue #177](https://github.com/SteveRodrigue/MCD/issues/177))**
   - **Schema & Models (`schema.ts`, `abilities.ts`):**
     - Introduced generic `HOST_WOULD_ATTACK` trigger replacing legacy `ATTACHED_ENEMY_ATTACKS`.

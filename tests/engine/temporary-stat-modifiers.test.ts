@@ -15,7 +15,7 @@ import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { getEffectiveAllyStats, getEffectiveHeroStats } from '@engine/pipeline/stat-calculator';
 import { canInitiateAbility } from '@engine/pipeline/legality-checker';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
-import { resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 import { executeEffect } from '@engine/effects';
@@ -96,12 +96,12 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
     );
 
     // Verify decision prompt is opened
-    expect(gameState.pendingDecisionPrompt).toBeDefined();
-    expect(gameState.pendingDecisionPrompt?.sourceCardName).toBe('Vision');
-    expect(gameState.pendingDecisionPrompt?.options.length).toBe(2);
+    expect(peekDecisionPrompt(gameState)).toBeDefined();
+    expect(peekDecisionPrompt(gameState)?.sourceCardName).toBe('Vision');
+    expect(peekDecisionPrompt(gameState)?.options.length).toBe(2);
 
-    const thwOption = gameState.pendingDecisionPrompt?.options.find((o) => o.id === 'boost_thw');
-    const atkOption = gameState.pendingDecisionPrompt?.options.find((o) => o.id === 'boost_atk');
+    const thwOption = peekDecisionPrompt(gameState)?.options.find((o) => o.id === 'boost_thw');
+    const atkOption = peekDecisionPrompt(gameState)?.options.find((o) => o.id === 'boost_atk');
     expect(thwOption).toBeDefined();
     expect(atkOption).toBeDefined();
   });

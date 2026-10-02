@@ -7,6 +7,7 @@ import {
   initiateEnemyAttack,
   resolveDefenderDeclaration,
   executeEnemyAttackSynchronously,
+  peekDecisionPrompt,
 } from '@engine/pipeline';
 
 describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engine', () => {
@@ -50,7 +51,7 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
       expect(nextState.villain.statusCards).not.toContain(StatusCard.STUNNED);
       expect(nextState.players[0].health).toBe(initialHp);
       expect(nextState.encounterDiscard.length).toBe(initialEncounterDiscard);
-      expect(nextState.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(nextState)).toBeUndefined();
     });
 
     it('triggers Webbed Up attachment: discards attachment, stuns villain, and cancels attack', () => {
@@ -80,8 +81,8 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
       // Spider-Sense draws 1 card
       expect(nextState.players[0].hand.length).toBe(initialHandSize + 1);
       // And then opens Step 3 DECLARE_DEFENDER prompt
-      expect(nextState.pendingDecisionPrompt).toBeDefined();
-      expect(nextState.pendingDecisionPrompt?.title).toContain('Enemy Attack: Rhino');
+      expect(peekDecisionPrompt(nextState)).toBeDefined();
+      expect(peekDecisionPrompt(nextState)?.title).toContain('Enemy Attack: Rhino');
     });
   });
 
@@ -95,8 +96,8 @@ describe('Sub-Milestone 2B-1: Core Combat Lifecycle & Defender Declaration Engin
         acceptOptionalTriggers: true,
       });
 
-      expect(nextState.pendingDecisionPrompt).toBeDefined();
-      const options = nextState.pendingDecisionPrompt!.options;
+      expect(peekDecisionPrompt(nextState)).toBeDefined();
+      const options = peekDecisionPrompt(nextState)!.options;
 
       expect(options.some((o) => o.id === 'defend_hero')).toBe(true);
       expect(options.some((o) => o.id.includes('defend_ally_'))).toBe(true);

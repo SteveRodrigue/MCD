@@ -6,8 +6,8 @@
   "description": "An open-source digital implementation of Marvel Champions: The Card Game",
   "license": "MIT",
   "scripts": {
-    "dev": "tsx scripts/dev-server-with-log.ts",
-    "build": "tsc && vite build",
+    "dev": "npm run schema:generate && tsx scripts/dev-server-with-log.ts",
+    "build": "npm run schema:generate && tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -26,7 +26,7 @@
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"**/*.{ts,tsx,js}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js}\"",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:coverage && npm run build",
+    "verify": "npm run schema:generate && npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:coverage && npm run build",
     "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {

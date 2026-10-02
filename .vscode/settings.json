@@ -12,7 +12,11 @@
   },
   "json.schemas": [
     {
-      "fileMatch": ["/src/data/supplemental/pack/*.json"],
+      "fileMatch": [
+        "src/data/supplemental/pack/*.json",
+        "/src/data/supplemental/pack/*.json",
+        "**/src/data/supplemental/pack/*.json"
+      ],
       "url": "./src/data/supplemental/schema.json"
     }
   ],

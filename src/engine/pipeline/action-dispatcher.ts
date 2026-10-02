@@ -2158,31 +2158,6 @@ export function dispatchAction(
       };
     }
 
-    case 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT': {
-      // Transitional forwarder to USE_CARD_ABILITY (ADR-0055)
-      const targetCard = findInPlayCardInstance(nextState, action.attachmentInstanceId);
-      const abilities = targetCard?.card.enrichment?.abilities || [];
-      const discardAbility = abilities.find(
-        (ab) =>
-          ab.steps?.some(
-            (s) =>
-              s.effect === 'DISCARD_ATTACHMENT' ||
-              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
-              (s.effect === 'DISCARD' &&
-                (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
-          ) || Boolean(ab.cost?.discardSelf),
-      );
-
-      return dispatchAction(nextState, {
-        type: 'USE_CARD_ABILITY',
-        playerId: action.playerId,
-        cardInstanceId: action.attachmentInstanceId,
-        abilityId: discardAbility ? discardAbility.id : 'ivory_horn_discard_action',
-        paymentCardInstanceIds: action.paymentCardInstanceIds,
-        generatorInstanceIds: action.generatorInstanceIds,
-      });
-    }
-
     case 'RESOLVE_DECISION_PROMPT': {
       const player = getPlayer(nextState, action.playerId);
       if (!player) return { state, result: { success: false, error: 'Player not found' } };

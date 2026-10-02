@@ -8,7 +8,6 @@ export type ActionType =
   | 'ALLY_THWART'
   | 'PLAY_CARD'
   | 'USE_CARD_ABILITY'
-  | 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'
   | 'RESOLVE_DECISION_PROMPT'
   | 'DECLARE_DEFENDER'
   | 'END_PLAYER_TURN'
@@ -92,17 +91,6 @@ export interface UseCardAbilityAction {
   discardCardInstanceIds?: string[];
 }
 
-/**
- * @deprecated Use USE_CARD_ABILITY instead (ADR-0055). Kept for backwards compatibility.
- */
-export interface SpendResourcesToDiscardAttachmentAction {
-  type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT';
-  playerId: string;
-  attachmentInstanceId: string;
-  paymentCardInstanceIds?: string[];
-  generatorInstanceIds?: string[];
-}
-
 export interface ResolveDecisionPromptAction {
   type: 'RESOLVE_DECISION_PROMPT';
   playerId: string;
@@ -158,7 +146,6 @@ export type GameAction =
   | AllyThwartAction
   | PlayCardAction
   | UseCardAbilityAction
-  | SpendResourcesToDiscardAttachmentAction
   | ResolveDecisionPromptAction
   | DeclareDefenderAction
   | EndPlayerTurnAction

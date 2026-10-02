@@ -108,7 +108,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     expect(shooterAfterCleanup.exhausted).toBe(false);
   });
 
-  it('2. SPEND_RESOURCES_TO_DISCARD_ATTACHMENT forwards and exhausts generators (e.g. Web-Shooter)', () => {
+  it('2. USE_CARD_ABILITY on attachment exhausts generators (e.g. Web-Shooter)', () => {
     // Add Web-Shooter ready to tableau (generates wild, satisfying physical requirement)
     const webShooter = createCardInstance(cardCatalog.getCard('01008')!);
     webShooter.counters = { web: 3 };
@@ -136,11 +136,12 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     } as any);
     state.players[0].hand = [card1, card2];
 
-    // Dispatch SPEND_RESOURCES_TO_DISCARD_ATTACHMENT with both payment cards and generator
+    // Dispatch USE_CARD_ABILITY with both payment cards and generator
     const actionResult = dispatchAction(state, {
-      type: 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
+      type: 'USE_CARD_ABILITY',
       playerId: 'p1',
-      attachmentInstanceId: ivoryHorn.instanceId,
+      cardInstanceId: ivoryHorn.instanceId,
+      abilityId: 'ivory_horn_discard_action',
       paymentCardInstanceIds: [card1.instanceId, card2.instanceId],
       generatorInstanceIds: [webShooter.instanceId],
     });

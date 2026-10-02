@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine): Complete ADR-0055 Migration & Remove Deprecated `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT` ([Issue #193](https://github.com/SteveRodrigue/MCD/issues/193))**
+  - **Models & Actions (`actions.ts`):**
+    - Removed `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT` from `ActionType` union.
+    - Deleted `SpendResourcesToDiscardAttachmentAction` interface and removed from `GameAction` union.
+  - **Pipeline Dispatcher (`action-dispatcher.ts`):**
+    - Removed transitional legacy `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT` dispatch handler in favor of canonical `USE_CARD_ABILITY`.
+  - **Legal Actions & UI (`legal-actions-generator.ts`, `CardAttachmentFan.tsx`):**
+    - Removed legacy `s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT'` checks from legal actions generation and attachment UI fans.
+  - **Test Suite (`ally-attachments.test.ts`, `unified-payment-subsystem.test.ts`):**
+    - Migrated attachment discard action tests directly to canonical `USE_CARD_ABILITY`.
+
 - **Refactor (Engine & UI): Complete ADR-0032 Decision Prompt Migration ([Issue #203](https://github.com/SteveRodrigue/MCD/issues/203))**
   - **Prompt Queue & State (`prompt-queue.ts`, `state.ts`):**
     - Removed dual-sync assignments in `enqueueDecisionPrompt` and `popDecisionPrompt`.

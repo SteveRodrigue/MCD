@@ -52,11 +52,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                 a.timing === 'HERO_ACTION' ||
                 a.timing === 'ALTER_EGO_ACTION' ||
                 a.timing === 'ACTION' ||
-                a.steps?.some(
-                  (s) =>
-                    s.effect === 'DISCARD_ATTACHMENT' ||
-                    s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
-                ),
+                a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT'),
             );
 
             // Stacking behind host: Host is z-30.
@@ -123,11 +119,7 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
                   a.timing === 'HERO_ACTION' ||
                   a.timing === 'ALTER_EGO_ACTION' ||
                   a.timing === 'ACTION' ||
-                  a.steps?.some(
-                    (s) =>
-                      s.effect === 'DISCARD_ATTACHMENT' ||
-                      s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT',
-                  ),
+                  a.steps?.some((s) => s.effect === 'DISCARD_ATTACHMENT'),
               );
 
               return (

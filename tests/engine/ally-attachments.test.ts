@@ -52,7 +52,6 @@ describe('Issue #95: Ally Attachment Rules Compliance & Cascading Cleanup', () =
     // Assert that no action permits arbitrary discard of Inspired or Daredevil
     const voluntaryDiscards = legalActions.filter(
       (a) =>
-        a.type === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
         (a as any).cardInstanceId === inspired.instanceId ||
         (a as any).sourceInstanceId === inspired.instanceId,
     );

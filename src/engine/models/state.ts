@@ -392,7 +392,9 @@ export interface GameState {
   /** Execution Frame Stack (ADR-0032) */
   executionStack?: ExecutionFrame[];
 
-  /** Legacy / direct pointer to head of pendingDecisionQueue for backwards-compatibility */
+  /**
+   * @deprecated Use `state.pendingDecisionQueue` and `peekDecisionPrompt(state)` per ADR-0032.
+   */
   pendingDecisionPrompt?: PendingDecisionPrompt;
   /** Ordered enemy activation queue for Villain Phase (ADR-0068) */
   pendingActivations?: PendingActivation[];

@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, CardType } from '../../src/engine/mo
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
 import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { executeEffect } from '../../src/engine/effects';
+import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 
 describe('Decision Prompt Card Preview Invariant (Issue #104)', () => {
   let state: GameState;
@@ -44,8 +45,8 @@ describe('Decision Prompt Card Preview Invariant (Issue #104)', () => {
 
     const nextState = step5_revealEncounterCards(state);
 
-    expect(nextState.pendingDecisionPrompt).toBeDefined();
-    const prompt = nextState.pendingDecisionPrompt!;
+    expect(peekDecisionPrompt(nextState)).toBeDefined();
+    const prompt = peekDecisionPrompt(nextState)!;
 
     expect(prompt.triggerSourceCard).toBeDefined();
     expect(prompt.triggerSourceCard?.code).toBe('01112');
@@ -65,8 +66,8 @@ describe('Decision Prompt Card Preview Invariant (Issue #104)', () => {
       sourceCardInstance: bomberInstance,
     });
 
-    expect(state.pendingDecisionPrompt).toBeDefined();
-    const prompt = state.pendingDecisionPrompt!;
+    expect(peekDecisionPrompt(state)).toBeDefined();
+    const prompt = peekDecisionPrompt(state)!;
 
     expect(prompt.sourceCardCode).toBe('01110');
     expect(prompt.triggerSourceCard).toBeDefined();

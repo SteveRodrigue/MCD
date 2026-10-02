@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { dispatchAction } from '@engine/pipeline';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeEffect } from '@engine/effects';
 
 describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
@@ -49,9 +49,9 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     // Verify Decision Prompt is opened
-    expect(state.pendingDecisionPrompt).toBeDefined();
-    expect(state.pendingDecisionPrompt!.title).toContain('Hydra Bomber');
-    expect(state.pendingDecisionPrompt!.options.length).toBe(2);
+    expect(peekDecisionPrompt(state)).toBeDefined();
+    expect(peekDecisionPrompt(state)!.title).toContain('Hydra Bomber');
+    expect(peekDecisionPrompt(state)!.options.length).toBe(2);
 
     // Player resolves decision: chooses "take_damage"
     const res = dispatchAction(state, {
@@ -61,7 +61,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     // Player takes 2 damage (10 - 2 = 8)
     expect(res.state.players[0].health).toBe(initialHp - 2);
   });
@@ -81,7 +81,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     // Verify Decision Prompt is opened
-    expect(state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(state)).toBeDefined();
 
     // Player resolves decision: chooses "place_threat"
     const res = dispatchAction(state, {
@@ -91,7 +91,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     expect(res.state.mainScheme.threat).toBe(3);
   });
 
@@ -107,7 +107,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
       sourceCardInstance: exhaustionInstance,
     });
 
-    expect(state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(state)).toBeDefined();
 
     // Choose to exhaust identity
     const res = dispatchAction(state, {
@@ -117,7 +117,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     expect(res.state.players[0].exhausted).toBe(true);
   });
 
@@ -140,8 +140,8 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(playRes.result.success).toBe(true);
-    expect(playRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(playRes.state.pendingDecisionPrompt!.options.length).toBe(3);
+    expect(peekDecisionPrompt(playRes.state)).toBeDefined();
+    expect(peekDecisionPrompt(playRes.state)!.options.length).toBe(3);
 
     // Choose "draw_3_cards"
     const resolveRes = dispatchAction(playRes.state, {
@@ -151,7 +151,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
     expect(resolveRes.state.players[0].hand.length).toBe(3);
     expect(resolveRes.state.players[0].deck.length).toBe(initialDeckSize - 3);
   });
@@ -176,7 +176,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
     expect(res.result.success).toBe(true);
     // 1-player mode should not open prompt
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
     expect(res.state.players[0].hand.length).toBe(initialHand + 1);
     expect(res.state.players[0].deck.length).toBe(initialDeck - 1);
   });
@@ -210,9 +210,9 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
 
     expect(res.result.success).toBe(true);
     // In 2-player mode, prompt MUST be opened to choose player
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt!.title).toContain('Choose a Player');
-    expect(res.state.pendingDecisionPrompt!.options.length).toBe(2);
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)!.title).toContain('Choose a Player');
+    expect(peekDecisionPrompt(res.state)!.options.length).toBe(2);
 
     // Resolve decision for Player 2
     const resolveRes = dispatchAction(res.state, {
@@ -222,7 +222,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
     // Player 2 drew 1 card
     expect(resolveRes.state.players[1].hand.length).toBe(1);
     expect(resolveRes.state.players[1].deck.length).toBe(9);
@@ -253,8 +253,8 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt!.title).toContain('Choose a Player');
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)!.title).toContain('Choose a Player');
 
     // Resolve for Player 2
     const resolveRes = dispatchAction(res.state, {
@@ -264,7 +264,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
     expect(resolveRes.state.players[1].hand.length).toBe(1);
     expect(resolveRes.state.players[0].tableau[0].exhausted).toBe(true);
   });
@@ -308,9 +308,9 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
       interactivePrompt: true,
     });
 
-    expect(promptRes.state.pendingDecisionPrompt).toBeDefined();
-    expect(promptRes.state.pendingDecisionPrompt?.kind).toBe('DISTRIBUTE_POINTS');
-    expect(promptRes.state.pendingDecisionPrompt?.distributionConfig?.effectiveBudget).toBe(3);
+    expect(peekDecisionPrompt(promptRes.state)).toBeDefined();
+    expect(peekDecisionPrompt(promptRes.state)?.kind).toBe('DISTRIBUTE_POINTS');
+    expect(peekDecisionPrompt(promptRes.state)?.distributionConfig?.effectiveBudget).toBe(3);
 
     // Resolve with assignments: 2 damage to Hero, 1 damage to Ally
     const resolveAction = dispatchAction(promptRes.state, {
@@ -324,7 +324,7 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     expect(resolveAction.result.success).toBe(true);
-    expect(resolveAction.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveAction.state)).toBeUndefined();
     expect(resolveAction.state.players[0].health).toBe(initialHeroHp - 2);
     expect(resolveAction.state.players[0].allies[0].tokens?.damage).toBe(1);
   });
@@ -355,6 +355,6 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     });
 
     // Auto-bypasses prompt because total capacity is 0
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
   });
 });

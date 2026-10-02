@@ -9,7 +9,7 @@ import {
   CardType,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { dispatchAction } from '@engine/pipeline';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { step2_villainActivations } from '@engine/pipeline/villain-phase';
 import { getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
 import { canPlayCard, evaluateCardPlayability } from '@engine/pipeline/legality-checker';
@@ -157,11 +157,11 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(res.state.players[0].engagedMinions.length).toBe(0);
 
     // Decision prompt enqueued because 2 schemes are in play
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt!.options.length).toBe(2);
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)!.options.length).toBe(2);
 
     // Player chooses Bomb Scare
-    const sideSchemeOpt = res.state.pendingDecisionPrompt!.options.find(
+    const sideSchemeOpt = peekDecisionPrompt(res.state)!.options.find(
       (o) => o.id === sideSchemeInstance.instanceId,
     );
     expect(sideSchemeOpt).toBeDefined();
@@ -173,7 +173,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     });
 
     expect(resolveRes.result.success).toBe(true);
-    expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
     // 3 threat removed from Bomb Scare (3 - 3 = 0) -> side scheme defeated and discarded (RR v1.8 p. 9, 25)
     expect(resolveRes.state.sideSchemes.length).toBe(0);
     expect(
@@ -380,12 +380,12 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     expect(res.result.success).toBe(true);
     // Should have enqueued a decision prompt
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt?.options.length).toBe(2);
-    expect(res.state.pendingDecisionPrompt?.options.some((o) => o.id === minion1.instanceId)).toBe(
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)?.options.length).toBe(2);
+    expect(peekDecisionPrompt(res.state)?.options.some((o) => o.id === minion1.instanceId)).toBe(
       true,
     );
-    expect(res.state.pendingDecisionPrompt?.options.some((o) => o.id === minion2.instanceId)).toBe(
+    expect(peekDecisionPrompt(res.state)?.options.some((o) => o.id === minion2.instanceId)).toBe(
       true,
     );
 
@@ -631,10 +631,10 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       });
 
       expect(res.result.success).toBe(true);
-      expect(res.state.pendingDecisionPrompt).toBeDefined();
-      expect(res.state.pendingDecisionPrompt?.options.length).toBe(2);
+      expect(peekDecisionPrompt(res.state)).toBeDefined();
+      expect(peekDecisionPrompt(res.state)?.options.length).toBe(2);
       expect(
-        res.state.pendingDecisionPrompt?.options.some((o) => o.id === spiderWomanInst.instanceId),
+        peekDecisionPrompt(res.state)?.options.some((o) => o.id === spiderWomanInst.instanceId),
       ).toBe(true);
 
       // Resolve decision prompt choosing Spider-Woman
@@ -645,7 +645,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
       });
 
       expect(resolveRes.result.success).toBe(true);
-      expect(resolveRes.state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(resolveRes.state)).toBeUndefined();
 
       const updatedSpiderWoman = resolveRes.state.players[0].allies.find(
         (a) => a.instanceId === spiderWomanInst.instanceId,

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { initiateEnemyAttack, canPlayCard } from '@engine/pipeline';
+import { initiateEnemyAttack, canPlayCard, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue #177)', () => {
   let state: GameState;
@@ -53,7 +53,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
     // Attack cancelled without dealing damage or boost cards
     expect(nextState.players[0].health).toBe(initialHp);
     expect(nextState.encounterDiscard.length).toBe(initialEncounterDiscard);
-    expect(nextState.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(nextState)).toBeUndefined();
   });
 
   it('Test 2: Follow-up villain attack cancelled by STUNNED status card', () => {
@@ -76,7 +76,7 @@ describe('Feature Delivery: Webbed Up (01009) & Host Attack Interception (Issue 
     // Attack cancelled
     expect(s2.players[0].health).toBe(initialHp);
     expect(s2.encounterDiscard.length).toBe(initialEncounterDiscard);
-    expect(s2.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(s2)).toBeUndefined();
   });
 
   it('Test 3: Pre-existing STUNNED status card on Villain takes timing priority over Webbed Up (Stun cleared, Webbed Up remains attached)', () => {

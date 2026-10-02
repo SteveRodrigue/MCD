@@ -11,6 +11,7 @@ import {
   dispatchAction,
   advanceVillainPhaseStep,
   executeVillainPhase,
+  peekDecisionPrompt,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -146,14 +147,14 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     // Without synchronousPolicy and with acceptOptionalTriggers: true, Spider-Sense auto-resolves and attack triggers DECLARE_DEFENDER prompt
     state = advanceVillainPhaseStep(state, { acceptOptionalTriggers: true });
 
-    expect(state.pendingDecisionPrompt).toBeDefined();
-    expect(state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER')).toBe(
+    expect(peekDecisionPrompt(state)).toBeDefined();
+    expect(peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')).toBe(
       true,
     );
 
     // Calling advanceVillainPhaseStep while prompt is pending yields state without advancing
     const haltedState = advanceVillainPhaseStep(state);
-    expect(haltedState.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(haltedState)).toBeDefined();
 
     // Calling ADVANCE_VILLAIN_PHASE via dispatcher fails with error
     const dispatchRes = dispatchAction(state, { type: 'ADVANCE_VILLAIN_PHASE' });
@@ -191,8 +192,8 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     state = advanceVillainPhaseStep(state, { acceptOptionalTriggers: true });
 
     // 1. Must halt with DECLARE_DEFENDER prompt
-    expect(state.pendingDecisionPrompt).toBeDefined();
-    expect(state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER')).toBe(
+    expect(peekDecisionPrompt(state)).toBeDefined();
+    expect(peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')).toBe(
       true,
     );
 
@@ -209,7 +210,7 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     expect(state.villainPhaseStepEvent?.description).toContain('is attacking Peter Parker');
 
     // 4. Resolve defender declaration as UNDEFENDED
-    const undefendedOption = state.pendingDecisionPrompt!.options.find(
+    const undefendedOption = peekDecisionPrompt(state)!.options.find(
       (o) => o.params?.defenderType === 'UNDEFENDED',
     )!;
 

@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { executeEffect } from '@engine/effects';
 import { executeVillainPhase } from '@engine/pipeline/villain-phase';
 import { endPlayerPhase } from '@engine/pipeline/player-phase';
@@ -155,8 +156,9 @@ describe('Turn-Gated Form Changes (RR v1.8 p. 8)', () => {
     const res1 = dispatchAction(state, { type: 'CHANGE_FORM', playerId: 'p1' });
     expect(res1.state.players[0].basicChangeFormUsedThisRound).toBe(true);
     let postFormState = res1.state;
-    if (postFormState.pendingDecisionPrompt) {
-      const passOption = postFormState.pendingDecisionPrompt.options.find(
+    const prompt = peekDecisionPrompt(postFormState);
+    if (prompt) {
+      const passOption = prompt.options.find(
         (option) => option.label === 'No' || option.id === 'pass',
       );
       expect(passOption).toBeDefined();

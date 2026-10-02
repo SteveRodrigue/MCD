@@ -11,7 +11,7 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { canBasicThwart, hasCrisisInPlay } from '@engine/pipeline/legality-checker';
-import { dispatchAction } from '@engine/pipeline';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { executeSequence } from '@engine/effects';
 import { resolveActiveEncounterCardAfterInterrupt } from '@engine/pipeline/villain-phase';
 
@@ -205,7 +205,7 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
 
     expect(result.success).toBe(true);
     // Decision prompt must NOT be enqueued because Main Scheme is blocked by Crisis and only 1 side scheme exists
-    expect(result.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(result.state)).toBeUndefined();
     // Threat was removed from Crowd Control, defeating it!
     expect(result.state.sideSchemes.length).toBe(0);
     // Main Scheme threat was untouched
@@ -250,9 +250,9 @@ describe('Keyword Icon: Crisis (Rules Reference v1.8 p. 11)', () => {
     );
 
     expect(result.success).toBe(true);
-    expect(result.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(result.state)).toBeDefined();
 
-    const prompt = result.state.pendingDecisionPrompt!;
+    const prompt = peekDecisionPrompt(result.state)!;
     const optionIds = prompt.options.map((o) => o.id);
 
     // Must NOT contain main scheme

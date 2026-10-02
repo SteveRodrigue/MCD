@@ -11,6 +11,7 @@ import {
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { getEffectiveHeroStats } from '@engine/pipeline/stat-calculator';
 
 describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () => {
@@ -202,7 +203,7 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       expect(result.success).toBe(true);
 
       let finalState = result.state;
-      if (finalState.pendingDecisionPrompt) {
+      if (peekDecisionPrompt(finalState)) {
         const resolveRes = dispatchAction(finalState, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',

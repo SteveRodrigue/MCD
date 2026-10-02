@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { executeEnemyAttackSynchronously, dispatchAction } from '@engine/pipeline';
+import {
+  executeEnemyAttackSynchronously,
+  dispatchAction,
+  peekDecisionPrompt,
+} from '@engine/pipeline';
 import { executeEffect, dealDirectDamage } from '@engine/effects';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 
@@ -249,10 +253,10 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         targetType: 'hero',
       });
 
-      expect(state.pendingDecisionPrompt).toBeDefined();
-      expect(state.pendingDecisionPrompt?.incomingDamage).toBe(5);
-      expect(state.pendingDecisionPrompt?.title).toContain('Incoming Damage: 5');
-      expect(state.pendingDecisionPrompt?.description).toContain('Incoming Damage: 5');
+      expect(peekDecisionPrompt(state)).toBeDefined();
+      expect(peekDecisionPrompt(state)?.incomingDamage).toBe(5);
+      expect(peekDecisionPrompt(state)?.title).toContain('Incoming Damage: 5');
+      expect(peekDecisionPrompt(state)?.description).toContain('Incoming Damage: 5');
     });
   });
 
@@ -296,12 +300,12 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         acceptOptionalTriggers: false,
       });
 
-      expect(cmState.pendingDecisionPrompt).toBeDefined();
-      expect(cmState.pendingDecisionPrompt?.incomingDamage).toBe(4);
-      expect(cmState.pendingDecisionPrompt?.preventAmount).toBe(3);
-      expect(cmState.pendingDecisionPrompt?.attackerName).toBe('Rhino');
-      expect(cmState.pendingDecisionPrompt?.targetCurrentHp).toBe(cmState.players[0].health);
-      expect(cmState.pendingDecisionPrompt?.targetCardCode).toBe('01010a');
+      expect(peekDecisionPrompt(cmState)).toBeDefined();
+      expect(peekDecisionPrompt(cmState)?.incomingDamage).toBe(4);
+      expect(peekDecisionPrompt(cmState)?.preventAmount).toBe(3);
+      expect(peekDecisionPrompt(cmState)?.attackerName).toBe('Rhino');
+      expect(peekDecisionPrompt(cmState)?.targetCurrentHp).toBe(cmState.players[0].health);
+      expect(peekDecisionPrompt(cmState)?.targetCardCode).toBe('01010a');
     });
 
     it("choosing 'Yes' discards Cosmic Flight and applies 1 remaining damage", () => {
@@ -312,7 +316,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         acceptOptionalTriggers: false,
       });
 
-      const yesOptionId = cmState.pendingDecisionPrompt?.options.find((o) => o.label === 'Yes')?.id;
+      const yesOptionId = peekDecisionPrompt(cmState)?.options.find((o) => o.label === 'Yes')?.id;
       expect(yesOptionId).toBeDefined();
 
       const res = dispatchAction(cmState, {
@@ -353,7 +357,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         acceptOptionalTriggers: false,
       });
 
-      expect(cmState.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(cmState)).toBeUndefined();
     });
 
     it('does NOT prompt Cosmic Flight when incoming damage is 0 (DEF >= total attack)', () => {
@@ -365,7 +369,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         acceptOptionalTriggers: false,
       });
 
-      expect(cmState.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(cmState)).toBeUndefined();
     });
 
     it('does NOT prompt Cosmic Flight when in Alter-Ego form', () => {
@@ -378,7 +382,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
         acceptOptionalTriggers: false,
       });
 
-      expect(cmState.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(cmState)).toBeUndefined();
     });
   });
 });

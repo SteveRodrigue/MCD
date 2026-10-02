@@ -10,7 +10,7 @@ import {
   Keyword,
   hasKeyword,
 } from '../models';
-import { enqueueDecisionPrompt, popDecisionPrompt } from './prompt-queue';
+import { enqueueDecisionPrompt, popDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
 import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
@@ -585,14 +585,14 @@ export function resolveDefenderDeclaration(
   state.activeAttackContext = undefined;
 
   // Clear defender decision prompt from queue if present
-  if (state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
+  if (peekDecisionPrompt(state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER')) {
     popDecisionPrompt(state);
   }
 
   // Trigger next pending activation if outside of Villain Phase (e.g. Gang-Up treachery)
   if (
     state.phase !== GamePhase.VILLAIN_PHASE &&
-    !state.pendingDecisionPrompt &&
+    !peekDecisionPrompt(state) &&
     (state as any).pendingActivations &&
     (state as any).pendingActivations.length > 0
   ) {

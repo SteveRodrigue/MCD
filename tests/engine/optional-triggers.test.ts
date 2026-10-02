@@ -9,6 +9,7 @@ import {
   MainSchemeCard,
   createCardInstance,
   StatusCard,
+  peekDecisionPrompt,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -72,7 +73,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       step2_villainActivations(gameState);
 
       // Verify prompt is enqueued for Spider-Sense with exact generic wording
-      const prompt = gameState.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(gameState);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Man?');
       expect(prompt?.description).toBe('ENEMY_INITIATES_ATTACK -> DRAW (1)');
@@ -98,7 +99,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       // Queue continues to Defender declaration prompt
       expect(
-        res.state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER'),
+        peekDecisionPrompt(res.state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER'),
       ).toBe(true);
     });
 
@@ -110,7 +111,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       step2_villainActivations(gameState);
 
-      const prompt = gameState.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(gameState);
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Man?');
 
       // Player selects 'No' / 'pass'
@@ -127,7 +128,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       // Queue continues to Defender declaration prompt
       expect(
-        res.state.pendingDecisionPrompt?.options.some((o) => o.effect === 'DECLARE_DEFENDER'),
+        peekDecisionPrompt(res.state)?.options.some((o) => o.effect === 'DECLARE_DEFENDER'),
       ).toBe(true);
     });
   });
@@ -151,7 +152,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       // First prompt is Spider-Sense on attack initiation
-      if (gameState.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      if (peekDecisionPrompt(gameState)?.title?.includes('Spider-Man')) {
         gameState = dispatchAction(gameState, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',
@@ -160,7 +161,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       }
 
       // Now at damage step: Backflip prompt enqueued
-      const prompt = gameState.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(gameState);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toContain('Do you want to use the following ability from Backflip?');
       expect(prompt?.title).toContain('Incoming Damage: 2');
@@ -200,7 +201,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       // Pass Spider-Sense
-      if (gameState.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+      if (peekDecisionPrompt(gameState)?.title?.includes('Spider-Man')) {
         gameState = dispatchAction(gameState, {
           type: 'RESOLVE_DECISION_PROMPT',
           playerId: 'p1',
@@ -209,7 +210,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       }
 
       // Pass Backflip
-      const prompt = gameState.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(gameState);
       expect(prompt?.title).toContain('Do you want to use the following ability from Backflip?');
       expect(prompt?.title).toContain('Incoming Damage: 2');
       expect(prompt?.incomingDamage).toBe(2);
@@ -255,7 +256,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       expect(playRes.result.success).toBe(true);
 
       // Prompt should be open for Spider-Woman
-      const prompt = playRes.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(playRes.state);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Woman?');
       expect(prompt?.description).toBe('ENTERS_PLAY -> ADD_STATUS (CONFUSED)');
@@ -327,7 +328,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       expect(playRes.result.success).toBe(true);
 
       // Prompt should be open for Mockingbird
-      const prompt = playRes.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(playRes.state);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Mockingbird?');
       expect(prompt?.description).toBe('ENTERS_PLAY -> ADD_STATUS (STUNNED)');
@@ -365,7 +366,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       });
 
       expect(playRes.result.success).toBe(true);
-      const prompt = playRes.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(playRes.state);
       expect(prompt).toBeDefined();
 
       const promptRes = dispatchAction(playRes.state, {
@@ -402,7 +403,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       expect(thwartRes.result.success).toBe(true);
 
       // Prompt for Daredevil response
-      const prompt = thwartRes.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(thwartRes.state);
       expect(prompt).toBeDefined();
       expect(prompt?.title).toBe('Do you want to use the following ability from Daredevil?');
       expect(prompt?.description).toBe('THWART_RESOLVED -> DEAL_DAMAGE (1)');
@@ -472,7 +473,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       expect(playRes.result.success).toBe(true);
       // Black Cat's ability is FORCED_RESPONSE, so no decision prompt should be opened for it!
-      expect(playRes.state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(playRes.state)).toBeUndefined();
       // 2 cards discarded from deck
       expect(playRes.state.players[0].deck.length).toBe(initialDeckLength - 2);
     });

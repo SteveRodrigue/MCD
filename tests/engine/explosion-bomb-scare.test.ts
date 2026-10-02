@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
   let state: GameState;
@@ -385,12 +386,10 @@ describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.state.pendingDecisionPrompt).toBeDefined();
-      expect(result.state.pendingDecisionPrompt?.kind).toBe('DISTRIBUTE_POINTS');
-      expect(result.state.pendingDecisionPrompt?.distributionConfig?.effectiveBudget).toBe(3);
-      expect(result.state.pendingDecisionPrompt?.distributionConfig?.allocationDomain).toBe(
-        'DAMAGE',
-      );
+      expect(peekDecisionPrompt(result.state)).toBeDefined();
+      expect(peekDecisionPrompt(result.state)?.kind).toBe('DISTRIBUTE_POINTS');
+      expect(peekDecisionPrompt(result.state)?.distributionConfig?.effectiveBudget).toBe(3);
+      expect(peekDecisionPrompt(result.state)?.distributionConfig?.allocationDomain).toBe('DAMAGE');
     });
   });
 });

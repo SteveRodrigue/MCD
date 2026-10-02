@@ -20,6 +20,7 @@ import {
   VillainCard,
   MainSchemeCard,
   createCardInstance,
+  peekDecisionPrompt,
 } from '@engine/index';
 import corePack from '../../data/upstream/pack/core.json';
 import coreEncounterPack from '../../data/upstream/pack/core_encounter.json';
@@ -99,7 +100,7 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     // Black Cat's FORCED_RESPONSE discards top 2 cards from deck — deck must shrink
     expect(res.state.players[0].deck.length).toBeLessThanOrEqual(initialDeck - 2);
     // FORCED_RESPONSE executes automatically — no pending prompt after play
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
   });
 
   it('E: Nick Fury FORCED_RESPONSE @ ENTERS_PLAY opens 3-choice prompt when played', () => {
@@ -117,9 +118,9 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt!.options.length).toBe(3);
-    const optionIds = res.state.pendingDecisionPrompt!.options.map((o) => o.id);
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)!.options.length).toBe(3);
+    const optionIds = peekDecisionPrompt(res.state)!.options.map((o) => o.id);
     expect(optionIds).toContain('draw_3_cards');
     expect(optionIds).toContain('remove_2_threat');
     expect(optionIds).toContain('deal_4_damage');
@@ -140,11 +141,9 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt!.description).toBe(
-      'ENTERS_PLAY -> ADD_STATUS (CONFUSED)',
-    );
-    expect(res.state.pendingDecisionPrompt!.isVoluntary).toBe(true);
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)!.description).toBe('ENTERS_PLAY -> ADD_STATUS (CONFUSED)');
+    expect(peekDecisionPrompt(res.state)!.isVoluntary).toBe(true);
   });
 
   it('H: Spider-Tracer attaches to a minion correctly after ACTION timing change (regression)', () => {
@@ -212,7 +211,7 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
     expect(res1.state.players[0].allies.some((a) => a.instanceId === nickFuryInst.instanceId)).toBe(
       true,
     );
-    expect(res1.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(res1.state)).toBeDefined();
 
     // Resolve Nick Fury's 3-choice prompt
     const res2 = dispatchAction(res1.state, {
@@ -221,7 +220,7 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
       selectedOptionId: 'draw_3_cards',
     });
     expect(res2.result.success).toBe(true);
-    expect(res2.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res2.state)).toBeUndefined();
 
     // Step 2: Play Mockingbird as a second ally
     const mockingbird = catalog.getCard('01083')!;
@@ -239,8 +238,9 @@ describe('ADR-0048: CARD_PLAYED vs ENTERS_PLAY trigger contract (RR v1.8 pp.11,2
 
     expect(res3.result.success).toBe(true);
     // Nick Fury must NOT have reopened his 3-choice prompt
-    if (res3.state.pendingDecisionPrompt) {
-      expect(res3.state.pendingDecisionPrompt.sourceCardName).not.toBe('Nick Fury');
+    const p3 = peekDecisionPrompt(res3.state);
+    if (p3) {
+      expect(p3.sourceCardName).not.toBe('Nick Fury');
     }
   });
 

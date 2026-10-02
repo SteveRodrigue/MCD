@@ -9,7 +9,7 @@ import {
   CardInstance,
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { canInitiateAbility } from '@engine/pipeline/legality-checker';
 
 describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-Resolution (Issue #14)', () => {
@@ -103,7 +103,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(res.state)).toBeUndefined();
 
     // Topmost Tech upgrade (01037) returned to hand
     const updatedP1 = res.state.players[0];
@@ -159,7 +159,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
 
       expect(res.result.success).toBe(true);
       // Auto-resolved: no prompt opened
-      expect(res.state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(res.state)).toBeUndefined();
 
       // Card retrieved to Player 1's hand
       expect(res.state.players[0].hand.length).toBe(1);
@@ -186,7 +186,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
       });
 
       expect(res.result.success).toBe(true);
-      const prompt = res.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(res.state);
       expect(prompt).toBeDefined();
       expect(prompt!.title).toContain('Choose a Player');
       expect(prompt!.options.length).toBe(2);
@@ -230,7 +230,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
 
       expect(res.result.success).toBe(true);
       // Even though only 1 player has Tech upgrade, prompt is forced open
-      const prompt = res.state.pendingDecisionPrompt;
+      const prompt = peekDecisionPrompt(res.state);
       expect(prompt).toBeDefined();
       expect(prompt!.title).toContain('Choose a Player');
       expect(prompt!.options.length).toBe(2);
@@ -254,7 +254,7 @@ describe('Stark Tower (01034): Cross-Player Targeting, Discard Legality & Auto-R
       });
 
       expect(choosePlayerRes.result.success).toBe(true);
-      const cardPrompt = choosePlayerRes.state.pendingDecisionPrompt;
+      const cardPrompt = peekDecisionPrompt(choosePlayerRes.state);
       expect(cardPrompt).toBeDefined();
       expect(cardPrompt!.options[0].effect).toBe('SEARCH_AND_SELECT_RESOLUTION');
 

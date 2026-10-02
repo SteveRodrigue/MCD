@@ -3,6 +3,7 @@ import { GameState, HeroCard, AlterEgoCard, StatusCard, GamePhase } from '@engin
 import { cardCatalog } from '../../../src/data/importer/card-loader';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 function makeResources(type: 'physical' | 'energy' | 'mental' | 'wild', count: number) {
   return {
@@ -220,7 +221,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     expect(res.state.villain.health).toBe(initialVillainHp - 3);
 
     // Spider-Tracer prompted for scheme choice with complete provenance metadata
-    const activePrompt = res.state.pendingDecisionQueue?.[0] || res.state.pendingDecisionPrompt;
+    const activePrompt = peekDecisionPrompt(res.state);
     expect(activePrompt).toBeDefined();
     expect(activePrompt?.sourceCardName).toBe('Spider-Tracer');
     expect(activePrompt?.sourceCardCode).toBe('01007');

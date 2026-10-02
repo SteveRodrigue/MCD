@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 describe('Ancestral Knowledge (01042) - Deck Shuffle Destination (Fixes #189, RR v1.8)', () => {
   let bpAlterEgo: any;
@@ -105,8 +106,8 @@ describe('Ancestral Knowledge (01042) - Deck Shuffle Destination (Fixes #189, RR
 
     expect(playResult.result.success).toBe(true);
     // Since there are 5 cards in discard (plus payCard discarded upon payment = 6), and takeCount is 3, prompt is enqueued
-    expect(playResult.state.pendingDecisionPrompt).toBeDefined();
-    const prompt = playResult.state.pendingDecisionPrompt!;
+    expect(peekDecisionPrompt(playResult.state)).toBeDefined();
+    const prompt = peekDecisionPrompt(playResult.state)!;
     expect(prompt.options.some((o) => o.id === d1.instanceId)).toBe(true);
     expect(prompt.options.some((o) => o.id === 'pass_search')).toBe(true);
 
@@ -174,7 +175,7 @@ describe('Ancestral Knowledge (01042) - Deck Shuffle Destination (Fixes #189, RR
       paymentCardInstanceIds: [payCard.instanceId],
     });
 
-    expect(playResult.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(playResult.state)).toBeDefined();
 
     // Select pass_search
     const passResult = dispatchAction(playResult.state, {

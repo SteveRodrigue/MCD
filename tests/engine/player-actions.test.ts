@@ -12,6 +12,7 @@ import {
   evaluateCardPlayability,
   executeEffect,
   Keyword,
+  peekDecisionPrompt,
 } from '@engine/index';
 
 import corePack from '../../data/upstream/pack/core.json';
@@ -777,9 +778,9 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         });
 
         expect(res1.result.success).toBe(true);
-        expect(res1.state.pendingDecisionPrompt).toBeDefined();
-        expect(res1.state.pendingDecisionPrompt?.title).toMatch(/futurist/i);
-        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(3); // All 3 looked cards offered per printed card text
+        expect(peekDecisionPrompt(res1.state)).toBeDefined();
+        expect(peekDecisionPrompt(res1.state)?.title).toMatch(/futurist/i);
+        expect(peekDecisionPrompt(res1.state)?.options.length).toBe(3); // All 3 looked cards offered per printed card text
 
         // 2. Select the Arc Reactor card
         const techOptionId = arcReactor.instanceId;
@@ -790,7 +791,7 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         });
 
         expect(res2.result.success).toBe(true);
-        expect(res2.state.pendingDecisionPrompt).toBeUndefined();
+        expect(peekDecisionPrompt(res2.state)).toBeUndefined();
         // Arc Reactor should now be in hand
         expect(res2.state.players[0].hand.length).toBe(initialHandLength + 1);
         expect(res2.state.players[0].hand.some((c) => c.card.code === '01035')).toBe(true);
@@ -822,8 +823,8 @@ describe('Player Actions Pipeline (Rules Reference v1.8)', () => {
         });
 
         expect(res1.result.success).toBe(true);
-        expect(res1.state.pendingDecisionPrompt).toBeDefined();
-        expect(res1.state.pendingDecisionPrompt?.options.length).toBe(3); // All 3 looked cards offered
+        expect(peekDecisionPrompt(res1.state)).toBeDefined();
+        expect(peekDecisionPrompt(res1.state)?.options.length).toBe(3); // All 3 looked cards offered
 
         // Select the second card (markVArmor)
         const secondOptionId = markVArmor.instanceId;

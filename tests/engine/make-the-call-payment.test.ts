@@ -8,6 +8,7 @@ import {
 } from '../../src/engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { canPlayCard, evaluateCardPlayability } from '../../src/engine/pipeline/legality-checker';
 
 describe('Make the Call Payment & Legality Checks (Issue #173)', () => {
@@ -200,7 +201,7 @@ describe('Make the Call Payment & Legality Checks (Issue #173)', () => {
     });
 
     expect(result.success).toBe(true);
-    const prompt = stateAfterPlay.pendingDecisionQueue?.[0] || stateAfterPlay.pendingDecisionPrompt;
+    const prompt = peekDecisionPrompt(stateAfterPlay);
     expect(prompt).toBeDefined();
 
     const optionIds = prompt!.options.map((o) => o.id);
@@ -238,7 +239,7 @@ describe('Make the Call Payment & Legality Checks (Issue #173)', () => {
       paymentCardInstanceIds: [],
     });
 
-    const prompt = stateAfterPlay.pendingDecisionQueue?.[0] || stateAfterPlay.pendingDecisionPrompt;
+    const prompt = peekDecisionPrompt(stateAfterPlay);
     expect(prompt).toBeDefined();
 
     // Resolve prompt by choosing Maria Hill, paying with paymentCard and Web-Shooter generator

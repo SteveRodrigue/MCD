@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { executePlayerCleanup } from '@engine/pipeline/player-phase-cleanup';
 
 describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v1.8 p. 23)', () => {
@@ -63,11 +64,11 @@ describe('End of Player Phase Clean-Up & Voluntary Hand Discard (Issue #41, RR v
     });
 
     expect(res.result.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
-    expect(res.state.pendingDecisionPrompt?.title).toContain(
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
+    expect(peekDecisionPrompt(res.state)?.title).toContain(
       'End of Player Phase: Voluntary Discard',
     );
-    expect(res.state.pendingDecisionPrompt?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
+    expect(peekDecisionPrompt(res.state)?.options.length).toBe(3); // Discard cardA, Discard cardB, Keep All (Done)
   });
 
   it('discards selected cards, draws up to printed hand size, and readies player cards', () => {

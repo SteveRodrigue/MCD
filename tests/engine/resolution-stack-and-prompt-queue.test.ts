@@ -60,7 +60,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
   describe('Prompt Queue Management & FIFO Ordering', () => {
     it('enqueues multiple decision prompts without state overwrite and indexes queue positions', () => {
       expect(state.pendingDecisionQueue).toEqual([]);
-      expect(state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(state)).toBeUndefined();
 
       // Enqueue first prompt for Player 1
       state = enqueueDecisionPrompt(state, {
@@ -74,7 +74,6 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
 
       expect(state.pendingDecisionQueue?.length).toBe(1);
       expect(peekDecisionPrompt(state)?.promptId).toBe('prompt_1');
-      expect(state.pendingDecisionPrompt?.promptId).toBe('prompt_1');
       expect(state.pendingDecisionQueue?.[0].queuePosition).toBe(1);
       expect(state.pendingDecisionQueue?.[0].totalQueued).toBe(1);
 
@@ -107,7 +106,6 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       // Now head of queue is prompt_2
       expect(res1.state.pendingDecisionQueue?.length).toBe(1);
       expect(peekDecisionPrompt(res1.state)?.promptId).toBe('prompt_2');
-      expect(res1.state.pendingDecisionPrompt?.promptId).toBe('prompt_2');
       expect(res1.state.pendingDecisionQueue?.[0].queuePosition).toBe(1);
       expect(res1.state.pendingDecisionQueue?.[0].totalQueued).toBe(1);
 
@@ -120,7 +118,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
 
       expect(res2.result.success).toBe(true);
       expect(res2.state.pendingDecisionQueue?.length).toBe(0);
-      expect(res2.state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(res2.state)).toBeUndefined();
     });
 
     it('handles voluntary reaction Pass option without mutating game state', () => {
@@ -152,7 +150,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
 
       expect(res.result.success).toBe(true);
       expect(res.result.onomatopoeia).toBe('PASSED');
-      expect(res.state.pendingDecisionPrompt).toBeUndefined();
+      expect(peekDecisionPrompt(res.state)).toBeUndefined();
       expect(res.state.mainScheme.threat).toBe(initialThreat);
     });
   });
@@ -241,7 +239,7 @@ describe('Universal Resolution Stack & Decision Prompt Queue (ADR-0032)', () => 
       });
 
       expect(effectRes.success).toBe(true);
-      expect(effectRes.state.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(effectRes.state)).toBeDefined();
 
       const resolved = resolveDefenderDeclaration(effectRes.state, {
         type: 'UNDEFENDED',

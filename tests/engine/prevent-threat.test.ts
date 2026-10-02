@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, CardAbility, AbilityStep } from '@engine/models';
-import { setupGame, createCardInstance, resetInstanceCounter } from '@engine/index';
+import {
+  setupGame,
+  createCardInstance,
+  resetInstanceCounter,
+  peekDecisionPrompt,
+} from '@engine/index';
 import { dispatchTrigger, formatAbilityStepsSummary } from '@engine/triggers/trigger-dispatcher';
 import { executeEffect } from '@engine/effects';
 
@@ -251,8 +256,8 @@ describe('PREVENT_THREAT Primitive Acceptance & Contract Tests (Issue #123, ADR-
       });
 
       expect(res.hasPendingPrompt).toBe(true);
-      expect(res.state.pendingDecisionPrompt).toBeDefined();
-      expect(res.state.pendingDecisionPrompt?.description).toContain('PREVENT_THREAT (1)');
+      expect(peekDecisionPrompt(res.state)).toBeDefined();
+      expect(peekDecisionPrompt(res.state)?.description).toContain('PREVENT_THREAT (1)');
     });
   });
 });

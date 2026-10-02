@@ -3,7 +3,11 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
-import { resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
+import {
+  enqueueDecisionPrompt,
+  peekDecisionPrompt,
+  resolveDecisionPrompt,
+} from '@engine/pipeline/prompt-queue';
 import { step6_endVillainPhaseAndRound } from '@engine/pipeline/round-upkeep';
 import { executePlayerCleanup } from '@engine/pipeline/player-phase-cleanup';
 import { dispatchAction } from '@engine/pipeline/action-dispatcher';
@@ -57,10 +61,10 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
 
     // Reveal encounter card -> prompts Enhanced Spider-Sense
     const promptState = step4_revealEncounterCards(state);
-    expect(promptState.pendingDecisionPrompt).toBeDefined();
-    expect(promptState.pendingDecisionPrompt?.sourceCardName).toBe('Enhanced Spider-Sense');
+    expect(peekDecisionPrompt(promptState)).toBeDefined();
+    expect(peekDecisionPrompt(promptState)?.sourceCardName).toBe('Enhanced Spider-Sense');
 
-    const yesOption = promptState.pendingDecisionPrompt!.options.find((o) => o.id !== 'pass')!;
+    const yesOption = peekDecisionPrompt(promptState)!.options.find((o) => o.id !== 'pass')!;
     expect(yesOption).toBeDefined();
 
     // Resolve decision prompt using Web-Shooter as resource generator
@@ -165,7 +169,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     state.players[0].tableau = [webShooter];
 
     // Queue a synthetic prompt representing a card or encounter effect with payment
-    state.pendingDecisionPrompt = {
+    state = enqueueDecisionPrompt(state, {
       promptId: 'prompt_synthetic_payment_test',
       playerId: 'p1',
       title: 'Pay 1 Resource',
@@ -184,7 +188,7 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
           effect: 'PASS',
         },
       ],
-    };
+    });
 
     const { state: resolvedState } = resolveDecisionPrompt(state, 'p1', 'pay_resource_option', {
       generatorInstanceIds: [webShooter.instanceId],
@@ -233,8 +237,8 @@ describe('Unified Payment Subsystem & Exhaust Lifecycle Invariants (Issue #155)'
     });
 
     expect(triggerRes.hasPendingPrompt).toBe(true);
-    expect(state.pendingDecisionPrompt).toBeDefined();
-    const yesOption = state.pendingDecisionPrompt!.options.find((o) => o.id !== 'pass')!;
+    expect(peekDecisionPrompt(state)).toBeDefined();
+    const yesOption = peekDecisionPrompt(state)!.options.find((o) => o.id !== 'pass')!;
     expect(yesOption).toBeDefined();
     expect((yesOption.params as any).requiresPayment).toBe(true);
     expect((yesOption.params as any).resourceCost?.amount).toBe(1);

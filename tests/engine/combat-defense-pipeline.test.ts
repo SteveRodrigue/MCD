@@ -11,6 +11,7 @@ import {
   resolveDefenderDeclaration,
   finishAttackDamageAndPostResolution,
 } from '../../src/engine/pipeline/combat-pipeline';
+import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 
@@ -393,7 +394,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
     // Verify Backflip is NOT triggered, remains in Player 1's hand
     expect(p1.hand).toContain(backflip);
     expect(p1.discard).not.toContain(backflip);
-    expect(state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(state)).toBeUndefined();
   });
 
   it('Test 8: Issue #191 Regression: Ally Defense for Spider-Man prevents damage to Spider-Man and does NOT trigger Backflip', () => {
@@ -427,7 +428,7 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
     // Verify Backflip is NOT triggered, remains in Player 1's hand
     expect(p1.hand).toContain(backflip);
     expect(p1.discard).not.toContain(backflip);
-    expect(state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(state)).toBeUndefined();
   });
 
   it('Test 9: Issue #191 Regression: Cross-Table Ally Defense for Spider-Man prevents damage to Spider-Man and does NOT trigger Backflip', () => {
@@ -465,6 +466,6 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
     expect(p1.exhausted).toBe(false);
     expect(p1.hand).toContain(backflip);
     expect(p1.discard).not.toContain(backflip);
-    expect(state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(state)).toBeUndefined();
   });
 });

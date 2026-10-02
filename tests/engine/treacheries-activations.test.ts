@@ -4,7 +4,7 @@ import { GameState, HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/model
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
 import { resolveDefenderDeclaration } from '@engine/pipeline/combat-pipeline';
-import { dispatchAction } from '@engine/pipeline/action-dispatcher';
+import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 
 describe('Standard Set & Modular Extra Activation Treacheries', () => {
   let state: GameState;
@@ -62,7 +62,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
       sourceCardInstance: assaultInst,
     });
     expect(resHero.success).toBe(true);
-    expect(resHero.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(resHero.state)).toBeDefined();
 
     // Resolve defender declaration to complete attack
     const resolvedHeroState = resolveDefenderDeclaration(resHero.state, {
@@ -98,9 +98,9 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
 
     let res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: gangUpInst });
     expect(res.success).toBe(true);
-    expect(res.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(res.state)).toBeDefined();
 
-    if (res.state.pendingDecisionPrompt?.title?.includes('Spider-Man')) {
+    if (peekDecisionPrompt(res.state)?.title?.includes('Spider-Man')) {
       res = {
         ...res,
         state: dispatchAction(res.state, {
@@ -126,7 +126,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(resAfterMinion.players[0].health).toBeLessThanOrEqual(initialHp - 3);
 
     // 2. In Alter-Ego Form -> Surges (deals encounter card), no attacks
-    delete state.pendingDecisionPrompt;
+    state.pendingDecisionQueue = [];
     delete (state as any).pendingActivations;
     state.players[0].engagedMinions = [];
     state.players[0].currentForm = 'alter_ego';
@@ -139,7 +139,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     });
     expect(resAlterEgo.success).toBe(true);
     expect(resAlterEgo.state.players[0].dealtEncounterCards.length).toBe(initialDealtCount + 1);
-    expect(resAlterEgo.state.pendingDecisionPrompt).toBeUndefined();
+    expect(peekDecisionPrompt(resAlterEgo.state)).toBeUndefined();
   });
 
   it('01106 Stampede: Causes villain to attack hero; surges if in alter-ego', () => {
@@ -154,7 +154,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
       sourceCardInstance: stampedeInst,
     });
     expect(resHero.success).toBe(true);
-    expect(resHero.state.pendingDecisionPrompt).toBeDefined();
+    expect(peekDecisionPrompt(resHero.state)).toBeDefined();
 
     // Resolve defender declaration to complete attack
     const resolvedHeroState = resolveDefenderDeclaration(resHero.state, {

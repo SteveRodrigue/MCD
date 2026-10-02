@@ -5,7 +5,7 @@ import { setupGame } from '../../src/engine/state/game-setup';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
-import { resolveDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
+import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 
 describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (ADR-0057)', () => {
@@ -249,8 +249,8 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
       state.phase = GamePhase.VILLAIN_PHASE;
       let nextState = step5_revealEncounterCards(state);
 
-      expect(nextState.pendingDecisionPrompt).toBeDefined();
-      expect(nextState.pendingDecisionPrompt?.sourceCardName).toContain('Hawkeye');
+      expect(peekDecisionPrompt(nextState)).toBeDefined();
+      expect(peekDecisionPrompt(nextState)?.sourceCardName).toContain('Hawkeye');
 
       // Resolve prompt to shoot the arrow
       nextState = resolveDecisionPrompt(nextState, 'p1', 'trigger_hawkeye_arrow_response').state;
@@ -334,9 +334,9 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
         targetPlayerId: p1.id,
       }).state;
 
-      expect(nextState.pendingDecisionPrompt).toBeDefined();
+      expect(peekDecisionPrompt(nextState)).toBeDefined();
       expect(
-        nextState.pendingDecisionPrompt?.options.some((o) => o.id === 'trigger_charge_response'),
+        peekDecisionPrompt(nextState)?.options.some((o) => o.id === 'trigger_charge_response'),
       ).toBe(true);
 
       // Resolve prompt

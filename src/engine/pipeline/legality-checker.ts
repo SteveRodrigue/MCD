@@ -897,6 +897,100 @@ export function evaluateAllyTargetRequirement(
 }
 
 /**
+ * Evaluates whether a card requires enemy targets (RR v1.8 p. 5, 16, 17)
+ * and whether eligible enemy targets currently exist in play (respecting maxPerHost).
+ */
+export function evaluateEnemyTargetRequirement(
+  state: GameState,
+  _player: PlayerState,
+  card: NormalizedCard,
+  targetEnemyId?: string,
+): { allowed: boolean; reason?: string } {
+  const abilities = card.enrichment?.abilities || [];
+
+  let requiresEnemy = false;
+  let maxPerHost: number | undefined;
+
+  for (const ab of abilities) {
+    for (const step of ab.steps || []) {
+      const stepParams = getStepEffectParams(step);
+      const target = stepParams.target;
+      if (
+        step.effect === 'ATTACH_TO_HOST' &&
+        (target === 'CHOSEN_ENEMY' || target === 'ENEMY' || target === 'ALL_ENEMIES')
+      ) {
+        requiresEnemy = true;
+        if (stepParams.maxPerHost !== undefined) {
+          maxPerHost = Number(stepParams.maxPerHost);
+        }
+      }
+    }
+  }
+
+  if (requiresEnemy) {
+    const allEnemies: { entity: any; id: string; attachments?: CardInstance[] }[] = [];
+    if (state.villain) {
+      allEnemies.push({
+        entity: state.villain,
+        id: state.villain.instanceId || 'villain',
+        attachments: state.villain.attachments,
+      });
+    }
+    for (const p of state.players) {
+      for (const m of p.engagedMinions || []) {
+        allEnemies.push({
+          entity: m,
+          id: m.instanceId,
+          attachments: m.attachments,
+        });
+      }
+    }
+
+    if (allEnemies.length === 0) {
+      return {
+        allowed: false,
+        reason: 'Cannot play this card: requires an enemy in play to attach to.',
+      };
+    }
+
+    if (targetEnemyId) {
+      const targetEnemy = allEnemies.find(
+        (e) => e.id === targetEnemyId || (e.entity as any)?.card?.code === targetEnemyId,
+      );
+      if (targetEnemy && maxPerHost !== undefined && maxPerHost > 0) {
+        const attachedCount = (targetEnemy.attachments || []).filter(
+          (att) => att.card.code === card.code || att.card.name === card.name,
+        ).length;
+        if (attachedCount >= maxPerHost) {
+          return {
+            allowed: false,
+            reason: `Cannot play this card: target enemy already has the maximum number (${maxPerHost}) of '${card.name}' attached.`,
+          };
+        }
+      }
+    }
+
+    if (maxPerHost !== undefined && maxPerHost > 0) {
+      const eligibleEnemies = allEnemies.filter((enemy) => {
+        const attachedCount = (enemy.attachments || []).filter(
+          (att) => att.card.code === card.code || att.card.name === card.name,
+        ).length;
+        return attachedCount < maxPerHost!;
+      });
+
+      if (!eligibleEnemies.length) {
+        return {
+          allowed: false,
+          reason: `Cannot play this card: all in-play enemies already have the maximum number (${maxPerHost}) of '${card.name}' attached.`,
+        };
+      }
+    }
+  }
+
+  return { allowed: true };
+}
+
+/**
  * Evaluates whether a card requires character targets (RR v1.8 p. 3, 11)
  * such as healing, and whether eligible damaged targets exist in play.
  */
@@ -1411,6 +1505,7 @@ export function canPlayCard(
     'HAND' | 'PLAYER_DISCARD' | 'ANY_PLAYER_DISCARD' | 'DECK_TOP' | 'ATTACHED' | 'TUCKED' = 'HAND',
   targetOwnerPlayerId?: string,
   targetPlayerId?: string,
+  targetInstanceId?: string,
 ): { allowed: boolean; reason?: string; cardToPlay?: NormalizedCard } {
   const player = getPlayer(state, playerId);
   if (!player) return { allowed: false, reason: 'Player not found' };
@@ -1471,6 +1566,12 @@ export function canPlayCard(
   const allyCheck = evaluateAllyTargetRequirement(state, player, card);
   if (!allyCheck.allowed) {
     return allyCheck;
+  }
+
+  // Enemy target and attachment requirement check (RR v1.8 p. 5, 16, 17)
+  const enemyCheck = evaluateEnemyTargetRequirement(state, player, card, targetInstanceId);
+  if (!enemyCheck.allowed) {
+    return enemyCheck;
   }
 
   // Character target and heal requirement check (RR v1.8 p. 3, 11)
@@ -1884,6 +1985,12 @@ export function evaluateCardPlayability(
   const allyPlayabilityCheck = evaluateAllyTargetRequirement(state, player, card);
   if (!allyPlayabilityCheck.allowed && allyPlayabilityCheck.reason) {
     reasons.push(allyPlayabilityCheck.reason);
+  }
+
+  // Enemy target and attachment requirement check (RR v1.8 p. 5, 16, 17)
+  const enemyPlayabilityCheck = evaluateEnemyTargetRequirement(state, player, card);
+  if (!enemyPlayabilityCheck.allowed && enemyPlayabilityCheck.reason) {
+    reasons.push(enemyPlayabilityCheck.reason);
   }
 
   // Character target and heal requirement check (RR v1.8 p. 3, 11)

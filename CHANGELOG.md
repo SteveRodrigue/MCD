@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feat (Engine & Data): Refactor Webbed Up (`01009`) & Generic Host Attack Interception (RR v1.8 pp. 5, 8, 23, 28, [Issue #177](https://github.com/SteveRodrigue/MCD/issues/177))**
+  - **Schema & Models (`schema.ts`, `abilities.ts`):**
+    - Introduced generic `HOST_WOULD_ATTACK` trigger replacing legacy `ATTACHED_ENEMY_ATTACKS`.
+    - Added `HOST` and `HOST_ENEMY` target selectors.
+    - Pruned legacy single-use `INTERCEPT_ATTACK` effect.
+  - **Declarative Supplemental Data (`core.json`):**
+    - Refactored *Webbed Up* (`01009`) to standard composable steps: `ATTACH_TO_HOST` (`CHOSEN_ENEMY`), `DISCARD` (`SELF`), and `ADD_STATUS` (`STUNNED`, `HOST_ENEMY`).
+  - **Combat Pipeline & Target Resolution (`combat-pipeline.ts`, `target-resolver.ts`):**
+    - Refactored `step1_preAttackAndStunCheck` to evaluate status card priority (Stun) first, followed by generic `HOST_WOULD_ATTACK` attachment execution on Villains and Minions.
+    - Completely removed hardcoded card `01009` and hero `01001a` engine references.
+  - **Legality & Action Dispatcher (`legality-checker.ts`, `action-dispatcher.ts`):**
+    - Enforced `maxPerHost: 1` constraint on enemy host attachments.
+  - **Automated Verification:**
+    - Added comprehensive acceptance test suite in `tests/engine/webbed-up.test.ts` (Villain cancellation, follow-up stun attack cancellation, pre-existing stun priority, minion attack cancellation, and max 1 unicity).
+
 - **Fix (Combat & Rules): Damage Retargeting on Cross-Character Defense & Backflip Invariant (RR v1.8 pp. 209–213, [Issue #191](https://github.com/SteveRodrigue/MCD/issues/191))**
   - **Combat Pipeline (`combat-pipeline.ts`):**
     - Retargeted attack context (`attackContext.targetPlayerId = declaration.playerId`) when another player or cross-table ally declares defense.

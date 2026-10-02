@@ -3522,8 +3522,7 @@ export function executeStep(
     }
 
     case 'GRANT_KEYWORD':
-    case 'ATTACHMENT_DAMAGE_SHIELD':
-    case 'INTERCEPT_ATTACK': {
+    case 'ATTACHMENT_DAMAGE_SHIELD': {
       // These are declarative constant/trigger primitives evaluated dynamically by stat-calculator and combat pipelines
       return { state, success: true };
     }
@@ -3578,6 +3577,32 @@ export function executeStep(
         success: true,
         mutatedState: true,
         onomatopoeia: 'READY!',
+      };
+    }
+
+    case 'CANCEL_ATTACK': {
+      if (state.activeAttackContext) {
+        (state.activeAttackContext as any).isCancelled = true;
+      }
+      (context as any).attackCancelled = true;
+      const cancelledBy = context.sourceCardInstance?.card.name || 'Ability';
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'combat.attack.cancelled',
+        params: {
+          cancelledBy,
+        },
+        onomatopoeia: 'ATTACK CANCELLED!',
+      });
+      return {
+        state,
+        success: true,
+        mutatedState: true,
+        onomatopoeia: 'ATTACK CANCELLED!',
       };
     }
 

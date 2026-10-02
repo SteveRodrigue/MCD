@@ -854,6 +854,91 @@ export function resolveTargets(
       return [];
     }
 
+    case 'HOST':
+    case 'HOST_ENEMY': {
+      if (context?.sourceCardInstance) {
+        const sourceInstId = context.sourceCardInstance.instanceId;
+        // 1. Check villain attachments
+        if (state.villain?.attachments?.some((a) => a.instanceId === sourceInstId)) {
+          return [
+            {
+              kind: 'character',
+              entityType: 'villain',
+              entity: state.villain,
+              id: state.villain.instanceId || 'villain',
+            },
+          ];
+        }
+        // 2. Check engaged minions across all players
+        for (const player of state.players) {
+          const minion = (player.engagedMinions || []).find((m) =>
+            m.attachments?.some((a) => a.instanceId === sourceInstId),
+          );
+          if (minion) {
+            return [
+              {
+                kind: 'character',
+                entityType: 'minion',
+                entity: minion,
+                id: minion.instanceId,
+                player,
+              },
+            ];
+          }
+        }
+        // 3. Check player attachments
+        if (selector === 'HOST') {
+          for (const player of state.players) {
+            if (player.attachments?.some((a) => a.instanceId === sourceInstId)) {
+              return [
+                {
+                  kind: 'character',
+                  entityType: player.currentForm === 'hero' ? 'hero' : 'alter_ego',
+                  entity: player,
+                  id: player.id,
+                  player,
+                },
+              ];
+            }
+          }
+        }
+        // 4. Check hostInstanceId stored on source card if already detached
+        const hostId = (context.sourceCardInstance as any).hostInstanceId;
+        if (hostId) {
+          const found = resolveEntityByInstanceId(state, hostId);
+          if (found) {
+            if (selector === 'HOST_ENEMY') {
+              if (
+                found.kind === 'character' &&
+                (found.entityType === 'villain' || found.entityType === 'minion')
+              ) {
+                return [found];
+              }
+            } else {
+              return [found];
+            }
+          }
+        }
+      }
+      // 5. Fallback to targetInstanceId from context
+      if (context?.targetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+        if (found) {
+          if (selector === 'HOST_ENEMY') {
+            if (
+              found.kind === 'character' &&
+              (found.entityType === 'villain' || found.entityType === 'minion')
+            ) {
+              return [found];
+            }
+          } else {
+            return [found];
+          }
+        }
+      }
+      return [];
+    }
+
     // 6. UNIVERSAL CHARACTERS
     case 'CHOSEN_CHARACTER': {
       if (context?.targetInstanceId) {

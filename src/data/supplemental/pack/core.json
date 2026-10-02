@@ -307,14 +307,27 @@
           ]
         },
         {
-          "id": "webbed_up_intercept",
+          "id": "webbed_up_interrupt",
           "timing": "FORCED_INTERRUPT",
-          "trigger": "ENEMY_INITIATES_ATTACK",
+          "trigger": "HOST_WOULD_ATTACK",
           "steps": [
             {
-              "effect": "INTERCEPT_ATTACK",
+              "id": "cancel_attack",
+              "effect": "CANCEL_ATTACK"
+            },
+            {
+              "id": "discard_webbed_up",
+              "effect": "DISCARD",
               "effectParams": {
-                "effect": "CANCEL_ATTACK_AND_STUN_HOST"
+                "source": "SELF"
+              }
+            },
+            {
+              "id": "stun_host",
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "HOST_ENEMY"
               }
             }
           ]
@@ -322,11 +335,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-02T00:30:00Z",
+        "reviewedAt": "2026-10-02T00:30:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
-        "confidence": 60,
+        "confidence": 100,
         "originalText": "Hero form only. Attach to an enemy. Max 1 per enemy.\n<b>Forced Interrupt</b>: When attached enemy would attack, discard Webbed Up instead. Then, stun that enemy."
       }
     },

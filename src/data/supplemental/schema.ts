@@ -67,7 +67,7 @@ export const TriggerTypeSchema = z.enum([
   'TREACHERY_REVEALED',
   'CHARACTER_DEFEATED',
   'SCHEME_DEFEATED',
-  'ATTACHED_ENEMY_ATTACKS',
+  'HOST_WOULD_ATTACK',
   'THREAT_WOULD_BE_PLACED',
   'MAIN_SCHEME_ADVANCED',
   'BASIC_ATTACK_PERFORMED',
@@ -131,6 +131,8 @@ export const TargetSelectorSchema = z.enum([
   'PREVIOUS_SELECTED_CARD',
   'TRIGGERING_MINION',
   'TRIGGERING_ENEMY',
+  'HOST',
+  'HOST_ENEMY',
 ]);
 
 export type TargetSelector = z.infer<typeof TargetSelectorSchema>;
@@ -194,6 +196,7 @@ export const EffectTypeSchema = z.enum([
   'ATTACHMENT_DAMAGE_SHIELD',
   'ATTACH_FACEDOWN_CARDS_FROM_HAND',
   'ATTACH_TO_HOST',
+  'CANCEL_ATTACK',
   'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS',
   'CANCEL_WHEN_REVEALED',
   'CANCEL_WHEN_REVEALED_AND_ATTACK',
@@ -215,7 +218,6 @@ export const EffectTypeSchema = z.enum([
   'GRANT_KEYWORD',
   'HEAL_DAMAGE',
   'HEAL_DAMAGE_WITH_SURGE',
-  'INTERCEPT_ATTACK',
   'MODIFY_ALLY_LIMIT',
   'MODIFY_RESTRICTED_LIMIT',
   'MODIFY_COUNTER',

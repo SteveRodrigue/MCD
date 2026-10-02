@@ -61,7 +61,7 @@
                     "TREACHERY_REVEALED",
                     "CHARACTER_DEFEATED",
                     "SCHEME_DEFEATED",
-                    "ATTACHED_ENEMY_ATTACKS",
+                    "HOST_WOULD_ATTACK",
                     "THREAT_WOULD_BE_PLACED",
                     "MAIN_SCHEME_ADVANCED",
                     "BASIC_ATTACK_PERFORMED",
@@ -188,7 +188,9 @@
                         "PREVIOUS_TARGET",
                         "PREVIOUS_SELECTED_CARD",
                         "TRIGGERING_MINION",
-                        "TRIGGERING_ENEMY"
+                        "TRIGGERING_ENEMY",
+                        "HOST",
+                        "HOST_ENEMY"
                       ]
                     },
                     "discardSelf": {
@@ -344,6 +346,7 @@
                           "ATTACHMENT_DAMAGE_SHIELD",
                           "ATTACH_FACEDOWN_CARDS_FROM_HAND",
                           "ATTACH_TO_HOST",
+                          "CANCEL_ATTACK",
                           "CANCEL_TREACHERY_AND_VILLAIN_ATTACKS",
                           "CANCEL_WHEN_REVEALED",
                           "CANCEL_WHEN_REVEALED_AND_ATTACK",
@@ -365,7 +368,6 @@
                           "GRANT_KEYWORD",
                           "HEAL_DAMAGE",
                           "HEAL_DAMAGE_WITH_SURGE",
-                          "INTERCEPT_ATTACK",
                           "MODIFY_ALLY_LIMIT",
                           "MODIFY_RESTRICTED_LIMIT",
                           "MODIFY_COUNTER",
@@ -440,7 +442,9 @@
                           "PREVIOUS_TARGET",
                           "PREVIOUS_SELECTED_CARD",
                           "TRIGGERING_MINION",
-                          "TRIGGERING_ENEMY"
+                          "TRIGGERING_ENEMY",
+                          "HOST",
+                          "HOST_ENEMY"
                         ]
                       },
                       "distinctFrom": {

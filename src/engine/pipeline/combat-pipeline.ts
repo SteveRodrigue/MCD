@@ -73,8 +73,9 @@ export function drawEncounterCardForCombat(state: GameState): CardInstance | und
 }
 
 /**
- * Step 1: Pre-Attack & Status Intercepts (RR v1.8 p. 4)
- * Checks Webbed Up / INTERCEPT_ATTACK attachments and Stun status.
+ * Step 1: Pre-Attack & Status Intercepts (RR v1.8 p. 4, 28)
+ * Checks Stun status first (priority 1 per RR v1.8 p. 28 "Status Cards"),
+ * then checks HOST_WOULD_ATTACK attachment interrupts (priority 2).
  * Returns true if the attack was cancelled.
  */
 export function step1_preAttackAndStunCheck(
@@ -83,41 +84,12 @@ export function step1_preAttackAndStunCheck(
   attackerCard?: CardInstance,
   targetPlayer?: PlayerState,
 ): boolean {
-  if (attackerType === 'VILLAIN') {
-    // Check Webbed Up or attachments with INTERCEPT_ATTACK
-    const webbedUpIdx = (state.villain.attachments || []).findIndex(
-      (att) =>
-        att.card.code === '01009' ||
-        att.card.enrichment?.abilities?.some((a) =>
-          a.steps?.some((s) => s.effect === 'INTERCEPT_ATTACK'),
-        ),
-    );
+  const attackerEntity = attackerType === 'VILLAIN' ? state.villain : attackerCard;
+  if (!attackerEntity) return false;
 
-    if (webbedUpIdx !== -1) {
-      const [webbedUp] = state.villain.attachments.splice(webbedUpIdx, 1);
-      const owner =
-        state.players.find((p) => p.hero.code === '01001a') || targetPlayer || state.players[0];
-      owner.discard.push(webbedUp);
-
-      if (!state.villain.statusCards.includes(StatusCard.STUNNED)) {
-        state.villain.statusCards.push(StatusCard.STUNNED);
-      }
-
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'combat',
-        key: 'villain.attack.cancelled',
-        params: { villain: state.villain.card.name, cancelledBy: 'Webbed Up' },
-        onomatopoeia: 'WEBBED UP! ATTACK CANCELLED & STUNNED!',
-      });
-      return true;
-    }
-
-    // Check Stun status on Villain (taking into account Steady - RR v1.8 p. 28)
-    if (consumeEntityStatusCards(state.villain, StatusCard.STUNNED)) {
+  // Priority 1: Check Stun status on attacking entity (taking into account Steady - RR v1.8 p. 28)
+  if (consumeEntityStatusCards(attackerEntity, StatusCard.STUNNED)) {
+    if (attackerType === 'VILLAIN') {
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -128,11 +100,7 @@ export function step1_preAttackAndStunCheck(
         params: { villain: state.villain.card.name },
         onomatopoeia: 'STUN CLEARED!',
       });
-      return true;
-    }
-  } else if (attackerCard) {
-    // Minion stun check (taking into account Steady - RR v1.8 p. 28)
-    if (consumeEntityStatusCards(attackerCard, StatusCard.STUNNED)) {
+    } else if (attackerCard) {
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
@@ -142,6 +110,46 @@ export function step1_preAttackAndStunCheck(
         key: 'minion.stunned.cancelled',
         params: { minion: attackerCard.card.name },
         onomatopoeia: 'STUN CLEARED!',
+      });
+    }
+    return true;
+  }
+
+  // Priority 2: Check attachments on attacking entity for HOST_WOULD_ATTACK interrupts
+  const attachments = attackerEntity.attachments || [];
+  for (let i = 0; i < attachments.length; i++) {
+    const att = attachments[i];
+    const ability = att.card.enrichment?.abilities?.find((a) => a.trigger === 'HOST_WOULD_ATTACK');
+    if (ability) {
+      const owner =
+        (att.ownerId ? state.players.find((p) => p.id === att.ownerId) : undefined) ||
+        targetPlayer ||
+        state.players[0];
+
+      const targetInstanceId =
+        attackerType === 'VILLAIN'
+          ? state.villain.instanceId || 'villain'
+          : attackerCard?.instanceId || 'minion';
+
+      executeEffect(state, ability, {
+        playerId: owner.id,
+        sourceCardInstance: att,
+        targetInstanceId,
+      });
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
+        params: {
+          ...(attackerType === 'VILLAIN' ? { villain: state.villain.card.name } : {}),
+          ...(attackerType === 'MINION' && attackerCard ? { minion: attackerCard.card.name } : {}),
+          cancelledBy: att.card.name,
+        },
+        onomatopoeia: `${att.card.name.toUpperCase()}! ATTACK CANCELLED & STUNNED!`,
       });
       return true;
     }

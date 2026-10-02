@@ -1201,14 +1201,14 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Cancel When Revealed effect and reveal another encounter card.',
     parameters: [],
   },
+  CANCEL_ATTACK: {
+    effect: 'CANCEL_ATTACK',
+    description: 'Cancel incoming enemy attack before boost cards or damage are resolved.',
+    parameters: [],
+  },
   DECLARE_DEFENDER: {
     effect: 'DECLARE_DEFENDER',
     description: 'Prompt player to declare a defender against an incoming enemy attack.',
-    parameters: [],
-  },
-  INTERCEPT_ATTACK: {
-    effect: 'INTERCEPT_ATTACK',
-    description: 'Intercept incoming attack directed at another friendly character.',
     parameters: [],
   },
 

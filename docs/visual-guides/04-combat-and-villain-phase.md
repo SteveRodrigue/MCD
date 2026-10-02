@@ -28,7 +28,7 @@ sequenceDiagram
 
 | Step | Function                               | Card-author-relevant trigger(s)                  |
 | :--- | :------------------------------------- | :----------------------------------------------- |
-| 1    | `step1_preAttackAndStunCheck`          | `ATTACHED_ENEMY_ATTACKS` (e.g. Webbed Up)        |
+| 1    | `step1_preAttackAndStunCheck`          | `HOST_WOULD_ATTACK` (e.g. Webbed Up)            |
 | 2    | `step2_dispatchInitiationTriggers`     | `ENEMY_INITIATES_ATTACK`                         |
 | 3    | `step3_openDefenderDeclarationPrompt`  | `ATTACK_DEFENDED`                                |
 | 4–5  | `step4_and_5_dealAndResolveBoostCards` | `BOOST`, `BOOST_STAR_RESOLVED`                   |

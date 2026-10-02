@@ -176,6 +176,7 @@ export function attachCardToHost(
   if (uTarget === 'VILLAIN') {
     if (!state.villain.attachments) state.villain.attachments = [];
     state.villain.attachments.push(cardInstance);
+    (cardInstance as any).hostInstanceId = state.villain.instanceId || 'villain';
   } else if (uTarget === 'ENEMY' || uTarget === 'CHOSEN_ENEMY') {
     let minion: CardInstance | undefined;
     if (targetHostId) {
@@ -187,9 +188,11 @@ export function attachCardToHost(
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = minion.instanceId;
     } else {
       if (!state.villain.attachments) state.villain.attachments = [];
       state.villain.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = state.villain.instanceId || 'villain';
     }
   } else if (
     uTarget === 'HERO' ||
@@ -204,6 +207,7 @@ export function attachCardToHost(
     if (targetPlayer) {
       if (!targetPlayer.attachments) targetPlayer.attachments = [];
       targetPlayer.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = targetPlayer.id;
     }
   } else if (uTarget === 'CHOSEN_ALLY' || uTarget === 'ALLY') {
     let ally: CardInstance | undefined;
@@ -224,6 +228,7 @@ export function attachCardToHost(
     if (ally) {
       if (!ally.attachments) ally.attachments = [];
       ally.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = ally.instanceId;
     }
   } else if (uTarget === 'CHOSEN_MINION' || uTarget === 'MINION' || uTarget === 'ALL_MINIONS') {
     let minion: CardInstance | undefined;
@@ -244,6 +249,7 @@ export function attachCardToHost(
     if (minion) {
       if (!minion.attachments) minion.attachments = [];
       minion.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = minion.instanceId;
     } else {
       const p = state.players.find((p) => p.id === targetHostId) || state.players[0];
       if (p) {

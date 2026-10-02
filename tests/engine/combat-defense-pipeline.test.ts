@@ -11,6 +11,8 @@ import {
   resolveDefenderDeclaration,
   finishAttackDamageAndPostResolution,
 } from '../../src/engine/pipeline/combat-pipeline';
+import { cardCatalog } from '../../src/data/importer/card-loader';
+import { createCardInstance } from '../../src/engine/state/card-instance';
 
 function createMockCardInstance(
   code: string,
@@ -356,5 +358,113 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
     // Tough discarded AND 3 damage dealt to hero (10 - 3 = 7)
     expect(p1.statusCards.includes(StatusCard.TOUGH)).toBe(false);
     expect(p1.health).toBe(7);
+  });
+
+  it('Test 7: Issue #191 Regression: Player 2 Hero Defense prevents damage to Spider-Man and does NOT trigger Backflip', () => {
+    const p1 = state.players[0];
+    const p2 = state.players[1];
+
+    const backflip = createCardInstance(cardCatalog.getCard('01003')!, p1.id);
+    p1.hand = [backflip];
+
+    state.encounterDeck = [];
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p1.id, { acceptOptionalTriggers: true });
+    const ctx = state.activeAttackContext!;
+    expect(ctx).toBeDefined();
+    expect(ctx.targetPlayerId).toBe('player_1');
+
+    // Player 2 (Iron Man) declares Hero defense
+    resolveDefenderDeclaration(state, { type: 'HERO', playerId: p2.id }, ctx);
+
+    // Verify attackContext.targetPlayerId is player_2
+    expect(ctx.targetPlayerId).toBe('player_2');
+    expect(state.lastCombatOutcome?.targetPlayerId).toBe('player_2');
+
+    // Verify Iron Man absorbs damage (mitigated by DEF 2: takes 1 damage)
+    expect(ctx.heroDefended).toBe(true);
+    expect(p2.exhausted).toBe(true);
+    expect(ctx.defenseValue).toBe(2);
+    expect(p2.health).toBe(8); // 9 max - 1 damage
+
+    // Verify Spider-Man takes 0 damage (remains at 10 HP)
+    expect(p1.health).toBe(10);
+    expect(p1.exhausted).toBe(false);
+
+    // Verify Backflip is NOT triggered, remains in Player 1's hand
+    expect(p1.hand).toContain(backflip);
+    expect(p1.discard).not.toContain(backflip);
+    expect(state.pendingDecisionPrompt).toBeUndefined();
+  });
+
+  it('Test 8: Issue #191 Regression: Ally Defense for Spider-Man prevents damage to Spider-Man and does NOT trigger Backflip', () => {
+    const p1 = state.players[0];
+    const backflip = createCardInstance(cardCatalog.getCard('01003')!, p1.id);
+    p1.hand = [backflip];
+
+    const blackCat = createCardInstance(cardCatalog.getCard('01002')!, p1.id);
+    p1.allies.push(blackCat);
+
+    state.encounterDeck = [];
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p1.id, { acceptOptionalTriggers: true });
+    const ctx = state.activeAttackContext!;
+    expect(ctx).toBeDefined();
+
+    // Player 1 declares Ally defense (Black Cat 01002)
+    resolveDefenderDeclaration(
+      state,
+      { type: 'ALLY', playerId: p1.id, allyInstanceId: blackCat.instanceId },
+      ctx,
+    );
+
+    // Verify Black Cat absorbs attack damage (defeated and discarded)
+    expect(p1.allies).not.toContain(blackCat);
+    expect(p1.discard).toContain(blackCat);
+
+    // Verify Spider-Man takes 0 damage (remains at 10 HP)
+    expect(p1.health).toBe(10);
+    expect(p1.exhausted).toBe(false);
+
+    // Verify Backflip is NOT triggered, remains in Player 1's hand
+    expect(p1.hand).toContain(backflip);
+    expect(p1.discard).not.toContain(backflip);
+    expect(state.pendingDecisionPrompt).toBeUndefined();
+  });
+
+  it('Test 9: Issue #191 Regression: Cross-Table Ally Defense for Spider-Man prevents damage to Spider-Man and does NOT trigger Backflip', () => {
+    const p1 = state.players[0];
+    const p2 = state.players[1];
+
+    const backflip = createCardInstance(cardCatalog.getCard('01003')!, p1.id);
+    p1.hand = [backflip];
+
+    const warMachine = createCardInstance(cardCatalog.getCard('01030')!, p2.id);
+    p2.allies.push(warMachine);
+
+    state.encounterDeck = [];
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p1.id, { acceptOptionalTriggers: true });
+    const ctx = state.activeAttackContext!;
+    expect(ctx).toBeDefined();
+
+    // Player 2 declares Ally defense (War Machine 01030)
+    resolveDefenderDeclaration(
+      state,
+      { type: 'ALLY', playerId: p2.id, allyInstanceId: warMachine.instanceId },
+      ctx,
+    );
+
+    // Verify target retargeted to Player 2
+    expect(ctx.targetPlayerId).toBe('player_2');
+    expect(state.lastCombatOutcome?.targetPlayerId).toBe('player_2');
+
+    // Verify War Machine absorbs attack damage (takes 3 damage on 4 HP)
+    expect(warMachine.tokens?.damage).toBe(3);
+    expect(p2.allies).toContain(warMachine);
+
+    // Verify Spider-Man takes 0 damage and Backflip remains in Player 1's hand
+    expect(p1.health).toBe(10);
+    expect(p1.exhausted).toBe(false);
+    expect(p1.hand).toContain(backflip);
+    expect(p1.discard).not.toContain(backflip);
+    expect(state.pendingDecisionPrompt).toBeUndefined();
   });
 });

@@ -106,15 +106,18 @@
           "steps": [
             {
               "id": "prevent_all_damage",
-              "effect": "PREVENT_DAMAGE"
+              "effect": "PREVENT_DAMAGE",
+              "effectParams": {
+                "target": "SELF"
+              }
             }
           ]
         }
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-10-02T00:01:58Z",
+        "reviewedAt": "2026-10-02T00:01:58Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

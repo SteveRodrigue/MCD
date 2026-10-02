@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Combat & Rules): Damage Retargeting on Cross-Character Defense & Backflip Invariant (RR v1.8 pp. 209–213, [Issue #191](https://github.com/SteveRodrigue/MCD/issues/191))**
+  - **Combat Pipeline (`combat-pipeline.ts`):**
+    - Retargeted attack context (`attackContext.targetPlayerId = declaration.playerId`) when another player or cross-table ally declares defense.
+    - Dispatches `DAMAGE_WOULD_BE_TAKEN` strictly to the defending player's hero only when hero defends and not when an ally defends.
+  - **Supplemental Data (`core.json`):**
+    - Updated *Backflip* (`01003`) target parameter explicitly to `SELF`.
+  - **Automated Verification:**
+    - Added regression tests in `tests/engine/combat-defense-pipeline.test.ts` ensuring that when Player 2 defends with Hero or an Ally defends for Spider-Man, Spider-Man takes 0 damage and *Backflip* is never triggered or prompted.
+
 - **Fix (Engine & UI): Global Unicity Enforcement Across Players & Card Ingress (RR v1.8 pp. 28–29, [Issue #187](https://github.com/SteveRodrigue/MCD/issues/187))**
   - **Legality Checker (`legality-checker.ts`):**
     - Synchronized `evaluateCardPlayability` with `canPlayCard` to call canonical `checkUniqueCardPlayable(state, card)`.

@@ -484,7 +484,6 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
           ab.steps?.some(
             (s) =>
               s.effect === 'DISCARD_ATTACHMENT' ||
-              s.effect === 'SPEND_RESOURCES_TO_DISCARD_ATTACHMENT' ||
               (s.effect === 'DISCARD' &&
                 (s.effectParams?.source === 'SELF' || s.effectParams?.source === 'HOST')),
           ) || Boolean(ab.cost?.discardSelf);

@@ -30,7 +30,11 @@ export const TableauActionModal: React.FC<TableauActionModalProps> = ({
       gameState.players[gameState.activePlayerIndex]?.id === player.id
     : true;
 
-  const legality = evaluateTableauCardLegality(cardInstance, player.currentForm);
+  const legality = evaluateTableauCardLegality(
+    cardInstance,
+    player.currentForm,
+    gameState ? { gameState, playerId: player.id } : undefined,
+  );
 
   const abilities = cardInstance.card.enrichment?.abilities || [];
   const actionableAbilities = abilities.filter(

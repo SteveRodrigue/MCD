@@ -118,6 +118,8 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 }
 ```
 
+> **Encounter attachments (`CardType.ATTACHMENT`):** "Attach to Rhino." is intrinsic to the card type. The engine attaches a revealed encounter attachment to the villain unconditionally (`villain-phase.ts`), so do **not** declare it as a `WHEN_REVEALED` ability: that would create a cancellable window that RR v1.8 does not grant (*Armored Rhino Suit* `01098`, *Charge* `01099`, *Enhanced Ivory Horn* `01100`; Issue #175). Declare only the card's own abilities.
+
 ---
 
 ## 4. Encounter Cancellation & Interrupts

@@ -118,19 +118,6 @@
     "01098": {
       "abilities": [
         {
-          "id": "armored_rhino_suit_attach",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ATTACH_TO_HOST",
-              "effectParams": {
-                "target": "VILLAIN"
-              }
-            }
-          ]
-        },
-        {
           "id": "armored_rhino_suit_shield",
           "timing": "FORCED_INTERRUPT",
           "trigger": "DAMAGE_WOULD_BE_TAKEN",
@@ -158,19 +145,6 @@
     },
     "01099": {
       "abilities": [
-        {
-          "id": "charge_attach",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ATTACH_TO_HOST",
-              "effectParams": {
-                "target": "VILLAIN"
-              }
-            }
-          ]
-        },
         {
           "id": "charge_atk_bonus",
           "timing": "CONSTANT",
@@ -209,19 +183,6 @@
     },
     "01100": {
       "abilities": [
-        {
-          "id": "ivory_horn_attach",
-          "timing": "WHEN_REVEALED",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ATTACH_TO_HOST",
-              "effectParams": {
-                "target": "VILLAIN"
-              }
-            }
-          ]
-        },
         {
           "id": "ivory_horn_atk_bonus",
           "timing": "CONSTANT",

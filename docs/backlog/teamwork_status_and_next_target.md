@@ -1,0 +1,194 @@
+# MCD Backlog Dependency, Prioritization Map & Teamwork Status
+
+> **Last Updated:** 2026-10-03  
+> **Repository Commit:** `052032e` (`origin/main`)  
+> **Release Gate:** Gate 1 ("Rhino Release" Vertical Slice — 100% Core 5 Heroes vs. Rhino)  
+> **Verification Status:** 🟢 All 1,545 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
+
+---
+
+## 1. Executive Summary
+
+A comprehensive dependency and risk mapping was performed on all 19 open issues in the primary backlog scope (#172–#202+) as well as cross-cutting connected backlog issues (#100, #109, #122, #126, #127, #129, #132, #135, #154, #158, #161).
+
+The backlog partitions cleanly into three distinct domains:
+1. **Engine Primitives (8 issues):** Core combat pipeline mechanics, interactive decision prompt rollbacks, generic cost-and-resource validation, threat legality checks, and type-safe architecture foundations.
+2. **Card Fixes (6 issues):** Declarative supplemental data modeling in `src/data/supplemental/pack/` for hero abilities, encounter attachments, and cost kickers.
+3. **UI & Refactors (10 issues):** Board action modal filtering, button enabled/disabled state consistency, comic pop-art z-indexing, test hygiene (`act(...)` warnings), dead-code elimination, and code audit cleanups.
+
+---
+
+## 2. Dependency Graph
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0b0f19', 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#475569', 'lineColor': '#64748b', 'secondaryColor': '#0f172a', 'tertiaryColor': '#1e293b' }}}%%
+flowchart TD
+    subgraph AuditFoundations["1. Audit Foundations"]
+        I194["#194 Accessor Migration<br/>(Multi-Villain Prep)"]
+        I192["#192 Step Aliases<br/>(Test Cleanliness)"]
+        I196["#196 Type Aliases<br/>(Scenario Registry)"]
+    end
+
+    subgraph CoreEngine["2. Core Engine Primitives"]
+        I183["#183 Defense Pipeline<br/>RESOLVED (a8e3e3a)"]
+        I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
+        I184["#184 Caught Off Guard Prompt<br/>RESOLVED (052032e)"]
+        I122["#122 Step-Gate Evaluator<br/>(Shared Engine Pipeline)"]
+        I154["#154 Cosmic Flight Aerial Gate<br/>(Hero Form Condition)"]
+        I158["#158 Obligations Engine<br/>(Family Emergency)"]
+    end
+
+    subgraph ResourceThreat["3. Resource & Threat Engines"]
+        I181["#181 Crisis & Patrol Legality<br/>RESOLVED (0d6c235)"]
+        I186["#186 / #135 For Justice! Kicker<br/>RESOLVED (052032e)"]
+        I180["#180 / #129 Payment Modal Filters<br/>(Resource Type Enforcement)"]
+        I185["#185 Surveillance Team Usability<br/>ACTIVE NEXT TARGET"]
+        I179["#179 Alpha Flight Station Usability<br/>(Empty Hand Check)"]
+        I175["#175 Charge Attachment Timing<br/>(Constant Attachment)"]
+    end
+
+    %% Dependencies & Flows
+    I194 --> I183
+    I172 --> I184
+    I184 --> I158
+    I122 --> I154
+    I181 --> I185
+    I185 --> I179
+    I180 --> I186
+    I180 --> I175
+
+    %% Dark Mode Styles
+    classDef resolved fill:#064e3b,stroke:#059669,stroke-width:2px,color:#ecfdf5;
+    classDef active fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
+    classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
+
+    class I183,I172,I184,I181,I186 resolved;
+    class I185 active;
+    class I194,I192,I196,I122,I154,I158,I180,I179,I175 open;
+```
+
+
+
+---
+
+## 3. Domain Classification & Issue Breakdown
+
+### Domain A: Engine Primitives (Core Rules & Framework)
+
+| Issue # | Title | Core Mechanic / Target Area | Status & Fix Strategy |
+|---|---|---|---|
+| **#183** | **Spider-Man defense not reducing incoming damage** | Combat Pipeline: Step 3 `DECLARE_DEFENDER` -> Step 6 damage mitigation in `combat-pipeline.ts` & `action-dispatcher.ts`. | 🟢 **Closed** (`a8e3e3a`). Preserved DEF reduction across prompt suspensions. |
+| **#172** | **Cancelled prompt loses card from hand** | Prompt Queue & Card Lifecycle: Hand-card splicing in `PLAY_CARD` / `PLAY_CARD_FROM_ZONE` before modal choice. | 🟢 **Closed** (`8681c23`). Implemented `cancel_target` / `pass` refund back to hand. |
+| **#184** | **Caught Off Guard (01188) choice prompt** | Encounter Resolution: When Revealed effect discards upgrade/support. | 🟢 **Closed** (`052032e`). Enqueues player choice modal when 2+ cards exist in tableau. |
+| **#181** | **Surveillance Team Crisis icon threat bypass** | Threat Pipeline & Legality: `threat-pipeline.ts` and `effects/index.ts`. | 🟢 **Closed** (`0d6c235`). Enforces Crisis icon and Patrol minion blocks in `CHOSEN_SCHEME`. |
+| **#186** | **For Justice! (01060) Mental resource bonus** | Cost Engine & Dynamic Formulas: `context.resourcesSpent` propagation. | 🟢 **Closed** (`052032e`). Added `PAID_WITH_RESOURCE` / `RESOURCES_SPENT` dynamicBonus, purged `bonusWithMental`. |
+| **#194** | **Replace state.villain/mainScheme legacy pointers [AUD-F003]** | Architecture & State: 221 references to legacy singleton pointers `state.villain` and `state.mainScheme`. | 🟡 **Open**. Prerequisite for multi-villain milestone. |
+| **#122** | **Extract shared step-gate evaluator** | Pipeline Unification: Unifies ability step gating (`TARGET_TRAIT_MATCH`, conditions) between effect execution and CONSTANT stat/trait loop. | 🟡 **Open**. Blocks #154. |
+| **#202** | **Tighten customActionHandlers action:any [AUD-OQ-04]** | Type Safety: Discriminated union contract for custom scenario plugin action handlers in `ScenarioPlugin`. | 🟡 **Open**. Type safety enhancement. |
+
+---
+
+### Domain B: Card Fixes (Supplemental Data & Declarative Modeling)
+
+| Issue # | Title | Target File / Code | Problem Statement & Fix Strategy |
+|---|---|---|---|
+| **#175** | **Charge (01099)** | `core_encounter.json` (`01099`) | "Attach to Rhino" incorrectly declared as `timing: "WHEN_REVEALED"`. Per RR v1.8 Attachments, attachment to designated host is unconditional. Fix: model as constant attachment. |
+| **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | Trait `Aerial` is granted constantly instead of being gated on Hero form (`form: "HERO"`). Dependent on Engine #122. |
+| **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | Obligation card resolution. Requires declarative obligation prompt structure (give to player, flip to alter-ego, exhaust / discard options). |
+| **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
+| **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | Iron Man upgrade: +1 HP and Aerial trait generation. Needs supplemental audit to verify constant HP bonus and active ability. |
+
+---
+
+### Domain C: UI & Code Refactors (Visuals, Test Hygiene & Architecture)
+
+| Issue # | Title | Primary Files | Problem Statement & Remediations |
+|---|---|---|---|
+| **#185** | **Surveillance Team (01064) modal opens with no threat** | `HeroZone.tsx`, `TableauCard.tsx`, `tableau-card-legality.ts` | 🎯 **Active Next Target**. Clicking tableau card unconditionally opens modal even when no threat exists on board. Must be disabled/grayed out when threat = 0. |
+| **#179** | **Alpha Flight Station (01015) active on empty hand** | `HeroZone.tsx`, `action-dispatcher.ts` | `HeroZone.tsx` checks form legality, not whether ability costs (shuffle 1 card from hand) can be paid. Must be disabled/grayed out when hand is empty. |
+| **#180** / **#129** | **Captain Marvel Rechannel & Rhino Attachment payment filtering** | `CostPaymentModal.tsx`, `GameBoard.tsx` | Resource payment modal allows selecting non-Energy cards for Rechannel or non-Physical cards for Rhino attachment. |
+| **#161** | **Hero exhausted card layering behind health bar** | `HeroZone.tsx`, CSS/z-index | When hero rotates on exhaustion, the rotated card frame overlaps HUD stats and health bar. Adjust z-index stacking context. |
+| **#192** | **Remove villain-phase step aliases in tests [AUD-F001]** | `villain-phase.ts`, test files | Migrate deprecated exports `step2_villainActivations`, `step4_dealEncounterCards`, `step5_revealEncounterCards` to canonical names. |
+| **#195** | **Fix mismatched log key step4->step3 [AUD-F004]** | `villain-phase.ts:305`, `locales/` | Log key `'villainPhase.step4.encounterCardsDealt'` emitted in Step 3. Change to `'villainPhase.step3.encounterCardsDealt'`. |
+| **#196** | **Remove ambiguous ScenarioDefinition alias [AUD-F005]** | `catalog.ts:71` | Remove re-export alias `ScenarioDefinition = LegacyScenarioDefinition` from `catalog.ts`. |
+| **#197** | **Remove dead isFacedown probes in CardView [AUD-F006]** | `CardView.tsx:80–82` | Remove dead `(instance as any)?.isFacedown` fallback checks. |
+| **#198** | **Remove dead raw field fallbacks in PlayerHandTray [AUD-F007]** | `PlayerHandTray.tsx:41–89` | Remove dead MarvelCDB raw field aliases (`faction_code`, `type_code`, `set_code`). |
+| **#199** | **act(...) warnings on CardView image tests [AUD-OQ-01]** | `CardView.tsx`, test renders | Wrap async test renders with `act()` or use RTL `waitFor` to eliminate console warning spam. |
+| **#200** | **Main JS bundle exceeds 500 kB [AUD-OQ-02]** | `vite.config.ts`, `App.tsx` | Evaluate route lazy loading for `ScenarioSelector`, `MulliganScreen`, and `GameBoard`. |
+| **#201** | **normalizeCardCodeForArt dead export [AUD-OQ-03]** | `card-cache-service.ts` | Verify whether `normalizeCardCodeForArt` is used outside tests; remove if dead. |
+
+---
+
+## 4. Prioritization & Risk Matrix
+
+| Priority | Issue # | Title | Domain | Risk / Blast Radius | Effort | Status |
+|---|---|---|---|---|---|---|
+| **P0** | **#183** | Spider-Man defense not reducing incoming damage | Engine | High / Core Combat | M | 🟢 **Closed** (`a8e3e3a`) |
+| **P1** | **#172** | Cancelled prompt loses card from hand | Engine | Medium / Hand State | S | 🟢 **Closed** (`8681c23`) |
+| **P1** | **#181** | Surveillance Team bypasses Crisis icon | Engine | Medium / Threat Engine | S | 🟢 **Closed** (`0d6c235`) |
+| **P1** | **#184** | Caught Off Guard lacks player choice prompt | Engine | Medium / Encounter Flow | S | 🟢 **Closed** (`052032e`) |
+| **P1** | **#186** | For Justice! Mental bonus not applied | Engine/Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
+| **P1** | **#135** | Duplicate of For Justice! (#186) | Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
+| **P1** | **#180** | Captain Marvel Rechannel resource validation | UI/Engine | Medium / Payment Flow | S | 🟡 **Open** (Next Milestone) |
+| **P1** | **#175** | Charge (01099) incorrect When Revealed | Card Data | Low / Supplemental Data | XS | 🟡 **Open** |
+| **P2** | **#185** | Surveillance Team clickable with no threat | UI/Engine | Low / Board UI | S | 🎯 **Active Next Target** |
+| **P2** | **#179** | Alpha Flight Station active with empty hand | UI/Engine | Low / Board UI | S | 🟡 **Open** (Next Milestone) |
+| **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟡 **Open** (Shared with #180) |
+| **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟡 **Open** |
+| **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟡 **Open** (Blocked by #122) |
+| **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / 221 Call Sites | L | 🟡 **Open** (Arch Milestone) |
+| **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟡 **Open** |
+| **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟡 **Open** |
+| **P3** | **#196** | Remove ambiguous ScenarioDefinition alias [AUD-F005] | Refactor | Low / Catalog Types | XS | 🟡 **Open** |
+| **P3** | **#197** | Remove dead isFacedown probes in CardView [AUD-F006] | Refactor | Low / UI Only | XS | 🟡 **Open** |
+| **P3** | **#198** | Remove dead raw field fallbacks in PlayerHandTray [AUD-F007] | Refactor | Low / UI Only | XS | 🟡 **Open** |
+| **P3** | **#161** | Exhausted hero card layering behind health bar | UI | Low / CSS Stacking | XS | 🟡 **Open** |
+| **P3** | **#199** | act(...) warnings in CardView image tests [AUD-OQ-01] | Refactor | Low / Vitest Output | S | 🟡 **Open** |
+| **P3** | **#200** | Main JS bundle exceeds 500 kB [AUD-OQ-02] | UI/Perf | Medium / Bundler | M | 🟡 **Open** |
+| **P3** | **#201** | normalizeCardCodeForArt dead export [AUD-OQ-03] | Refactor | Low / Service | XS | 🟡 **Open** |
+| **P3** | **#202** | Tighten customActionHandlers action:any [AUD-OQ-04] | Engine | Low / Types | S | 🟡 **Open** |
+
+---
+
+## 5. Execution Roadmap & Phase Plan
+
+### Phase 1: Core Combat & Card Play Flow (Completed ✅)
+- ✅ **#183** (Spider-Man defense damage mitigation in combat pipeline)
+- ✅ **#172** (Voluntary decision prompt cancellation & hand refund)
+- ✅ **#181** (Scheme targeting Crisis icon & Patrol legality)
+- ✅ **#184** (Caught Off Guard player choice modal)
+- ✅ **#186 / #135** (For Justice! declarative resource payment kicker)
+
+### Phase 2: Ability Usability & Action Legality Pre-checks (Active 🎯)
+- 🎯 **#185**: *Surveillance Team* (`01064`) — gray out action when total removable threat across legal schemes is 0.
+- **#179**: *Alpha Flight Station* (`01015`) — gray out action when hand is empty.
+- **#180 / #129**: *Captain Marvel* (`01010a` Rechannel) & Rhino attachment — payment modal resource type enforcement.
+- **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
+
+### Phase 3: Architectural Foundation & Shared Gating
+- **#122 & #154**: Extract shared step-gate evaluator and gate Cosmic Flight *Aerial* trait on Hero form.
+- **#158**: Obligation prompt engine for *Family Emergency*.
+- **#194**: Batch migration of 221 legacy `state.villain` / `state.mainScheme` pointers to accessor helpers.
+
+### Phase 4: Code Audit Cleanups & Polish
+- **#192, #195, #196, #197, #198**: Remove dead aliases, fix log key, and eliminate dead `as any` probes.
+- **#161, #199, #200, #201, #202**: UI layering, test hygiene, bundle splitting, and type contracts.
+
+---
+
+## 6. Handoff Protocol for Resuming Agents & Developers
+
+1. **Verify Clean Working Tree:**
+   ```powershell
+   rtk git pull origin main
+   rtk npm test
+   ```
+2. **Select Active Target:**
+   - Primary: **Issue #185** (*Surveillance Team* action legality when threat = 0).
+3. **Follow Standard TDD & Quality Gates:**
+   - Author reproduction test in `tests/engine/` or `tests/ui/`.
+   - Implement declarative data / generic engine logic.
+   - Run: `rtk npm test -- <test_file>`, `rtk npm run typecheck`, `rtk npm run lint`.
+4. **Delivery:**
+   - Update `CHANGELOG.md` under `[Unreleased]` and update status in this document.
+   - Run `/commit-and-push` when approved.

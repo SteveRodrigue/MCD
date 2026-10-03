@@ -59,6 +59,36 @@ import {
   checkUniqueCardPlayable,
 } from '../pipeline/legality-checker';
 
+/**
+ * Narrows resolved targets with an optional UniversalCardFilter (ADR-0046) so that EXHAUST and READY
+ * honor the `filter` parameter the Card Editor already offers (Issue #158).
+ */
+function filterResolvedTargets(
+  state: GameState,
+  targets: ResolvedTarget[],
+  filter: Record<string, any> | undefined,
+  player: PlayerState,
+): ResolvedTarget[] {
+  if (!filter) return targets;
+  return targets.filter((t) => {
+    let card: NormalizedCard | undefined;
+    if (t.kind === 'card') {
+      card = t.entity.card;
+    } else if (t.kind === 'player') {
+      card = t.entity.activeFormCard;
+    } else if (t.kind === 'character') {
+      if (t.entityType === 'hero' || t.entityType === 'alter_ego') {
+        card = (t.entity as PlayerState).activeFormCard;
+      } else if (t.entityType === 'villain') {
+        card = (t.entity as VillainState).card;
+      } else {
+        card = (t.entity as CardInstance).card;
+      }
+    }
+    return card ? matchesCardFilter(card, filter, { player, state }) : false;
+  });
+}
+
 export interface EffectExecutionContext {
   playerId: string;
   targetPlayerId?: string;
@@ -122,6 +152,7 @@ import {
   resolveEntityByInstanceId,
   type EffectContext,
   type SchemeTarget,
+  type ResolvedTarget,
 } from './target-resolver';
 
 /**
@@ -3579,7 +3610,17 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let readyTargetName = player.name;
 
-      const targets = resolveTargets(state, targetParam as any, context);
+      const readyFilter = (step.effectParams?.filter || step.filter) as
+        Record<string, any> | undefined;
+      const targets = filterResolvedTargets(
+        state,
+        resolveTargets(state, targetParam as any, context),
+        readyFilter,
+        player,
+      );
+      if (targets.length === 0 && readyFilter) {
+        return { state, success: true, mutatedState: false, onomatopoeia: 'NOTHING TO READY' };
+      }
       if (targets.length === 0) {
         player.exhausted = false;
         readyTargetName = player.activeFormCard?.name || player.name;
@@ -3678,7 +3719,18 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;
 
-      const targets = resolveTargets(state, targetParam as any, context);
+      const exhaustFilter = (step.effectParams?.filter || step.filter) as
+        Record<string, any> | undefined;
+      const targets = filterResolvedTargets(
+        state,
+        resolveTargets(state, targetParam as any, context),
+        exhaustFilter,
+        player,
+      );
+      if (targets.length === 0 && exhaustFilter) {
+        // A filter that matches nothing is a no-op, never an identity fallback
+        return { state, success: true, mutatedState: false, onomatopoeia: 'NOTHING TO EXHAUST' };
+      }
       if (targets.length === 0) {
         player.exhausted = true;
         exhaustTargetName = player.activeFormCard?.name || player.name;
@@ -4191,6 +4243,32 @@ export function executeStep(
         mutatedState: true,
         value: 1,
         onomatopoeia,
+      };
+    }
+
+    case 'ADD_ACCELERATION': {
+      // Acceleration tokens sit on the main scheme (RR v1.8 "Acceleration"): +1 threat per token each villain phase
+      const amount = evaluateDynamicAmount(step.effectParams?.amount as any, context, {
+        fallback: 1,
+        state,
+        player,
+      });
+      state.accelerationTokens = (state.accelerationTokens || 0) + amount;
+      state.log.push({
+        id: `log_${Date.now()}_acceleration`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'scheme.acceleration.added',
+        params: { amount, card: context.sourceCardInstance?.card.name || 'Card' },
+        onomatopoeia: `+${amount} ACCELERATION!`,
+      });
+      return {
+        state,
+        success: true,
+        mutatedState: amount !== 0,
+        value: amount,
+        onomatopoeia: `+${amount} ACCELERATION!`,
       };
     }
 

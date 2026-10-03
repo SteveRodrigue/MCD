@@ -456,6 +456,20 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
+  ADD_ACCELERATION: {
+    effect: 'ADD_ACCELERATION',
+    description:
+      'Place acceleration tokens on the main scheme (+1 threat per token each villain phase).',
+    parameters: [
+      {
+        key: 'amount',
+        label: 'Acceleration Tokens',
+        type: 'number',
+        allowDynamic: true,
+        defaultValue: 1,
+      },
+    ],
+  },
   ADD_COUNTERS: {
     effect: 'ADD_COUNTERS',
     description: 'Add multiple counter tokens to target card.',

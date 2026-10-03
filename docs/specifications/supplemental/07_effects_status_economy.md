@@ -67,6 +67,8 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   - `'ALL_CHARACTERS'`: Exhausts identity and all allies in play.
   - `'VILLAIN'`: Exhausts the active villain (`state.villain.exhausted = true`).
   - `'CHOSEN_MINION'` / `'ALL_MINIONS'`: Exhausts targeted or all engaged minions.
+  - `'ALL_CONTROLLED_TABLEAU'`: Every card in the player's tableau; combine with `filter` (e.g. `{ "types": ["upgrade"] }`) to exhaust "each upgrade you control" (*Business Problems* `01170`).
+  - **`filter` (optional):** a `UniversalCardFilter` that narrows the resolved targets (evaluated with `matchesCardFilter` against each target's card). A filter that matches nothing is a **no-op**: it never falls back to exhausting the identity.
 
 ```json
 {
@@ -91,6 +93,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   - `'CHOSEN_CHARACTER'`: Readies chosen identity or ally.
   - `'ALL_CHARACTERS'`: Readies identity and all allies in play.
   - `'CHOSEN_MINION'` / `'ALL_MINIONS'`: Readies targeted or all minions.
+  - `'ALL_CONTROLLED_TABLEAU'`: Every card in the player's tableau; combine with `filter` to narrow by type/trait. As with `EXHAUST`, a filter that matches nothing is a no-op (no identity fallback).
 
 ```json
 {
@@ -231,5 +234,19 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
     "target": "SELF",
     "discardWhenEmpty": true
   }
+}
+```
+
+---
+
+### `ADD_ACCELERATION`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue #158 / *Legal Work* `01160`)
+- **Description:** Places acceleration tokens on the main scheme (`GameState.accelerationTokens`): each token adds 1 threat to the main scheme in every villain phase (RR v1.8 "Acceleration"). `amount` accepts a number or a dynamic value source; defaults to `1`.
+
+```json
+{
+  "effect": "ADD_ACCELERATION",
+  "effectParams": { "amount": 1 }
 }
 ```

@@ -781,14 +781,57 @@
     "01160": {
       "abilities": [
         {
-          "id": "legal_work",
+          "id": "legal_work_resolve",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
-              "effect": "DISCARD",
+              "effect": "CHANGE_FORM",
               "effectParams": {
-                "source": "SELF"
+                "form": "alter_ego",
+                "optional": true
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Legal Work",
+                "description": "Choose how to resolve this obligation:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust Jennifer Walters",
+                    "description": "Exhaust Jennifer Walters to remove Legal Work from the game.",
+                    "gate": "IF_FORM",
+                    "gateParams": {
+                      "form": "alter_ego"
+                    },
+                    "cost": {
+                      "exhaustCard": "SELF_IDENTITY"
+                    },
+                    "steps": [
+                      {
+                        "effect": "REMOVE_FROM_GAME",
+                        "effectParams": {
+                          "target": "SELF"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "take_effect",
+                    "label": "Give the main scheme 1 acceleration token.",
+                    "description": "Give the main scheme 1 acceleration token.",
+                    "steps": [
+                      {
+                        "effect": "ADD_ACCELERATION",
+                        "effectParams": {
+                          "amount": 1
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -796,11 +839,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-03T17:30",
+        "reviewedAt": "2026-10-03T17:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b><i>Give to the Jennifer Walters player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Jennifer Walters → remove Legal Work from the game.\n• Give the main scheme 1 acceleration token. Discard this obligation."
       }
     },
@@ -1104,14 +1147,62 @@
     "01170": {
       "abilities": [
         {
-          "id": "business_problems",
+          "id": "business_problems_resolve",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
-              "effect": "DISCARD",
+              "effect": "CHANGE_FORM",
               "effectParams": {
-                "source": "SELF"
+                "form": "alter_ego",
+                "optional": true
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Business Problems",
+                "description": "Choose how to resolve this obligation:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust Tony Stark",
+                    "description": "Exhaust Tony Stark to remove Business Problems from the game.",
+                    "gate": "IF_FORM",
+                    "gateParams": {
+                      "form": "alter_ego"
+                    },
+                    "cost": {
+                      "exhaustCard": "SELF_IDENTITY"
+                    },
+                    "steps": [
+                      {
+                        "effect": "REMOVE_FROM_GAME",
+                        "effectParams": {
+                          "target": "SELF"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "take_effect",
+                    "label": "Exhaust each upgrade you control.",
+                    "description": "Exhaust each upgrade you control.",
+                    "steps": [
+                      {
+                        "effect": "EXHAUST",
+                        "effectParams": {
+                          "target": "ALL_CONTROLLED_TABLEAU",
+                          "filter": {
+                            "types": [
+                              "upgrade"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -1119,11 +1210,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-03T17:30",
+        "reviewedAt": "2026-10-03T17:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b><i>Give to the Tony Stark player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Tony Stark → remove Business Problems from the game.\n• Exhaust each upgrade you control. Discard this obligation."
       }
     },

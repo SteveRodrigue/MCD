@@ -116,6 +116,7 @@ export const TargetSelectorSchema = z.enum([
   'CHOSEN_ALLY',
   'CHOSEN_CONTROLLED_ALLY',
   'ALL_CONTROLLED_ALLIES',
+  'ALL_CONTROLLED_TABLEAU',
   'ALL_ALLIES',
   'CHOSEN_CHARACTER',
   'CHOSEN_CONTROLLED_CHARACTER',
@@ -187,6 +188,7 @@ export const ConditionGateSchema = z.enum([
  */
 export const EffectTypeSchema = z.enum([
   'DRAW',
+  'ADD_ACCELERATION',
   'ADD_COUNTERS',
   'ADD_STATUS',
   'ADD_STATUS_WITH_SURGE',

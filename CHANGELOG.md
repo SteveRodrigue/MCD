@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feat (Engine & Data): Remaining core obligations, zone-generic tableau selector, `ADD_ACCELERATION` ([Issue #158](https://github.com/SteveRodrigue/MCD/issues/158))**
+  - **Engine:** New zone-generic target selector `ALL_CONTROLLED_TABLEAU`; `EXHAUST` and `READY` now honor the `filter` parameter (a filter matching nothing is a no-op, never an identity fallback); new `ADD_ACCELERATION` primitive.
+  - **Supplemental Data (`core_encounter.json`):** _Legal Work_ `01160` and _Business Problems_ `01170` replace their placeholder entries; all five core obligations are now integrated.
+  - **Card Editor / Documentation:** `ADD_ACCELERATION` registry entry; ADR-0075 addendum; spec updates (`03` selector, `07` EXHAUST/READY/ADD_ACCELERATION).
+  - **Automated Verification (`obligations-remaining.test.ts`):** 12 tests covering Option A (alter-ego required) for all five cards, Legal Work, Business Problems and the new primitives.
+
 - **Feat (Engine, Data & UI): Obligation engine, first slice ([Issue #158](https://github.com/SteveRodrigue/MCD/issues/158))**
   - **Engine:** Obligations revealed from the encounter deck are given to a recipient instead of being silently discarded: default recipient is the owner of the card's hero set (derived `belongsToHeroSet` flag on `NormalizedCard`), else the revealing player; if the hero is not in the game the card is removed from the game and another encounter card is revealed (RR v1.8). Optional top-level `recipient` override (`FIRST_PLAYER`, `REVEALING_PLAYER`, `CARD_SET_OWNER`, `IDENTITY`). New `PlayerState.obligations` zone (card-conservation scans) and obligation resolution via `ENTERS_PLAY`.
   - **Prompts & effects:** `PLAYER_CHOICE` options support `steps`, an availability `gate` and a `cost`, re-evaluated whenever a prompt becomes the head; optional `CHANGE_FORM` (`form`, `optional`); new `REMOVE_FROM_GAME`; engine completion default discards a resolved obligation. Option A ("Exhaust <alter-ego>") requires alter-ego form (user ruling).

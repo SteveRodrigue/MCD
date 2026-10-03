@@ -1,6 +1,6 @@
 # Plan: Issue #158 — Obligation engine (the five core-set obligations)
 
-> Status: **Awaiting approval** (no source/test/data edits made yet). Largest item in Phase 3. Scope: **all five core-set obligations** (01155, 01160, 01165, 01170, 01175) plus one real proof card for the `recipient` override (*Now It's Personal* `56128b`), delivered in two commits.
+> Status: **Implemented** (uncommitted; delivered as two commits). Implementation notes at the end of this file list the deviations from this plan. Largest item in Phase 3. Scope: **all five core-set obligations** (01155, 01160, 01165, 01170, 01175) plus one real proof card for the `recipient` override (*Now It's Personal* `56128b`), delivered in two commits.
 >
 > History: r2 generic recipient selector; r3 obligations live in the per-seat Threat Zone; r4 five-card scope, S1 selector; **r5 (2026-10-03): decisions R2 + B2.** r6: user rulings applied (Option A requires alter-ego form; proof card stays out of the live loader; two commits). Default recipient is derived from set data, so only 2 of the 106 audited cards (the two PvP *Now It's Personal* cards) need an explicit field, and only one of them is implemented here as the proof; obligation behavior is expressed as ordinary abilities/steps (no `obligation` block); `recipient` is an optional top-level enrichment field outside the abilities.
 
@@ -253,3 +253,13 @@ The only real derogations in the audit are the two PvP cards. Implement `recipie
 ## 8. Estimate and risk
 
 About 6-7 hours for everything: commit 1 about 4 h (flag + recipient + proof card, zone + reveal branch, option cost, optional flip, `REMOVE_FROM_GAME`, Threat Zone UI, three cards), commit 2 about 2-3 h (`ADD_ACCELERATION`, selector + `filter` in `EXHAUST`/`READY`, two cards, editor registry, docs). Risk medium-high: new zone touches state validation, setup and UI; B2 extends `PLAYER_CHOICE` (used by existing cards, covered by existing tests) and `EXHAUST`/`READY`; mitigated by TDD, the conservation test and keeping unfiltered behavior under existing tests.
+
+## 9. Implementation notes (deviations and corrections found while implementing)
+
+- **Placeholder entries existed.** `core_encounter.json` already had entries for the five obligations (a `WHEN_REVEALED` + `DISCARD SELF` placeholder at confidence 50; the earlier "no entry" finding came from a lookup on the wrong JSON level). They are replaced, which also removes the Cancel When Revealed exposure.
+- **Resolution timing is `FORCED_RESPONSE` + `ENTERS_PLAY`,** not `RESPONSE`: `RESPONSE` abilities are optional (a prompt), an obligation must resolve.
+- **Acceleration tokens live on `GameState.accelerationTokens`,** not on the main scheme object; `ADD_ACCELERATION` takes only `amount`.
+- **Prompt availability is evaluated when a prompt becomes the head** (and after each resolved option), because sequences do not suspend on prompts: the optional flip and the choice are queued together. Options are cloned per prompt.
+- **`PlayerState.obligations` is a required field,** so five existing test files that hand-build a `PlayerState` literal got `obligations: []` (no behavior change).
+- **Tests for the resolution flow were written after the engine code** (the recipient and UI tests were red first).
+- **Two commits, one push:** commit 1 (engine, recipient, zone, UI, three cards) and commit 2 (`ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU`/`filter`, two cards) are pushed together, so main never holds the intermediate state in which *Legal Work* and *Business Problems* would be given to a player with no way to resolve them.

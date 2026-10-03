@@ -9,6 +9,7 @@
  */
 
 import type { GameState, PlayerState, CardInstance } from '../models';
+import { getActiveVillain, getActiveMainScheme } from '../models';
 import type { DynamicValueSource } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import {
@@ -235,9 +236,9 @@ export function evaluateDynamicAmount(
               (s: any) =>
                 s.instanceId === options.targetInstanceId || s.id === options.targetInstanceId,
             );
-            baseValue = sideScheme ? sideScheme.threat : (state.mainScheme?.threat ?? 0);
+            baseValue = sideScheme ? sideScheme.threat : (getActiveMainScheme(state)?.threat ?? 0);
           } else {
-            baseValue = state.mainScheme?.threat ?? 0;
+            baseValue = getActiveMainScheme(state)?.threat ?? 0;
           }
         }
       } else if (stat === 'DAMAGE') {
@@ -249,9 +250,11 @@ export function evaluateDynamicAmount(
                 (m: any) =>
                   m.instanceId === options.targetInstanceId || m.id === options.targetInstanceId,
               );
-            baseValue = minion ? minion.damage || 0 : state.villain?.damage || 0;
+            baseValue = minion
+              ? minion.damage || 0
+              : (getActiveVillain(state) as { damage?: number } | undefined)?.damage || 0;
           } else {
-            baseValue = state.villain?.damage || 0;
+            baseValue = (getActiveVillain(state) as { damage?: number } | undefined)?.damage || 0;
           }
         }
       }

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): Rhino encounter attachments attach unconditionally ([Issue #175](https://github.com/SteveRodrigue/MCD/issues/175))**
+  - **Supplemental Data (`core_encounter.json`):** Removed the `WHEN_REVEALED` "attach" ability from _Armored Rhino Suit_ (`01098`), _Charge_ (`01099`) and _Enhanced Ivory Horn_ (`01100`). "Attach to Rhino" is intrinsic to the Attachment card type and is handled by the engine's reveal branch, so it can no longer be cancelled by Cancel When Revealed effects.
+  - **Documentation:** Added an encounter-attachment note to `08_effects_villain_nemesis.md`; regenerated the supplemental declarations usage report.
+  - **Automated Verification (`encounter-attachment-unconditional.test.ts`):** 10 tests covering no When Revealed declaration, single attachment on reveal, no cancel prompt, and Charge's constant ATK/OVERKILL.
+
 - **Fix (UI): Enforce resource type eligibility in the payment modal ([Issue #180](https://github.com/SteveRodrigue/MCD/issues/180), [Issue #129](https://github.com/SteveRodrigue/MCD/issues/129))**
   - **Payment Modal (`CardPaymentModal.tsx`, `payment-eligibility.ts`):** Hand cards and generators that cannot pay a typed cost (e.g. non-Energy for Rechannel, non-Physical for Rhino attachment discard) are grayed out and disabled; Wild icons still qualify unless `requirePrinted`.
   - **Engine Verification (`action-cost-engine.test.ts`):** Added regression test confirming Rechannel cannot be initiated without an Energy or Wild source.

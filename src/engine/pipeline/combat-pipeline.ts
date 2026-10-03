@@ -636,22 +636,57 @@ export function step4_and_5_dealAndResolveBoostCards(
       attackContext.boostQueue.push(boostCard);
     }
 
-    // Check villain innate abilities for extra boost cards (e.g. Klaw 01113/01114/01115 / ADR-0019)
-    const villainAbilities = state.villain.card.enrichment?.abilities || [];
-    const extraBoostAbility =
-      Boolean((state.villain.card as any).additionalBoostCards) ||
-      villainAbilities.some((a) =>
-        a.steps?.some(
-          (s) =>
-            s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' || s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
-        ),
-      );
-    if (extraBoostAbility) {
+    // Check villain innate abilities and attachments for extra boost cards (e.g. Klaw 01113/01114/01115 / ADR-0019)
+    let extraBoostCount = 0;
+    if (attackContext.attackerType === 'VILLAIN') {
+      const villainAbilities = state.villain.card.enrichment?.abilities || [];
+      if (typeof (state.villain.card as any).additionalBoostCards === 'number') {
+        extraBoostCount += (state.villain.card as any).additionalBoostCards;
+      } else if ((state.villain.card as any).additionalBoostCards) {
+        extraBoostCount += 1;
+      } else if (
+        villainAbilities.some((a) =>
+          a.steps?.some(
+            (s) =>
+              s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' ||
+              s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
+          ),
+        )
+      ) {
+        extraBoostCount += 1;
+      }
+
+      for (const att of state.villain.attachments || []) {
+        if (typeof (att.card as any).additionalBoostCards === 'number') {
+          extraBoostCount += (att.card as any).additionalBoostCards;
+        } else if ((att.card as any).additionalBoostCards) {
+          extraBoostCount += 1;
+        } else if (
+          (att.card.enrichment?.abilities || []).some((a) =>
+            a.steps?.some(
+              (s) =>
+                s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' ||
+                s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
+            ),
+          )
+        ) {
+          extraBoostCount += 1;
+        }
+      }
+    } else if (isVillainousMinion && attackContext.attackerCard) {
+      if (typeof (attackContext.attackerCard.card as any).additionalBoostCards === 'number') {
+        extraBoostCount += (attackContext.attackerCard.card as any).additionalBoostCards;
+      } else if ((attackContext.attackerCard.card as any).additionalBoostCards) {
+        extraBoostCount += 1;
+      }
+    }
+
+    for (let i = 0; i < extraBoostCount; i++) {
       const extraBoost = drawEncounterCardForCombat(state);
       if (extraBoost) {
         attackContext.boostQueue.push(extraBoost);
         state.log.push({
-          id: `log_${Date.now()}`,
+          id: `log_${Date.now()}_extra_${i}`,
           timestamp: Date.now(),
           round: state.roundNumber,
           phase: state.phase,
@@ -704,7 +739,7 @@ export function step4_and_5_dealAndResolveBoostCards(
       }
 
       // 3. Accumulate Boost Icons
-      const icons = currentBoost.card.boostIcons || 0;
+      const icons = currentBoost.card.boostIcons ?? (currentBoost.card as any).boost ?? 0;
       attackContext.totalBoostIcons += icons;
 
       state.log.push({
@@ -719,10 +754,19 @@ export function step4_and_5_dealAndResolveBoostCards(
       });
 
       // 4. Discard Boost Card (unless put into play by an ability like Weapons Runner)
-      if (!(attackContext as any).skipBoostDiscard) {
+      const targetPlayer = state.players.find((p) => p.id === attackContext.targetPlayerId);
+      if (
+        !(attackContext as any).skipBoostDiscard &&
+        !(state as any).skipBoostDiscard &&
+        !(
+          targetPlayer &&
+          targetPlayer.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
+        )
+      ) {
         state.encounterDiscard.push(currentBoost);
       } else {
         delete (attackContext as any).skipBoostDiscard;
+        delete (state as any).skipBoostDiscard;
       }
 
       state.activeBoostCard = undefined;

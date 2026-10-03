@@ -83,6 +83,10 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'status',
+      actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
       key: 'villain.confused.cancelled',
       params: { villain: state.villain.card?.name || 'Villain' },
       onomatopoeia: 'CONFUSION CLEARED!',
@@ -90,18 +94,145 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     return;
   }
 
-  // Draw Boost Card
-  const boostCard = drawEncounterCard(state);
-  const boostIcons = boostCard
-    ? (boostCard.card.boostIcons ?? (boostCard.card as any).boost ?? 0)
-    : 0;
+  // Build Boost Cards Queue (RR v1.8 p. 25: 1 base boost card + any additional boost cards)
+  const boostQueue: CardInstance[] = [];
+
+  const baseBoost = drawEncounterCard(state);
+  if (baseBoost) {
+    boostQueue.push(baseBoost);
+  }
+
+  // Check villain innate abilities and attachments for extra boost cards (e.g. Klaw 01113 / ADR-0019)
+  const villainAbilities = state.villain.card.enrichment?.abilities || [];
+  let extraBoostCount = 0;
+  if (typeof (state.villain.card as any).additionalBoostCards === 'number') {
+    extraBoostCount += (state.villain.card as any).additionalBoostCards;
+  } else if ((state.villain.card as any).additionalBoostCards) {
+    extraBoostCount += 1;
+  } else if (
+    villainAbilities.some((a) =>
+      a.steps?.some(
+        (s) =>
+          s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' || s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
+      ),
+    )
+  ) {
+    extraBoostCount += 1;
+  }
+
+  for (const att of state.villain.attachments || []) {
+    if (typeof (att.card as any).additionalBoostCards === 'number') {
+      extraBoostCount += (att.card as any).additionalBoostCards;
+    } else if ((att.card as any).additionalBoostCards) {
+      extraBoostCount += 1;
+    } else if (
+      (att.card.enrichment?.abilities || []).some((a) =>
+        a.steps?.some(
+          (s) =>
+            s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' || s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
+        ),
+      )
+    ) {
+      extraBoostCount += 1;
+    }
+  }
+
+  for (let i = 0; i < extraBoostCount; i++) {
+    const extraBoost = drawEncounterCard(state);
+    if (extraBoost) {
+      boostQueue.push(extraBoost);
+      state.log.push({
+        id: `log_${Date.now()}_extra_${i}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'scheme',
+        actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+        key: 'villain.boost.extra',
+        params: { villain: state.villain.card?.name || 'Villain' },
+        onomatopoeia: 'EXTRA BOOST DEALT!',
+      });
+    }
+  }
+
+  let totalBoostIcons = 0;
+
+  // Resolve boost cards one at a time in FIFO order (RR v1.8 p. 25)
+  while (boostQueue.length > 0) {
+    const currentBoost = boostQueue.shift()!;
+    state.activeBoostCard = currentBoost;
+
+    // 1. Dispatch Boost Reveal Interrupt Window (e.g. Defiance, Target Acquired)
+    dispatchTrigger(state, 'WHEN_BOOST_CARD_REVEALED', {
+      targetPlayerId: player.id,
+      sourceInstanceId: currentBoost.instanceId,
+    });
+
+    // 2. Resolve ★ Star Boost Abilities (if present)
+    if (currentBoost.card.boostStar) {
+      const boostAbilities = (currentBoost.card.enrichment?.abilities || []).filter(
+        (a) => a.timing === 'BOOST' || a.trigger === 'BOOST',
+      );
+
+      for (const boostAbility of boostAbilities) {
+        executeEffect(state, boostAbility, {
+          playerId: player.id,
+          sourceCardInstance: currentBoost,
+        });
+
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'scheme',
+          actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+          key: 'villain.boost.starResolved',
+          params: { card: currentBoost.card.name, abilityId: boostAbility.id },
+          onomatopoeia: 'STAR BOOST ACTIVATED!',
+        });
+      }
+    }
+
+    // 3. Accumulate Boost Icons
+    const icons = currentBoost.card.boostIcons ?? (currentBoost.card as any).boost ?? 0;
+    totalBoostIcons += icons;
+
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'scheme',
+      actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+      key: 'villain.boost.revealed',
+      params: {
+        villain: state.villain.card?.name || 'Villain',
+        card: currentBoost.card.name,
+        boostIcons: icons,
+      },
+      onomatopoeia: 'BOOST REVEALED!',
+    });
+
+    // 4. Discard Boost Card (unless put into play by an ability or flagged skipBoostDiscard)
+    if (
+      !(currentBoost as any).skipBoostDiscard &&
+      !(state as any).skipBoostDiscard &&
+      !player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
+    ) {
+      state.encounterDiscard.push(currentBoost);
+    } else {
+      delete (currentBoost as any).skipBoostDiscard;
+      delete (state as any).skipBoostDiscard;
+    }
+
+    state.activeBoostCard = undefined;
+  }
+
+  // Calculate modified SCH stat & place threat
   const villainStats = getEffectiveVillainStats(state, state.villain);
   const baseScheme = villainStats.scheme;
-  const totalScheme = baseScheme + boostIcons;
-
-  if (boostCard) {
-    state.encounterDiscard.push(boostCard);
-  }
+  const totalScheme = baseScheme + totalBoostIcons;
 
   applyThreatPlacement(state, {
     targetType: 'main_scheme',
@@ -109,7 +240,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     sourceType: 'VILLAIN_SCHEME',
     sourceEntityName: state.villain.card?.name || 'Villain',
     sourcePlayerId: player.id,
-    boostIcons,
+    boostIcons: totalBoostIcons,
   });
 }
 
@@ -145,6 +276,10 @@ export function executeMinionSchemeAgainstPlayer(
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'status',
+      actor: { name: minion.card.name, type: 'minion' },
       key: 'minion.confused.cancelled',
       params: { minion: minion.card.name },
       onomatopoeia: 'CONFUSION CLEARED!',
@@ -153,24 +288,108 @@ export function executeMinionSchemeAgainstPlayer(
   }
 
   const minionCard = minion.card as MinionCard;
-  let schemeThreat = minionCard.scheme ?? (minionCard as any).sch ?? 1;
+  const baseScheme = minionCard.scheme ?? (minionCard as any).sch ?? 1;
+  let totalBoostIcons = 0;
 
   // Villainous minion deals and resolves a facedown boost card (RR v1.8 p. 30)
   if (hasEntityKeyword(minion, 'Villainous')) {
-    const boostCard = drawEncounterCard(state);
-    if (boostCard) {
-      const icons = boostCard.card.boostIcons ?? (boostCard.card as any).boost ?? 0;
-      schemeThreat += icons;
-      state.encounterDiscard.push(boostCard);
+    const boostQueue: CardInstance[] = [];
+    const baseBoost = drawEncounterCard(state);
+    if (baseBoost) {
+      boostQueue.push(baseBoost);
+    }
+
+    const extraBoost =
+      typeof (minion.card as any).additionalBoostCards === 'number'
+        ? (minion.card as any).additionalBoostCards
+        : (minion.card as any).additionalBoostCards
+          ? 1
+          : 0;
+    for (let i = 0; i < extraBoost; i++) {
+      const eb = drawEncounterCard(state);
+      if (eb) boostQueue.push(eb);
+    }
+
+    while (boostQueue.length > 0) {
+      const currentBoost = boostQueue.shift()!;
+      state.activeBoostCard = currentBoost;
+
+      // 1. Dispatch Boost Reveal Interrupt Window
+      dispatchTrigger(state, 'WHEN_BOOST_CARD_REVEALED', {
+        targetPlayerId: player.id,
+        sourceInstanceId: currentBoost.instanceId,
+      });
+
+      // 2. Resolve ★ Star Boost Abilities (if present)
+      if (currentBoost.card.boostStar) {
+        const boostAbilities = (currentBoost.card.enrichment?.abilities || []).filter(
+          (a) => a.timing === 'BOOST' || a.trigger === 'BOOST',
+        );
+
+        for (const boostAbility of boostAbilities) {
+          executeEffect(state, boostAbility, {
+            playerId: player.id,
+            sourceCardInstance: currentBoost,
+          });
+
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'scheme',
+            actor: { name: minion.card.name, type: 'minion' },
+            key: 'villain.boost.starResolved',
+            params: { card: currentBoost.card.name, abilityId: boostAbility.id },
+            onomatopoeia: 'STAR BOOST ACTIVATED!',
+          });
+        }
+      }
+
+      // 3. Accumulate Boost Icons
+      const icons = currentBoost.card.boostIcons ?? (currentBoost.card as any).boost ?? 0;
+      totalBoostIcons += icons;
+
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'scheme',
+        actor: { name: minion.card.name, type: 'minion' },
+        key: 'villain.boost.revealed',
+        params: {
+          villain: minion.card.name,
+          minion: minion.card.name,
+          card: currentBoost.card.name,
+          boostIcons: icons,
+        },
+        onomatopoeia: 'BOOST REVEALED!',
+      });
+
+      // 4. Discard Boost Card (unless put into play or skipBoostDiscard)
+      if (
+        !(currentBoost as any).skipBoostDiscard &&
+        !(state as any).skipBoostDiscard &&
+        !player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
+      ) {
+        state.encounterDiscard.push(currentBoost);
+      } else {
+        delete (currentBoost as any).skipBoostDiscard;
+        delete (state as any).skipBoostDiscard;
+      }
+
+      state.activeBoostCard = undefined;
     }
   }
 
   applyThreatPlacement(state, {
     targetType: 'main_scheme',
-    amount: schemeThreat,
+    amount: baseScheme + totalBoostIcons,
     sourceType: 'MINION_SCHEME',
     sourceEntityName: minion.card?.name || 'Minion',
     sourcePlayerId: player.id,
+    boostIcons: totalBoostIcons,
   });
 }
 

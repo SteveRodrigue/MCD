@@ -6,6 +6,12 @@ import {
   StatusCard,
   VillainCard,
   NormalizedCard,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainById,
+  setActiveVillain,
+  replaceVillain,
+  replaceActiveMainScheme,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
@@ -55,8 +61,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     };
 
     state.villains = [initialVillain];
-    state.activeVillainIndex = 0;
-    state.villain = initialVillain;
+    setActiveVillain(state, initialVillain.instanceId!);
 
     // 2. Setup Main Scheme (Underground Distribution Stage 1B)
     const mainSchemeCard = cardCatalog.getMainSchemeByStage('klaw', '1B');
@@ -75,9 +80,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
       stage: '1B',
     };
 
-    state.mainSchemes = [initialMainScheme];
-    state.activeMainSchemeIndex = 0;
-    state.mainScheme = initialMainScheme;
+    replaceActiveMainScheme(state, initialMainScheme);
 
     // 3. Build Encounter Deck based on Difficulty
     const modularSetCodes =
@@ -211,8 +214,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     victory?: boolean;
   } {
-    const villain =
-      state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
+    const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
     const numPlayers = state.players.length || 1;
@@ -295,9 +297,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
       attachments: [],
     };
 
-    state.villains = [newVillain];
-    state.activeVillainIndex = 0;
-    state.villain = newVillain;
+    replaceVillain(state, getActiveVillain(state).instanceId!, newVillain);
 
     if (onRevealedCallback) {
       onRevealedCallback(newVillain);
@@ -340,18 +340,18 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     }
 
     if (immortalCard) {
-      state.villain.attachments.push(immortalCard);
+      getActiveVillain(state).attachments.push(immortalCard);
       // Immortal Klaw grants +10 health per player
       const bonusHealth = 10 * (state.players.length || 1);
-      state.villain.health += bonusHealth;
-      state.villain.maxHealth += bonusHealth;
+      getActiveVillain(state).health += bonusHealth;
+      getActiveVillain(state).maxHealth += bonusHealth;
 
       state.log.push({
         id: `log_${Date.now()}`,
         timestamp: Date.now(),
         category: 'status',
         key: 'attachment.attached',
-        params: { attachment: immortalCard.card.name, target: state.villain.card.name },
+        params: { attachment: immortalCard.card.name, target: getActiveVillain(state).card.name },
         onomatopoeia: 'IMMORTAL KLAW ATTACHES!',
       });
     }
@@ -366,7 +366,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     defeat?: boolean;
   } {
     const numPlayers = state.players.length || 1;
-    const currentStage = state.mainScheme.stage;
+    const currentStage = getActiveMainScheme(state).stage;
 
     if (currentStage === '1B') {
       // Advance to Stage 2B (Secret Rendezvous)
@@ -384,9 +384,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
         stage: '2B',
       };
 
-      state.mainSchemes = [nextMainScheme];
-      state.activeMainSchemeIndex = 0;
-      state.mainScheme = nextMainScheme;
+      replaceActiveMainScheme(state, nextMainScheme);
 
       state.log.push({
         id: `log_${Date.now()}`,

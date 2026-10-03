@@ -1,4 +1,9 @@
-import { GameState, DecisionPromptOption, PendingDecisionPrompt } from '@engine/models';
+import {
+  GameState,
+  DecisionPromptOption,
+  PendingDecisionPrompt,
+  cloneGameState,
+} from '@engine/models';
 import { getEffectiveHandSize } from './stat-calculator';
 import { drawPlayerCard } from './deck-exhaustion';
 import { enqueueDecisionPrompt } from './prompt-queue';
@@ -20,7 +25,7 @@ export function initiatePlayerPhaseCleanup(
   state: GameState,
   options?: PlayerPhaseCleanupOptions,
 ): GameState {
-  const nextState: GameState = JSON.parse(JSON.stringify(state));
+  const nextState: GameState = cloneGameState(state);
 
   // Initialize player-by-player cleanup queue in player order starting from firstPlayerIndex
   const queue: string[] = [];

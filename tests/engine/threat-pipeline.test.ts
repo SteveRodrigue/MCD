@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameState, CardType, StatusCard, HeroCard, AlterEgoCard } from '@engine/models';
+import {
+  GameState,
+  CardType,
+  StatusCard,
+  HeroCard,
+  AlterEgoCard,
+  getActiveVillain,
+  replaceActiveMainScheme,
+  replaceVillain,
+} from '@engine/models';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { setupGame } from '@engine/state/game-setup';
 import { applyThreatPlacement, applyThwart } from '@engine/pipeline/threat-pipeline';
@@ -34,7 +43,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
     player.currentForm = 'hero';
     player.exhausted = false;
     state.accelerationTokens = 0;
-    state.mainScheme = {
+    replaceActiveMainScheme(state, {
       instanceId: 'main_scheme_1',
       stage: '1A',
       threat: 4,
@@ -48,7 +57,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
         escalationThreat: 1,
         targetThreat: 7,
       } as any,
-    };
+    });
     state.sideSchemes = [];
   });
 
@@ -377,7 +386,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
     it('Advance (01186): Treachery causes villain to scheme and applies threat via threat pipeline', () => {
       const player = state.players[0];
       state.mainScheme.threat = 2;
-      state.villain = {
+      replaceVillain(state, getActiveVillain(state).instanceId!, {
         instanceId: 'rhino_villain',
         health: 14,
         maxHealth: 14,
@@ -391,7 +400,7 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
           type: CardType.VILLAIN,
           sch: 1,
         } as any,
-      };
+      });
       // Boost card on encounter deck
       state.encounterDeck = [
         {

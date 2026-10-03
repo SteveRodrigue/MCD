@@ -17,7 +17,6 @@ describe('Problem Report Service', () => {
     activePlayerIndex: 0,
     players: [],
     villains: [],
-    activeVillainIndex: 0,
     mainSchemes: [],
     activeMainSchemeIndex: 0,
     villain: {} as any,

@@ -23,7 +23,7 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
 
   it('Multi-Entity Accessors resolve correctly for active and specific entities', () => {
     const mockState: Partial<GameState> = {
-      activeVillainIndex: 1,
+      activeVillainId: 'v2',
       activeMainSchemeIndex: 0,
       villains: [
         {
@@ -108,7 +108,6 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
       ],
       villains: [],
       villain: {} as any,
-      activeVillainIndex: 0,
       mainSchemes: [],
       mainScheme: {} as any,
       activeMainSchemeIndex: 0,

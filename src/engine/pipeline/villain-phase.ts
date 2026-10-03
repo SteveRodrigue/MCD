@@ -11,6 +11,7 @@ import {
   Keyword,
   hasKeyword,
   PendingActivation,
+  cloneGameState,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -758,7 +759,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   // Halt if an interactive decision prompt is currently waiting for player input
   if (peekDecisionPrompt(state)) return state;
 
-  const nextState: GameState = JSON.parse(JSON.stringify(state));
+  const nextState: GameState = cloneGameState(state);
   if (!nextState.options) nextState.options = {};
   nextState.options.villainPhaseStepping = true;
 
@@ -1173,7 +1174,7 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
     return advanceVillainPhaseStep(state, options);
   }
 
-  const nextState: GameState = JSON.parse(JSON.stringify(state));
+  const nextState: GameState = cloneGameState(state);
   nextState.phase = GamePhase.VILLAIN_PHASE;
 
   // Reset phase-level ability limits and expire phase cost reductions for all players during Villain Phase

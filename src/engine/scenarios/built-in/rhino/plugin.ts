@@ -6,6 +6,11 @@ import {
   StatusCard,
   VillainCard,
   NormalizedCard,
+  getActiveVillain,
+  getVillainById,
+  setActiveVillain,
+  replaceVillain,
+  replaceActiveMainScheme,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
@@ -55,8 +60,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     };
 
     state.villains = [initialVillain];
-    state.activeVillainIndex = 0;
-    state.villain = initialVillain;
+    setActiveVillain(state, initialVillain.instanceId!);
 
     // 2. Setup Main Scheme (The Break-In! Stage 1B)
     const mainSchemeCard = cardCatalog.getMainSchemeByStage('rhino', '1B');
@@ -75,9 +79,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       stage: '1B',
     };
 
-    state.mainSchemes = [initialMainScheme];
-    state.activeMainSchemeIndex = 0;
-    state.mainScheme = initialMainScheme;
+    replaceActiveMainScheme(state, initialMainScheme);
 
     // 3. Build Encounter Deck based on Difficulty
     const modularSetCodes =
@@ -151,8 +153,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     victory?: boolean;
   } {
-    const villain =
-      state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
+    const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
     const numPlayers = state.players.length || 1;
@@ -284,9 +285,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
       attachments: [], // Clear attachments on stage transition
     };
 
-    state.villains = [updatedVillain];
-    state.activeVillainIndex = 0;
-    state.villain = updatedVillain;
+    replaceVillain(state, getActiveVillain(state).instanceId!, updatedVillain);
 
     state.log.push({
       id: `log_${Date.now()}`,
@@ -354,7 +353,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
 
   private resolveStageIIIWhenRevealed(state: GameState): void {
     // Rhino Stage III: Stun each hero. Rhino gains Tough status.
-    const activeVillain = state.villains[0] || state.villain;
+    const activeVillain = getActiveVillain(state);
     if (!activeVillain.statusCards.includes(StatusCard.TOUGH)) {
       activeVillain.statusCards.push(StatusCard.TOUGH);
     }

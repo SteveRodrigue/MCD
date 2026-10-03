@@ -1,4 +1,4 @@
-import { GameState } from '@engine/models';
+import { GameState, getActiveVillain } from '@engine/models';
 import { ScenarioRegistry } from '@engine/scenarios';
 
 /**
@@ -9,8 +9,7 @@ export function handleVillainDefeat(state: GameState, villainInstanceId?: string
   const scenarioId = state.scenarioId || 'rhino';
   if (ScenarioRegistry.has(scenarioId)) {
     const plugin = ScenarioRegistry.get(scenarioId);
-    const targetId =
-      villainInstanceId || state.villains?.[state.activeVillainIndex ?? 0]?.instanceId || '';
+    const targetId = villainInstanceId || getActiveVillain(state)?.instanceId || '';
     const res = plugin.onVillainDefeated(state, targetId);
     return res.state;
   }

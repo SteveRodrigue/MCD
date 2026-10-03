@@ -228,7 +228,7 @@ export function setupGame(options: GameSetupOptions): GameState {
     executionStack: [],
     players,
     villains: [villain],
-    activeVillainIndex: 0,
+    activeVillainId: villain.instanceId,
     mainSchemes: [mainScheme],
     activeMainSchemeIndex: 0,
     villain,

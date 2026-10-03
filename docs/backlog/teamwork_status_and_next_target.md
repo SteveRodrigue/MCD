@@ -33,8 +33,8 @@ flowchart TD
         I183["#183 Defense Pipeline<br/>RESOLVED (a8e3e3a)"]
         I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
         I184["#184 Caught Off Guard Prompt<br/>RESOLVED (052032e)"]
-        I122["#122 Step-Gate Evaluator<br/>ACTIVE NEXT TARGET"]
-        I154["#154 Cosmic Flight Aerial Gate<br/>(Hero Form Condition)"]
+        I122["#122 Step-Gate Evaluator<br/>RESOLVED (pending commit)"]
+        I154["#154 Cosmic Flight Aerial Gate<br/>ACTIVE NEXT TARGET"]
         I158["#158 Obligations Engine<br/>(Family Emergency)"]
     end
 
@@ -44,7 +44,7 @@ flowchart TD
         I180["#180 / #129 Payment Modal Filters<br/>RESOLVED (c7d970d)"]
         I185["#185 Surveillance Team Usability<br/>RESOLVED (569274c)"]
         I179["#179 Alpha Flight Station Usability<br/>RESOLVED (569274c + tests)"]
-        I175["#175 Charge Attachment Timing<br/>RESOLVED (pending commit)"]
+        I175["#175 Charge Attachment Timing<br/>RESOLVED (0fc765e)"]
     end
 
     %% Dependencies & Flows
@@ -62,9 +62,9 @@ flowchart TD
     classDef active fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
     classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
 
-    class I183,I172,I184,I181,I186,I185,I179,I180,I175 resolved;
-    class I122 active;
-    class I194,I192,I196,I154,I158 open;
+    class I183,I172,I184,I181,I186,I185,I179,I180,I175,I122 resolved;
+    class I154 active;
+    class I194,I192,I196,I158 open;
 ```
 
 
@@ -83,7 +83,7 @@ flowchart TD
 | **#181** | **Surveillance Team Crisis icon threat bypass** | Threat Pipeline & Legality: `threat-pipeline.ts` and `effects/index.ts`. | 🟢 **Closed** (`0d6c235`). Enforces Crisis icon and Patrol minion blocks in `CHOSEN_SCHEME`. |
 | **#186** | **For Justice! (01060) Mental resource bonus** | Cost Engine & Dynamic Formulas: `context.resourcesSpent` propagation. | 🟢 **Closed** (`052032e`). Added `PAID_WITH_RESOURCE` / `RESOURCES_SPENT` dynamicBonus, purged `bonusWithMental`. |
 | **#194** | **Replace state.villain/mainScheme legacy pointers [AUD-F003]** | Architecture & State: 221 references to legacy singleton pointers `state.villain` and `state.mainScheme`. | 🟡 **Open**. Prerequisite for multi-villain milestone. |
-| **#122** | **Extract shared step-gate evaluator** | Pipeline Unification: Unifies ability step gating (`TARGET_TRAIT_MATCH`, conditions) between effect execution and CONSTANT stat/trait loop. | 🟡 **Open**. Blocks #154. |
+| **#122** | **Extract shared step-gate evaluator** | Pipeline Unification: Unifies ability step gating (`TARGET_TRAIT_MATCH`, conditions) between effect execution and CONSTANT stat/trait loop. | 🟢 **Resolved** (pending commit). `evaluateStepGate` shared by the effect pipeline and the CONSTANT stat loop (ADR-0019 addendum). |
 | **#202** | **Tighten customActionHandlers action:any [AUD-OQ-04]** | Type Safety: Discriminated union contract for custom scenario plugin action handlers in `ScenarioPlugin`. | 🟡 **Open**. Type safety enhancement. |
 
 ---
@@ -92,7 +92,7 @@ flowchart TD
 
 | Issue # | Title | Target File / Code | Problem Statement & Fix Strategy |
 |---|---|---|---|
-| **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved (pending commit)**. Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
+| **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved** (`0fc765e`). Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
 | **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | Trait `Aerial` is granted constantly instead of being gated on Hero form (`form: "HERO"`). Dependent on Engine #122. |
 | **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | Obligation card resolution. Requires declarative obligation prompt structure (give to player, flip to alter-ego, exhaust / discard options). |
 | **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
@@ -130,12 +130,12 @@ flowchart TD
 | **P1** | **#186** | For Justice! Mental bonus not applied | Engine/Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
 | **P1** | **#135** | Duplicate of For Justice! (#186) | Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
 | **P1** | **#180** | Captain Marvel Rechannel resource validation | UI/Engine | Medium / Payment Flow | S | 🟢 **Resolved** (`c7d970d`) |
-| **P1** | **#175** | Charge (01099) incorrect When Revealed | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (pending commit) |
+| **P1** | **#175** | Charge (01099) incorrect When Revealed | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (`0fc765e`) |
 | **P2** | **#185** | Surveillance Team clickable with no threat | UI/Engine | Low / Board UI | S | 🟢 **Resolved** (`569274c`) |
 | **P2** | **#179** | Alpha Flight Station active with empty hand | UI/Engine | Low / Board UI | S | 🟢 **Resolved** (`569274c` + tests) |
 | **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟢 **Resolved** (`c7d970d`) |
-| **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🎯 **Active Next Target** |
-| **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟡 **Open** (Blocked by #122) |
+| **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟢 **Resolved** (pending commit) |
+| **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🎯 **Active Next Target** (unblocked) |
 | **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / 221 Call Sites | L | 🟡 **Open** (Arch Milestone) |
 | **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟡 **Open** |
 | **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟡 **Open** |
@@ -166,7 +166,8 @@ flowchart TD
 - ✅ **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
 
 ### Phase 3: Architectural Foundation & Shared Gating (Active 🎯)
-- 🎯 **#122 & #154**: Extract shared step-gate evaluator and gate Cosmic Flight *Aerial* trait on Hero form.
+- ✅ **#122**: Shared step-gate evaluator extracted.
+- 🎯 **#154**: Gate Cosmic Flight *Aerial* trait on Hero form.
 - **#158**: Obligation prompt engine for *Family Emergency*.
 - **#194**: Batch migration of 221 legacy `state.villain` / `state.mainScheme` pointers to accessor helpers.
 
@@ -184,7 +185,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Issue #122** (shared step-gate evaluator; unblocks #154). Needs a plan before implementation.
+   - Primary: **Issue #154** (Cosmic Flight *Aerial* gated on Hero form via `IF_FORM`; now unblocked). Needs a plan before implementation.
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

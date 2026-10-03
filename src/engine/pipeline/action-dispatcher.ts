@@ -1660,6 +1660,19 @@ export function dispatchAction(
               };
             });
 
+            options.push({
+              id: 'cancel_target',
+              label: 'Cancel (Return to Hand)',
+              description: `Cancel playing ${playedCardInstance.card.name} and return it to hand`,
+              effect: 'EVENT_CHOSEN_TARGET',
+              params: {
+                isEventTargetChoice: true,
+                playedCardInstance,
+                ownerId: action.playerId,
+                resourcesSpent,
+              },
+            });
+
             const prompt: PendingDecisionPrompt = {
               promptId: `prompt_event_target_${Date.now()}`,
               playerId: action.playerId,
@@ -1667,7 +1680,7 @@ export function dispatchAction(
               description: `Select target for ${playedCardInstance.card.name}:`,
               sourceCardName: playedCardInstance.card.name,
               options,
-              isVoluntary: false,
+              isVoluntary: true,
             };
 
             const enqueuedState = enqueueDecisionPrompt(nextState, prompt);
@@ -2165,10 +2178,10 @@ export function dispatchAction(
     }
 
     case 'RESOLVE_DECISION_PROMPT': {
-      const player = getPlayer(nextState, action.playerId);
-      if (!player) return { state, result: { success: false, error: 'Player not found' } };
-
       const activePrompt = peekDecisionPrompt(nextState);
+      const targetPlayerId = action.playerId || activePrompt?.playerId;
+      const player = targetPlayerId ? getPlayer(nextState, targetPlayerId) : undefined;
+      if (!player) return { state, result: { success: false, error: 'Player not found' } };
 
       // Distribution Prompt Resolution (ADR-0064)
       if (
@@ -2518,9 +2531,59 @@ export function dispatchAction(
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
         const chosenMinionId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
         const attachmentCard = (selectedOption?.params?.attachmentCard ||
+          activePrompt.options.find((o) => o.params?.attachmentCard)?.params?.attachmentCard ||
           activePrompt.options[0]?.params?.attachmentCard) as CardInstance | undefined;
         const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options.find((o) => o.params?.ownerId)?.params?.ownerId ||
           activePrompt.options[0]?.params?.ownerId) as string | undefined;
+
+        const isCancelled =
+          action.selectedOptionId === 'cancel' ||
+          action.selectedOptionId === 'pass' ||
+          selectedOption?.id === 'cancel' ||
+          selectedOption?.id === 'pass';
+
+        if (isCancelled) {
+          const targetPlayer = (ownerId ? getPlayer(poppedState, ownerId) : undefined) || player;
+          if (attachmentCard) {
+            let discIdx = targetPlayer.discard.findIndex(
+              (c) => c.instanceId === attachmentCard.instanceId,
+            );
+            if (discIdx !== -1) {
+              targetPlayer.discard.splice(discIdx, 1);
+            } else {
+              for (const otherPlayer of poppedState.players) {
+                discIdx = otherPlayer.discard.findIndex(
+                  (c) => c.instanceId === attachmentCard.instanceId,
+                );
+                if (discIdx !== -1) {
+                  otherPlayer.discard.splice(discIdx, 1);
+                  break;
+                }
+              }
+            }
+            if (!targetPlayer.hand.some((c) => c.instanceId === attachmentCard.instanceId)) {
+              targetPlayer.hand.push(attachmentCard);
+            }
+          }
+
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'decision.prompt.cancelled',
+            params: {
+              player: targetPlayer.name,
+              source: activePrompt.sourceCardName,
+            },
+            onomatopoeia: 'CANCELLED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
+        }
 
         if (attachmentCard) {
           (attachmentCard as any).ownerId = ownerId;
@@ -2552,9 +2615,59 @@ export function dispatchAction(
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
         const chosenAllyId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
         const attachmentCard = (selectedOption?.params?.attachmentCard ||
+          activePrompt.options.find((o) => o.params?.attachmentCard)?.params?.attachmentCard ||
           activePrompt.options[0]?.params?.attachmentCard) as CardInstance | undefined;
         const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options.find((o) => o.params?.ownerId)?.params?.ownerId ||
           activePrompt.options[0]?.params?.ownerId) as string | undefined;
+
+        const isCancelled =
+          action.selectedOptionId === 'cancel' ||
+          action.selectedOptionId === 'pass' ||
+          selectedOption?.id === 'cancel' ||
+          selectedOption?.id === 'pass';
+
+        if (isCancelled) {
+          const targetPlayer = (ownerId ? getPlayer(poppedState, ownerId) : undefined) || player;
+          if (attachmentCard) {
+            let discIdx = targetPlayer.discard.findIndex(
+              (c) => c.instanceId === attachmentCard.instanceId,
+            );
+            if (discIdx !== -1) {
+              targetPlayer.discard.splice(discIdx, 1);
+            } else {
+              for (const otherPlayer of poppedState.players) {
+                discIdx = otherPlayer.discard.findIndex(
+                  (c) => c.instanceId === attachmentCard.instanceId,
+                );
+                if (discIdx !== -1) {
+                  otherPlayer.discard.splice(discIdx, 1);
+                  break;
+                }
+              }
+            }
+            if (!targetPlayer.hand.some((c) => c.instanceId === attachmentCard.instanceId)) {
+              targetPlayer.hand.push(attachmentCard);
+            }
+          }
+
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'decision.prompt.cancelled',
+            params: {
+              player: targetPlayer.name,
+              source: activePrompt.sourceCardName,
+            },
+            onomatopoeia: 'CANCELLED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
+        }
 
         if (attachmentCard) {
           (attachmentCard as any).ownerId = ownerId;
@@ -2586,9 +2699,59 @@ export function dispatchAction(
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
         const chosenEnemyId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
         const attachmentCard = (selectedOption?.params?.attachmentCard ||
+          activePrompt.options.find((o) => o.params?.attachmentCard)?.params?.attachmentCard ||
           activePrompt.options[0]?.params?.attachmentCard) as CardInstance | undefined;
         const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options.find((o) => o.params?.ownerId)?.params?.ownerId ||
           activePrompt.options[0]?.params?.ownerId) as string | undefined;
+
+        const isCancelled =
+          action.selectedOptionId === 'cancel' ||
+          action.selectedOptionId === 'pass' ||
+          selectedOption?.id === 'cancel' ||
+          selectedOption?.id === 'pass';
+
+        if (isCancelled) {
+          const targetPlayer = (ownerId ? getPlayer(poppedState, ownerId) : undefined) || player;
+          if (attachmentCard) {
+            let discIdx = targetPlayer.discard.findIndex(
+              (c) => c.instanceId === attachmentCard.instanceId,
+            );
+            if (discIdx !== -1) {
+              targetPlayer.discard.splice(discIdx, 1);
+            } else {
+              for (const otherPlayer of poppedState.players) {
+                discIdx = otherPlayer.discard.findIndex(
+                  (c) => c.instanceId === attachmentCard.instanceId,
+                );
+                if (discIdx !== -1) {
+                  otherPlayer.discard.splice(discIdx, 1);
+                  break;
+                }
+              }
+            }
+            if (!targetPlayer.hand.some((c) => c.instanceId === attachmentCard.instanceId)) {
+              targetPlayer.hand.push(attachmentCard);
+            }
+          }
+
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'decision.prompt.cancelled',
+            params: {
+              player: targetPlayer.name,
+              source: activePrompt.sourceCardName,
+            },
+            onomatopoeia: 'CANCELLED',
+          });
+
+          return { state: poppedState, result: { success: true, onomatopoeia: 'CANCELLED' } };
+        }
 
         if (attachmentCard) {
           (attachmentCard as any).ownerId = ownerId;
@@ -2618,17 +2781,76 @@ export function dispatchAction(
       if (activePrompt && activePrompt.options.some((o) => o.params?.isEventTargetChoice)) {
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
+        const ownerId = (selectedOption?.params?.ownerId ||
+          activePrompt.options.find((o) => o.params?.ownerId)?.params?.ownerId ||
+          activePrompt.options[0]?.params?.ownerId ||
+          action.playerId) as string;
+        const targetPlayer = getPlayer(poppedState, ownerId) || player;
+
+        const isCancelled =
+          action.selectedOptionId === 'cancel_target' ||
+          action.selectedOptionId === 'cancel' ||
+          action.selectedOptionId === 'pass' ||
+          selectedOption?.id === 'cancel_target' ||
+          selectedOption?.id === 'cancel' ||
+          selectedOption?.id === 'pass';
+
+        if (isCancelled) {
+          const playedCardInstance = (selectedOption?.params?.playedCardInstance ||
+            activePrompt.options.find((o) => o.params?.playedCardInstance)?.params
+              ?.playedCardInstance ||
+            activePrompt.options[0]?.params?.playedCardInstance) as CardInstance | undefined;
+
+          if (playedCardInstance) {
+            let discIdx = targetPlayer.discard.findIndex(
+              (c) => c.instanceId === playedCardInstance.instanceId,
+            );
+            if (discIdx !== -1) {
+              targetPlayer.discard.splice(discIdx, 1);
+            } else {
+              for (const otherPlayer of poppedState.players) {
+                discIdx = otherPlayer.discard.findIndex(
+                  (c) => c.instanceId === playedCardInstance.instanceId,
+                );
+                if (discIdx !== -1) {
+                  otherPlayer.discard.splice(discIdx, 1);
+                  break;
+                }
+              }
+            }
+            if (!targetPlayer.hand.some((c) => c.instanceId === playedCardInstance.instanceId)) {
+              targetPlayer.hand.push(playedCardInstance);
+            }
+          }
+
+          poppedState.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: poppedState.roundNumber,
+            phase: poppedState.phase,
+            category: 'ability',
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
+            key: 'decision.prompt.cancelled',
+            params: {
+              player: targetPlayer.name,
+              source: activePrompt.sourceCardName,
+            },
+            onomatopoeia: 'CANCELLED',
+          });
+
+          return {
+            state: poppedState,
+            result: { success: true, onomatopoeia: 'CANCELLED' },
+          };
+        }
+
         const chosenTargetId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
         const playedCardInstance = (selectedOption?.params?.playedCardInstance ||
           activePrompt.options[0]?.params?.playedCardInstance) as CardInstance | undefined;
-        const ownerId = (selectedOption?.params?.ownerId ||
-          activePrompt.options[0]?.params?.ownerId ||
-          action.playerId) as string;
         const resourcesSpent = (selectedOption?.params?.resourcesSpent ||
           activePrompt.options[0]?.params?.resourcesSpent) as string[] | undefined;
 
         if (playedCardInstance) {
-          const targetPlayer = getPlayer(poppedState, ownerId) || player;
           const abilities = playedCardInstance.card.enrichment?.abilities || [];
 
           let targetType:
@@ -3010,16 +3232,21 @@ export function dispatchAction(
       ) {
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
-        const targetPlayer = poppedState.players.find((p) => p.id === action.playerId) || player;
+        const targetPlayer =
+          poppedState.players.find((p) => p.id === (action.playerId || activePrompt.playerId)) ||
+          player;
 
         if (
           !selectedOption ||
           action.selectedOptionId === 'pass_play_from_zone' ||
-          selectedOption.id === 'pass_play_from_zone' ||
-          selectedOption.effect === 'PLAY_CARD_FROM_ZONE_PASS'
+          action.selectedOptionId === 'pass' ||
+          action.selectedOptionId === 'PLAY_CARD_FROM_ZONE_PASS' ||
+          selectedOption?.id === 'pass_play_from_zone' ||
+          selectedOption?.id === 'pass' ||
+          selectedOption?.effect === 'PLAY_CARD_FROM_ZONE_PASS'
         ) {
           if (activePrompt.sourceCardInstanceId || activePrompt.sourceCardCode) {
-            const discardIdx = targetPlayer.discard.findIndex(
+            let discardIdx = targetPlayer.discard.findIndex(
               (c) =>
                 (activePrompt.sourceCardInstanceId &&
                   c.instanceId === activePrompt.sourceCardInstanceId) ||
@@ -3028,6 +3255,20 @@ export function dispatchAction(
             if (discardIdx !== -1) {
               const [refunded] = targetPlayer.discard.splice(discardIdx, 1);
               targetPlayer.hand.push(refunded);
+            } else {
+              for (const otherPlayer of poppedState.players) {
+                discardIdx = otherPlayer.discard.findIndex(
+                  (c) =>
+                    (activePrompt.sourceCardInstanceId &&
+                      c.instanceId === activePrompt.sourceCardInstanceId) ||
+                    (activePrompt.sourceCardCode && c.card.code === activePrompt.sourceCardCode),
+                );
+                if (discardIdx !== -1) {
+                  const [refunded] = otherPlayer.discard.splice(discardIdx, 1);
+                  targetPlayer.hand.push(refunded);
+                  break;
+                }
+              }
             }
           }
 
@@ -3037,9 +3278,9 @@ export function dispatchAction(
             round: poppedState.roundNumber,
             phase: poppedState.phase,
             category: 'ability',
-            actor: { name: player.name, type: player.currentForm },
+            actor: { name: targetPlayer.name, type: targetPlayer.currentForm },
             key: 'card.playFromZone.passed',
-            params: { player: player.name, prompt: activePrompt.title },
+            params: { player: targetPlayer.name, prompt: activePrompt.title },
             onomatopoeia: 'PASSED',
           });
 

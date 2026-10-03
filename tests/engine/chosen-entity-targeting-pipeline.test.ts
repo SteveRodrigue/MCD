@@ -283,9 +283,10 @@ describe('Systemic CHOSEN_* Entity Targeting Pipeline (Fixes #146)', () => {
       // Prompt should be enqueued
       expect(actionResult.state.pendingDecisionQueue?.length).toBe(1);
       const prompt = actionResult.state.pendingDecisionQueue![0];
-      expect(prompt.options.length).toBe(2);
+      expect(prompt.options.length).toBe(3);
       expect(prompt.options.map((o) => o.id)).toContain('p1');
       expect(prompt.options.map((o) => o.id)).toContain('p2');
+      expect(prompt.options.map((o) => o.id)).toContain('cancel_target');
 
       // Now resolve the prompt choosing p2
       const promptRes = dispatchAction(actionResult.state, {

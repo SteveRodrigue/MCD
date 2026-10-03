@@ -1418,7 +1418,7 @@
       "abilities": [
         {
           "id": "caught_off_guard_when_revealed",
-          "timing": "FORCED_RESPONSE",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
@@ -1440,7 +1440,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-03T15:00:00Z",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

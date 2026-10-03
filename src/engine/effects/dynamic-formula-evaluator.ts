@@ -310,6 +310,32 @@ export function evaluateDynamicAmount(
       }
       break;
     }
+    case 'PAID_WITH_RESOURCE': {
+      const requiredResource = (amountParam as any).resource || (amountParam as any).resourceType;
+      const spent: string[] = context.resourcesSpent || [];
+      const hasMatchingResource = requiredResource
+        ? spent.some((r) => {
+            const lower = String(r).toLowerCase();
+            return lower === String(requiredResource).toLowerCase() || lower === 'wild';
+          })
+        : spent.length > 0;
+      baseValue = hasMatchingResource ? ((amountParam as any).amount ?? 1) : 0;
+      break;
+    }
+    case 'RESOURCES_SPENT': {
+      const targetResource = (amountParam as any).resource || (amountParam as any).resourceType;
+      const spent: string[] = context.resourcesSpent || [];
+      if (targetResource) {
+        const count = spent.filter((r) => {
+          const lower = String(r).toLowerCase();
+          return lower === String(targetResource).toLowerCase() || lower === 'wild';
+        }).length;
+        baseValue = count;
+      } else {
+        baseValue = spent.length;
+      }
+      break;
+    }
     default:
       baseValue = 0;
   }

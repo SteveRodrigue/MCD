@@ -36,6 +36,8 @@ Ad-hoc string tokens (`amountFormula`) are completely retired in favor of this s
 | `DISCARDED_CARDS`     | Inspects cards discarded in preceding step (`previousResult.discardedCards` or `discardedCards`) via `discardAttribute` (`COUNT`, `RESOURCE_ICONS`, `DIFFERENT_RESOURCES`, `BOOST_ICONS`, `DIFFERENT_CARD_TYPES`, `PRINTED_COST`) and optional `filter`. | Discard steps / attrition / milling                                        | _Legal Practice_ (`01023`), _Repulsor Blast_ (`01031`)                      |
 | `HAS_TRAIT`           | Checks if active player identity or in-play cards possess the specified trait in `filter.traits` (1 if true, 0 if false). Multiplied by `multiplier`.                                                                                                    | Trait conditional scaling / bonuses (e.g. `[[AERIAL]]`)                    | _Supersonic Punch_ (`01032`), _Powered Gauntlets_ (`01038`)                 |
 | `HAS_IDENTITY`        | Checks if player's active form card matches `filter.codes` or criteria (1 if true, 0 if false). Multiplied by `multiplier`.                                                                                                                              | Alter-Ego / Hero identity specific bonuses                                 | _Alpha Flight Station_ (`01015`)                                            |
+| `PAID_WITH_RESOURCE`  | Checks if card was paid for using the resource specified in `resource` (or `wild`). Returns `amount` (default: 1) if matched, 0 otherwise. Multiplied by `multiplier`.                                                                                   | Card play payment inspection                                               | _For Justice!_ (`01060`)                                                    |
+| `RESOURCES_SPENT`     | Counts total resources (or matching `resource` / `wild`) spent in payment. Multiplied by `multiplier`.                                                                                                                                                   | Variable resource kickers / scalers                                        | Resource-scaled abilities                                                   |
 
 ---
 
@@ -181,3 +183,37 @@ $$\text{Final Amount} = \max\Big(0, \operatorname{clamp}\big(\lfloor \text{Base 
   }
 }
 ```
+
+### G. Paid with Resource Bonus Threat Removal (_For Justice!_ `01060`)
+
+```json
+{
+  "effect": "REMOVE_THREAT",
+  "effectParams": {
+    "amount": 3,
+    "dynamicBonus": {
+      "from": "PAID_WITH_RESOURCE",
+      "resource": "mental",
+      "amount": 1
+    },
+    "target": "CHOSEN_SCHEME"
+  }
+}
+```
+
+### H. Resources Spent Scaling Damage
+
+```json
+{
+  "effect": "DEAL_DAMAGE",
+  "effectParams": {
+    "target": "CHOSEN_ENEMY",
+    "amount": {
+      "from": "RESOURCES_SPENT",
+      "resource": "energy",
+      "multiplier": 2
+    }
+  }
+}
+```
+

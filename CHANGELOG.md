@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine & Data): Declarative Resource Payment DynamicBonus & For Justice! Refactor ([Issue #186](https://github.com/SteveRodrigue/MCD/issues/186))**
+  - **Dynamic Formulas & Schema (`schema.ts`, `schema.json`, `dynamic-formula-evaluator.ts`):**
+    - Added `PAID_WITH_RESOURCE` and `RESOURCES_SPENT` to `DynamicValueSourceSchema` `from` enum and extended schema with optional `resource` and `amount`.
+    - Evaluates `context.resourcesSpent` during ability execution, supporting specific resource types and Wild resource substitution.
+  - **Effects Pipeline & Prompt Propagation (`effects/index.ts`, `prompt-queue.ts`):**
+    - Purged legacy `bonusWithMental` property from `REMOVE_THREAT`.
+    - Preserved and forwarded `resourcesSpent` through decision prompts and prompt execution queues for target choices.
+  - **Supplemental Data (`core.json`):**
+    - Refactored _For Justice!_ (`01060`) to declarative `dynamicBonus: { "from": "PAID_WITH_RESOURCE", "resource": "mental", "amount": 1 }`.
+    - Updated declaration reports and usage documentation.
+  - **Card Editor UI (`DynamicValueBuilder.tsx`):**
+    - Added `PAID_WITH_RESOURCE` and `RESOURCES_SPENT` to source selector, enabling dynamic payment bonuses and scaling amounts in the Card Editor.
+  - **Documentation (`09_dynamic_formulas.md`):**
+    - Documented `PAID_WITH_RESOURCE` and `RESOURCES_SPENT` syntax and added concrete JSON examples.
+  - **Automated Verification (`for-justice-resource-bonus.test.ts`, `dynamic-formula-evaluator.test.ts`, `DynamicValueBuilder.test.tsx`):**
+    - Added comprehensive regression tests verifying mental/wild payment threat removal (4 threat), non-mental payment (3 threat), multi-scheme decision prompt targeting, formula evaluation, and Card Editor UI rendering.
+
+  - **Tableau Discard Pipeline (`effects/index.ts`):**
+    - Enhanced `executeDiscard` for `source === 'TABLEAU'` to prompt the player with a decision modal when 2+ matching upgrades or supports exist on their tableau.
+    - Preserved direct discard when exactly 1 card matches, and Surge fallback when 0 cards match.
+  - **Supplemental Data (`core_encounter.json`):**
+    - Updated _Caught Off Guard_ (`01188`) ability `timing` to `"WHEN_REVEALED"`.
+    - Regenerated declaration reports.
+  - **Automated Verification (`caught-off-guard-choice.test.ts`):**
+    - Added 4 acceptance test cases validating multi-card prompt creation, choice resolution without Surge, single-card auto-discard, and zero-card Surge fallback.
+
 - **Fix (Engine): Scheme Targeting Crisis & Patrol Legality Check (RR v1.8 p. 11, [Issue #181](https://github.com/SteveRodrigue/MCD/issues/181))**
   - **Target Resolver & Effects Pipeline (`target-resolver.ts`, `effects/index.ts`, `action-dispatcher.ts`):**
     - Enforced Crisis icon and Patrol minion checks in `getEligibleTargets` for `CHOSEN_SCHEME`, excluding the Main Scheme when Crisis or Patrol prevents threat removal.

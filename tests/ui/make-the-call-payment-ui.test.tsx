@@ -245,7 +245,8 @@ describe('Make the Call Payment UI Flow (Issue #173)', () => {
     expect(confirmButton.hasAttribute('disabled')).toBe(false);
     fireEvent.click(confirmButton);
 
-    // Verify onDispatchAction was called with RESOLVE_DECISION_PROMPT, maria_inst_1 and paymentCardInstanceIds
+    // Verify onDispatchAction was called exactly once with RESOLVE_DECISION_PROMPT, maria_inst_1 and paymentCardInstanceIds
+    expect(onDispatchAction).toHaveBeenCalledTimes(1);
     expect(onDispatchAction).toHaveBeenCalledWith({
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: 'p1',

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI): CardPaymentModal Double-Dispatch / Cancellation on Confirmation ([Issue #205](https://github.com/SteveRodrigue/MCD/issues/205))**
+  - **Payment Modal Flow (`CardPaymentModal.tsx`, `GameBoard.tsx`):**
+    - Removed redundant `onClose()` invocation from `CardPaymentModal.tsx`'s `handleConfirm`.
+    - Prevents `GameBoard.tsx`'s cancellation handler from triggering a spurious `RESOLVE_DECISION_PROMPT` (`pass_play_from_zone`) after confirmation, fixing an issue where playing *Make the Call* (`01071`) and paying for an ally (e.g. Maria Hill) from discard immediately cancelled ally placement and refunded the event to hand.
+  - **Automated Verification (`make-the-call-payment-ui.test.tsx`):**
+    - Updated payment flow test with strict `toHaveBeenCalledTimes(1)` assertion on `onDispatchAction`.
+
 - **Fix (Engine & UI): Photonic Blast (`01013`) Energy Bonus Verification & Combat Log Source Attribution ([Issue #204](https://github.com/SteveRodrigue/MCD/issues/204))**
   - **Engine Card Draw Logging (`effects/index.ts`):**
     - Enhanced `executeDraw` to attach originating card name `source: context.sourceCardInstance?.card?.name` to `params` in `card.effect.drawCards` log entries across targeted and untargeted branches.

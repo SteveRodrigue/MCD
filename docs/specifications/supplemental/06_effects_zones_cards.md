@@ -302,3 +302,31 @@ Supported `discardAttribute` inspection modes:
   }
 }
 ```
+
+---
+
+### `REMOVE_FROM_GAME`
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue #158 / core obligations: _Affairs of State_ `01155`, _Eviction Notice_ `01165`, _Family Emergency_ `01175`)
+- **Description:** Removes the source card from the game (RR v1.8 "Removed from the Game"). The card leaves every other zone and ends only in `state.removedFromGame`; it does not go to a discard pile and triggers no discard effects. Target is the source card (`SELF`).
+
+```json
+{
+  "effect": "REMOVE_FROM_GAME",
+  "effectParams": { "target": "SELF" }
+}
+```
+
+---
+
+### `CHANGE_FORM` (alias `FLIP_FORM`)
+
+- **Status:** 🟢 `IMPLEMENTED (v1.0)`; `form` and `optional` added in Issue #158.
+- **Description:** Flips the identity to its other form. `effectParams.form` (`"hero"` | `"alter_ego"`) names the wanted form: if the identity is already in it, the step is a no-op. `effectParams.optional: true` queues a **voluntary** prompt ("Flip to <form>?") instead of flipping immediately. Flipping by a card ability does **not** count against the once-per-turn voluntary form change (RR v1.8 "Form").
+
+```json
+{
+  "effect": "CHANGE_FORM",
+  "effectParams": { "form": "alter_ego", "optional": true }
+}
+```

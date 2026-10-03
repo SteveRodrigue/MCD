@@ -13,6 +13,63 @@ import {
   AbilityPaymentOptions,
 } from './cost-engine';
 import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
+import { evaluateStepGate } from './step-gate-evaluator';
+import { canPayAbilityCost } from './cost-engine';
+import { discardResolvedObligation } from './obligations';
+
+/**
+ * Re-evaluates per-option availability (`gate`, `cost`) against the current state (Issue #158).
+ * Run whenever a prompt becomes the active head, so options reflect effects of earlier prompts
+ * in the same sequence (e.g. a voluntary form flip before "Exhaust <alter-ego>").
+ */
+export function refreshPromptOptionAvailability(
+  state: GameState,
+  prompt?: PendingDecisionPrompt,
+): void {
+  if (!prompt) return;
+  const player = state.players.find((p) => p.id === prompt.playerId);
+  if (!player) return;
+  const source = prompt.sourceCardInstanceId
+    ? [...(player.obligations || []), ...player.tableau, ...player.allies].find(
+        (c) => c.instanceId === prompt.sourceCardInstanceId,
+      )
+    : undefined;
+
+  for (const option of prompt.options) {
+    if (!option.gate && !option.cost) continue;
+    let reason: string | undefined;
+
+    if (option.gate) {
+      const ok = evaluateStepGate(
+        option.gate,
+        undefined,
+        state,
+        { effect: 'RESOLVED', gate: option.gate, gateParams: option.gateParams },
+        { playerId: player.id },
+      );
+      if (!ok) {
+        const form = String(option.gateParams?.form ?? '').replace('_', '-');
+        reason =
+          option.gate === 'IF_FORM' && form
+            ? `Requires ${form} form`
+            : 'Option requirements not met';
+      }
+    }
+
+    if (!reason && option.cost) {
+      const check = canPayAbilityCost(
+        state,
+        player,
+        { id: `${prompt.promptId}_${option.id}`, timing: 'ACTION', cost: option.cost, steps: [] },
+        source,
+      );
+      if (!check.allowed) reason = check.reason || 'Cannot pay the cost';
+    }
+
+    option.disabled = Boolean(reason);
+    option.disabledReason = reason;
+  }
+}
 
 /**
  * Enqueue a decision prompt into the structured FIFO prompt queue (ADR-0032).
@@ -35,6 +92,8 @@ export function enqueueDecisionPrompt(state: GameState, prompt: PendingDecisionP
     queue[i].queuePosition = i + 1;
     queue[i].totalQueued = total;
   }
+
+  if (queue.length === 1) refreshPromptOptionAvailability(state, queue[0]);
 
   return state;
 }
@@ -146,6 +205,8 @@ export function popDecisionPrompt(state: GameState): {
     queue[i].totalQueued = total;
   }
 
+  if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
+
   return { state, prompt: popped };
 }
 
@@ -217,6 +278,14 @@ export function resolveDecisionPrompt(
     return {
       state,
       result: { success: false, error: `Invalid option id '${selectedOptionId}'` },
+    };
+  }
+
+  refreshPromptOptionAvailability(state, prompt);
+  if (selectedOption?.disabled && (selectedOption.gate || selectedOption.cost)) {
+    return {
+      state,
+      result: { success: false, error: selectedOption.disabledReason || 'Option is disabled' },
     };
   }
 
@@ -364,7 +433,8 @@ export function resolveDecisionPrompt(
 
   // Look up source card instance if prompt originated from a specific in-play card
   const promptCardInst = prompt.sourceCardInstanceId
-    ? player?.allies.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+    ? player?.obligations?.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
+      player?.allies.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
       player?.tableau.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
       player?.attachments?.find((c) => c.instanceId === prompt.sourceCardInstanceId) ||
       player?.hand.find((c) => c.instanceId === prompt.sourceCardInstanceId)
@@ -402,6 +472,22 @@ export function resolveDecisionPrompt(
     );
   }
 
+  // Pay the chosen option's own cost (e.g. exhaust the identity) before its steps (Issue #158)
+  if (player && selectedOption?.cost) {
+    executeAbilityCost(
+      nextState,
+      player,
+      {
+        id: `${prompt.promptId}_${selectedOption.id}`,
+        timing: 'ACTION',
+        cost: selectedOption.cost,
+        steps: [],
+      },
+      promptCardInst,
+      paymentOptions,
+    );
+  }
+
   // Synthesize and execute ability
   const syntheticAbility: CardAbility = {
     id: `${prompt.promptId}_${selectedOption!.id}`,
@@ -423,6 +509,14 @@ export function resolveDecisionPrompt(
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
     resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
   });
+
+  // Completion default for obligations: discard unless an option already removed it from play
+  if (prompt.completion === 'DISCARD_SOURCE_OBLIGATION' && prompt.sourceCardInstanceId) {
+    discardResolvedObligation(effectRes.state, prompt.sourceCardInstanceId);
+  }
+
+  // The chosen option may have changed state later prompts depend on (e.g. a form flip)
+  refreshPromptOptionAvailability(effectRes.state, peekDecisionPrompt(effectRes.state));
 
   return {
     state: effectRes.state,

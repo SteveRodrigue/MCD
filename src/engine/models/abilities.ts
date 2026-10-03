@@ -205,6 +205,16 @@ export interface CardAuditMetadata {
   comment?: string;
 }
 
+/**
+ * Who receives an obligation when it is revealed from the encounter deck (Issue #158).
+ * Absent = default: owner of the card's hero set when it belongs to one, else the revealing player.
+ */
+export type PlayerRecipient =
+  | { type: 'FIRST_PLAYER' }
+  | { type: 'REVEALING_PLAYER' }
+  | { type: 'CARD_SET_OWNER' }
+  | { type: 'IDENTITY'; codes: string[] };
+
 export interface CardEnrichment {
   noSupplementalNeeded?: boolean;
   cardName?: string;
@@ -214,6 +224,8 @@ export interface CardEnrichment {
   attackCost?: number;
   thwartCost?: number;
   maxPerPlayer?: number;
+  /** Optional obligation recipient override (outside the abilities); absent = engine default */
+  recipient?: PlayerRecipient;
   playUnderAnyPlayerControl?: boolean;
   uses?: CardUsesDefinition;
   /** Explicit keywords on the card (overrides text loader deductions) */

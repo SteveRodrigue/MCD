@@ -14,6 +14,7 @@ export function getAllCardInstances(state: GameState): CardInstance[] {
     cards.push(...(player.tableau || []));
     cards.push(...(player.attachments || []));
     cards.push(...(player.cardsUnderneath || []));
+    cards.push(...(player.obligations || []));
 
     for (const ally of player.allies || []) {
       cards.push(ally);
@@ -109,6 +110,7 @@ export function removeCardFromAllZones(
     if (removeFromList(p.tableau)) return found;
     if (removeFromList(p.attachments)) return found;
     if (removeFromList(p.cardsUnderneath)) return found;
+    if (removeFromList(p.obligations)) return found;
 
     for (const a of p.allies || []) {
       if (removeFromList(a.attachments)) return found;

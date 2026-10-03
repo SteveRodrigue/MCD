@@ -33,6 +33,7 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
     tableau: [],
     allies: [],
     engagedMinions: [],
+    obligations: [],
     activeFormCard: {
       code: '01021',
       name: 'She-Hulk',

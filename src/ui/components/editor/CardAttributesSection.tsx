@@ -87,6 +87,28 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
     });
   };
 
+  const recipientType: string = supplemental.recipient?.type ?? '';
+  const handleRecipientTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const type = e.target.value;
+    if (!type) {
+      onChange({ ...supplemental, recipient: undefined });
+    } else if (type === 'IDENTITY') {
+      onChange({
+        ...supplemental,
+        recipient: { type, codes: supplemental.recipient?.codes ?? [] },
+      });
+    } else {
+      onChange({ ...supplemental, recipient: { type } });
+    }
+  };
+  const handleRecipientCodesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const codes = e.target.value
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    onChange({ ...supplemental, recipient: { type: 'IDENTITY', codes } });
+  };
+
   const handleConfidenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = parseInt(e.target.value, 10);
     onChange({
@@ -149,6 +171,7 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
     (supplemental.traits && supplemental.traits.length > 0) ||
     supplemental.uses ||
     supplemental.maxPerPlayer != null ||
+    supplemental.recipient ||
     supplemental.restrictedSlots != null,
   );
 
@@ -334,6 +357,36 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
               className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
             />
           </div>
+
+          {(typeCode === 'obligation' || supplemental.recipient) && (
+            <div data-testid="obligation-recipient-field">
+              <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                Obligation Recipient Override
+              </label>
+              <select
+                data-testid="obligation-recipient-select"
+                value={recipientType}
+                onChange={handleRecipientTypeChange}
+                className="w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+              >
+                <option value="">Default (hero-set owner, else revealing player)</option>
+                <option value="FIRST_PLAYER">First player</option>
+                <option value="REVEALING_PLAYER">Revealing player</option>
+                <option value="CARD_SET_OWNER">Card set owner</option>
+                <option value="IDENTITY">Specific identity codes</option>
+              </select>
+              {recipientType === 'IDENTITY' && (
+                <input
+                  type="text"
+                  data-testid="obligation-recipient-codes"
+                  value={(supplemental.recipient?.codes ?? []).join(', ')}
+                  onChange={handleRecipientCodesChange}
+                  placeholder="Hero / alter-ego codes, comma separated (e.g. 01010a, 01010b)"
+                  className="mt-1 w-full bg-white border border-black p-1.5 text-xs rounded focus:ring-1 focus:ring-black"
+                />
+              )}
+            </div>
+          )}
 
           <div>
             <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">

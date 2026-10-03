@@ -382,6 +382,26 @@ export class CardCatalog {
       const normalized = normalizeRawCard(raw);
       this.cards.set(normalized.code, normalized);
     }
+    this.markHeroSetMembership();
+  }
+
+  /**
+   * Derives `belongsToHeroSet` from set data (not card text, ADR-0019): a card belongs to a
+   * hero set when a hero or alter-ego card in this catalog carries the same setCode (Issue #158).
+   */
+  private markHeroSetMembership(): void {
+    const heroSetCodes = new Set<string>();
+    for (const card of this.cards.values()) {
+      if ((card.type === CardType.HERO || card.type === CardType.ALTER_EGO) && card.setCode) {
+        heroSetCodes.add(card.setCode);
+      }
+    }
+    for (const [code, card] of this.cards) {
+      this.cards.set(code, {
+        ...card,
+        belongsToHeroSet: Boolean(card.setCode && heroSetCodes.has(card.setCode)),
+      });
+    }
   }
 
   public applyTranslations(translationCards: Partial<RawUpstreamCard>[]): void {

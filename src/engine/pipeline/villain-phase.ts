@@ -23,6 +23,7 @@ import {
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
+import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
 import { peekDecisionPrompt } from './prompt-queue';
 import {
@@ -693,6 +694,8 @@ export function resolveActiveEncounterCardAfterInterrupt(
         });
       }
     }
+  } else if (card.type === CardType.OBLIGATION) {
+    resolveRevealedObligation(state, cardInstance, player);
   } else if (card.type === CardType.ATTACHMENT) {
     state.villain.attachments.push(cardInstance);
     state.log.push({

@@ -394,6 +394,7 @@
                           "REDUCE_NEXT_CARD_COST",
                           "REMOVE_COUNTERS",
                           "REMOVE_COUNTERS_MATCHING_FILTER",
+                          "REMOVE_FROM_GAME",
                           "REMOVE_THREAT",
                           "RESTRICTED_LIMIT_BONUS",
                           "RETURN_TO_HAND",
@@ -634,6 +635,70 @@
           },
           "maxPerPlayer": {
             "type": "number"
+          },
+          "recipient": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "FIRST_PLAYER"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "REVEALING_PLAYER"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "CARD_SET_OWNER"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "IDENTITY"
+                  },
+                  "codes": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "codes"
+                ],
+                "additionalProperties": false
+              }
+            ]
           },
           "playUnderAnyPlayerControl": {
             "type": "boolean"

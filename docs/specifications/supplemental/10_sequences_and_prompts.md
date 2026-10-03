@@ -179,6 +179,9 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 > The parent `PLAYER_CHOICE` step strictly uses `"effectParams": { "title": "...", "options": [...] }`. Within each option of `options: []`, parameters configuring that choice's effect are declared under `"params": { ... }` per `DecisionPromptOptionSchema`.
 
 > [!NOTE]
+> **Option `steps`, `gate` and `cost` (Issue #158, ADR-0075):** an option may carry its own `steps: [...]` (run instead of the single `effect`/`params`), an availability `gate` + `gateParams` (evaluated by the shared step-gate evaluator, e.g. `"gate": "IF_FORM", "gateParams": { "form": "alter_ego" }`) and a `cost` (an `AbilityCost`, e.g. `{ "exhaustCard": "SELF_IDENTITY" }`). Availability is **re-evaluated whenever the prompt becomes the active head** (and after each resolved option), so a prompt queued behind an optional flip sees the flipped form; unavailable options are `disabled` with a `disabledReason` and are rejected by `resolveDecisionPrompt`. The cost is paid when the option is chosen. Prompt options are cloned per prompt, so shared card data is never mutated. A `PLAYER_CHOICE` whose source card is an `obligation` sets `completion: "DISCARD_SOURCE_OBLIGATION"`: once the option resolves, an obligation still in its owner's zone is discarded to the encounter discard.
+
+> [!NOTE]
 > The `promptId` field on `PendingDecisionPrompt` is **not** used by `resolveDecisionPrompt` for disambiguation — the resolver always pops the head of the `pendingDecisionQueue`. The `promptId` is retained in the queue for log tracing.
 
 ### `sourceCardInstanceId` Binding (ADR-0062)

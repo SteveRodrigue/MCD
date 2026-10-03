@@ -143,6 +143,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       tableau: permanentCards,
       allies: [],
       engagedMinions: [],
+      obligations: [],
       basicChangeFormUsedThisRound: false,
       formChangedThisRound: false,
       recoveryUsedThisRound: false,

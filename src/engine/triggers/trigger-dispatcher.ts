@@ -508,6 +508,7 @@ export function dispatchTrigger(
       ...(controller.tableau || []),
       ...(controller.allies || []),
       ...(controller.attachments || []),
+      ...(controller.obligations || []),
       ...(controller.allies || []).flatMap((a) => a.attachments || []),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
     ];

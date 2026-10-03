@@ -135,6 +135,7 @@ describe('HeroBoard Theme & Distinguishability (Issue #110)', () => {
         tableau: [],
         allies: [],
         engagedMinions: [],
+        obligations: [],
         basicChangeFormUsedThisRound: false,
         formChangedThisRound: false,
         recoveryUsedThisRound: false,

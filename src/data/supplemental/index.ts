@@ -2,6 +2,7 @@ import { CardEnrichment } from '@engine/models';
 
 import corePackSupplemental from './pack/core.json';
 import coreEncounterPackSupplemental from './pack/core_encounter.json';
+import cwEncounterPackSupplemental from './pack/cw_encounter.json';
 
 export interface PackSupplementalData {
   $schema?: string;
@@ -15,6 +16,7 @@ export interface PackSupplementalData {
 export const supplementalRegistry: Record<string, CardEnrichment> = {
   ...(corePackSupplemental.cards as Record<string, CardEnrichment>),
   ...(coreEncounterPackSupplemental.cards as Record<string, CardEnrichment>),
+  ...(cwEncounterPackSupplemental.cards as Record<string, CardEnrichment>),
 };
 
 /**

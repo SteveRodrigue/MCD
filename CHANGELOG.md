@@ -7,20 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Scheme Targeting Crisis & Patrol Legality Check (RR v1.8 p. 11, [Issue #181](https://github.com/SteveRodrigue/MCD/issues/181))**
+  - **Target Resolver & Effects Pipeline (`target-resolver.ts`, `effects/index.ts`, `action-dispatcher.ts`):**
+    - Enforced Crisis icon and Patrol minion checks in `getEligibleTargets` for `CHOSEN_SCHEME`, excluding the Main Scheme when Crisis or Patrol prevents threat removal.
+    - Updated `resolveSchemeTargets` and `REMOVE_THREAT` fallback logic to prevent defaulting to the Main Scheme when Crisis is active.
+    - Properly creates decision choice prompts whenever 2+ legally targetable schemes exist (e.g. multiple side schemes during Crisis, or Main Scheme + Side Scheme when Crisis is inactive), and auto-targets when exactly 1 legal scheme exists.
+  - **Automated Verification (`crisis-scheme-targeting.test.ts`):**
+    - Added 4 acceptance test cases verifying single Crisis side scheme auto-targeting, multi-side-scheme prompting during Crisis, Main + Side scheme prompting without Crisis, and Main Scheme re-enabling upon defeating Crisis side scheme.
+
 - **Fix (Engine): Voluntary Decision Prompt Cancellation & Hand Refund ([Issue #172](https://github.com/SteveRodrigue/MCD/issues/172))**
   - **Decision Prompt Lifecycle (`action-dispatcher.ts`):**
     - Enhanced `RESOLVE_DECISION_PROMPT` to safely fall back to `activePrompt.playerId` when resolving acting player.
-    - Updated `PLAY_CARD_FROM_ZONE` prompt cancellation to search and refund the source card (e.g. *Make the Call* `01071`) from discard back into the player's hand.
+    - Updated `PLAY_CARD_FROM_ZONE` prompt cancellation to search and refund the source card (e.g. _Make the Call_ `01071`) from discard back into the player's hand.
     - Added cancellation handlers for `isEventTargetChoice` and `isAttachment*Choice` prompts, allowing players to cancel voluntary card plays and return the played card to hand with zero uncommitted effects executed.
     - Added `cancel_target` option to `PLAY_CARD` event target selection prompts when multiple targets are available.
   - **Automated Verification (`prompt-cancellation.test.ts`, `chosen-entity-targeting-pipeline.test.ts`):**
     - Added 4 dedicated regression test cases in `tests/engine/prompt-cancellation.test.ts` covering Make the Call, First Aid target cancellation, and voluntary attachment cancellation.
 
-
 - **Fix (UI): CardPaymentModal Double-Dispatch / Cancellation on Confirmation ([Issue #205](https://github.com/SteveRodrigue/MCD/issues/205))**
   - **Payment Modal Flow (`CardPaymentModal.tsx`, `GameBoard.tsx`):**
     - Removed redundant `onClose()` invocation from `CardPaymentModal.tsx`'s `handleConfirm`.
-    - Prevents `GameBoard.tsx`'s cancellation handler from triggering a spurious `RESOLVE_DECISION_PROMPT` (`pass_play_from_zone`) after confirmation, fixing an issue where playing *Make the Call* (`01071`) and paying for an ally (e.g. Maria Hill) from discard immediately cancelled ally placement and refunded the event to hand.
+    - Prevents `GameBoard.tsx`'s cancellation handler from triggering a spurious `RESOLVE_DECISION_PROMPT` (`pass_play_from_zone`) after confirmation, fixing an issue where playing _Make the Call_ (`01071`) and paying for an ally (e.g. Maria Hill) from discard immediately cancelled ally placement and refunded the event to hand.
   - **Automated Verification (`make-the-call-payment-ui.test.tsx`):**
     - Updated payment flow test with strict `toHaveBeenCalledTimes(1)` assertion on `onDispatchAction`.
 
@@ -85,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Added `HOST` and `HOST_ENEMY` target selectors.
     - Pruned legacy single-use `INTERCEPT_ATTACK` effect.
   - **Declarative Supplemental Data (`core.json`):**
-    - Refactored *Webbed Up* (`01009`) to standard composable steps: `ATTACH_TO_HOST` (`CHOSEN_ENEMY`), `DISCARD` (`SELF`), and `ADD_STATUS` (`STUNNED`, `HOST_ENEMY`).
+    - Refactored _Webbed Up_ (`01009`) to standard composable steps: `ATTACH_TO_HOST` (`CHOSEN_ENEMY`), `DISCARD` (`SELF`), and `ADD_STATUS` (`STUNNED`, `HOST_ENEMY`).
   - **Combat Pipeline & Target Resolution (`combat-pipeline.ts`, `target-resolver.ts`):**
     - Refactored `step1_preAttackAndStunCheck` to evaluate status card priority (Stun) first, followed by generic `HOST_WOULD_ATTACK` attachment execution on Villains and Minions.
     - Completely removed hardcoded card `01009` and hero `01001a` engine references.
@@ -99,9 +106,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Retargeted attack context (`attackContext.targetPlayerId = declaration.playerId`) when another player or cross-table ally declares defense.
     - Dispatches `DAMAGE_WOULD_BE_TAKEN` strictly to the defending player's hero only when hero defends and not when an ally defends.
   - **Supplemental Data (`core.json`):**
-    - Updated *Backflip* (`01003`) target parameter explicitly to `SELF`.
+    - Updated _Backflip_ (`01003`) target parameter explicitly to `SELF`.
   - **Automated Verification:**
-    - Added regression tests in `tests/engine/combat-defense-pipeline.test.ts` ensuring that when Player 2 defends with Hero or an Ally defends for Spider-Man, Spider-Man takes 0 damage and *Backflip* is never triggered or prompted.
+    - Added regression tests in `tests/engine/combat-defense-pipeline.test.ts` ensuring that when Player 2 defends with Hero or an Ally defends for Spider-Man, Spider-Man takes 0 damage and _Backflip_ is never triggered or prompted.
 
 - **Fix (Engine & UI): Global Unicity Enforcement Across Players & Card Ingress (RR v1.8 pp. 28–29, [Issue #187](https://github.com/SteveRodrigue/MCD/issues/187))**
   - **Legality Checker (`legality-checker.ts`):**
@@ -126,8 +133,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Added dedicated Form Gate parameter controls (`HERO` / `ALTER_EGO` dropdown) when `gate === 'IF_FORM'`.
     - Formatted `IF_FORM` step summaries with `[IF_FORM: ${form}]` badge indicator.
   - **Supplemental Pack Declarations (`core_encounter.json`):**
-    - Updated **01187** (*Assault*) and **01189** (*Gang-Up*) to flat 2-step pipelines with `gate: "IF_FORM"` and `form: "HERO"` / `"ALTER_EGO"` (`SURGE`).
-    - Migrated **01106** (*Stampede*) to the flat `IF_FORM` pattern for catalog consistency.
+    - Updated **01187** (_Assault_) and **01189** (_Gang-Up_) to flat 2-step pipelines with `gate: "IF_FORM"` and `form: "HERO"` / `"ALTER_EGO"` (`SURGE`).
+    - Migrated **01106** (_Stampede_) to the flat `IF_FORM` pattern for catalog consistency.
   - **Automated Verification:**
     - Updated `tests/engine/treacheries-activations.test.ts` to test Hero and Alter-Ego resolutions for 01187, 01189, and 01106.
     - Updated `tests/ui/StepPipelineEditor.test.tsx` and `tests/ui/step-pipeline-summaries.test.tsx` for `IF_FORM` controls and summary rendering.
@@ -279,7 +286,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Expanded Aunt May tests in `tests/engine/spider-man-cards.test.ts` verifying play from hand at 10/10 health, tableau entry, `USE_CARD_ABILITY` rejection when undamaged, and heal resolution when damaged.
     - Added tests in `tests/engine/target-legality-requirements.test.ts` verifying First Aid event playability gating vs Med Team support playability at full health.
     - Updated `tests/engine/player-actions.test.ts` and `tests/engine/attachments-player.test.ts` aligning mock cards with the RR v1.8 event invariant.
-
 
 - **Fix (UI & Tools): Supplemental Card Editor Route Freeze, Re-render Loop & Pagination ([Issue #168](https://github.com/SteveRodrigue/MCD/issues/168))**
   - **Dev Server Watcher Stability (`vite.config.ts`):**

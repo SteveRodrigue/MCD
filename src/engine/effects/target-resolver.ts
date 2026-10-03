@@ -6,6 +6,8 @@ import {
   MainSchemeState,
   SideSchemeState,
   StatusCard,
+  Keyword,
+  hasKeyword,
 } from '@engine/models';
 import { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
@@ -1080,13 +1082,23 @@ export function resolveTargets(
         context?.ignoresCrisis || (context as any)?.step?.effectParams?.ignoresCrisis,
       );
       const isPlayerSource = context?.sourceCardInstance?.card?.faction !== 'encounter';
-      const isMainBlocked = !ignoresCrisis && isPlayerSource && hasCrisisInPlay(state);
+      const player = context?.playerId
+        ? state.players.find((p) => p.id === context.playerId)
+        : context?.sourceCardInstance
+          ? state.players.find((p) => p.id === context.sourceCardInstance?.ownerId)
+          : undefined;
+      const hasPatrol = player
+        ? (player.engagedMinions || []).some((m) => hasKeyword(m.card, Keyword.PATROL))
+        : false;
+      const isMainBlocked =
+        !ignoresCrisis && isPlayerSource && (hasCrisisInPlay(state) || hasPatrol);
 
       if (context?.targetInstanceId) {
         if (
           state.mainScheme &&
           (context.targetInstanceId === state.mainScheme.instanceId ||
-            context.targetInstanceId === 'main_scheme')
+            context.targetInstanceId === 'main_scheme' ||
+            context.targetInstanceId === state.mainScheme.card?.code)
         ) {
           if (isMainBlocked) {
             return [];
@@ -1101,7 +1113,8 @@ export function resolveTargets(
           ];
         }
         const side = (state.sideSchemes || []).find(
-          (s) => s.instanceId === context.targetInstanceId,
+          (s) =>
+            s.instanceId === context.targetInstanceId || s.card?.code === context.targetInstanceId,
         );
         if (side) {
           return [
@@ -1112,6 +1125,9 @@ export function resolveTargets(
               id: side.instanceId,
             },
           ];
+        }
+        if (isMainBlocked) {
+          return [];
         }
       }
       if (state.mainScheme && !isMainBlocked) {
@@ -1399,6 +1415,8 @@ export interface TargetFilterOptions {
   traits?: string[];
   status?: StatusCard | 'STUNNED' | 'CONFUSED' | 'TOUGH';
   maxPerHost?: number;
+  ignoresCrisis?: boolean;
+  isPlayerSource?: boolean;
 }
 
 /**
@@ -1650,7 +1668,14 @@ export function getEligibleTargets(
     }
 
     case 'CHOSEN_SCHEME': {
-      if (state.mainScheme) {
+      const isPlayerSource = filterOptions?.isPlayerSource ?? true;
+      const hasPatrol = (resolvingPlayer?.engagedMinions || []).some((m) =>
+        hasKeyword(m.card, Keyword.PATROL),
+      );
+      const isMainBlocked =
+        isPlayerSource && (hasCrisisInPlay(state) || hasPatrol) && !filterOptions?.ignoresCrisis;
+
+      if (state.mainScheme && !isMainBlocked) {
         candidates.push({
           kind: 'scheme',
           entityType: 'main_scheme',

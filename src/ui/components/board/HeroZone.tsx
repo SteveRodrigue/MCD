@@ -1054,7 +1054,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                     (isHero && ab.timing === 'HERO_ACTION') ||
                     (!isHero && ab.timing === 'ALTER_EGO_ACTION'),
                 );
-                const legality = evaluateTableauCardLegality(cardInst, player.currentForm);
+                const legality = evaluateTableauCardLegality(
+                  cardInst,
+                  player.currentForm,
+                  gameState ? { gameState, playerId: player.id } : undefined,
+                );
 
                 return (
                   <div key={cardInst.instanceId} className="flex flex-col items-center gap-1">
@@ -1066,7 +1070,11 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                       isUsable={legality.isUsable}
                       unusableBadge={legality.badge}
                       unusableReason={legality.reason}
-                      onClick={() => setSelectedTableauCardForModal(cardInst)}
+                      onClick={
+                        legality.isUsable
+                          ? () => setSelectedTableauCardForModal(cardInst)
+                          : undefined
+                      }
                     />
                     {activeAbilities.map((ab) => {
                       const costCheck = gameState

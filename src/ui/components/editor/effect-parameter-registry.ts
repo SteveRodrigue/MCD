@@ -108,6 +108,14 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 'CHOSEN_ENEMY',
       },
       {
+        key: 'targetPlayer',
+        label: 'Target Player',
+        type: 'select',
+        options: ['SELF', 'CHOSEN_PLAYER'] as const,
+        description:
+          "Which player's engaged enemies are hit when Target is Engaged Enemies (prompts in multiplayer)",
+      },
+      {
         key: 'overkill',
         label: 'Overkill',
         type: 'boolean',

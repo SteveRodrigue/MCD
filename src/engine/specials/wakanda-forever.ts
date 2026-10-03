@@ -55,29 +55,7 @@ export function resolveSingleWakandaUpgrade(
     return;
   }
 
-  if (code === '01046') {
-    // 1. Energy Daggers: 1 damage to villain + engaged minions (2 if final)
-    const dmg = isFinalStep ? 2 : 1;
-    // Villain damage
-    state.villain.health = Math.max(0, state.villain.health - dmg);
-    // Engaged minions damage
-    for (const minion of player.engagedMinions || []) {
-      const curDmg = minion.tokens?.damage || 0;
-      minion.tokens = { ...minion.tokens, damage: curDmg + dmg };
-    }
-    state.log.push({
-      id: `log_${Date.now()}_${code}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      category: 'ability',
-      key: 'special.energy_daggers',
-      params: { player: player.name, amount: dmg, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep
-        ? 'ENERGY DAGGERS FINISHER! (2 DMG AOE)'
-        : 'ENERGY DAGGERS! (1 DMG AOE)',
-    });
-  } else if (code === '01047') {
+  if (code === '01047') {
     // 2. Panther Claws: 2 damage to enemy (4 if final)
     const dmg = isFinalStep ? 4 : 2;
     if (targetEnemyId && targetEnemyId !== 'villain') {

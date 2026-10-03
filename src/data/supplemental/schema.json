@@ -113,6 +113,15 @@
                         "ANY"
                       ]
                     },
+                    "targetScope": {
+                      "type": "string",
+                      "enum": [
+                        "HOST",
+                        "SELF",
+                        "OTHER",
+                        "ANY"
+                      ]
+                    },
                     "targetForm": {
                       "type": "string",
                       "enum": [

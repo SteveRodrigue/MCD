@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Data): Spider-Tracer (`01007`) Attached Host Defeat Trigger Scoping (RR v1.8 pp. 5, 11, [Issue #176](https://github.com/SteveRodrigue/MCD/issues/176))**
+  - **Schema & Supplemental Data (`schema.ts`, `core.json`):**
+    - Extended `TriggerFilterSchema` to support `targetScope: 'HOST' | 'SELF' | 'OTHER' | 'ANY'`.
+    - Updated Spider-Tracer (`01007`) `triggerFilter` to `{ "targetScope": "HOST" }` and refreshed audit metadata.
+  - **Engine Triggers & Pipelines (`trigger-dispatcher.ts`, `effects/index.ts`, `damage-pipeline.ts`):**
+    - Enforced host matching in `matchesTriggerFilter` ensuring attachment triggers only execute when their specific host is defeated.
+    - Added universal attachment defeat guard isolating attachment triggers to their assigned host.
+  - **Card Editor UI (`TriggerFilterSection.tsx`, `TriggerFilterSection.test.tsx`):**
+    - Added `Target Scope` dropdown exposing `HOST`, `SELF`, `OTHER`, and `ANY` options in the Card Editor UI with unit test coverage.
+  - **Automated Verification (`spider-tracer-host-defeat.test.ts`):**
+    - Added acceptance tests validating that defeating an attached host fires Spider-Tracer, whereas defeating unrelated minions does not trigger it.
+
 - **Fix (Engine & Rules): Villain Scheme Boost Card Resolution & Villainous Activation Boosts (RR v1.8 pp. 25, 30, [Issue #188](https://github.com/SteveRodrigue/MCD/issues/188))**
   - **Villain Phase Pipeline (`villain-phase.ts`):**
     - Enhanced `executeVillainSchemeAgainstPlayer` to deal base and additional boost cards, process FIFO boost resolution, dispatch `WHEN_BOOST_CARD_REVEALED`, resolve `★` star boost abilities, log `villain.boost.revealed`, accumulate boost icons, and discard boost cards per RR v1.8 p. 25.

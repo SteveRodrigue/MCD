@@ -81,6 +81,20 @@ describe('TriggerFilterSection', () => {
     expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'ALLY' }));
   });
 
+  it('configures targetScope', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    const scopeSelect = screen.getByTestId('trigger-target-scope-0');
+    await user.selectOptions(scopeSelect, 'HOST');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetScope: 'HOST' }));
+
+    await user.selectOptions(scopeSelect, 'SELF');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetScope: 'SELF' }));
+  });
+
   it('configures sourceCardCode and sourceInstanceId', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();

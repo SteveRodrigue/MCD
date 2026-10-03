@@ -159,6 +159,25 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
+          {/* targetScope */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Target Scope
+            </label>
+            <select
+              data-testid={`trigger-target-scope-${abilityIndex}`}
+              value={currentFilter.targetScope || ''}
+              onChange={(e) => handleFieldChange('targetScope', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="HOST">Attached Host</option>
+              <option value="SELF">Self</option>
+              <option value="OTHER">Other Entity</option>
+              <option value="ANY">Any Entity</option>
+            </select>
+          </div>
+
           {/* sourceCardCode */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">

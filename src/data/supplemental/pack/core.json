@@ -227,7 +227,7 @@
           "timing": "FORCED_INTERRUPT",
           "trigger": "CHARACTER_DEFEATED",
           "triggerFilter": {
-            "targetType": "MINION"
+            "targetScope": "HOST"
           },
           "steps": [
             {
@@ -242,8 +242,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-02T20:55:00Z",
+        "reviewedAt": "2026-10-02T20:55:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

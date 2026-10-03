@@ -22,6 +22,8 @@ const FROM_SOURCES = [
   'CARD_ATTRIBUTE',
   'HAS_TRAIT',
   'HAS_IDENTITY',
+  'PAID_WITH_RESOURCE',
+  'RESOURCES_SPENT',
 ] as const;
 
 const DISCARD_ATTRIBUTE_OPTIONS = [
@@ -101,6 +103,8 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
     const cleaned: Record<string, any> = { from: next.from };
     if (next.discardAttribute) cleaned.discardAttribute = next.discardAttribute;
     if (next.resourceType) cleaned.resourceType = next.resourceType;
+    if (next.resource) cleaned.resource = next.resource;
+    if (next.amount !== undefined) cleaned.amount = next.amount;
     if (next.stat) cleaned.stat = next.stat;
     if (next.counterType) cleaned.counterType = next.counterType;
     if (next.attribute) cleaned.attribute = next.attribute;
@@ -524,6 +528,79 @@ export const DynamicValueBuilder: React.FC<DynamicValueBuilderProps> = ({
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {/* PAID_WITH_RESOURCE sub-fields */}
+          {sourceValue.from === 'PAID_WITH_RESOURCE' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                  Resource Type
+                </label>
+                <select
+                  data-testid="dynamic-value-resource-select"
+                  value={sourceValue.resource || 'mental'}
+                  onChange={(e) =>
+                    handleUpdateFormula({
+                      resource: (e.target.value as any) || undefined,
+                    })
+                  }
+                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                >
+                  {RESOURCE_TYPE_OPTIONS.map((rt) => (
+                    <option key={rt} value={rt}>
+                      {rt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                  Amount
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  data-testid="dynamic-value-amount-input"
+                  value={sourceValue.amount ?? 1}
+                  onChange={(e) =>
+                    handleUpdateFormula({
+                      amount: e.target.value === '' ? undefined : parseInt(e.target.value, 10) || 0,
+                    })
+                  }
+                  className="w-full rounded border border-black bg-white px-2 py-1 text-xs text-black font-bold"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* RESOURCES_SPENT sub-fields */}
+          {sourceValue.from === 'RESOURCES_SPENT' && (
+            <div className="space-y-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-700 mb-1">
+                  Resource Type (Optional)
+                </label>
+                <select
+                  data-testid="dynamic-value-resource-select"
+                  value={sourceValue.resource || ''}
+                  onChange={(e) =>
+                    handleUpdateFormula({
+                      resource: (e.target.value as any) || undefined,
+                    })
+                  }
+                  className="w-full rounded border border-black bg-white p-1 text-xs text-black font-bold"
+                >
+                  <option value="">All Spent Resources</option>
+                  {RESOURCE_TYPE_OPTIONS.map((rt) => (
+                    <option key={rt} value={rt}>
+                      {rt}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

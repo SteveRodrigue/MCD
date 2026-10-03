@@ -274,9 +274,9 @@ export function resolveDecisionPrompt(
   });
 
   // Handle optional trigger execution
+  const optContext = selectedOption?.params?.context as any;
   if (selectedOption?.effect === 'EXECUTE_OPTIONAL_TRIGGER' && selectedOption.params?.ability) {
     const optAbility = selectedOption.params.ability as CardAbility;
-    const optContext = selectedOption.params.context as any;
     const sourceCardInstanceId = selectedOption.params.sourceCardInstanceId as string | undefined;
 
     let sourceCardInst = sourceCardInstanceId
@@ -311,7 +311,7 @@ export function resolveDecisionPrompt(
       damageAmount: optContext?.damageAmount,
       interceptedValue:
         optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
-      resourcesSpent: optContext?.resourcesSpent,
+      resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
     });
 
     if (
@@ -421,6 +421,7 @@ export function resolveDecisionPrompt(
     playerId,
     sourceCardInstance: promptCardInst,
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
+    resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
   });
 
   return {

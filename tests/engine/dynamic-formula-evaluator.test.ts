@@ -355,4 +355,97 @@ describe('Dynamic Formula Evaluator (evaluateDynamicAmount) — RR v1.8 & ADR-00
       ).toBe(8);
     });
   });
+
+  describe('PAID_WITH_RESOURCE (Issue #186)', () => {
+    it('returns amount when matching resource is in resourcesSpent', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'PAID_WITH_RESOURCE', resource: 'mental', amount: 1 },
+        { resourcesSpent: ['physical', 'mental'] },
+      );
+      expect(result).toBe(1);
+    });
+
+    it('returns default amount of 1 when amount is omitted and resource matches', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'PAID_WITH_RESOURCE', resource: 'mental' },
+        { resourcesSpent: ['mental'] },
+      );
+      expect(result).toBe(1);
+    });
+
+    it('returns amount when wild resource is used in resourcesSpent', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'PAID_WITH_RESOURCE', resource: 'mental', amount: 2 },
+        { resourcesSpent: ['wild'] },
+      );
+      expect(result).toBe(2);
+    });
+
+    it('returns 0 when resourcesSpent contains only non-matching resources', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'PAID_WITH_RESOURCE', resource: 'mental', amount: 1 },
+        { resourcesSpent: ['physical', 'energy'] },
+      );
+      expect(result).toBe(0);
+    });
+
+    it('returns 0 when resourcesSpent is empty or undefined', () => {
+      expect(
+        evaluateDynamicAmount(
+          { from: 'PAID_WITH_RESOURCE', resource: 'mental', amount: 1 },
+          { resourcesSpent: [] },
+        ),
+      ).toBe(0);
+      expect(
+        evaluateDynamicAmount({ from: 'PAID_WITH_RESOURCE', resource: 'mental', amount: 1 }, {}),
+      ).toBe(0);
+    });
+
+    it('applies multiplier when matching resource is present', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'PAID_WITH_RESOURCE', resource: 'energy', amount: 2, multiplier: 3 },
+        { resourcesSpent: ['energy'] },
+      );
+      expect(result).toBe(6);
+    });
+  });
+
+  describe('RESOURCES_SPENT (Issue #186)', () => {
+    it('counts total resources spent when no specific resource is requested', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'RESOURCES_SPENT' },
+        { resourcesSpent: ['physical', 'energy', 'mental'] },
+      );
+      expect(result).toBe(3);
+    });
+
+    it('counts matching resources plus wild when specific resource is requested', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'RESOURCES_SPENT', resource: 'mental' },
+        { resourcesSpent: ['mental', 'physical', 'mental', 'wild', 'energy'] },
+      );
+      expect(result).toBe(3); // 2 mental + 1 wild
+    });
+
+    it('applies multiplier to spent count', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'RESOURCES_SPENT', resource: 'energy', multiplier: 2 },
+        { resourcesSpent: ['energy', 'wild', 'physical'] },
+      );
+      expect(result).toBe(4); // (1 energy + 1 wild) * 2 = 4
+    });
+
+    it('returns 0 when no matching resource or wild was spent', () => {
+      const result = evaluateDynamicAmount(
+        { from: 'RESOURCES_SPENT', resource: 'energy' },
+        { resourcesSpent: ['physical', 'mental'] },
+      );
+      expect(result).toBe(0);
+    });
+
+    it('returns 0 when resourcesSpent is empty or undefined', () => {
+      expect(evaluateDynamicAmount({ from: 'RESOURCES_SPENT' }, { resourcesSpent: [] })).toBe(0);
+      expect(evaluateDynamicAmount({ from: 'RESOURCES_SPENT' }, {})).toBe(0);
+    });
+  });
 });

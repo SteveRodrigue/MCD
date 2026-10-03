@@ -2211,7 +2211,11 @@
               "effect": "REMOVE_THREAT",
               "effectParams": {
                 "amount": 3,
-                "bonusWithMental": 1,
+                "dynamicBonus": {
+                  "from": "PAID_WITH_RESOURCE",
+                  "resource": "mental",
+                  "amount": 1
+                },
                 "target": "CHOSEN_SCHEME"
               }
             }
@@ -2220,7 +2224,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-03T16:25:33Z",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

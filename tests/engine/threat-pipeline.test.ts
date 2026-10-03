@@ -249,7 +249,11 @@ describe('Threat & Thwart Pipeline (RR v1.8)', () => {
         effect: 'REMOVE_THREAT',
         effectParams: {
           amount: 3,
-          bonusWithMental: 1,
+          dynamicBonus: {
+            from: 'PAID_WITH_RESOURCE',
+            resource: 'mental',
+            amount: 1,
+          },
         },
       };
 

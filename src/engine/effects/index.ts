@@ -1246,16 +1246,47 @@ export function executeDiscard(
 
   // 4. DISCARD FROM TABLEAU
   if (source === 'TABLEAU') {
-    const matchingIndices: number[] = [];
-    player.tableau.forEach((inst, idx) => {
-      if (!filter || matchesCardFilter(inst.card, filter, { player, state })) {
-        matchingIndices.push(idx);
+    const targetInstanceId = (params.targetInstanceId || context.targetInstanceId) as
+      string | undefined;
+    if (targetInstanceId) {
+      const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
+      if (targetCard) {
+        discardCardInstance(state, targetCard, player.id);
+        state.log.push({
+          id: `log_${Date.now()}`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'player.tableau.discarded',
+          params: { player: player.name, card: targetCard.card.name },
+          onomatopoeia: 'TABLEAU DISCARDED!',
+        });
+        return {
+          state,
+          success: true,
+          mutatedState: true,
+          onomatopoeia: `DISCARDED ${targetCard.card.name.toUpperCase()}!`,
+        };
       }
-    });
+      return { state, success: false, error: 'Target card not found in tableau' };
+    }
 
-    if (matchingIndices.length > 0) {
-      const targetIdx = matchingIndices[0];
-      const targetCard = player.tableau[targetIdx];
+    const matchingCards = player.tableau.filter(
+      (inst) => !filter || matchesCardFilter(inst.card, filter, { player, state }),
+    );
+
+    if (matchingCards.length === 0) {
+      if (fallback === 'SURGE') {
+        const surgeCard = drawEncounterCard(state);
+        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
+      }
+      return { state, success: true, mutatedState: false };
+    }
+
+    if (matchingCards.length === 1) {
+      const targetCard = matchingCards[0];
       discardCardInstance(state, targetCard, player.id);
       state.log.push({
         id: `log_${Date.now()}`,
@@ -1275,13 +1306,32 @@ export function executeDiscard(
       };
     }
 
-    if (fallback === 'SURGE') {
-      const surgeCard = drawEncounterCard(state);
-      if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-      return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
-    }
+    const options: DecisionPromptOption[] = matchingCards.map((c) => ({
+      id: c.instanceId,
+      label: c.card.name,
+      cardCode: c.card.code,
+      description: c.card.text || `Discard ${c.card.name} from your tableau`,
+      effect: 'DISCARD',
+      params: { source: 'TABLEAU', targetInstanceId: c.instanceId },
+    }));
 
-    return { state, success: true, mutatedState: false };
+    enqueueDecisionPrompt(state, {
+      promptId: `prompt_discard_tableau_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      playerId: player.id,
+      title: 'Discard Upgrade or Support',
+      description: 'Choose an upgrade or support you control to discard:',
+      sourceCardName: context.sourceCardInstance?.card.name || 'Caught Off Guard',
+      sourceCardCode: context.sourceCardInstance?.card.code,
+      isVoluntary: false,
+      options,
+    });
+
+    return {
+      state,
+      success: true,
+      mutatedState: true,
+      onomatopoeia: 'CHOOSE CARD TO DISCARD!',
+    };
   }
 
   // 5. DISCARD SELF
@@ -2820,15 +2870,6 @@ export function executeStep(
       if (context.isFinalStep && step.effectParams?.finisherBonus) {
         amount += (step.effectParams.finisherBonus as number) || 0;
       }
-      if (
-        step.effectParams?.bonusWithMental &&
-        context.resourcesSpent?.some((r) => {
-          const lower = String(r).toLowerCase();
-          return lower === 'mental' || lower === 'wild';
-        })
-      ) {
-        amount += (step.effectParams.bonusWithMental as number) || 1;
-      }
       const targetParam =
         (step.effectParams?.target as string) ||
         (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
@@ -2930,7 +2971,7 @@ export function executeStep(
                 description: `Remove ${amount} threat from ${es.name}`,
                 cardCode: es.code,
                 effect: 'REMOVE_THREAT',
-                params: { amount, target: 'MAIN_SCHEME' },
+                params: { amount, target: 'MAIN_SCHEME', resourcesSpent: context.resourcesSpent },
               };
             }
             return {
@@ -2939,7 +2980,12 @@ export function executeStep(
               description: `Remove ${amount} threat from ${es.name}`,
               cardCode: es.code,
               effect: 'REMOVE_THREAT',
-              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: es.instanceId },
+              params: {
+                amount,
+                target: 'SIDE_SCHEME',
+                targetInstanceId: es.instanceId,
+                resourcesSpent: context.resourcesSpent,
+              },
             };
           });
 
@@ -2999,7 +3045,7 @@ export function executeStep(
               description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
               cardCode: state.mainScheme.card.code,
               effect: 'REMOVE_THREAT',
-              params: { amount, target: 'MAIN_SCHEME' },
+              params: { amount, target: 'MAIN_SCHEME', resourcesSpent: context.resourcesSpent },
             });
           }
           for (const s of sideSchemes) {
@@ -3009,7 +3055,12 @@ export function executeStep(
               description: `Remove ${amount} threat from ${s.card.name}`,
               cardCode: s.card.code,
               effect: 'REMOVE_THREAT',
-              params: { amount, target: 'SIDE_SCHEME', targetInstanceId: s.instanceId },
+              params: {
+                amount,
+                target: 'SIDE_SCHEME',
+                targetInstanceId: s.instanceId,
+                resourcesSpent: context.resourcesSpent,
+              },
             });
           }
 

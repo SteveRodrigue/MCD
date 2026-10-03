@@ -486,9 +486,13 @@ export const DynamicValueSourceSchema = z
       'CARD_ATTRIBUTE',
       'HAS_TRAIT',
       'HAS_IDENTITY',
+      'PAID_WITH_RESOURCE',
+      'RESOURCES_SPENT',
     ]),
     discardAttribute: DiscardInspectionAttributeSchema.optional(),
     resourceType: ResourceTypeSchema.optional(),
+    resource: ResourceTypeSchema.optional(),
+    amount: z.number().optional(),
     targetCardCode: z.string().optional(),
     stat: z
       .enum([

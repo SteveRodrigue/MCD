@@ -358,4 +358,60 @@ describe('DynamicValueBuilder Interactive UI Component', () => {
       }),
     );
   });
+
+  it('renders and updates PAID_WITH_RESOURCE and RESOURCES_SPENT fields', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    const { rerender } = render(
+      <DynamicValueBuilder
+        label="Bonus Threat"
+        value={{
+          from: 'PAID_WITH_RESOURCE',
+          resource: 'mental',
+          amount: 1,
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const resourceSelect = screen.getByTestId('dynamic-value-resource-select');
+    expect(resourceSelect).toBeDefined();
+    expect((resourceSelect as HTMLSelectElement).value).toBe('mental');
+
+    const amountInput = screen.getByTestId('dynamic-value-amount-input');
+    expect(amountInput).toBeDefined();
+    expect((amountInput as HTMLInputElement).value).toBe('1');
+
+    await user.selectOptions(resourceSelect, 'energy');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'PAID_WITH_RESOURCE',
+        resource: 'energy',
+      }),
+    );
+
+    // Rerender as RESOURCES_SPENT
+    rerender(
+      <DynamicValueBuilder
+        label="Scaled Damage"
+        value={{
+          from: 'RESOURCES_SPENT',
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const spentResourceSelect = screen.getByTestId('dynamic-value-resource-select');
+    expect(spentResourceSelect).toBeDefined();
+    expect(screen.queryByTestId('dynamic-value-amount-input')).toBeNull();
+
+    await user.selectOptions(spentResourceSelect, 'physical');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'RESOURCES_SPENT',
+        resource: 'physical',
+      }),
+    );
+  });
 });

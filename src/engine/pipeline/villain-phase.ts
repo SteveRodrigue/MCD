@@ -12,6 +12,8 @@ import {
   hasKeyword,
   PendingActivation,
   cloneGameState,
+  getActiveVillain,
+  getActiveMainScheme,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -47,7 +49,7 @@ export function step1_placeThreat(state: GameState): GameState {
 
   // Escalation threat per player + acceleration tokens + side scheme acceleration icons
   let totalThreatToAdd =
-    state.mainScheme.card.escalationThreat * playerCount + state.accelerationTokens;
+    getActiveMainScheme(state).card.escalationThreat * playerCount + state.accelerationTokens;
 
   for (const sideScheme of state.sideSchemes) {
     const card = sideScheme.card as SideSchemeCard;
@@ -80,17 +82,19 @@ export function executeVillainAttackAgainstPlayer(
  * Executes a single villain scheme against a target alter-ego or on-demand (Advance 01186).
  */
 export function executeVillainSchemeAgainstPlayer(state: GameState, player: PlayerState): void {
+  // The scheming villain is fixed now: moving the active counter mid-scheme must not change it.
+  const villain = getActiveVillain(state);
   // Check Confused status on Villain (taking into account Steady - RR v1.8 p. 28)
-  if (consumeEntityStatusCards(state.villain, StatusCard.CONFUSED)) {
+  if (consumeEntityStatusCards(villain, StatusCard.CONFUSED)) {
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
       round: state.roundNumber,
       phase: state.phase,
       category: 'status',
-      actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+      actor: { name: villain.card?.name || 'Villain', type: 'villain' },
       key: 'villain.confused.cancelled',
-      params: { villain: state.villain.card?.name || 'Villain' },
+      params: { villain: villain.card?.name || 'Villain' },
       onomatopoeia: 'CONFUSION CLEARED!',
     });
     return;
@@ -105,11 +109,11 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
   }
 
   // Check villain innate abilities and attachments for extra boost cards (e.g. Klaw 01113 / ADR-0019)
-  const villainAbilities = state.villain.card.enrichment?.abilities || [];
+  const villainAbilities = villain.card.enrichment?.abilities || [];
   let extraBoostCount = 0;
-  if (typeof (state.villain.card as any).additionalBoostCards === 'number') {
-    extraBoostCount += (state.villain.card as any).additionalBoostCards;
-  } else if ((state.villain.card as any).additionalBoostCards) {
+  if (typeof (villain.card as any).additionalBoostCards === 'number') {
+    extraBoostCount += (villain.card as any).additionalBoostCards;
+  } else if ((villain.card as any).additionalBoostCards) {
     extraBoostCount += 1;
   } else if (
     villainAbilities.some((a) =>
@@ -122,7 +126,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     extraBoostCount += 1;
   }
 
-  for (const att of state.villain.attachments || []) {
+  for (const att of villain.attachments || []) {
     if (typeof (att.card as any).additionalBoostCards === 'number') {
       extraBoostCount += (att.card as any).additionalBoostCards;
     } else if ((att.card as any).additionalBoostCards) {
@@ -149,9 +153,9 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
         round: state.roundNumber,
         phase: state.phase,
         category: 'scheme',
-        actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+        actor: { name: villain.card?.name || 'Villain', type: 'villain' },
         key: 'villain.boost.extra',
-        params: { villain: state.villain.card?.name || 'Villain' },
+        params: { villain: villain.card?.name || 'Villain' },
         onomatopoeia: 'EXTRA BOOST DEALT!',
       });
     }
@@ -188,7 +192,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
           round: state.roundNumber,
           phase: state.phase,
           category: 'scheme',
-          actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+          actor: { name: villain.card?.name || 'Villain', type: 'villain' },
           key: 'villain.boost.starResolved',
           params: { card: currentBoost.card.name, abilityId: boostAbility.id },
           onomatopoeia: 'STAR BOOST ACTIVATED!',
@@ -206,10 +210,10 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
       round: state.roundNumber,
       phase: state.phase,
       category: 'scheme',
-      actor: { name: state.villain.card?.name || 'Villain', type: 'villain' },
+      actor: { name: villain.card?.name || 'Villain', type: 'villain' },
       key: 'villain.boost.revealed',
       params: {
-        villain: state.villain.card?.name || 'Villain',
+        villain: villain.card?.name || 'Villain',
         card: currentBoost.card.name,
         boostIcons: icons,
       },
@@ -232,7 +236,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
   }
 
   // Calculate modified SCH stat & place threat
-  const villainStats = getEffectiveVillainStats(state, state.villain);
+  const villainStats = getEffectiveVillainStats(state, villain);
   const baseScheme = villainStats.scheme;
   const totalScheme = baseScheme + totalBoostIcons;
 
@@ -240,7 +244,7 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
     targetType: 'main_scheme',
     amount: totalScheme,
     sourceType: 'VILLAIN_SCHEME',
-    sourceEntityName: state.villain.card?.name || 'Villain',
+    sourceEntityName: villain.card?.name || 'Villain',
     sourcePlayerId: player.id,
     boostIcons: totalBoostIcons,
   });
@@ -698,12 +702,12 @@ export function resolveActiveEncounterCardAfterInterrupt(
   } else if (card.type === CardType.OBLIGATION) {
     resolveRevealedObligation(state, cardInstance, player);
   } else if (card.type === CardType.ATTACHMENT) {
-    state.villain.attachments.push(cardInstance);
+    getActiveVillain(state).attachments.push(cardInstance);
     state.log.push({
       id: `log_${Date.now()}`,
       timestamp: Date.now(),
       key: 'encounter.reveal.attachment',
-      params: { attachment: card.name, host: state.villain.card.name },
+      params: { attachment: card.name, host: getActiveVillain(state).card.name },
       onomatopoeia: 'ATTACHED!',
     });
     const abilities = card.enrichment?.abilities || [];
@@ -804,15 +808,15 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
     }
 
     // Step 1: Place threat on main scheme
-    const threatBefore = nextState.mainScheme.threat;
+    const threatBefore = getActiveMainScheme(nextState).threat;
     step1_placeThreat(nextState);
-    const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+    const threatAdded = Math.max(0, getActiveMainScheme(nextState).threat - threatBefore);
 
     nextState.villainPhaseStepEvent = {
       type: 'THREAT_PLACED',
       step: VillainPhaseStep.MAIN_SCHEME_THREAT,
       amount: threatAdded,
-      description: `${threatAdded} threat placed on ${nextState.mainScheme.card.name}.`,
+      description: `${threatAdded} threat placed on ${getActiveMainScheme(nextState).card.name}.`,
       onomatopoeia: 'SCHEME GROWS!',
     };
 
@@ -865,6 +869,8 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           : options;
 
       if (act.type === 'VILLAIN') {
+        // Resolved when the activation starts; a counter move during it does not change the attacker.
+        const activatingVillain = getActiveVillain(nextState);
         if (player.currentForm === 'hero') {
           const mutatedState = executeVillainAttackAgainstPlayer(
             nextState,
@@ -875,11 +881,11 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             mutatedState.villainPhaseStepEvent = {
               type: 'VILLAIN_ATTACK',
               step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
-              sourceName: mutatedState.villain.card.name,
+              sourceName: activatingVillain.card.name,
               targetPlayerId: player.id,
               targetName: player.name,
               amount: undefined,
-              description: `${mutatedState.villain.card.name} is attacking ${player.name}! Declare a defender.`,
+              description: `${activatingVillain.card.name} is attacking ${player.name}! Declare a defender.`,
               onomatopoeia: 'DEFEND!',
               combatOutcome: undefined,
             };
@@ -889,11 +895,11 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           mutatedState.villainPhaseStepEvent = {
             type: 'VILLAIN_ATTACK',
             step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
-            sourceName: mutatedState.villain.card.name,
+            sourceName: activatingVillain.card.name,
             targetPlayerId: player.id,
             targetName: player.name,
             amount: dmg,
-            description: `${mutatedState.villain.card.name} attacked ${player.name} for ${dmg} damage.`,
+            description: `${activatingVillain.card.name} attacked ${player.name} for ${dmg} damage.`,
             onomatopoeia: dmg > 0 ? 'BANG!' : 'BLOCKED!',
             combatOutcome: mutatedState.lastCombatOutcome,
           };
@@ -906,17 +912,17 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           }
           return mutatedState;
         } else {
-          const threatBefore = nextState.mainScheme.threat;
+          const threatBefore = getActiveMainScheme(nextState).threat;
           executeVillainSchemeAgainstPlayer(nextState, player);
-          const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+          const threatAdded = Math.max(0, getActiveMainScheme(nextState).threat - threatBefore);
           nextState.villainPhaseStepEvent = {
             type: 'VILLAIN_SCHEME',
             step: VillainPhaseStep.VILLAIN_ACTIVATIONS,
-            sourceName: nextState.villain.card.name,
+            sourceName: activatingVillain.card.name,
             targetPlayerId: player.id,
             targetName: player.name,
             amount: threatAdded,
-            description: `${nextState.villain.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
+            description: `${activatingVillain.card.name} schemed against ${player.name} (+${threatAdded} threat).`,
             onomatopoeia: 'SCHEME!',
           };
           if (peekDecisionPrompt(nextState) || nextState.winner) {
@@ -973,9 +979,9 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             }
             return mutatedState;
           } else {
-            const threatBefore = nextState.mainScheme.threat;
+            const threatBefore = getActiveMainScheme(nextState).threat;
             executeMinionActivationAgainstPlayer(nextState, minion, player, resolvedOptions);
-            const threatAdded = Math.max(0, nextState.mainScheme.threat - threatBefore);
+            const threatAdded = Math.max(0, getActiveMainScheme(nextState).threat - threatBefore);
             nextState.villainPhaseStepEvent = {
               type: 'MINION_SCHEME',
               step: VillainPhaseStep.VILLAIN_ACTIVATIONS,

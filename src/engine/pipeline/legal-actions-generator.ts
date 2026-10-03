@@ -1,4 +1,11 @@
-import { GameState, CardInstance, GameAction } from '../models';
+import {
+  GameState,
+  CardInstance,
+  GameAction,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+} from '../models';
 import {
   getPlayer,
   canChangeForm,
@@ -122,7 +129,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         identityActions.push({
           id: `action_basic_attack_villain_${player.id}`,
           category: 'identity',
-          headline: `Hero Strike on ${state.villain.card.name}`,
+          headline: `Hero Strike on ${getActiveVillain(state).card.name}`,
           subtext: `Exhaust ${player.activeFormCard.name} to deal ${effectiveStats.attack} damage`,
           action: { type: 'BASIC_ATTACK', playerId: player.id, targetType: 'villain' },
           badge: `${effectiveStats.attack} ATK`,
@@ -160,14 +167,14 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
       }
 
       // 1D. Basic Thwart (Hero only)
-      if ((state.mainScheme?.threat || 0) > 0) {
+      if ((getActiveMainScheme(state)?.threat || 0) > 0) {
         const thwCheck = canBasicThwart(state, playerId, 'main_scheme');
         if (thwCheck.allowed) {
           identityActions.push({
             id: `action_basic_thwart_main_${player.id}`,
             category: 'identity',
             headline: `Thwart Main Scheme`,
-            subtext: `Exhaust ${player.activeFormCard.name} to remove ${effectiveStats.thwart} threat from ${state.mainScheme.card.name}`,
+            subtext: `Exhaust ${player.activeFormCard.name} to remove ${effectiveStats.thwart} threat from ${getActiveMainScheme(state).card.name}`,
             action: { type: 'BASIC_THWART', playerId: player.id, targetType: 'main_scheme' },
             badge: `${effectiveStats.thwart} THW`,
             iconType: 'thwart',
@@ -411,7 +418,7 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         }
 
         // Ally Thwart (Main Scheme)
-        if ((state.mainScheme?.threat || 0) > 0) {
+        if ((getActiveMainScheme(state)?.threat || 0) > 0) {
           boardActions.push({
             id: `action_ally_thwart_${ally.instanceId}`,
             category: 'board',
@@ -460,8 +467,10 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
     for (const att of player.attachments || []) {
       allAttachments.push({ attachment: att, hostName: player.name });
     }
-    for (const att of state.villain.attachments || []) {
-      allAttachments.push({ attachment: att, hostName: state.villain.card.name });
+    for (const villain of getVillainsInPlay(state)) {
+      for (const att of villain.attachments || []) {
+        allAttachments.push({ attachment: att, hostName: villain.card.name });
+      }
     }
     for (const m of player.engagedMinions || []) {
       for (const att of m.attachments || []) {
@@ -473,8 +482,8 @@ export function getLegalActionsForPlayer(state: GameState, playerId: string): Le
         allAttachments.push({ attachment: att, hostName: a.card.name });
       }
     }
-    for (const att of state.mainScheme.attachments || []) {
-      allAttachments.push({ attachment: att, hostName: state.mainScheme.card.name });
+    for (const att of getActiveMainScheme(state).attachments || []) {
+      allAttachments.push({ attachment: att, hostName: getActiveMainScheme(state).card.name });
     }
 
     for (const { attachment, hostName } of allAttachments) {

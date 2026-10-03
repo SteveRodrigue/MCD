@@ -10,6 +10,9 @@ import {
   getKeywordValue,
   CardAbility,
   AbilityStep,
+  getActiveMainScheme,
+  getMainSchemesInPlay,
+  getVillainsInPlay,
 } from '@engine/models';
 import { getCardEnrichment } from '../../data/supplemental';
 import {
@@ -61,9 +64,9 @@ export function hasCrisisInPlay(state: GameState): boolean {
   }
 
   // 2. Main scheme & attachments
-  if (state.mainScheme) {
-    if (cardHasCrisisIcon(state.mainScheme.card)) return true;
-    for (const att of state.mainScheme.attachments || []) {
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    if (cardHasCrisisIcon(mainScheme.card)) return true;
+    for (const att of mainScheme.attachments || []) {
       if (cardHasCrisisIcon(att.card)) return true;
     }
   }
@@ -74,9 +77,9 @@ export function hasCrisisInPlay(state: GameState): boolean {
   }
 
   // 4. Villain & attachments
-  if (state.villain) {
-    if (cardHasCrisisIcon(state.villain.card)) return true;
-    for (const att of state.villain.attachments || []) {
+  for (const villain of getVillainsInPlay(state)) {
+    if (cardHasCrisisIcon(villain.card)) return true;
+    for (const att of villain.attachments || []) {
       if (cardHasCrisisIcon(att.card)) return true;
     }
   }
@@ -341,7 +344,7 @@ export function canBasicThwart(
 
   if (targetType === 'main_scheme') {
     // 0. Threat Check: Cannot thwart a scheme with no threat (RR v1.8 p. 29)
-    if (!state.mainScheme || state.mainScheme.threat <= 0) {
+    if (!getActiveMainScheme(state) || getActiveMainScheme(state).threat <= 0) {
       return {
         allowed: false,
         reason: 'Cannot thwart a scheme with no threat.',
@@ -414,7 +417,7 @@ export function canAllyThwart(
   }
 
   if (targetType === 'main_scheme') {
-    if (!state.mainScheme || state.mainScheme.threat <= 0) {
+    if (!getActiveMainScheme(state) || getActiveMainScheme(state).threat <= 0) {
       return {
         allowed: false,
         reason: 'Cannot thwart a scheme with no threat.',
@@ -634,16 +637,17 @@ export function checkUniqueCardPlayable(
     }
   }
 
-  // 3. Check against active Villain
-  if (state.villain?.card?.isUnique) {
-    const villainName = state.villain.card.name.toLowerCase().trim();
-    const villainSubname = state.villain.card.subname
-      ? state.villain.card.subname.toLowerCase().trim()
+  // 3. Check against every Villain in play
+  for (const villain of getVillainsInPlay(state)) {
+    if (!villain.card?.isUnique) continue;
+    const villainName = villain.card.name.toLowerCase().trim();
+    const villainSubname = villain.card.subname
+      ? villain.card.subname.toLowerCase().trim()
       : undefined;
     if (isUniqueCollision(targetName, targetSubname, villainName, villainSubname)) {
       return {
         allowed: false,
-        reason: `Global unicity violation (RR v1.8 p. 29): Unique card '${card.name}' is already in play as the active Villain.`,
+        reason: `Global unicity violation (RR v1.8 p. 29): Unique card '${card.name}' is already in play as a Villain.`,
       };
     }
   }
@@ -929,11 +933,11 @@ export function evaluateEnemyTargetRequirement(
 
   if (requiresEnemy) {
     const allEnemies: { entity: any; id: string; attachments?: CardInstance[] }[] = [];
-    if (state.villain) {
+    for (const villain of getVillainsInPlay(state)) {
       allEnemies.push({
-        entity: state.villain,
-        id: state.villain.instanceId || 'villain',
-        attachments: state.villain.attachments,
+        entity: villain,
+        id: villain.instanceId || 'villain',
+        attachments: villain.attachments,
       });
     }
     for (const p of state.players) {
@@ -1055,8 +1059,8 @@ export function hasEligibleThreatRemovalTarget(
   );
 
   const isMainSchemeEligible =
-    Boolean(state.mainScheme) &&
-    (state.mainScheme.threat || 0) > 0 &&
+    Boolean(getActiveMainScheme(state)) &&
+    (getActiveMainScheme(state).threat || 0) > 0 &&
     !crisisInPlay &&
     !hasPatrolMinion;
 
@@ -1074,7 +1078,10 @@ export function hasEligibleThreatRemovalTarget(
 
   // CHOSEN_SCHEME or default
   if (targetInstanceId) {
-    if (targetInstanceId === 'main_scheme' || targetInstanceId === state.mainScheme?.instanceId) {
+    if (
+      targetInstanceId === 'main_scheme' ||
+      targetInstanceId === getActiveMainScheme(state)?.instanceId
+    ) {
       return isMainSchemeEligible;
     }
     const side = (state.sideSchemes || []).find((s) => s.instanceId === targetInstanceId);

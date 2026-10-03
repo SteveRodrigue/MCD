@@ -23,15 +23,9 @@ export function countLegacyAccesses(source: string): number {
 
 const BASELINE: Record<string, number> = {
   'src/engine/models/state.ts': 12,
-  'src/engine/pipeline/legal-actions-generator.ts': 8,
-  'src/engine/pipeline/legality-checker.ts': 21,
-  'src/engine/pipeline/step-gate-evaluator.ts': 3,
-  'src/engine/pipeline/villain-phase.ts': 31,
   'src/engine/queries/card-inspector.ts': 6,
   'src/engine/simulation/player-bot.ts': 4,
   'src/engine/specials/wakanda-forever.ts': 10,
-  'src/engine/state/state-validator.ts': 23,
-  'src/engine/triggers/trigger-dispatcher.ts': 9,
   'src/ui/components/board/attack-target-utils.ts': 5,
   'src/ui/components/board/CardPaymentModal.tsx': 10,
   'src/ui/components/board/GameBoard.tsx': 4,

@@ -87,3 +87,11 @@ Each card declares one ability `timing: FORCED_RESPONSE`, `trigger: ENTERS_PLAY`
 - Prompt options with `gate`/`cost` are re-evaluated whenever a prompt becomes the head. Mitigation: pure, cheap checks; covered by `tests/engine/obligations.test.ts`.
 - The default relies on `set_code` conventions upstream. Mitigation: audited 106 cards; the 3 outliers are explicit (2 PvP cards declare `recipient`; Burning Hunger `34028` has no upstream text at all).
 - Out of scope, tracked separately: obligations drawn from a player deck (#208) and the "Attach to X. Otherwise …" family (#209).
+
+---
+
+## Addendum (follow-up commit): remaining core obligations, tableau selector and acceleration
+
+- **Business Problems `01170` ("exhaust each upgrade you control")** uses a **zone-generic selector** `ALL_CONTROLLED_TABLEAU` plus the existing `UniversalCardFilter` (`filter: { types: ["upgrade"] }`), not a type-specific selector. `EXHAUST` and `READY` now honor `filter` (the Card Editor and the spec already advertised it, the engine ignored it); a filter matching nothing is a no-op and never falls back to the identity. Options considered: type-specific `ALL_CONTROLLED_UPGRADES` (rejected: card type baked into the name), `source`/`count` params mirroring `DISCARD` (rejected: two ways to pick targets), plural `CardLocationSelector` (deferred: larger, revisit if a third primitive needs it).
+- **Legal Work `01160`** uses the new generic `ADD_ACCELERATION` primitive on `GameState.accelerationTokens` (the existing field used by the villain-phase threat formula and the deck-exhaustion pipeline).
+- All five core obligations are now integrated; each follows the same ability skeleton and none needs a `recipient` declaration.

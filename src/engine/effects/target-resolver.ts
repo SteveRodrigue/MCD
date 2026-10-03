@@ -414,6 +414,16 @@ export function resolveTargets(
       }));
     }
 
+    case 'ALL_CONTROLLED_TABLEAU': {
+      // Zone-generic: every card in the acting player's tableau. Narrow by type/trait/etc. with
+      // the step `filter` (UniversalCardFilter), e.g. { types: ['upgrade'] } (Issue #158).
+      return (resolvingPlayer.tableau || []).map((c) => ({
+        kind: 'card' as const,
+        entity: c,
+        id: c.instanceId,
+      }));
+    }
+
     case 'CHOSEN_CONTROLLED_CHARACTER': {
       if (context?.targetInstanceId) {
         if (context.targetInstanceId === resolvingPlayer.id) {

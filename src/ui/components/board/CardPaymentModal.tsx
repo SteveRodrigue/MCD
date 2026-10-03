@@ -717,7 +717,6 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       selectedTargetId,
       selectedDiscardCardIds,
     );
-    onClose();
   };
 
   return createPortal(

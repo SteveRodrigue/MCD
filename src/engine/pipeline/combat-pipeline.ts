@@ -9,6 +9,9 @@ import {
   GamePhase,
   Keyword,
   hasKeyword,
+  VillainState,
+  getActiveVillain,
+  getVillainById,
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
@@ -74,6 +77,18 @@ export function drawEncounterCardForCombat(state: GameState): CardInstance | und
 }
 
 /**
+ * The villain performing the current attack: fixed at initiation (`attackerVillainId`), falling
+ * back to the active villain for contexts created without one.
+ */
+function attackingVillain(state: GameState, attackContext: AttackExecutionContext): VillainState {
+  return (
+    (attackContext.attackerVillainId
+      ? getVillainById(state, attackContext.attackerVillainId)
+      : undefined) ?? getActiveVillain(state)
+  );
+}
+
+/**
  * Step 1: Pre-Attack & Status Intercepts (RR v1.8 p. 4, 28)
  * Checks Stun status first (priority 1 per RR v1.8 p. 28 "Status Cards"),
  * then checks HOST_WOULD_ATTACK attachment interrupts (priority 2).
@@ -84,8 +99,10 @@ export function step1_preAttackAndStunCheck(
   attackerType: 'VILLAIN' | 'MINION',
   attackerCard?: CardInstance,
   targetPlayer?: PlayerState,
+  attackerVillain?: VillainState,
 ): boolean {
-  const attackerEntity = attackerType === 'VILLAIN' ? state.villain : attackerCard;
+  const villain = attackerVillain ?? getActiveVillain(state);
+  const attackerEntity = attackerType === 'VILLAIN' ? villain : attackerCard;
   if (!attackerEntity) return false;
 
   // Priority 1: Check Stun status on attacking entity (taking into account Steady - RR v1.8 p. 28)
@@ -98,7 +115,7 @@ export function step1_preAttackAndStunCheck(
         phase: state.phase,
         category: 'combat',
         key: 'villain.stunned.cancelled',
-        params: { villain: state.villain.card.name },
+        params: { villain: villain.card.name },
         onomatopoeia: 'STUN CLEARED!',
       });
     } else if (attackerCard) {
@@ -129,7 +146,7 @@ export function step1_preAttackAndStunCheck(
 
       const targetInstanceId =
         attackerType === 'VILLAIN'
-          ? state.villain.instanceId || 'villain'
+          ? villain.instanceId || 'villain'
           : attackerCard?.instanceId || 'minion';
 
       executeEffect(state, ability, {
@@ -146,7 +163,7 @@ export function step1_preAttackAndStunCheck(
         category: 'combat',
         key: attackerType === 'VILLAIN' ? 'villain.attack.cancelled' : 'minion.attack.cancelled',
         params: {
-          ...(attackerType === 'VILLAIN' ? { villain: state.villain.card.name } : {}),
+          ...(attackerType === 'VILLAIN' ? { villain: villain.card.name } : {}),
           ...(attackerType === 'MINION' && attackerCard ? { minion: attackerCard.card.name } : {}),
           cancelledBy: att.card.name,
         },
@@ -182,17 +199,29 @@ export function step2_dispatchInitiationTriggers(
  */
 export function initiateEnemyAttack(
   state: GameState,
-  attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance },
+  attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance; villainId?: string },
   targetPlayerId: string,
   options?: CombatOptions,
 ): GameState {
   state.lastCombatOutcome = undefined;
+  // The attacking villain is fixed now: moving the active counter mid-activation must not change it.
+  const attackerVillain =
+    attacker.type === 'VILLAIN'
+      ? ((attacker.villainId ? getVillainById(state, attacker.villainId) : undefined) ??
+        getActiveVillain(state))
+      : undefined;
 
   const player = state.players.find((p) => p.id === targetPlayerId);
   if (!player) return state;
 
   // Step 1: Pre-Attack & Stun check
-  const isCancelled = step1_preAttackAndStunCheck(state, attacker.type, attacker.card, player);
+  const isCancelled = step1_preAttackAndStunCheck(
+    state,
+    attacker.type,
+    attacker.card,
+    player,
+    attackerVillain,
+  );
   if (isCancelled) return state;
 
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
@@ -208,8 +237,8 @@ export function initiateEnemyAttack(
   let hasOverkill = false;
   let hasPiercing = false;
 
-  if (attacker.type === 'VILLAIN') {
-    const villainStats = getEffectiveVillainStats(state, state.villain);
+  if (attackerVillain) {
+    const villainStats = getEffectiveVillainStats(state, attackerVillain);
     baseAttack = villainStats.attack;
     hasOverkill = villainStats.keywords.includes('OVERKILL');
     hasPiercing = villainStats.keywords.includes('PIERCING');
@@ -223,6 +252,7 @@ export function initiateEnemyAttack(
     attackId: `attack_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     attackerType: attacker.type,
     attackerCard: attacker.card,
+    attackerVillainId: attackerVillain?.instanceId,
     targetPlayerId,
     phase: initResult.hasPendingPrompt ? 'INITIATION' : 'DECLARE_DEFENDER',
     baseAttack,
@@ -385,7 +415,7 @@ export function step3_openDefenderDeclarationPrompt(
 
   const attackerName =
     attackContext.attackerType === 'VILLAIN'
-      ? state.villain.card.name
+      ? attackingVillain(state, attackContext).card.name
       : attackContext.attackerCard?.card.name || 'Minion';
 
   const targetRetaliate = getEffectiveRetaliate(player, state);
@@ -398,16 +428,16 @@ export function step3_openDefenderDeclarationPrompt(
     sourceCardName: attackerName,
     sourceCardCode:
       attackContext.attackerType === 'VILLAIN'
-        ? state.villain.card.code
+        ? attackingVillain(state, attackContext).card.code
         : attackContext.attackerCard?.card.code,
     triggerSourceCard:
       attackContext.attackerType === 'VILLAIN'
-        ? state.villain.card
+        ? attackingVillain(state, attackContext).card
         : attackContext.attackerCard?.card,
     attackerName,
     attackerCardCode:
       attackContext.attackerType === 'VILLAIN'
-        ? state.villain.card.code
+        ? attackingVillain(state, attackContext).card.code
         : attackContext.attackerCard?.card.code,
     hasOverkill: attackContext.hasOverkill,
     hasPiercing: attackContext.hasPiercing,
@@ -489,7 +519,7 @@ export function resolveDefenderDeclaration(
 
   const attackerName =
     attackContext.attackerType === 'VILLAIN'
-      ? state.villain.card.name
+      ? attackingVillain(state, attackContext).card.name
       : attackContext.attackerCard?.card.name || 'Minion';
   const heroOrPlayerName = player.hero?.name || player.name;
 
@@ -640,10 +670,15 @@ export function step4_and_5_dealAndResolveBoostCards(
     // Check villain innate abilities and attachments for extra boost cards (e.g. Klaw 01113/01114/01115 / ADR-0019)
     let extraBoostCount = 0;
     if (attackContext.attackerType === 'VILLAIN') {
-      const villainAbilities = state.villain.card.enrichment?.abilities || [];
-      if (typeof (state.villain.card as any).additionalBoostCards === 'number') {
-        extraBoostCount += (state.villain.card as any).additionalBoostCards;
-      } else if ((state.villain.card as any).additionalBoostCards) {
+      const villainAbilities =
+        attackingVillain(state, attackContext).card.enrichment?.abilities || [];
+      if (
+        typeof (attackingVillain(state, attackContext).card as any).additionalBoostCards ===
+        'number'
+      ) {
+        extraBoostCount += (attackingVillain(state, attackContext).card as any)
+          .additionalBoostCards;
+      } else if ((attackingVillain(state, attackContext).card as any).additionalBoostCards) {
         extraBoostCount += 1;
       } else if (
         villainAbilities.some((a) =>
@@ -657,7 +692,7 @@ export function step4_and_5_dealAndResolveBoostCards(
         extraBoostCount += 1;
       }
 
-      for (const att of state.villain.attachments || []) {
+      for (const att of attackingVillain(state, attackContext).attachments || []) {
         if (typeof (att.card as any).additionalBoostCards === 'number') {
           extraBoostCount += (att.card as any).additionalBoostCards;
         } else if ((att.card as any).additionalBoostCards) {
@@ -693,7 +728,7 @@ export function step4_and_5_dealAndResolveBoostCards(
           phase: state.phase,
           category: 'combat',
           key: 'villain.boost.extra',
-          params: { villain: state.villain.card.name },
+          params: { villain: attackingVillain(state, attackContext).card.name },
           onomatopoeia: 'EXTRA BOOST DEALT!',
         });
       }
@@ -813,7 +848,7 @@ export function step6_calculateAndApplyAttackDamage(
         player: player.name,
         who_attacks:
           attackContext.attackerType === 'VILLAIN'
-            ? state.villain.card.name
+            ? attackingVillain(state, attackContext).card.name
             : attackContext.attackerCard?.card.name || 'Minion',
         target: player.hero?.name || player.name,
       },
@@ -824,9 +859,12 @@ export function step6_calculateAndApplyAttackDamage(
     attackContext.defenseValue = 0;
   }
 
-  const attackerCardCode = attackContext.attackerCard?.card?.code || state.villain?.card?.code;
+  const attackerCardCode =
+    attackContext.attackerCard?.card?.code || attackingVillain(state, attackContext)?.card?.code;
   const attackerName =
-    attackContext.attackerCard?.card?.name || state.villain?.card?.name || 'Enemy';
+    attackContext.attackerCard?.card?.name ||
+    attackingVillain(state, attackContext)?.card?.name ||
+    'Enemy';
   const defenderType =
     attackContext.defender?.type || (attackContext.heroDefended ? 'HERO' : 'UNDEFENDED');
   const defenderCardCode =
@@ -1027,10 +1065,10 @@ export function applyCalculatedAttackDamage(
         params: {
           who_attacks:
             attackContext.attackerType === 'VILLAIN'
-              ? state.villain.card.name
+              ? attackingVillain(state, attackContext).card.name
               : attackContext.attackerCard?.card.name || 'Minion',
           who_is_taking_damage: player.name,
-          villain: state.villain.card.name,
+          villain: attackingVillain(state, attackContext).card.name,
           minion: attackContext.attackerCard?.card.name || 'Minion',
           player: player.name,
           damage: rawDamage,
@@ -1052,11 +1090,11 @@ export function applyCalculatedAttackDamage(
 
   const attackerName =
     attackContext.attackerType === 'VILLAIN'
-      ? state.villain.card.name
+      ? attackingVillain(state, attackContext).card.name
       : attackContext.attackerCard?.card.name || 'Minion';
   const attackerCode =
     attackContext.attackerType === 'VILLAIN'
-      ? state.villain.card.code
+      ? attackingVillain(state, attackContext).card.code
       : attackContext.attackerCard?.card.code;
 
   state.lastCombatOutcome = {
@@ -1162,7 +1200,10 @@ export function step7_resolvePostAttackAndRetaliate(
 
     if (retaliateX > 0) {
       if (attackContext.attackerType === 'VILLAIN') {
-        state.villain.health = Math.max(0, state.villain.health - retaliateX);
+        attackingVillain(state, attackContext).health = Math.max(
+          0,
+          attackingVillain(state, attackContext).health - retaliateX,
+        );
         state.log.push({
           id: `log_${Date.now()}`,
           timestamp: Date.now(),
@@ -1170,7 +1211,7 @@ export function step7_resolvePostAttackAndRetaliate(
           phase: state.phase,
           category: 'combat',
           key: 'retaliate.hero.hit',
-          params: { damage: retaliateX, villain: state.villain.card.name },
+          params: { damage: retaliateX, villain: attackingVillain(state, attackContext).card.name },
           onomatopoeia: 'RETALIATE! (HERO)',
         });
       } else if (attackContext.attackerCard) {
@@ -1199,7 +1240,10 @@ export function step7_resolvePostAttackAndRetaliate(
       const allyRetaliate = getEffectiveRetaliate(ally, state);
       if (allyRetaliate > 0) {
         if (attackContext.attackerType === 'VILLAIN') {
-          state.villain.health = Math.max(0, state.villain.health - allyRetaliate);
+          attackingVillain(state, attackContext).health = Math.max(
+            0,
+            attackingVillain(state, attackContext).health - allyRetaliate,
+          );
           state.log.push({
             id: `log_${Date.now()}`,
             timestamp: Date.now(),
@@ -1209,7 +1253,7 @@ export function step7_resolvePostAttackAndRetaliate(
             key: 'retaliate.ally.hit',
             params: {
               damage: allyRetaliate,
-              villain: state.villain.card.name,
+              villain: attackingVillain(state, attackContext).card.name,
               ally: ally.card.name,
             },
             onomatopoeia: 'RETALIATE! (ALLY)',
@@ -1235,11 +1279,11 @@ export function step7_resolvePostAttackAndRetaliate(
 
   // Discard single-use attack attachments on villain (e.g. Charge 01099)
   if (attackContext.attackerType === 'VILLAIN') {
-    const chargeIdx = (state.villain.attachments || []).findIndex(
+    const chargeIdx = (attackingVillain(state, attackContext).attachments || []).findIndex(
       (att) => att.card.code === '01099',
     );
     if (chargeIdx !== -1) {
-      const [chargeAtt] = state.villain.attachments.splice(chargeIdx, 1);
+      const [chargeAtt] = attackingVillain(state, attackContext).attachments.splice(chargeIdx, 1);
       state.encounterDiscard.push(chargeAtt);
     }
   }
@@ -1268,7 +1312,7 @@ export function step7_resolvePostAttackAndRetaliate(
  */
 export function executeEnemyAttackSynchronously(
   state: GameState,
-  attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance },
+  attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance; villainId?: string },
   targetPlayerId: string,
   policy: DefensePolicy = 'TAKE_UNDEFENDED',
   options?: { acceptOptionalTriggers?: boolean },

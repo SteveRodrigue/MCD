@@ -37,7 +37,7 @@ export interface BasicAttackAction {
   type: 'BASIC_ATTACK';
   playerId: string;
   targetType: 'villain' | 'minion';
-  targetInstanceId?: string; // Required if target is minion
+  targetInstanceId?: string; // Required for a minion; for a villain, any villain in play (default: the active villain)
 }
 
 export interface BasicThwartAction {

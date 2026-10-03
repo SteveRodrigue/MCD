@@ -19,6 +19,11 @@ import {
   Keyword,
   getKeywordValue,
   cloneGameState,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+  getMainSchemesInPlay,
+  getVillainById,
 } from '@engine/models';
 import {
   getPlayer,
@@ -149,15 +154,15 @@ export function findInPlayCardInstance(
     }
   }
 
-  if (state.villain) {
-    const fromVillainAtt = state.villain.attachments?.find(
+  for (const villain of getVillainsInPlay(state)) {
+    const fromVillainAtt = villain.attachments?.find(
       (c) => c.instanceId === instanceId || c.card.code === instanceId,
     );
     if (fromVillainAtt) return fromVillainAtt;
   }
 
-  if (state.mainScheme) {
-    const fromMainSchemeAtt = state.mainScheme.attachments?.find(
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    const fromMainSchemeAtt = mainScheme.attachments?.find(
       (c) => c.instanceId === instanceId || c.card.code === instanceId,
     );
     if (fromMainSchemeAtt) return fromMainSchemeAtt;
@@ -272,6 +277,22 @@ export function routeCardInstances(
       attachCardToHost(state, card, targetHost || 'VILLAIN', player.id);
     }
   }
+}
+
+/**
+ * Resolves the villain a player attacks or attaches to: the one named by `targetInstanceId`
+ * (any villain in play may be targeted, MC03 rules insert p.6), else the active villain.
+ * Returns undefined when an id is given that matches none of the villains in play.
+ */
+function resolveAttackedVillain(
+  state: GameState,
+  targetInstanceId?: string,
+): VillainState | undefined {
+  if (!targetInstanceId) return getActiveVillain(state);
+  const found = getVillainById(state, targetInstanceId);
+  if (found) return found;
+  // States without a villains collection only have the legacy pointer (#215).
+  return getVillainsInPlay(state).length === 0 ? getActiveVillain(state) : undefined;
 }
 
 /**
@@ -480,13 +501,16 @@ export function dispatchAction(
 
       // 2. Resolve Attack on Target
       if (action.targetType === 'villain') {
+        const targetVillain = resolveAttackedVillain(nextState, action.targetInstanceId);
+        if (!targetVillain)
+          return { state, result: { success: false, error: 'Villain not found' } };
         const damageRes = applyDamageToTarget(nextState, {
           target: {
             type: 'villain',
-            entity: nextState.villain,
-            name: nextState.villain.card?.name || (nextState.villain as any).name || 'Villain',
-            attachments: nextState.villain.attachments,
-            statusCards: nextState.villain.statusCards,
+            entity: targetVillain,
+            name: targetVillain.card?.name || (targetVillain as any).name || 'Villain',
+            attachments: targetVillain.attachments,
+            statusCards: targetVillain.statusCards,
           },
           amount: attackDamage,
           sourceType: 'HERO',
@@ -618,13 +642,16 @@ export function dispatchAction(
 
       // Deal damage to target
       if (action.targetType === 'villain') {
+        const targetVillain = resolveAttackedVillain(nextState, action.targetInstanceId);
+        if (!targetVillain)
+          return { state, result: { success: false, error: 'Villain not found' } };
         applyDamageToTarget(nextState, {
           target: {
             type: 'villain',
-            entity: nextState.villain,
-            name: nextState.villain.card?.name || (nextState.villain as any).name || 'Villain',
-            attachments: nextState.villain.attachments,
-            statusCards: nextState.villain.statusCards,
+            entity: targetVillain,
+            name: targetVillain.card?.name || (targetVillain as any).name || 'Villain',
+            attachments: targetVillain.attachments,
+            statusCards: targetVillain.statusCards,
           },
           amount: attackDmg,
           sourceType: 'ALLY',
@@ -1314,17 +1341,17 @@ export function dispatchAction(
 
             const allEnemies: { enemy: CardInstance | VillainState; id: string; name: string }[] =
               [];
-            if (nextState.villain) {
-              const currentAttached = (nextState.villain.attachments || []).filter(
+            for (const villain of getVillainsInPlay(nextState)) {
+              const currentAttached = (villain.attachments || []).filter(
                 (att) =>
                   att.card.code === playedCardInstance.card.code ||
                   att.card.name === playedCardInstance.card.name,
               ).length;
               if (maxPerHost === undefined || maxPerHost <= 0 || currentAttached < maxPerHost) {
                 allEnemies.push({
-                  enemy: nextState.villain,
-                  id: nextState.villain.instanceId || 'villain',
-                  name: nextState.villain.card.name,
+                  enemy: villain,
+                  id: villain.instanceId || 'villain',
+                  name: villain.card.name,
                 });
               }
             }
@@ -1396,7 +1423,8 @@ export function dispatchAction(
               });
             } else {
               attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-              const villainName = nextState.villain.card.name;
+              const villainName =
+                resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
               nextState.log.push({
                 id: `log_${Date.now()}`,
                 timestamp: Date.now(),
@@ -1416,7 +1444,8 @@ export function dispatchAction(
             }
           } else if (targetHost === 'CHOSEN_ENEMY' || targetHost === 'ENEMY') {
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-            let hostName = nextState.villain.card.name;
+            let hostName =
+              resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
             for (const p of nextState.players) {
               const m = p.engagedMinions?.find((min) => min.instanceId === action.targetInstanceId);
               if (m) {
@@ -1442,7 +1471,8 @@ export function dispatchAction(
             });
           } else {
             attachCardToHost(nextState, playedCardInstance, targetHost, action.targetInstanceId);
-            const villainName = nextState.villain.card.name;
+            const villainName =
+              resolveAttackedVillain(nextState, action.targetInstanceId)?.card.name ?? '';
             nextState.log.push({
               id: `log_${Date.now()}`,
               timestamp: Date.now(),
@@ -2290,6 +2320,11 @@ export function dispatchAction(
                     pl.activeFormCard?.code === targetId ||
                     pl.hero?.code === targetId,
                 ) || (targetId === player.id ? player : undefined);
+              // A chosen villain is resolved by id so any villain in play can be targeted.
+              const targetVillain =
+                targetId === 'villain'
+                  ? getActiveVillain(poppedState)
+                  : getVillainById(poppedState, targetId);
 
               if (targetPlayer) {
                 const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
@@ -2299,18 +2334,14 @@ export function dispatchAction(
                   targetPlayer.health = Math.max(0, targetPlayer.health - amount);
                   if (targetPlayer.health <= 0) poppedState.winner = 'VILLAIN';
                 }
-              } else if (
-                targetId === poppedState.villain?.instanceId ||
-                targetId === 'villain' ||
-                targetId === poppedState.villain?.card?.code
-              ) {
-                const vToughIdx = poppedState.villain.statusCards.indexOf(StatusCard.TOUGH);
+              } else if (targetVillain) {
+                const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
                 if (vToughIdx !== -1) {
-                  poppedState.villain.statusCards.splice(vToughIdx, 1);
+                  targetVillain.statusCards.splice(vToughIdx, 1);
                 } else {
-                  poppedState.villain.health = Math.max(0, poppedState.villain.health - amount);
-                  if (poppedState.villain.health <= 0) {
-                    handleVillainDefeat(poppedState, poppedState.villain.instanceId);
+                  targetVillain.health = Math.max(0, targetVillain.health - amount);
+                  if (targetVillain.health <= 0) {
+                    handleVillainDefeat(poppedState, targetVillain.instanceId);
                   }
                 }
               } else {
@@ -2346,12 +2377,13 @@ export function dispatchAction(
               }
             }
           } else if (domain === 'THREAT_REMOVAL') {
+            const targetMainScheme = getActiveMainScheme(poppedState);
             if (
               targetId === 'main_scheme' ||
-              targetId === poppedState.mainScheme?.instanceId ||
-              targetId === poppedState.mainScheme?.card?.code
+              targetId === targetMainScheme?.instanceId ||
+              targetId === targetMainScheme?.card?.code
             ) {
-              poppedState.mainScheme.threat = Math.max(0, poppedState.mainScheme.threat - amount);
+              targetMainScheme.threat = Math.max(0, targetMainScheme.threat - amount);
             } else {
               const sideIdx = (poppedState.sideSchemes || []).findIndex(
                 (s) => s.instanceId === targetId || s.card.code === targetId,

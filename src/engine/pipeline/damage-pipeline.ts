@@ -263,7 +263,7 @@ export function applyDamageToTarget(
     onomatopoeia = onomatopoeia || 'POW!';
     switch (target.type) {
       case 'villain': {
-        const villain = state.villain;
+        const villain = target.entity as VillainState;
         villain.health = Math.max(0, villain.health - damageTaken);
         state.log.push({
           id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -418,7 +418,7 @@ export function applyDamageToTarget(
   if (!skipRetaliate && isAttack && !targetDefeated && damageDealt > 0) {
     let retaliateX = 0;
     if (target.type === 'villain') {
-      retaliateX = getEffectiveRetaliate(state.villain, state);
+      retaliateX = getEffectiveRetaliate(target.entity as VillainState, state);
     } else if (target.type === 'minion' || target.type === 'ally') {
       retaliateX = getEffectiveRetaliate(target.entity as CardInstance, state);
     } else if (target.type === 'player') {

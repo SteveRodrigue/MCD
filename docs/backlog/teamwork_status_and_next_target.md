@@ -41,10 +41,10 @@ flowchart TD
     subgraph ResourceThreat["3. Resource & Threat Engines"]
         I181["#181 Crisis & Patrol Legality<br/>RESOLVED (0d6c235)"]
         I186["#186 / #135 For Justice! Kicker<br/>RESOLVED (052032e)"]
-        I180["#180 / #129 Payment Modal Filters<br/>ACTIVE NEXT TARGET"]
+        I180["#180 / #129 Payment Modal Filters<br/>RESOLVED (pending commit)"]
         I185["#185 Surveillance Team Usability<br/>RESOLVED (pending commit)"]
         I179["#179 Alpha Flight Station Usability<br/>RESOLVED (569274c + tests)"]
-        I175["#175 Charge Attachment Timing<br/>(Constant Attachment)"]
+        I175["#175 Charge Attachment Timing<br/>ACTIVE NEXT TARGET"]
     end
 
     %% Dependencies & Flows
@@ -62,9 +62,9 @@ flowchart TD
     classDef active fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
     classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
 
-    class I183,I172,I184,I181,I186,I185,I179 resolved;
-    class I180 active;
-    class I194,I192,I196,I122,I154,I158,I175 open;
+    class I183,I172,I184,I181,I186,I185,I179,I180 resolved;
+    class I175 active;
+    class I194,I192,I196,I122,I154,I158 open;
 ```
 
 
@@ -106,7 +106,7 @@ flowchart TD
 |---|---|---|---|
 | **#185** | **Surveillance Team (01064) modal opens with no threat** | `HeroZone.tsx`, `TableauActionModal.tsx`, `tableau-card-legality.ts` | 🟢 **Resolved (pending commit)**. Tableau cards whose Action/Resource abilities fail `canInitiateAbility` are grayed and non-clickable (ADR-0074). |
 | **#179** | **Alpha Flight Station (01015) active on empty hand** | `tableau-card-legality.ts`, `HeroZone.tsx` | 🟢 **Resolved**. Covered by the #185 fix (`569274c`, ADR-0074); regression tests added. |
-| **#180** / **#129** | **Captain Marvel Rechannel & Rhino Attachment payment filtering** | `CostPaymentModal.tsx`, `GameBoard.tsx` | Resource payment modal allows selecting non-Energy cards for Rechannel or non-Physical cards for Rhino attachment. |
+| **#180** / **#129** | **Captain Marvel Rechannel & Rhino Attachment payment filtering** | `CardPaymentModal.tsx`, `payment-eligibility.ts` | 🟢 **Resolved (pending commit)**. Modal disables hand cards/generators that cannot pay a typed cost (ADR-0072 addendum). |
 | **#161** | **Hero exhausted card layering behind health bar** | `HeroZone.tsx`, CSS/z-index | When hero rotates on exhaustion, the rotated card frame overlaps HUD stats and health bar. Adjust z-index stacking context. |
 | **#192** | **Remove villain-phase step aliases in tests [AUD-F001]** | `villain-phase.ts`, test files | Migrate deprecated exports `step2_villainActivations`, `step4_dealEncounterCards`, `step5_revealEncounterCards` to canonical names. |
 | **#195** | **Fix mismatched log key step4->step3 [AUD-F004]** | `villain-phase.ts:305`, `locales/` | Log key `'villainPhase.step4.encounterCardsDealt'` emitted in Step 3. Change to `'villainPhase.step3.encounterCardsDealt'`. |
@@ -129,11 +129,11 @@ flowchart TD
 | **P1** | **#184** | Caught Off Guard lacks player choice prompt | Engine | Medium / Encounter Flow | S | 🟢 **Closed** (`052032e`) |
 | **P1** | **#186** | For Justice! Mental bonus not applied | Engine/Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
 | **P1** | **#135** | Duplicate of For Justice! (#186) | Data | Low / Card Effect | S | 🟢 **Closed** (`052032e`) |
-| **P1** | **#180** | Captain Marvel Rechannel resource validation | UI/Engine | Medium / Payment Flow | S | 🎯 **Active Next Target** |
-| **P1** | **#175** | Charge (01099) incorrect When Revealed | Card Data | Low / Supplemental Data | XS | 🟡 **Open** |
+| **P1** | **#180** | Captain Marvel Rechannel resource validation | UI/Engine | Medium / Payment Flow | S | 🟢 **Resolved** (pending commit) |
+| **P1** | **#175** | Charge (01099) incorrect When Revealed | Card Data | Low / Supplemental Data | XS | 🎯 **Active Next Target** |
 | **P2** | **#185** | Surveillance Team clickable with no threat | UI/Engine | Low / Board UI | S | 🟢 **Resolved** (pending commit) |
 | **P2** | **#179** | Alpha Flight Station active with empty hand | UI/Engine | Low / Board UI | S | 🟢 **Resolved** (`569274c` + tests) |
-| **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟡 **Open** (Shared with #180) |
+| **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟢 **Resolved** (pending commit) |
 | **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟡 **Open** |
 | **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟡 **Open** (Blocked by #122) |
 | **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / 221 Call Sites | L | 🟡 **Open** (Arch Milestone) |
@@ -162,8 +162,8 @@ flowchart TD
 ### Phase 2: Ability Usability & Action Legality Pre-checks (Active 🎯)
 - ✅ **#185**: *Surveillance Team* (`01064`) — gray out action when total removable threat across legal schemes is 0.
 - ✅ **#179**: *Alpha Flight Station* (`01015`) — gray out action when hand is empty.
-- 🎯 **#180 / #129**: *Captain Marvel* (`01010a` Rechannel) & Rhino attachment — payment modal resource type enforcement.
-- **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
+- ✅ **#180 / #129**: *Captain Marvel* (`01010a` Rechannel) & Rhino attachment — payment modal resource type enforcement.
+- 🎯 **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
 
 ### Phase 3: Architectural Foundation & Shared Gating
 - **#122 & #154**: Extract shared step-gate evaluator and gate Cosmic Flight *Aerial* trait on Hero form.
@@ -184,7 +184,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Issue #180 / #129** (payment modal resource type enforcement).
+   - Primary: **Issue #175** (*Charge* constant attachment timing).
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

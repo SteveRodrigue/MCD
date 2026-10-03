@@ -35,6 +35,8 @@ The optional `cost` object defines mandatory prerequisites that must be satisfie
 | `resources`     | `ResourceType[]`                   | `["energy", "mental"]`                                  | Specific printed resource types required (`'physical'`, `'energy'`, `'mental'`, `'wild'`). |
 | `resourceCost`  | `number \| Record<string, number>` | `2` or `{"physical": 1}`                                | Generic untyped resource cost ($N$) or typed resource map. Evaluated in `cost-engine.ts`.  |
 | `requirePrinted`| `boolean`                          | `true`                                                  | When true, resources paid must match printed icons on cards (RR v1.8 p. 15).                |
+
+> **Typed-cost eligibility:** for a typed cost (`resources` or a typed `resourceCost`), the payment modal disables hand cards and generators with no icon of that type. A Wild icon qualifies unless `requirePrinted` is `true`. See ADR-0072 addendum (Issues #180, #129).
 | `discardCard`   | `object`                           | `{"count": 1, "from": "HAND", "filter": { ... }}`       | Card(s) discarded from `"HAND"`, `"DECK"`, or `"PLAY"`. Supports `maxCount` and `filter`.  |
 | `spendCounters` | `object`                           | `{"amount": 1, "counterType": "web", "target": "SELF"}` | Decrements counters from the card instance or player identity.                             |
 | `heal`          | `object`                           | `{"amount": 1, "target": "SELF"}`                       | Damage must be healed as an atomic prerequisite cost (RR v1.8 p. 11, 16).                  |

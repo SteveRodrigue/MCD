@@ -61,3 +61,9 @@ Introduced `executeResourceCostPayment(state, player, requiredAmount, requiredTy
 
 ### Negative / Trade-Offs
 - Slightly expanded blast-radius across action dispatcher and prompt queue, mitigated by 100% automated test coverage in `tests/engine/unified-payment-subsystem.test.ts`.
+
+## Addendum (2026-10-03): Typed-Resource Eligibility in `CardPaymentModal` (Issues #180, #129)
+
+- When a cost requires a specific resource type (e.g. Rechannel `energy`, Rhino attachment discard `physical`), `CardPaymentModal` disables hand cards and generators that cannot pay it. A card is eligible if it prints the required type or a Wild icon; with `requirePrinted`, Wild no longer qualifies. A required type of `wild` (or none) leaves everything selectable.
+- The rule lives in `src/ui/components/board/payment-eligibility.ts` (`isHandCardIneligibleForCost`, `isGeneratorIneligibleForCost`) so the modal and tests share one predicate.
+- Engine affordability (`canPayAbilityCost`) already rejected unaffordable typed costs; regression tests in `tests/engine/action-cost-engine.test.ts` lock this in, so the Rechannel button disables when no Energy or Wild source exists.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Data): Honor step gates on ADD_TRAIT; gate Cosmic Flight Aerial to Hero form ([Issue #154](https://github.com/SteveRodrigue/MCD/issues/154))**
+  - **Engine (`stat-calculator.ts`, `step-gate-evaluator.ts`, `models/abilities.ts`):** `CONSTANT` `ADD_TRAIT` steps now respect `gate`; added player-only `evaluateFormGate`, optional `state` on the trait helpers, and `IF_FORM` to the `ConditionGate` type. Call sites in `legality-checker.ts` and `dynamic-formula-evaluator.ts` pass `state`.
+  - **Supplemental Data (`core.json`):** _Cosmic Flight_ (`01017`) `cosmic_flight_aerial` gated with `IF_FORM: hero`.
+  - **Documentation:** ADR-0019 addendum, gate note in `10_sequences_and_prompts.md`, regenerated declarations report.
+  - **Automated Verification (`conditional-trait-gating.test.ts`):** 5 tests covering Hero vs Alter-Ego form, synthetic gated trait, state gates, and ungated regression.
+
 - **Refactor (Engine): Extract shared step-gate evaluator ([Issue #122](https://github.com/SteveRodrigue/MCD/issues/122))**
   - **Engine (`step-gate-evaluator.ts`, `effects/index.ts`, `stat-calculator.ts`):** Moved gate evaluation into `evaluateStepGate`; `shouldExecuteStep` now delegates to it and the CONSTANT stat loop uses it in place of the inline `TARGET_TRAIT_MATCH` check. CONSTANT steps now honor all state/player gates (e.g. `IF_FORM`); result-based gates never apply to them. No existing card data changes behavior (no CONSTANT step in supplemental data declared a gate).
   - **Documentation:** ADR-0019 addendum and gate note in `10_sequences_and_prompts.md`.

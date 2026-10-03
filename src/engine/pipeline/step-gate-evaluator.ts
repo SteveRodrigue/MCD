@@ -1,6 +1,7 @@
 import {
   GameState,
   CardInstance,
+  PlayerState,
   StatusCard,
   ConditionGate,
   StepResolutionResult,
@@ -160,23 +161,35 @@ export function evaluateStepGate(
         (Array.isArray(gateParams.traits) ? (gateParams.traits[0] as string) : undefined);
       const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
       if (requiredTrait && player) {
-        return hasPlayerTrait(player, requiredTrait);
+        return hasPlayerTrait(player, requiredTrait, state);
       }
     }
     return !!evaluatedResult && evaluatedResult.conditionMet === true;
   }
 
   if (gate === 'IF_FORM') {
-    const targetForm = ((gateParams.form as string) || '').toLowerCase();
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
-    if (!player || !targetForm) return false;
-    const currentForm = (player.currentForm || 'hero').toLowerCase();
-    return (
-      currentForm === targetForm ||
-      (targetForm === 'alter_ego' && currentForm === 'alter-ego') ||
-      (targetForm === 'alter-ego' && currentForm === 'alter_ego')
-    );
+    return !!player && evaluateFormGate(player, gateParams);
   }
 
   return true;
+}
+
+/**
+ * `IF_FORM` gate: true when the player's current identity form matches `gateParams.form`
+ * (`hero` or `alter_ego`; `alter-ego` is accepted as an alias). Needs only the player, so
+ * trait and stat calculators can evaluate it without a `GameState`.
+ */
+export function evaluateFormGate(
+  player: PlayerState,
+  gateParams: Record<string, unknown>,
+): boolean {
+  const targetForm = ((gateParams.form as string) || '').toLowerCase();
+  if (!targetForm) return false;
+  const currentForm = (player.currentForm || 'hero').toLowerCase();
+  return (
+    currentForm === targetForm ||
+    (targetForm === 'alter_ego' && currentForm === 'alter-ego') ||
+    (targetForm === 'alter-ego' && currentForm === 'alter_ego')
+  );
 }

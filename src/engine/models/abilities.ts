@@ -140,7 +140,8 @@ export type ConditionGate =
   | 'IF_RESOURCE_MATCH'
   | 'IF_CONDITION_MET'
   | 'IF_CARD_IN_PLAY'
-  | 'IF_CARD_NOT_IN_PLAY';
+  | 'IF_CARD_NOT_IN_PLAY'
+  | 'IF_FORM';
 
 export interface StepResolutionResult {
   success: boolean;

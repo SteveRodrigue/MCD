@@ -296,7 +296,7 @@ export function evaluateDynamicAmount(
         const traitsToCheck =
           filter?.traits ||
           ((amountParam as any).trait ? [(amountParam as any).trait as string] : []);
-        const hasTrait = traitsToCheck.some((t: string) => hasPlayerTrait(player, t));
+        const hasTrait = traitsToCheck.some((t: string) => hasPlayerTrait(player, t, state));
         baseValue = hasTrait ? 1 : 0;
       }
       break;

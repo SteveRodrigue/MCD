@@ -32,6 +32,7 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 - `"IF_CONDITION_MET"` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md)): Executes Step $N$ only if the explicitly monitored condition (`condition` in Step $N-1$ or targeted by `targetStepId`) evaluated to `true`.
 
 > **Shared evaluator (Issue #122):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State/player gates (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`, `IF_CONDITION_MET` + `TARGET_TRAIT_MATCH`) therefore work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`) need a preceding step, so they never apply to `CONSTANT` steps.
+> Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. *Cosmic Flight* `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "hero" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
 
 ### Explicit Condition Contracts (`StepConditionSchema`)
 

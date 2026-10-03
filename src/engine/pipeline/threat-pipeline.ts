@@ -1,4 +1,11 @@
-import { GameState, PlayerState, StatusCard, CardInstance, SideSchemeState } from '@engine/models';
+import {
+  GameState,
+  PlayerState,
+  StatusCard,
+  CardInstance,
+  SideSchemeState,
+  getActiveMainScheme,
+} from '@engine/models';
 import { consumeEntityStatusCards } from './stat-calculator';
 import { hasCrisisInPlay } from './legality-checker';
 import { handleMainSchemeCompletion } from './scenario-helpers';
@@ -76,12 +83,12 @@ export function applyThreatPlacement(
   if (amount <= 0) {
     const schemeName =
       targetType === 'main_scheme'
-        ? state.mainScheme?.card?.name || 'Main Scheme'
+        ? getActiveMainScheme(state)?.card?.name || 'Main Scheme'
         : state.sideSchemes.find((s) => s.instanceId === targetInstanceId)?.card?.name ||
           'Side Scheme';
     const curThreat =
       targetType === 'main_scheme'
-        ? state.mainScheme?.threat || 0
+        ? getActiveMainScheme(state)?.threat || 0
         : state.sideSchemes.find((s) => s.instanceId === targetInstanceId)?.threat || 0;
 
     return {
@@ -121,10 +128,11 @@ export function applyThreatPlacement(
   // STEP 2: Placing of threat tokens on target scheme
   // ---------------------------------------------------------------------------
   if (targetType === 'main_scheme') {
-    targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
-    state.mainScheme.threat += finalThreat;
-    currentThreat = state.mainScheme.threat;
-    targetThreat = state.mainScheme.targetThreat;
+    const mainScheme = getActiveMainScheme(state);
+    targetSchemeName = mainScheme?.card?.name || 'Main Scheme';
+    mainScheme.threat += finalThreat;
+    currentThreat = mainScheme.threat;
+    targetThreat = mainScheme.targetThreat;
 
     if (sourceType === 'VILLAIN_PHASE_STEP_1') {
       onomatopoeia = 'SCHEME GROWS!';
@@ -184,9 +192,9 @@ export function applyThreatPlacement(
     // ---------------------------------------------------------------------------
     // STEP 3: Main Scheme Threshold Check & Stage Progression
     // ---------------------------------------------------------------------------
-    if (state.mainScheme.targetThreat && state.mainScheme.threat >= state.mainScheme.targetThreat) {
+    if (mainScheme.targetThreat && mainScheme.threat >= mainScheme.targetThreat) {
       stageCompleted = true;
-      state = handleMainSchemeCompletion(state, state.mainScheme.instanceId);
+      state = handleMainSchemeCompletion(state, mainScheme.instanceId);
     }
   } else if (targetType === 'side_scheme') {
     let sideScheme: SideSchemeState | undefined;
@@ -315,7 +323,7 @@ export function applyThwart(
       key: 'card.effect.threatBlockedByCrisis',
       params: {
         player: player.name,
-        scheme: state.mainScheme?.card?.name || 'Main Scheme',
+        scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
       },
       onomatopoeia,
     });
@@ -326,8 +334,8 @@ export function applyThwart(
         thwartAttempted: false,
         confusedCleared: false,
         threatRemoved: 0,
-        targetSchemeName: state.mainScheme?.card?.name || 'Main Scheme',
-        remainingThreat: state.mainScheme?.threat || 0,
+        targetSchemeName: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
+        remainingThreat: getActiveMainScheme(state)?.threat || 0,
         schemeDefeated: false,
         onomatopoeia,
       },
@@ -344,10 +352,11 @@ export function applyThwart(
   // STEP 3: Threat Removal Application
   // ---------------------------------------------------------------------------
   if (targetType === 'main_scheme') {
-    targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
-    removed = Math.min(state.mainScheme.threat, Math.max(0, thwartValue));
-    state.mainScheme.threat -= removed;
-    remainingThreat = state.mainScheme.threat;
+    const mainScheme = getActiveMainScheme(state);
+    targetSchemeName = mainScheme?.card?.name || 'Main Scheme';
+    removed = Math.min(mainScheme.threat, Math.max(0, thwartValue));
+    mainScheme.threat -= removed;
+    remainingThreat = mainScheme.threat;
 
     onomatopoeia = 'FOILED!';
     state.log.push({
@@ -411,7 +420,7 @@ export function applyThwart(
       targetPlayerId: player.id,
       sourceInstanceId:
         targetType === 'main_scheme'
-          ? state.mainScheme?.instanceId || 'main_scheme'
+          ? getActiveMainScheme(state)?.instanceId || 'main_scheme'
           : targetInstanceId,
       entityType: 'SCHEME',
       threatAmount: removed,

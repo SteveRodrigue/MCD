@@ -1,6 +1,6 @@
 # Plan: Issue #194 — Replace `state.villain` / `state.mainScheme` legacy pointers with typed accessors [AUD-F003]
 
-> Status: **Revision 3, batches 0-2 committed (ba31d33), batch 3 done (uncommitted)**. One batch-0 test stays red until batch 4 (`BASIC_ATTACK` with a villain `targetInstanceId`). Next: batch 4.
+> Status: **Revision 3, batches 0-3 committed (ba31d33, 09c80bd), batch 4 done (uncommitted)**. Next: batch 5.
 
 ## 1. Confirmation
 

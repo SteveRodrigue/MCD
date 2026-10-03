@@ -16,6 +16,7 @@ import {
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
+import { executeEnemyAttackSynchronously } from '@engine/pipeline/combat-pipeline';
 import {
   resolveCharacterTargets,
   resolveEntityByInstanceId,
@@ -216,6 +217,36 @@ describe('Active villain accessors (#194, MC03 multi-villain readiness)', () => 
       expect(result.success).toBe(true);
       expect(getVillainById(next, 'v_piledriver')!.health).toBeLessThan(11);
       expect(getVillainById(next, 'v_wrecker')!.health).toBe(18);
+    });
+
+    it('BASIC_ATTACK with an id that matches no villain in play fails and changes nothing', () => {
+      const state = buildFourVillainState();
+      const { state: next, result } = dispatchAction(state, {
+        type: 'BASIC_ATTACK',
+        playerId: 'p1',
+        targetType: 'villain',
+        targetInstanceId: 'v_missing',
+      });
+      expect(result.success).toBe(false);
+      expect(next.villains.map((v) => v.health)).toEqual([18, 16, 11, 15]);
+    });
+
+    it('an enemy attack uses the villain named at initiation, not whoever holds the counter', () => {
+      const state = buildFourVillainState();
+      setActiveVillain(state, 'v_thunderball');
+      const byId = executeEnemyAttackSynchronously(
+        structuredClone(state),
+        { type: 'VILLAIN', villainId: 'v_wrecker' },
+        'p1',
+      );
+      expect(byId.lastCombatOutcome?.attackerCode).toBe('01094');
+
+      const byDefault = executeEnemyAttackSynchronously(
+        structuredClone(state),
+        { type: 'VILLAIN' },
+        'p1',
+      );
+      expect(byDefault.lastCombatOutcome?.attackerCode).toBe('01095');
     });
 
     it('BASIC_ATTACK without a villain target id still hits the active villain', () => {

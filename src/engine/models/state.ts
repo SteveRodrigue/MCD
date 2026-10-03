@@ -232,6 +232,8 @@ export interface AttackExecutionContext {
   attackId: string;
   attackerType: 'VILLAIN' | 'MINION';
   attackerCard?: CardInstance;
+  /** Instance id of the attacking villain, fixed at initiation so a mid-activation active counter move does not change the attacker (MC03 rules insert p.6). */
+  attackerVillainId?: string;
   targetPlayerId: string;
   phase: CombatPhase;
   baseAttack: number;
@@ -630,8 +632,8 @@ export function cloneGameState(state: GameState): GameState {
  */
 export function getVillainById(state: GameState, idOrCode: string): VillainState | undefined {
   return (
-    (state.villains || []).find((v) => v.card.code === idOrCode || v.instanceId === idOrCode) ||
-    (state.villain?.card.code === idOrCode ? state.villain : undefined)
+    (state.villains || []).find((v) => v.card?.code === idOrCode || v.instanceId === idOrCode) ||
+    (state.villain?.card?.code === idOrCode ? state.villain : undefined)
   );
 }
 

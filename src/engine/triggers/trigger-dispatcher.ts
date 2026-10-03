@@ -1,4 +1,13 @@
-import { GameState, TriggerType, AbilityStep, PlayerState, CardInstance } from '@engine/models';
+import {
+  GameState,
+  TriggerType,
+  AbilityStep,
+  PlayerState,
+  CardInstance,
+  VillainState,
+  getActiveVillain,
+  getVillainById,
+} from '@engine/models';
 import { TriggerFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect } from '../effects';
@@ -185,6 +194,17 @@ export interface TriggerContext {
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   triggerDepth?: number;
+}
+
+/**
+ * The villain a trigger refers to: the one named by `context.targetInstanceId`, else the active
+ * villain.
+ */
+function targetedVillain(state: GameState, context: TriggerContext): VillainState {
+  return (
+    (context.targetInstanceId ? getVillainById(state, context.targetInstanceId) : undefined) ??
+    getActiveVillain(state)
+  );
 }
 
 export interface TriggerDispatchResult {
@@ -460,13 +480,17 @@ export function dispatchTrigger(
           sourceCardCode: player.activeFormCard.code,
           triggerSourceName:
             context.encounterCardInstance?.card?.name ||
-            (context.targetType === 'villain' ? state.villain.card.name : undefined),
+            (context.targetType === 'villain'
+              ? targetedVillain(state, context).card.name
+              : undefined),
           triggerSourceCode:
             context.encounterCardInstance?.card?.code ||
-            (context.targetType === 'villain' ? state.villain.card.code : undefined),
+            (context.targetType === 'villain'
+              ? targetedVillain(state, context).card.code
+              : undefined),
           triggerSourceCard:
             context.encounterCardInstance?.card ||
-            (context.targetType === 'villain' ? state.villain.card : undefined),
+            (context.targetType === 'villain' ? targetedVillain(state, context).card : undefined),
           triggerType: ability.timing,
           isVoluntary: true,
           options: [
@@ -656,13 +680,19 @@ export function dispatchTrigger(
               sourceCardCode: cardInst.card.code,
               triggerSourceName:
                 context.encounterCardInstance?.card?.name ||
-                (context.targetType === 'villain' ? state.villain.card.name : undefined),
+                (context.targetType === 'villain'
+                  ? targetedVillain(state, context).card.name
+                  : undefined),
               triggerSourceCode:
                 context.encounterCardInstance?.card?.code ||
-                (context.targetType === 'villain' ? state.villain.card.code : undefined),
+                (context.targetType === 'villain'
+                  ? targetedVillain(state, context).card.code
+                  : undefined),
               triggerSourceCard:
                 context.encounterCardInstance?.card ||
-                (context.targetType === 'villain' ? state.villain.card : undefined),
+                (context.targetType === 'villain'
+                  ? targetedVillain(state, context).card
+                  : undefined),
               triggerType: ability.timing,
               isVoluntary: true,
               options: [
@@ -819,13 +849,17 @@ export function dispatchTrigger(
             sourceCardCode: interruptCard.card.code,
             triggerSourceName:
               context.encounterCardInstance?.card?.name ||
-              (context.targetType === 'villain' ? state.villain.card.name : undefined),
+              (context.targetType === 'villain'
+                ? targetedVillain(state, context).card.name
+                : undefined),
             triggerSourceCode:
               context.encounterCardInstance?.card?.code ||
-              (context.targetType === 'villain' ? state.villain.card.code : undefined),
+              (context.targetType === 'villain'
+                ? targetedVillain(state, context).card.code
+                : undefined),
             triggerSourceCard:
               context.encounterCardInstance?.card ||
-              (context.targetType === 'villain' ? state.villain.card : undefined),
+              (context.targetType === 'villain' ? targetedVillain(state, context).card : undefined),
             triggerType: ability.timing,
             isVoluntary: true,
             options: [

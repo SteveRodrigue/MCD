@@ -1,4 +1,13 @@
-import { GameState, CardInstance } from '../models';
+import {
+  GameState,
+  CardInstance,
+  VillainState,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainById,
+  getVillainsInPlay,
+  getMainSchemesInPlay,
+} from '../models';
 
 /**
  * Traverses all containers and zones in the game state to collect every active CardInstance.
@@ -30,15 +39,15 @@ export function getAllCardInstances(state: GameState): CardInstance[] {
   }
 
   // 2. Villain Zones & Attachments
-  if (state.villain) {
-    cards.push(...(state.villain.attachments || []));
-    cards.push(...(state.villain.cardsUnderneath || []));
+  for (const villain of getVillainsInPlay(state)) {
+    cards.push(...(villain.attachments || []));
+    cards.push(...(villain.cardsUnderneath || []));
   }
 
   // 3. Schemes & Attachments
-  if (state.mainScheme) {
-    cards.push(...(state.mainScheme.attachments || []));
-    cards.push(...(state.mainScheme.cardsUnderneath || []));
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    cards.push(...(mainScheme.attachments || []));
+    cards.push(...(mainScheme.cardsUnderneath || []));
   }
 
   for (const scheme of state.sideSchemes || []) {
@@ -126,15 +135,15 @@ export function removeCardFromAllZones(
   }
 
   // Villain
-  if (state.villain) {
-    if (removeFromList(state.villain.attachments)) return found;
-    if (removeFromList(state.villain.cardsUnderneath)) return found;
+  for (const villain of getVillainsInPlay(state)) {
+    if (removeFromList(villain.attachments)) return found;
+    if (removeFromList(villain.cardsUnderneath)) return found;
   }
 
   // Schemes
-  if (state.mainScheme) {
-    if (removeFromList(state.mainScheme.attachments)) return found;
-    if (removeFromList(state.mainScheme.cardsUnderneath)) return found;
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    if (removeFromList(mainScheme.attachments)) return found;
+    if (removeFromList(mainScheme.cardsUnderneath)) return found;
   }
 
   for (const s of state.sideSchemes || []) {
@@ -161,6 +170,16 @@ export function removeCardFromAllZones(
 }
 
 /**
+ * The villain an attachment goes on: the one named by `targetHostId` when it is in play,
+ * else the active villain.
+ */
+function resolveVillainHost(state: GameState, targetHostId?: string): VillainState {
+  return (
+    (targetHostId ? getVillainById(state, targetHostId) : undefined) ?? getActiveVillain(state)
+  );
+}
+
+/**
  * Atomically attaches a card instance to a target host entity (ADR-0040).
  */
 export function attachCardToHost(
@@ -176,9 +195,10 @@ export function attachCardToHost(
   const uTarget = targetHostType.toUpperCase();
 
   if (uTarget === 'VILLAIN') {
-    if (!state.villain.attachments) state.villain.attachments = [];
-    state.villain.attachments.push(cardInstance);
-    (cardInstance as any).hostInstanceId = state.villain.instanceId || 'villain';
+    const host = resolveVillainHost(state, targetHostId);
+    if (!host.attachments) host.attachments = [];
+    host.attachments.push(cardInstance);
+    (cardInstance as any).hostInstanceId = host.instanceId || 'villain';
   } else if (uTarget === 'ENEMY' || uTarget === 'CHOSEN_ENEMY') {
     let minion: CardInstance | undefined;
     if (targetHostId) {
@@ -192,9 +212,10 @@ export function attachCardToHost(
       minion.attachments.push(cardInstance);
       (cardInstance as any).hostInstanceId = minion.instanceId;
     } else {
-      if (!state.villain.attachments) state.villain.attachments = [];
-      state.villain.attachments.push(cardInstance);
-      (cardInstance as any).hostInstanceId = state.villain.instanceId || 'villain';
+      const host = resolveVillainHost(state, targetHostId);
+      if (!host.attachments) host.attachments = [];
+      host.attachments.push(cardInstance);
+      (cardInstance as any).hostInstanceId = host.instanceId || 'villain';
     }
   } else if (
     uTarget === 'HERO' ||
@@ -270,8 +291,9 @@ export function attachCardToHost(
       targetPlayer.tableau.push(cardInstance);
     }
   } else if (uTarget === 'MAIN_SCHEME' || uTarget === 'SCHEME') {
-    if (!state.mainScheme.attachments) state.mainScheme.attachments = [];
-    state.mainScheme.attachments.push(cardInstance);
+    const mainScheme = getActiveMainScheme(state);
+    if (!mainScheme.attachments) mainScheme.attachments = [];
+    mainScheme.attachments.push(cardInstance);
   } else if (uTarget === 'SIDE_SCHEME' || uTarget === 'CHOSEN_SIDE_SCHEME') {
     const scheme =
       state.sideSchemes.find((s) => s.instanceId === targetHostId) || state.sideSchemes[0];

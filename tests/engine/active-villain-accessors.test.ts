@@ -17,6 +17,13 @@ import {
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline/combat-pipeline';
+import { hasCrisisInPlay } from '@engine/pipeline/legality-checker';
+import {
+  attachCardToHost,
+  getAllCardInstances,
+  removeCardFromAllZones,
+} from '@engine/state/state-validator';
+import { createCardInstance } from '@engine/state/game-setup';
 import {
   resolveCharacterTargets,
   resolveEntityByInstanceId,
@@ -290,6 +297,33 @@ describe('Active villain accessors (#194, MC03 multi-villain readiness)', () => 
       const found = resolveEntityByInstanceId(state, 'v_bulldozer');
       expect(found?.id).toBe('v_bulldozer');
       expect(resolveEntityByInstanceId(state, 'villain')?.id).toBe('v_wrecker');
+    });
+  });
+  describe('attachments and keywords with four villains in play (B and T tags)', () => {
+    it('attachCardToHost with a villain id attaches to that villain, not the active one', () => {
+      const state = buildFourVillainState();
+      const card = createCardInstance(cardCatalog.getCard('01098')!);
+      attachCardToHost(state, card, 'VILLAIN', 'v_bulldozer');
+      expect(getVillainById(state, 'v_bulldozer')!.attachments).toContain(card);
+      expect(getVillainById(state, 'v_wrecker')!.attachments).toHaveLength(0);
+      expect((card as any).hostInstanceId).toBe('v_bulldozer');
+    });
+
+    it('card conservation sees and moves attachments on a non-active villain', () => {
+      const state = buildFourVillainState();
+      const card = createCardInstance(cardCatalog.getCard('01098')!);
+      attachCardToHost(state, card, 'VILLAIN', 'v_thunderball');
+      expect(getAllCardInstances(state)).toContain(card);
+      expect(removeCardFromAllZones(state, card.instanceId)).toBeTruthy();
+      expect(getVillainById(state, 'v_thunderball')!.attachments).toHaveLength(0);
+    });
+
+    it('a Crisis icon on a non-active villain attachment counts as Crisis in play', () => {
+      const state = buildFourVillainState();
+      expect(hasCrisisInPlay(state)).toBe(false);
+      const crowdControl = createCardInstance(cardCatalog.getCard('01108')!);
+      getVillainById(state, 'v_piledriver')!.attachments.push(crowdControl);
+      expect(hasCrisisInPlay(state)).toBe(true);
     });
   });
 });

@@ -5,6 +5,8 @@ import {
   StatusCard,
   ConditionGate,
   StepResolutionResult,
+  getActiveVillain,
+  getVillainsInPlay,
 } from '../models';
 import { AbilityStep } from '../models/abilities';
 import { getStepGateParams } from '../../data/supplemental/schema';
@@ -70,7 +72,7 @@ export function evaluateStepGate(
     const statusParam = (gateParams.status as StatusCard) || StatusCard.TOUGH;
     const targetParam = (gateParams.target as string) || 'VILLAIN';
     if (targetParam === 'VILLAIN') {
-      return state.villain.statusCards.includes(statusParam as StatusCard);
+      return getActiveVillain(state).statusCards.includes(statusParam as StatusCard);
     }
     return false;
   }
@@ -118,8 +120,8 @@ export function evaluateStepGate(
     const cardCode = (gateParams.cardCode as string) || (gateParams.code as string);
     if (cardCode) {
       const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
-      const inVillainAttachments = state.villain?.attachments?.some(
-        (a) => a.card?.code === cardCode,
+      const inVillainAttachments = getVillainsInPlay(state).some((v) =>
+        v.attachments?.some((a) => a.card?.code === cardCode),
       );
       const inPlayerZones = state.players?.some((p) =>
         [
@@ -138,8 +140,8 @@ export function evaluateStepGate(
     const cardCode = (gateParams.cardCode as string) || (gateParams.code as string);
     if (cardCode) {
       const inSideSchemes = state.sideSchemes?.some((s) => s.card?.code === cardCode);
-      const inVillainAttachments = state.villain?.attachments?.some(
-        (a) => a.card?.code === cardCode,
+      const inVillainAttachments = getVillainsInPlay(state).some((v) =>
+        v.attachments?.some((a) => a.card?.code === cardCode),
       );
       const inPlayerZones = state.players?.some((p) =>
         [

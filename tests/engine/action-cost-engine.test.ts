@@ -4,6 +4,7 @@ import { GameState, HeroCard, AlterEgoCard } from '../../src/engine/models';
 import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { canPayAbilityCost } from '../../src/engine/pipeline/cost-engine';
+import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
 
 describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
   let state: GameState;
@@ -71,6 +72,32 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(res.result.success).toBe(false);
       expect(res.result.error).toContain('Requires at least 1 damage on Identity to heal as cost');
       expect(res.state.players[0].exhausted).toBe(false);
+    });
+
+    it('Cannot initiate Rechannel when no hand card or generator can supply Energy (Issue #180)', () => {
+      const p1 = state.players[0];
+      p1.currentForm = 'hero';
+      p1.activeFormCard = captainMarvelHero;
+      p1.health = ((p1.activeFormCard as HeroCard).health || 12) - 3;
+      p1.exhausted = false;
+      const ability = captainMarvelHero.enrichment!.abilities!.find((a) => a.id === 'rechannel')!;
+      const noEnergy = (name: string, res: any) => ({
+        instanceId: name,
+        card: { ...cardCatalog.getCard('01005')!, resources: { ...res, total: 1 } } as any,
+        exhausted: false,
+      });
+
+      p1.hand = [
+        noEnergy('phys', { physical: 1, energy: 0, mental: 0, wild: 0 }),
+        noEnergy('ment', { physical: 0, energy: 0, mental: 1, wild: 0 }),
+      ];
+      expect(canInitiateAbility(state, p1.id, ability, undefined, {}).allowed).toBe(false);
+
+      p1.hand = [noEnergy('wild', { physical: 0, energy: 0, mental: 0, wild: 1 })];
+      expect(canInitiateAbility(state, p1.id, ability, undefined, {}).allowed).toBe(true);
+
+      p1.hand = [noEnergy('en', { physical: 0, energy: 1, mental: 0, wild: 0 })];
+      expect(canInitiateAbility(state, p1.id, ability, undefined, {}).allowed).toBe(true);
     });
 
     it('Allows Rechannel and heals 1 damage without exhausting Captain Marvel when damaged', () => {

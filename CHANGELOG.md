@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (UI): Enforce resource type eligibility in the payment modal ([Issue #180](https://github.com/SteveRodrigue/MCD/issues/180), [Issue #129](https://github.com/SteveRodrigue/MCD/issues/129))**
+  - **Payment Modal (`CardPaymentModal.tsx`, `payment-eligibility.ts`):** Hand cards and generators that cannot pay a typed cost (e.g. non-Energy for Rechannel, non-Physical for Rhino attachment discard) are grayed out and disabled; Wild icons still qualify unless `requirePrinted`.
+  - **Engine Verification (`action-cost-engine.test.ts`):** Added regression test confirming Rechannel cannot be initiated without an Energy or Wild source.
+  - **Documentation:** ADR-0072 addendum and `03_costs_and_targeting.md` typed-cost note.
+  - **Automated Verification (`card-payment-modal-resource-eligibility.test.tsx`):** 5 tests for Energy, Physical, `requirePrinted`, untyped cost, and generator eligibility.
+
 - **Fix (UI): Gray out tableau cards with no usable action ([Issue #185](https://github.com/SteveRodrigue/MCD/issues/185))**
   - **Legality Helper (`tableau-card-legality.ts`):** `evaluateTableauCardLegality` accepts an optional game context and delegates to `canInitiateAbility`; cards whose Action/Resource abilities cannot be initiated (e.g. Surveillance Team with no threat) are grayed out.
   - **Board UI (`HeroZone.tsx`, `TableauActionModal.tsx`):** Grayed cards no longer open the action modal; hover zoom is unchanged.

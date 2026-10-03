@@ -28,6 +28,7 @@ import {
 import { FormattedCardText } from '../cards/FormattedCardText';
 import { CardArtThumbnail } from '../cards/CardArtThumbnail';
 import { locateCard, readCardResources } from '../../../engine/queries/card-inspector';
+import { isHandCardIneligibleForCost, isGeneratorIneligibleForCost } from './payment-eligibility';
 
 interface CardPaymentModalProps {
   isOpen: boolean;
@@ -1006,9 +1007,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                       : undefined;
                   const isHandCardDisabled =
                     isUsedForDiscardCost ||
-                    (isRequirePrinted &&
-                      abilityCost?.resourceType !== undefined &&
-                      (matchingPrintedCount || 0) === 0);
+                    isHandCardIneligibleForCost(hCard, abilityCost?.resourceType, isRequirePrinted);
 
                   return (
                     <button
@@ -1076,9 +1075,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
                   const isSelected = selectedGeneratorIds.includes(gen.id);
                   const isGenDisabled =
                     gen.amount === 0 ||
-                    (isRequirePrinted &&
-                      abilityCost?.resourceType !== undefined &&
-                      gen.resourceType !== abilityCost.resourceType);
+                    isGeneratorIneligibleForCost(gen, abilityCost?.resourceType, isRequirePrinted);
                   return (
                     <button
                       key={gen.id}

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Legality Helper (`tableau-card-legality.ts`):** `evaluateTableauCardLegality` accepts an optional game context and delegates to `canInitiateAbility`; cards whose Action/Resource abilities cannot be initiated (e.g. Surveillance Team with no threat) are grayed out.
   - **Board UI (`HeroZone.tsx`, `TableauActionModal.tsx`):** Grayed cards no longer open the action modal; hover zoom is unchanged.
   - **Documentation:** Added [ADR-0074](docs/decisions/0074-engine-backed-tableau-card-actionability.md).
-  - **Automated Verification (`tableau-card-actionability.test.tsx`):** 8 tests covering threat, side scheme, turn, exhaustion, form-only fallback, and HeroZone graying/click behavior.
+  - **Automated Verification (`tableau-card-actionability.test.tsx`):** 11 tests covering threat, side scheme, turn, exhaustion, form-only fallback, HeroZone graying/click behavior, and Alpha Flight Station graying on an empty hand ([Issue #179](https://github.com/SteveRodrigue/MCD/issues/179)).
 
 - **Refactor (Engine & Data): Declarative Resource Payment DynamicBonus & For Justice! Refactor ([Issue #186](https://github.com/SteveRodrigue/MCD/issues/186))**
   - **Dynamic Formulas & Schema (`schema.ts`, `schema.json`, `dynamic-formula-evaluator.ts`):**

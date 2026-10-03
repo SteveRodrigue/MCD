@@ -21,6 +21,10 @@ import {
   Keyword,
   hasKeyword,
   ActiveCostReduction,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+  getVillainById,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -653,13 +657,13 @@ export function compileDistributionTargets(
   }
 
   // 2. Schemes (Main Scheme + Side Schemes)
-  if (includeSchemes && state.mainScheme) {
-    const mainThreat = state.mainScheme.threat || 0;
+  if (includeSchemes && getActiveMainScheme(state)) {
+    const mainThreat = getActiveMainScheme(state).threat || 0;
     const isMainEligible = mainThreat > 0;
     targets.push({
       instanceId: 'main_scheme',
-      name: state.mainScheme.card.name,
-      cardCode: state.mainScheme.card.code,
+      name: getActiveMainScheme(state).card.name,
+      cardCode: getActiveMainScheme(state).card.code,
       cardType: 'main_scheme',
       currentValue: mainThreat,
       allocationCap: mainThreat,
@@ -685,17 +689,18 @@ export function compileDistributionTargets(
 
   // 3. Enemies (Villain + Minions)
   if (includeEnemies) {
-    if (state.villain) {
-      const vTough = state.villain.statusCards.includes(StatusCard.TOUGH);
+    const villainsInPlay = getVillainsInPlay(state);
+    for (const villain of villainsInPlay.length > 0 ? villainsInPlay : [getActiveVillain(state)]) {
+      if (!villain) continue;
       targets.push({
-        instanceId: state.villain.instanceId || 'villain',
-        name: state.villain.card.name,
-        cardCode: state.villain.card.code,
+        instanceId: villain.instanceId || 'villain',
+        name: villain.card.name,
+        cardCode: villain.card.code,
         cardType: 'villain',
-        currentValue: state.villain.health,
-        allocationCap: state.villain.health,
-        hasTough: vTough,
-        statusCards: state.villain.statusCards,
+        currentValue: villain.health,
+        allocationCap: villain.health,
+        hasTough: villain.statusCards.includes(StatusCard.TOUGH),
+        statusCards: villain.statusCards,
         isEligible: true,
       });
     }
@@ -750,13 +755,14 @@ function dealDamageToEnemies(
   amount: number,
   minionOwners: PlayerState[],
 ): GameState {
-  const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+  const villain = getActiveVillain(state);
+  const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
   if (villainToughIdx !== -1) {
-    state.villain.statusCards.splice(villainToughIdx, 1);
+    villain.statusCards.splice(villainToughIdx, 1);
   } else {
-    state.villain.health = Math.max(0, state.villain.health - amount);
-    if (state.villain.health <= 0) {
-      state = handleVillainDefeat(state, state.villain.instanceId);
+    villain.health = Math.max(0, villain.health - amount);
+    if (villain.health <= 0) {
+      state = handleVillainDefeat(state, villain.instanceId);
     }
   }
 
@@ -1284,9 +1290,9 @@ export function executeDiscard(
   // 6. DISCARD FROM HOST (ATTACHMENT)
   if (source === 'HOST') {
     if (context.sourceCardInstance) {
-      const vIdx = (state.villain.attachments || []).indexOf(context.sourceCardInstance);
+      const vIdx = (getActiveVillain(state).attachments || []).indexOf(context.sourceCardInstance);
       if (vIdx !== -1) {
-        state.villain.attachments.splice(vIdx, 1);
+        getActiveVillain(state).attachments.splice(vIdx, 1);
         state.encounterDiscard.push(context.sourceCardInstance);
         return {
           state,
@@ -1322,11 +1328,11 @@ export function executeDiscard(
     let cardsToDiscard: CardInstance[] = [];
 
     if (targetHost === 'VILLAIN') {
-      cardsToDiscard = state.villain.cardsUnderneath || [];
-      state.villain.cardsUnderneath = [];
+      cardsToDiscard = getActiveVillain(state).cardsUnderneath || [];
+      getActiveVillain(state).cardsUnderneath = [];
     } else if (targetHost === 'MAIN_SCHEME') {
-      cardsToDiscard = state.mainScheme.cardsUnderneath || [];
-      state.mainScheme.cardsUnderneath = [];
+      cardsToDiscard = getActiveMainScheme(state).cardsUnderneath || [];
+      getActiveMainScheme(state).cardsUnderneath = [];
     }
 
     for (const card of cardsToDiscard) {
@@ -1585,13 +1591,14 @@ export function executeStep(
 
       if (targetParam === 'ALL_CHARACTERS') {
         // 1. Damage to Villain
-        const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+        const villain = getActiveVillain(state);
+        const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
         if (villainToughIdx !== -1) {
-          state.villain.statusCards.splice(villainToughIdx, 1);
+          villain.statusCards.splice(villainToughIdx, 1);
         } else {
-          state.villain.health = Math.max(0, state.villain.health - amount);
-          if (state.villain.health <= 0) {
-            state = handleVillainDefeat(state, state.villain.instanceId);
+          villain.health = Math.max(0, villain.health - amount);
+          if (villain.health <= 0) {
+            state = handleVillainDefeat(state, villain.instanceId);
           }
         }
 
@@ -2107,9 +2114,10 @@ export function executeStep(
               );
 
               if (isOverkill && excessDmg > 0) {
-                const villainToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+                const villain = getActiveVillain(state);
+                const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
                 if (villainToughIdx !== -1) {
-                  state.villain.statusCards.splice(villainToughIdx, 1);
+                  villain.statusCards.splice(villainToughIdx, 1);
                   state.log.push({
                     id: `log_${Date.now()}`,
                     timestamp: Date.now(),
@@ -2119,14 +2127,14 @@ export function executeStep(
                     key: 'card.effect.dealDamage',
                     params: {
                       player: player.name,
-                      target: state.villain.card.name,
+                      target: villain.card.name,
                       amount: 0,
                       toughAbsorbed: true,
                     },
                     onomatopoeia: 'CLANG! (TOUGH)',
                   });
                 } else {
-                  state.villain.health = Math.max(0, state.villain.health - excessDmg);
+                  villain.health = Math.max(0, villain.health - excessDmg);
                   state.log.push({
                     id: `log_${Date.now()}`,
                     timestamp: Date.now(),
@@ -2136,12 +2144,12 @@ export function executeStep(
                     key: 'overkill.villain.hit',
                     params: {
                       damage: excessDmg,
-                      villain: state.villain.card.name,
+                      villain: villain.card.name,
                     },
                     onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
                   });
-                  if (state.villain.health <= 0) {
-                    state = handleVillainDefeat(state, state.villain.instanceId);
+                  if (villain.health <= 0) {
+                    state = handleVillainDefeat(state, villain.instanceId);
                   }
                 }
               }
@@ -2252,10 +2260,10 @@ export function executeStep(
       const damageRes = applyDamageToTarget(state, {
         target: {
           type: 'villain',
-          entity: state.villain,
-          name: state.villain.card.name,
-          attachments: state.villain.attachments,
-          statusCards: state.villain.statusCards,
+          entity: getActiveVillain(state),
+          name: getActiveVillain(state).card.name,
+          attachments: getActiveVillain(state).attachments,
+          statusCards: getActiveVillain(state).statusCards,
         },
         amount,
         sourceType: 'CARD_EFFECT',
@@ -2344,6 +2352,9 @@ export function executeStep(
                     pl.activeFormCard?.code === targetId ||
                     pl.hero?.code === targetId,
                 ) || (targetId === player.id ? player : undefined);
+              // A chosen villain is resolved by id so any villain in play can be targeted.
+              const targetVillain =
+                targetId === 'villain' ? getActiveVillain(state) : getVillainById(state, targetId);
 
               if (targetPlayer) {
                 const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
@@ -2353,18 +2364,14 @@ export function executeStep(
                   targetPlayer.health = Math.max(0, targetPlayer.health - amount);
                   if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
                 }
-              } else if (
-                targetId === state.villain?.instanceId ||
-                targetId === 'villain' ||
-                targetId === state.villain?.card?.code
-              ) {
-                const vToughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+              } else if (targetVillain) {
+                const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
                 if (vToughIdx !== -1) {
-                  state.villain.statusCards.splice(vToughIdx, 1);
+                  targetVillain.statusCards.splice(vToughIdx, 1);
                 } else {
-                  state.villain.health = Math.max(0, state.villain.health - amount);
-                  if (state.villain.health <= 0) {
-                    state = handleVillainDefeat(state, state.villain.instanceId);
+                  targetVillain.health = Math.max(0, targetVillain.health - amount);
+                  if (targetVillain.health <= 0) {
+                    state = handleVillainDefeat(state, targetVillain.instanceId);
                   }
                 }
               } else {
@@ -2400,10 +2407,13 @@ export function executeStep(
           } else if (allocationDomain === 'THREAT_REMOVAL') {
             if (
               targetId === 'main_scheme' ||
-              targetId === state.mainScheme?.instanceId ||
-              targetId === state.mainScheme?.card?.code
+              targetId === getActiveMainScheme(state)?.instanceId ||
+              targetId === getActiveMainScheme(state)?.card?.code
             ) {
-              state.mainScheme.threat = Math.max(0, state.mainScheme.threat - amount);
+              getActiveMainScheme(state).threat = Math.max(
+                0,
+                getActiveMainScheme(state).threat - amount,
+              );
             } else {
               const sideIdx = (state.sideSchemes || []).findIndex(
                 (s) => s.instanceId === targetId || s.card.code === targetId,
@@ -2547,8 +2557,11 @@ export function executeStep(
           if (player.health <= 0) state.winner = 'VILLAIN';
         }
       } else if (allocationDomain === 'THREAT_REMOVAL') {
-        if (state.mainScheme) {
-          state.mainScheme.threat = Math.max(0, state.mainScheme.threat - budget);
+        if (getActiveMainScheme(state)) {
+          getActiveMainScheme(state).threat = Math.max(
+            0,
+            getActiveMainScheme(state).threat - budget,
+          );
         }
       } else if (allocationDomain === 'HEAL') {
         player.health = Math.min(player.maxHealth, player.health + budget);
@@ -2626,7 +2639,7 @@ export function executeStep(
           player: player.name,
           target,
           amount: healed,
-          health: target === 'VILLAIN' ? state.villain.health : player.health,
+          health: target === 'VILLAIN' ? getActiveVillain(state).health : player.health,
         },
         onomatopoeia,
       });
@@ -2839,8 +2852,8 @@ export function executeStep(
           (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
       };
       let removed = 0;
-      let targetSchemeName = state.mainScheme?.card?.name || 'Main Scheme';
-      let remainingThreat = state.mainScheme?.threat || 0;
+      let targetSchemeName = getActiveMainScheme(state)?.card?.name || 'Main Scheme';
+      let remainingThreat = getActiveMainScheme(state)?.threat || 0;
 
       const ignoresCrisis = Boolean(
         step.effectParams?.ignoresCrisis || (step as any).ignoresCrisis || context.ignoresCrisis,
@@ -2866,8 +2879,10 @@ export function executeStep(
           isMainSchemeBlockedByCrisis ||
           (excludedId &&
             (excludedId === 'main_scheme' ||
-              (state.mainScheme?.instanceId && excludedId === state.mainScheme.instanceId) ||
-              (state.mainScheme?.card?.code && excludedId === state.mainScheme.card.code))),
+              (getActiveMainScheme(state)?.instanceId &&
+                excludedId === getActiveMainScheme(state).instanceId) ||
+              (getActiveMainScheme(state)?.card?.code &&
+                excludedId === getActiveMainScheme(state).card.code))),
         );
 
         const isSideSchemeExcluded = (s: SideSchemeState) =>
@@ -2888,13 +2903,13 @@ export function executeStep(
             }
         )[] = [];
 
-        if (state.mainScheme && !isMainSchemeExcluded) {
+        if (getActiveMainScheme(state) && !isMainSchemeExcluded) {
           eligibleSchemes.push({
             kind: 'main_scheme',
-            id: state.mainScheme.instanceId || 'main_scheme',
-            name: state.mainScheme.card?.name || 'Main Scheme',
-            threat: state.mainScheme.threat || 0,
-            code: state.mainScheme.card?.code,
+            id: getActiveMainScheme(state).instanceId || 'main_scheme',
+            name: getActiveMainScheme(state).card?.name || 'Main Scheme',
+            threat: getActiveMainScheme(state).threat || 0,
+            code: getActiveMainScheme(state).card?.code,
           });
         }
         for (const s of state.sideSchemes || []) {
@@ -2974,8 +2989,8 @@ export function executeStep(
                 {
                   kind: 'scheme' as const,
                   entityType: 'main_scheme' as const,
-                  entity: state.mainScheme,
-                  id: state.mainScheme.instanceId || 'main_scheme',
+                  entity: getActiveMainScheme(state),
+                  id: getActiveMainScheme(state).instanceId || 'main_scheme',
                 },
               ]
             : [
@@ -2994,15 +3009,16 @@ export function executeStep(
           (state.sideSchemes || []).length > 0
         ) {
           const sideSchemes = state.sideSchemes || [];
-          const isMainEligible = Boolean(state.mainScheme) && !isMainSchemeBlockedByCrisis;
+          const isMainEligible =
+            Boolean(getActiveMainScheme(state)) && !isMainSchemeBlockedByCrisis;
 
           const options: DecisionPromptOption[] = [];
           if (isMainEligible) {
             options.push({
               id: 'main_scheme',
-              label: `${state.mainScheme.card.name} (${state.mainScheme.threat} Threat)`,
-              description: `Remove ${amount} threat from ${state.mainScheme.card.name}`,
-              cardCode: state.mainScheme.card.code,
+              label: `${getActiveMainScheme(state).card.name} (${getActiveMainScheme(state).threat} Threat)`,
+              description: `Remove ${amount} threat from ${getActiveMainScheme(state).card.name}`,
+              cardCode: getActiveMainScheme(state).card.code,
               effect: 'REMOVE_THREAT',
               params: { amount, target: 'MAIN_SCHEME', resourcesSpent: context.resourcesSpent },
             });
@@ -3050,8 +3066,8 @@ export function executeStep(
                     {
                       kind: 'scheme' as const,
                       entityType: 'main_scheme' as const,
-                      entity: state.mainScheme,
-                      id: state.mainScheme.instanceId || 'main_scheme',
+                      entity: getActiveMainScheme(state),
+                      id: getActiveMainScheme(state).instanceId || 'main_scheme',
                     },
                   ]
                 : [
@@ -3073,7 +3089,7 @@ export function executeStep(
                 key: 'card.effect.threatBlockedByCrisis',
                 params: {
                   player: player.name,
-                  scheme: state.mainScheme?.card?.name || 'Main Scheme',
+                  scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
                 },
                 onomatopoeia: 'CRISIS BLOCKS!',
               });
@@ -3093,8 +3109,8 @@ export function executeStep(
               (s) =>
                 s.entityType !== 'main_scheme' &&
                 s.id !== 'main_scheme' &&
-                s.id !== state.mainScheme?.instanceId &&
-                s.id !== state.mainScheme?.card?.code,
+                s.id !== getActiveMainScheme(state)?.instanceId &&
+                s.id !== getActiveMainScheme(state)?.card?.code,
             );
             if (nonMainSchemes.length === 0) {
               state.log.push({
@@ -3106,7 +3122,7 @@ export function executeStep(
                 key: 'card.effect.threatBlockedByCrisis',
                 params: {
                   player: player.name,
-                  scheme: state.mainScheme?.card?.name || 'Main Scheme',
+                  scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
                 },
                 onomatopoeia: 'CRISIS BLOCKS!',
               });
@@ -3127,8 +3143,8 @@ export function executeStep(
                     {
                       kind: 'scheme' as const,
                       entityType: 'main_scheme' as const,
-                      entity: state.mainScheme,
-                      id: state.mainScheme.instanceId || 'main_scheme',
+                      entity: getActiveMainScheme(state),
+                      id: getActiveMainScheme(state).instanceId || 'main_scheme',
                     },
                   ];
           }
@@ -3238,10 +3254,12 @@ export function executeStep(
 
       const firstTarget = targetCharacters[0];
       let targetName: string =
-        targetParam === 'VILLAIN' ? state.villain.card.name : String(targetParam || 'Villain');
+        targetParam === 'VILLAIN'
+          ? getActiveVillain(state).card.name
+          : String(targetParam || 'Villain');
       if (firstTarget) {
         if (firstTarget.entityType === 'villain') {
-          targetName = state.villain.card.name;
+          targetName = getActiveVillain(state).card.name;
         } else if (firstTarget.entityType === 'hero' || firstTarget.entityType === 'alter_ego') {
           const p = firstTarget.entity as PlayerState;
           targetName = p.hero?.name || p.name;
@@ -3371,9 +3389,12 @@ export function executeStep(
     case 'HEAL_DAMAGE_WITH_SURGE': {
       // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
       const amount = (step.effectParams?.amount as number) || 4;
-      const healed = Math.min(state.villain.maxHealth - state.villain.health, amount);
+      const healed = Math.min(
+        getActiveVillain(state).maxHealth - getActiveVillain(state).health,
+        amount,
+      );
       if (healed > 0) {
-        state.villain.health += healed;
+        getActiveVillain(state).health += healed;
         return {
           state,
           success: true,
@@ -3389,8 +3410,8 @@ export function executeStep(
 
     case 'ADD_STATUS_WITH_SURGE': {
       // "I'm Tough" (01105): Give Rhino Tough. If already Tough -> surge
-      if (!state.villain.statusCards.includes(StatusCard.TOUGH)) {
-        state.villain.statusCards.push(StatusCard.TOUGH);
+      if (!getActiveVillain(state).statusCards.includes(StatusCard.TOUGH)) {
+        getActiveVillain(state).statusCards.push(StatusCard.TOUGH);
         return { state, success: true, onomatopoeia: 'RHINO GAINS TOUGH!' };
       } else {
         const surgeCard = state.encounterDeck.shift();
@@ -3426,8 +3447,9 @@ export function executeStep(
       if (!sourceCard) return { state, success: true };
 
       if (targetHost === 'VILLAIN' || targetHost === 'ENEMY') {
-        if (!state.villain.cardsUnderneath) state.villain.cardsUnderneath = [];
-        state.villain.cardsUnderneath.push(sourceCard);
+        const villain = getActiveVillain(state);
+        if (!villain.cardsUnderneath) villain.cardsUnderneath = [];
+        villain.cardsUnderneath.push(sourceCard);
         return {
           state,
           success: true,
@@ -3435,8 +3457,9 @@ export function executeStep(
           onomatopoeia: 'PLACED UNDER VILLAIN!',
         };
       } else if (targetHost === 'MAIN_SCHEME' || targetHost === 'SCHEME') {
-        if (!state.mainScheme.cardsUnderneath) state.mainScheme.cardsUnderneath = [];
-        state.mainScheme.cardsUnderneath.push(sourceCard);
+        const mainScheme = getActiveMainScheme(state);
+        if (!mainScheme.cardsUnderneath) mainScheme.cardsUnderneath = [];
+        mainScheme.cardsUnderneath.push(sourceCard);
         return {
           state,
           success: true,
@@ -4439,7 +4462,7 @@ export function executeStep(
           };
         }
 
-        if (state.mainScheme?.card?.code === cardCode) {
+        if (getActiveMainScheme(state)?.card?.code === cardCode) {
           const { result } = applyThreatPlacement(state, {
             targetType: 'main_scheme',
             amount,
@@ -5238,7 +5261,7 @@ export function executeStep(
       if (
         targetEnemyId &&
         targetEnemyId !== 'villain' &&
-        targetEnemyId !== state.villain.instanceId
+        targetEnemyId !== getActiveVillain(state).instanceId
       ) {
         let targetMinion: CardInstance | undefined;
         for (const p of state.players) {
@@ -5657,12 +5680,13 @@ export function dealDirectDamage(
   }
 
   if (target === 'VILLAIN') {
-    const toughIdx = state.villain.statusCards.indexOf(StatusCard.TOUGH);
+    const villain = getActiveVillain(state);
+    const toughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
     if (toughIdx !== -1) {
-      state.villain.statusCards.splice(toughIdx, 1);
+      villain.statusCards.splice(toughIdx, 1);
       return { damageDealt: 0, absorbedByTough: true };
     }
-    state.villain.health = Math.max(0, state.villain.health - amount);
+    villain.health = Math.max(0, villain.health - amount);
     return { damageDealt: amount, absorbedByTough: false };
   }
 

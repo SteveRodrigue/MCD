@@ -7,6 +7,12 @@ import {
   CardInstance,
   CardType,
   MinionCard,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainById,
+  setActiveVillain,
+  replaceVillain,
+  replaceActiveMainScheme,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
@@ -101,8 +107,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     };
 
     state.villains = [initialVillain];
-    state.activeVillainIndex = 0;
-    state.villain = initialVillain;
+    setActiveVillain(state, initialVillain.instanceId!);
 
     // 2. Setup Main Scheme (The Crimson Cowl Stage 1B)
     const mainSchemeCard = cardCatalog.getMainSchemeByStage('ultron', '1B');
@@ -121,9 +126,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       stage: '1B',
     };
 
-    state.mainSchemes = [initialMainScheme];
-    state.activeMainSchemeIndex = 0;
-    state.mainScheme = initialMainScheme;
+    replaceActiveMainScheme(state, initialMainScheme);
 
     // 3. Build Encounter Deck based on Difficulty
     const modularSetCodes =
@@ -239,8 +242,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     victory?: boolean;
   } {
-    const villain =
-      state.villains.find((v) => v.instanceId === defeatedVillainInstanceId) || state.villain;
+    const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
     const numPlayers = state.players.length || 1;
@@ -318,9 +320,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
       attachments: [],
     };
 
-    state.villains = [newVillain];
-    state.activeVillainIndex = 0;
-    state.villain = newVillain;
+    replaceVillain(state, getActiveVillain(state).instanceId!, newVillain);
 
     state.log.push({
       id: `log_${Date.now()}`,
@@ -347,7 +347,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
     defeat?: boolean;
   } {
     const numPlayers = state.players.length || 1;
-    const currentStage = state.mainScheme.stage;
+    const currentStage = getActiveMainScheme(state).stage;
 
     if (currentStage === '1B') {
       // Advance to Stage 2B (Assault on NORAD)
@@ -365,9 +365,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
         stage: '2B',
       };
 
-      state.mainSchemes = [nextMainScheme];
-      state.activeMainSchemeIndex = 0;
-      state.mainScheme = nextMainScheme;
+      replaceActiveMainScheme(state, nextMainScheme);
 
       state.log.push({
         id: `log_${Date.now()}`,
@@ -397,9 +395,7 @@ export class UltronScenarioPlugin implements ScenarioPlugin {
         stage: '3B',
       };
 
-      state.mainSchemes = [nextMainScheme];
-      state.activeMainSchemeIndex = 0;
-      state.mainScheme = nextMainScheme;
+      replaceActiveMainScheme(state, nextMainScheme);
 
       state.log.push({
         id: `log_${Date.now()}`,

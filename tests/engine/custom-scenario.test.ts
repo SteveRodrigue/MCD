@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard, setActiveVillain } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { ScenarioPlugin, ScenarioDefinition, ScenarioRegistry } from '@engine/scenarios';
 
@@ -67,16 +67,14 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
           attachments: [],
         },
       ];
-      state.activeVillainIndex = 0;
-      state.villain = state.villains[0];
+      setActiveVillain(state, 'hydra_commander_1');
       return state;
     }
 
     onVillainDefeated(state: GameState, defeatedVillainInstanceId: string) {
       // Custom logic: If commander 1 is defeated, shift active villain to lieutenant 2!
       if (defeatedVillainInstanceId === 'hydra_commander_1') {
-        state.activeVillainIndex = 1;
-        state.villain = state.villains[1];
+        setActiveVillain(state, 'hydra_lieutenant_2');
         return { state, advancedStage: true };
       }
 
@@ -118,12 +116,12 @@ describe('Fan-Made Custom Scenario Extensibility (Universal Scenario Package For
 
     // Verify 2 villains in play
     expect(state.villains.length).toBe(2);
-    expect(state.activeVillainIndex).toBe(0);
+    expect(state.activeVillainId).toBe('hydra_commander_1');
     expect(state.villain.instanceId).toBe('hydra_commander_1');
 
     // Defeat villain 1 -> Shifts active villain to villain 2
     const { state: shiftedState } = customPlugin.onVillainDefeated(state, 'hydra_commander_1');
-    expect(shiftedState.activeVillainIndex).toBe(1);
+    expect(shiftedState.activeVillainId).toBe('hydra_lieutenant_2');
     expect(shiftedState.villain.instanceId).toBe('hydra_lieutenant_2');
     expect(shiftedState.winner).toBeNull();
 

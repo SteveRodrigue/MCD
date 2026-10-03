@@ -418,17 +418,29 @@ export interface GameState {
   activePlayerIndex: number;
   players: PlayerState[];
 
-  /** Multi-Villain Collection & Active Pointer */
+  /**
+   * Multi-Villain Collection & Active Counter (#194, ADR-0076). `villains` is canonical.
+   * `activeVillainId` is the instanceId of the villain holding the active counter (MC03 rules
+   * insert p.6): "the villain" in card text means this villain. When unset, the first villain
+   * is active. Read via `getActiveVillain`; write via `setActiveVillain` / `replaceVillain` /
+   * `removeVillain`.
+   */
   villains: VillainState[];
-  activeVillainIndex: number;
+  activeVillainId?: string;
 
   /** Multi-Main Scheme Collection & Active Pointer */
   mainSchemes: MainSchemeState[];
   activeMainSchemeIndex: number;
 
-  /** Legacy / direct reference to active villain for backwards-compatibility */
+  /**
+   * Legacy / direct reference to active villain for backwards-compatibility. Diverges from
+   * `villains[]` after the JSON clone in `dispatchAction`; use `getActiveVillain` (#194, #215).
+   */
   villain: VillainState;
-  /** Legacy / direct reference to active main scheme for backwards-compatibility */
+  /**
+   * Legacy / direct reference to active main scheme for backwards-compatibility. Use
+   * `getActiveMainScheme` (#194, #215).
+   */
   mainScheme: MainSchemeState;
 
   sideSchemes: SideSchemeState[];
@@ -479,14 +491,89 @@ export function getFirstPlayer(state: GameState): PlayerState {
 }
 
 /**
- * Accessor returning the currently active villain from GameState.
+ * Accessor returning the active villain (the one holding the active counter) from GameState.
+ * "The villain" in card text and the villain phase activation resolve to this entity.
+ * Falls back to the first villain when no active id is recorded, and to the legacy pointer only
+ * when the collection is empty.
  */
 export function getActiveVillain(state: GameState): VillainState {
   if (state.villains && state.villains.length > 0) {
-    const idx = state.activeVillainIndex ?? 0;
-    return state.villains[idx] || state.villains[0];
+    const active = state.activeVillainId
+      ? state.villains.find((v) => v.instanceId === state.activeVillainId)
+      : undefined;
+    return active || state.villains[0];
   }
   return state.villain;
+}
+
+/**
+ * Every villain in play, active or not. Players may attack any villain (MC03 rules insert p.6).
+ */
+export function getVillainsInPlay(state: GameState): VillainState[] {
+  return state.villains || [];
+}
+
+/**
+ * Moves the active counter to the villain with the given instance id and re-syncs the legacy
+ * `state.villain` pointer (by reference) until it is removed (#215).
+ */
+export function setActiveVillain(state: GameState, villainInstanceId: string): void {
+  const villain = (state.villains || []).find((v) => v.instanceId === villainInstanceId);
+  if (!villain) {
+    throw new Error(`Cannot activate villain '${villainInstanceId}': not in play.`);
+  }
+  state.activeVillainId = villainInstanceId;
+  state.villain = villain;
+}
+
+/**
+ * Replaces a villain in place (e.g. a stage advance). The active counter follows the
+ * replacement when the replaced villain held it.
+ */
+export function replaceVillain(
+  state: GameState,
+  villainInstanceId: string,
+  next: VillainState,
+): void {
+  const villains = state.villains || [];
+  const index = villains.findIndex((v) => v.instanceId === villainInstanceId);
+  if (index < 0) {
+    throw new Error(`Cannot replace villain '${villainInstanceId}': not in play.`);
+  }
+  const wasActive = getActiveVillain(state) === villains[index];
+  villains[index] = next;
+  state.villains = villains;
+  if (wasActive && next.instanceId) {
+    state.activeVillainId = next.instanceId;
+  }
+  state.villain = getActiveVillain(state);
+}
+
+/**
+ * Removes a villain from play (final-stage defeat). When it held the active counter, the
+ * scenario-supplied `pickSuccessor` chooses the next active villain (e.g. MC03: the villain whose
+ * side scheme has the most threat); the first remaining villain is the default.
+ */
+export function removeVillain(
+  state: GameState,
+  villainInstanceId: string,
+  pickSuccessor?: (remaining: VillainState[]) => VillainState | undefined,
+): void {
+  const villains = state.villains || [];
+  const index = villains.findIndex((v) => v.instanceId === villainInstanceId);
+  if (index < 0) {
+    throw new Error(`Cannot remove villain '${villainInstanceId}': not in play.`);
+  }
+  const wasActive = getActiveVillain(state) === villains[index];
+  const remaining = villains.filter((_, i) => i !== index);
+  state.villains = remaining;
+  if (wasActive) {
+    const successor = pickSuccessor?.(remaining) ?? remaining[0];
+    state.activeVillainId = successor?.instanceId;
+  }
+  if (remaining.length > 0) {
+    state.villain = getActiveVillain(state);
+  }
 }
 
 /**
@@ -498,6 +585,44 @@ export function getActiveMainScheme(state: GameState): MainSchemeState {
     return state.mainSchemes[idx] || state.mainSchemes[0];
   }
   return state.mainScheme;
+}
+
+/**
+ * Every main scheme in play.
+ */
+export function getMainSchemesInPlay(state: GameState): MainSchemeState[] {
+  return state.mainSchemes || [];
+}
+
+/**
+ * Makes `next` the active main scheme: replaces the active entry (a stage advance) or installs it
+ * as the sole main scheme during setup, and re-syncs the legacy `state.mainScheme` pointer.
+ */
+export function replaceActiveMainScheme(state: GameState, next: MainSchemeState): void {
+  const schemes = state.mainSchemes || [];
+  if (schemes.length === 0) {
+    state.mainSchemes = [next];
+    state.activeMainSchemeIndex = 0;
+  } else {
+    const index = state.activeMainSchemeIndex ?? 0;
+    schemes[schemes[index] ? index : 0] = next;
+    state.mainSchemes = schemes;
+  }
+  state.mainScheme = getActiveMainScheme(state);
+}
+
+/**
+ * Deep-clones a GameState. The JSON round trip splits the legacy `villain` / `mainScheme`
+ * pointers from their collection entries, so they are re-linked to the active entities of the
+ * clone (#194; removed with the legacy fields in #215).
+ */
+export function cloneGameState(state: GameState): GameState {
+  const clone: GameState = JSON.parse(JSON.stringify(state));
+  if (clone.villains && clone.villains.length > 0) clone.villain = getActiveVillain(clone);
+  if (clone.mainSchemes && clone.mainSchemes.length > 0) {
+    clone.mainScheme = getActiveMainScheme(clone);
+  }
+  return clone;
 }
 
 /**

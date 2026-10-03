@@ -18,6 +18,7 @@ import {
   CardAbility,
   Keyword,
   getKeywordValue,
+  cloneGameState,
 } from '@engine/models';
 import {
   getPlayer,
@@ -281,7 +282,7 @@ export function dispatchAction(
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
   // Clone state immutably for pure state transition
-  const nextState: GameState = JSON.parse(JSON.stringify(state));
+  const nextState: GameState = cloneGameState(state);
 
   switch (action.type) {
     case 'RESOLVE_MULLIGAN': {

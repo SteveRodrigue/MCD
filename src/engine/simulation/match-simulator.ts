@@ -1,4 +1,4 @@
-import { GameState, GamePhase } from '@engine/models';
+import { GameState, GamePhase, cloneGameState } from '@engine/models';
 import { dispatchAction, executeVillainPhase } from '../pipeline';
 import { chooseBotAction } from './player-bot';
 
@@ -25,7 +25,7 @@ export function runMatch(
   const maxRounds = options.maxRounds || 30;
   const maxActionsPerTurn = options.maxActionsPerTurn || 15;
 
-  let state: GameState = JSON.parse(JSON.stringify(initialState));
+  let state: GameState = cloneGameState(initialState);
   let totalActions = 0;
 
   // 0. Auto-resolve mulligan if match starts in SETUP_PHASE

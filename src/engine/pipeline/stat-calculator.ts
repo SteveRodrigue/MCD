@@ -12,6 +12,8 @@ import {
 import { matchesCardFilter } from '../filters/card-filter';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { AbilityStep } from '../models/abilities';
+import { evaluateStepGate } from './step-gate-evaluator';
 
 export interface EffectiveTraitsResult {
   traits: string[]; // Deduplicated canonical traits (printed + dynamic)
@@ -302,11 +304,33 @@ export function hasPlayerTrait(player: PlayerState, trait: string): boolean {
   return getEffectivePlayerTraits(player).some((t) => t.toLowerCase().trim() === lower);
 }
 
+const RESULT_BASED_GATES = new Set([
+  'THEN',
+  'IF_PREVIOUS_SUCCESS',
+  'IF_AMOUNT_ZERO',
+  'IF_ZERO_HEALED',
+  'IF_FAILED',
+]);
+
+/**
+ * Whether a CONSTANT ability step applies right now. CONSTANT steps have no preceding step, so
+ * result-based gates never apply; every other gate is evaluated by the shared evaluator (Issue #122).
+ */
+function evaluateConstantStepGate(
+  step: AbilityStep,
+  state: GameState,
+  player: PlayerState,
+): boolean {
+  if (!step.gate || step.gate === 'ALWAYS') return true;
+  if (RESULT_BASED_GATES.has(step.gate)) return false;
+  return evaluateStepGate(step.gate, undefined, state, step, { playerId: player.id });
+}
+
 /**
  * Computes dynamic effective stats for a player's hero or alter-ego,
  * aggregating base card stats and in-play upgrades (e.g. Combat Training +1 ATK, Armored Vest +1 DEF, Heroic Intuition +1 THW).
  */
-export function getEffectiveHeroStats(_state: GameState, player: PlayerState): EffectiveHeroStats {
+export function getEffectiveHeroStats(state: GameState, player: PlayerState): EffectiveHeroStats {
   const isHero = player.currentForm === 'hero';
   let thwart = isHero
     ? ((player.hero as HeroCard).thwart ??
@@ -340,10 +364,7 @@ export function getEffectiveHeroStats(_state: GameState, player: PlayerState): E
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (step.gate === 'IF_CONDITION_MET' && step.condition === 'TARGET_TRAIT_MATCH') {
-            const requiredTrait = (step.gateParams as any)?.trait as string;
-            if (!hasPlayerTrait(player, requiredTrait)) continue;
-          }
+          if (!evaluateConstantStepGate(step, state, player)) continue;
 
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {

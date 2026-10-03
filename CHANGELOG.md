@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine): Extract shared step-gate evaluator ([Issue #122](https://github.com/SteveRodrigue/MCD/issues/122))**
+  - **Engine (`step-gate-evaluator.ts`, `effects/index.ts`, `stat-calculator.ts`):** Moved gate evaluation into `evaluateStepGate`; `shouldExecuteStep` now delegates to it and the CONSTANT stat loop uses it in place of the inline `TARGET_TRAIT_MATCH` check. CONSTANT steps now honor all state/player gates (e.g. `IF_FORM`); result-based gates never apply to them. No existing card data changes behavior (no CONSTANT step in supplemental data declared a gate).
+  - **Documentation:** ADR-0019 addendum and gate note in `10_sequences_and_prompts.md`.
+  - **Automated Verification (`step-gate-evaluator.test.ts`):** 10 tests covering each gate in isolation and CONSTANT gating in the stat calculator.
+
 - **Fix (Data): Rhino encounter attachments attach unconditionally ([Issue #175](https://github.com/SteveRodrigue/MCD/issues/175))**
   - **Supplemental Data (`core_encounter.json`):** Removed the `WHEN_REVEALED` "attach" ability from _Armored Rhino Suit_ (`01098`), _Charge_ (`01099`) and _Enhanced Ivory Horn_ (`01100`). "Attach to Rhino" is intrinsic to the Attachment card type and is handled by the engine's reveal branch, so it can no longer be cancelled by Cancel When Revealed effects.
   - **Documentation:** Added an encounter-attachment note to `08_effects_villain_nemesis.md`; regenerated the supplemental declarations usage report.

@@ -31,6 +31,8 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
   - `only` (or `requireOnly`): When `true`, requires 100% of spent resources to match the specified resource type.
 - `"IF_CONDITION_MET"` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md)): Executes Step $N$ only if the explicitly monitored condition (`condition` in Step $N-1$ or targeted by `targetStepId`) evaluated to `true`.
 
+> **Shared evaluator (Issue #122):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State/player gates (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`, `IF_CONDITION_MET` + `TARGET_TRAIT_MATCH`) therefore work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`) need a preceding step, so they never apply to `CONSTANT` steps.
+
 ### Explicit Condition Contracts (`StepConditionSchema`)
 
 Under **ADR-0049**, rather than relying on implicit side-effects, an ability step explicitly specifies what condition milestone it evaluates via `condition`:

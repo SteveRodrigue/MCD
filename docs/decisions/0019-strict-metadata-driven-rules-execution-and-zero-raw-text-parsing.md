@@ -67,3 +67,8 @@ const isAlterEgoFormRequired =
 - **Multi-Language Ready:** Non-English card packs (French, Spanish, German, etc.) execute with 100% identical engine behavior without altering a single line of code.
 - **Typo & Errata Immunity:** Errata or corrections in upstream card descriptions cannot break card execution or legality logic.
 - **Deterministic & Type-Safe:** All card behaviors are strictly typed via TypeScript and validate against our JSON schemas.
+
+## Addendum (2026-10-03): Single Shared Step-Gate Evaluator (Issue #122)
+
+Gate evaluation (`gate`, `gateParams`, `condition`) lives in one module, `src/engine/pipeline/step-gate-evaluator.ts` (`evaluateStepGate`). `shouldExecuteStep` (effect pipeline) delegates to it, and the `CONSTANT` stat-calculator loop calls it instead of an inline `TARGET_TRAIT_MATCH` check. New gate types therefore work for action and constant steps alike, with no per-card or per-pipeline code. Result-based gates do not apply to `CONSTANT` steps (no preceding step).
+

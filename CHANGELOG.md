@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Voluntary Decision Prompt Cancellation & Hand Refund ([Issue #172](https://github.com/SteveRodrigue/MCD/issues/172))**
+  - **Decision Prompt Lifecycle (`action-dispatcher.ts`):**
+    - Enhanced `RESOLVE_DECISION_PROMPT` to safely fall back to `activePrompt.playerId` when resolving acting player.
+    - Updated `PLAY_CARD_FROM_ZONE` prompt cancellation to search and refund the source card (e.g. *Make the Call* `01071`) from discard back into the player's hand.
+    - Added cancellation handlers for `isEventTargetChoice` and `isAttachment*Choice` prompts, allowing players to cancel voluntary card plays and return the played card to hand with zero uncommitted effects executed.
+    - Added `cancel_target` option to `PLAY_CARD` event target selection prompts when multiple targets are available.
+  - **Automated Verification (`prompt-cancellation.test.ts`, `chosen-entity-targeting-pipeline.test.ts`):**
+    - Added 4 dedicated regression test cases in `tests/engine/prompt-cancellation.test.ts` covering Make the Call, First Aid target cancellation, and voluntary attachment cancellation.
+
+
 - **Fix (UI): CardPaymentModal Double-Dispatch / Cancellation on Confirmation ([Issue #205](https://github.com/SteveRodrigue/MCD/issues/205))**
   - **Payment Modal Flow (`CardPaymentModal.tsx`, `GameBoard.tsx`):**
     - Removed redundant `onClose()` invocation from `CardPaymentModal.tsx`'s `handleConfirm`.

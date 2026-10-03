@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & UI): Photonic Blast (`01013`) Energy Bonus Verification & Combat Log Source Attribution ([Issue #204](https://github.com/SteveRodrigue/MCD/issues/204))**
+  - **Engine Card Draw Logging (`effects/index.ts`):**
+    - Enhanced `executeDraw` to attach originating card name `source: context.sourceCardInstance?.card?.name` to `params` in `card.effect.drawCards` log entries across targeted and untargeted branches.
+  - **Combat Log & Localization (`GameBoard.tsx`, `comic-log-formatter.ts`, `ComicSpeechBalloon.tsx`, `en/combat-log.json`, `fr/combat-log.json`):**
+    - Initialized Combat Log drawer to open by default (`isLogOpen: true`) on game table load.
+    - Added `CARDS_DRAWN_FROM_SOURCE` templates in English and French to explicitly attribute card draw actions to their source card in narrative text.
+    - Added a dedicated source card badge (`🃏 <Card Name>`) to `ComicSpeechBalloon` headers for instant visual traceability.
+  - **Supplemental Data (`core.json`):**
+    - Updated Photonic Blast (`01013`) audit timestamps and verification status.
+  - **Automated Verification (`photonic-blast-resource-bonus.test.ts`, `comic-log-formatter.test.ts`, `combat-log-drawer.test.tsx`):**
+    - Added 6-case acceptance test suite testing Photonic Blast payment permutations (Physical + Energy, pure Physical, Energy Absorption, Wild resources, decision prompt preservation, and Tableau generators).
+    - Added unit tests for `CARDS_DRAWN_FROM_SOURCE` and source badge rendering.
+
 - **Fix (Engine & Data): Spider-Tracer (`01007`) Attached Host Defeat Trigger Scoping (RR v1.8 pp. 5, 11, [Issue #176](https://github.com/SteveRodrigue/MCD/issues/176))**
   - **Schema & Supplemental Data (`schema.ts`, `core.json`):**
     - Extended `TriggerFilterSchema` to support `targetScope: 'HOST' | 'SELF' | 'OTHER' | 'ANY'`.

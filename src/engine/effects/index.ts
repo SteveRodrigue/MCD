@@ -1450,6 +1450,9 @@ export function executeStep(
             drawnCardsForP.push(drawn);
             drawnForP += 1;
           }
+          const drawSource =
+            context.sourceCardInstance?.card?.name ||
+            (context.ability?.id ? String(context.ability.id) : undefined);
           state.log.push({
             id: `log_${Date.now()}_${targetP.id}`,
             timestamp: Date.now(),
@@ -1464,6 +1467,7 @@ export function executeStep(
               cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
               drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
               ...(targetLimit !== undefined ? { targetLimit } : {}),
+              ...(drawSource ? { source: drawSource } : {}),
             },
             onomatopoeia: `DRAW +${drawnForP}!`,
           });
@@ -1537,6 +1541,9 @@ export function executeStep(
           drawnForP += 1;
           totalDrawn += 1;
         }
+        const drawSource =
+          context.sourceCardInstance?.card?.name ||
+          (context.ability?.id ? String(context.ability.id) : undefined);
         state.log.push({
           id: `log_${Date.now()}_${p.id}`,
           timestamp: Date.now(),
@@ -1551,6 +1558,7 @@ export function executeStep(
             cards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card').join(', '),
             drawnCards: drawnCardsForP.map((c: any) => c?.card?.name || c?.name || 'Card'),
             ...(targetLimit !== undefined ? { targetLimit } : {}),
+            ...(drawSource ? { source: drawSource } : {}),
           },
           onomatopoeia: `DRAW +${drawnForP}!`,
         });

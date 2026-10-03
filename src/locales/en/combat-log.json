@@ -79,6 +79,7 @@
     "MINION_ATTACK_HIT": "{{who_attacks}} attacked {{who_is_taking_damage}} for {{amount}} damage!",
     "CARDS_DISCARDED_NAMES": "{{who}} discarded {{count}} card(s) from {{source}}: {{cards}}.",
     "CARDS_DRAWN_NAMES": "{{who}} drew {{count}} card(s): {{cards}}.",
+    "CARDS_DRAWN_FROM_SOURCE": "{{who}} drew {{count}} card(s) ({{source}}): {{cards}}.",
     "BLACK_CAT_FETCH": "Black Cat retrieved {{card}} into {{who}}'s hand!"
   },
   "dialogue": {

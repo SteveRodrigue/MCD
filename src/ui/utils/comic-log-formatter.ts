@@ -23,6 +23,7 @@ export interface FormattedComicDialogue {
   dialogueQuote?: string;
   narrativeAction: string;
   onomatopoeia?: string;
+  sourceCard?: string;
   stats?: {
     damage?: number;
     threat?: number;
@@ -423,6 +424,9 @@ export function mapToCanonicalTemplateKey(key?: string, entry?: GameLogEntry): s
 
     case 'card.effect.drawCards':
     case 'CARDS_DRAWN_NAMES':
+      if (entry?.params?.source && entry.params.source !== 'deck') {
+        return 'CARDS_DRAWN_FROM_SOURCE';
+      }
       return 'CARDS_DRAWN_NAMES';
 
     case 'black_cat.fetch':
@@ -950,6 +954,11 @@ export function formatComicLogEntry(
   if (typeof normalizedParams.remainingHp === 'number')
     stats.remainingHp = Number(normalizedParams.remainingHp);
 
+  const sourceCard =
+    normalizedParams.source !== 'Source' && normalizedParams.source !== 'deck'
+      ? String(normalizedParams.source)
+      : undefined;
+
   return {
     id: entry.id || String(entry.timestamp || Math.random()),
     type: dialogueType,
@@ -962,6 +971,7 @@ export function formatComicLogEntry(
     dialogueQuote,
     narrativeAction,
     onomatopoeia,
+    sourceCard,
     stats,
     phase: entry.phase,
     round: entry.round,

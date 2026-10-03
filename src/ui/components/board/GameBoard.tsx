@@ -41,7 +41,7 @@ const SPEED_MAP: Record<string, number> = {
 
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
   const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
-  const [isLogOpen, setIsLogOpen] = useState<boolean>(false);
+  const [isLogOpen, setIsLogOpen] = useState<boolean>(true);
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
   const [paymentModalCard, setPaymentModalCard] = useState<CardInstance | null>(null);

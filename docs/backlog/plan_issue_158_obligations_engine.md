@@ -1,6 +1,6 @@
 # Plan: Issue #158 — Obligation engine (the five core-set obligations)
 
-> Status: **Implemented** (uncommitted; delivered as two commits). Implementation notes at the end of this file list the deviations from this plan. Largest item in Phase 3. Scope: **all five core-set obligations** (01155, 01160, 01165, 01170, 01175) plus one real proof card for the `recipient` override (*Now It's Personal* `56128b`), delivered in two commits.
+> Status: **Implemented and delivered** as two commits: `2cc63df` (Refs #158) and `b205d7c` (Fixes #158). Implementation notes at the end of this file list the deviations from this plan. Largest item in Phase 3. Scope: **all five core-set obligations** (01155, 01160, 01165, 01170, 01175) plus one real proof card for the `recipient` override (*Now It's Personal* `56128b`), delivered in two commits.
 >
 > History: r2 generic recipient selector; r3 obligations live in the per-seat Threat Zone; r4 five-card scope, S1 selector; **r5 (2026-10-03): decisions R2 + B2.** r6: user rulings applied (Option A requires alter-ego form; proof card stays out of the live loader; two commits). Default recipient is derived from set data, so only 2 of the 106 audited cards (the two PvP *Now It's Personal* cards) need an explicit field, and only one of them is implemented here as the proof; obligation behavior is expressed as ordinary abilities/steps (no `obligation` block); `recipient` is an optional top-level enrichment field outside the abilities.
 

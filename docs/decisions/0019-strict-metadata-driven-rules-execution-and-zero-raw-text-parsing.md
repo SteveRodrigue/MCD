@@ -72,3 +72,7 @@ const isAlterEgoFormRequired =
 
 Gate evaluation (`gate`, `gateParams`, `condition`) lives in one module, `src/engine/pipeline/step-gate-evaluator.ts` (`evaluateStepGate`). `shouldExecuteStep` (effect pipeline) delegates to it, and the `CONSTANT` stat-calculator loop calls it instead of an inline `TARGET_TRAIT_MATCH` check. New gate types therefore work for action and constant steps alike, with no per-card or per-pipeline code. Result-based gates do not apply to `CONSTANT` steps (no preceding step).
 
+### Addendum (2026-10-03): Gates on CONSTANT `ADD_TRAIT` (Issue #154)
+
+Trait computation (`getEffectivePlayerTraits*`, `hasPlayerTrait`, `getEffectiveCardTraits*`) honors `gate`/`gateParams` on `CONSTANT` `ADD_TRAIT` steps. `IF_FORM` needs only the player (`evaluateFormGate`), so UI callers without a `GameState` get correct results; other state gates are evaluated when an optional `state` argument is supplied and skipped otherwise. *Cosmic Flight* (`01017`) now declares `IF_FORM: hero`, so Aerial is not granted in Alter-Ego form.
+

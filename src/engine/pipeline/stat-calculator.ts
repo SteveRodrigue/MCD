@@ -13,7 +13,7 @@ import { matchesCardFilter } from '../filters/card-filter';
 import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { AbilityStep } from '../models/abilities';
-import { evaluateStepGate } from './step-gate-evaluator';
+import { evaluateFormGate, evaluateStepGate } from './step-gate-evaluator';
 
 export interface EffectiveTraitsResult {
   traits: string[]; // Deduplicated canonical traits (printed + dynamic)
@@ -163,7 +163,36 @@ function dedupeTraits(traits: (string | undefined | null)[]): string[] {
   return result;
 }
 
-function extractAddTraitEffects(sources: (CardInstance | undefined)[]): string[] {
+const RESULT_BASED_GATES = new Set([
+  'THEN',
+  'IF_PREVIOUS_SUCCESS',
+  'IF_AMOUNT_ZERO',
+  'IF_ZERO_HEALED',
+  'IF_FAILED',
+]);
+
+/**
+ * Whether a CONSTANT ability step applies right now. CONSTANT steps have no preceding step, so
+ * result-based gates never apply. `IF_FORM` needs only the player; every other gate needs a
+ * `GameState` and is skipped when none is supplied (Issues #122, #154).
+ */
+function evaluateConstantStepGate(
+  step: AbilityStep,
+  player: PlayerState,
+  state?: GameState,
+): boolean {
+  if (!step.gate || step.gate === 'ALWAYS') return true;
+  if (RESULT_BASED_GATES.has(step.gate)) return false;
+  if (step.gate === 'IF_FORM') return evaluateFormGate(player, step.gateParams ?? {});
+  if (!state) return false;
+  return evaluateStepGate(step.gate, undefined, state, step, { playerId: player.id });
+}
+
+function extractAddTraitEffects(
+  sources: (CardInstance | undefined)[],
+  player?: PlayerState,
+  state?: GameState,
+): string[] {
   const dynamicTraits: string[] = [];
   for (const item of sources) {
     if (!item) continue;
@@ -172,6 +201,8 @@ function extractAddTraitEffects(sources: (CardInstance | undefined)[]): string[]
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
           if (step.effect === 'ADD_TRAIT') {
+            if (step.gate && step.gate !== 'ALWAYS' && !player) continue;
+            if (player && !evaluateConstantStepGate(step, player, state)) continue;
             const stepParams = getStepEffectParams(step);
             const trait = stepParams.trait as string | undefined;
             if (trait && trait.trim()) {
@@ -190,7 +221,10 @@ function extractAddTraitEffects(sources: (CardInstance | undefined)[]): string[]
  * inspecting active form traits, hero/alter-ego printed traits,
  * tableau upgrades with CONSTANT ADD_TRAIT, and identity attachments with CONSTANT ADD_TRAIT.
  */
-export function getEffectivePlayerTraitsDetails(player: PlayerState): EffectiveTraitsResult {
+export function getEffectivePlayerTraitsDetails(
+  player: PlayerState,
+  state?: GameState,
+): EffectiveTraitsResult {
   const rawPrinted = [
     ...(player.activeFormCard?.traits || []),
     ...(player.hero?.traits || []),
@@ -199,7 +233,7 @@ export function getEffectivePlayerTraitsDetails(player: PlayerState): EffectiveT
   const printedTraits = dedupeTraits(rawPrinted);
 
   const dynamicSources = [...(player.tableau || []), ...(player.attachments || [])];
-  const dynamicTraits = dedupeTraits(extractAddTraitEffects(dynamicSources));
+  const dynamicTraits = dedupeTraits(extractAddTraitEffects(dynamicSources, player, state));
   const traits = dedupeTraits([...printedTraits, ...dynamicTraits]);
 
   return {
@@ -212,8 +246,8 @@ export function getEffectivePlayerTraitsDetails(player: PlayerState): EffectiveT
 /**
  * Computes active and dynamic traits for a player identity (deduplicated).
  */
-export function getEffectivePlayerTraits(player: PlayerState): string[] {
-  return getEffectivePlayerTraitsDetails(player).traits;
+export function getEffectivePlayerTraits(player: PlayerState, state?: GameState): string[] {
+  return getEffectivePlayerTraitsDetails(player, state).traits;
 }
 
 /**
@@ -245,9 +279,11 @@ export function getEffectiveCardTraitsDetails(
       (card as any).type === 'alter_ego');
 
   if (targetPlayer && isIdentityCard) {
-    const playerDetails = getEffectivePlayerTraitsDetails(targetPlayer);
+    const playerDetails = getEffectivePlayerTraitsDetails(targetPlayer, context?.state);
     if (instance?.attachments && instance.attachments.length > 0) {
-      const extraDynamic = dedupeTraits(extractAddTraitEffects(instance.attachments));
+      const extraDynamic = dedupeTraits(
+        extractAddTraitEffects(instance.attachments, targetPlayer, context?.state),
+      );
       const combinedDynamic = dedupeTraits([...playerDetails.dynamicTraits, ...extraDynamic]);
       const combinedTraits = dedupeTraits([...playerDetails.traits, ...extraDynamic]);
       return {
@@ -273,7 +309,9 @@ export function getEffectiveCardTraitsDetails(
     attachmentSources.push(...context.villain.attachments);
   }
 
-  const dynamicTraits = dedupeTraits(extractAddTraitEffects(attachmentSources));
+  const dynamicTraits = dedupeTraits(
+    extractAddTraitEffects(attachmentSources, context?.player, context?.state),
+  );
   const traits = dedupeTraits([...printedTraits, ...dynamicTraits]);
 
   return {
@@ -299,31 +337,9 @@ export function getEffectiveCardTraits(
  * evaluating active form traits, hero/alter-ego printed traits, tableau CONSTANT ADD_TRAIT upgrades,
  * and identity attachments with CONSTANT ADD_TRAIT.
  */
-export function hasPlayerTrait(player: PlayerState, trait: string): boolean {
+export function hasPlayerTrait(player: PlayerState, trait: string, state?: GameState): boolean {
   const lower = trait.toLowerCase().trim();
-  return getEffectivePlayerTraits(player).some((t) => t.toLowerCase().trim() === lower);
-}
-
-const RESULT_BASED_GATES = new Set([
-  'THEN',
-  'IF_PREVIOUS_SUCCESS',
-  'IF_AMOUNT_ZERO',
-  'IF_ZERO_HEALED',
-  'IF_FAILED',
-]);
-
-/**
- * Whether a CONSTANT ability step applies right now. CONSTANT steps have no preceding step, so
- * result-based gates never apply; every other gate is evaluated by the shared evaluator (Issue #122).
- */
-function evaluateConstantStepGate(
-  step: AbilityStep,
-  state: GameState,
-  player: PlayerState,
-): boolean {
-  if (!step.gate || step.gate === 'ALWAYS') return true;
-  if (RESULT_BASED_GATES.has(step.gate)) return false;
-  return evaluateStepGate(step.gate, undefined, state, step, { playerId: player.id });
+  return getEffectivePlayerTraits(player, state).some((t) => t.toLowerCase().trim() === lower);
 }
 
 /**
@@ -364,7 +380,7 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
     for (const ab of abilities) {
       if (ab.timing === 'CONSTANT') {
         for (const step of ab.steps || []) {
-          if (!evaluateConstantStepGate(step, state, player)) continue;
+          if (!evaluateConstantStepGate(step, player, state)) continue;
 
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {

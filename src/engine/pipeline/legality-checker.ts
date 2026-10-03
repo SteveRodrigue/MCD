@@ -1437,7 +1437,7 @@ export function evaluatePlayRequirements(
   // 3. Identity Traits Requirement (e.g. ['Avenger'], ['X-Men'], ['Mystic'])
   if (reqs.identityTraits && reqs.identityTraits.length > 0) {
     const hasMatchingTrait = reqs.identityTraits.some((reqTrait: string) =>
-      hasPlayerTrait(player, reqTrait),
+      hasPlayerTrait(player, reqTrait, state),
     );
 
     if (!hasMatchingTrait) {

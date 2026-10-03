@@ -611,6 +611,10 @@
           "steps": [
             {
               "effect": "ADD_TRAIT",
+              "gate": "IF_FORM",
+              "gateParams": {
+                "form": "hero"
+              },
               "effectParams": {
                 "trait": "Aerial"
               }

@@ -3053,6 +3053,21 @@ export function executeStep(
                     },
                   ];
           } else {
+            if (isMainSchemeBlockedByCrisis) {
+              state.log.push({
+                id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                timestamp: Date.now(),
+                round: state.roundNumber,
+                phase: state.phase,
+                category: 'ability',
+                key: 'card.effect.threatBlockedByCrisis',
+                params: {
+                  player: player.name,
+                  scheme: state.mainScheme?.card?.name || 'Main Scheme',
+                },
+                onomatopoeia: 'CRISIS BLOCKS!',
+              });
+            }
             return {
               state,
               success: true,
@@ -3063,17 +3078,50 @@ export function executeStep(
           }
         } else {
           const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
-          targetSchemes =
-            schemes.length > 0
-              ? schemes
-              : [
-                  {
-                    kind: 'scheme' as const,
-                    entityType: 'main_scheme' as const,
-                    entity: state.mainScheme,
-                    id: state.mainScheme.instanceId || 'main_scheme',
-                  },
-                ];
+          if (isMainSchemeBlockedByCrisis) {
+            const nonMainSchemes = schemes.filter(
+              (s) =>
+                s.entityType !== 'main_scheme' &&
+                s.id !== 'main_scheme' &&
+                s.id !== state.mainScheme?.instanceId &&
+                s.id !== state.mainScheme?.card?.code,
+            );
+            if (nonMainSchemes.length === 0) {
+              state.log.push({
+                id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                timestamp: Date.now(),
+                round: state.roundNumber,
+                phase: state.phase,
+                category: 'ability',
+                key: 'card.effect.threatBlockedByCrisis',
+                params: {
+                  player: player.name,
+                  scheme: state.mainScheme?.card?.name || 'Main Scheme',
+                },
+                onomatopoeia: 'CRISIS BLOCKS!',
+              });
+              return {
+                state,
+                success: true,
+                mutatedState: false,
+                value: 0,
+                onomatopoeia: 'CRISIS BLOCKS!',
+              };
+            }
+            targetSchemes = nonMainSchemes;
+          } else {
+            targetSchemes =
+              schemes.length > 0
+                ? schemes
+                : [
+                    {
+                      kind: 'scheme' as const,
+                      entityType: 'main_scheme' as const,
+                      entity: state.mainScheme,
+                      id: state.mainScheme.instanceId || 'main_scheme',
+                    },
+                  ];
+          }
         }
       }
 

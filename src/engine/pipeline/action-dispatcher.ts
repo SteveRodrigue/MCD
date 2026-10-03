@@ -1602,6 +1602,14 @@ export function dispatchAction(
                 step.effect === 'READY_CHARACTER'
               ) {
                 filterOpts = { exhausted: true };
+              } else if (step.effect === 'REMOVE_THREAT') {
+                filterOpts = {
+                  ignoresCrisis: Boolean(
+                    stepParams.ignoresCrisis ||
+                    step.effectParams?.ignoresCrisis ||
+                    (step as any).ignoresCrisis,
+                  ),
+                };
               }
               break;
             }
@@ -1944,6 +1952,14 @@ export function dispatchAction(
             step.effect === 'READY_CHARACTER'
           ) {
             abilityFilterOpts = { exhausted: true };
+          } else if (step.effect === 'REMOVE_THREAT') {
+            abilityFilterOpts = {
+              ignoresCrisis: Boolean(
+                stepParams.ignoresCrisis ||
+                step.effectParams?.ignoresCrisis ||
+                (step as any).ignoresCrisis,
+              ),
+            };
           }
           break;
         }

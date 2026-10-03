@@ -22,8 +22,6 @@ export function countLegacyAccesses(source: string): number {
 }
 
 const BASELINE: Record<string, number> = {
-  'src/engine/effects/dynamic-formula-evaluator.ts': 4,
-  'src/engine/effects/target-resolver.ts': 69,
   'src/engine/models/state.ts': 12,
   'src/engine/pipeline/action-dispatcher.ts': 34,
   'src/engine/pipeline/combat-pipeline.ts': 31,

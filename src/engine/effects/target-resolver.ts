@@ -8,6 +8,10 @@ import {
   StatusCard,
   Keyword,
   hasKeyword,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+  getMainSchemesInPlay,
 } from '@engine/models';
 import { TargetSelector } from '../../data/supplemental/schema';
 import type { EffectExecutionContext } from './index';
@@ -56,33 +60,35 @@ export function resolveEntityByInstanceId(
 ): ResolvedTarget | undefined {
   if (!instanceId) return undefined;
 
-  // 1. Villain
-  if (
-    state.villain &&
-    (state.villain.instanceId === instanceId ||
-      instanceId === 'villain' ||
-      instanceId === state.villain.card?.code)
-  ) {
+  // 1. Villain (any villain in play, by id or code; 'villain' means the active villain)
+  const villain =
+    instanceId === 'villain'
+      ? getActiveVillain(state)
+      : getVillainsInPlay(state).find(
+          (v) => v.instanceId === instanceId || v.card?.code === instanceId,
+        );
+  if (villain) {
     return {
       kind: 'character',
       entityType: 'villain',
-      entity: state.villain,
-      id: state.villain.instanceId || 'villain',
+      entity: villain,
+      id: villain.instanceId || 'villain',
     };
   }
 
   // 2. Main Scheme
-  if (
-    state.mainScheme &&
-    (state.mainScheme.instanceId === instanceId ||
-      instanceId === 'main_scheme' ||
-      instanceId === state.mainScheme.card?.code)
-  ) {
+  const mainScheme =
+    instanceId === 'main_scheme'
+      ? getActiveMainScheme(state)
+      : getMainSchemesInPlay(state).find(
+          (m) => m.instanceId === instanceId || m.card?.code === instanceId,
+        );
+  if (mainScheme) {
     return {
       kind: 'scheme',
       entityType: 'main_scheme',
-      entity: state.mainScheme,
-      id: state.mainScheme.instanceId || 'main_scheme',
+      entity: mainScheme,
+      id: mainScheme.instanceId || 'main_scheme',
     };
   }
 
@@ -619,13 +625,14 @@ export function resolveTargets(
 
     // 5. ENEMIES & MINIONS
     case 'VILLAIN': {
-      if (state.villain) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain) {
         return [
           {
             kind: 'character',
             entityType: 'villain',
-            entity: state.villain,
-            id: state.villain.instanceId || 'villain',
+            entity: activeVillain,
+            id: activeVillain.instanceId || 'villain',
           },
         ];
       }
@@ -634,13 +641,14 @@ export function resolveTargets(
 
     case 'CHOSEN_ENEMY': {
       if (context?.targetType === 'villain') {
-        if (state.villain) {
+        const activeVillain = getActiveVillain(state);
+        if (activeVillain) {
           return [
             {
               kind: 'character',
               entityType: 'villain',
-              entity: state.villain,
-              id: state.villain.instanceId || 'villain',
+              entity: activeVillain,
+              id: activeVillain.instanceId || 'villain',
             },
           ];
         }
@@ -668,13 +676,14 @@ export function resolveTargets(
           },
         ];
       }
-      if (state.villain) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain) {
         return [
           {
             kind: 'character',
             entityType: 'villain',
-            entity: state.villain,
-            id: state.villain.instanceId || 'villain',
+            entity: activeVillain,
+            id: activeVillain.instanceId || 'villain',
           },
         ];
       }
@@ -683,12 +692,12 @@ export function resolveTargets(
 
     case 'ALL_ENEMIES': {
       const results: ResolvedTarget[] = [];
-      if (state.villain) {
+      for (const villain of getVillainsInPlay(state)) {
         results.push({
           kind: 'character',
           entityType: 'villain',
-          entity: state.villain,
-          id: state.villain.instanceId || 'villain',
+          entity: villain,
+          id: villain.instanceId || 'villain',
         });
       }
       for (const p of state.players) {
@@ -707,12 +716,13 @@ export function resolveTargets(
 
     case 'ENGAGED_ENEMIES': {
       const results: ResolvedTarget[] = [];
-      if (state.villain) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain) {
         results.push({
           kind: 'character',
           entityType: 'villain',
-          entity: state.villain,
-          id: state.villain.instanceId || 'villain',
+          entity: activeVillain,
+          id: activeVillain.instanceId || 'villain',
         });
       }
       for (const m of resolvingPlayer.engagedMinions || []) {
@@ -853,13 +863,14 @@ export function resolveTargets(
           return [found];
         }
       }
-      if (state.villain) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain) {
         return [
           {
             kind: 'character',
             entityType: 'villain',
-            entity: state.villain,
-            id: state.villain.instanceId || 'villain',
+            entity: activeVillain,
+            id: activeVillain.instanceId || 'villain',
           },
         ];
       }
@@ -871,13 +882,16 @@ export function resolveTargets(
       if (context?.sourceCardInstance) {
         const sourceInstId = context.sourceCardInstance.instanceId;
         // 1. Check villain attachments
-        if (state.villain?.attachments?.some((a) => a.instanceId === sourceInstId)) {
+        const hostVillain = getVillainsInPlay(state).find((v) =>
+          v.attachments?.some((a) => a.instanceId === sourceInstId),
+        );
+        if (hostVillain) {
           return [
             {
               kind: 'character',
               entityType: 'villain',
-              entity: state.villain,
-              id: state.villain.instanceId || 'villain',
+              entity: hostVillain,
+              id: hostVillain.instanceId || 'villain',
             },
           ];
         }
@@ -972,12 +986,12 @@ export function resolveTargets(
 
     case 'ALL_CHARACTERS': {
       const results: ResolvedTarget[] = [];
-      if (state.villain) {
+      for (const villain of getVillainsInPlay(state)) {
         results.push({
           kind: 'character',
           entityType: 'villain',
-          entity: state.villain,
-          id: state.villain.instanceId || 'villain',
+          entity: villain,
+          id: villain.instanceId || 'villain',
         });
       }
       for (const p of state.players) {
@@ -1012,13 +1026,14 @@ export function resolveTargets(
 
     // 7. SCHEMES
     case 'MAIN_SCHEME': {
-      if (state.mainScheme) {
+      const activeMainScheme = getActiveMainScheme(state);
+      if (activeMainScheme) {
         return [
           {
             kind: 'scheme',
             entityType: 'main_scheme',
-            entity: state.mainScheme,
-            id: state.mainScheme.instanceId || 'main_scheme',
+            entity: activeMainScheme,
+            id: activeMainScheme.instanceId || 'main_scheme',
           },
         ];
       }
@@ -1104,11 +1119,12 @@ export function resolveTargets(
         !ignoresCrisis && isPlayerSource && (hasCrisisInPlay(state) || hasPatrol);
 
       if (context?.targetInstanceId) {
+        const chosenMainScheme = getActiveMainScheme(state);
         if (
-          state.mainScheme &&
-          (context.targetInstanceId === state.mainScheme.instanceId ||
+          chosenMainScheme &&
+          (context.targetInstanceId === chosenMainScheme.instanceId ||
             context.targetInstanceId === 'main_scheme' ||
-            context.targetInstanceId === state.mainScheme.card?.code)
+            context.targetInstanceId === chosenMainScheme.card?.code)
         ) {
           if (isMainBlocked) {
             return [];
@@ -1117,8 +1133,8 @@ export function resolveTargets(
             {
               kind: 'scheme',
               entityType: 'main_scheme',
-              entity: state.mainScheme,
-              id: state.mainScheme.instanceId || 'main_scheme',
+              entity: chosenMainScheme,
+              id: chosenMainScheme.instanceId || 'main_scheme',
             },
           ];
         }
@@ -1140,13 +1156,14 @@ export function resolveTargets(
           return [];
         }
       }
-      if (state.mainScheme && !isMainBlocked) {
+      const activeMainScheme = getActiveMainScheme(state);
+      if (activeMainScheme && !isMainBlocked) {
         return [
           {
             kind: 'scheme',
             entityType: 'main_scheme',
-            entity: state.mainScheme,
-            id: state.mainScheme.instanceId || 'main_scheme',
+            entity: activeMainScheme,
+            id: activeMainScheme.instanceId || 'main_scheme',
           },
         ];
       }
@@ -1176,12 +1193,13 @@ export function resolveTargets(
 
     case 'ALL_SCHEMES': {
       const results: ResolvedTarget[] = [];
-      if (state.mainScheme) {
+      const activeMainScheme = getActiveMainScheme(state);
+      if (activeMainScheme) {
         results.push({
           kind: 'scheme',
           entityType: 'main_scheme',
-          entity: state.mainScheme,
-          id: state.mainScheme.instanceId || 'main_scheme',
+          entity: activeMainScheme,
+          id: activeMainScheme.instanceId || 'main_scheme',
         });
       }
       for (const s of state.sideSchemes || []) {
@@ -1202,13 +1220,14 @@ export function resolveTargets(
           return [found];
         }
       }
-      if (state.mainScheme) {
+      const activeMainScheme = getActiveMainScheme(state);
+      if (activeMainScheme) {
         return [
           {
             kind: 'scheme',
             entityType: 'main_scheme',
-            entity: state.mainScheme,
-            id: state.mainScheme.instanceId || 'main_scheme',
+            entity: activeMainScheme,
+            id: activeMainScheme.instanceId || 'main_scheme',
           },
         ];
       }
@@ -1226,13 +1245,14 @@ export function resolveTargets(
         if (found) return [found];
       }
       if (context?.targetType === 'villain') {
-        if (state.villain) {
+        const activeVillain = getActiveVillain(state);
+        if (activeVillain) {
           return [
             {
               kind: 'character',
               entityType: 'villain',
-              entity: state.villain,
-              id: state.villain.instanceId || 'villain',
+              entity: activeVillain,
+              id: activeVillain.instanceId || 'villain',
             },
           ];
         }
@@ -1263,13 +1283,14 @@ export function resolveTargets(
         }
       }
       // Fallback: villain
-      if (state.villain) {
+      const activeVillain = getActiveVillain(state);
+      if (activeVillain) {
         return [
           {
             kind: 'character',
             entityType: 'villain',
-            entity: state.villain,
-            id: state.villain.instanceId || 'villain',
+            entity: activeVillain,
+            id: activeVillain.instanceId || 'villain',
           },
         ];
       }
@@ -1467,12 +1488,12 @@ export function getEligibleTargets(
         }
       }
       // 3. Villain
-      if (state.villain) {
+      for (const villain of getVillainsInPlay(state)) {
         candidates.push({
           kind: 'character',
           entityType: 'villain',
-          entity: state.villain,
-          id: state.villain.instanceId || state.villain.card.code,
+          entity: villain,
+          id: villain.instanceId || villain.card.code,
         });
       }
       // 4. All minions
@@ -1644,12 +1665,12 @@ export function getEligibleTargets(
     }
 
     case 'CHOSEN_ENEMY': {
-      if (state.villain) {
+      for (const villain of getVillainsInPlay(state)) {
         candidates.push({
           kind: 'character',
           entityType: 'villain',
-          entity: state.villain,
-          id: state.villain.instanceId || state.villain.card.code,
+          entity: villain,
+          id: villain.instanceId || villain.card.code,
         });
       }
       for (const p of state.players) {
@@ -1685,12 +1706,13 @@ export function getEligibleTargets(
       const isMainBlocked =
         isPlayerSource && (hasCrisisInPlay(state) || hasPatrol) && !filterOptions?.ignoresCrisis;
 
-      if (state.mainScheme && !isMainBlocked) {
+      const activeMainScheme = getActiveMainScheme(state);
+      if (activeMainScheme && !isMainBlocked) {
         candidates.push({
           kind: 'scheme',
           entityType: 'main_scheme',
-          entity: state.mainScheme,
-          id: state.mainScheme.instanceId || state.mainScheme.card.code,
+          entity: activeMainScheme,
+          id: activeMainScheme.instanceId || activeMainScheme.card.code,
         });
       }
       for (const s of state.sideSchemes || []) {

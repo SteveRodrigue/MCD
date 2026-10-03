@@ -16,6 +16,11 @@ import {
 } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
 import { dispatchAction } from '@engine/pipeline';
+import {
+  resolveCharacterTargets,
+  resolveEntityByInstanceId,
+  getEligibleTargets,
+} from '@engine/effects/target-resolver';
 
 /**
  * #194: `villains[]` is canonical; the active villain is identified by `activeVillainId`
@@ -224,6 +229,36 @@ describe('Active villain accessors (#194, MC03 multi-villain readiness)', () => 
       expect(result.success).toBe(true);
       expect(getVillainById(next, 'v_thunderball')!.health).toBeLessThan(16);
       expect(getVillainById(next, 'v_wrecker')!.health).toBe(18);
+    });
+  });
+  describe('target resolution with four villains in play (T and B tags)', () => {
+    it('ALL_ENEMIES and ALL_CHARACTERS include every villain; VILLAIN means the active one', () => {
+      const state = buildFourVillainState();
+      setActiveVillain(state, 'v_piledriver');
+
+      const enemyIds = resolveCharacterTargets(state, 'ALL_ENEMIES').map((t) => t.id);
+      expect(enemyIds).toEqual(expect.arrayContaining(state.villains.map((v) => v.instanceId!)));
+
+      const characterIds = resolveCharacterTargets(state, 'ALL_CHARACTERS').map((t) => t.id);
+      expect(characterIds).toEqual(
+        expect.arrayContaining(state.villains.map((v) => v.instanceId!)),
+      );
+
+      expect(resolveCharacterTargets(state, 'VILLAIN').map((t) => t.id)).toEqual(['v_piledriver']);
+    });
+
+    it('CHOSEN_ENEMY offers every villain in play as a candidate', () => {
+      const state = buildFourVillainState();
+      const candidates = getEligibleTargets(state, state.players[0], 'CHOSEN_ENEMY');
+      const ids = candidates.map((t) => t.id);
+      for (const v of state.villains) expect(ids).toContain(v.instanceId);
+    });
+
+    it('resolveEntityByInstanceId reaches a non-active villain by id', () => {
+      const state = buildFourVillainState();
+      const found = resolveEntityByInstanceId(state, 'v_bulldozer');
+      expect(found?.id).toBe('v_bulldozer');
+      expect(resolveEntityByInstanceId(state, 'villain')?.id).toBe('v_wrecker');
     });
   });
 });

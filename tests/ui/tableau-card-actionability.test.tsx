@@ -136,4 +136,48 @@ describe('Tableau Card Actionability Graying (Issue #185)', () => {
     fireEvent.click(cardEl);
     expect(screen.queryByText(/Select an ability to activate/i)).not.toBeNull();
   });
+
+  describe('Alpha Flight Station (01015) discard cost (Issue #179)', () => {
+    let afs: CardInstance;
+
+    beforeEach(() => {
+      state.players[0].tableau = [];
+      afs = createCardInstance(cardCatalog.getCard('01015')!);
+      state.players[0].tableau.push(afs);
+    });
+
+    it('is unusable when the hand is empty', () => {
+      state.players[0].hand = [];
+      const result = evaluateTableauCardLegality(afs, 'hero', {
+        gameState: state,
+        playerId: 'p1',
+      });
+      expect(result.isUsable).toBe(false);
+    });
+
+    it('is usable when the hand has a card to discard', () => {
+      state.players[0].hand = [createCardInstance(cardCatalog.getCard('01005')!)];
+      const result = evaluateTableauCardLegality(afs, 'hero', {
+        gameState: state,
+        playerId: 'p1',
+      });
+      expect(result.isUsable).toBe(true);
+    });
+
+    it('HeroZone grays the card when the hand is empty', () => {
+      state.players[0].hand = [];
+      render(
+        <HeroZone
+          player={state.players[0]}
+          gameState={state}
+          seatNumber={1}
+          isFocused={true}
+          isMultiHero={false}
+        />,
+      );
+      expect(
+        screen.getByTestId('tableau-section').querySelector('.filter.grayscale'),
+      ).not.toBeNull();
+    });
+  });
 });

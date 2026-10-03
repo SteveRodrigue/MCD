@@ -35,7 +35,7 @@ flowchart TD
         I184["#184 Caught Off Guard Prompt<br/>RESOLVED (052032e)"]
         I122["#122 Step-Gate Evaluator<br/>RESOLVED (0acc25f)"]
         I154["#154 Cosmic Flight Aerial Gate<br/>RESOLVED (608a19a)"]
-        I158["#158 Obligations Engine<br/>RESOLVED (pending commit)"]
+        I158["#158 Obligations Engine<br/>RESOLVED (2cc63df, b205d7c)"]
     end
 
     subgraph ResourceThreat["3. Resource & Threat Engines"]
@@ -94,7 +94,7 @@ flowchart TD
 |---|---|---|---|
 | **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved** (`0fc765e`). Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
 | **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | 🟢 **Resolved** (`608a19a`). ADD_TRAIT honors gates; `01017` gated with `IF_FORM: hero`. |
-| **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🟢 **Resolved (pending commit)**. All five core obligations integrated: `PlayerState.obligations` zone, hero-set default recipient + optional `recipient` override (proof card `56128b`), `ENTERS_PLAY` resolution ability with `PLAYER_CHOICE` option `gate`/`cost`, `REMOVE_FROM_GAME`, `ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU` + `filter` (ADR-0075). |
+| **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🟢 **Resolved** (`2cc63df`, `b205d7c`). All five core obligations integrated: `PlayerState.obligations` zone, hero-set default recipient + optional `recipient` override (proof card `56128b`), `ENTERS_PLAY` resolution ability with `PLAYER_CHOICE` option `gate`/`cost`, `REMOVE_FROM_GAME`, `ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU` + `filter` (ADR-0075). |
 | **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
 | **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | Iron Man upgrade: +1 HP and Aerial trait generation. Needs supplemental audit to verify constant HP bonus and active ability. |
 

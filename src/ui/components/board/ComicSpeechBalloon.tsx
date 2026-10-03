@@ -28,6 +28,7 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
     dialogueQuote,
     narrativeAction,
     onomatopoeia,
+    sourceCard,
     stats,
     round,
   } = dialogue;
@@ -77,6 +78,11 @@ export const ComicSpeechBalloon: React.FC<ComicSpeechBalloonProps> = ({
               }}
             >
               {speakerRole.replace('_', ' ')}
+            </span>
+          )}
+          {sourceCard && (
+            <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider border shrink-0 bg-white/20 text-white border-white/40">
+              🃏 {sourceCard}
             </span>
           )}
           {round !== undefined && type === 'narrator_caption' && (

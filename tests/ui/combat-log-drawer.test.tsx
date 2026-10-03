@@ -1,9 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CombatLogDrawer } from '../../src/ui/components/board/CombatLogDrawer';
+import { GameBoard } from '../../src/ui/components/board/GameBoard';
 import { TopBar } from '../../src/ui/components/board/TopBar';
 import { GameSettingsProvider } from '../../src/ui/context/GameSettingsProvider';
 import { GameLogEntry, GamePhase, GameState } from '../../src/engine/models';
+import { setupGame } from '../../src/engine/state/game-setup';
+import { cardCatalog } from '../../src/data/importer/card-loader';
 
 describe('CombatLogDrawer Component (Issue #142)', () => {
   const mockLogs: GameLogEntry[] = [
@@ -188,5 +191,65 @@ describe('CombatLogDrawer Component (Issue #142)', () => {
 
     const headerOpen = container.querySelector('header');
     expect(headerOpen?.className).toContain('lg:right-[420px]');
+  });
+
+  it('renders source card badge when log entry has source attribution (Issue #204)', () => {
+    const logWithSource: GameLogEntry[] = [
+      {
+        id: 'log-pb-1',
+        timestamp: 1000,
+        round: 1,
+        phase: GamePhase.PLAYER_PHASE,
+        key: 'card.effect.drawCards',
+        actor: { name: 'Captain Marvel', type: 'hero' },
+        params: {
+          who: 'Captain Marvel',
+          count: 1,
+          cards: 'Energy Absorption',
+          source: 'Photonic Blast',
+        },
+      },
+    ];
+
+    render(
+      <CombatLogDrawer
+        isOpen={true}
+        onClose={vi.fn()}
+        logs={logWithSource}
+        gameState={mockGameState as GameState}
+      />,
+    );
+
+    expect(screen.getByText(/🃏 Photonic Blast/)).toBeDefined();
+    expect(
+      screen.getByText(/Captain Marvel drew 1 card\(s\) \(Photonic Blast\): Energy Absorption\./),
+    ).toBeDefined();
+  });
+
+  it('GameBoard initializes with Combat Log drawer open by default (Issue #204)', () => {
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'Carol Danvers',
+          hero: cardCatalog.getCard('01010b') as any,
+          alterEgo: cardCatalog.getCard('01010a') as any,
+          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: cardCatalog.getCard('01094') as any,
+      mainScheme: cardCatalog.getCard('01097b') as any,
+      encounterCards: cardCatalog.getCardsBySet('rhino'),
+      skipMulligan: true,
+    });
+
+    render(
+      <GameSettingsProvider>
+        <GameBoard gameState={state} onReset={vi.fn()} onDispatchAction={vi.fn()} />
+      </GameSettingsProvider>,
+    );
+
+    expect(screen.getByText(/FLASH NEWS & ACTION CHRONICLE/)).toBeDefined();
   });
 });

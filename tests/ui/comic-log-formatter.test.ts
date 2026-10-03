@@ -594,6 +594,33 @@ describe('Comic Log Formatter & Dialogue Engine (ADR-0005, ADR-0009, ADR-0037)',
         );
       });
 
+      it('formats card draws with source card attribution (CARDS_DRAWN_FROM_SOURCE) in English and French', () => {
+        const drawSourceEntry: GameLogEntry = {
+          id: 'log-draw-source',
+          timestamp: Date.now(),
+          round: 1,
+          key: 'card.effect.drawCards',
+          params: {
+            who: 'Carol Danvers',
+            count: 1,
+            cards: ['Energy Absorption'],
+            source: 'Photonic Blast',
+          },
+        };
+
+        const enDraw = formatComicLogEntry(drawSourceEntry, 'en', mockGameState);
+        expect(enDraw.narrativeAction).toBe(
+          'Carol Danvers drew 1 card(s) (Photonic Blast): Energy Absorption.',
+        );
+        expect(enDraw.sourceCard).toBe('Photonic Blast');
+
+        const frDraw = formatComicLogEntry(drawSourceEntry, 'fr', mockGameState);
+        expect(frDraw.narrativeAction).toBe(
+          'Carol Danvers a pioché 1 carte(s) (Photonic Blast) : Energy Absorption.',
+        );
+        expect(frDraw.sourceCard).toBe('Photonic Blast');
+      });
+
       it('formats Black Cat fetch retrieval into hand', () => {
         const fetchEntry: GameLogEntry = {
           id: 'log-black-cat-fetch',

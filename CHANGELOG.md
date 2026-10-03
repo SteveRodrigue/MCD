@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine & Rules): Villain Scheme Boost Card Resolution & Villainous Activation Boosts (RR v1.8 pp. 25, 30, [Issue #188](https://github.com/SteveRodrigue/MCD/issues/188))**
+  - **Villain Phase Pipeline (`villain-phase.ts`):**
+    - Enhanced `executeVillainSchemeAgainstPlayer` to deal base and additional boost cards, process FIFO boost resolution, dispatch `WHEN_BOOST_CARD_REVEALED`, resolve `★` star boost abilities, log `villain.boost.revealed`, accumulate boost icons, and discard boost cards per RR v1.8 p. 25.
+    - Updated `executeMinionSchemeAgainstPlayer` to support the `Villainous` keyword on minions during scheme activations.
+  - **Combat Pipeline (`combat-pipeline.ts`):**
+    - Enhanced `step4_and_5_dealAndResolveBoostCards` to support numerical `additionalBoostCards` (> 1) and attachments granting extra boost cards during combat activations.
+  - **Automated Verification (`villain-scheme-boost.test.ts`):**
+    - Added comprehensive acceptance test suite covering Advance (01186), star boost abilities during scheme, multiple boost cards, `Villainous` minion attacks and schemes, regular minion invariants, and Confused villain cancellations.
+
 - **Refactor (Engine): Complete ADR-0055 Migration & Remove Deprecated `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT` ([Issue #193](https://github.com/SteveRodrigue/MCD/issues/193))**
   - **Models & Actions (`actions.ts`):**
     - Removed `SPEND_RESOURCES_TO_DISCARD_ATTACHMENT` from `ActionType` union.

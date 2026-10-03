@@ -381,6 +381,7 @@ export const TriggerFilterSchema = z
     sourceCardCode: z.string().optional(),
     sourceInstanceId: z.string().optional(),
     targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),
+    targetScope: z.enum(['HOST', 'SELF', 'OTHER', 'ANY']).optional(),
     targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
     targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
     isEngaged: z.boolean().optional(),

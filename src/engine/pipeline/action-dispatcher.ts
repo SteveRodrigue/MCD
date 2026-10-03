@@ -93,7 +93,13 @@ function dispatchCanonicalDefeatTriggers(
   entityType: 'CHARACTER' | 'SCHEME',
   targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'SCHEME',
 ): void {
-  const context = { targetPlayerId, sourceInstanceId, entityType, targetType };
+  const context = {
+    targetPlayerId,
+    sourceInstanceId,
+    targetInstanceId: sourceInstanceId,
+    entityType,
+    targetType,
+  };
   dispatchTrigger(state, 'DEFEATED', context);
   if (entityType === 'CHARACTER') {
     dispatchTrigger(state, 'CHARACTER_DEFEATED', context);

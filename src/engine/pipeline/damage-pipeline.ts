@@ -65,6 +65,7 @@ function dispatchCanonicalDefeat(
   const context = {
     targetPlayerId,
     sourceInstanceId,
+    targetInstanceId: sourceInstanceId,
     entityType: 'CHARACTER' as const,
     targetType,
   };

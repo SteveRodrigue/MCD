@@ -43,7 +43,7 @@ import {
   hasEntityKeyword,
   hasPlayerTrait,
 } from '../pipeline/stat-calculator';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger, matchesTriggerFilter } from '../triggers/trigger-dispatcher';
 import { TriggerCallNode } from '../errors/infinite-loop-error';
 import { getSpecialHandler } from '../specials/special-registry';
 import '../specials/wakanda-forever';
@@ -329,6 +329,7 @@ export function processHostDefeated(
   if (attachments.length === 0 && cardsUnderneath.length === 0) return;
 
   for (const att of attachments) {
+    (att as any).hostInstanceId = (att as any).hostInstanceId || hostCard.instanceId;
     const abilities = att.card.enrichment?.abilities || [];
     for (const ab of abilities) {
       if (ab.trigger === 'CHARACTER_DEFEATED' || ab.trigger === 'DEFEATED') {
@@ -337,6 +338,18 @@ export function processHostDefeated(
           (ownerId ? state.players.find((p) => p.id === ownerId) : undefined) ||
           context?.player ||
           state.players[0];
+
+        if (ab.triggerFilter) {
+          const filterCtx = {
+            targetPlayerId: owner.id,
+            targetInstanceId: hostCard.instanceId,
+            sourceInstanceId: hostCard.instanceId,
+            targetType: hostCard.card.type ? hostCard.card.type.toUpperCase() : undefined,
+          };
+          if (!matchesTriggerFilter(ab.triggerFilter, filterCtx, owner, att, ab.trigger)) {
+            continue;
+          }
+        }
 
         executeEffect(state, ab, {
           playerId: owner.id,

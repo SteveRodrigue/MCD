@@ -1,4 +1,4 @@
-import { GameState, TriggerType, AbilityStep, PlayerState } from '@engine/models';
+import { GameState, TriggerType, AbilityStep, PlayerState, CardInstance } from '@engine/models';
 import { TriggerFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect } from '../effects';
@@ -42,12 +42,48 @@ function displayEffectName(effect: string): string {
   return effect;
 }
 
-function matchesTriggerFilter(
+export function matchesTriggerFilter(
   filter: TriggerFilter | undefined,
   context: TriggerContext,
   player?: PlayerState,
+  cardInst?: CardInstance,
+  trigger?: TriggerType | string,
 ): boolean {
+  const hostId = (cardInst as any)?.hostInstanceId;
+  const targetId =
+    context.targetInstanceId ||
+    (trigger === 'CHARACTER_DEFEATED' || trigger === 'DEFEATED'
+      ? context.sourceInstanceId
+      : undefined);
+
+  // Universal attachment defeat guard:
+  // Attachments in play must only trigger when their attached host is defeated
+  if (hostId && (trigger === 'CHARACTER_DEFEATED' || trigger === 'DEFEATED')) {
+    if (targetId && targetId !== hostId) {
+      return false;
+    }
+  }
+
   if (!filter) return true;
+
+  if (filter.targetScope) {
+    if (filter.targetScope === 'HOST') {
+      if (!hostId) {
+        return false;
+      }
+      if (targetId && targetId !== hostId) {
+        return false;
+      }
+    } else if (filter.targetScope === 'SELF') {
+      if (targetId && targetId !== cardInst?.instanceId) {
+        return false;
+      }
+    } else if (filter.targetScope === 'OTHER') {
+      if (targetId && targetId === cardInst?.instanceId) {
+        return false;
+      }
+    }
+  }
 
   if (filter.attackerKind) {
     const actual =
@@ -331,7 +367,15 @@ export function dispatchTrigger(
       ) {
         continue;
       }
-      if (!matchesTriggerFilter(ability.triggerFilter, context, player)) {
+      if (
+        !matchesTriggerFilter(
+          ability.triggerFilter,
+          context,
+          player,
+          { instanceId: player.id, card: player.activeFormCard } as CardInstance,
+          trigger,
+        )
+      ) {
         continue;
       }
       if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
@@ -460,11 +504,14 @@ export function dispatchTrigger(
 
   for (const controller of playersToScanForInPlay) {
     if (hasPendingPrompt) break;
-    for (const cardInst of [
+    const inPlayCards: CardInstance[] = [
       ...(controller.tableau || []),
       ...(controller.allies || []),
       ...(controller.attachments || []),
-    ]) {
+      ...(controller.allies || []).flatMap((a) => a.attachments || []),
+      ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
+    ];
+    for (const cardInst of inPlayCards) {
       const abilities = cardInst.card.enrichment?.abilities || [];
       for (const ability of abilities) {
         if (triggersAreEquivalent(ability.trigger, trigger)) {
@@ -480,7 +527,9 @@ export function dispatchTrigger(
           ) {
             continue;
           }
-          if (!matchesTriggerFilter(ability.triggerFilter, context, controller)) {
+          if (
+            !matchesTriggerFilter(ability.triggerFilter, context, controller, cardInst, trigger)
+          ) {
             continue;
           }
           // Universal guard for self-referential in-play play/entry triggers (ADR-0050):
@@ -684,7 +733,9 @@ export function dispatchTrigger(
         player.currentForm !== 'alter_ego'
       ) {
         // Form timing requirement not met
-      } else if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
+      } else if (
+        matchesTriggerFilter(ability.triggerFilter, context, player, interruptCard, trigger)
+      ) {
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
           const node: TriggerCallNode = {
@@ -833,7 +884,7 @@ export function dispatchTrigger(
             (!a.timing.startsWith('ALTER_EGO_') || p.currentForm === 'alter_ego'),
         )!;
 
-        if (!matchesTriggerFilter(ability.triggerFilter, context, p)) {
+        if (!matchesTriggerFilter(ability.triggerFilter, context, p, interruptCard, trigger)) {
           continue;
         }
 
@@ -959,7 +1010,7 @@ export function dispatchTrigger(
           (!a.timing.startsWith('ALTER_EGO_') || player.currentForm === 'alter_ego'),
       )!;
 
-      if (matchesTriggerFilter(ability.triggerFilter, context, player)) {
+      if (matchesTriggerFilter(ability.triggerFilter, context, player, interruptCard, trigger)) {
         const isForced = ability.timing.startsWith('FORCED_');
         if (isForced || context.acceptOptionalTriggers === true) {
           const node: TriggerCallNode = {

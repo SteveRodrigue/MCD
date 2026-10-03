@@ -1779,7 +1779,8 @@
               "effectParams": {
                 "amount": 1,
                 "finisherBonus": 1,
-                "target": "ALL_ENEMIES"
+                "target": "ENGAGED_ENEMIES",
+              "targetPlayer": "CHOSEN_PLAYER"
               }
             }
           ]
@@ -1787,8 +1788,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-03T16:19",
+        "reviewedAt": "2026-10-03T16:19",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

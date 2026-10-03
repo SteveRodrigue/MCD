@@ -8,7 +8,7 @@ import {
   PlayerSideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
-import { AbilityStep } from './abilities';
+import { AbilityStep, AbilityCost, ConditionGate } from './abilities';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -55,6 +55,7 @@ export interface PlayerState {
   tableau: CardInstance[]; // Supports & Upgrades in play
   allies: CardInstance[]; // Allies in play
   engagedMinions: CardInstance[]; // Minions engaged with this player
+  obligations: CardInstance[]; // Obligations given to this player, displayed in the Threat Zone (Issue #158)
   attachments?: CardInstance[]; // Attachments attached directly to player identity (e.g. Caught in a Web)
   cardsUnderneath?: CardInstance[]; // Out-of-play cards placed under identity
   counters?: Record<string, number>; // Universal identity counter map per ADR-0035 (e.g. charge, growth)
@@ -182,6 +183,13 @@ export interface DecisionPromptOption {
   requiresPayment?: boolean;
   disabled?: boolean;
   disabledReason?: string;
+  /** Optional multi-step effect list run when this option is chosen (PLAYER_CHOICE) */
+  steps?: AbilityStep[];
+  /** Availability gate re-evaluated whenever the prompt becomes the active head (e.g. IF_FORM) */
+  gate?: ConditionGate;
+  gateParams?: Record<string, unknown>;
+  /** Cost checked for availability and paid on selection (e.g. exhaustCard: SELF_IDENTITY) */
+  cost?: AbilityCost;
 }
 
 export interface RevealedCardDisplay {
@@ -330,6 +338,8 @@ export interface PendingDecisionPrompt {
   triggerSourceCard?: NormalizedCard;
   triggerType?: string;
   options: DecisionPromptOption[];
+  /** When set, the source obligation is discarded once the chosen option has resolved (Issue #158) */
+  completion?: 'DISCARD_SOURCE_OBLIGATION';
   revealedCards?: RevealedCardDisplay[];
   isVoluntary?: boolean;
   parentFrameId?: string;

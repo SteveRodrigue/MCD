@@ -96,6 +96,7 @@ describe('Scenario Plugin Registry & Multi-Entity Accessors', () => {
           tableau: [],
           allies: [],
           engagedMinions: [],
+          obligations: [],
           dealtEncounterCards: [],
           setAsideCards: [],
           basicChangeFormUsedThisRound: false,

@@ -914,6 +914,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Tuck cards facedown under host card from hand.',
     parameters: [],
   },
+  REMOVE_FROM_GAME: {
+    effect: 'REMOVE_FROM_GAME',
+    description:
+      'Remove the source card from the game (it ends only in the removed-from-game zone).',
+    parameters: [],
+  },
   PLACE_CARD_UNDER_HOST: {
     effect: 'PLACE_CARD_UNDER_HOST',
     description: 'Place card underneath host card.',

@@ -618,14 +618,66 @@
     "01155": {
       "abilities": [
         {
-          "id": "affairs_of_state",
+          "id": "affairs_of_state_resolve",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
-              "effect": "DISCARD",
+              "effect": "CHANGE_FORM",
               "effectParams": {
-                "source": "SELF"
+                "form": "alter_ego",
+                "optional": true
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Affairs of State",
+                "description": "Choose how to resolve this obligation:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust T'Challa",
+                    "description": "Exhaust T'Challa to remove Affairs of State from the game.",
+                    "gate": "IF_FORM",
+                    "gateParams": {
+                      "form": "alter_ego"
+                    },
+                    "cost": {
+                      "exhaustCard": "SELF_IDENTITY"
+                    },
+                    "steps": [
+                      {
+                        "effect": "REMOVE_FROM_GAME",
+                        "effectParams": {
+                          "target": "SELF"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "take_effect",
+                    "label": "Choose and discard a Black Panther upgrade you control.",
+                    "description": "Choose and discard a Black Panther upgrade you control.",
+                    "steps": [
+                      {
+                        "effect": "DISCARD",
+                        "effectParams": {
+                          "source": "TABLEAU",
+                          "mode": "CHOSEN",
+                          "filter": {
+                            "types": [
+                              "upgrade"
+                            ],
+                            "traits": [
+                              "Black Panther"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -633,11 +685,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-03T16:30",
+        "reviewedAt": "2026-10-03T16:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b><i>Give to the T'Challa player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust T'Challa → remove Affairs of State from the game.\n• Choose and discard a [[Black Panther]] upgrade you control. Discard this obligation."
       }
     },
@@ -868,14 +920,62 @@
     "01165": {
       "abilities": [
         {
-          "id": "eviction_notice",
+          "id": "eviction_notice_resolve",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
-              "effect": "DISCARD",
+              "effect": "CHANGE_FORM",
               "effectParams": {
-                "source": "SELF"
+                "form": "alter_ego",
+                "optional": true
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Eviction Notice",
+                "description": "Choose how to resolve this obligation:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust Peter Parker",
+                    "description": "Exhaust Peter Parker to remove Eviction Notice from the game.",
+                    "gate": "IF_FORM",
+                    "gateParams": {
+                      "form": "alter_ego"
+                    },
+                    "cost": {
+                      "exhaustCard": "SELF_IDENTITY"
+                    },
+                    "steps": [
+                      {
+                        "effect": "REMOVE_FROM_GAME",
+                        "effectParams": {
+                          "target": "SELF"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "take_effect",
+                    "label": "Discard 1 card at random from your hand. This card gains surge.",
+                    "description": "Discard 1 card at random from your hand. This card gains surge.",
+                    "steps": [
+                      {
+                        "effect": "DISCARD",
+                        "effectParams": {
+                          "source": "HAND",
+                          "mode": "RANDOM",
+                          "count": 1
+                        }
+                      },
+                      {
+                        "effect": "SURGE"
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -883,11 +983,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-03T16:30",
+        "reviewedAt": "2026-10-03T16:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b><i>Give to the Peter Parker player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Peter Parker → remove Eviction Notice from the game.\n• Discard 1 card at random from your hand. This card gains surge. Discard this obligation."
       }
     },
@@ -1169,14 +1269,61 @@
     "01175": {
       "abilities": [
         {
-          "id": "family_emergency",
+          "id": "family_emergency_resolve",
           "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
+          "trigger": "ENTERS_PLAY",
           "steps": [
             {
-              "effect": "DISCARD",
+              "effect": "CHANGE_FORM",
               "effectParams": {
-                "source": "SELF"
+                "form": "alter_ego",
+                "optional": true
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Family Emergency",
+                "description": "Choose how to resolve this obligation:",
+                "options": [
+                  {
+                    "id": "exhaust_identity",
+                    "label": "Exhaust Carol Danvers",
+                    "description": "Exhaust Carol Danvers to remove Family Emergency from the game.",
+                    "gate": "IF_FORM",
+                    "gateParams": {
+                      "form": "alter_ego"
+                    },
+                    "cost": {
+                      "exhaustCard": "SELF_IDENTITY"
+                    },
+                    "steps": [
+                      {
+                        "effect": "REMOVE_FROM_GAME",
+                        "effectParams": {
+                          "target": "SELF"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "take_effect",
+                    "label": "You are stunned. This card gains surge.",
+                    "description": "You are stunned. This card gains surge.",
+                    "steps": [
+                      {
+                        "effect": "ADD_STATUS",
+                        "effectParams": {
+                          "status": "STUNNED",
+                          "target": "SELF_IDENTITY"
+                        }
+                      },
+                      {
+                        "effect": "SURGE"
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -1184,11 +1331,11 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-03T16:30",
+        "reviewedAt": "2026-10-03T16:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 100,
         "originalText": "<b><i>Give to the Carol Danvers player.</i></b>\nYou may flip to alter-ego form. Choose:\n• Exhaust Carol Danvers → remove Family Emergency from the game.\n• You are stunned. This card gains surge. Discard this obligation."
       }
     },

@@ -49,6 +49,7 @@ describe('Hero Color Palette Extraction & Fallback Utility (Issue #110)', () => 
         tableau: [],
         allies: [],
         engagedMinions: [],
+        obligations: [],
         basicChangeFormUsedThisRound: false,
         formChangedThisRound: false,
         recoveryUsedThisRound: false,

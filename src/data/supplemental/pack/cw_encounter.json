@@ -1,0 +1,20 @@
+{
+  "$schema": "../schema.json",
+  "cards": {
+    "56128b": {
+      "recipient": {
+        "type": "FIRST_PLAYER"
+      },
+      "audit": {
+        "createdAt": "2026-10-03T15:30",
+        "updatedAt": "2026-10-03T15:30",
+        "reviewedAt": "2026-10-03T15:30",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 50,
+        "ambiguityFile": "docs/ambiguities/cw_56128b_now-its-personal.md",
+        "originalText": "<b><i>Give to the first player.</i></b>\n<b>Action</b>: Remove this card from the game → each player on your team chooses 2 of your leader's set-aside player cards and adds them to their hand."
+      }
+    }
+  }
+}

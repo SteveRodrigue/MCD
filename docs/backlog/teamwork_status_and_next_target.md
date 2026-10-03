@@ -34,7 +34,7 @@ flowchart TD
         I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
         I184["#184 Caught Off Guard Prompt<br/>RESOLVED (052032e)"]
         I122["#122 Step-Gate Evaluator<br/>RESOLVED (0acc25f)"]
-        I154["#154 Cosmic Flight Aerial Gate<br/>RESOLVED (pending commit)"]
+        I154["#154 Cosmic Flight Aerial Gate<br/>RESOLVED (608a19a)"]
         I158["#158 Obligations Engine<br/>ACTIVE NEXT TARGET"]
     end
 
@@ -93,7 +93,7 @@ flowchart TD
 | Issue # | Title | Target File / Code | Problem Statement & Fix Strategy |
 |---|---|---|---|
 | **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved** (`0fc765e`). Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
-| **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | 🟢 **Resolved** (pending commit). ADD_TRAIT honors gates; `01017` gated with `IF_FORM: hero`. |
+| **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | 🟢 **Resolved** (`608a19a`). ADD_TRAIT honors gates; `01017` gated with `IF_FORM: hero`. |
 | **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🎯 **Active Next Target**. Obligation card resolution. Requires declarative obligation prompt structure (give to player, flip to alter-ego, exhaust / discard options). |
 | **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
 | **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | Iron Man upgrade: +1 HP and Aerial trait generation. Needs supplemental audit to verify constant HP bonus and active ability. |
@@ -135,7 +135,7 @@ flowchart TD
 | **P2** | **#179** | Alpha Flight Station active with empty hand | UI/Engine | Low / Board UI | S | 🟢 **Resolved** (`569274c` + tests) |
 | **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟢 **Resolved** (`c7d970d`) |
 | **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟢 **Resolved** (`0acc25f`) |
-| **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (pending commit) |
+| **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (`608a19a`) |
 | **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / 221 Call Sites | L | 🟡 **Open** (Arch Milestone) |
 | **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟡 **Open** |
 | **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟡 **Open** |
@@ -169,6 +169,8 @@ flowchart TD
 - ✅ **#122**: Shared step-gate evaluator extracted.
 - ✅ **#154**: Gate Cosmic Flight *Aerial* trait on Hero form.
 - 🎯 **#158**: Obligation prompt engine for *Family Emergency*.
+  - Deferred follow-up: **#208** (player-deck obligations go to the play area on draw; depends on #158).
+  - Deferred follow-up: **#209** (conditional encounter attachments, "Attach to X. Otherwise …", 42 cards; independent of #158).
 - **#194**: Batch migration of 221 legacy `state.villain` / `state.mainScheme` pointers to accessor helpers.
 
 ### Phase 4: Code Audit Cleanups & Polish
@@ -185,7 +187,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Issue #158** (Obligation prompt engine for *Family Emergency* `01175`). Needs a plan before implementation.
+   - Primary: **Issue #158** (Obligation prompt engine for *Family Emergency* `01175`). Plan: [`plan_issue_158_obligations_engine.md`](plan_issue_158_obligations_engine.md) (awaiting approval).
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

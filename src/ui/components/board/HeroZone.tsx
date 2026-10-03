@@ -27,6 +27,7 @@ import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generato
 import { CardView } from '../cards/CardView';
 import { CardAttachmentFan } from '../cards/CardAttachmentFan';
 import { FacedownEncounterCard } from '../cards/FacedownEncounterCard';
+import { ThreatZoneSubzone } from './ThreatZoneSubzone';
 import { useGameSettings } from '../../context/useGameSettings';
 import { IdentityActionModal } from './IdentityActionModal';
 import { ComicDamageSplash } from './ComicDamageSplash';
@@ -102,6 +103,8 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const engagedMinions = player.engagedMinions || [];
   const dealtCards = player.dealtEncounterCards || [];
   const hasDealtCards = dealtCards.length > 0;
+  const obligations = player.obligations || [];
+  const hasObligations = obligations.length > 0;
 
   const effectiveStats = getEffectiveHeroStats(
     gameState || ({ sideSchemes: [], players: [] } as any),
@@ -364,13 +367,18 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
       </div>
 
       {/* 1. Engaged Minions & Dealt Encounter Cards Row (Always Visible for this Hero Seat!) */}
-      <div className="bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm">
+      <div
+        data-testid="threat-zone"
+        className="bg-rose-50/80 p-3 rounded-xl border-2 border-comic-black shadow-comic-sm"
+      >
         <div className="flex items-center justify-between border-b border-rose-200 pb-1 mb-2">
           <div className="flex items-center gap-1.5">
             <AlertOctagon className="w-4 h-4 text-comic-red" />
             <span className="font-comic text-xs text-comic-red uppercase font-bold">
-              {hasDealtCards
-                ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards)`
+              {hasDealtCards || hasObligations
+                ? `Threat Zone: ${player.name} (${engagedMinions.length} Minions • ${dealtCards.length} Dealt Cards${
+                    hasObligations ? ` • ${obligations.length} Obligations` : ''
+                  })`
                 : `Minions Engaged with ${player.name} (${engagedMinions.length})`}
             </span>
           </div>
@@ -379,80 +387,111 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-1">
+        <div className="flex flex-wrap items-start gap-4 pt-1">
           {hasDealtCards && (
-            <FacedownEncounterCard cards={dealtCards} heroName={player.name} devMode={isDevMode} />
+            <ThreatZoneSubzone testId="threat-zone-facedown" label="Encounter Facedown">
+              <FacedownEncounterCard
+                cards={dealtCards}
+                heroName={player.name}
+                devMode={isDevMode}
+              />
+            </ThreatZoneSubzone>
           )}
 
-          {engagedMinions.length > 0 ? (
-            <div className="flex flex-wrap gap-4 items-center">
-              {engagedMinions.map((minion) => {
-                const isGuard = hasKeyword(minion.card, Keyword.GUARD);
-                const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
-                const attachmentCount = minion.attachments?.length || 0;
-                const verticalExtraPx = attachmentCount > 0 ? attachmentCount * 70 : 0;
-                const horizontalExtraClass = attachmentCount > 0 ? 'ml-4 sm:ml-6' : '';
+          {hasObligations && (
+            <ThreatZoneSubzone
+              testId="threat-zone-obligations"
+              label="Obligations"
+              count={obligations.length}
+            >
+              {obligations.map((obligation) => (
+                <CardView
+                  key={obligation.instanceId}
+                  card={obligation.card}
+                  instance={obligation}
+                  size="sm"
+                  enableHoverZoom={true}
+                />
+              ))}
+            </ThreatZoneSubzone>
+          )}
 
-                return (
-                  <div
-                    key={minion.instanceId}
-                    className={`flex flex-col items-center gap-1 transition-all ${horizontalExtraClass}`}
-                    style={
-                      verticalExtraPx > 0 ? { marginBottom: `${verticalExtraPx}px` } : undefined
-                    }
-                  >
-                    <div className="relative flex flex-col items-center">
-                      <div className="relative z-30 flex flex-col items-center">
-                        <CardView
-                          card={minion.card}
-                          instance={minion}
-                          size="sm"
-                          enableHoverZoom={true}
+          <ThreatZoneSubzone
+            testId="threat-zone-minions"
+            label="Minions Engaged"
+            count={engagedMinions.length}
+            grow={engagedMinions.length === 0}
+          >
+            {engagedMinions.length > 0 ? (
+              <div className="flex flex-wrap gap-4 items-center">
+                {engagedMinions.map((minion) => {
+                  const isGuard = hasKeyword(minion.card, Keyword.GUARD);
+                  const isTough = minion.statusCards?.includes(StatusCard.TOUGH) ?? false;
+                  const attachmentCount = minion.attachments?.length || 0;
+                  const verticalExtraPx = attachmentCount > 0 ? attachmentCount * 70 : 0;
+                  const horizontalExtraClass = attachmentCount > 0 ? 'ml-4 sm:ml-6' : '';
+
+                  return (
+                    <div
+                      key={minion.instanceId}
+                      className={`flex flex-col items-center gap-1 transition-all ${horizontalExtraClass}`}
+                      style={
+                        verticalExtraPx > 0 ? { marginBottom: `${verticalExtraPx}px` } : undefined
+                      }
+                    >
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-30 flex flex-col items-center">
+                          <CardView
+                            card={minion.card}
+                            instance={minion}
+                            size="sm"
+                            enableHoverZoom={true}
+                          />
+                        </div>
+                        <CardAttachmentFan
+                          attachments={minion.attachments}
+                          cardsUnderneath={minion.cardsUnderneath}
+                          mode="staircase"
                         />
                       </div>
-                      <CardAttachmentFan
-                        attachments={minion.attachments}
-                        cardsUnderneath={minion.cardsUnderneath}
-                        mode="staircase"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1 flex-wrap justify-center z-30">
-                      <span
-                        className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
-                        title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
-                      >
-                        SCH {(minion.card as any).scheme ?? 0}
-                      </span>
-                      <span
-                        className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
-                        title={`Attack: ${(minion.card as any).attack ?? 0}`}
-                      >
-                        ATK {(minion.card as any).attack ?? 0}
-                      </span>
-                      {isGuard && (
-                        <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          GUARD
+                      <div className="flex items-center gap-1 flex-wrap justify-center z-30">
+                        <span
+                          className="bg-white text-comic-blue border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          title={`Scheme: ${(minion.card as any).scheme ?? 0}`}
+                        >
+                          SCH {(minion.card as any).scheme ?? 0}
                         </span>
-                      )}
-                      {isTough && (
-                        <span className="bg-sky-400 text-slate-950 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          TOUGH
+                        <span
+                          className="bg-white text-comic-red border border-comic-black font-comic text-[9px] px-1 py-0.2 rounded font-bold shadow-comic-xs"
+                          title={`Attack: ${(minion.card as any).attack ?? 0}`}
+                        >
+                          ATK {(minion.card as any).attack ?? 0}
                         </span>
-                      )}
+                        {isGuard && (
+                          <span className="bg-slate-900 text-comic-yellow border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                            GUARD
+                          </span>
+                        )}
+                        {isTough && (
+                          <span className="bg-sky-400 text-slate-950 border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded font-bold">
+                            TOUGH
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div
-              className={`py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2 ${
-                hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
-              }`}
-            >
-              <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className={`py-2 px-3 border-2 border-dashed border-rose-200 rounded-lg text-center text-xs text-rose-400 font-semibold bg-white/60 flex items-center justify-center gap-2 ${
+                  hasDealtCards ? 'flex-1 self-stretch' : 'w-full'
+                }`}
+              >
+                <span>🛡️ No minions engaged with {player.name} (Perimeter secure).</span>
+              </div>
+            )}
+          </ThreatZoneSubzone>
         </div>
       </div>
 

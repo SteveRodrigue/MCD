@@ -3814,6 +3814,8 @@ export function executeStep(
       const description = (step.effectParams?.description as string) || '';
       const sourceCardName = context.sourceCardInstance?.card.name || step.id || 'Card Ability';
       const promptId = `prompt_${Date.now()}_${step.id || 'choice'}`;
+      // Clone options so per-prompt availability (gate/cost) never mutates shared card data
+      options = options.map((opt: any) => ({ ...opt }));
       state = enqueueDecisionPrompt(state, {
         promptId,
         playerId: context.playerId || player.id,
@@ -3825,6 +3827,10 @@ export function executeStep(
         triggerSourceCard: context.sourceCardInstance?.card,
         options,
         isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,
+        completion:
+          context.sourceCardInstance?.card.type === CardType.OBLIGATION
+            ? 'DISCARD_SOURCE_OBLIGATION'
+            : undefined,
       });
 
       state.log.push({
@@ -4135,6 +4141,36 @@ export function executeStep(
     case 'FLIP_FORM':
     case 'CHANGE_FORM': {
       const nextFormCard = player.availableForms.find((f) => f.code !== player.activeFormCard.code);
+      const requestedForm = (step.effectParams?.form as string | undefined)
+        ?.toLowerCase()
+        .replace('-', '_');
+      // A requested form the identity is already in is a no-op (e.g. "you may flip to alter-ego form")
+      if (requestedForm && requestedForm === player.currentForm) {
+        return { state, success: true, mutatedState: false, value: 0 };
+      }
+      // Optional flip: offer a voluntary choice instead of flipping immediately
+      if (step.effectParams?.optional && nextFormCard) {
+        enqueueDecisionPrompt(state, {
+          promptId: `prompt_optional_flip_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          playerId: context.playerId || player.id,
+          title: `Flip to ${nextFormCard.name}?`,
+          description: `You may flip to ${nextFormCard.name}.`,
+          sourceCardName: context.sourceCardInstance?.card.name || 'Card Ability',
+          sourceCardCode: context.sourceCardInstance?.card.code,
+          sourceCardInstanceId: context.sourceCardInstance?.instanceId,
+          isVoluntary: true,
+          options: [
+            {
+              id: 'flip',
+              label: `Flip to ${nextFormCard.name}`,
+              description: `Change to ${nextFormCard.name}.`,
+              effect: 'CHANGE_FORM',
+              params: { form: requestedForm },
+            },
+          ],
+        });
+        return { state, success: true, mutatedState: false, onomatopoeia: 'FLIP OPTIONAL!' };
+      }
       if (nextFormCard) {
         player.activeFormCard = nextFormCard;
         player.currentForm = nextFormCard.type === CardType.HERO ? 'hero' : 'alter_ego';
@@ -4156,6 +4192,24 @@ export function executeStep(
         value: 1,
         onomatopoeia,
       };
+    }
+
+    case 'REMOVE_FROM_GAME': {
+      // Removes the source card (target SELF) from the game: it ends only in removedFromGame
+      const source = context.sourceCardInstance;
+      if (!source) return { state, success: false, error: 'No card to remove from the game' };
+      removeCardFromAllZones(state, source.instanceId);
+      state.removedFromGame.push(source);
+      state.log.push({
+        id: `log_${Date.now()}_removed_from_game`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        key: 'card.removedFromGame',
+        params: { card: source.card.name, player: player.name },
+        onomatopoeia: 'REMOVED FROM THE GAME!',
+      });
+      return { state, success: true, mutatedState: true, onomatopoeia: 'REMOVED FROM THE GAME!' };
     }
 
     case 'SURGE': {

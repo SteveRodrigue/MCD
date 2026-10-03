@@ -101,6 +101,8 @@ export interface NormalizedCard {
   resources: CardResources;
   setCode?: string;
   setPosition?: number;
+  /** Derived at catalog load: true when this card's setCode is the set of a hero/alter-ego card in the same catalog (Issue #158). */
+  belongsToHeroSet?: boolean;
   backLink?: string;
   boostIcons?: number;
   boostStar?: boolean;

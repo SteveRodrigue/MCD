@@ -235,6 +235,7 @@ export const EffectTypeSchema = z.enum([
   'REDUCE_NEXT_CARD_COST',
   'REMOVE_COUNTERS',
   'REMOVE_COUNTERS_MATCHING_FILTER',
+  'REMOVE_FROM_GAME',
   'REMOVE_THREAT',
   'RESTRICTED_LIMIT_BONUS',
   'RETURN_TO_HAND',
@@ -871,6 +872,17 @@ export type PlayRequirements = z.infer<typeof PlayRequirementsSchema>;
 /**
  * Card Enrichment Schema
  */
+/**
+ * Obligation recipient override (Issue #158). Separate from TargetSelectorSchema so it cannot be
+ * confused with effect targets. Absent on a card = engine default (hero-set owner, else revealing player).
+ */
+export const PlayerRecipientSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('FIRST_PLAYER') }).strict(),
+  z.object({ type: z.literal('REVEALING_PLAYER') }).strict(),
+  z.object({ type: z.literal('CARD_SET_OWNER') }).strict(),
+  z.object({ type: z.literal('IDENTITY'), codes: z.array(z.string()).min(1) }).strict(),
+]);
+
 export const CardEnrichmentSchema = z
   .object({
     abilities: z.array(CardAbilitySchema).optional(),
@@ -881,6 +893,7 @@ export const CardEnrichmentSchema = z
     attackCost: z.number().int().nonnegative().optional(),
     thwartCost: z.number().int().nonnegative().optional(),
     maxPerPlayer: z.number().optional(),
+    recipient: PlayerRecipientSchema.optional(),
     playUnderAnyPlayerControl: z.boolean().optional(),
     uses: CardUsesSchema.optional(),
     victoryPoints: z.number().optional(),

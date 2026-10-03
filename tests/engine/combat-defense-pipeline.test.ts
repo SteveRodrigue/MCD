@@ -11,6 +11,7 @@ import {
   resolveDefenderDeclaration,
   finishAttackDamageAndPostResolution,
 } from '../../src/engine/pipeline/combat-pipeline';
+import { dispatchAction } from '../../src/engine/pipeline/action-dispatcher';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
@@ -467,5 +468,163 @@ describe('Combat & Defense Pipeline (RR v1.8)', () => {
     expect(p1.hand).toContain(backflip);
     expect(p1.discard).not.toContain(backflip);
     expect(peekDecisionPrompt(state)).toBeUndefined();
+  });
+
+  it('Test 10: Issue #183 Regression: Cross-Table Hero Defense via RESOLVE_DECISION_PROMPT declares Spider-Man, exhausts Spider-Man, and applies 3 DEF', () => {
+    state.options = { villainPhaseStepping: true };
+    const p1 = state.players[0]; // Spider-Man, DEF: 3, HP: 10
+    const p2 = state.players[1]; // Iron Man, DEF: 2, HP: 9
+
+    state.encounterDeck = []; // 0 boost icons
+    // Rhino (ATK 3) attacks Player 2
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p2.id);
+
+    const prompt = peekDecisionPrompt(state);
+    expect(prompt).toBeDefined();
+    expect(prompt?.playerId).toBe(p2.id);
+
+    const crossHeroOpt = prompt?.options.find((o) => o.id === `defend_hero_${p1.id}`);
+    expect(crossHeroOpt).toBeDefined();
+    expect(crossHeroOpt?.params?.playerId).toBe(p1.id);
+
+    // Player 2 resolves the prompt by selecting Player 1's hero defense
+    const dispatchRes = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p2.id,
+      selectedOptionId: crossHeroOpt!.id,
+    });
+
+    expect(dispatchRes.result.success).toBe(true);
+
+    const finalP1 = dispatchRes.state.players[0];
+    const finalP2 = dispatchRes.state.players[1];
+
+    // Spider-Man (Player 1) must be declared defender and exhausted
+    expect(finalP1.exhausted).toBe(true);
+    // Player 2 must NOT be exhausted
+    expect(finalP2.exhausted).toBe(false);
+
+    // Defender stats and damage reduction:
+    // Rhino 3 ATK - Spider-Man 3 DEF = 0 damage dealt
+    expect(dispatchRes.state.lastCombatOutcome?.defenderName).toBe('Spider-Man');
+    expect(dispatchRes.state.lastCombatOutcome?.defenseValue).toBe(3);
+    expect(dispatchRes.state.lastCombatOutcome?.finalDamage).toBe(0);
+    expect(dispatchRes.state.lastCombatOutcome?.targetPlayerId).toBe(p1.id);
+
+    // Player 1 HP unchanged (10)
+    expect(finalP1.health).toBe(10);
+    // Player 2 HP unchanged (9)
+    expect(finalP2.health).toBe(9);
+  });
+
+  it('Test 11: Issue #183 Regression: Cross-Table Ally Defense via RESOLVE_DECISION_PROMPT correctly declares and exhausts defending ally', () => {
+    state.options = { villainPhaseStepping: true };
+    const p1 = state.players[0];
+    const p2 = state.players[1];
+
+    const blackCat = createMockCardInstance('01002', 'Black Cat', 'ally', { health: 2 });
+    p1.allies.push(blackCat);
+
+    state.encounterDeck = [];
+    // Rhino attacks Player 2
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p2.id);
+
+    const prompt = peekDecisionPrompt(state);
+    expect(prompt).toBeDefined();
+    const allyOpt = prompt?.options.find((o) => o.id === `defend_ally_${blackCat.instanceId}`);
+    expect(allyOpt).toBeDefined();
+    expect(allyOpt?.params?.playerId).toBe(p1.id);
+
+    // Player 2 chooses Player 1's ally to block
+    const dispatchRes = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p2.id,
+      selectedOptionId: allyOpt!.id,
+    });
+
+    expect(dispatchRes.result.success).toBe(true);
+    const finalP1 = dispatchRes.state.players[0];
+    const finalP2 = dispatchRes.state.players[1];
+
+    // Ally takes damage and is defeated
+    expect(finalP1.allies).not.toContainEqual(
+      expect.objectContaining({ instanceId: blackCat.instanceId }),
+    );
+    expect(finalP1.discard).toContainEqual(
+      expect.objectContaining({ instanceId: blackCat.instanceId }),
+    );
+
+    // Player 2 is untouched
+    expect(finalP2.health).toBe(9);
+    expect(finalP2.exhausted).toBe(false);
+    expect(dispatchRes.state.lastCombatOutcome?.targetPlayerId).toBe(p1.id);
+  });
+
+  it('Test 12: Issue #183 Regression: Direct/Solo Hero Defense via RESOLVE_DECISION_PROMPT functions seamlessly', () => {
+    let currentState = state;
+    currentState.options = { villainPhaseStepping: true };
+    const p1 = currentState.players[0]; // Spider-Man, DEF: 3, HP: 10
+
+    currentState.encounterDeck = [];
+    currentState = initiateEnemyAttack(currentState, { type: 'VILLAIN' }, p1.id);
+
+    const prompt = peekDecisionPrompt(currentState);
+    expect(prompt).toBeDefined();
+    expect(prompt?.playerId).toBe(p1.id);
+
+    const heroOpt = prompt?.options.find((o) => o.id === 'defend_hero');
+    expect(heroOpt).toBeDefined();
+
+    const dispatchRes = dispatchAction(currentState, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p1.id,
+      selectedOptionId: heroOpt!.id,
+    });
+
+    expect(dispatchRes.result.success).toBe(true);
+    const finalP1 = dispatchRes.state.players[0];
+
+    expect(finalP1.exhausted).toBe(true);
+    expect(dispatchRes.state.lastCombatOutcome?.defenderName).toBe('Spider-Man');
+    expect(dispatchRes.state.lastCombatOutcome?.defenseValue).toBe(3);
+    expect(dispatchRes.state.lastCombatOutcome?.finalDamage).toBe(0);
+    expect(finalP1.health).toBe(10);
+  });
+
+  it('Test 13: Issue #183 Regression: Cross-Table Hero Defense with excess attack damage deals remaining damage to defending hero, not attacked player', () => {
+    state.options = { villainPhaseStepping: true };
+    const p1 = state.players[0]; // Spider-Man, DEF: 3, HP: 10
+    const p2 = state.players[1]; // Iron Man, DEF: 2, HP: 9
+
+    // Boost card with 2 boost icons
+    const boostCard = createMockCardInstance('01121', 'Boost Card', 'treachery', {
+      boostIcons: 2,
+    });
+    state.encounterDeck = [boostCard];
+
+    // Rhino (ATK 3) attacks Player 2. Total ATK will be 3 + 2 = 5.
+    initiateEnemyAttack(state, { type: 'VILLAIN' }, p2.id);
+
+    const prompt = peekDecisionPrompt(state);
+    const crossHeroOpt = prompt?.options.find((o) => o.id === `defend_hero_${p1.id}`);
+
+    const dispatchRes = dispatchAction(state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: p2.id,
+      selectedOptionId: crossHeroOpt!.id,
+    });
+
+    expect(dispatchRes.result.success).toBe(true);
+    const finalP1 = dispatchRes.state.players[0];
+    const finalP2 = dispatchRes.state.players[1];
+
+    // Spider-Man defends: 5 ATK - 3 DEF = 2 damage dealt to Spider-Man
+    expect(finalP1.exhausted).toBe(true);
+    expect(finalP1.health).toBe(8); // 10 - 2 = 8
+    // Player 2 takes 0 damage and is not exhausted
+    expect(finalP2.exhausted).toBe(false);
+    expect(finalP2.health).toBe(9);
+    expect(dispatchRes.state.lastCombatOutcome?.finalDamage).toBe(2);
+    expect(dispatchRes.state.lastCombatOutcome?.targetPlayerId).toBe(p1.id);
   });
 });

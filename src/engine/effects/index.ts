@@ -3818,7 +3818,7 @@ export function executeStep(
       const defenderType =
         (step.effectParams?.defenderType as 'HERO' | 'ALLY' | 'UNDEFENDED') || 'UNDEFENDED';
       const allyInstanceId = step.effectParams?.allyInstanceId as string | undefined;
-      const playerId = context.playerId || (step.effectParams?.playerId as string) || player.id;
+      const playerId = (step.effectParams?.playerId as string) || context.playerId || player.id;
       const resState = resolveDefenderDeclaration(state, {
         type: defenderType,
         playerId,

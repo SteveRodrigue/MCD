@@ -11,7 +11,8 @@
 | F2 | Wakanda sequence can't pause for mid-sequence prompts | **Done** (2026-10-04, [#207](https://github.com/SteveRodrigue/MCD/issues/207), [plan](plan_issue_207_wakanda_sequence.md)) |
 | A3 | Rocket Boots `01039` (= #131) | **Done** (2026-10-04, uncommitted): [plan](plan_issue_131_rocket_boots.md) |
 | A2 | Counter-Punch `01077` (cost 0, hand reaction, "that enemy", "your hero defends") | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_a2_counter_punch.md) |
-| A4–A6, B1–B8, C1–C13, D | see sections below | Not started |
+| B7 | Med Team `01080` (friendly character only) | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_b7_med_team.md) |
+| A4–A6, B1–B6, B8, C1–C13, D | see sections below | Not started |
 
 **Scope:** every player card in `core` (`01001a`–`01093`, 101 entries incl. the four `01043a–d` variants).
 **Method:** independent translation from upstream printed text, differential comparison against

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): Med Team heals a friendly character, not any character (core review B7)**
+  - **Supplemental Data (`core.json`):** _Med Team_ `01080` heal step targets `CHOSEN_FRIENDLY_CHARACTER` (it was `CHOSEN_CHARACTER`, which let a player heal the villain or a minion, and offered the action when only an enemy was damaged). _First Aid_ `01086` prints "any character" and keeps `CHOSEN_CHARACTER`. No engine, schema or editor change.
+  - **Automated Verification (`med-team-friendly-target.test.ts`):** 4 tests (villain-only damage blocks the action, villain target rejected with nothing spent, another player's ally healed, alter-ego-form hero is a valid target).
+
 - **Fix (Data, Engine & Editor): Counter-Punch costs 0, fires from the hand, and hits the attacker (core review A2)**
   - **Supplemental Data (`core.json`):** _Counter-Punch_ `01077` drops `resourceCost: 1` (the card costs 0), targets `TRIGGERING_ENEMY` (it targeted the villain whoever attacked), and carries `triggerFilter: { targetPlayerScope: "SELF", defenderType: "HERO" }` ("after your hero defends").
   - **Engine (`trigger-dispatcher.ts`, `combat-pipeline.ts`):** hand reactions for `ATTACK_DEFENDED` did not exist, so the card never fired in a real game. The three duplicated in-hand scans (damage, threat, encounter reveal) are now one `scanHandReactions` helper, used for `ATTACK_DEFENDED` too. Side effect, rule-correct: the immediate-resolution path of the damage and threat scans now pays the ability cost and runs the effect like the encounter path already did. `ATTACK_DEFENDED` is dispatched with `defenderType` and `targetInstanceId` (the attacking villain or minion). New `triggerFilter.defenderType` (`HERO`/`ALLY`).

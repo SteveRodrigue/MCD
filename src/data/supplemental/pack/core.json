@@ -2891,7 +2891,7 @@
               "effect": "HEAL_DAMAGE",
               "effectParams": {
                 "amount": 2,
-                "target": "CHOSEN_CHARACTER"
+                "target": "CHOSEN_FRIENDLY_CHARACTER"
               }
             }
           ]
@@ -2899,8 +2899,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T17:05",
+        "reviewedAt": "2026-10-04T17:05",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

@@ -128,6 +128,9 @@ export interface EffectExecutionContext {
   ability?: CardAbility;
   distinctFromId?: string;
   ignoresCrisis?: boolean;
+  /** Attack being resolved (boost cards): who attacks and who defended, for UNDEFENDED_ATTACK. */
+  attackerType?: 'VILLAIN' | 'MINION';
+  defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';

@@ -155,6 +155,9 @@ export const StepConditionSchema = z.enum([
   'TARGET_TRAIT_MATCH',
   'TARGET_FORM_MATCH',
 
+  // Combat Context (evaluated against the attack being resolved, e.g. in a boost)
+  'UNDEFENDED_ATTACK',
+
   // Payment & Resource Invariants
   'RESOURCE_KICKER_MET',
 

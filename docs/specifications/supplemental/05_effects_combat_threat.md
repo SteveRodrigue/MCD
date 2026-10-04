@@ -134,6 +134,8 @@
 }
 ```
 
+> **Conditional threat:** to place threat only in some situations (for example the undefended-attack boost of _Kree Manipulator_ `01178`), gate the step with `IF_CONDITION_MET` and a `condition` such as `UNDEFENDED_ATTACK`; `effectParams` has no `condition` key (see [10. Sequences & Modals](10_sequences_and_prompts.md)).
+
 ---
 
 ### `ADD_THREAT` (with `perPlayer: true`)

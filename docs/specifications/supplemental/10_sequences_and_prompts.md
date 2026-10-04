@@ -94,9 +94,26 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 | **Entity State**   | `TARGET_ALREADY_EXHAUSTED` | Target was already exhausted.                                          | `EXHAUST`                                                  |
 | **Entity State**   | `TARGET_TRAIT_MATCH`       | Targeted entity possesses specified trait (e.g. `[[AERIAL]]`).         | Card filter                                                |
 | **Entity State**   | `TARGET_FORM_MATCH`        | Identity is in specified form (`hero`, `alter_ego`, etc.).             | Form check                                                 |
+| **Combat Context** | `UNDEFENDED_ATTACK`        | The attack being resolved has no defender (no hero or ally declared). `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`) optionally restricts who is attacking. False outside an attack. | Boost resolution (_Kree Manipulator_ `01178`, _Electric Whip Attack_ `01173`) |
 | **Resource**       | `RESOURCE_KICKER_MET`      | Resources spent to pay for card match required kicker icon(s).         | _Photonic Blast_ (`01013`), _Relentless Assault_ (`01053`) |
 | **Threshold**      | `COUNTER_THRESHOLD_MET`    | Target upgrade/support has reached or exceeded counter count.          | _Energy Channel_ (`01018`)                                 |
 | **Threshold**      | `ZONE_EMPTY`               | Evaluated zone (e.g. hand, discard) contains 0 cards.                  | Zone check                                                 |
+
+### Example: Undefended Attack Boost (_Kree Manipulator_ `01178`)
+
+"[star] **Boost**: If the villain is making an undefended attack, place 1 threat on the main scheme." Whether an attack was defended is a fact about the attack in progress, not the result of an earlier step, so the step carries the condition itself and is gated on it. Boosts are resolved after the defender is declared, and the combat pipeline hands `attackerType` and `defenderType` (`HERO` / `ALLY` / `UNDEFENDED`) to the gate:
+
+```json
+{
+  "effect": "ADD_THREAT",
+  "gate": "IF_CONDITION_MET",
+  "condition": "UNDEFENDED_ATTACK",
+  "gateParams": { "attackerKind": "VILLAIN" },
+  "effectParams": { "amount": 1, "target": "MAIN_SCHEME" }
+}
+```
+
+Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing reads it there and the step would run on every attack. Use `IF_CONDITION_NOT_MET` for the opposite ("if the attack is defended ...").
 
 ### Example: Resource Payment Kicker Pattern (_Photonic Blast_ `01013`)
 

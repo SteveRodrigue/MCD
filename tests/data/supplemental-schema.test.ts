@@ -895,6 +895,22 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(step.success).toBe(true);
       });
 
+      it('Kree Manipulator (01178) boost gates on UNDEFENDED_ATTACK and no longer hides it in effectParams', () => {
+        expect(StepConditionSchema.safeParse('UNDEFENDED_ATTACK').success).toBe(true);
+
+        const pack = JSON.parse(
+          fs.readFileSync(path.join(packDir, 'core_encounter.json'), 'utf8'),
+        ) as Record<string, any>;
+        const cards = pack.cards ?? pack;
+        const boost = cards['01178'].abilities.find((a: any) => a.id === 'kree_manipulator_boost');
+        const step = boost.steps[0];
+        expect(AbilityStepSchema.safeParse(step).success).toBe(true);
+        expect(step.gate).toBe('IF_CONDITION_MET');
+        expect(step.condition).toBe('UNDEFENDED_ATTACK');
+        expect(step.gateParams).toEqual({ attackerKind: 'VILLAIN' });
+        expect(step.effectParams.condition).toBeUndefined();
+      });
+
       it('Iron Man (01029a) hand size is a dynamic amount with a +6 clamp and the official errata text', () => {
         const pack = JSON.parse(
           fs.readFileSync(path.join(packDir, 'core.json'), 'utf8'),

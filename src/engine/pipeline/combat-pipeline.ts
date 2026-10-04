@@ -759,6 +759,8 @@ export function step4_and_5_dealAndResolveBoostCards(
           executeEffect(state, boostAbility, {
             playerId: attackContext.targetPlayerId,
             sourceCardInstance: currentBoost,
+            attackerType: attackContext.attackerType,
+            defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
           });
 
           state.log.push({

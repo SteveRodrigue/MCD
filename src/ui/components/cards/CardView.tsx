@@ -75,12 +75,7 @@ export const CardView: React.FC<CardViewProps> = ({
   const [dynamicOrigin, setDynamicOrigin] = useState<string | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
-  const isFacedown = Boolean(
-    isFacedownProp ??
-    (instance as any)?.isFacedown ??
-    (instance as any)?.facedown ??
-    (card as any)?.isFacedown,
-  );
+  const isFacedown = Boolean(isFacedownProp);
   const resolvedBackType = cardBackType || getCardBackTypeForCard(card);
   const [cardBackError, setCardBackError] = useState(false);
 

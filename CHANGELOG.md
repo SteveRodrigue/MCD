@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine, Data & Editor): Timed trait grants; Rocket Boots now gives Aerial ([Issue #131](https://github.com/SteveRodrigue/MCD/issues/131))**
+  - **Engine:** `ADD_TRAIT` works as an effect step (it was only evaluated for CONSTANT abilities, so Rocket Boots paid its cost and granted nothing). The trait goes on the resolving player's identity as a new `PlayerState.activeTraitModifiers` entry; default duration is **while the source card stays in play**, or an explicit `PHASE`/`ROUND`/`TURN`. Expiry follows the stat-modifier sites (player phase start and end, villain phase, round upkeep). `findInPlayCardInstance` moved to `state/state-validator.ts` to avoid a dependency cycle.
+  - **Supplemental Data (`core.json`):** _Rocket Boots_ `01039` Hero Action now targets `SELF_IDENTITY` (it targeted the boots card) with `duration: "PHASE"`.
+  - **Card Editor / Documentation:** `ADD_TRAIT` registry entry gains a `duration` field; spec `07_effects_status_economy.md` documents the default and the effect-step form.
+  - **Audit:** all 67 upstream cards that say "gain(s) the [[X]] trait": 62 are passive or attached, 5 are Hero Action grants and all five print an explicit duration, so the default never conflicts with a printed card.
+  - **Automated Verification (`rocket-boots.test.ts`, `add-trait-action.test.ts`, `add-trait-duration.test.ts`):** 5 + 5 + 3 tests (cost and grant, end-of-phase expiry, source-bound default, ROUND duration, duplicates, and a data guard for printed "until ...").
+
 - **Test (Engine): Validate Imminent Overload (01171) ([Issue #132](https://github.com/SteveRodrigue/MCD/issues/132))**
   - **Finding:** the card prints an **Acceleration** icon, not a Crisis icon (upstream `scheme_acceleration: 1`, no `scheme_crisis`), so the report's premise does not match the card. The engine behaves as printed: fixed base threat 3 plus 1 per hero from When Revealed, +1 main scheme threat in villain phase step 1 while it is in play, and main scheme thwarting is not blocked. No data or engine change.
   - **Automated Verification (`imminent-overload.test.ts`):** 6 tests (data flags, threat at 1 and 2 heroes, no Crisis, acceleration on and off).

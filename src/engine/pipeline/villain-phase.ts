@@ -772,6 +772,9 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
       player.activeStatModifiers = (player.activeStatModifiers || []).filter(
         (m) => m.duration !== 'PHASE',
       );
+      player.activeTraitModifiers = (player.activeTraitModifiers || []).filter(
+        (m) => m.duration !== 'PHASE',
+      );
       for (const card of [...player.allies, ...player.tableau, ...(player.attachments || [])]) {
         card.activeStatModifiers = (card.activeStatModifiers || []).filter(
           (m) => m.duration !== 'PHASE',

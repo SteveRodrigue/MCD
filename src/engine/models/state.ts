@@ -71,6 +71,7 @@ export interface PlayerState {
   activeCostReductions?: ActiveCostReduction[];
   /** Active temporary stat modifier auras (e.g. Lead from the Front 01070) */
   activeStatModifiers?: ActiveStatModifier[];
+  activeTraitModifiers?: ActiveTraitModifier[];
   dealtEncounterCards: CardInstance[]; // Face-down cards dealt in Step 4
   setAsideCards: CardInstance[]; // Set-aside nemesis cards
 }
@@ -82,6 +83,18 @@ export interface ActiveStatModifier {
   stat: 'THW' | 'ATK' | 'DEF' | 'REC' | 'ATTACK' | 'THWART' | 'DEFENSE' | 'RECOVER' | 'RECOVERY';
   amount: number;
   duration: Duration;
+  sourceCardName?: string;
+  sourceCardCode?: string;
+}
+
+/**
+ * A trait granted by an effect step (not a CONSTANT ability). With a `duration` it expires like a
+ * stat modifier; without one it lasts while the source card stays in play (#131).
+ */
+export interface ActiveTraitModifier {
+  trait: string;
+  duration?: Duration;
+  sourceInstanceId?: string;
   sourceCardName?: string;
   sourceCardCode?: string;
 }

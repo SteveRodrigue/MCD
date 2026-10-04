@@ -9,7 +9,8 @@
 | A1 | Energy Daggers `01046` | **Done** (2026-10-03, committed `a6c5397`): [plan](plan_core_review_a1_energy_daggers.md) |
 | F1 | Dead card-coded fallbacks for `01047`–`01049` in `wakanda-forever.ts` (`resolveSingleWakandaUpgrade`) | Follow-up, not started (verify they are unreachable, then remove) |
 | F2 | Wakanda sequence can't pause for mid-sequence prompts (steps resolve out of order; reproduced with Tough villain) | Filed as [#207](https://github.com/SteveRodrigue/MCD/issues/207) (draft: [issue_draft_wakanda_sequence_prompt_ordering.md](issue_draft_wakanda_sequence_prompt_ordering.md)); to be tackled on its own |
-| A2–A6, B1–B8, C1–C13, D | see sections below | Not started |
+| A3 | Rocket Boots `01039` (= #131) | **Done** (2026-10-04, uncommitted): [plan](plan_issue_131_rocket_boots.md) |
+| A2, A4–A6, B1–B8, C1–C13, D | see sections below | Not started |
 
 **Scope:** every player card in `core` (`01001a`–`01093`, 101 entries incl. the four `01043a–d` variants).
 **Method:** independent translation from upstream printed text, differential comparison against

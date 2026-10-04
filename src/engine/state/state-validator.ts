@@ -324,3 +324,67 @@ export function initializeCardUses(cardInstance: CardInstance): void {
     [counterType]: usesDef.count,
   };
 }
+
+/**
+ * Scans all in-play zones for a card instance by instanceId or card code (ADR-0055).
+ * Searches player tableaus, allies, identity attachments, ally attachments,
+ * minion attachments, villain attachments, and scheme attachments.
+ */
+export function findInPlayCardInstance(
+  state: GameState,
+  instanceId: string,
+): CardInstance | undefined {
+  for (const p of state.players || []) {
+    const fromTableau = p.tableau.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromTableau) return fromTableau;
+
+    const fromAllies = p.allies.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromAllies) return fromAllies;
+
+    const fromAttachments = p.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromAttachments) return fromAttachments;
+
+    for (const a of p.allies || []) {
+      const fromAllyAtt = a.attachments?.find(
+        (c) => c.instanceId === instanceId || c.card.code === instanceId,
+      );
+      if (fromAllyAtt) return fromAllyAtt;
+    }
+
+    for (const m of p.engagedMinions || []) {
+      const fromMinionAtt = m.attachments?.find(
+        (c) => c.instanceId === instanceId || c.card.code === instanceId,
+      );
+      if (fromMinionAtt) return fromMinionAtt;
+    }
+  }
+
+  for (const villain of getVillainsInPlay(state)) {
+    const fromVillainAtt = villain.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromVillainAtt) return fromVillainAtt;
+  }
+
+  for (const mainScheme of getMainSchemesInPlay(state)) {
+    const fromMainSchemeAtt = mainScheme.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromMainSchemeAtt) return fromMainSchemeAtt;
+  }
+
+  for (const s of state.sideSchemes || []) {
+    const fromSideSchemeAtt = s.attachments?.find(
+      (c) => c.instanceId === instanceId || c.card.code === instanceId,
+    );
+    if (fromSideSchemeAtt) return fromSideSchemeAtt;
+  }
+
+  return undefined;
+}

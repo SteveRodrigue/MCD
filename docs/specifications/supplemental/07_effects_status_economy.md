@@ -23,13 +23,15 @@
 
 ### `ADD_TRAIT`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4))
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`stat-calculator.ts`](../../../src/engine/pipeline/stat-calculator.ts) / _Cosmic Flight_ `01017` / Issue [#4](https://github.com/SteveRodrigue/MCD/issues/4)); as an effect step: [`effects/index.ts`](../../../src/engine/effects/index.ts) / _Rocket Boots_ `01039` / Issue [#131](https://github.com/SteveRodrigue/MCD/issues/131)
 - **Description:** Dynamically grants a trait (e.g. `Aerial`, `Avenger`, `Gamma`) to the target character (identity, ally, or enemy) as long as the source card remains in play. Typically declared on continuous abilities (`"timing": "CONSTANT"`) or attachments.
+- **As an effect step (Hero Action, Response, ...):** grants the trait to the **resolving player's identity** (`target: "SELF_IDENTITY"`, the only supported target) by recording an `ActiveTraitModifier` on the player. **Default duration: while the source card stays in play** (checked when traits are read, no cleanup needed). With `duration: "PHASE" | "ROUND" | "TURN"` the trait expires like a stat modifier instead (printed "until the end of the phase/round"). A data test (`tests/data/add-trait-duration.test.ts`) fails if the printed text says "until the end of ..." and the step has no `duration`.
 - **Engine Resolution:** Evaluated dynamically via `getEffectivePlayerTraits`, `getEffectiveCardTraits`, and `hasPlayerTrait` in `src/engine/pipeline/stat-calculator.ts`. Dynamically granted traits satisfy card play requirements (`identityTraits` in [**11. Play Requirements**](./11_play_requirements.md)) and conditional ability triggers (`TARGET_TRAIT_MATCH`).
 - **UI Presentation:** Rendered with 1960s comic pop-art badge pills (`[✨ Aerial]`) at the top of cards during tabletop play and hover-zoom in `CardView.tsx`, as well as within inspection modals (`IdentityActionModal.tsx`, `AllyActionModal.tsx`).
 - **Parameters:**
   - `trait`: `string` (Required) — Trait name to grant (e.g. `"Aerial"`).
-  - `target`: `TargetSelector` (Optional) — Target entity to grant the trait to (`'SELF'`, `'SELF_IDENTITY'`, `'ATTACHED_HOST'`). Defaults to `'SELF'`.
+  - `target`: `TargetSelector` (Optional) — Target entity to grant the trait to (`'SELF'`, `'SELF_IDENTITY'`, `'ATTACHED_HOST'`). Defaults to `'SELF'` for CONSTANT abilities; effect steps support `'SELF_IDENTITY'` only (default).
+  - `duration`: `"PHASE" | "ROUND" | "TURN"` (Optional, effect steps only) — omit for "while the source card is in play".
 
 ```json
 {

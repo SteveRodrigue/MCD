@@ -1172,9 +1172,13 @@ export function step7_resolvePostAttackAndRetaliate(
   const player = state.players.find((p) => p.id === attackContext.targetPlayerId);
 
   // Post-Defense Reactions (e.g. Indomitable 01082 ready hero, Counter-Punch 01077)
+  const attackerInstanceId =
+    attackContext.attackerCard?.instanceId ?? attackContext.attackerVillainId;
   if (attackContext.heroDefended && player) {
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: player.id,
+      defenderType: 'HERO',
+      targetInstanceId: attackerInstanceId,
       sourceInstanceId: attackContext.attackerCard?.instanceId,
       damageAmount: attackContext.finalDamage,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,
@@ -1182,6 +1186,8 @@ export function step7_resolvePostAttackAndRetaliate(
   } else if (attackContext.defender?.type === 'ALLY' && player) {
     dispatchTrigger(state, 'ATTACK_DEFENDED', {
       targetPlayerId: player.id,
+      defenderType: 'ALLY',
+      targetInstanceId: attackerInstanceId,
       sourceInstanceId: attackContext.attackerCard?.instanceId,
       damageAmount: attackContext.finalDamage,
       acceptOptionalTriggers: attackContext.acceptOptionalTriggers,

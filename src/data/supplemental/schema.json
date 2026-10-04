@@ -141,6 +141,13 @@
                     },
                     "isEngaged": {
                       "type": "boolean"
+                    },
+                    "defenderType": {
+                      "type": "string",
+                      "enum": [
+                        "HERO",
+                        "ALLY"
+                      ]
                     }
                   },
                   "additionalProperties": false

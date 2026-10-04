@@ -59,3 +59,13 @@ For test automation and headless simulation, `dispatchTrigger` accepts an option
 - **Rules Reference v1.8 Compliance:** 100% adherence to official timing rules for forced vs optional abilities and enemy activation scoping.
 - **Player Agency:** Players retain full strategic control over when to spend defensive/reactive cards from hand.
 - **Extensibility:** All future Interrupts and Responses (defense cards, encounter card cancellations like _Enhanced Spider-Sense_, treachery cancels) integrate seamlessly into this prompt architecture.
+
+---
+
+## Addendum (2026-10-04, core review A2): one shared in-hand reaction scan
+
+The three in-hand scans in `dispatchTrigger` (damage about to be taken, threat about to be placed, encounter card revealed) had grown apart: only the encounter path paid the ability cost when it resolved at once, the damage path ran only effects containing `PREVENT_DAMAGE`, and the form and filter checks differed. A fourth hand reaction (`ATTACK_DEFENDED`, Counter-Punch `01077`) had no scan at all, so the card never fired from the hand.
+
+**Decision:** a single `scanHandReactions` helper in `trigger-dispatcher.ts` owns what every hand reaction shares: pick the first hand card per scanned player whose `zone: HAND` ability matches the trigger, the player's form, `canPayAbilityCost` and `triggerFilter`; then either resolve at once (`FORCED_` timing or `acceptOptionalTriggers`: pay the cost, move the card to the discard unless `discardSelf: false`, run the effect) or queue the optional prompt (`requiresPayment` only when the cost is above 0). Per-trigger behaviour is passed in as callbacks (damage prevention, threat reduction, encounter cancellation, prompt display fields). The scan scope is explicit per trigger: threat and `ATTACK_DEFENDED` scan every player (the card's own `triggerFilter` decides who qualifies); damage and encounter reveals scan the targeted player only, because their "you" cards carry no filter.
+
+`ATTACK_DEFENDED` is dispatched with `defenderType` (`HERO` or `ALLY`) and `targetInstanceId` set to the attacking enemy, so cards can say "your hero defends" (`triggerFilter.defenderType`) and "that enemy" (`TRIGGERING_ENEMY`).

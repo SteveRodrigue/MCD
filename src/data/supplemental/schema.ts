@@ -388,6 +388,7 @@ export const TriggerFilterSchema = z
     targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
     targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
     isEngaged: z.boolean().optional(),
+    defenderType: z.enum(['HERO', 'ALLY']).optional(),
   })
   .strict();
 

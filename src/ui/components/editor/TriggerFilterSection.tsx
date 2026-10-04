@@ -159,6 +159,23 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
+          {/* defenderType */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Defender Type
+            </label>
+            <select
+              data-testid={`trigger-defender-type-${abilityIndex}`}
+              value={currentFilter.defenderType || ''}
+              onChange={(e) => handleFieldChange('defenderType', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="HERO">Hero</option>
+              <option value="ALLY">Ally</option>
+            </select>
+          </div>
+
           {/* targetScope */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data, Engine & Editor): Counter-Punch costs 0, fires from the hand, and hits the attacker (core review A2)**
+  - **Supplemental Data (`core.json`):** _Counter-Punch_ `01077` drops `resourceCost: 1` (the card costs 0), targets `TRIGGERING_ENEMY` (it targeted the villain whoever attacked), and carries `triggerFilter: { targetPlayerScope: "SELF", defenderType: "HERO" }` ("after your hero defends").
+  - **Engine (`trigger-dispatcher.ts`, `combat-pipeline.ts`):** hand reactions for `ATTACK_DEFENDED` did not exist, so the card never fired in a real game. The three duplicated in-hand scans (damage, threat, encounter reveal) are now one `scanHandReactions` helper, used for `ATTACK_DEFENDED` too. Side effect, rule-correct: the immediate-resolution path of the damage and threat scans now pays the ability cost and runs the effect like the encounter path already did. `ATTACK_DEFENDED` is dispatched with `defenderType` and `targetInstanceId` (the attacking villain or minion). New `triggerFilter.defenderType` (`HERO`/`ALLY`).
+  - **Card Editor / Documentation:** `defenderType` select in the trigger filter section; `schema.json` regenerated; specs `02` (trigger and filter tables) and `03` (`TRIGGERING_ENEMY`), combat visual guide, ADR-0020 addendum.
+  - **Automated Verification (`counter-punch-hand-reaction.test.ts`, `trigger-filter-contract.test.ts`, `TriggerFilterSection.test.tsx`):** 6 + 1 + 1 tests (zero cost, villain and minion attacker, no payment card discarded, prompt path, ally defender, other player's hand).
+
 - **Fix (Engine): Wakanda Forever! pauses for mid-sequence decision prompts ([Issue #207](https://github.com/SteveRodrigue/MCD/issues/207))**
   - **Engine (`specials/wakanda-forever.ts`, `special-registry.ts`, `action-dispatcher.ts`, `models/state.ts`):** upgrades now resolve one at a time from `GameState.pendingSpecialSequence`; a step that opens a prompt (Energy Daggers choosing a player) pauses the remaining steps, and `dispatchAction` resumes them once the prompt queue is empty. Before, later steps resolved first (for example Panther Claws removed Tough before Daggers, so a Daggers-then-Claws sequence dealt 1 damage instead of 4 against a Tough villain). Removed the dead card-coded fallbacks for `01047`-`01049` (tracker item F1).
   - **Documentation:** ADR-0038 addendum; `02_timings_and_triggers.md` (`SPECIAL` resume semantics).

@@ -46,7 +46,7 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'ATTACK'`                 | Target character is declared as the recipient of an attack.                                                                                            | `executeVillainAttackAgainstPlayer`                  |
 | `'MINION_ATTACKED'`        | Minion completes an attack activation against a player.                                                                                                | `executeMinionAttackAgainstPlayer`                   |
 | `'ENEMY_INITIATES_ATTACK'` | Enemy initiates attack sequence (Spider-Sense window).                                                                                                 | `combat-pipeline.ts`                                 |
-| `'ATTACK_DEFENDED'`        | Player or ally declares defense against an incoming attack.                                                                                            | `combat-pipeline.ts`                                 |
+| `'ATTACK_DEFENDED'`        | A hero or ally defended an incoming attack (after damage, step 7). Context carries `defenderType` (`HERO`/`ALLY`) and `targetInstanceId` (the attacking enemy). Fires for tableau abilities and for `zone: 'HAND'` reactions (e.g. Counter-Punch `01077`). | `combat-pipeline.ts`                                 |
 | `'ATTACK_RESOLVED'`        | Attack activation completes resolution against target.                                                                                                 | `combat-pipeline.ts`                                 |
 | `'BASIC_ATTACK_PERFORMED'` | Hero or ally executes a basic attack action.                                                                                                           | `action-dispatcher.ts`                               |
 | `'THWART_RESOLVED'`        | Basic or event thwart action completes threat removal on a scheme.                                                                                     | `action-dispatcher.ts`                               |
@@ -98,6 +98,7 @@ When an ability defines `triggerFilter`, the trigger matcher (`matchesTriggerFil
 | `targetForm`         | `'HERO' \| 'ALTER_EGO'`                                 | Restricts trigger resolution based on the target identity's form.                                              | ✅ Yes               |
 | `targetType`         | `'VILLAIN' \| 'MINION' \| 'SCHEME' \| 'CHARACTER'`      | Matches the entity classification being targeted or affected.                                                 | ✅ Yes               |
 | `isEngaged`          | `boolean`                                               | Matches whether the target/source enemy is engaged with the triggering player.                                 | ✅ Yes               |
+| `defenderType`       | `'HERO' \| 'ALLY'`                                      | Matches who defended on `ATTACK_DEFENDED`: `HERO` for "your hero defends" (pair with `targetPlayerScope: 'SELF'`), `ALLY` for an ally defender. | ✅ Yes               |
 
 ### Purged Speculative Orphan Fields (ADR-0069)
 

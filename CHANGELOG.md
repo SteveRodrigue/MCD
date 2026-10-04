@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor & Fix (UI & Engine): Phase 4 audit cleanups, group B ([#161](https://github.com/SteveRodrigue/MCD/issues/161), [#199](https://github.com/SteveRodrigue/MCD/issues/199), [#200](https://github.com/SteveRodrigue/MCD/issues/200), [#201](https://github.com/SteveRodrigue/MCD/issues/201), [#202](https://github.com/SteveRodrigue/MCD/issues/202))**
+  - **#161 (UI):** the identity stat and HP columns in `HeroZone` now stack above the rotated exhausted identity card (`relative z-10`), so the card sits behind the health bar and stats; hovering the card still brings it to the front. Verified live: the card was topmost over every overlapped stat point before the fix and over none after.
+  - **#199:** closed as not reproducible (0 `act(...)` warnings in the full suite).
+  - **#200 (UI):** `ScenarioSelector`, `MulliganScreen` and `GameBoard` load through `React.lazy` + `Suspense`; the main chunk drops from 1,230 kB to 860 kB (293 kB to 210 kB gzip). It still exceeds 500 kB (engine and card data), so the build warning remains.
+  - **#201:** removed the unused `normalizeCardCodeForArt` alias and its test case (covered by the `getCardArtFileName` tests).
+  - **#202 (Engine):** removed the unused `customActionHandlers` member from `ScenarioPlugin` (nothing set or called it).
+  - **Automated Verification (`hero-zone-tableau-layout.test.tsx`):** two tests assert the stacking contract in Hero and Alter-Ego form.
+
 - **Refactor (Engine & UI): Phase 4 audit cleanups, group A ([#195](https://github.com/SteveRodrigue/MCD/issues/195), [#192](https://github.com/SteveRodrigue/MCD/issues/192), [#196](https://github.com/SteveRodrigue/MCD/issues/196), [#197](https://github.com/SteveRodrigue/MCD/issues/197), [#198](https://github.com/SteveRodrigue/MCD/issues/198))**
   - **#195:** the encounter deal in villain phase step 3 now logs `villainPhase.step3.encounterCardsDealt` (was `step4`); no locale entry added, like every other engine log key.
   - **#192:** removed the `step2_villainActivations`, `step4_dealEncounterCards` and `step5_revealEncounterCards` aliases from `villain-phase.ts`; 17 test files and the internal callers use the canonical names, and `villain-phase-order.test.ts` now asserts the aliases are gone.

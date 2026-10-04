@@ -389,6 +389,19 @@ export interface EncounterExecutionContext {
   cancellationReason?: string;
 }
 
+/**
+ * An ordered special-ability sequence (e.g. Wakanda Forever!) that paused because one of its steps
+ * opened a decision prompt. The remaining steps resume once the prompt queue is empty (#207).
+ */
+export interface PendingSpecialSequence {
+  specialId: string;
+  playerId: string;
+  /** Instance ids of the steps still to resolve, in order. */
+  remainingUpgradeIds: string[];
+  targetEnemyId?: string;
+  targetSchemeId?: string;
+}
+
 export interface PendingActivation {
   type: 'VILLAIN' | 'MINION';
   playerId: string;
@@ -423,6 +436,8 @@ export interface GameState {
   pendingDecisionPrompt?: PendingDecisionPrompt;
   /** Ordered enemy activation queue for Villain Phase (ADR-0068) */
   pendingActivations?: PendingActivation[];
+  /** Special-ability sequence paused on a decision prompt (#207) */
+  pendingSpecialSequence?: PendingSpecialSequence;
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;

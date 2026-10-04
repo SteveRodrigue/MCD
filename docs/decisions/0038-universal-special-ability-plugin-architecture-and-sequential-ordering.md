@@ -56,3 +56,17 @@ We establish a dedicated **Special Ability Plugin Registry** in `src/engine/spec
 ### Negative
 
 - Requires a registration step during engine initialization (handled cleanly in `special-registry.ts`).
+
+---
+
+## Addendum (2026-10-04, Issue #207): resumable special sequences
+
+Each Special is an **ordered step**, so a step that needs a decision must finish it before any later step runs. A synchronous loop cannot do that (a later step such as Panther Claws used to resolve before the player answered Energy Daggers' "choose a player" prompt, wrongly changing Tough interactions).
+
+- `GameState.pendingSpecialSequence` (`specialId`, `playerId`, `remainingUpgradeIds`, optional targets) holds the steps still to resolve, by instance id, in order.
+- `SpecialAbilityHandler` gains an optional `resume`. The Wakanda handler resolves one upgrade at a time; if a step opens a prompt and steps remain, it saves them and returns.
+- `dispatchAction` resumes a pending sequence after any successful action once the prompt queue is empty (`resumePendingSpecialSequence` in `special-registry.ts`).
+- The finisher bonus is fixed by list position (the last step), unchanged. Prompt-free sequences and the single-upgrade path resolve immediately and leave no pending state.
+- The card-coded fallbacks for `01047`-`01049` were removed: all four upgrades declare a `SPECIAL` ability in supplemental data.
+- Step failures inside `executeSequence` remain swallowed engine-wide (tracked in #225).
+

@@ -38,17 +38,13 @@ type DeckDirection = 'top_to_bottom' | 'bottom_to_top';
 type CostDirection = 'low_to_high' | 'high_to_low';
 
 function getPlayerCardAffinity(card: NormalizedCard): string {
-  const faction = (card.faction || (card as any).faction_code || '').toLowerCase();
+  const faction = (card.faction || '').toLowerCase();
   if (faction === 'justice') return 'Justice';
   if (faction === 'aggression') return 'Aggression';
   if (faction === 'leadership') return 'Leadership';
   if (faction === 'protection') return 'Protection';
   if (faction === 'basic') return 'Basic';
-  if (
-    faction === 'hero' ||
-    card.setCode === 'spider_man' ||
-    (card as any).set_code === 'spider_man'
-  ) {
+  if (faction === 'hero' || card.setCode === 'spider_man') {
     return 'Hero Signature (Spider-Man)';
   }
   if (card.setCode) {
@@ -61,7 +57,7 @@ function getPlayerCardAffinity(card: NormalizedCard): string {
 }
 
 function getPlayerCardTypeName(card: NormalizedCard): string {
-  const type = card.type || (card as any).type_code || 'card';
+  const type = card.type || 'card';
   if (type === 'event') return 'Events';
   if (type === 'ally') return 'Allies';
   if (type === 'upgrade') return 'Upgrades';
@@ -71,11 +67,7 @@ function getPlayerCardTypeName(card: NormalizedCard): string {
 }
 
 function getPlayerCardCostGroup(card: NormalizedCard): string {
-  const isNoCost =
-    card.type === 'resource' ||
-    (card as any).type_code === 'resource' ||
-    card.cost === undefined ||
-    card.cost === null;
+  const isNoCost = card.type === 'resource' || card.cost === undefined || card.cost === null;
 
   if (isNoCost) {
     return 'Resource Cards (No Cost)';
@@ -84,12 +76,7 @@ function getPlayerCardCostGroup(card: NormalizedCard): string {
 }
 
 function getPlayerCardCostValue(card: NormalizedCard): number {
-  if (
-    card.type === 'resource' ||
-    (card as any).type_code === 'resource' ||
-    card.cost === undefined ||
-    card.cost === null
-  ) {
+  if (card.type === 'resource' || card.cost === undefined || card.cost === null) {
     return 999;
   }
   return card.cost;

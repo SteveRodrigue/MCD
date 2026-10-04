@@ -10,14 +10,21 @@ import {
   GameState,
   InfiniteLoopError,
 } from '../engine';
-import { ScenarioSelector, SetupSelection } from './components/setup/ScenarioSelector';
-import { MulliganScreen } from './components/setup/MulliganScreen';
-import { GameBoard } from './components/board/GameBoard';
+import type { SetupSelection } from './components/setup/ScenarioSelector';
 import { logGameStateSnapshot } from './services/gamestate-logger-service';
 
 import { GameSettingsProvider } from './context/GameSettingsProvider';
 import { useGameSettings } from './context/useGameSettings';
 
+const ScenarioSelector = React.lazy(() =>
+  import('./components/setup/ScenarioSelector').then((m) => ({ default: m.ScenarioSelector })),
+);
+const MulliganScreen = React.lazy(() =>
+  import('./components/setup/MulliganScreen').then((m) => ({ default: m.MulliganScreen })),
+);
+const GameBoard = React.lazy(() =>
+  import('./components/board/GameBoard').then((m) => ({ default: m.GameBoard })),
+);
 const SupplementalEditorScreen = React.lazy(() =>
   import('./components/editor/SupplementalEditorScreen').then((m) => ({
     default: m.SupplementalEditorScreen,
@@ -204,25 +211,33 @@ export const AppContent: React.FC = () => {
 
       {/* Screen Render Switcher */}
       <div className="relative z-10 w-full">
-        {stage === 'SETUP' && (
-          <ScenarioSelector catalog={catalog} onStartSetup={handleStartSetup} />
-        )}
+        <React.Suspense
+          fallback={
+            <div className="flex items-center justify-center h-screen bg-comic-paper">
+              <div className="font-bangers text-2xl text-black animate-pulse">Loading...</div>
+            </div>
+          }
+        >
+          {stage === 'SETUP' && (
+            <ScenarioSelector catalog={catalog} onStartSetup={handleStartSetup} />
+          )}
 
-        {stage === 'MULLIGAN' && gameState && (
-          <MulliganScreen
-            gameState={gameState}
-            onResolveHeroMulligan={handleResolveHeroMulligan}
-            onStartScenario={handleStartScenario}
-          />
-        )}
+          {stage === 'MULLIGAN' && gameState && (
+            <MulliganScreen
+              gameState={gameState}
+              onResolveHeroMulligan={handleResolveHeroMulligan}
+              onStartScenario={handleStartScenario}
+            />
+          )}
 
-        {stage === 'IN_GAME' && gameState && (
-          <GameBoard
-            gameState={gameState}
-            onReset={handleReset}
-            onDispatchAction={handleDispatchAction}
-          />
-        )}
+          {stage === 'IN_GAME' && gameState && (
+            <GameBoard
+              gameState={gameState}
+              onReset={handleReset}
+              onDispatchAction={handleDispatchAction}
+            />
+          )}
+        </React.Suspense>
 
         {stage === 'EDITOR' && (
           <React.Suspense

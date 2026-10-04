@@ -112,9 +112,4 @@ export interface ScenarioPlugin {
     winner?: 'HEROES' | 'VILLAIN';
     reason?: string;
   } | null;
-
-  /**
-   * Optional custom action handlers for scenario-specific buttons/triggers.
-   */
-  customActionHandlers?: Record<string, (state: GameState, action: any) => GameState>;
 }

@@ -154,8 +154,8 @@ Target selection in Marvel Champions Digital is modeled as an orthogonal product
 - **`CHARACTER`**: Universal union of Identities, Allies, Villains, and Minions (RR v1.8 p. 6).
 - **`ENEMY`**: Villain + all engaged minions in play.
 - **`MINION`**: Minions engaged with players (`player.engagedMinions`).
-- **`VILLAIN`**: The primary scenario villain (`state.villain`).
-- **`SCHEME`**: Main scheme (`state.mainScheme`) and side schemes (`state.sideSchemes`).
+- **`VILLAIN`**: The active villain (`getActiveVillain(state)`, ADR-0076). In multi-villain scenarios "the villain" means only the villain holding the active counter; `ALL_ENEMIES`, `ALL_CHARACTERS` and `CHOSEN_ENEMY` include every villain in play, and a chosen villain is resolved by id.
+- **`SCHEME`**: The active main scheme (`getActiveMainScheme(state)`) and side schemes (`state.sideSchemes`).
 
 ### 3. Scope & Quantifier Dimension Definitions
 

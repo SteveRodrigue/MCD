@@ -437,11 +437,15 @@ export interface GameState {
   /**
    * Legacy / direct reference to active villain for backwards-compatibility. Diverges from
    * `villains[]` after the JSON clone in `dispatchAction`; use `getActiveVillain` (#194, #215).
+   *
+   * @deprecated Use `getActiveVillain(state)` / `getVillainsInPlay(state)` (ADR-0076). Removal: #215.
    */
   villain: VillainState;
   /**
    * Legacy / direct reference to active main scheme for backwards-compatibility. Use
    * `getActiveMainScheme` (#194, #215).
+   *
+   * @deprecated Use `getActiveMainScheme(state)` / `getMainSchemesInPlay(state)` (ADR-0076). Removal: #215.
    */
   mainScheme: MainSchemeState;
 

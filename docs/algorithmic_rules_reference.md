@@ -100,6 +100,8 @@ stateDiagram-v2
 
 > [!NOTE]
 > This represents the **standard base game layout**. Complex modular scenarios (e.g. Tower Defense, Kang, Mutagen Formula) may dynamically register additional custom zones, decks, and side displays via the `ScenarioPlugin` interface.
+>
+> In the diagram below, `state.villain` / `state.mainScheme` denote the **active** villain and main scheme. The canonical state is the `villains[]` / `mainSchemes[]` collections plus `activeVillainId`, read through `getActiveVillain` / `getVillainsInPlay` (ADR-0076; multi-villain scenarios such as MC03 Wrecking Crew keep several villains in play).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐

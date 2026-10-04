@@ -1,9 +1,9 @@
 # MCD Backlog Dependency, Prioritization Map & Teamwork Status
 
-> **Last Updated:** 2026-10-03  
-> **Repository Commit:** `052032e` (`origin/main`)  
+> **Last Updated:** 2026-10-03 (#194 resolved)  
+> **Repository Commit:** `11067bc` (local `main`, plus the #194 closing commit)  
 > **Release Gate:** Gate 1 ("Rhino Release" Vertical Slice — 100% Core 5 Heroes vs. Rhino)  
-> **Verification Status:** 🟢 All 1,545 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
+> **Verification Status:** 🟢 All 1,665 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
 
 ---
 
@@ -24,7 +24,7 @@ The backlog partitions cleanly into three distinct domains:
 %%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0b0f19', 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#475569', 'lineColor': '#64748b', 'secondaryColor': '#0f172a', 'tertiaryColor': '#1e293b' }}}%%
 flowchart TD
     subgraph AuditFoundations["1. Audit Foundations"]
-        I194["#194 Accessor Migration<br/>ACTIVE NEXT TARGET"]
+        I194["#194 Accessor Migration<br/>RESOLVED (ba31d33..11067bc)"]
         I192["#192 Step Aliases<br/>(Test Cleanliness)"]
         I196["#196 Type Aliases<br/>(Scenario Registry)"]
     end
@@ -62,8 +62,7 @@ flowchart TD
     classDef active fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
     classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
 
-    class I183,I172,I184,I181,I186,I185,I179,I180,I175,I122,I154,I158 resolved;
-    class I194 active;
+    class I194,I183,I172,I184,I181,I186,I185,I179,I180,I175,I122,I154,I158 resolved;
     class I192,I196 open;
 ```
 
@@ -82,7 +81,7 @@ flowchart TD
 | **#184** | **Caught Off Guard (01188) choice prompt** | Encounter Resolution: When Revealed effect discards upgrade/support. | 🟢 **Closed** (`052032e`). Enqueues player choice modal when 2+ cards exist in tableau. |
 | **#181** | **Surveillance Team Crisis icon threat bypass** | Threat Pipeline & Legality: `threat-pipeline.ts` and `effects/index.ts`. | 🟢 **Closed** (`0d6c235`). Enforces Crisis icon and Patrol minion blocks in `CHOSEN_SCHEME`. |
 | **#186** | **For Justice! (01060) Mental resource bonus** | Cost Engine & Dynamic Formulas: `context.resourcesSpent` propagation. | 🟢 **Closed** (`052032e`). Added `PAID_WITH_RESOURCE` / `RESOURCES_SPENT` dynamicBonus, purged `bonusWithMental`. |
-| **#194** | **Replace state.villain/mainScheme legacy pointers [AUD-F003]** | Architecture & State: 221 references to legacy singleton pointers `state.villain` and `state.mainScheme`. | 🟡 **Open**. Prerequisite for multi-villain milestone. |
+| **#194** | **Replace state.villain/mainScheme legacy pointers [AUD-F003]** | Architecture & State: about 520 references to legacy singleton pointers `state.villain` and `state.mainScheme`. | 🟢 **Resolved** (`ba31d33`, `09c80bd`, `1c8a74f`, `a3fc747`, `11067bc`). `villains[]` / `mainSchemes[]` plus `activeVillainId` are canonical, accessors and setters in `models/state.ts`, legacy fields `@deprecated` (ADR-0076). Follow-ups: #215 (field removal), #210-#214 (Wrecking Crew prerequisites). |
 | **#122** | **Extract shared step-gate evaluator** | Pipeline Unification: Unifies ability step gating (`TARGET_TRAIT_MATCH`, conditions) between effect execution and CONSTANT stat/trait loop. | 🟢 **Resolved** (`0acc25f`). `evaluateStepGate` shared by the effect pipeline and the CONSTANT stat loop (ADR-0019 addendum). |
 | **#202** | **Tighten customActionHandlers action:any [AUD-OQ-04]** | Type Safety: Discriminated union contract for custom scenario plugin action handlers in `ScenarioPlugin`. | 🟡 **Open**. Type safety enhancement. |
 
@@ -136,7 +135,10 @@ flowchart TD
 | **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟢 **Resolved** (`c7d970d`) |
 | **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟢 **Resolved** (`0acc25f`) |
 | **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (`608a19a`) |
-| **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / 221 Call Sites | L | 🎯 **Active Next Target** (Arch Milestone) |
+| **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / ~520 Call Sites | L | 🟢 **Resolved** (`ba31d33`..`11067bc`) |
+| **P3** | **#210-#215** | Multi-villain follow-ups for MC03 Wrecking Crew (encounter decks, side schemes and scheme threat, targeting/Guard/win, active counter effects, scenario plugin, legacy field removal) | Engine/Data | Medium | M-L | 🟡 **Open** (no immediate impact) |
+| **P3** | **#216** | STAT_VALUE DAMAGE reads nonexistent villain/minion `damage` | Engine | Low | XS | 🟡 **Open** |
+| **P3** | **#217** | Flaky obligation rule 2 test (shuffle-dependent) | Tests | Low | XS | 🟡 **Open** |
 | **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟡 **Open** |
 | **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟡 **Open** |
 | **P3** | **#196** | Remove ambiguous ScenarioDefinition alias [AUD-F005] | Refactor | Low / Catalog Types | XS | 🟡 **Open** |
@@ -171,7 +173,8 @@ flowchart TD
 - ✅ **#158**: Obligation engine for the five core obligations (zone, recipient, ability-based resolution).
   - Deferred follow-up: **#208** (player-deck obligations go to the play area on draw; depends on #158).
   - Deferred follow-up: **#209** (conditional encounter attachments, "Attach to X. Otherwise …", 42 cards; independent of #158).
-- 🎯 **#194**: Batch migration of 221 legacy `state.villain` / `state.mainScheme` pointers to accessor helpers.
+- ✅ **#194**: Migration of the legacy `state.villain` / `state.mainScheme` pointers to accessor helpers (7 batches, ADR-0076).
+  - Deferred follow-ups for Wrecking Crew (MC03): **#210** (per-villain encounter decks), **#211** (side schemes and scheme threat), **#212** (multi-villain targeting, Guard, win), **#213** (active counter effects), **#214** (scenario plugin and data), **#215** (remove the legacy fields and migrate test fixtures).
 
 ### Phase 4: Code Audit Cleanups & Polish
 - **#192, #195, #196, #197, #198**: Remove dead aliases, fix log key, and eliminate dead `as any` probes.
@@ -187,7 +190,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Issue #194** (replace 221 legacy `state.villain` / `state.mainScheme` pointers with accessors; L effort, high blast radius: needs a plan and likely several commits).
+   - No active target is designated. Candidates: Phase 4 audit cleanups (#192, #195-#202, #161), test hygiene (#216, #217), or the Wrecking Crew chain (#210-#215, then #214).
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

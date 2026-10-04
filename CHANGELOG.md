@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data & Docs): Hydra Bomber scope, Exhaustion text, and removal of placeholder abilities on six core encounter cards ([Issue #133](https://github.com/SteveRodrigue/MCD/issues/133))**
+  - **Supplemental Data (`core_encounter.json`):** _Hydra Bomber_ `01110` "take 2 damage" now targets only the revealing player's identity (`SELF_IDENTITY`; it hit every hero-form player, and nobody in alter-ego form). _Exhaustion_ `01191` is now just "Exhaust your identity card" (the invented "or take 2 damage" choice is gone; its Surge keyword waits on #218).
+  - **Circuit-breaker:** the placeholder abilities of _Ritual Combat_ `01159`, _Titania's Fury_ `01164` (When Revealed only, boost kept), _Sweeping Swoop_ `01168`, _The Vulture's Plans_ `01169`, _Electromagnetic Backlash_ `01174` and _Yon-Rogg's Treason_ `01179` were removed so the engine no longer executes behavior that contradicts the printed text; each has an ambiguity report under `docs/ambiguities/` and an engine issue: Surge keyword #218, hand discard #219, per-player iteration #220, damage gate #221, form-literal "your hero" selector #222, named-minion attack #223.
+  - **Documentation:** spec `03_costs_and_targeting.md` states that cards are read literally ("your hero" is never the alter-ego; `HERO` means every hero-form player).
+  - **Automated Verification (`hydra-bomber.test.ts`, `blocked-placeholder-cards.test.ts`, `decision-prompts.test.ts`):** 4 Hydra Bomber tests (damage scope, alter-ego, threat option), 12 guard tests for the blocked cards, rewritten Exhaustion test; the Sweeping Swoop boost test was removed with its placeholder.
+
 - **Refactor & Fix (UI & Engine): Phase 4 audit cleanups, group B ([#161](https://github.com/SteveRodrigue/MCD/issues/161), [#199](https://github.com/SteveRodrigue/MCD/issues/199), [#200](https://github.com/SteveRodrigue/MCD/issues/200), [#201](https://github.com/SteveRodrigue/MCD/issues/201), [#202](https://github.com/SteveRodrigue/MCD/issues/202))**
   - **#161 (UI):** the identity stat and HP columns in `HeroZone` now stack above the rotated exhausted identity card (`relative z-10`), so the card sits behind the health bar and stats; hovering the card still brings it to the front. Verified live: the card was topmost over every overlapped stat point before the fix and over none after.
   - **#199:** closed as not reproducible (0 `act(...)` warnings in the full suite).

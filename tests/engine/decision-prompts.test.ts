@@ -95,30 +95,25 @@ describe('Interactive Decision Prompt Modal State Machine (ADR-0020)', () => {
     expect(res.state.mainScheme.threat).toBe(3);
   });
 
-  it('01191 Exhaustion: PLAYER_CHOICE resolves "Exhaust Identity"', () => {
+  it('01191 Exhaustion: exhausts the revealing identity with no choice and no damage', () => {
     const exhaustionCard = cardCatalog.getCard('01191')!;
     const exhaustionInstance = createCardInstance(exhaustionCard);
 
-    const ability = exhaustionCard.enrichment!.abilities![0];
-    state.players[0].exhausted = false;
+    const abilities = exhaustionCard.enrichment!.abilities!;
+    expect(abilities).toHaveLength(1);
+    expect(abilities[0].trigger).toBe('WHEN_REVEALED');
 
-    executeEffect(state, ability, {
+    state.players[0].exhausted = false;
+    const healthBefore = state.players[0].health;
+
+    executeEffect(state, abilities[0], {
       playerId: 'p1',
       sourceCardInstance: exhaustionInstance,
     });
 
-    expect(peekDecisionPrompt(state)).toBeDefined();
-
-    // Choose to exhaust identity
-    const res = dispatchAction(state, {
-      type: 'RESOLVE_DECISION_PROMPT',
-      playerId: 'p1',
-      selectedOptionId: 'exhaust_identity',
-    });
-
-    expect(res.result.success).toBe(true);
-    expect(peekDecisionPrompt(res.state)).toBeUndefined();
-    expect(res.state.players[0].exhausted).toBe(true);
+    expect(peekDecisionPrompt(state)).toBeUndefined();
+    expect(state.players[0].exhausted).toBe(true);
+    expect(state.players[0].health).toBe(healthBefore);
   });
 
   it('01084 Nick Fury: CARD_PLAYED opens tactical choice and resolves "Draw 3 Cards"', () => {

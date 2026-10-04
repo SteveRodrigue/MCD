@@ -511,7 +511,7 @@
                     "description": "Deal 2 damage to your identity.",
                     "effect": "DEAL_DAMAGE",
                     "params": {
-                      "target": "HERO",
+                      "target": "SELF_IDENTITY",
                       "amount": 2
                     }
                   },
@@ -533,9 +533,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-28T20:35:00Z",
-        "reviewedAt": "2026-09-28T20:35:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: Choose to either take 2 damage or place 1 threat on the main scheme."
@@ -754,27 +754,13 @@
       }
     },
     "01159": {
-      "abilities": [
-        {
-          "id": "ritual_combat",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "effectParams": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 70,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01159_ritual-combat.md",
         "originalText": "<b>When Revealed</b>: Discard the top card of the encounter deck. Then, choose to either deal X damage to your hero or place X threat on the main scheme. X is 1 more than the number of boost icons on the discarded encounter card."
       }
     },
@@ -926,20 +912,6 @@
     "01164": {
       "abilities": [
         {
-          "id": "titanias_fury",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "effectParams": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        },
-        {
           "id": "titanias_fury_boost",
           "timing": "BOOST",
           "trigger": "BOOST",
@@ -952,11 +924,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 80,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01164_titanias-fury.md",
         "originalText": "<b>When Revealed</b>: Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge.\n<hr />\n[star] <b>Boost</b>: Give the villain 1 additional boost card for this activation."
       }
     },
@@ -1079,68 +1052,25 @@
       }
     },
     "01168": {
-      "abilities": [
-        {
-          "id": "sweeping_swoop",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "effectParams": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        },
-        {
-          "id": "sweeping_swoop_boost",
-          "timing": "BOOST",
-          "trigger": "BOOST",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "STUNNED",
-                "target": "DEFENDING_CHARACTER"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 100,
+        "confidence": 70,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01168_sweeping-swoop.md",
         "originalText": "<b>When Revealed</b>: Stun your hero. If Vulture is in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to a friendly character, stun that character."
       }
     },
     "01169": {
-      "abilities": [
-        {
-          "id": "vultures_plans",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "ADD_STATUS",
-              "effectParams": {
-                "status": "CONFUSED",
-                "target": "HERO"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 70,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01169_vultures-plans.md",
         "originalText": "<b>When Revealed</b>: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way."
       }
     },
@@ -1333,27 +1263,13 @@
       }
     },
     "01174": {
-      "abilities": [
-        {
-          "id": "electromagnetic_backlash",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "effectParams": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 70,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01174_electromagnetic-backlash.md",
         "originalText": "<b>When Revealed</b>: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage."
       }
     },
@@ -1528,27 +1444,13 @@
       }
     },
     "01179": {
-      "abilities": [
-        {
-          "id": "yon_roggs_treason",
-          "timing": "FORCED_RESPONSE",
-          "trigger": "WHEN_REVEALED",
-          "steps": [
-            {
-              "effect": "DEAL_DAMAGE",
-              "effectParams": {
-                "amount": 2,
-                "target": "HERO"
-              }
-            }
-          ]
-        }
-      ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 70,
+        "ambiguityFile": "docs/ambiguities/core_encounter_01179_yon-roggs-treason.md",
         "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."
       }
     },
@@ -1765,31 +1667,9 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "PLAYER_CHOICE",
+              "effect": "EXHAUST",
               "effectParams": {
-                "title": "Exhaustion Treachery",
-                "description": "Choose to either exhaust your identity or take 2 damage:",
-                "options": [
-                  {
-                    "id": "exhaust_identity",
-                    "label": "Exhaust Identity",
-                    "description": "Exhaust your hero or alter-ego.",
-                    "effect": "EXHAUST",
-                    "params": {
-                      "target": "SELF_IDENTITY"
-                    }
-                  },
-                  {
-                    "id": "take_2_damage",
-                    "label": "Take 2 Damage",
-                    "description": "Deal 2 damage to your identity.",
-                    "effect": "DEAL_DAMAGE",
-                    "params": {
-                      "target": "HERO",
-                      "amount": 2
-                    }
-                  }
-                ]
+                "target": "SELF_IDENTITY"
               }
             }
           ]
@@ -1797,11 +1677,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-04T10:44",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 50,
+        "confidence": 90,
+        "ambiguityFile": "docs/ambiguities/core_encounter_surge-keyword.md",
         "originalText": "Surge.\n<b>When Revealed</b>: Exhaust your identity card."
       }
     },

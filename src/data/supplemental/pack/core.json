@@ -1443,8 +1443,9 @@
             {
               "effect": "ADD_TRAIT",
               "effectParams": {
-                "target": "SELF",
-                "trait": "Aerial"
+                "target": "SELF_IDENTITY",
+                "trait": "Aerial",
+                "duration": "PHASE"
               }
             }
           ]
@@ -1452,9 +1453,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-29T18:28:09Z",
-        "reviewedAt": "2026-09-29T18:28:09Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T12:00",
+        "reviewedAt": "2026-10-04T12:00",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "You get +1 hit point.\n<b>Hero Action</b>: Exhaust Rocket Boots and spend a [mental] resource → gain the [[Aerial]] trait until the end of the phase."

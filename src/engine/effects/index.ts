@@ -3482,6 +3482,50 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'PLACED UNDER CARD!' };
     }
 
+    case 'ADD_TRAIT': {
+      // A CONSTANT ADD_TRAIT is evaluated by the stat calculator. As an effect step it grants the
+      // trait to the resolving player's identity for `duration`, or while the source card stays
+      // in play when no duration is given (#131).
+      const stepParams = getStepEffectParams(step);
+      const trait = (stepParams.trait as string | undefined)?.trim();
+      if (!trait) return { state, success: false, error: 'ADD_TRAIT requires a trait' };
+      const targetParam = (stepParams.target as string) || 'SELF_IDENTITY';
+      if (targetParam !== 'SELF_IDENTITY') {
+        return {
+          state,
+          success: false,
+          error: `ADD_TRAIT as an effect step supports target SELF_IDENTITY only (got ${targetParam})`,
+        };
+      }
+      const duration = stepParams.duration as 'PHASE' | 'ROUND' | 'TURN' | undefined;
+      const sourceInstanceId = context.sourceCardInstance?.instanceId;
+      if (!player.activeTraitModifiers) player.activeTraitModifiers = [];
+      const alreadyGranted = player.activeTraitModifiers.some(
+        (m) =>
+          m.trait === trait && m.duration === duration && m.sourceInstanceId === sourceInstanceId,
+      );
+      if (!alreadyGranted) {
+        player.activeTraitModifiers.push({
+          trait,
+          duration,
+          sourceInstanceId,
+          sourceCardName: context.sourceCardInstance?.card.name,
+          sourceCardCode: context.sourceCardInstance?.card.code,
+        });
+      }
+      state.log.push({
+        id: `log_${Date.now()}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'status',
+        key: 'card.effect.addTrait',
+        params: { player: player.name, trait, duration: duration ?? 'WHILE_SOURCE_IN_PLAY' },
+        onomatopoeia: 'POWER UP!',
+      });
+      return { state, success: true, mutatedState: true, onomatopoeia: 'POWER UP!' };
+    }
+
     case 'MODIFY_STAT': {
       const stepParams = getStepEffectParams(step);
       const targetParam =

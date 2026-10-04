@@ -14,6 +14,7 @@ import { parseKeywordItem } from '../models/keyword';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { AbilityStep } from '../models/abilities';
 import { evaluateFormGate, evaluateStepGate } from './step-gate-evaluator';
+import { findInPlayCardInstance } from '../state/state-validator';
 
 export interface EffectiveTraitsResult {
   traits: string[]; // Deduplicated canonical traits (printed + dynamic)
@@ -233,7 +234,17 @@ export function getEffectivePlayerTraitsDetails(
   const printedTraits = dedupeTraits(rawPrinted);
 
   const dynamicSources = [...(player.tableau || []), ...(player.attachments || [])];
-  const dynamicTraits = dedupeTraits(extractAddTraitEffects(dynamicSources, player, state));
+  const timedTraits = (player.activeTraitModifiers || [])
+    .filter(
+      (m) =>
+        m.duration ||
+        (state && m.sourceInstanceId && findInPlayCardInstance(state, m.sourceInstanceId)),
+    )
+    .map((m) => m.trait);
+  const dynamicTraits = dedupeTraits([
+    ...extractAddTraitEffects(dynamicSources, player, state),
+    ...timedTraits,
+  ]);
   const traits = dedupeTraits([...printedTraits, ...dynamicTraits]);
 
   return {

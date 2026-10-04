@@ -658,6 +658,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
       },
+      {
+        key: 'duration',
+        label: 'Duration (empty = while the source card is in play)',
+        type: 'select',
+        options: DURATION_OPTIONS,
+      },
     ],
   },
   GRANT_KEYWORD: {

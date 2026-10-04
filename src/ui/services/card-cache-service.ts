@@ -78,14 +78,6 @@ export function getCardArtFileName(card: CardArtIdentifier | string): string {
 }
 
 /**
- * Legacy compatibility alias for getCardArtFileName (without extension).
- */
-export function normalizeCardCodeForArt(card: CardArtIdentifier | string): string {
-  const fileName = getCardArtFileName(card);
-  return fileName.replace(/\.png$/i, '');
-}
-
-/**
  * Returns the local static URL for a cached card image (e.g. "/cards/01097.png").
  */
 export function getLocalCardArtUrl(card: CardArtIdentifier | string): string {

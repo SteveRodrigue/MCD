@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   getCardArtFileName,
-  normalizeCardCodeForArt,
   getLocalCardArtUrl,
   getRemoteMarvelCdbUrl,
   getCardArtUrl,
@@ -11,16 +10,6 @@ import {
 import { CardType } from '../../src/engine/models';
 
 describe('Card Art Caching & Multi-Sided Asset Resolution Service', () => {
-  it('correctly normalizes card codes for legacy callers', () => {
-    expect(
-      normalizeCardCodeForArt({ code: '01097a', type: CardType.MAIN_SCHEME, stage: '1A' }),
-    ).toBe('01097b');
-    expect(
-      normalizeCardCodeForArt({ code: '01097b', type: CardType.MAIN_SCHEME, stage: '1B' }),
-    ).toBe('01097');
-    expect(normalizeCardCodeForArt({ code: '01001a', type: CardType.HERO })).toBe('01001a');
-  });
-
   it('correctly resolves card image file names handling Core Set exceptions and standard expansions', () => {
     // --- Core Set Inverted Exception (Pack 01xxx) ---
     // Rhino 1A (Setup face -> 01097b.png)

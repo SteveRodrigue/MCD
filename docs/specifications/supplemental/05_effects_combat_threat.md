@@ -93,7 +93,8 @@
 ### `REMOVE_THREAT`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L120`](../../../src/engine/effects/index.ts#L120))
-- **Description:** Removes threat from Main Scheme, Side Scheme, or chosen scheme. Enforces Crisis keyword restrictions.
+- **Description:** Removes threat from Main Scheme, Side Scheme, or chosen scheme. Enforces Crisis keyword restrictions and Patrol: when the resolving player is engaged with a Patrol minion, the main scheme is never a target of a player card effect (same filter as Crisis, for every scheme selector including `ALL_SCHEMES`).
+- **"From each scheme instead if you have Aerial"** (Mark V Helmet `01037`): there is no `aerialAllSchemes` parameter. Use two steps, `target: "CHOSEN_SCHEME"` gated `IF_CONDITION_NOT_MET` and `target: "ALL_SCHEMES"` gated `IF_CONDITION_MET`, both with `condition: "TARGET_TRAIT_MATCH"` and `gateParams: { trait: "Aerial" }` (see [10. Sequences & Modals](10_sequences_and_prompts.md#choosing-between-if_condition_met-if_condition_not_met-and-if_failed)).
 
 ```json
 {
@@ -111,8 +112,7 @@
 | `target`           | `TargetSelector`               | No       | `"MAIN_SCHEME"` | Target scheme (`MAIN_SCHEME`, `CHOSEN_SCHEME`, `THIS_SIDE_SCHEME`).                         |
 | `finisherBonus`    | `number`                       | No       | -               | Bonus threat removed when ability resolves as final step in a sequence (e.g. *Wakanda Forever!*). |
 | `dynamicBonus`     | `number \| DynamicValueSource` | No       | -               | Dynamic bonus threat added to amount.                                                       |
-| `aerialAllSchemes` | `boolean`                      | No       | `false`         | Removes threat from all active schemes if character has Aerial.                             |
-| `crisisIgnore`     | `boolean`                      | No       | `false`         | Removes threat from Main Scheme even if Crisis icon is active.                              |
+| `ignoresCrisis`    | `boolean`                      | No       | `false`         | Removes threat from the Main Scheme even if a Crisis icon is in play.                       |
 
 ---
 

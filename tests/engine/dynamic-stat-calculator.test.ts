@@ -165,6 +165,25 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
       } as any);
       expect(getEffectiveAllyStats(state, jessicaInstance).thwart).toBe(3); // Base 1 + 2
     });
+
+    it('has no cap: +1 THW per side scheme however many are in play', () => {
+      const jessicaCard = cardCatalog.getCard('01059')!;
+      const jessicaInstance = {
+        instanceId: 'jj',
+        card: jessicaCard,
+        exhausted: false,
+      };
+
+      state.sideSchemes = [];
+      for (let i = 1; i <= 7; i++) {
+        state.sideSchemes.push({
+          instanceId: `ss${i}`,
+          card: cardCatalog.getCard('01109')!,
+          threat: 1,
+        } as any);
+        expect(getEffectiveAllyStats(state, jessicaInstance).thwart).toBe(1 + i);
+      }
+    });
   });
 
   describe('Alter-Ego Form Upgrade Playability (RR v1.8 p. 16, 28)', () => {

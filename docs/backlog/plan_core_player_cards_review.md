@@ -12,8 +12,8 @@
 | A3 | Rocket Boots `01039` (= #131) | **Done** (2026-10-04, uncommitted): [plan](plan_issue_131_rocket_boots.md) |
 | A2 | Counter-Punch `01077` (cost 0, hand reaction, "that enemy", "your hero defends") | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_a2_counter_punch.md) |
 | B7 | Med Team `01080` (friendly character only) | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_b7_med_team.md) |
-| A4 | Mark V Helmet `01037` | **Superseded by WP1** ([#226](https://github.com/SteveRodrigue/MCD/issues/226)): the audit found `aerialAllSchemes` is ignored by the engine, so this is a functional bug. See [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
-| C1 | Jessica Jones `01059` `maxBonus` | **Plan approved 2026-10-04, step 1 of the approved order**: [plan](plan_core_review_c1_jessica_jones.md); part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
+| A4 | Mark V Helmet `01037` | **Superseded by WP1; done 2026-10-04, uncommitted** ([plan](plan_core_review_wp1_mark_v_helmet.md)) ([#226](https://github.com/SteveRodrigue/MCD/issues/226)): the audit found `aerialAllSchemes` is ignored by the engine, so this is a functional bug. See [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
+| C1 | Jessica Jones `01059` `maxBonus` | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_c1_jessica_jones.md); part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
 | A5, A6, B1–B6, B8, C2–C13, D | see sections below | Not started |
 
 **Scope:** every player card in `core` (`01001a`–`01093`, 101 entries incl. the four `01043a–d` variants).

@@ -30,9 +30,54 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
   - `printedResource` (or `requirePrinted`): When `true`, inspects printed resources on discarded cards (e.g. Hulk `01050`) rather than generated payment resources.
   - `only` (or `requireOnly`): When `true`, requires 100% of spent resources to match the specified resource type.
 - `"IF_CONDITION_MET"` ([ADR-0049](../../decisions/0049-composable-value-transformers-and-event-interception.md)): Executes Step $N$ only if the explicitly monitored condition (`condition` in Step $N-1$ or targeted by `targetStepId`) evaluated to `true`.
+- `"IF_CONDITION_NOT_MET"`: the exact negation of `IF_CONDITION_MET` for the same `condition` / `gateParams`. Executes Step $N$ only if the condition did **not** hold. Use it for the "otherwise / instead" branch of a printed "if X ... instead" ability (see the comparison below).
 
-> **Shared evaluator (Issue #122):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State/player gates (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`, `IF_CONDITION_MET` + `TARGET_TRAIT_MATCH`) therefore work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`) need a preceding step, so they never apply to `CONSTANT` steps.
+> **Shared evaluator (Issue #122):** every gate is evaluated by `evaluateStepGate` in `src/engine/pipeline/step-gate-evaluator.ts`, used by both the effect pipeline (`shouldExecuteStep`) and the `CONSTANT` stat-calculator loop. State/player gates (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_ALREADY_HAS_STATUS`, `IF_RESOURCE_MATCH`, `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` + `TARGET_TRAIT_MATCH`) therefore work on `CONSTANT` steps. Result-based gates (`THEN`, `IF_PREVIOUS_SUCCESS`, `IF_AMOUNT_ZERO`, `IF_ZERO_HEALED`, `IF_FAILED`) need a preceding step, so they never apply to `CONSTANT` steps.
 > Gates on `CONSTANT` `ADD_TRAIT` steps are honored by the trait calculators too (e.g. *Cosmic Flight* `01017` uses `"gate": "IF_FORM", "gateParams": { "form": "hero" }`); state gates (other than `IF_FORM`) need the optional `state` argument and are skipped without it (Issue #154).
+
+### Choosing between `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET` and `IF_FAILED`
+
+All three skip a step when their test is false, but they test different things.
+
+| Gate | Tests | Printed wording | Typical shape |
+| :-- | :-- | :-- | :-- |
+| `IF_CONDITION_MET` | A **condition** holds: a state check (`TARGET_TRAIT_MATCH` with `gateParams.trait`) or a milestone reported by an earlier step (`SCHEME_EMPTY`, `TARGET_DEFEATED`, ...). | "Then, **if** you have the Aerial trait, ..." (adds an extra effect) | Step 1 runs always; step 2 is gated `IF_CONDITION_MET`. |
+| `IF_CONDITION_NOT_MET` | The **same** condition does **not** hold. | "... **if** X, do A **instead**", "**otherwise**, ..." (replaces the normal effect) | Two steps carrying the **same** `condition` and `gateParams`: the normal one gated `IF_CONDITION_NOT_MET`, the upgraded one gated `IF_CONDITION_MET`. Exactly one runs. |
+| `IF_FAILED` | The **previous step (or `targetStepId`) could not do anything** (`!success` or `!mutatedState`). | "If you **cannot** ..., ", "If no cards were discarded this way, ..." (fallback for a failed effect) | Step 1 is the attempt; step 2 is the fallback, gated `IF_FAILED`. |
+
+Rule of thumb: ask what the printed text depends on. A fact about the board or the player (traits, form, a milestone) uses `IF_CONDITION_MET` or `IF_CONDITION_NOT_MET`. Whether the previous effect actually did something uses `IF_FAILED` (or `THEN` for the positive case). Do not use `IF_FAILED` to model an "instead" branch: "nothing was removed" also happens when the upgraded branch resolves with nothing to do, which would wrongly fire the fallback.
+
+**Additive example, `IF_CONDITION_MET`: Crisis Interdiction `01012`** ("Remove 2 threat from a scheme. Then, if you have the Aerial trait, remove 2 threat from a different scheme."):
+
+```json
+"steps": [
+  { "effect": "REMOVE_THREAT", "effectParams": { "amount": 2, "target": "CHOSEN_SCHEME" } },
+  { "effect": "REMOVE_THREAT",
+    "gate": "IF_CONDITION_MET",
+    "condition": "TARGET_TRAIT_MATCH",
+    "gateParams": { "trait": "Aerial" },
+    "effectParams": { "amount": 2, "target": "CHOSEN_SCHEME", "distinctFrom": "PREVIOUS_TARGET" } }
+]
+```
+
+**Exclusive example, `IF_CONDITION_NOT_MET` + `IF_CONDITION_MET`: Mark V Helmet `01037`** ("Remove 1 threat from a scheme (from each scheme instead if you have the Aerial trait)."). Without Aerial only the first step runs; with Aerial only the second one does:
+
+```json
+"steps": [
+  { "id": "helmet_chosen_scheme", "effect": "REMOVE_THREAT",
+    "gate": "IF_CONDITION_NOT_MET", "condition": "TARGET_TRAIT_MATCH", "gateParams": { "trait": "Aerial" },
+    "effectParams": { "amount": 1, "target": "CHOSEN_SCHEME" } },
+  { "id": "helmet_all_schemes", "effect": "REMOVE_THREAT",
+    "gate": "IF_CONDITION_MET", "condition": "TARGET_TRAIT_MATCH", "gateParams": { "trait": "Aerial" },
+    "effectParams": { "amount": 1, "target": "ALL_SCHEMES" } }
+]
+```
+
+Writing it the Crisis Interdiction way (step 1 always, step 2 gated on Aerial) would be wrong here: an Aerial player would remove threat from the chosen scheme and then again from every scheme.
+
+**Fallback example, `IF_FAILED`:** "Discard an upgrade or support you control. If no cards were discarded this way, this card gains surge." The discard is the attempt; the surge step is gated on that attempt having done nothing. The gate looks at the *result of an effect*, not at the board.
+
+> **Chosen-target pre-selection:** before an ability runs, the dispatcher looks ahead for the first `CHOSEN_*` target to ask the player once. Steps whose gate is a state-only gate and is closed right now (`IF_FORM`, `IF_CARD_IN_PLAY`, `IF_CARD_NOT_IN_PLAY`, `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` with `TARGET_TRAIT_MATCH`) are ignored by that look-ahead (`isStepGateClosedByState`), so a closed branch never asks for a target. Result-based gates cannot be known in advance and are not skipped.
 
 ### Explicit Condition Contracts (`StepConditionSchema`)
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data, Engine & Editor): Mark V Helmet removes threat from each scheme with Aerial; new `IF_CONDITION_NOT_MET` gate ([Issue #226](https://github.com/SteveRodrigue/MCD/issues/226), review item A4)**
+  - **Supplemental Data (`core.json`):** _Mark V Helmet_ `01037` drops the dead `aerialAllSchemes` key (nothing in the engine read it, so the Aerial bonus never applied) and uses two exclusive steps: `CHOSEN_SCHEME` gated `IF_CONDITION_NOT_MET` and `ALL_SCHEMES` gated `IF_CONDITION_MET`, both on the Aerial trait.
+  - **Schema / Engine:** new gate `IF_CONDITION_NOT_MET`, the exact negation of `IF_CONDITION_MET` (`schema.ts`, regenerated `schema.json`, `models/abilities.ts`, `step-gate-evaluator.ts`). The dispatcher's chosen-target look-ahead now ignores steps whose state-only gate is closed (`isStepGateClosedByState`), for abilities and events; before, the non-Aerial branch asked for a target even when it could not run. `REMOVE_THREAT` now enforces **Patrol** (the main scheme is not a target while the player is engaged with a Patrol minion) for every scheme selector, next to the existing Crisis filter, with its own log key and onomatopoeia.
+  - **Card Editor:** the gate dropdown lists `IF_CONDITION_NOT_MET` (it is built from the schema) and the target-step panel is shown for it.
+  - **Documentation:** spec `10_sequences_and_prompts.md` gains "Choosing between `IF_CONDITION_MET`, `IF_CONDITION_NOT_MET` and `IF_FAILED`" with the Crisis Interdiction (additive), Mark V Helmet (exclusive) and `IF_FAILED` (fallback) examples; spec `05` drops `aerialAllSchemes` and corrects `crisisIgnore` to `ignoresCrisis`; visual guides `02` and `05` (decision flowchart); ADR-0049 addendum.
+  - **Automated Verification (`mark-v-helmet.test.ts`, `step-gate-evaluator.test.ts`, `supplemental-schema.test.ts`, `StepPipelineEditor.test.tsx`):** 6 + 3 + 1 + 1 tests (no Aerial picks one scheme, Aerial thwarts every scheme once with no prompt, Crisis and Patrol skip the main scheme, no-threat action rejected, gate negation and state-only helper, schema acceptance, editor round-trip).
+
+- **Fix (Data & Engine): Jessica Jones has no +4 THW cap (core review C1)**
+  - **Supplemental Data (`core.json`):** _Jessica Jones_ `01059` drops the invented `maxBonus: 4`; the card prints "+1 THW for each side scheme in play" with no cap.
+  - **Engine (`stat-calculator.ts`):** the `PER_SIDE_SCHEME` branch no longer applies a hardcoded default cap of 4 (it read `maxBonus` with a fallback of 4, so removing the data field alone would not have fixed it). Nothing else read `maxBonus`.
+  - **Tracking:** part of the `effectParams` remediation (`docs/backlog/plan_effect_params_remediation.md`, audit `docs/reports/effect_params_orphan_audit.md`).
+  - **Automated Verification (`dynamic-stat-calculator.test.ts`):** 1 new test (THW grows by 1 per side scheme from 1 to 7 side schemes; failed at the fifth before the fix).
+
 - **Fix (Data): Med Team heals a friendly character, not any character (core review B7)**
   - **Supplemental Data (`core.json`):** _Med Team_ `01080` heal step targets `CHOSEN_FRIENDLY_CHARACTER` (it was `CHOSEN_CHARACTER`, which let a player heal the villain or a minion, and offered the action when only an enemy was damaged). _First Aid_ `01086` prints "any character" and keeps `CHOSEN_CHARACTER`. No engine, schema or editor change.
   - **Automated Verification (`med-team-friendly-target.test.ts`):** 4 tests (villain-only damage blocks the action, villain target rejected with nothing spent, another player's ally healed, alter-ego-form hero is a valid target).

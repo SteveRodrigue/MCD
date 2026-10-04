@@ -234,3 +234,11 @@ Embed micro-expressions or mini-scripts directly in supplemental JSON (e.g. `amo
 - **Context & Schema Extension:** `AbilityStepSchema` and `EffectExecutionContext` must be extended with `condition?: StepCondition` and `interceptedValue?: number`.
   - *Mitigation:* `EffectExecutionContext` already carries `threatAmount` and `damageAmount`. Consolidating them into a unified scalar `interceptedValue?: number` simplifies rather than complicates the runtime context contract.
 
+
+---
+
+## Addendum (2026-10-04, WP1 / Mark V Helmet `01037`): `IF_CONDITION_NOT_MET`
+
+`IF_CONDITION_MET` is positive only, so an "if X ... **instead**" ability (Mark V Helmet: remove threat from a chosen scheme, from each scheme instead with Aerial) could not express its non-X branch. A key `aerialAllSchemes` in the data stood in for it and the engine never read it.
+
+**Decision:** add the gate `IF_CONDITION_NOT_MET`, the exact negation of `IF_CONDITION_MET` for the same `condition` / `gateParams`, evaluated by `evaluateStepGate`. The exclusive pattern is two steps carrying the same condition, one gated `IF_CONDITION_NOT_MET` and one `IF_CONDITION_MET`. `IF_FAILED` is not a substitute: it tests whether the previous *effect* did anything, which is also true when the upgraded branch resolves with nothing to do. State-only closed gates are ignored by the dispatcher's chosen-target look-ahead (`isStepGateClosedByState`). Authoring guidance and examples: spec `10_sequences_and_prompts.md`.

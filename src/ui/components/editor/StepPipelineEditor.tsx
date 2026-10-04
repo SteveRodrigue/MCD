@@ -603,12 +603,16 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
-              {(step.gate === 'IF_FAILED' || step.gate === 'IF_CONDITION_MET') && (
+              {(step.gate === 'IF_FAILED' ||
+                step.gate === 'IF_CONDITION_MET' ||
+                step.gate === 'IF_CONDITION_NOT_MET') && (
                 <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
                   <span className="text-[9px] uppercase font-bold text-yellow-800 block">
                     {step.gate === 'IF_FAILED'
                       ? 'Failed Gate Parameters'
-                      : 'Condition Met Gate Parameters'}
+                      : step.gate === 'IF_CONDITION_NOT_MET'
+                        ? 'Condition Not Met Gate Parameters'
+                        : 'Condition Met Gate Parameters'}
                   </span>
                   <div>
                     <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">

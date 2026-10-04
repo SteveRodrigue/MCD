@@ -99,11 +99,7 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
           if (stepParams.stat === 'THWART') {
             if (stepParams.scaling === 'PER_SIDE_SCHEME') {
               const sideSchemeCount = (state.sideSchemes || []).length;
-              const maxBonus = (stepParams.maxBonus as number) || 4;
-              thwart += Math.min(
-                maxBonus,
-                sideSchemeCount * ((stepParams.multiplier as number) || 1),
-              );
+              thwart += sideSchemeCount * ((stepParams.multiplier as number) || 1);
             } else if (stepParams.amount) {
               thwart += (stepParams.amount as number) || 0;
             }

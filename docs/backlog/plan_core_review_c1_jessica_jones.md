@@ -1,6 +1,6 @@
 # Plan: Core review C1, Jessica Jones `01059` has an invented +4 THW cap
 
-> **Status:** approved 2026-10-04 (step 1 of the approved order), implementation in progress. Tier 1 (data) plus a one-line engine cleanup in the stat calculator. Tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
+> **Status:** implemented 2026-10-04 (approved; uncommitted). Tier 1 (data) plus a one-line engine cleanup in the stat calculator. Tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
 > **UI / Card Editor impact:** none. `maxBonus` is not in `schema.ts`, the editor registry, or the spec; it only exists in one card's data and one engine line.
 
 ## 1. Printed text (upstream `core` 01059, ally, Justice, cost 3, ATK 2, THW 1, HP 3, trait Defender., unique)

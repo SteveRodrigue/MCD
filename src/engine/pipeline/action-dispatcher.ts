@@ -92,6 +92,7 @@ import {
   TargetFilterOptions,
 } from '../effects/target-resolver';
 import { getStepEffectParams } from '../../data/supplemental/schema';
+import { isStepGateClosedByState } from './step-gate-evaluator';
 import { applyDamageToTarget } from './damage-pipeline';
 import { applyThwart, applyThreatPlacement } from './threat-pipeline';
 
@@ -1571,6 +1572,7 @@ function dispatchSingleAction(
 
         for (const ab of abilities) {
           for (const step of ab.steps || []) {
+            if (isStepGateClosedByState(step, nextState, { playerId: action.playerId })) continue;
             const stepParams = getStepEffectParams(step);
             const tgt = stepParams.target as string | undefined;
             if (tgt && tgt.startsWith('CHOSEN_')) {
@@ -1921,6 +1923,7 @@ function dispatchSingleAction(
       let requiredAbilityScope: string | undefined;
       let abilityFilterOpts: TargetFilterOptions | undefined;
       for (const step of effectiveAbility.steps || []) {
+        if (isStepGateClosedByState(step, nextState, { playerId: action.playerId })) continue;
         const stepParams = getStepEffectParams(step);
         const tgt = stepParams.target as string | undefined;
         if (tgt && tgt.startsWith('CHOSEN_') && tgt !== 'CHOSEN_PLAYER') {

@@ -178,6 +178,7 @@ export const ConditionGateSchema = z.enum([
   'IF_ALREADY_HAS_STATUS',
   'IF_RESOURCE_MATCH',
   'IF_CONDITION_MET',
+  'IF_CONDITION_NOT_MET',
   'IF_CARD_IN_PLAY',
   'IF_CARD_NOT_IN_PLAY',
   'IF_FORM',

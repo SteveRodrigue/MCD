@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Test (Engine): Validate Imminent Overload (01171) ([Issue #132](https://github.com/SteveRodrigue/MCD/issues/132))**
+  - **Finding:** the card prints an **Acceleration** icon, not a Crisis icon (upstream `scheme_acceleration: 1`, no `scheme_crisis`), so the report's premise does not match the card. The engine behaves as printed: fixed base threat 3 plus 1 per hero from When Revealed, +1 main scheme threat in villain phase step 1 while it is in play, and main scheme thwarting is not blocked. No data or engine change.
+  - **Automated Verification (`imminent-overload.test.ts`):** 6 tests (data flags, threat at 1 and 2 heroes, no Crisis, acceleration on and off).
+  - **Follow-up:** [#224](https://github.com/SteveRodrigue/MCD/issues/224), acceleration icons on non-side-scheme cards are ignored by step 1 (outside the Core Set).
+
 - **Fix (Data & Docs): Hydra Bomber scope, Exhaustion text, and removal of placeholder abilities on six core encounter cards ([Issue #133](https://github.com/SteveRodrigue/MCD/issues/133))**
   - **Supplemental Data (`core_encounter.json`):** _Hydra Bomber_ `01110` "take 2 damage" now targets only the revealing player's identity (`SELF_IDENTITY`; it hit every hero-form player, and nobody in alter-ego form). _Exhaustion_ `01191` is now just "Exhaust your identity card" (the invented "or take 2 damage" choice is gone; its Surge keyword waits on #218).
   - **Circuit-breaker:** the placeholder abilities of _Ritual Combat_ `01159`, _Titania's Fury_ `01164` (When Revealed only, boost kept), _Sweeping Swoop_ `01168`, _The Vulture's Plans_ `01169`, _Electromagnetic Backlash_ `01174` and _Yon-Rogg's Treason_ `01179` were removed so the engine no longer executes behavior that contradicts the printed text; each has an ambiguity report under `docs/ambiguities/` and an engine issue: Surge keyword #218, hand discard #219, per-player iteration #220, damage gate #221, form-literal "your hero" selector #222, named-minion attack #223.

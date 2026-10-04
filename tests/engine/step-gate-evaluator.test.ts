@@ -121,6 +121,43 @@ describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
     expect(evalGate(step, undefined)).toBe(true);
   });
 
+  it('UNDEFENDED_ATTACK is true only for an attack with no defender, optionally by a given attacker kind', () => {
+    const step = (gate: string, gateParams?: Record<string, unknown>) => ({
+      gate,
+      condition: 'UNDEFENDED_ATTACK',
+      gateParams,
+      effect: 'ADD_THREAT',
+    });
+    const met = (gateParams: Record<string, unknown> | undefined, extra: any) =>
+      evalGate(step('IF_CONDITION_MET', gateParams), undefined, extra);
+
+    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'UNDEFENDED' })).toBe(true);
+    expect(met(undefined, { attackerType: 'MINION', defenderType: 'UNDEFENDED' })).toBe(true);
+    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'HERO' })).toBe(false);
+    expect(met(undefined, { attackerType: 'VILLAIN', defenderType: 'ALLY' })).toBe(false);
+    // Not an attack at all (for example a scheme activation boost): never undefended.
+    expect(met(undefined, {})).toBe(false);
+
+    const villainOnly = { attackerKind: 'VILLAIN' };
+    expect(met(villainOnly, { attackerType: 'VILLAIN', defenderType: 'UNDEFENDED' })).toBe(true);
+    expect(met(villainOnly, { attackerType: 'MINION', defenderType: 'UNDEFENDED' })).toBe(false);
+    expect(
+      met({ attackerKind: 'MINION' }, { attackerType: 'MINION', defenderType: 'UNDEFENDED' }),
+    ).toBe(true);
+    expect(
+      met({ attackerKind: 'ANY_ENEMY' }, { attackerType: 'MINION', defenderType: 'UNDEFENDED' }),
+    ).toBe(true);
+
+    // IF_CONDITION_NOT_MET is the exact negation.
+    expect(
+      evalGate(step('IF_CONDITION_NOT_MET', villainOnly), undefined, {
+        attackerType: 'VILLAIN',
+        defenderType: 'HERO',
+      }),
+    ).toBe(true);
+    expect(evalGate(step('IF_CONDITION_NOT_MET', villainOnly), undefined, {})).toBe(true);
+  });
+
   it('isStepGateClosedByState reports only state-evaluable gates that are closed now', () => {
     const trait = (gate: string) => ({
       gate,

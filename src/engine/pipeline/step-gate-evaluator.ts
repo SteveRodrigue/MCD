@@ -20,6 +20,10 @@ export interface StepGateContext {
   playerId: string;
   resourcesSpent?: string[];
   discardedCards?: CardInstance[];
+  /** Who is making the attack being resolved (set while resolving boost cards). */
+  attackerType?: 'VILLAIN' | 'MINION';
+  /** Who defended that attack; `UNDEFENDED` when no hero or ally was declared. */
+  defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
 }
 
 /**
@@ -163,6 +167,13 @@ export function evaluateStepGate(
   }
 
   if (gate === 'IF_CONDITION_MET') {
+    if (step.condition === 'UNDEFENDED_ATTACK') {
+      // True only while an attack is being resolved and nobody defended it; `attackerKind`
+      // optionally restricts who is attacking ("if the villain is making an undefended attack").
+      if (context.defenderType !== 'UNDEFENDED') return false;
+      const kind = gateParams.attackerKind as string | undefined;
+      return !kind || kind === 'ANY_ENEMY' || kind === context.attackerType;
+    }
     if (step.condition === 'TARGET_TRAIT_MATCH') {
       const requiredTrait =
         (gateParams.trait as string) ||

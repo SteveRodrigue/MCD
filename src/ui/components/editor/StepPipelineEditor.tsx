@@ -651,6 +651,30 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
+              {step.condition === 'UNDEFENDED_ATTACK' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Undefended Attack Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Attacker Kind (Optional)
+                    </label>
+                    <select
+                      data-testid={`gate-param-attackerKind-${abilityIndex}-${sIdx}`}
+                      value={gateParams.attackerKind || ''}
+                      onChange={(e) => updateGateParam('attackerKind', e.target.value)}
+                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                    >
+                      <option value="">Any attacker</option>
+                      <option value="VILLAIN">Villain</option>
+                      <option value="MINION">Minion</option>
+                      <option value="ANY_ENEMY">Any enemy</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Effect Primitive Selector & Description */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-0.5">

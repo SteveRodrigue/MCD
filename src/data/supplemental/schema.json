@@ -527,6 +527,7 @@
                           "TARGET_ALREADY_EXHAUSTED",
                           "TARGET_TRAIT_MATCH",
                           "TARGET_FORM_MATCH",
+                          "UNDEFENDED_ATTACK",
                           "RESOURCE_KICKER_MET",
                           "COUNTER_THRESHOLD_MET",
                           "ZONE_EMPTY"

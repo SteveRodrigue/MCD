@@ -242,3 +242,12 @@ Embed micro-expressions or mini-scripts directly in supplemental JSON (e.g. `amo
 `IF_CONDITION_MET` is positive only, so an "if X ... **instead**" ability (Mark V Helmet: remove threat from a chosen scheme, from each scheme instead with Aerial) could not express its non-X branch. A key `aerialAllSchemes` in the data stood in for it and the engine never read it.
 
 **Decision:** add the gate `IF_CONDITION_NOT_MET`, the exact negation of `IF_CONDITION_MET` for the same `condition` / `gateParams`, evaluated by `evaluateStepGate`. The exclusive pattern is two steps carrying the same condition, one gated `IF_CONDITION_NOT_MET` and one `IF_CONDITION_MET`. `IF_FAILED` is not a substitute: it tests whether the previous *effect* did anything, which is also true when the upgraded branch resolves with nothing to do. State-only closed gates are ignored by the dispatcher's chosen-target look-ahead (`isStepGateClosedByState`). Authoring guidance and examples: spec `10_sequences_and_prompts.md`.
+
+
+---
+
+## Addendum (2026-10-04, WP4 / Kree Manipulator `01178`): `UNDEFENDED_ATTACK`
+
+Boost abilities were resolved with no attack facts, so "if the villain is making an undefended attack" had no declarative form and the data hid a made-up `condition` inside `effectParams`, which nothing read (the boost fired on every attack).
+
+**Decision:** a new `StepCondition` `UNDEFENDED_ATTACK`, evaluated by `evaluateStepGate` through `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` against `attackerType` and `defenderType` carried in the step gate context. The combat pipeline passes both when it resolves a boost card (`defenderType` is `UNDEFENDED` when no hero or ally was declared). Optional `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`, same enum as `triggerFilter.attackerKind`) restricts the attacker. Outside an attack the condition is false. Unlike `TARGET_TRAIT_MATCH` it is not state-only, so `isStepGateClosedByState` does not look at it.

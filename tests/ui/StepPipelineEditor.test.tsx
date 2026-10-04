@@ -450,4 +450,35 @@ describe('StepPipelineEditor', () => {
     expect(screen.queryByTestId('step-param-scaling-0-0')).toBeNull();
     expect(screen.queryByTestId('step-param-multiplier-0-0')).toBeNull();
   });
+  it('shows an Attacker Kind select for the UNDEFENDED_ATTACK condition and round-trips gateParams', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'ADD_THREAT',
+            gate: 'IF_CONDITION_MET',
+            condition: 'UNDEFENDED_ATTACK',
+            gateParams: { attackerKind: 'VILLAIN' },
+            effectParams: { amount: 1, target: 'MAIN_SCHEME' },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    const condition = screen.getByTestId('step-condition-0-0') as HTMLSelectElement;
+    expect(Array.from(condition.options).map((o) => o.value)).toContain('UNDEFENDED_ATTACK');
+    expect(condition.value).toBe('UNDEFENDED_ATTACK');
+
+    const kind = screen.getByTestId('gate-param-attackerKind-0-0') as HTMLSelectElement;
+    expect(kind.value).toBe('VILLAIN');
+
+    await user.selectOptions(kind, 'ANY_ENEMY');
+    expect(handleChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ gateParams: { attackerKind: 'ANY_ENEMY' } }),
+    ]);
+  });
 });

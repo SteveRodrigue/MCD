@@ -13,7 +13,8 @@ Order approved by the user on 2026-10-04. Order matters: fix the cards first, th
 | 1 | **C1** | Jessica Jones `01059` invented `maxBonus` cap (engine default 4 too) | _(tracker item, no issue)_ | 1 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_c1_jessica_jones.md) |
 | 2 | **WP1** | Mark V Helmet `01037` `aerialAllSchemes` ignored (supersedes review item A4) | [#226](https://github.com/SteveRodrigue/MCD/issues/226) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp1_mark_v_helmet.md) |
 | 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp2_iron_man_hand_size.md) |
-| 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | Not started |
+| 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp4_kree_manipulator.md) |
+| 4b | **WP8** | Electric Whip Attack `01173`: invented +1 ATTACK, wrong boost filter, no undefended gate, When Revealed choice unmodelled | [#241](https://github.com/SteveRodrigue/MCD/issues/241) | 2-3 | WP4 (undefended condition); When Revealed needs #222 | **Boost done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp8_electric_whip_attack.md). **Issue stays open:** When Revealed blocked on #222 (ambiguity report) |
 | 5 | **WP3** | Genetically Enhanced `01163` invented key, printed text unmodelled | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | 3 | #209, #218 | Not started |
 | 6 | **WP5** | Guard: unknown `effectParams` key fails the data test | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 2 | C1, WP1-WP4 | Not started |
 | 7 | **WP6** | Retire `scaling`/`multiplier`/`maxBonus` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 2 | C1, WP2 | Not started |
@@ -59,6 +60,14 @@ Printed: *Jessica Jones gets +1 THW for each side scheme in play.* Data has `max
 - **Evidence:** the literal exists nowhere in `src/engine/` and is not in the `StepConditionSchema` enum. The boost adds threat on every attack. Spec lists `condition` for `ADD_THREAT`.
 - **Fix direction:** one real, schema-validated condition evaluated from the attack context (a new `StepCondition`, or a gate over the attack's defender), generic enough for other "undefended" boost cards; audit the other core encounter boosts that mention undefended or defended attacks.
 - **Acceptance:** threat only when undefended; tests for undefended, hero-defended and ally-defended; schema, spec, editor registry updated together.
+
+### WP8: Electric Whip Attack `01173` ([#241](https://github.com/SteveRodrigue/MCD/issues/241))
+
+- **Printed:** *When Revealed: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.* / *[star] Boost: If the villain is making an undefended attack, choose and discard an upgrade you control.*
+- **Data today:** an invented `CONSTANT MODIFY_STAT ATTACK +1`; a boost `DISCARD` filtered to `upgrade` **and** `support`; no undefended condition; no When Revealed ability.
+- **Found by:** reading the data next to the printed text while planning WP4. The key audit cannot detect this class of error.
+- **Fix direction:** reuse WP4's `UNDEFENDED_ATTACK` condition for the boost, correct the filter, remove the invented ability, model the When Revealed `PLAYER_CHOICE` (damage per upgrade via `ENTITY_COUNT`, or a chosen upgrade discard); circuit-breaker with an ambiguity report if an engine primitive is missing.
+- **Acceptance:** every printed clause modelled or explicitly stripped; tests for undefended villain, defended and minion attacks, and both When Revealed options.
 
 ### WP3: Genetically Enhanced `01163` ([#228](https://github.com/SteveRodrigue/MCD/issues/228))
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): Electric Whip Attack boost is gated and filtered as printed; invented +1 ATTACK removed; When Revealed logged as blocked ([Issue #241](https://github.com/SteveRodrigue/MCD/issues/241), WP8)**
+  - **Supplemental Data (`core_encounter.json`):** _Electric Whip Attack_ `01173` loses an invented `CONSTANT +1 ATTACK`; the boost now discards an **upgrade** only (it also discarded supports) and only when the villain makes an undefended attack (`UNDEFENDED_ATTACK`, WP4); `audit.confidence` 70 with an `ambiguityFile`.
+  - **Circuit-breaker:** the When Revealed choice (damage to "your hero" per upgrade, or discard an upgrade) stays unmodelled because "your hero" needs the form-literal selector of #222 (see `docs/ambiguities/core_encounter_01173_electric-whip-attack.md`). #241 stays open until then.
+  - **Automated Verification (`electric-whip-attack.test.ts`):** 5 tests (only upgrades, chosen discard, defended attack, no upgrade, no invented abilities).
+
+- **Fix (Data, Engine & Editor): Kree Manipulator boost only places threat on an undefended villain attack; new `UNDEFENDED_ATTACK` condition ([Issue #229](https://github.com/SteveRodrigue/MCD/issues/229))**
+  - **Supplemental Data (`core_encounter.json`):** _Kree Manipulator_ `01178` boost is now `IF_CONDITION_MET` + `UNDEFENDED_ATTACK` + `gateParams.attackerKind: VILLAIN`. It used a `condition` key inside `effectParams` that nothing read, so the boost placed threat on every attack, defended or not.
+  - **Schema / Engine:** new `StepCondition` `UNDEFENDED_ATTACK` (`schema.ts`, regenerated `schema.json`, `step-gate-evaluator.ts`); `StepGateContext` and `EffectExecutionContext` carry `attackerType` / `defenderType`, and the combat pipeline passes them when resolving a boost card.
+  - **Card Editor:** the condition appears in the condition dropdown (built from the schema) and the step panel shows an "Attacker Kind" select for it.
+  - **Documentation:** spec `10` (condition table row and worked example), spec `05` (`ADD_THREAT` conditional note), ADR-0049 addendum.
+  - **Automated Verification (`kree-manipulator-boost.test.ts`, `step-gate-evaluator.test.ts`, `supplemental-schema.test.ts`, `StepPipelineEditor.test.tsx`):** 4 + 1 + 1 + 1 tests (undefended villain adds threat; hero-defended and ally-defended add none; minion attack adds none; gate matrix with `attackerKind` and negation; data and editor guards).
+  - **Follow-up:** [#241](https://github.com/SteveRodrigue/MCD/issues/241) (WP8) applies the same condition to _Electric Whip Attack_ `01173`.
+
 - **Fix (Data, Engine & Editor): Iron Man hand size cap follows the official errata; hand size has no invented 1..10 clamp ([Issue #227](https://github.com/SteveRodrigue/MCD/issues/227))**
   - **Supplemental Data (`core.json`):** _Iron Man_ `01029a` `MODIFY_HAND_SIZE` is now a dynamic `amount` (`ENTITY_COUNT` of Tech upgrades, `clamp.max: 6`), matching the Rules Reference errata "to a maximum of +6 hand size" (recorded in the ability's `errata` field). The dead keys `maxHandSize` and `applicableForm` and the bespoke `scaling: PER_MATCHING_CARD` are gone: the cap was never enforced (seven Tech upgrades gave a hand size of 8).
   - **Engine (`stat-calculator.ts`):** `getEffectiveHandSize` evaluates `MODIFY_HAND_SIZE.amount` with the generic dynamic formula evaluator, drops the `PER_MATCHING_CARD` branch, takes a required `state`, and no longer clamps the total to 1..10 (no rule says so; it now only cannot go below 0). `HeroZone` passes an empty board when rendered without a game state. This retires the `MODIFY_HAND_SIZE` part of the pseudo-primitive cleanup (#231).

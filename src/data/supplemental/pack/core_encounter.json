@@ -1219,31 +1219,22 @@
     "01173": {
       "abilities": [
         {
-          "id": "electric_whip_attack",
-          "timing": "CONSTANT",
-          "steps": [
-            {
-              "effect": "MODIFY_STAT",
-              "effectParams": {
-                "stat": "ATTACK",
-                "amount": 1
-              }
-            }
-          ]
-        },
-        {
           "id": "electric_whip_attack_boost",
           "timing": "BOOST",
           "trigger": "BOOST",
           "steps": [
             {
               "effect": "DISCARD",
+              "gate": "IF_CONDITION_MET",
+              "condition": "UNDEFENDED_ATTACK",
+              "gateParams": {
+                "attackerKind": "VILLAIN"
+              },
               "effectParams": {
                 "source": "TABLEAU",
                 "filter": {
                   "types": [
-                    "upgrade",
-                    "support"
+                    "upgrade"
                   ]
                 },
                 "target": "DEFENDING_PLAYER"
@@ -1254,12 +1245,13 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-04T20:10",
+        "reviewedAt": "2026-10-04T20:10",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 100,
-        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control."
+        "confidence": 70,
+        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control.",
+        "ambiguityFile": "docs/ambiguities/core_encounter_01173_electric-whip-attack.md"
       }
     },
     "01174": {
@@ -1424,10 +1416,14 @@
           "steps": [
             {
               "effect": "ADD_THREAT",
+              "gate": "IF_CONDITION_MET",
+              "condition": "UNDEFENDED_ATTACK",
+              "gateParams": {
+                "attackerKind": "VILLAIN"
+              },
               "effectParams": {
                 "amount": 1,
-                "target": "MAIN_SCHEME",
-                "condition": "UNDEFENDED_ATTACK"
+                "target": "MAIN_SCHEME"
               }
             }
           ]
@@ -1435,8 +1431,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T19:40",
+        "reviewedAt": "2026-10-04T19:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

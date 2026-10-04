@@ -1358,11 +1358,29 @@
           },
           "steps": [
             {
+              "id": "helmet_chosen_scheme",
               "effect": "REMOVE_THREAT",
+              "gate": "IF_CONDITION_NOT_MET",
+              "condition": "TARGET_TRAIT_MATCH",
+              "gateParams": {
+                "trait": "Aerial"
+              },
               "effectParams": {
                 "amount": 1,
-                "aerialAllSchemes": true,
                 "target": "CHOSEN_SCHEME"
+              }
+            },
+            {
+              "id": "helmet_all_schemes",
+              "effect": "REMOVE_THREAT",
+              "gate": "IF_CONDITION_MET",
+              "condition": "TARGET_TRAIT_MATCH",
+              "gateParams": {
+                "trait": "Aerial"
+              },
+              "effectParams": {
+                "amount": 1,
+                "target": "ALL_SCHEMES"
               }
             }
           ]
@@ -1370,8 +1388,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T18:10",
+        "reviewedAt": "2026-10-04T18:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -2190,8 +2208,7 @@
               "effectParams": {
                 "stat": "THWART",
                 "scaling": "PER_SIDE_SCHEME",
-                "multiplier": 1,
-                "maxBonus": 4
+                "multiplier": 1
               }
             }
           ]
@@ -2199,8 +2216,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T17:30",
+        "reviewedAt": "2026-10-04T17:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

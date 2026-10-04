@@ -3,7 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { getEffectiveHeroStats } from '@engine/pipeline/stat-calculator';
-import { evaluateStepGate } from '@engine/pipeline/step-gate-evaluator';
+import { evaluateStepGate, isStepGateClosedByState } from '@engine/pipeline/step-gate-evaluator';
 
 describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
   let state: GameState;
@@ -92,6 +92,52 @@ describe('Shared step-gate evaluator (Issue #122, RR v1.8 p. 2, 24)', () => {
     expect(evalGate(step('Nonexistent Trait'))).toBe(false);
     const traits = (hero.traits || [])[0];
     if (traits) expect(evalGate(step(traits))).toBe(true);
+  });
+
+  it('IF_CONDITION_NOT_MET is the exact negation of IF_CONDITION_MET (trait condition)', () => {
+    const step = (gate: string, trait: string) => ({
+      gate,
+      condition: 'TARGET_TRAIT_MATCH',
+      gateParams: { trait },
+      effect: 'DRAW',
+    });
+    const present = (hero.traits || [])[0] ?? 'Avenger';
+    for (const trait of [present, 'Nonexistent Trait']) {
+      const met = evalGate(step('IF_CONDITION_MET', trait));
+      expect(evalGate(step('IF_CONDITION_NOT_MET', trait))).toBe(!met);
+    }
+    // A granted trait flips both gates together.
+    state.players[0].activeTraitModifiers = [{ trait: 'Aerial', duration: 'PHASE' }];
+    expect(evalGate(step('IF_CONDITION_MET', 'Aerial'))).toBe(true);
+    expect(evalGate(step('IF_CONDITION_NOT_MET', 'Aerial'))).toBe(false);
+  });
+
+  it('IF_CONDITION_NOT_MET also negates a result-based condition when no trait is checked', () => {
+    const met = { success: true, mutatedState: true, conditionMet: true };
+    const notMet = { success: true, mutatedState: true, conditionMet: false };
+    const step = { gate: 'IF_CONDITION_NOT_MET', effect: 'DRAW' };
+    expect(evalGate(step, met)).toBe(false);
+    expect(evalGate(step, notMet)).toBe(true);
+    expect(evalGate(step, undefined)).toBe(true);
+  });
+
+  it('isStepGateClosedByState reports only state-evaluable gates that are closed now', () => {
+    const trait = (gate: string) => ({
+      gate,
+      condition: 'TARGET_TRAIT_MATCH',
+      gateParams: { trait: 'Aerial' },
+      effect: 'DRAW',
+    });
+    const closed = (step: any) => isStepGateClosedByState(step, state, ctx);
+    expect(closed(trait('IF_CONDITION_MET'))).toBe(true);
+    expect(closed(trait('IF_CONDITION_NOT_MET'))).toBe(false);
+    expect(closed({ gate: 'IF_FORM', gateParams: { form: 'alter_ego' }, effect: 'DRAW' })).toBe(
+      true,
+    );
+    // Result-based gates and ungated steps are never "closed by state".
+    expect(closed({ gate: 'THEN', effect: 'DRAW' })).toBe(false);
+    expect(closed({ gate: 'IF_CONDITION_MET', effect: 'DRAW' })).toBe(false);
+    expect(closed({ effect: 'DRAW' })).toBe(false);
   });
 
   it('result-based gates read the previous step result', () => {

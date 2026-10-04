@@ -73,10 +73,17 @@ flowchart TD
     Q2 -->|yes| ResGate["Step 2: gate: IF_RESOURCE_MATCH<br/>+ gateParams"]
     Q2 -->|no| Q3{"Does effect #2 depend on a<br/>named milestone from step #1?<br/>(scheme cleared, target defeated...)"}
     Q3 -->|yes| CondGate["Step 1: condition: SCHEME_EMPTY (etc.)<br/>Step 2: gate: IF_CONDITION_MET"]
-    Q3 -->|no| Q4{"Does the player pick between<br/>2+ discrete outcomes?"}
+    Q3 -->|no| Q3b{"Does effect #2 depend on a fact about<br/>the player or board? (trait, form)<br/>e.g. if you have Aerial"}
+    Q3b -->|"yes, extra effect"| TraitMet["Step 2: gate: IF_CONDITION_MET<br/>condition: TARGET_TRAIT_MATCH"]
+    Q3b -->|"yes, instead of effect #1"| TraitNot["Step 1: gate: IF_CONDITION_NOT_MET<br/>Step 2: gate: IF_CONDITION_MET<br/>(same condition + gateParams)"]
+    Q3b -->|"no, only if #1 could not resolve"| FailGate["Step 2: gate: IF_FAILED"]
+    Q3b -->|no| Q4{"Does the player pick between<br/>2+ discrete outcomes?"}
     Q4 -->|yes| Choice["Single step: effect: PLAYER_CHOICE<br/>with options: []"]
     Q4 -->|no| Plain["Just list effects as separate<br/>steps with gate: ALWAYS (default)"]
 ```
+
+Worked examples (additive `IF_CONDITION_MET` on Crisis Interdiction `01012`, exclusive `IF_CONDITION_NOT_MET` + `IF_CONDITION_MET` on Mark V Helmet `01037`, `IF_FAILED` fallback) and when each applies:
+[10. Sequences & Modals, choosing a gate](../specifications/supplemental/10_sequences_and_prompts.md#choosing-between-if_condition_met-if_condition_not_met-and-if_failed).
 
 Full gate/condition catalog:
 [10. Sequences & Modals §1](../specifications/supplemental/10_sequences_and_prompts.md#1-unified-action-step-sequencing-steps--conditional-gates).

@@ -395,4 +395,36 @@ describe('StepPipelineEditor', () => {
       }),
     ]);
   });
+  it('offers IF_CONDITION_NOT_MET and shows its trait and target-step fields', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'REMOVE_THREAT',
+            gate: 'IF_CONDITION_NOT_MET',
+            condition: 'TARGET_TRAIT_MATCH',
+            gateParams: { trait: 'Aerial' },
+            effectParams: { amount: 1, target: 'CHOSEN_SCHEME' },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    const gateSelect = screen.getByTestId('step-gate-0-0') as HTMLSelectElement;
+    expect(gateSelect.value).toBe('IF_CONDITION_NOT_MET');
+    expect(Array.from(gateSelect.options).map((o) => o.value)).toContain('IF_CONDITION_NOT_MET');
+    expect(screen.getByText('Condition Not Met Gate Parameters')).toBeDefined();
+    expect(screen.getByTestId('gate-param-targetStepId-0-0')).toBeDefined();
+    expect((screen.getByTestId('gate-param-trait-0-0') as HTMLInputElement).value).toBe('Aerial');
+
+    await user.selectOptions(gateSelect, 'IF_CONDITION_MET');
+    expect(handleChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ gate: 'IF_CONDITION_MET' }),
+    ]);
+    expect(screen.getByText('Condition Met Gate Parameters')).toBeDefined();
+  });
 });

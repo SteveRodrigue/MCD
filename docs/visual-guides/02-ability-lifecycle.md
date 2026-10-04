@@ -34,7 +34,7 @@ outcome of a previous step via `condition` / `gate` / `target: "PREVIOUS_TARGET"
 flowchart TD
     Step(["Step N: { effect, gate?, gateParams?, effectParams?, condition? }"]) --> GateCheck{"gate present?"}
     GateCheck -->|"no (defaults to ALWAYS)"| Run["Run effect primitive<br/>(src/engine/effects/index.ts)"]
-    GateCheck -->|"yes, e.g. THEN, IF_RESOURCE_MATCH,<br/>IF_CONDITION_MET, IF_CARD_IN_PLAY"| Eval{"Evaluate gate against<br/>gateParams + prior step outcome"}
+    GateCheck -->|"yes, e.g. THEN, IF_RESOURCE_MATCH,<br/>IF_CONDITION_MET, IF_CONDITION_NOT_MET,<br/>IF_CARD_IN_PLAY"| Eval{"Evaluate gate against<br/>gateParams + prior step outcome"}
     Eval -->|false| Skip(["Step skipped, no state change"])
     Eval -->|true| Run
     Run --> Condition{"condition declared?<br/>(e.g. SCHEME_EMPTY, TARGET_DEFEATED)"}

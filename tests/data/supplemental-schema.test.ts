@@ -895,6 +895,20 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(step.success).toBe(true);
       });
 
+      it('Accepts IF_CONDITION_NOT_MET in ConditionGateSchema and AbilityStepSchema (Mark V Helmet 01037)', () => {
+        expect(ConditionGateSchema.safeParse('IF_CONDITION_NOT_MET').success).toBe(true);
+
+        const step = AbilityStepSchema.safeParse({
+          id: 'helmet_chosen_scheme',
+          effect: 'REMOVE_THREAT',
+          gate: 'IF_CONDITION_NOT_MET',
+          condition: 'TARGET_TRAIT_MATCH',
+          gateParams: { trait: 'Aerial' },
+          effectParams: { amount: 1, target: 'CHOSEN_SCHEME' },
+        });
+        expect(step.success).toBe(true);
+      });
+
       it('Accepts DynamicValueSource in param schemas for counters, discard, and search', () => {
         const addCounters = AddCountersParamsSchema.safeParse({
           target: 'SELF',

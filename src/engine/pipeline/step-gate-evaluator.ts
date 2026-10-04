@@ -156,6 +156,12 @@ export function evaluateStepGate(
     return true;
   }
 
+  // Exact negation of IF_CONDITION_MET for the same `condition` / `gateParams`: use it for the
+  // "otherwise / instead" branch of a printed "if X ... instead" ability.
+  if (gate === 'IF_CONDITION_NOT_MET') {
+    return !evaluateStepGate('IF_CONDITION_MET', prevResult, state, step, context, stepResultsMap);
+  }
+
   if (gate === 'IF_CONDITION_MET') {
     if (step.condition === 'TARGET_TRAIT_MATCH') {
       const requiredTrait =
@@ -175,6 +181,28 @@ export function evaluateStepGate(
   }
 
   return true;
+}
+
+/**
+ * True when the step carries a gate that depends only on the current game state (never on a
+ * previous step's result) and that gate is closed right now, so the step cannot run. Lets callers
+ * that look ahead at an ability's steps (chosen-target pre-selection) ignore steps that will be
+ * skipped, e.g. the non-Aerial branch of an "if you have Aerial ... instead" ability.
+ */
+export function isStepGateClosedByState(
+  step: AbilityStep,
+  state: GameState,
+  context: StepGateContext,
+): boolean {
+  const gate = step.gate;
+  if (!gate) return false;
+  const isStateOnly =
+    gate === 'IF_FORM' ||
+    gate === 'IF_CARD_IN_PLAY' ||
+    gate === 'IF_CARD_NOT_IN_PLAY' ||
+    ((gate === 'IF_CONDITION_MET' || gate === 'IF_CONDITION_NOT_MET') &&
+      step.condition === 'TARGET_TRAIT_MATCH');
+  return isStateOnly && !evaluateStepGate(gate, undefined, state, step, context);
 }
 
 /**

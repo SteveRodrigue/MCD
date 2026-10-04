@@ -2859,8 +2859,17 @@ export function executeStep(
         step.effectParams?.ignoresCrisis || (step as any).ignoresCrisis || context.ignoresCrisis,
       );
       const isPlayerSource = context.sourceCardInstance?.card?.faction !== 'encounter';
+      // The main scheme cannot be thwarted by cards while a Crisis icon is in play (RR v1.8 p. 11)
+      // or while the resolving player is engaged with a Patrol minion (Patrol keyword).
       const isMainSchemeBlockedByCrisis =
         !ignoresCrisis && isPlayerSource && hasCrisisInPlay(state);
+      const isMainSchemeBlockedByPatrol =
+        isPlayerSource &&
+        (player.engagedMinions || []).some((m) => hasKeyword(m.card, Keyword.PATROL));
+      const isMainSchemeBlocked = isMainSchemeBlockedByCrisis || isMainSchemeBlockedByPatrol;
+      const mainSchemeBlock = isMainSchemeBlockedByCrisis
+        ? { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' }
+        : { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' };
 
       const isDistinct = Boolean(
         step.distinctFrom === 'PREVIOUS_TARGET' ||
@@ -2876,7 +2885,7 @@ export function executeStep(
           context.distinctFromId || context.previousResult?.targetId || context.targetInstanceId;
 
         const isMainSchemeExcluded = Boolean(
-          isMainSchemeBlockedByCrisis ||
+          isMainSchemeBlocked ||
           (excludedId &&
             (excludedId === 'main_scheme' ||
               (getActiveMainScheme(state)?.instanceId &&
@@ -3009,8 +3018,7 @@ export function executeStep(
           (state.sideSchemes || []).length > 0
         ) {
           const sideSchemes = state.sideSchemes || [];
-          const isMainEligible =
-            Boolean(getActiveMainScheme(state)) && !isMainSchemeBlockedByCrisis;
+          const isMainEligible = Boolean(getActiveMainScheme(state)) && !isMainSchemeBlocked;
 
           const options: DecisionPromptOption[] = [];
           if (isMainEligible) {
@@ -3079,19 +3087,19 @@ export function executeStep(
                     },
                   ];
           } else {
-            if (isMainSchemeBlockedByCrisis) {
+            if (isMainSchemeBlocked) {
               state.log.push({
                 id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
                 timestamp: Date.now(),
                 round: state.roundNumber,
                 phase: state.phase,
                 category: 'ability',
-                key: 'card.effect.threatBlockedByCrisis',
+                key: mainSchemeBlock.key,
                 params: {
                   player: player.name,
                   scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
                 },
-                onomatopoeia: 'CRISIS BLOCKS!',
+                onomatopoeia: mainSchemeBlock.onomatopoeia,
               });
             }
             return {
@@ -3099,12 +3107,14 @@ export function executeStep(
               success: true,
               mutatedState: false,
               value: 0,
-              onomatopoeia: isMainSchemeBlockedByCrisis ? 'CRISIS BLOCKS!' : 'NO SCHEME THREAT!',
+              onomatopoeia: isMainSchemeBlocked
+                ? mainSchemeBlock.onomatopoeia
+                : 'NO SCHEME THREAT!',
             };
           }
         } else {
           const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
-          if (isMainSchemeBlockedByCrisis) {
+          if (isMainSchemeBlocked) {
             const nonMainSchemes = schemes.filter(
               (s) =>
                 s.entityType !== 'main_scheme' &&
@@ -3119,19 +3129,19 @@ export function executeStep(
                 round: state.roundNumber,
                 phase: state.phase,
                 category: 'ability',
-                key: 'card.effect.threatBlockedByCrisis',
+                key: mainSchemeBlock.key,
                 params: {
                   player: player.name,
                   scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
                 },
-                onomatopoeia: 'CRISIS BLOCKS!',
+                onomatopoeia: mainSchemeBlock.onomatopoeia,
               });
               return {
                 state,
                 success: true,
                 mutatedState: false,
                 value: 0,
-                onomatopoeia: 'CRISIS BLOCKS!',
+                onomatopoeia: mainSchemeBlock.onomatopoeia,
               };
             }
             targetSchemes = nonMainSchemes;

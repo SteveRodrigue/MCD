@@ -12,7 +12,9 @@
 | A3 | Rocket Boots `01039` (= #131) | **Done** (2026-10-04, uncommitted): [plan](plan_issue_131_rocket_boots.md) |
 | A2 | Counter-Punch `01077` (cost 0, hand reaction, "that enemy", "your hero defends") | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_a2_counter_punch.md) |
 | B7 | Med Team `01080` (friendly character only) | **Done** (2026-10-04, uncommitted): [plan](plan_core_review_b7_med_team.md) |
-| A4–A6, B1–B6, B8, C1–C13, D | see sections below | Not started |
+| A4 | Mark V Helmet `01037` | **Superseded by WP1** ([#226](https://github.com/SteveRodrigue/MCD/issues/226)): the audit found `aerialAllSchemes` is ignored by the engine, so this is a functional bug. See [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
+| C1 | Jessica Jones `01059` `maxBonus` | **Plan approved 2026-10-04, step 1 of the approved order**: [plan](plan_core_review_c1_jessica_jones.md); part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md) |
+| A5, A6, B1–B6, B8, C2–C13, D | see sections below | Not started |
 
 **Scope:** every player card in `core` (`01001a`–`01093`, 101 entries incl. the four `01043a–d` variants).
 **Method:** independent translation from upstream printed text, differential comparison against
@@ -45,7 +47,7 @@ Legend: **Tier** = blast radius per `shared-quality-gates.md`. **Verified** = I 
 - **Proposed:** add a generic temporary-trait mechanism (`ADD_TRAIT` with `duration: "PHASE"`, stored as a timed modifier), or reuse the existing phase-duration modifier path used by `MODIFY_STAT`. Then add a regression test (Rocket Boots → Crisis Interdiction / Supersonic Punch).
 - **Why:** this is a real card that silently fails. It also blocks Aerial synergy for Iron Man.
 
-### A4. Mark V Helmet `01037` — card-specific param (Verified, Tier 2)
+### A4. Mark V Helmet `01037` — card-specific param (Verified, Tier 2). **Update 2026-10-04:** the audit shows the engine never reads `aerialAllSchemes`, so the Aerial bonus does not work at all; tracked as WP1 (#226) in `plan_effect_params_remediation.md`
 - **Printed:** remove 1 threat from a scheme (from **each** scheme instead if you have Aerial).
 - **Current:** `aerialAllSchemes: true`. This is a card-shaped parameter (ADR-0021 spirit).
 - **Proposed:** `REMOVE_THREAT` to `CHOSEN_SCHEME`, plus a gated second form with `target: ALL_SCHEMES`. Use the same player-trait gate as Crisis Interdiction and the `dynamicBonus.HAS_TRAIT` pattern. Remove the bespoke param from `effects/index.ts`.
@@ -118,7 +120,11 @@ Photonic Blast's paid-with-energy gate and Hulk's wild "all of the above" both w
 
 ---
 
-## Proposed order if approved
+## Approved order (2026-10-04, supersedes the proposed order below)
+
+Functional bugs before cosmetics. 1) C1; 2) WP1 (Mark V Helmet, replaces A4), WP2, WP4; 3) engine #218 Surge, then #219, #222; 4) WP5 guard test, WP3; 5) Tier 1 cosmetics (C2-C5, C8, C11, A6 test), then WP6, WP7. Source of truth for status: `teamwork_status_and_next_target.md`; details: `plan_effect_params_remediation.md`.
+
+## Original proposed order (kept for history)
 
 1. **Tier 1, data only:** A2 (partial), B7, C1–C4, C5, C8, C11, plus the Luke Cage test (A6).
 2. **Tier 2, small generic helpers:** A1, A3, A4, A5, B1/B3 (new filter fields), B6, B8, C6, C7.

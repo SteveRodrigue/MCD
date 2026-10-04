@@ -9,9 +9,9 @@ import {
   NormalizedCard,
   CardType,
 } from '../models';
-import { matchesCardFilter } from '../filters/card-filter';
 import { parseKeywordItem } from '../models/keyword';
-import { getStepEffectParams } from '../../data/supplemental/schema';
+import { getStepEffectParams, type DynamicValueSource } from '../../data/supplemental/schema';
+import { evaluateDynamicAmount } from '../effects/dynamic-formula-evaluator';
 import { AbilityStep } from '../models/abilities';
 import { evaluateFormGate, evaluateStepGate } from './step-gate-evaluator';
 import { findInPlayCardInstance } from '../state/state-validator';
@@ -427,7 +427,7 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
  * Computes dynamic effective Hand Size for a player, aggregating base form hand size
  * and continuous aura modifiers (e.g. Iron Man 01029a scaled by in-play Tech upgrades).
  */
-export function getEffectiveHandSize(player: PlayerState, _state?: GameState): number {
+export function getEffectiveHandSize(player: PlayerState, state: GameState): number {
   const isHero = player.currentForm === 'hero';
 
   // Base printed hand size
@@ -450,24 +450,20 @@ export function getEffectiveHandSize(player: PlayerState, _state?: GameState): n
         for (const step of ab.steps || []) {
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_HAND_SIZE') {
-            if (stepParams.scaling === 'PER_MATCHING_CARD') {
-              // Count matching cards in player's tableau using universal card filter (ADR-0046)
-              const filter = stepParams.filter || step.filter;
-              const matches = (player.tableau || []).filter((tableauItem) =>
-                matchesCardFilter(tableauItem.card, filter, { player, state: _state }),
-              ).length;
-              bonus += matches * ((stepParams.multiplier as number) || 1);
-            } else if (stepParams.amount) {
-              bonus += (stepParams.amount as number) || 0;
-            }
+            bonus += evaluateDynamicAmount(
+              stepParams.amount as number | DynamicValueSource | undefined,
+              {},
+              { state, player },
+            );
           }
         }
       }
     }
   }
 
-  // Clamp effective hand size between 1 and 10
-  return Math.max(1, Math.min(10, baseHandSize + bonus));
+  // A hand size can never be negative; the rules set no other bound (printed caps such as
+  // "to a maximum of +6" are declared on the modifier with `clamp.max`).
+  return Math.max(0, baseHandSize + bonus);
 }
 
 /**

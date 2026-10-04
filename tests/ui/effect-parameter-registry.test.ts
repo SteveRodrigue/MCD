@@ -137,6 +137,13 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(removeThreatAmount?.allowDynamic).toBe(true);
   });
 
+  it('MODIFY_HAND_SIZE takes a dynamic amount and no longer lists the PER_MATCHING_CARD pseudo-primitive', () => {
+    const desc = getEffectDescriptor('MODIFY_HAND_SIZE');
+    const keys = desc.parameters.map((p) => p.key);
+    expect(keys).toEqual(['amount']);
+    expect(desc.parameters[0].allowDynamic).toBe(true);
+  });
+
   it('GRANT_KEYWORD exposes keyword, amount, duration, and target', () => {
     const desc = getEffectDescriptor('GRANT_KEYWORD');
     const paramKeys = desc.parameters.map((p) => p.key);

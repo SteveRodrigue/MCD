@@ -895,6 +895,28 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(step.success).toBe(true);
       });
 
+      it('Iron Man (01029a) hand size is a dynamic amount with a +6 clamp and the official errata text', () => {
+        const pack = JSON.parse(
+          fs.readFileSync(path.join(packDir, 'core.json'), 'utf8'),
+        ) as Record<string, any>;
+        const cards = pack.cards ?? pack;
+        const ability = cards['01029a'].abilities[0];
+        expect(AbilityStepSchema.safeParse(ability.steps[0]).success).toBe(true);
+        expect(ability.steps[0].effectParams.amount).toEqual({
+          from: 'ENTITY_COUNT',
+          filter: { types: ['upgrade'], traits: ['Tech'] },
+          clamp: { max: 6 },
+        });
+        expect(ability.errata).toMatch(/maximum of \+6 hand size/);
+      });
+
+      it('No pack uses the retired MODIFY_HAND_SIZE keys (maxHandSize, applicableForm, PER_MATCHING_CARD)', () => {
+        for (const file of packFiles) {
+          const raw = fs.readFileSync(path.join(packDir, file), 'utf8');
+          expect(raw).not.toMatch(/"maxHandSize"|"applicableForm"|"PER_MATCHING_CARD"/);
+        }
+      });
+
       it('Accepts IF_CONDITION_NOT_MET in ConditionGateSchema and AbilityStepSchema (Mark V Helmet 01037)', () => {
         expect(ConditionGateSchema.safeParse('IF_CONDITION_NOT_MET').success).toBe(true);
 

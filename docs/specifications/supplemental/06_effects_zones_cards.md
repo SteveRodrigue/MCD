@@ -40,34 +40,36 @@
 
 ### `MODIFY_HAND_SIZE`
 
-- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#9](https://github.com/SteveRodrigue/MCD/issues/9) / _Iron Man_ `01029a`)
-- **Description:** Continuous aura modifying live effective hand size dynamically during round upkeep and UI rendering. Supports trait scaling and min/max clamping.
+- **Status:** 🟢 `IMPLEMENTED (v1.0)` (Issue [#9](https://github.com/SteveRodrigue/MCD/issues/9), reworked for _Iron Man_ `01029a` in WP2 / [#227](https://github.com/SteveRodrigue/MCD/issues/227); [`getEffectiveHandSize`](../../../src/engine/pipeline/stat-calculator.ts))
+- **Description:** Continuous aura (`CONSTANT`) adding to the live effective hand size during end-of-phase draw/discard and UI rendering. `amount` is a number or a `DynamicValueSource` (see [08. Dynamic Formulas](./09_dynamic_formulas.md)); printed caps are declared with the formula's `clamp.max`. The resulting hand size is never negative; the Rules Reference sets no other bound.
 
 ```json
 {
-  "effect": "MODIFY_HAND_SIZE",
-  "effectParams": {
-    "scaling": "PER_MATCHING_CARD",
-    "filter": {
-      "types": ["upgrade"],
-      "traits": ["Tech"]
-    },
-    "multiplier": 1,
-    "maxHandSize": 7,
-    "applicableForm": "hero"
-  }
+  "id": "iron_man_hand_size",
+  "timing": "CONSTANT",
+  "errata": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum of +6 hand size).",
+  "steps": [
+    {
+      "effect": "MODIFY_HAND_SIZE",
+      "effectParams": {
+        "amount": {
+          "from": "ENTITY_COUNT",
+          "filter": { "types": ["upgrade"], "traits": ["Tech"] },
+          "clamp": { "max": 6 }
+        }
+      }
+    }
+  ]
 }
 ```
 
-| Parameter        | Type                    | Required | Description                                                                                                                                 |
-| :--------------- | :---------------------- | :------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scaling`        | `"PER_MATCHING_CARD"`   | No       | Multiplies count of matching tableau cards.                                                                                                 |
-| `filter`         | `UniversalCardFilter`   | No       | Matching criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade"], "traits": ["Tech"] }`). |
-| `multiplier`     | `number`                | No       | Multiplier per matching card (default `1`).                                                                                                 |
-| `amount`         | `number`                | No       | Flat hand size modifier (`+1`, `-1`).                                                                                                       |
-| `maxHandSize`    | `number`                | No       | Upper clamp (e.g. `7`).                                                                                                                     |
-| `minHandSize`    | `number`                | No       | Lower clamp.                                                                                                                                |
-| `applicableForm` | `"hero" \| "alter_ego"` | No       | Restricts bonus to specific identity form.                                                                                                  |
+| Parameter | Type                           | Required | Description                                                                                                                                                                    |
+| :-------- | :----------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `amount`  | `number \| DynamicValueSource` | Yes      | Hand size modifier. Flat (`+1`, `-1`) or a formula; use `ENTITY_COUNT` with a card filter for "+1 for each ...", `multiplier` for other ratios and `clamp.max` for "to a maximum of +N". |
+
+> **Retired parameters:** `scaling: "PER_MATCHING_CARD"`, `filter`, `multiplier`, `maxHandSize`, `minHandSize` and `applicableForm` were removed. The first three are replaced by the dynamic `amount` above. `maxHandSize` was never read by the engine and `minHandSize` never existed in it. `applicableForm` is redundant: identity abilities are read from the active form card only, so the hero card's ability is inert in alter-ego form.
+>
+> **Errata:** the official errata for Iron Man (`references/rules/appendices/05_card_errata.md`) caps the *bonus* at +6 rather than the total at 7 (same result for his printed hand size of 1). Data follows the errata; the ability records the errata text in its `errata` field.
 
 ---
 

@@ -12,7 +12,7 @@ Order approved by the user on 2026-10-04. Order matters: fix the cards first, th
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 | **C1** | Jessica Jones `01059` invented `maxBonus` cap (engine default 4 too) | _(tracker item, no issue)_ | 1 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_c1_jessica_jones.md) |
 | 2 | **WP1** | Mark V Helmet `01037` `aerialAllSchemes` ignored (supersedes review item A4) | [#226](https://github.com/SteveRodrigue/MCD/issues/226) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp1_mark_v_helmet.md) |
-| 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | Not started |
+| 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp2_iron_man_hand_size.md) |
 | 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | Not started |
 | 5 | **WP3** | Genetically Enhanced `01163` invented key, printed text unmodelled | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | 3 | #209, #218 | Not started |
 | 6 | **WP5** | Guard: unknown `effectParams` key fails the data test | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 2 | C1, WP1-WP4 | Not started |
@@ -44,7 +44,7 @@ Printed: *Jessica Jones gets +1 THW for each side scheme in play.* Data has `max
 - **Fix direction:** two gated steps: `REMOVE_THREAT` on `CHOSEN_SCHEME` (no Aerial) and `REMOVE_THREAT` on `ALL_SCHEMES` (Aerial), gated by a player-trait check (same pattern as Crisis Interdiction `01012`, which uses `IF_CONDITION_MET` with a `trait`). Respect Crisis and Patrol rules when removing from the main scheme.
 - **Acceptance:** with Aerial, one action removes 1 threat from every scheme; without Aerial, one chosen scheme; no `aerialAllSchemes` left in `src/`, specs or tests; regression tests for both cases and for Crisis/Patrol interaction. Also resolves review item A4.
 
-### WP2: Iron Man `01029a` ([#227](https://github.com/SteveRodrigue/MCD/issues/227))
+### WP2: Iron Man `01029a` ([#227](https://github.com/SteveRodrigue/MCD/issues/227)), done 2026-10-04 (plan: [plan_core_review_wp2_iron_man_hand_size.md](plan_core_review_wp2_iron_man_hand_size.md))
 
 - **Printed:** *You get +1 hand size for each Tech upgrade you control (to a maximum hand size of 7).*
 - **Data today:** `MODIFY_HAND_SIZE` with `{ scaling: PER_MATCHING_CARD, filter: {types: [upgrade], traits: [Tech]}, multiplier: 1, maxHandSize: 7, applicableForm: hero }`.
@@ -74,6 +74,8 @@ Printed: *Jessica Jones gets +1 THW for each side scheme in play.* Data has `max
 - **Acceptance:** fails on a fabricated unknown key; passes on all packs with **zero exemptions**; record the decision in an ADR or an ADR addendum.
 
 ### WP6: Retire `scaling` / `multiplier` / `maxBonus` ([#231](https://github.com/SteveRodrigue/MCD/issues/231))
+
+- **Progress:** the `MODIFY_HAND_SIZE` / `PER_MATCHING_CARD` pseudo-primitive was retired in WP2 (Iron Man now uses a dynamic `amount`). Remaining: `PER_SIDE_SCHEME` (Jessica Jones), `PER_DISCARDED_CARD` (Legal Practice), `PER_RESOURCE_SPENT` (Energy Channel).
 
 - **Problem:** card-shaped pseudo-primitives pre-processed in `action-dispatcher.ts` (`PER_DISCARDED_CARD`, `PER_RESOURCE_SPENT`) and `stat-calculator.ts` (`PER_SIDE_SCHEME`, `PER_MATCHING_CARD`), duplicating generic dynamic amounts (`ENTITY_COUNT` etc.). Cards: `01059`, `01023`, `01018`, `01029a`.
 - **Direction:** let CONSTANT `MODIFY_STAT` and `MODIFY_HAND_SIZE` evaluate dynamic `amount` formulas, migrate the four cards, delete the pseudo-primitives from engine, spec and editor registry.

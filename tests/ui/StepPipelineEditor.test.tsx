@@ -427,4 +427,27 @@ describe('StepPipelineEditor', () => {
     ]);
     expect(screen.getByText('Condition Met Gate Parameters')).toBeDefined();
   });
+  it('edits MODIFY_HAND_SIZE amount as a dynamic formula (Iron Man 01029a) with no legacy scaling fields', () => {
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'MODIFY_HAND_SIZE',
+            effectParams: {
+              amount: {
+                from: 'ENTITY_COUNT',
+                filter: { types: ['upgrade'], traits: ['Tech'] },
+                clamp: { max: 6 },
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('Hand Size Delta')).toBeDefined();
+    expect(screen.getByTestId('dynamic-value-multiplier-input')).toBeDefined();
+    expect(screen.queryByTestId('step-param-scaling-0-0')).toBeNull();
+    expect(screen.queryByTestId('step-param-multiplier-0-0')).toBeNull();
+  });
 });

@@ -1053,22 +1053,25 @@
         {
           "id": "iron_man_hand_size",
           "timing": "CONSTANT",
+          "errata": "You get +1 hand size for each [[Tech]] upgrade you control (to a maximum of +6 hand size).",
           "steps": [
             {
               "effect": "MODIFY_HAND_SIZE",
               "effectParams": {
-                "scaling": "PER_MATCHING_CARD",
-                "filter": {
-                  "types": [
-                    "upgrade"
-                  ],
-                  "traits": [
-                    "Tech"
-                  ]
-                },
-                "multiplier": 1,
-                "maxHandSize": 7,
-                "applicableForm": "hero"
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "filter": {
+                    "types": [
+                      "upgrade"
+                    ],
+                    "traits": [
+                      "Tech"
+                    ]
+                  },
+                  "clamp": {
+                    "max": 6
+                  }
+                }
               }
             }
           ]
@@ -1076,8 +1079,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-29T20:49:04Z",
-        "reviewedAt": "2026-09-29T20:49:04Z",
+        "updatedAt": "2026-10-04T18:55",
+        "reviewedAt": "2026-10-04T18:55",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

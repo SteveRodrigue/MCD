@@ -50,6 +50,9 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `errata`                    | `string \| null`               | Optional | Text override if card has official FFG ruling/errata. Renders **[ERRATA]** UI badge.                               |
 
 > [!NOTE]
+> `errata` is also accepted on an individual ability (`CardAbility.errata`). Use it when the official errata (`references/rules/appendices/05_card_errata.md`) differs from the upstream printed text that `audit.originalText` mirrors, and model the **errata** wording in the steps. Example: _Iron Man_ `01029a` records "(to a maximum of +6 hand size)" where the printed card says "(to a maximum hand size of 7)".
+
+> [!NOTE]
 > Root-level `comment` was decommissioned and encapsulated into `audit.comment` per [ADR-0067](../../decisions/0067-encapsulating-supplemental-comments-into-audit-metadata.md). Root `comment` is strictly rejected by `CardEnrichmentSchema`.
 
 > [!NOTE]

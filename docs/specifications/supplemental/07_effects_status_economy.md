@@ -65,7 +65,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   - `'ALL_ALLIES'`: Exhausts all allies in the player's control.
   - `'CHOSEN_CHARACTER'`: Exhausts chosen identity or ally.
   - `'ALL_CHARACTERS'`: Exhausts identity and all allies in play.
-  - `'VILLAIN'`: Exhausts the active villain (`state.villain.exhausted = true`).
+  - `'VILLAIN'`: Exhausts the active villain (`getActiveVillain(state).exhausted = true`).
   - `'CHOSEN_MINION'` / `'ALL_MINIONS'`: Exhausts targeted or all engaged minions.
   - `'ALL_CONTROLLED_TABLEAU'`: Every card in the player's tableau; combine with `filter` (e.g. `{ "types": ["upgrade"] }`) to exhaust "each upgrade you control" (*Business Problems* `01170`).
   - **`filter` (optional):** a `UniversalCardFilter` that narrows the resolved targets (evaluated with `matchesCardFilter` against each target's card). A filter that matches nothing is a **no-op**: it never falls back to exhausting the identity.

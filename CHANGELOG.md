@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine, UI & Docs): Replace `state.villain` / `state.mainScheme` legacy pointers with typed accessors ([Issue #194](https://github.com/SteveRodrigue/MCD/issues/194))**
+  - **Engine (`models/state.ts`):** `villains[]` / `mainSchemes[]` are canonical and the active villain is identified by `activeVillainId` (replaces `activeVillainIndex`; the MC03 active counter). New `getVillainsInPlay`, `setActiveVillain`, `replaceVillain`, `removeVillain`, `getMainSchemesInPlay`, `replaceActiveMainScheme` and `cloneGameState`; the legacy `villain` / `mainScheme` fields are `@deprecated` (removal in #215). All reads and writes in `effects/`, `pipeline/`, `state/`, `triggers/`, `queries/`, `specials/`, `simulation/`, the three scenario plugins and the board UI now go through the accessors.
+  - **Bug fix:** state cloning (`dispatchAction`, villain phase, simulator) split the legacy pointers from the collections, so accessor reads saw stale villain data after a dispatch. `cloneGameState` re-links them (temporary, removed with #215).
+  - **Multi-villain readiness (no behavior change for core scenarios):** the attacking villain is fixed at initiation (`AttackExecutionContext.attackerVillainId`), `BASIC_ATTACK` / `ALLY_ATTACK` and chosen-target damage accept any villain in play by id, enemy and character target selectors list every villain, and Crisis, unicity and attachment checks span all villains. Follow-ups for Wrecking Crew: #210, #211, #212, #213, #214, #215.
+  - **Documentation:** New [ADR-0076](docs/decisions/0076-active-villain-id-and-multi-villain-accessors.md); spec, rules-reference and visual-guide wording updated.
+  - **Automated Verification (`active-villain-accessors.test.ts`, `legacy-villain-pointer-guard.test.ts`):** 27 tests for the accessors and setters, four-villain targeting, by-id attacks and attachments, the fixed attacker, and an architecture guard that blocks new uses of the legacy pointers.
+
 - **Feat (Engine & Data): Remaining core obligations, zone-generic tableau selector, `ADD_ACCELERATION` ([Issue #158](https://github.com/SteveRodrigue/MCD/issues/158))**
   - **Engine:** New zone-generic target selector `ALL_CONTROLLED_TABLEAU`; `EXHAUST` and `READY` now honor the `filter` parameter (a filter matching nothing is a no-op, never an identity fallback); new `ADD_ACCELERATION` primitive.
   - **Supplemental Data (`core_encounter.json`):** _Legal Work_ `01160` and _Business Problems_ `01170` replace their placeholder entries; all five core obligations are now integrated.

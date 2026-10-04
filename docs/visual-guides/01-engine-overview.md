@@ -60,8 +60,8 @@ flowchart TD
 ```mermaid
 flowchart TB
     subgraph Shared["Shared In-Play Area"]
-        Villain["state.villain<br/>+ attachments"]
-        MainScheme["state.mainScheme"]
+        Villain["state.villains[]<br/>(active villain id)<br/>+ attachments"]
+        MainScheme["state.mainSchemes[]"]
         SideSchemes["state.sideSchemes[]"]
         EncounterDeck["state.encounterDeck / encounterDiscard"]
         Boost["state.activeBoostCard"]

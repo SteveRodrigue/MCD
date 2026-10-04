@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard, NormalizedCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { assertCardConservation } from '@engine/state/state-validator';
 
@@ -44,7 +44,7 @@ describe('Core obligations: resolution flow (Issue #158, RR v1.8 Obligation)', (
 
   function reveal(code: string, dealtTo = 'p1'): GameState {
     p(state, dealtTo).dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(code)!));
-    return step5_revealEncounterCards(state);
+    return step4_revealEncounterCards(state);
   }
 
   const choose = (s: GameState, playerId: string, optionId: string) =>
@@ -147,7 +147,7 @@ describe('Core obligations: resolution flow (Issue #158, RR v1.8 Obligation)', (
       const empty = game();
       p(empty, 'p1').hand = [];
       p(empty, 'p1').dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01165')!));
-      const emptyReveal = step5_revealEncounterCards(empty);
+      const emptyReveal = step4_revealEncounterCards(empty);
       const deckBeforeEmpty = emptyReveal.encounterDeck.length;
       const { state: emptyAfter } = choose(emptyReveal, 'p1', 'take_effect');
       expect(p(emptyAfter, 'p1').hand).toEqual([]);

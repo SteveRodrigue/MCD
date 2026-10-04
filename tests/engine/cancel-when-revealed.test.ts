@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { canPayAbilityCost } from '@engine/pipeline/cost-engine';
 
@@ -47,7 +47,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     expect(state.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
 
     // Execute encounter card reveal with automatic interrupt trigger acceptance
-    const nextState = step5_revealEncounterCards(state, { acceptOptionalTriggers: true });
+    const nextState = step4_revealEncounterCards(state, { acceptOptionalTriggers: true });
 
     // Treachery was cancelled: player is NOT confused
     expect(nextState.players[0].statusCards).not.toContain(StatusCard.CONFUSED);
@@ -66,7 +66,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
     // Reveal encounter cards without auto-accept -> should enqueue decision prompt
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     expect(peekDecisionPrompt(nextState)).toBeDefined();
     expect(peekDecisionPrompt(nextState)?.sourceCardName).toBe('Enhanced Spider-Sense');
@@ -93,7 +93,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
     // Reveal encounter cards without auto-accept -> should enqueue decision prompt
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player chooses "pass"
@@ -139,7 +139,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
 
     const initialHp = state.players[0].health;
 
-    const nextState = step5_revealEncounterCards(state, { acceptOptionalTriggers: true });
+    const nextState = step4_revealEncounterCards(state, { acceptOptionalTriggers: true });
 
     // Shocker's When Revealed damage was cancelled: hero HP unchanged
     expect(nextState.players[0].health).toBe(initialHp);
@@ -162,7 +162,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     const falseAlarm = createCardInstance(cardCatalog.getCard('01112')!);
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     // Prompt is suppressed: cannot afford cost
     expect(peekDecisionPrompt(nextState)).toBeUndefined();
@@ -205,7 +205,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     const falseAlarm = createCardInstance(cardCatalog.getCard('01112')!);
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     const yesOption = peekDecisionPrompt(nextState)!.options.find((o) => o.id !== 'pass')!;
@@ -243,7 +243,7 @@ describe('Encounter Cancellation & CANCEL_WHEN_REVEALED Primitive (Issue #1)', (
     const falseAlarm = createCardInstance(cardCatalog.getCard('01112')!);
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     const yesOption = peekDecisionPrompt(nextState)!.options.find((o) => o.id !== 'pass')!;

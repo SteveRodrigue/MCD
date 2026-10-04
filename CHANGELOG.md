@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine & UI): Phase 4 audit cleanups, group A ([#195](https://github.com/SteveRodrigue/MCD/issues/195), [#192](https://github.com/SteveRodrigue/MCD/issues/192), [#196](https://github.com/SteveRodrigue/MCD/issues/196), [#197](https://github.com/SteveRodrigue/MCD/issues/197), [#198](https://github.com/SteveRodrigue/MCD/issues/198))**
+  - **#195:** the encounter deal in villain phase step 3 now logs `villainPhase.step3.encounterCardsDealt` (was `step4`); no locale entry added, like every other engine log key.
+  - **#192:** removed the `step2_villainActivations`, `step4_dealEncounterCards` and `step5_revealEncounterCards` aliases from `villain-phase.ts`; 17 test files and the internal callers use the canonical names, and `villain-phase-order.test.ts` now asserts the aliases are gone.
+  - **#196:** removed the ambiguous `ScenarioDefinition` alias from `scenarios/catalog.ts` (`getScenario` / `listScenarios` return `LegacyScenarioDefinition`).
+  - **#197, #198:** removed dead `as any` probes in `CardView` (`isFacedown` comes from its prop only) and dead raw-field fallbacks (`faction_code`, `set_code`, `type_code`) in `PlayerHandTray`.
+  - **Automated Verification:** new step 3 log key test in `villain-phase.test.ts`; full suite 1,666 tests.
+
 - **Refactor (Engine, UI & Docs): Replace `state.villain` / `state.mainScheme` legacy pointers with typed accessors ([Issue #194](https://github.com/SteveRodrigue/MCD/issues/194))**
   - **Engine (`models/state.ts`):** `villains[]` / `mainSchemes[]` are canonical and the active villain is identified by `activeVillainId` (replaces `activeVillainIndex`; the MC03 active counter). New `getVillainsInPlay`, `setActiveVillain`, `replaceVillain`, `removeVillain`, `getMainSchemesInPlay`, `replaceActiveMainScheme` and `cloneGameState`; the legacy `villain` / `mainScheme` fields are `@deprecated` (removal in #215). All reads and writes in `effects/`, `pipeline/`, `state/`, `triggers/`, `queries/`, `specials/`, `simulation/`, the three scenario plugins and the board UI now go through the accessors.
   - **Bug fix:** state cloning (`dispatchAction`, villain phase, simulator) split the legacy pointers from the collections, so accessor reads saw stale villain data after a dispatch. `cloneGameState` re-links them (temporary, removed with #215).

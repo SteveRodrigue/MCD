@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { HeroCard, AlterEgoCard, SideSchemeCard } from '@engine/models';
 import { setupGame } from '@engine/state/game-setup';
-import { step4_dealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step3_dealEncounterCards } from '@engine/pipeline/villain-phase';
 
 describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic Mode (RR v1.8 p. 11, p. 22)', () => {
   let spiderManHero: HeroCard;
@@ -61,7 +61,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     ];
 
     state.firstPlayerIndex = 0; // P1 starts
-    step4_dealEncounterCards(state);
+    step3_dealEncounterCards(state);
 
     // Base pass: P1=1, P2=1, P3=1
     // Hazard pass: Hazard 1 -> P1, Hazard 2 -> P2
@@ -105,7 +105,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     ];
 
     state.firstPlayerIndex = 1; // P2 (Captain Marvel) starts!
-    step4_dealEncounterCards(state);
+    step3_dealEncounterCards(state);
 
     // Base pass: P2=1, P1=1
     // Hazard pass: Hazard 1 -> P2, Hazard 2 -> P1, Hazard 3 -> P2
@@ -143,7 +143,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     });
 
     // No hazard icons
-    step4_dealEncounterCards(state);
+    step3_dealEncounterCards(state);
 
     // Each player gets 1 base + 1 heroic = 2 cards
     expect(state.players[0].dealtEncounterCards.length).toBe(2);
@@ -185,7 +185,7 @@ describe('Step 4 Deal Encounter Cards: Sequential Hazard Distribution & Heroic M
     ];
 
     state.firstPlayerIndex = 0; // P1 starts
-    step4_dealEncounterCards(state);
+    step3_dealEncounterCards(state);
 
     // Base pass: P1=3, P2=3 (Heroic 2)
     // Hazard pass: Hazard 1 -> P1 (+1)

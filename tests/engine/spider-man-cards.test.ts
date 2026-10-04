@@ -4,7 +4,7 @@ import {
   setupGame,
   resetInstanceCounter,
   dispatchAction,
-  step2_villainActivations,
+  step2_villainAndMinionActivations,
   VillainCard,
   MainSchemeCard,
   createCardInstance,
@@ -71,7 +71,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       const initialDeckCount = gameState.players[0].deck.length;
 
       // Step 2 Villain activates against hero
-      step2_villainActivations(gameState, { acceptOptionalTriggers: true });
+      step2_villainAndMinionActivations(gameState, { acceptOptionalTriggers: true });
 
       // Spider-Sense triggered: hand should have drawn 1 card
       expect(gameState.players[0].hand.length).toBe(1);
@@ -93,7 +93,7 @@ describe('Spider-Man Signature Cards & Data-Driven Triggers (RR v1.8 & ADR-0008)
       const initialHealth = gameState.players[0].health; // 10
 
       // Step 2 Villain Attacks (with TAKE_UNDEFENDED to reach damage calculation step)
-      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+      step2_villainAndMinionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // All damage prevented by Backflip (HP remains 10)
       expect(gameState.players[0].health).toBe(initialHealth);

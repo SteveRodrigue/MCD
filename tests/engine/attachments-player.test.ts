@@ -10,7 +10,7 @@ import {
 } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
-import { step2_villainActivations } from '@engine/pipeline/villain-phase';
+import { step2_villainAndMinionActivations } from '@engine/pipeline/villain-phase';
 import { getEffectiveAllyStats } from '@engine/pipeline/stat-calculator';
 import { canPlayCard, evaluateCardPlayability } from '@engine/pipeline/legality-checker';
 import { getLegalActionsForPlayer } from '@engine/pipeline/legal-actions-generator';
@@ -85,7 +85,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     const initialHeroHp = state.players[0].health;
 
     // Execute step 2 villain activations (Rhino would attack Spider-Man in hero form)
-    const nextState = step2_villainActivations(state);
+    const nextState = step2_villainAndMinionActivations(state);
 
     // Attack must be cancelled
     expect(nextState.players[0].health).toBe(initialHeroHp);

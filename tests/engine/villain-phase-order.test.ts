@@ -10,10 +10,9 @@ import {
 } from '@engine/index';
 import * as triggers from '@engine/triggers';
 import {
+  step2_villainAndMinionActivations,
   step3_dealEncounterCards,
-  step4_dealEncounterCards,
   step4_revealEncounterCards,
-  step5_revealEncounterCards,
   step5_passFirstPlayerToken,
   step6_endVillainPhaseAndRound,
   step6_passFirstPlayerAndRoundUpkeep,
@@ -194,14 +193,11 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
     expect(snapshot.usedAbilitiesThisPhase).toEqual({});
   });
 
-  it('c) Step function exports and backward-compatible aliases exist', () => {
+  it('c) Canonical step functions are exported and the retired step aliases are gone', () => {
     // Named imports check
+    expect(typeof step2_villainAndMinionActivations).toBe('function');
     expect(typeof step3_dealEncounterCards).toBe('function');
-    expect(typeof step4_dealEncounterCards).toBe('function');
-    expect(step4_dealEncounterCards).toBe(step3_dealEncounterCards);
     expect(typeof step4_revealEncounterCards).toBe('function');
-    expect(typeof step5_revealEncounterCards).toBe('function');
-    expect(step5_revealEncounterCards).toBe(step4_revealEncounterCards);
     expect(typeof step5_passFirstPlayerToken).toBe('function');
     expect(typeof step6_endVillainPhaseAndRound).toBe('function');
     expect(typeof step6_passFirstPlayerAndRoundUpkeep).toBe('function');
@@ -209,15 +205,14 @@ describe('Villain Phase End Ordering & RR v1.8 Step Alignment (Issue #145)', () 
     const vp = villainPhase as any;
     const ru = roundUpkeep as any;
 
-    // Step 3 / 4 deal encounter cards
-    expect(typeof vp.step3_dealEncounterCards).toBe('function');
-    expect(typeof vp.step4_dealEncounterCards).toBe('function');
-    expect(vp.step4_dealEncounterCards).toBe(vp.step3_dealEncounterCards);
+    // Aliases from the old step numbering (#192) are no longer exported
+    expect(vp.step2_villainActivations).toBeUndefined();
+    expect(vp.step4_dealEncounterCards).toBeUndefined();
+    expect(vp.step5_revealEncounterCards).toBeUndefined();
 
-    // Step 4 / 5 reveal encounter cards
+    expect(typeof vp.step2_villainAndMinionActivations).toBe('function');
+    expect(typeof vp.step3_dealEncounterCards).toBe('function');
     expect(typeof vp.step4_revealEncounterCards).toBe('function');
-    expect(typeof vp.step5_revealEncounterCards).toBe('function');
-    expect(vp.step5_revealEncounterCards).toBe(vp.step4_revealEncounterCards);
 
     // Step 5 pass first player token
     expect(typeof vp.step5_passFirstPlayerToken).toBe('function');

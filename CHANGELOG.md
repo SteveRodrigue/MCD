@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): Wakanda Forever! pauses for mid-sequence decision prompts ([Issue #207](https://github.com/SteveRodrigue/MCD/issues/207))**
+  - **Engine (`specials/wakanda-forever.ts`, `special-registry.ts`, `action-dispatcher.ts`, `models/state.ts`):** upgrades now resolve one at a time from `GameState.pendingSpecialSequence`; a step that opens a prompt (Energy Daggers choosing a player) pauses the remaining steps, and `dispatchAction` resumes them once the prompt queue is empty. Before, later steps resolved first (for example Panther Claws removed Tough before Daggers, so a Daggers-then-Claws sequence dealt 1 damage instead of 4 against a Tough villain). Removed the dead card-coded fallbacks for `01047`-`01049` (tracker item F1).
+  - **Documentation:** ADR-0038 addendum; `02_timings_and_triggers.md` (`SPECIAL` resume semantics).
+  - **Automated Verification (`wakanda-forever-prompt-order.test.ts`):** 5 tests (Tough-villain order, Daggers in the middle of three, clean completion, prompt-free sequence, unrelated queued prompt).
+  - **Follow-up:** [#225](https://github.com/SteveRodrigue/MCD/issues/225), `executeSequence` swallows step failures.
+
 - **Fix (Engine, Data & Editor): Timed trait grants; Rocket Boots now gives Aerial ([Issue #131](https://github.com/SteveRodrigue/MCD/issues/131))**
   - **Engine:** `ADD_TRAIT` works as an effect step (it was only evaluated for CONSTANT abilities, so Rocket Boots paid its cost and granted nothing). The trait goes on the resolving player's identity as a new `PlayerState.activeTraitModifiers` entry; default duration is **while the source card stays in play**, or an explicit `PHASE`/`ROUND`/`TURN`. Expiry follows the stat-modifier sites (player phase start and end, villain phase, round upkeep). `findInPlayCardInstance` moved to `state/state-validator.ts` to avoid a dependency cycle.
   - **Supplemental Data (`core.json`):** _Rocket Boots_ `01039` Hero Action now targets `SELF_IDENTITY` (it targeted the boots card) with `duration: "PHASE"`.

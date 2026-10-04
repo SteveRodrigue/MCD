@@ -1,19 +1,7 @@
-import {
-  GameState,
-  CardInstance,
-  getActiveVillain,
-  getActiveMainScheme,
-  getVillainById,
-} from '../models';
-import {
-  EffectExecutionContext,
-  EffectResult,
-  executeSequence,
-  defeatSideScheme,
-} from '../effects';
+import { GameState, CardInstance } from '../models';
+import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
-import { getEffectiveMaxHealth } from '../pipeline/stat-calculator';
 import { cardCatalog } from '../../data/importer/card-loader';
 
 export const BLACK_PANTHER_UPGRADE_CODES = ['01046', '01047', '01048', '01049'];
@@ -44,7 +32,6 @@ export function resolveSingleWakandaUpgrade(
   targetSchemeId?: string,
 ): void {
   const player = state.players.find((p) => p.id === playerId) || state.players[0];
-  const code = upgrade.card.code;
 
   const specialAbility =
     upgrade.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
@@ -60,84 +47,45 @@ export function resolveSingleWakandaUpgrade(
     });
     return;
   }
+}
 
-  if (code === '01047') {
-    // 2. Panther Claws: 2 damage to enemy (4 if final)
-    const dmg = isFinalStep ? 4 : 2;
-    if (targetEnemyId && targetEnemyId !== 'villain') {
-      let targetMinion: CardInstance | undefined;
-      for (const p of state.players) {
-        targetMinion = p.engagedMinions.find((m) => m.instanceId === targetEnemyId);
-        if (targetMinion) break;
-      }
-      if (targetMinion) {
-        const curDmg = targetMinion.tokens?.damage || 0;
-        targetMinion.tokens = { ...targetMinion.tokens, damage: curDmg + dmg };
-      } else {
-        const villain = getVillainById(state, targetEnemyId) ?? getActiveVillain(state);
-        villain.health = Math.max(0, villain.health - dmg);
-      }
-    } else {
-      const villain = getActiveVillain(state);
-      villain.health = Math.max(0, villain.health - dmg);
+/**
+ * Resolves the pending Wakanda Forever! upgrades one at a time, in the chosen order. When a step
+ * opens a decision prompt (e.g. Energy Daggers choosing a player) and more steps remain, the
+ * sequence pauses with the rest saved in `state.pendingSpecialSequence`; `resume` continues it once
+ * the prompt is answered (#207). The finisher flag is fixed by list position (the last step).
+ */
+function runWakandaSequence(state: GameState): { resolved: number; paused: boolean } {
+  const pending = state.pendingSpecialSequence;
+  if (!pending) return { resolved: 0, paused: false };
+  const player = state.players.find((p) => p.id === pending.playerId) || state.players[0];
+  let resolved = 0;
+
+  while (pending.remainingUpgradeIds.length > 0) {
+    const upgradeId = pending.remainingUpgradeIds.shift()!;
+    const isFinal = pending.remainingUpgradeIds.length === 0;
+    const upgrade = player.tableau.find((t) => t.instanceId === upgradeId);
+    if (!upgrade) continue;
+
+    const promptsBefore = state.pendingDecisionQueue?.length ?? 0;
+    resolveSingleWakandaUpgrade(
+      state,
+      upgrade,
+      player.id,
+      isFinal,
+      pending.targetEnemyId,
+      pending.targetSchemeId,
+    );
+    resolved++;
+
+    const opensPrompt = (state.pendingDecisionQueue?.length ?? 0) > promptsBefore;
+    if (opensPrompt && pending.remainingUpgradeIds.length > 0) {
+      return { resolved, paused: true };
     }
-    state.log.push({
-      id: `log_${Date.now()}_${code}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      category: 'combat',
-      key: 'special.panther_claws',
-      params: { player: player.name, amount: dmg, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep ? 'PANTHER CLAWS FINISHER! (4 DMG)' : 'PANTHER CLAWS! (2 DMG)',
-    });
-  } else if (code === '01048') {
-    // 3. Tactical Genius: 1 threat removed from scheme (2 if final)
-    const thw = isFinalStep ? 2 : 1;
-    if (targetSchemeId && targetSchemeId !== 'main_scheme') {
-      const sideScheme = state.sideSchemes.find((s) => s.instanceId === targetSchemeId);
-      if (sideScheme) {
-        sideScheme.threat = Math.max(0, sideScheme.threat - thw);
-        if (sideScheme.threat <= 0) {
-          defeatSideScheme(state, sideScheme.instanceId, player.id);
-        }
-      } else {
-        getActiveMainScheme(state).threat = Math.max(0, getActiveMainScheme(state).threat - thw);
-      }
-    } else {
-      getActiveMainScheme(state).threat = Math.max(0, getActiveMainScheme(state).threat - thw);
-    }
-    state.log.push({
-      id: `log_${Date.now()}_${code}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      category: 'scheme',
-      key: 'special.tactical_genius',
-      params: { player: player.name, amount: thw, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep
-        ? 'TACTICAL GENIUS FINISHER! (2 THREAT)'
-        : 'TACTICAL GENIUS! (1 THREAT)',
-    });
-  } else if (code === '01049') {
-    // 4. Panther Suit: Move 1 damage from identity to enemy (2 if final)
-    const moveAmt = isFinalStep ? 2 : 1;
-    const maxHp = getEffectiveMaxHealth(player, state);
-    player.health = Math.min(maxHp, player.health + moveAmt);
-    getActiveVillain(state).health = Math.max(0, getActiveVillain(state).health - moveAmt);
-    state.log.push({
-      id: `log_${Date.now()}_${code}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      category: 'ability',
-      key: 'special.panther_suit',
-      params: { player: player.name, amount: moveAmt, isFinal: isFinalStep },
-      onomatopoeia: isFinalStep
-        ? 'PANTHER SUIT FINISHER! (MOVE 2 DMG)'
-        : 'PANTHER SUIT! (MOVE 1 DMG)',
-    });
   }
+
+  delete state.pendingSpecialSequence;
+  return { resolved, paused: false };
 }
 
 export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
@@ -146,6 +94,16 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
     const upgrades = getPlayerBlackPantherUpgrades(player);
     return upgrades.length > 0;
+  },
+  resume: (state: GameState): EffectResult => {
+    const { resolved, paused } = runWakandaSequence(state);
+    return {
+      state,
+      success: true,
+      mutatedState: resolved > 0,
+      value: resolved,
+      onomatopoeia: paused ? 'SELECT WAKANDA TARGET ➔' : '⚡ WAKANDA FOREVER! ⚡',
+    };
   },
   execute: (state: GameState, context: EffectExecutionContext, payload?: any): EffectResult => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
@@ -159,16 +117,20 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       };
     }
 
+    const startSequence = (upgrades: CardInstance[]) => {
+      state.pendingSpecialSequence = {
+        specialId: 'WAKANDA_FOREVER',
+        playerId: player.id,
+        remainingUpgradeIds: upgrades.map((u) => u.instanceId),
+        targetEnemyId: payload?.targetEnemyId,
+        targetSchemeId: payload?.targetSchemeId,
+      };
+      return runWakandaSequence(state);
+    };
+
     // 1. Single upgrade in play: Immediately resolves with Finisher bonus
     if (availableUpgrades.length === 1) {
-      resolveSingleWakandaUpgrade(
-        state,
-        availableUpgrades[0],
-        player.id,
-        true,
-        payload?.targetEnemyId,
-        payload?.targetSchemeId,
-      );
+      startSequence(availableUpgrades);
       return {
         state,
         success: true,
@@ -195,26 +157,16 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
         }
       }
 
-      for (let i = 0; i < orderedUpgrades.length; i++) {
-        const upgrade = orderedUpgrades[i];
-        const isFinal = i === orderedUpgrades.length - 1;
-        resolveSingleWakandaUpgrade(
-          state,
-          upgrade,
-          player.id,
-          isFinal,
-          payload.targetEnemyId,
-          payload.targetSchemeId,
-        );
-      }
+      const { resolved, paused } = startSequence(orderedUpgrades);
 
-      const onomatopoeia = `⚡ WAKANDA FOREVER! (${orderedUpgrades.length} UPGRADES RESOLVED) ⚡`;
       return {
         state,
         success: true,
         mutatedState: true,
-        value: orderedUpgrades.length,
-        onomatopoeia,
+        value: resolved,
+        onomatopoeia: paused
+          ? 'SELECT WAKANDA TARGET ➔'
+          : `⚡ WAKANDA FOREVER! (${orderedUpgrades.length} UPGRADES RESOLVED) ⚡`,
       };
     }
 

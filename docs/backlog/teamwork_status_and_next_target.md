@@ -143,7 +143,7 @@ flowchart TD
 | **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (Phase 5, data fix + audit) |
 | **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟢 **Resolved** (Phase 5, validated: no defect) |
 | **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟢 **Resolved** (Phase 5) |
-| **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟡 **Open** (Phase 5) |
+| **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟢 **Resolved** (Phase 5) |
 | **P3** | **#210-#215** | Multi-villain follow-ups for MC03 Wrecking Crew (encounter decks, side schemes and scheme threat, targeting/Guard/win, active counter effects, scenario plugin, legacy field removal) | Engine/Data | Medium | M-L | 🟡 **Open** (no immediate impact) |
 | **P3** | **#216** | STAT_VALUE DAMAGE reads nonexistent villain/minion `damage` | Engine | Low | XS | 🟡 **Open** |
 | **P3** | **#217** | Flaky obligation rule 2 test (shuffle-dependent) | Tests | Low | XS | 🟡 **Open** |
@@ -196,7 +196,7 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
   1. ✅ **#133** Hydra Bomber (01110): damage scoped to the revealing player. Audit of the same `HERO` pattern (`plan_hero_target_audit.md`): `01191` fixed, six placeholder cards stripped with ambiguity reports. Engine prerequisites filed: #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 damage gate, #222 form-literal "your hero" selector, #223 named-minion attack.
   2. ✅ **#132** Imminent Overload (01171): validated by test; the card prints an Acceleration icon (not Crisis) and the engine matches the printed text. Follow-up #224 (acceleration icons outside side schemes).
   3. ✅ **#131** Rocket Boots (01039): same defect as review item A3 (the Aerial grant is never applied); Tier 2/3, needs an engine primitive and Card Editor parameter work (M).
-  4. 🎯 **#207** Wakanda Forever! sequence pausing, then follow-up F1 (M).
+  4. ✅ **#207** Wakanda Forever! sequence pausing and follow-up F1 (resumable `pendingSpecialSequence`, ADR-0038 addendum). Follow-up #225 (`executeSequence` swallows step failures). **Track A is complete.**
 - **Track B, core player cards review tracker** (`plan_core_player_cards_review.md`, living, one item at a time): A1 is done (`a6c5397`). Remaining order from the tracker: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A3-A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
 - **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
 ### Phase 6: Supplemental Data Pass (postponed) — #100
@@ -214,7 +214,7 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 5, Track A, step 4: Issue #207** (Wakanda Forever! sequence pausing, plus follow-up F1). Then Track B (core player cards review) and the engine issues #218-#223. Engine issues #218-#223 unblock the six stripped cards (do before or alongside #131/#207). Needs a plan before implementation.
+   - Primary: **Phase 5, Track B** (core player cards review, one item at a time per `plan_core_player_cards_review.md`) together with the engine issues #218-#223 and #225 that unblock the stripped encounter cards. Next item to pick: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test). Engine issues #218-#223 unblock the six stripped cards (do before or alongside #131/#207). Needs a plan before implementation.
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

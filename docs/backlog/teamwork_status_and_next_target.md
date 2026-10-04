@@ -1,9 +1,9 @@
 # MCD Backlog Dependency, Prioritization Map & Teamwork Status
 
-> **Last Updated:** 2026-10-03 (#194 resolved)  
-> **Repository Commit:** `11067bc` (local `main`, plus the #194 closing commit)  
+> **Last Updated:** 2026-10-04 (Phase 4 complete, Phase 5 defined)  
+> **Repository Commit:** `f9dd6b8` (`origin/main`)  
 > **Release Gate:** Gate 1 ("Rhino Release" Vertical Slice — 100% Core 5 Heroes vs. Rhino)  
-> **Verification Status:** 🟢 All 1,665 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
+> **Verification Status:** 🟢 All 1,667 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
 
 ---
 
@@ -96,6 +96,8 @@ flowchart TD
 | **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🟢 **Resolved** (`2cc63df`, `b205d7c`). All five core obligations integrated: `PlayerState.obligations` zone, hero-set default recipient + optional `recipient` override (proof card `56128b`), `ENTERS_PLAY` resolution ability with `PLAYER_CHOICE` option `gate`/`cost`, `REMOVE_FROM_GAME`, `ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU` + `filter` (ADR-0075). |
 | **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
 | **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | Iron Man upgrade: +1 HP and Aerial trait generation. Needs supplemental audit to verify constant HP bonus and active ability. |
+| **#132** | **Imminent Overload (01171)** | `core_encounter.json` (`01171`) | Player asks to validate the Crisis icon behavior on this treachery/side scheme. Needs a failing or confirming test against the Crisis legality rules (RR v1.8 Crisis icon). |
+| **#207** | **Wakanda Forever! sequence ignores mid-sequence prompts** | `specials/wakanda-forever.ts` | Steps after a prompting step resolve before it; reproduced with Energy Daggers and a Tough villain (ADR-0038 ordering). Includes follow-up F1 (dead `01047`-`01049` fallbacks). |
 
 ---
 
@@ -136,6 +138,11 @@ flowchart TD
 | **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟢 **Resolved** (`0acc25f`) |
 | **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (`608a19a`) |
 | **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / ~520 Call Sites | L | 🟢 **Resolved** (`ba31d33`..`11067bc`) |
+| **P2** | **#100** | New pass on card supplemental data (postponed, was P0) | Card Data | High / all cards | L | ⏸️ **Postponed** (Phase 6) |
+| **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟡 **Open** (Phase 5) |
+| **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟡 **Open** (Phase 5) |
+| **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟡 **Open** (Phase 5) |
+| **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟡 **Open** (Phase 5) |
 | **P3** | **#210-#215** | Multi-villain follow-ups for MC03 Wrecking Crew (encounter decks, side schemes and scheme threat, targeting/Guard/win, active counter effects, scenario plugin, legacy field removal) | Engine/Data | Medium | M-L | 🟡 **Open** (no immediate impact) |
 | **P3** | **#216** | STAT_VALUE DAMAGE reads nonexistent villain/minion `damage` | Engine | Low | XS | 🟡 **Open** |
 | **P3** | **#217** | Flaky obligation rule 2 test (shuffle-dependent) | Tests | Low | XS | 🟡 **Open** |
@@ -180,6 +187,22 @@ flowchart TD
 - ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes (plan: `plan_phase4_audit_cleanups_a.md`).
 - ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports (plan: `plan_phase4_audit_cleanups_b.md`). Phase 4 is complete.
 
+### Phase 5: Core Set Card Correctness (Gate 1 release gate) — Next 🎯
+
+Goal: the Core Set cards used by the Rhino vertical slice do what the printed text says. Two tracks:
+
+- **Track A, reported card bugs (do first):**
+  1. 🎯 **#133** Hydra Bomber (01110): scope the 2 damage to the right heroes (XS, data).
+  2. **#132** Imminent Overload (01171): confirm or fix Crisis behavior with a test (S).
+  3. **#131** Rocket Boots (01039): same defect as review item A3 (the Aerial grant is never applied); Tier 2/3, needs an engine primitive and Card Editor parameter work (M).
+  4. **#207** Wakanda Forever! sequence pausing, then follow-up F1 (M).
+- **Track B, core player cards review tracker** (`plan_core_player_cards_review.md`, living, one item at a time): A1 is done (`a6c5397`). Remaining order from the tracker: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A3-A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
+- **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
+### Phase 6: Supplemental Data Pass (postponed) — #100
+
+- **#100** "New pass on card supplemental data" is **postponed** (downgraded from P0-blocker to P2-medium).
+- **Why:** Phase 5 and the core review tracker may still change primitives, triggers, filters and parameters; a full pass now would be redone. Start it only after Phase 5 is finished, on a stable engine contract.
+
 ---
 
 ## 6. Handoff Protocol for Resuming Agents & Developers
@@ -190,7 +213,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Phase 4 is complete. Next candidate chain: the open Core Set card bugs #131, #132, #133 (Gate 1 release gate), or #207 (Wakanda Forever sequence).
+   - Primary: **Phase 5, Track A, step 1: Issue #133** (Hydra Bomber). Then #132, #131 (= review item A3), #207. Needs a plan before implementation.
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

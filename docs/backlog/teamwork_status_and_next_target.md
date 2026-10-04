@@ -144,11 +144,11 @@ flowchart TD
 | **P3** | **#196** | Remove ambiguous ScenarioDefinition alias [AUD-F005] | Refactor | Low / Catalog Types | XS | 🟢 **Resolved** (Phase 4 group A) |
 | **P3** | **#197** | Remove dead isFacedown probes in CardView [AUD-F006] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (Phase 4 group A) |
 | **P3** | **#198** | Remove dead raw field fallbacks in PlayerHandTray [AUD-F007] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#161** | Exhausted hero card layering behind health bar | UI | Low / CSS Stacking | XS | 🟡 **Open** |
-| **P3** | **#199** | act(...) warnings in CardView image tests [AUD-OQ-01] | Refactor | Low / Vitest Output | S | 🟡 **Open** |
-| **P3** | **#200** | Main JS bundle exceeds 500 kB [AUD-OQ-02] | UI/Perf | Medium / Bundler | M | 🟡 **Open** |
-| **P3** | **#201** | normalizeCardCodeForArt dead export [AUD-OQ-03] | Refactor | Low / Service | XS | 🟡 **Open** |
-| **P3** | **#202** | Tighten customActionHandlers action:any [AUD-OQ-04] | Engine | Low / Types | S | 🟡 **Open** |
+| **P3** | **#161** | Exhausted hero card layering behind health bar | UI | Low / CSS Stacking | XS | 🟢 **Resolved** (Phase 4 group B) |
+| **P3** | **#199** | act(...) warnings in CardView image tests [AUD-OQ-01] | Refactor | Low / Vitest Output | S | 🟢 **Resolved** (Phase 4 group B) |
+| **P3** | **#200** | Main JS bundle exceeds 500 kB [AUD-OQ-02] | UI/Perf | Medium / Bundler | M | 🟢 **Resolved** (Phase 4 group B) |
+| **P3** | **#201** | normalizeCardCodeForArt dead export [AUD-OQ-03] | Refactor | Low / Service | XS | 🟢 **Resolved** (Phase 4 group B) |
+| **P3** | **#202** | Tighten customActionHandlers action:any [AUD-OQ-04] | Engine | Low / Types | S | 🟢 **Resolved** (Phase 4 group B) |
 
 ---
 
@@ -178,7 +178,7 @@ flowchart TD
 
 ### Phase 4: Code Audit Cleanups & Polish
 - ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes (plan: `plan_phase4_audit_cleanups_a.md`).
-- **#161, #199, #200, #201, #202**: UI layering, test hygiene, bundle splitting, and type contracts.
+- ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports (plan: `plan_phase4_audit_cleanups_b.md`). Phase 4 is complete.
 
 ---
 
@@ -190,7 +190,7 @@ flowchart TD
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 4 second group**: #161, #199, #200, #201, #202 (needs a plan before implementation).
+   - Phase 4 is complete. Next candidate chain: the open Core Set card bugs #131, #132, #133 (Gate 1 release gate), or #207 (Wakanda Forever sequence).
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

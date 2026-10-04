@@ -68,8 +68,6 @@ export function listModularEncounterSets(): ModularEncounterSetInfo[] {
   return MODULAR_ENCOUNTER_SETS;
 }
 
-export type ScenarioDefinition = LegacyScenarioDefinition;
-
 /**
  * Registry of Scenarios.
  * Extensible for Rhino, Klaw, Ultron, Mutagen Formula, etc.
@@ -169,10 +167,10 @@ export const scenarioCatalog: Record<string, LegacyScenarioDefinition> = {
   },
 };
 
-export function getScenario(id: string): ScenarioDefinition | undefined {
+export function getScenario(id: string): LegacyScenarioDefinition | undefined {
   return scenarioCatalog[id];
 }
 
-export function listScenarios(): ScenarioDefinition[] {
+export function listScenarios(): LegacyScenarioDefinition[] {
   return Object.values(scenarioCatalog);
 }

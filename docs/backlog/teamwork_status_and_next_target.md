@@ -293,7 +293,7 @@ Not part of any phase yet; pick them deliberately:
 2. **Select Active Target:**
    - Primary: **Phase 5, Track B** in the **approved order of 2026-10-04** (functional bugs before cosmetics), one item at a time, each with a plan first:
      1. ~~**C1** Jessica Jones cap~~ done 2026-10-04, uncommitted ([plan](plan_core_review_c1_jessica_jones.md))
-     2. **WP1, WP2, WP4** (WP1 Mark V Helmet done 2026-10-04, uncommitted: [plan](plan_core_review_wp1_mark_v_helmet.md); Mark V Helmet #226, Iron Man hand size #227, Kree Manipulator #229): independent, can run in parallel
+     2. **WP1, WP2, WP4** (WP1 Mark V Helmet done 2026-10-04 (`8762323`): [plan](plan_core_review_wp1_mark_v_helmet.md); WP2 Iron Man hand size done 2026-10-04, uncommitted: [plan](plan_core_review_wp2_iron_man_hand_size.md); Mark V Helmet #226, Iron Man hand size #227, Kree Manipulator #229): independent, can run in parallel
      3. **#218 Surge** (unblocks six stripped encounter cards), then #219 and #222
      4. **WP5** guard test #230 (after WP1-WP4, zero exemptions); WP3 #228 after #209 and #218
      5. **Remaining Tier 1 cosmetics** (C2-C5, C8, C11, A6 test), then WP6 #231 and WP7 #232

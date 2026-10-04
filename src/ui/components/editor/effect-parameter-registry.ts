@@ -719,33 +719,15 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
   MODIFY_HAND_SIZE: {
     effect: 'MODIFY_HAND_SIZE',
-    description: 'Modify effective hand size (e.g. Iron Man Tech hand size scaling).',
+    description:
+      'Modify effective hand size. Use a dynamic formula for scaled bonuses (e.g. Iron Man: +1 per Tech upgrade, clamp max 6).',
     parameters: [
       {
         key: 'amount',
         label: 'Hand Size Delta',
         type: 'number',
+        allowDynamic: true,
         placeholder: '1',
-      },
-      {
-        key: 'scaling',
-        label: 'Scaling Mode',
-        type: 'select',
-        options: ['PER_MATCHING_CARD'],
-        description: 'Scale hand size dynamically per matching card in tableau',
-      },
-      {
-        key: 'multiplier',
-        label: 'Scaling Multiplier',
-        type: 'number',
-        placeholder: '1',
-        defaultValue: 1,
-      },
-      {
-        key: 'filter',
-        label: 'Matching Card Filter',
-        type: 'card-filter',
-        description: 'Universal card filter to match cards for hand size bonus',
       },
     ],
   },

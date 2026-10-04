@@ -79,6 +79,105 @@ describe('Milestone 2A.2: Unified Dynamic Stat & Aura Calculator', () => {
       expect(getEffectiveHandSize(p1, state)).toBe(4);
     });
 
+    describe('maximum of +6 hand size (Iron Man errata)', () => {
+      const addTech = (n: number) => {
+        const p1 = state.players[0];
+        p1.currentForm = 'hero';
+        p1.activeFormCard = ironManHero;
+        p1.tableau = [];
+        for (let i = 0; i < n; i++) {
+          p1.tableau.push({
+            instanceId: `tech${i}`,
+            card: cardCatalog.getCard('01035')!,
+            exhausted: false,
+          });
+        }
+        return p1;
+      };
+
+      it('caps the Tech bonus at +6: 6 upgrades give 7, 7 and 9 upgrades still give 7', () => {
+        expect(getEffectiveHandSize(addTech(6), state)).toBe(7);
+        expect(getEffectiveHandSize(addTech(7), state)).toBe(7);
+        expect(getEffectiveHandSize(addTech(9), state)).toBe(7);
+      });
+
+      it('does not count non-Tech upgrades or non-upgrade Tech cards', () => {
+        const p1 = addTech(2);
+        p1.tableau.push({
+          instanceId: 'plain',
+          card: cardCatalog.getCard('01057')!, // Combat Training, not Tech
+          exhausted: false,
+        });
+        expect(getEffectiveHandSize(p1, state)).toBe(3);
+      });
+
+      it('gives no bonus in Alter-Ego form even with Tech upgrades in play', () => {
+        const p1 = addTech(3);
+        p1.currentForm = 'alter_ego';
+        p1.activeFormCard = tonyStarkAlterEgo;
+        expect(getEffectiveHandSize(p1, state)).toBe(6);
+      });
+
+      it('clean-up draws up to 7, not 8, with 7 Tech upgrades', () => {
+        const p1 = addTech(7);
+        p1.hand = [];
+        const afterCleanup = executePlayerCleanup(state, p1.id, []);
+        expect(afterCleanup.players[0].hand).toHaveLength(7);
+      });
+    });
+
+    describe('hand size modifiers are generic (no 1..10 clamp, flat and formula amounts)', () => {
+      const withModifier = (amount: unknown) => {
+        const p1 = state.players[0];
+        p1.currentForm = 'hero';
+        p1.activeFormCard = ironManHero;
+        p1.tableau = [
+          {
+            instanceId: 'mod',
+            card: {
+              code: 'test-mod',
+              name: 'Test Modifier',
+              type: 'upgrade',
+              enrichment: {
+                abilities: [
+                  {
+                    id: 'test_mod',
+                    timing: 'CONSTANT',
+                    steps: [{ effect: 'MODIFY_HAND_SIZE', effectParams: { amount } }],
+                  },
+                ],
+              },
+            } as any,
+            exhausted: false,
+          },
+        ];
+        return p1;
+      };
+
+      it('applies flat positive and negative amounts', () => {
+        expect(getEffectiveHandSize(withModifier(2), state)).toBe(3);
+        expect(getEffectiveHandSize(withModifier(-1), state)).toBe(0);
+      });
+
+      it('never goes below zero', () => {
+        expect(getEffectiveHandSize(withModifier(-5), state)).toBe(0);
+      });
+
+      it('has no upper bound other than a declared clamp', () => {
+        expect(getEffectiveHandSize(withModifier(12), state)).toBe(13);
+        expect(
+          getEffectiveHandSize(
+            withModifier({
+              from: 'ENTITY_COUNT',
+              filter: { types: ['upgrade'] },
+              clamp: { max: 0 },
+            }),
+            state,
+          ),
+        ).toBe(1);
+      });
+    });
+
     it('Player phase clean-up draws up to dynamic effective hand size', () => {
       const p1 = state.players[0];
       p1.currentForm = 'hero';

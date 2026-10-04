@@ -107,11 +107,10 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
   const obligations = player.obligations || [];
   const hasObligations = obligations.length > 0;
 
-  const effectiveStats = getEffectiveHeroStats(
-    gameState || ({ sideSchemes: [], players: [] } as any),
-    player,
-  );
-  const effectiveHandSize = getEffectiveHandSize(player, gameState);
+  // Stat formulas need a game state; a bare player (isolated renders) gets an empty board.
+  const statState = gameState || ({ sideSchemes: [], players: [] } as any);
+  const effectiveStats = getEffectiveHeroStats(statState, player);
+  const effectiveHandSize = getEffectiveHandSize(player, statState);
   const effectiveAllyLimit = getEffectiveAllyLimit(player, gameState);
   const identityTraitsDetails = getEffectivePlayerTraitsDetails(player);
   const availableResources = getAvailableResources(player, gameState);

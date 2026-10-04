@@ -1,4 +1,5 @@
 import type { GameState, PlayerState, CardInstance, NormalizedCard } from '../models';
+import { getVillainsInPlay, getMainSchemesInPlay } from '../models';
 import { ResourceType } from '../models/enums';
 import type { CardLocationSelector, CardInspectionAttribute } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -47,9 +48,10 @@ export function locateCard(
             if (al.attachments?.some((a) => a.instanceId === src.instanceId)) return al;
           }
         }
-        if (state.villain?.attachments?.some((a) => a.instanceId === src.instanceId)) {
-          return state.villain.card;
-        }
+        const hostVillain = getVillainsInPlay(state).find((v) =>
+          v.attachments?.some((a) => a.instanceId === src.instanceId),
+        );
+        if (hostVillain) return hostVillain.card;
         for (const s of state.sideSchemes || []) {
           if (s.attachments?.some((a) => a.instanceId === src.instanceId)) return s.card;
         }
@@ -173,7 +175,7 @@ export function locateCard(
       }
 
       // 2. Check main schemes
-      for (const ms of state.mainSchemes || (state.mainScheme ? [state.mainScheme] : [])) {
+      for (const ms of getMainSchemesInPlay(state)) {
         if (matchesCard(ms.card)) {
           return {
             instanceId: ms.instanceId || 'main_scheme',
@@ -187,7 +189,7 @@ export function locateCard(
       }
 
       // 3. Check villains
-      for (const v of state.villains || (state.villain ? [state.villain] : [])) {
+      for (const v of getVillainsInPlay(state)) {
         if (matchesCard(v.card)) {
           return {
             instanceId: v.instanceId || 'villain',

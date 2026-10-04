@@ -23,15 +23,6 @@ export function countLegacyAccesses(source: string): number {
 
 const BASELINE: Record<string, number> = {
   'src/engine/models/state.ts': 12,
-  'src/engine/queries/card-inspector.ts': 6,
-  'src/engine/simulation/player-bot.ts': 4,
-  'src/engine/specials/wakanda-forever.ts': 10,
-  'src/ui/components/board/attack-target-utils.ts': 5,
-  'src/ui/components/board/CardPaymentModal.tsx': 10,
-  'src/ui/components/board/GameBoard.tsx': 4,
-  'src/ui/components/board/HeroZone.tsx': 1,
-  'src/ui/components/board/thwart-target-utils.ts': 4,
-  'src/ui/utils/comic-log-formatter.ts': 4,
 };
 
 const SRC_ROOT = path.resolve(__dirname, '../../src');

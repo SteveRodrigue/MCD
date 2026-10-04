@@ -4,6 +4,7 @@ import {
   Keyword,
   SideSchemeCard,
   hasKeyword,
+  getActiveMainScheme,
 } from '../../../engine/models';
 import { canAllyThwart, canBasicThwart } from '../../../engine/pipeline/legality-checker';
 
@@ -33,7 +34,8 @@ export function getValidThwartTargets(
   if (!player) return targets;
 
   // 1. Main Scheme
-  if (state.mainScheme) {
+  const mainScheme = getActiveMainScheme(state);
+  if (mainScheme) {
     const check =
       thwarterType === 'hero'
         ? canBasicThwart(state, playerId, 'main_scheme')
@@ -43,10 +45,10 @@ export function getValidThwartTargets(
 
     targets.push({
       id: 'main_scheme',
-      name: state.mainScheme.card?.name || 'Main Scheme',
+      name: mainScheme.card?.name || 'Main Scheme',
       type: 'main_scheme',
-      threat: state.mainScheme.threat,
-      targetThreat: state.mainScheme.targetThreat,
+      threat: mainScheme.threat,
+      targetThreat: mainScheme.targetThreat,
       hasCrisis: false,
       hasHazard: false,
       hasAcceleration: (state.accelerationTokens || 0) > 0,

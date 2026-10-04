@@ -6,6 +6,10 @@ import {
   CardInstance,
   CombatResolutionSummary,
   GamePhase,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+  getMainSchemesInPlay,
 } from '../../../engine/models';
 import { VillainPhaseStepper } from './VillainPhaseStepper';
 import { CombatBoostModal } from './CombatBoostModal';
@@ -253,8 +257,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
           player.tableau.find((c) => c.instanceId === action.cardInstanceId) ||
           player.allies?.find((a) => a.instanceId === action.cardInstanceId) ||
           player.attachments?.find((a) => a.instanceId === action.cardInstanceId) ||
-          gameState.villain.attachments?.find((a) => a.instanceId === action.cardInstanceId) ||
-          gameState.mainScheme.attachments?.find((a) => a.instanceId === action.cardInstanceId);
+          getVillainsInPlay(gameState)
+            .flatMap((v) => v.attachments || [])
+            .find((a) => a.instanceId === action.cardInstanceId) ||
+          getMainSchemesInPlay(gameState)
+            .flatMap((m) => m.attachments || [])
+            .find((a) => a.instanceId === action.cardInstanceId);
       }
 
       const ability = targetCardInstance?.card.enrichment?.abilities?.find(
@@ -338,8 +346,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
 
         {/* Scenario Main Villain & Schemes Console */}
         <VillainZone
-          villain={gameState.villain}
-          mainScheme={gameState.mainScheme}
+          villain={getActiveVillain(gameState)}
+          mainScheme={getActiveMainScheme(gameState)}
           sideSchemes={gameState.sideSchemes}
           encounterDeck={gameState.encounterDeck}
           encounterDiscard={gameState.encounterDiscard}

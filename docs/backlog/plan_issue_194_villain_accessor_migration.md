@@ -1,6 +1,6 @@
 # Plan: Issue #194 — Replace `state.villain` / `state.mainScheme` legacy pointers with typed accessors [AUD-F003]
 
-> Status: **Revision 3, batches 0-4 committed (ba31d33, 09c80bd, 1c8a74f), batch 5 done (uncommitted)**. Next: batch 6.
+> Status: **Revision 3, batches 0-5 committed (ba31d33, 09c80bd, 1c8a74f, a3fc747), batch 6 done (uncommitted)**. Next: batch 7.
 
 ## 1. Confirmation
 

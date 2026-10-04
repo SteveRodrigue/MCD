@@ -5,6 +5,7 @@ import {
   MinionCard,
   StatusCard,
   hasKeyword,
+  getActiveVillain,
 } from '../../../engine/models';
 import { canAllyAttack, canBasicAttack } from '../../../engine/pipeline/legality-checker';
 
@@ -40,17 +41,19 @@ export function getValidAttackTargets(
         : false;
 
   if (canAtkVillain) {
-    const vHealth = state.villain.health;
-    const vMaxHealth = state.villain.card.health || 14;
-    const hasTough = (state.villain.statusCards || []).includes(StatusCard.TOUGH);
+    // Offers the active villain only; a villain selection for multi-villain scenarios is #212.
+    const villain = getActiveVillain(state);
+    const vHealth = villain.health;
+    const vMaxHealth = villain.card.health || 14;
+    const hasTough = (villain.statusCards || []).includes(StatusCard.TOUGH);
     targets.push({
       id: 'villain',
-      name: state.villain.card.name,
+      name: villain.card.name,
       type: 'villain',
       health: vHealth,
       maxHealth: vMaxHealth,
       damage: Math.max(0, vMaxHealth - vHealth),
-      traits: state.villain.card.traits || [],
+      traits: villain.card.traits || [],
       hasGuard: false,
       hasTough,
     });

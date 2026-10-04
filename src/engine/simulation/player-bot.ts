@@ -1,4 +1,4 @@
-import { GameState, GameAction, CardType } from '@engine/models';
+import { GameState, GameAction, CardType, getActiveMainScheme } from '@engine/models';
 import {
   canChangeForm,
   canBasicRecover,
@@ -22,8 +22,9 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
 
   const halfHpThreshold = Math.floor(player.maxHealth / 2);
   const ninetyPercentHpThreshold = Math.ceil(player.maxHealth * 0.9);
-  const halfThreatThreshold = Math.floor(state.mainScheme.targetThreat / 2);
-  const isThreatHigh = state.mainScheme.threat >= halfThreatThreshold;
+  const mainScheme = getActiveMainScheme(state);
+  const halfThreatThreshold = Math.floor(mainScheme.targetThreat / 2);
+  const isThreatHigh = mainScheme.threat >= halfThreatThreshold;
 
   // 1. If in Alter-Ego form:
   if (player.currentForm === 'alter_ego') {
@@ -153,7 +154,7 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
   for (const ally of player.allies) {
     if (!ally.exhausted) {
       // If threat is elevated, prioritize Ally Thwart
-      if (isThreatHigh || state.mainScheme.threat >= 2) {
+      if (isThreatHigh || getActiveMainScheme(state).threat >= 2) {
         return {
           type: 'ALLY_THWART',
           playerId,
@@ -195,7 +196,10 @@ export function chooseBotAction(context: BotDecisionContext): GameAction {
     }
 
     // 5B. Privilege Thwarting: Main Scheme if threat > 0
-    if (state.mainScheme.threat > 0 && canBasicThwart(state, playerId, 'main_scheme').allowed) {
+    if (
+      getActiveMainScheme(state).threat > 0 &&
+      canBasicThwart(state, playerId, 'main_scheme').allowed
+    ) {
       return {
         type: 'BASIC_THWART',
         playerId,

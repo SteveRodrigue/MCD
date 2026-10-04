@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CardCatalog } from '@data/importer/card-loader';
 import { createCardInstance } from '../../src/engine/state/card-instance';
-import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { GamePhase, GameState, PlayerState, SideSchemeState } from '../../src/engine/models';
 import corePack from '../../data/upstream/pack/core.json';
@@ -113,7 +113,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const minionInstance = createCardInstance(catalog.getCard('01101')!);
     player1.dealtEncounterCards = [minionInstance];
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     // Minion has entered play engaged with Player 1
     expect(nextState.players[0].engagedMinions.length).toBe(1);
@@ -137,7 +137,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const hydraMercenary = createCardInstance(catalog.getCard('01101')!);
     player1.dealtEncounterCards = [hydraMercenary];
 
-    let nextState = step5_revealEncounterCards(state);
+    let nextState = step4_revealEncounterCards(state);
 
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
@@ -167,7 +167,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const weaponsRunner = createCardInstance(catalog.getCard('01121')!);
     player1.dealtEncounterCards = [weaponsRunner];
 
-    let nextState = step5_revealEncounterCards(state);
+    let nextState = step4_revealEncounterCards(state);
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player triggers Hawkeye
@@ -187,7 +187,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const hydraMercenary = createCardInstance(catalog.getCard('01101')!);
     player1.dealtEncounterCards = [hydraMercenary];
 
-    let nextState = step5_revealEncounterCards(state);
+    let nextState = step4_revealEncounterCards(state);
     expect(peekDecisionPrompt(nextState)).toBeDefined();
 
     // Player passes
@@ -214,7 +214,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const minionInstance = createCardInstance(catalog.getCard('01101')!);
     player1.dealtEncounterCards = [minionInstance];
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     // Prompt should be addressed to Player 2 (who controls Hawkeye)
     expect(peekDecisionPrompt(nextState)).toBeDefined();
@@ -232,7 +232,7 @@ describe('Hawkeye (01066) Ally Response Trigger When Minion Enters Play (Issue #
     const minionInstance = createCardInstance(catalog.getCard('01101')!);
     player1.dealtEncounterCards = [minionInstance];
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     // No prompt should be queued since cost cannot be paid
     expect(peekDecisionPrompt(nextState)).toBeUndefined();

@@ -4,7 +4,7 @@ import {
   setupGame,
   resetInstanceCounter,
   dispatchAction,
-  step2_villainActivations,
+  step2_villainAndMinionActivations,
   VillainCard,
   MainSchemeCard,
   createCardInstance,
@@ -70,7 +70,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const initialDeckCount = gameState.players[0].deck.length;
 
       // Villain activates against Spider-Man
-      step2_villainActivations(gameState);
+      step2_villainAndMinionActivations(gameState);
 
       // Verify prompt is enqueued for Spider-Sense with exact generic wording
       const prompt = peekDecisionPrompt(gameState);
@@ -109,7 +109,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       gameState.players[0].hand = [];
       const initialDeckCount = gameState.players[0].deck.length;
 
-      step2_villainActivations(gameState);
+      step2_villainAndMinionActivations(gameState);
 
       const prompt = peekDecisionPrompt(gameState);
       expect(prompt?.title).toBe('Do you want to use the following ability from Spider-Man?');
@@ -146,7 +146,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
       const initialHealth = gameState.players[0].health;
 
       // Villain attacks with TAKE_UNDEFENDED to reach damage step
-      step2_villainActivations(gameState, {
+      step2_villainAndMinionActivations(gameState, {
         synchronousPolicy: 'TAKE_UNDEFENDED',
         acceptOptionalTriggers: false,
       });
@@ -195,7 +195,7 @@ describe('Optional Interrupts & Responses Prompting (RR v1.8 & Issue #77)', () =
 
       const initialHealth = gameState.players[0].health;
 
-      step2_villainActivations(gameState, {
+      step2_villainAndMinionActivations(gameState, {
         synchronousPolicy: 'TAKE_UNDEFENDED',
         acceptOptionalTriggers: false,
       });

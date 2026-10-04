@@ -9,7 +9,7 @@ import {
   createCardInstance,
   dispatchAction,
   peekDecisionPrompt,
-  step5_revealEncounterCards,
+  step4_revealEncounterCards,
   executeEffect,
 } from '@engine/index';
 
@@ -53,7 +53,7 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     const caughtOffGuard = createCardInstance(cardCatalog.getCard('01188')!);
     state.players[0].dealtEncounterCards.push(caughtOffGuard);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     const prompt = peekDecisionPrompt(nextState);
     expect(prompt).toBeDefined();
@@ -74,7 +74,7 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     const caughtOffGuard = createCardInstance(cardCatalog.getCard('01188')!);
     state.players[0].dealtEncounterCards.push(caughtOffGuard);
 
-    const promptState = step5_revealEncounterCards(state);
+    const promptState = step4_revealEncounterCards(state);
     const prompt = peekDecisionPrompt(promptState);
     expect(prompt).toBeDefined();
 
@@ -114,7 +114,7 @@ describe('Caught Off Guard (01188) Discard Choice and Surge Behavior (Issue #184
     const caughtOffGuard = createCardInstance(cardCatalog.getCard('01188')!);
     state.players[0].dealtEncounterCards.push(caughtOffGuard);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     // No prompt enqueued
     expect(peekDecisionPrompt(nextState)).toBeUndefined();

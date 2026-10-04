@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 describe('Encounter attachments attach unconditionally (Issue #175, RR v1.8 Attachment)', () => {
@@ -47,14 +47,14 @@ describe('Encounter attachments attach unconditionally (Issue #175, RR v1.8 Atta
 
     it('attaches to the villain exactly once when revealed', () => {
       state.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(code)!));
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(next.villain.attachments.filter((a) => a.card.code === code)).toHaveLength(1);
     });
 
     it('still attaches and offers no cancel prompt when a Cancel When Revealed card is in hand', () => {
       state.players[0].hand.push(createCardInstance(cardCatalog.getCard('01004')!));
       state.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard(code)!));
-      const next = step5_revealEncounterCards(state, { acceptOptionalTriggers: true });
+      const next = step4_revealEncounterCards(state, { acceptOptionalTriggers: true });
       expect(peekDecisionPrompt(next)).toBeUndefined();
       expect(next.villain.attachments.filter((a) => a.card.code === code)).toHaveLength(1);
       expect(next.players[0].hand.some((c) => c.card.code === '01004')).toBe(true);

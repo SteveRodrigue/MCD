@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog, CardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, NormalizedCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { assertCardConservation } from '@engine/state/state-validator';
 import { CardEnrichmentSchema } from '../../src/data/supplemental/schema';
 import corePack from '../../data/upstream/pack/core.json';
@@ -67,7 +67,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
     it('hero-set obligation goes to the owner of that hero set, not the revealing player', () => {
       // Family Emergency (Carol Danvers set) dealt to the Spider-Man seat
       p('p1').dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01175')!));
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p2').obligations.map((c) => c.card.code)).toEqual(['01175']);
       expect(of(next, 'p1').obligations).toEqual([]);
       expect(next.encounterDiscard.some((c) => c.card.code === '01175')).toBe(false);
@@ -78,7 +78,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
       p('p2').currentForm = 'hero';
       p('p2').activeFormCard = cardCatalog.getCard('01010a') as HeroCard;
       p('p1').dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01175')!));
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p2').obligations).toHaveLength(1);
     });
 
@@ -91,7 +91,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         enrichment: undefined,
       } as NormalizedCard);
       p('p1').dealtEncounterCards.push(synthetic);
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p1').obligations).toHaveLength(1);
       expect(of(next, 'p2').obligations).toHaveLength(0);
     });
@@ -115,7 +115,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
       });
       const deckBefore = solo.encounterDeck.length;
       solo.players[0].dealtEncounterCards.push(createCardInstance(cardCatalog.getCard('01175')!));
-      const next = step5_revealEncounterCards(solo);
+      const next = step4_revealEncounterCards(solo);
       expect(next.removedFromGame.some((c) => c.card.code === '01175')).toBe(true);
       expect(next.players[0].obligations).toEqual([]);
       expect(next.encounterDeck.length).toBeLessThan(deckBefore);
@@ -137,7 +137,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
     it('FIRST_PLAYER: given to the first player even when another player revealed it', () => {
       state.firstPlayerIndex = 1; // Captain Marvel (p2) is first
       p('p1').dealtEncounterCards.push(proofCard());
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p2').obligations.map((c) => c.card.code)).toEqual(['56128b']);
       expect(of(next, 'p1').obligations).toEqual([]);
       assertCardConservation(next);
@@ -151,7 +151,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
       } as NormalizedCard;
       state.firstPlayerIndex = 1;
       p('p1').dealtEncounterCards.push(stripped);
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p1').obligations).toHaveLength(1);
       expect(of(next, 'p2').obligations).toHaveLength(0);
     });
@@ -164,7 +164,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         enrichment: { ...card.card.enrichment, recipient: { type: 'REVEALING_PLAYER' } },
       } as NormalizedCard;
       p('p1').dealtEncounterCards.push(card);
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p1').obligations).toHaveLength(1);
     });
 
@@ -174,7 +174,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         enrichment: { recipient: { type: 'CARD_SET_OWNER' } },
       } as NormalizedCard);
       p('p1').dealtEncounterCards.push(card);
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p2').obligations).toHaveLength(1);
     });
 
@@ -184,7 +184,7 @@ describe('Obligation recipient resolution (Issue #158, RR v1.8 Obligation)', () 
         enrichment: { recipient: { type: 'IDENTITY', codes: ['01001a', '01001b'] } },
       } as NormalizedCard);
       p('p2').dealtEncounterCards.push(card);
-      const next = step5_revealEncounterCards(state);
+      const next = step4_revealEncounterCards(state);
       expect(of(next, 'p1').obligations).toHaveLength(1);
     });
 

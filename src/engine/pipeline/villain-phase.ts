@@ -480,9 +480,6 @@ export function step2_villainAndMinionActivations(
   return state;
 }
 
-// Backward-compatible alias for Step 2
-export const step2_villainActivations = step2_villainAndMinionActivations;
-
 /**
  * Step 3: Deal Encounter Cards (RR v1.8 p. 11, p. 22, p. 47 & FFG Heroic Mode)
  * 1. Pass 1 (Base & Heroic): Deal 1 + heroicLevel encounter cards to each player in player order, starting with First Player.
@@ -528,7 +525,7 @@ export function step3_dealEncounterCards(state: GameState): GameState {
   state.log.push({
     id: `log_${Date.now()}`,
     timestamp: Date.now(),
-    key: 'villainPhase.step4.encounterCardsDealt',
+    key: 'villainPhase.step3.encounterCardsDealt',
     params: {
       basePerPlayer: baseCardsPerPlayer,
       heroicLevel,
@@ -539,9 +536,6 @@ export function step3_dealEncounterCards(state: GameState): GameState {
 
   return state;
 }
-
-// Backward-compatible alias for Step 3
-export const step4_dealEncounterCards = step3_dealEncounterCards;
 
 export interface RevealEncounterOptions {
   acceptOptionalTriggers?: boolean;
@@ -617,9 +611,6 @@ export function step4_revealEncounterCards(
 
   return state;
 }
-
-// Backward-compatible alias for Step 4
-export const step5_revealEncounterCards = step4_revealEncounterCards;
 
 /**
  * Resolves the effects and final destination of an active encounter card
@@ -1007,7 +998,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
 
     delete nextState.pendingActivations;
     delete nextState.lastCombatOutcome;
-    step4_dealEncounterCards(nextState);
+    step3_dealEncounterCards(nextState);
     const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
     nextState.villainPhaseStepEvent = {
       type: 'DEAL_ENCOUNTER_CARD',
@@ -1024,7 +1015,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   // Case 3: DEAL_ENCOUNTER_CARDS
   if (nextState.villainPhaseStep === VillainPhaseStep.DEAL_ENCOUNTER_CARDS) {
     delete nextState.lastCombatOutcome;
-    step4_dealEncounterCards(nextState);
+    step3_dealEncounterCards(nextState);
     const totalDealt = nextState.players.reduce((sum, p) => sum + p.dealtEncounterCards.length, 0);
     nextState.villainPhaseStepEvent = {
       type: 'DEAL_ENCOUNTER_CARD',

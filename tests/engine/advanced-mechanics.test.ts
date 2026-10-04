@@ -4,7 +4,7 @@ import {
   setupGame,
   resetInstanceCounter,
   dispatchAction,
-  step5_revealEncounterCards,
+  step4_revealEncounterCards,
   StatusCard,
   VillainCard,
   MainSchemeCard,
@@ -268,7 +268,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       gameState.players[0].dealtEncounterCards.push(encounterInst);
 
       // Execute Step 5
-      const nextState = step5_revealEncounterCards(gameState);
+      const nextState = step4_revealEncounterCards(gameState);
 
       // Shooter was discarded from tableau
       expect(nextState.players[0].tableau.length).toBe(0);
@@ -281,7 +281,7 @@ describe('Advanced Rules & Card Mechanics (RR v1.8)', () => {
       const encInst = createCardInstance(hardCard);
       gameState.players[0].dealtEncounterCards.push(encInst);
 
-      const nextState = step5_revealEncounterCards(gameState);
+      const nextState = step4_revealEncounterCards(gameState);
 
       // Healed 4 HP: 10 + 4 = 14
       expect(nextState.villain.health).toBe(14);

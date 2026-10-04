@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard, CardType } from '../../src/engine/models';
 import { setupGame, createCardInstance } from '../../src/engine/state/game-setup';
-import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { executeEffect } from '../../src/engine/effects';
 import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 
@@ -43,7 +43,7 @@ describe('Decision Prompt Card Preview Invariant (Issue #104)', () => {
     const falseAlarm = createCardInstance(cardCatalog.getCard('01112')!);
     state.players[0].dealtEncounterCards.push(falseAlarm);
 
-    const nextState = step5_revealEncounterCards(state);
+    const nextState = step4_revealEncounterCards(state);
 
     expect(peekDecisionPrompt(nextState)).toBeDefined();
     const prompt = peekDecisionPrompt(nextState)!;

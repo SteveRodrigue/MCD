@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
-import { step5_revealEncounterCards } from '@engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '@engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '@engine/pipeline/prompt-queue';
 import { executeEffect, resolveTargets } from '@engine/effects';
 import { assertCardConservation } from '@engine/state/state-validator';
@@ -66,7 +66,7 @@ describe('Core obligations: Legal Work, Business Problems and shared Option A (I
 
   function reveal(code: string, dealtTo = 'p1'): GameState {
     p(state, dealtTo).dealtEncounterCards.push(inst(code));
-    return step5_revealEncounterCards(state);
+    return step4_revealEncounterCards(state);
   }
   const choose = (s: GameState, playerId: string, optionId: string) =>
     resolveDecisionPrompt(s, playerId, optionId);

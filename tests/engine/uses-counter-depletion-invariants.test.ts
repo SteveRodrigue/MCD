@@ -4,7 +4,7 @@ import { GamePhase, GameState, HeroCard, AlterEgoCard } from '../../src/engine/m
 import { setupGame } from '../../src/engine/state/game-setup';
 import { createCardInstance } from '../../src/engine/state/card-instance';
 import { dispatchAction } from '../../src/engine/pipeline';
-import { step5_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
+import { step4_revealEncounterCards } from '../../src/engine/pipeline/villain-phase';
 import { resolveDecisionPrompt, peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 import { dispatchTrigger } from '../../src/engine/triggers/trigger-dispatcher';
 
@@ -247,7 +247,7 @@ describe('Universal Uses (X) Counter Depletion & Discard Lifecycle Invariants (A
       p1.dealtEncounterCards = [weaponsRunner];
 
       state.phase = GamePhase.VILLAIN_PHASE;
-      let nextState = step5_revealEncounterCards(state);
+      let nextState = step4_revealEncounterCards(state);
 
       expect(peekDecisionPrompt(nextState)).toBeDefined();
       expect(peekDecisionPrompt(nextState)?.sourceCardName).toContain('Hawkeye');

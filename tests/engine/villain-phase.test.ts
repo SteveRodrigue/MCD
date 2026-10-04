@@ -10,9 +10,9 @@ import {
   createCardInstance,
   executeVillainPhase,
   step1_placeThreat,
-  step2_villainActivations,
-  step4_dealEncounterCards,
-  step5_revealEncounterCards,
+  step2_villainAndMinionActivations,
+  step3_dealEncounterCards,
+  step4_revealEncounterCards,
   step6_passFirstPlayerAndRoundUpkeep,
   GamePhase,
 } from '@engine/index';
@@ -103,7 +103,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       const initialThreat = gameState.mainScheme.threat;
 
-      step2_villainActivations(gameState);
+      step2_villainAndMinionActivations(gameState);
 
       // Rhino base scheme (1) + Boost (2) = +3 threat
       expect(gameState.mainScheme.threat).toBe(initialThreat + 3);
@@ -126,7 +126,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       const initialHealth = gameState.players[0].health; // 10
 
-      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+      step2_villainAndMinionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // Rhino base attack (2) + Boost (2) = 4 damage -> 10 - 4 = 6 HP
       expect(gameState.players[0].health).toBe(initialHealth - 4);
@@ -139,7 +139,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
 
       const initialHealth = gameState.players[0].health;
 
-      step2_villainActivations(gameState);
+      step2_villainAndMinionActivations(gameState);
 
       // Stun is discarded, 0 damage dealt
       expect(gameState.players[0].health).toBe(initialHealth);
@@ -150,7 +150,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.villain.statusCards.push(StatusCard.CONFUSED);
       const initialThreat = gameState.mainScheme.threat;
 
-      step2_villainActivations(gameState);
+      step2_villainAndMinionActivations(gameState);
 
       // Confused is discarded, 0 threat added
       expect(gameState.mainScheme.threat).toBe(initialThreat);
@@ -193,7 +193,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.firstPlayerIndex = 0;
       gameState.log = [];
 
-      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+      step2_villainAndMinionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       // Extract attack/scheme activation log keys
       const activationLogs = gameState.log.filter((l) =>
@@ -259,7 +259,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.firstPlayerIndex = 1; // P2 starts!
       gameState.log = [];
 
-      step2_villainActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
+      step2_villainAndMinionActivations(gameState, { synchronousPolicy: 'TAKE_UNDEFENDED' });
 
       const activationLogs = gameState.log.filter((l) =>
         ['villain.attack.hit', 'minion.attack.hit'].includes(l.key),
@@ -286,13 +286,20 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       expect(gameState.players[0].dealtEncounterCards.length).toBe(0);
 
       // Step 4 deals card
-      step4_dealEncounterCards(gameState);
+      step3_dealEncounterCards(gameState);
       expect(gameState.players[0].dealtEncounterCards.length).toBe(1);
 
       // Step 5 reveals card into play
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
       expect(gameState.players[0].dealtEncounterCards.length).toBe(0);
       expect(gameState.players[0].engagedMinions.length).toBe(1);
+    });
+
+    it('logs the encounter deal under the step 3 key (#195)', () => {
+      step3_dealEncounterCards(gameState);
+      const keys = gameState.log.map((entry) => entry.key);
+      expect(keys).toContain('villainPhase.step3.encounterCardsDealt');
+      expect(keys).not.toContain('villainPhase.step4.encounterCardsDealt');
     });
 
     it('triggers Shocker (01103) When Revealed ability to deal 1 damage to each hero in Step 5', () => {
@@ -302,7 +309,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.players[0].dealtEncounterCards = [shockerInstance];
       const initialHealth = gameState.players[0].health;
 
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
 
       expect(gameState.players[0].engagedMinions.length).toBe(1);
       expect(gameState.players[0].engagedMinions[0].card.code).toBe('01103');
@@ -314,7 +321,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       const bombScareInstance = createCardInstance(bombScareCard);
       gameState.players[0].dealtEncounterCards = [bombScareInstance];
 
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
 
       expect(gameState.sideSchemes.length).toBe(1);
       expect(gameState.sideSchemes[0].card.code).toBe('01109');
@@ -333,7 +340,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.encounterDeck = [evictionNotice, imTough];
       gameState.encounterDiscard = [];
 
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
 
       // Sandman enters play engaged with player
       expect(gameState.players[0].engagedMinions.length).toBe(1);
@@ -358,7 +365,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       gameState.villain.statusCards = [];
       gameState.encounterDiscard = [];
 
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
 
       // Villain receives Tough status
       expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);
@@ -378,7 +385,7 @@ describe('Villain Phase Automation (Rules Reference v1.8 p. 31-32)', () => {
       const nextCard = createCardInstance(catalog.getCard('01101')!);
       gameState.encounterDeck = [nextCard];
 
-      step5_revealEncounterCards(gameState);
+      step4_revealEncounterCards(gameState);
 
       // Villain still has Tough status
       expect(gameState.villain.statusCards?.includes(StatusCard.TOUGH)).toBe(true);

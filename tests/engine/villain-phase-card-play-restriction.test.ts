@@ -15,8 +15,8 @@ import {
 } from '../../src/engine/pipeline/legality-checker';
 import { dispatchAction, peekDecisionPrompt } from '../../src/engine/pipeline';
 import {
-  step2_villainActivations,
-  step5_revealEncounterCards,
+  step2_villainAndMinionActivations,
+  step4_revealEncounterCards,
 } from '../../src/engine/pipeline/villain-phase';
 
 describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
@@ -171,7 +171,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
 
       const initialHealth = state.players[0].health;
 
-      step2_villainActivations(state, {
+      step2_villainAndMinionActivations(state, {
         synchronousPolicy: 'TAKE_UNDEFENDED',
         acceptOptionalTriggers: false,
       });
@@ -218,7 +218,7 @@ describe('Villain Phase Card Play and Action Restrictions (Issue #182)', () => {
       state.players[0].dealtEncounterCards = [falseAlarm];
 
       // Reveal encounter cards without automatic trigger acceptance
-      const intermediateState = step5_revealEncounterCards(state, {
+      const intermediateState = step4_revealEncounterCards(state, {
         acceptOptionalTriggers: false,
       });
 

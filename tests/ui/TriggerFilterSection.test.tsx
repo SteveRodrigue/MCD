@@ -165,4 +165,30 @@ describe('TriggerFilterSection', () => {
     expect(screen.getByText(/Issue/i)).toBeDefined();
     expect(screen.getByText(/Invalid attackerKind specified/i)).toBeDefined();
   });
+  it('selects defenderType', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('trigger-defender-type-0'), 'HERO');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ defenderType: 'HERO' }));
+
+    await user.selectOptions(screen.getByTestId('trigger-defender-type-0'), '');
+    expect(handleChange).toHaveBeenLastCalledWith(undefined);
+  });
+  it('shows the Counter-Punch (01077) trigger filter as configured', () => {
+    render(
+      <TriggerFilterSection
+        filter={{ targetPlayerScope: 'SELF', defenderType: 'HERO' }}
+        isExpanded={true}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect((screen.getByTestId('trigger-defender-type-0') as HTMLSelectElement).value).toBe('HERO');
+    expect((screen.getByTestId('trigger-target-player-scope-0') as HTMLSelectElement).value).toBe(
+      'SELF',
+    );
+  });
 });

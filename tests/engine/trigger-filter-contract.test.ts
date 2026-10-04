@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { initiateEnemyAttack } from '@engine/pipeline/combat-pipeline';
+import { matchesTriggerFilter } from '@engine/triggers/trigger-dispatcher';
 
 describe('Universal Trigger Filter Contract Tests (Spider-Sense 01001a & Scope Matching) — ADR-0046, Issue #115', () => {
   let state: GameState;
@@ -87,5 +88,23 @@ describe('Universal Trigger Filter Contract Tests (Spider-Sense 01001a & Scope M
     // Spider-Sense is on p1 and requires targetPlayerScope: 'SELF' -> p1 does NOT draw
     expect(nextState.players[0].hand.length).toBe(initialHandSizeP1);
     expect(nextState.players[1].hand.length).toBe(initialHandSizeP2);
+  });
+  it('defenderType filter matches only when that kind of defender declared the defense', () => {
+    const heroFilter = { defenderType: 'HERO' as const };
+    const allyFilter = { defenderType: 'ALLY' as const };
+
+    expect(matchesTriggerFilter(heroFilter, { targetPlayerId: 'p1', defenderType: 'HERO' })).toBe(
+      true,
+    );
+    expect(matchesTriggerFilter(heroFilter, { targetPlayerId: 'p1', defenderType: 'ALLY' })).toBe(
+      false,
+    );
+    expect(matchesTriggerFilter(heroFilter, { targetPlayerId: 'p1' })).toBe(false);
+    expect(matchesTriggerFilter(allyFilter, { targetPlayerId: 'p1', defenderType: 'ALLY' })).toBe(
+      true,
+    );
+    expect(matchesTriggerFilter(allyFilter, { targetPlayerId: 'p1', defenderType: 'HERO' })).toBe(
+      false,
+    );
   });
 });

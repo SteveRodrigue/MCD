@@ -100,7 +100,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'PREVIOUS_TARGET'`             | Re-uses target from previous ability step or the triggering combat context.                                           | Step result or event entity.                            |
 | `'PREVIOUS_SELECTED_CARD'`      | Re-uses card instance selected in immediate preceding search step.                                                    | Search result card.                                     |
 | `'TRIGGERING_MINION'`           | The specific minion that triggered the event (e.g. minion entering play for Hawkeye `01066`).                         | Direct minion reference via `context.targetInstanceId`. |
-| `'TRIGGERING_ENEMY'`            | The specific enemy that triggered the event.                                                                          | Direct enemy reference via `context.targetInstanceId`.  |
+| `'TRIGGERING_ENEMY'`            | The specific enemy that triggered the event (falls back to the active villain when the trigger names none). `ATTACK_DEFENDED` names the attacking villain or minion, so Counter-Punch `01077` hits "that enemy". | Direct enemy reference via `context.targetInstanceId`.  |
 
 ### Orthogonal Collective Target Scopes (Rules Authority & Form Invariants)
 

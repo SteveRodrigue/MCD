@@ -2776,10 +2776,13 @@
           "id": "counter_punch_response",
           "timing": "RESPONSE",
           "trigger": "ATTACK_DEFENDED",
+          "triggerFilter": {
+            "targetPlayerScope": "SELF",
+            "defenderType": "HERO"
+          },
           "zone": "HAND",
           "cost": {
-            "discardSelf": true,
-            "resourceCost": 1
+            "discardSelf": true
           },
           "steps": [
             {
@@ -2789,7 +2792,7 @@
                   "from": "STAT_VALUE",
                   "stat": "ATTACK"
                 },
-                "target": "ENEMY"
+                "target": "TRIGGERING_ENEMY"
               }
             }
           ]
@@ -2797,8 +2800,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T16:40",
+        "reviewedAt": "2026-10-04T16:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 100,

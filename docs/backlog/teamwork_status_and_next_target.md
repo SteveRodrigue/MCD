@@ -255,7 +255,7 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
 | `01168` Sweeping Swoop | #222, #221 |
 | `01164` Titania's Fury | #222, #223 |
 
-- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A3 (`32aa400`) and follow-ups F1/F2 are done. Remaining, in the tracker's order: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
+- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A2 (Counter-Punch, uncommitted: cost, hand reaction, attacker target, shared in-hand reaction scan), A3 (`32aa400`) and follow-ups F1/F2 are done. Remaining, in the tracker's order: Tier 1 data-only items (B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
 - **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
 
 ### Phase 6: Supplemental Data Pass (postponed), #100
@@ -289,7 +289,7 @@ Not part of any phase yet; pick them deliberately:
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 5, Track B** (core player cards review): start with the Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), one item at a time, each with a plan first.
+   - Primary: **Phase 5, Track B** (core player cards review): start with the Tier 1 data-only items (B7, C1-C5, C8, C11, A6 test), one item at a time, each with a plan first.
    - In parallel or next: the engine prerequisites #218 (Surge keyword, six cards) and #219/#222 (two to three cards each) unblock the stripped encounter cards; #225 improves failure visibility for all abilities.
    - Wrecking Crew (#210-#215) is deferred until MC03 is scheduled.
 3. **Follow Standard TDD & Quality Gates:**

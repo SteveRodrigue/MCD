@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-**State at `df01659`:** 25 open issues on GitHub. Phases 1-4 are complete and Phase 5 Track A (reported Core Set card bugs) is complete. The Rhino vertical slice (Gate 1) work that remains is Phase 5 Track B (the core player cards review) plus the engine prerequisites that unblock six core encounter cards whose placeholder abilities were removed.
+**State at `df01659`:** 32 open issues on GitHub (25 plus #226-#232, the `effectParams` remediation packages). Phases 1-4 are complete and Phase 5 Track A (reported Core Set card bugs) is complete. The Rhino vertical slice (Gate 1) work that remains is Phase 5 Track B (the core player cards review) plus the engine prerequisites that unblock six core encounter cards whose placeholder abilities were removed.
 
 The 25 open issues group as follows:
 1. **Engine prerequisites for stripped core encounter cards (7):** #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 "damage dealt" gate, #222 form-literal "your hero" selector, #223 named-minion attack, #225 `executeSequence` swallows step failures.
@@ -255,7 +255,8 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
 | `01168` Sweeping Swoop | #222, #221 |
 | `01164` Titania's Fury | #222, #223 |
 
-- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A2 (Counter-Punch, uncommitted: cost, hand reaction, attacker target, shared in-hand reaction scan), A3 (`32aa400`) and follow-ups F1/F2 are done. B7 (Med Team, uncommitted) is done. Remaining, in the tracker's order: Tier 1 data-only items (C1-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
+- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A2 (Counter-Punch, uncommitted: cost, hand reaction, attacker target, shared in-hand reaction scan), A3 (`32aa400`) and follow-ups F1/F2 are done. B7 (Med Team, uncommitted) is done. Remaining in the approved order of 2026-10-04 (functional bugs before cosmetics): C1, WP1/WP2/WP4, #218 Surge (then #219, #222), WP5, then the Tier 1 cosmetics (C2-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
+- **`effectParams` remediation** ([plan_effect_params_remediation.md](plan_effect_params_remediation.md), audit: `docs/reports/effect_params_orphan_audit.md`): C1, then WP1-WP7 ([#226](https://github.com/SteveRodrigue/MCD/issues/226) to [#232](https://github.com/SteveRodrigue/MCD/issues/232)). Four core cards ship `effectParams` keys the engine never reads (`01037`, `01029a`, `01163`, `01178`); the permanent fix is a guard test (WP5) after the card fixes.
 - **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
 
 ### Phase 6: Supplemental Data Pass (postponed), #100
@@ -278,6 +279,7 @@ Not part of any phase yet; pick them deliberately:
 | #109 | Observer-scoped minion and enemy reaction triggers | P3 | Feature |
 | #27 | Calibrate the security response SLA in `SECURITY.md` | P3, docs | Documentation |
 | #100 | New pass on card supplemental data | P2 (postponed) | Phase 6 |
+| #226-#232 | `effectParams` remediation work packages WP1-WP7 | P2-P3, bug/enhancement | Ordered in `plan_effect_params_remediation.md`; WP1, WP2, WP4 first (independent) |
 
 ---
 
@@ -289,7 +291,13 @@ Not part of any phase yet; pick them deliberately:
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 5, Track B** (core player cards review): start with the Tier 1 data-only items (C1-C5, C8, C11, A6 test), one item at a time, each with a plan first.
+   - Primary: **Phase 5, Track B** in the **approved order of 2026-10-04** (functional bugs before cosmetics), one item at a time, each with a plan first:
+     1. **C1** Jessica Jones cap ([plan](plan_core_review_c1_jessica_jones.md), approved)
+     2. **WP1, WP2, WP4** (Mark V Helmet #226, Iron Man hand size #227, Kree Manipulator #229): independent, can run in parallel
+     3. **#218 Surge** (unblocks six stripped encounter cards), then #219 and #222
+     4. **WP5** guard test #230 (after WP1-WP4, zero exemptions); WP3 #228 after #209 and #218
+     5. **Remaining Tier 1 cosmetics** (C2-C5, C8, C11, A6 test), then WP6 #231 and WP7 #232
+     Full detail: [plan_effect_params_remediation.md](plan_effect_params_remediation.md).
    - In parallel or next: the engine prerequisites #218 (Surge keyword, six cards) and #219/#222 (two to three cards each) unblock the stripped encounter cards; #225 improves failure visibility for all abilities.
    - Wrecking Crew (#210-#215) is deferred until MC03 is scheduled.
 3. **Follow Standard TDD & Quality Gates:**

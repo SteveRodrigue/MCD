@@ -1,4 +1,10 @@
-import { GameState, CardInstance } from '../models';
+import {
+  GameState,
+  CardInstance,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainById,
+} from '../models';
 import {
   EffectExecutionContext,
   EffectResult,
@@ -68,10 +74,12 @@ export function resolveSingleWakandaUpgrade(
         const curDmg = targetMinion.tokens?.damage || 0;
         targetMinion.tokens = { ...targetMinion.tokens, damage: curDmg + dmg };
       } else {
-        state.villain.health = Math.max(0, state.villain.health - dmg);
+        const villain = getVillainById(state, targetEnemyId) ?? getActiveVillain(state);
+        villain.health = Math.max(0, villain.health - dmg);
       }
     } else {
-      state.villain.health = Math.max(0, state.villain.health - dmg);
+      const villain = getActiveVillain(state);
+      villain.health = Math.max(0, villain.health - dmg);
     }
     state.log.push({
       id: `log_${Date.now()}_${code}`,
@@ -94,10 +102,10 @@ export function resolveSingleWakandaUpgrade(
           defeatSideScheme(state, sideScheme.instanceId, player.id);
         }
       } else {
-        state.mainScheme.threat = Math.max(0, state.mainScheme.threat - thw);
+        getActiveMainScheme(state).threat = Math.max(0, getActiveMainScheme(state).threat - thw);
       }
     } else {
-      state.mainScheme.threat = Math.max(0, state.mainScheme.threat - thw);
+      getActiveMainScheme(state).threat = Math.max(0, getActiveMainScheme(state).threat - thw);
     }
     state.log.push({
       id: `log_${Date.now()}_${code}`,
@@ -116,7 +124,7 @@ export function resolveSingleWakandaUpgrade(
     const moveAmt = isFinalStep ? 2 : 1;
     const maxHp = getEffectiveMaxHealth(player, state);
     player.health = Math.min(maxHp, player.health + moveAmt);
-    state.villain.health = Math.max(0, state.villain.health - moveAmt);
+    getActiveVillain(state).health = Math.max(0, getActiveVillain(state).health - moveAmt);
     state.log.push({
       id: `log_${Date.now()}_${code}`,
       timestamp: Date.now(),

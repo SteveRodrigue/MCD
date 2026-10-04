@@ -3,7 +3,13 @@
  * Implements ADR-0005 & ADR-0009 / ADR-0037: Localized Comic Narrative & Dialogue Engine
  */
 
-import { GameLogEntry, GamePhase, GameState } from '../../engine/models';
+import {
+  GameLogEntry,
+  GamePhase,
+  GameState,
+  getActiveVillain,
+  getActiveMainScheme,
+} from '../../engine/models';
 import enCombatLog from '../../locales/en/combat-log.json';
 import frCombatLog from '../../locales/fr/combat-log.json';
 import { getHeroColorPalette, getContrastTextColor } from './hero-theme';
@@ -470,8 +476,10 @@ export function normalizeLogParams(
 
   const defaultHeroName =
     cleanCharacterName(matchedPlayer?.hero?.name || matchedPlayer?.name, matchedPlayer) || 'Hero';
-  const defaultVillainName = gameState?.villain?.card?.name || 'Villain';
-  const defaultMainSchemeName = gameState?.mainScheme?.card?.name || 'Main Scheme';
+  const defaultVillainName =
+    (gameState ? getActiveVillain(gameState) : undefined)?.card?.name || 'Villain';
+  const defaultMainSchemeName =
+    (gameState ? getActiveMainScheme(gameState) : undefined)?.card?.name || 'Main Scheme';
 
   // 1. Resolve 'who'
   let who =
@@ -706,8 +714,14 @@ export function resolveComicColors(
   // 2. Villain / Minion Actions
   if (dialogueType === 'villain_shout') {
     const rawVillainColors =
-      (gameState?.villain?.card?.meta as { colors?: unknown } | undefined)?.colors ??
-      (gameState?.villain?.card?.raw?.meta as { colors?: unknown } | undefined)?.colors;
+      (
+        (gameState ? getActiveVillain(gameState) : undefined)?.card?.meta as
+          { colors?: unknown } | undefined
+      )?.colors ??
+      (
+        (gameState ? getActiveVillain(gameState) : undefined)?.card?.raw?.meta as
+          { colors?: unknown } | undefined
+      )?.colors;
 
     if (
       Array.isArray(rawVillainColors) &&

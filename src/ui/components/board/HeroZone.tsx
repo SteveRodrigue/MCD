@@ -22,6 +22,7 @@ import {
   Keyword,
   hasKeyword,
   CardAbility,
+  getActiveMainScheme,
 } from '../../../engine/models';
 import { LegalActionItem } from '../../../engine/pipeline/legal-actions-generator';
 import { CardView } from '../cards/CardView';
@@ -941,7 +942,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                   const canAct = isPlayerTurn && !ally.exhausted;
                   const canThw =
                     canAct &&
-                    ((gameState?.mainScheme?.threat || 0) > 0 ||
+                    (((gameState ? getActiveMainScheme(gameState) : undefined)?.threat || 0) > 0 ||
                       (gameState?.sideSchemes || []).some((s) => s.threat > 0));
 
                   const attachmentCount = ally.attachments?.length || 0;

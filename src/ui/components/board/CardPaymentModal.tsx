@@ -11,7 +11,16 @@ import {
   Users,
   Target,
 } from 'lucide-react';
-import { CardInstance, PlayerState, GameState, MinionCard, CardType } from '../../../engine/models';
+import {
+  CardInstance,
+  PlayerState,
+  GameState,
+  MinionCard,
+  CardType,
+  getActiveVillain,
+  getActiveMainScheme,
+  getVillainsInPlay,
+} from '../../../engine/models';
 import { getCardEnrichment } from '../../../data/supplemental';
 import {
   isResourceAbility,
@@ -160,10 +169,11 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
           const firstMinion = gameState.players.flatMap((p) => p.engagedMinions || [])[0];
           setSelectedTargetId(firstMinion?.instanceId);
         } else {
-          setSelectedTargetId(gameState.villain.card.code);
+          const activeVillain = getActiveVillain(gameState);
+          setSelectedTargetId(activeVillain.instanceId || activeVillain.card.code);
         }
       } else if (isEventCard && hasThwart) {
-        setSelectedTargetId(gameState.mainScheme.card.code);
+        setSelectedTargetId(getActiveMainScheme(gameState).card.code);
       } else if (isEventCard && hasHeal) {
         // Default to active player if damaged, otherwise first damaged character, otherwise active player
         const activeDamaged = player.health < getEffectiveMaxHealth(player, gameState);
@@ -560,12 +570,14 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
     }[] = [];
 
     if (eventTargetScope !== 'CHOSEN_MINION' && eventTargetScope !== 'CHOSEN_ENGAGED_MINION') {
-      targets.push({
-        id: gameState.villain.card.code,
-        name: `${gameState.villain.card.name} (Villain)`,
-        type: 'villain',
-        hp: gameState.villain.health,
-      });
+      for (const villain of getVillainsInPlay(gameState)) {
+        targets.push({
+          id: villain.instanceId || villain.card.code,
+          name: `${villain.card.name} (Villain)`,
+          type: 'villain',
+          hp: villain.health,
+        });
+      }
     }
 
     // Engaged minions across all players (RR v1.8 p. 5, 10)
@@ -583,7 +595,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       });
     });
     return targets;
-  }, [gameState.villain, gameState.players, player.id, eventTargetScope]);
+  }, [gameState, player.id, eventTargetScope]);
 
   const schemeTargets = useMemo(() => {
     const targets: {
@@ -593,10 +605,10 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       threat: number;
     }[] = [
       {
-        id: gameState.mainScheme.card.code,
-        name: `${gameState.mainScheme.card.name} (Main Scheme)`,
+        id: getActiveMainScheme(gameState).card.code,
+        name: `${getActiveMainScheme(gameState).card.name} (Main Scheme)`,
         type: 'main_scheme',
-        threat: gameState.mainScheme.threat,
+        threat: getActiveMainScheme(gameState).threat,
       },
     ];
     gameState.sideSchemes.forEach((s) => {
@@ -608,7 +620,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
       });
     });
     return targets;
-  }, [gameState.mainScheme, gameState.sideSchemes]);
+  }, [gameState]);
 
   const healTargets = useMemo(() => {
     const targets: {

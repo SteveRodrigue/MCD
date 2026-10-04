@@ -564,7 +564,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
               {/* Left Column (Stats) */}
               {isHero ? (
                 <div
-                  className="flex flex-col gap-1 items-center justify-center min-w-[36px]"
+                  className="relative z-10 flex flex-col gap-1 items-center justify-center min-w-[36px]"
                   data-testid="identity-stats-column"
                 >
                   {/* THW */}
@@ -659,7 +659,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
                 </div>
               ) : (
                 <div
-                  className="flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
+                  className="relative z-10 flex flex-col gap-1.5 items-center justify-center min-w-[36px]"
                   data-testid="identity-stats-column"
                 >
                   {/* REC */}
@@ -745,7 +745,7 @@ export const HeroZone: React.FC<HeroZoneProps> = ({
 
               {/* Right Column (Vertical HP Gauge) */}
               <div
-                className="flex flex-col items-center justify-center gap-1 shrink-0"
+                className="relative z-10 flex flex-col items-center justify-center gap-1 shrink-0"
                 data-testid="identity-hp-column"
               >
                 <div className="flex flex-col items-center text-center">

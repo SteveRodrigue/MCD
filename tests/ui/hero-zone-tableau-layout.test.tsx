@@ -211,6 +211,35 @@ describe('HeroZone Nested Allies & 2-Tier Tableau Architecture (Issue #156)', ()
     expect(onDispatchAction.mock.calls[0][0].type).toBe('USE_CARD_ABILITY');
   });
 
+  it.each(['hero', 'alter_ego'] as const)(
+    '8b. Stat and HP columns stack above the rotated exhausted identity card in %s form (#161)',
+    (form) => {
+      const gameState = createTestGame();
+      const player = gameState.players[0];
+      player.currentForm = form;
+      player.activeFormCard = form === 'hero' ? player.hero : player.alterEgo;
+      player.exhausted = true;
+
+      render(
+        <HeroZone
+          player={player}
+          gameState={gameState}
+          seatNumber={1}
+          isFocused={true}
+          isMultiHero={false}
+          onDispatchAction={vi.fn()}
+        />,
+      );
+
+      const identityStation = screen.getByTestId('identity-station');
+      for (const testId of ['identity-stats-column', 'identity-hp-column']) {
+        const column = within(identityStation).getByTestId(testId);
+        expect(column.className).toContain('relative');
+        expect(column.className).toContain('z-10');
+      }
+    },
+  );
+
   it('8. Renders Identity Station in compact tri-column layout with Hero stats, CardView, vertical HP gauge, and single-row action buttons', () => {
     const gameState = createTestGame();
     const player = gameState.players[0];

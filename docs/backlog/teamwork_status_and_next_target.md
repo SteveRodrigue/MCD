@@ -1,20 +1,23 @@
 # MCD Backlog Dependency, Prioritization Map & Teamwork Status
 
-> **Last Updated:** 2026-10-04 (Phase 4 complete, Phase 5 defined)  
-> **Repository Commit:** `f9dd6b8` (`origin/main`)  
+> **Last Updated:** 2026-10-04 (Phases 1-4 and Phase 5 Track A complete)  
+> **Repository Commit:** `df01659` (`origin/main`)  
 > **Release Gate:** Gate 1 ("Rhino Release" Vertical Slice — 100% Core 5 Heroes vs. Rhino)  
-> **Verification Status:** 🟢 All 1,667 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
+> **Verification Status:** 🟢 All 1,706 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
 
 ---
 
 ## 1. Executive Summary
 
-A comprehensive dependency and risk mapping was performed on all 19 open issues in the primary backlog scope (#172–#202+) as well as cross-cutting connected backlog issues (#100, #109, #122, #126, #127, #129, #132, #135, #154, #158, #161).
+**State at `df01659`:** 25 open issues on GitHub. Phases 1-4 are complete and Phase 5 Track A (reported Core Set card bugs) is complete. The Rhino vertical slice (Gate 1) work that remains is Phase 5 Track B (the core player cards review) plus the engine prerequisites that unblock six core encounter cards whose placeholder abilities were removed.
 
-The backlog partitions cleanly into three distinct domains:
-1. **Engine Primitives (8 issues):** Core combat pipeline mechanics, interactive decision prompt rollbacks, generic cost-and-resource validation, threat legality checks, and type-safe architecture foundations.
-2. **Card Fixes (6 issues):** Declarative supplemental data modeling in `src/data/supplemental/pack/` for hero abilities, encounter attachments, and cost kickers.
-3. **UI & Refactors (10 issues):** Board action modal filtering, button enabled/disabled state consistency, comic pop-art z-indexing, test hygiene (`act(...)` warnings), dead-code elimination, and code audit cleanups.
+The 25 open issues group as follows:
+1. **Engine prerequisites for stripped core encounter cards (7):** #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 "damage dealt" gate, #222 form-literal "your hero" selector, #223 named-minion attack, #225 `executeSequence` swallows step failures.
+2. **Wrecking Crew (MC03) chain (6):** #210 per-villain encounter decks, #211 side schemes and scheme threat, #212 multi-villain targeting/Guard/win, #213 active counter effects, #214 scenario plugin and data, #215 remove the legacy villain fields. No immediate impact on Gate 1.
+3. **Small defects and test hygiene (3):** #216 (`STAT_VALUE DAMAGE` reads a nonexistent field), #217 (flaky obligation rule 2 test), #224 (acceleration icons outside side schemes).
+4. **Unscheduled backlog (9):** #27, #37, #100 (postponed, Phase 6), #109, #126, #127, #206, #208, #209. See section 5, "Unscheduled open issues".
+
+Everything in the original scope (#172-#202, the card fixes #131-#133/#154/#158/#175, the UI items) is resolved; the tables below keep that history with commit references.
 
 ---
 
@@ -23,50 +26,88 @@ The backlog partitions cleanly into three distinct domains:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0b0f19', 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#475569', 'lineColor': '#64748b', 'secondaryColor': '#0f172a', 'tertiaryColor': '#1e293b' }}}%%
 flowchart TD
-    subgraph AuditFoundations["1. Audit Foundations"]
-        I194["#194 Accessor Migration<br/>RESOLVED (ba31d33..11067bc)"]
-        I192["#192 Step Aliases<br/>(Test Cleanliness)"]
-        I196["#196 Type Aliases<br/>(Scenario Registry)"]
-    end
-
-    subgraph CoreEngine["2. Core Engine Primitives"]
-        I183["#183 Defense Pipeline<br/>RESOLVED (a8e3e3a)"]
-        I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
-        I184["#184 Caught Off Guard Prompt<br/>RESOLVED (052032e)"]
+    subgraph Foundations["1. Foundations (resolved)"]
+        I194["#194 Accessor Migration<br/>RESOLVED (ba31d33..5612170)"]
         I122["#122 Step-Gate Evaluator<br/>RESOLVED (0acc25f)"]
-        I154["#154 Cosmic Flight Aerial Gate<br/>RESOLVED (608a19a)"]
         I158["#158 Obligations Engine<br/>RESOLVED (2cc63df, b205d7c)"]
+        I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
     end
 
-    subgraph ResourceThreat["3. Resource & Threat Engines"]
-        I181["#181 Crisis & Patrol Legality<br/>RESOLVED (0d6c235)"]
-        I186["#186 / #135 For Justice! Kicker<br/>RESOLVED (052032e)"]
-        I180["#180 / #129 Payment Modal Filters<br/>RESOLVED (c7d970d)"]
-        I185["#185 Surveillance Team Usability<br/>RESOLVED (569274c)"]
-        I179["#179 Alpha Flight Station Usability<br/>RESOLVED (569274c + tests)"]
-        I175["#175 Charge Attachment Timing<br/>RESOLVED (0fc765e)"]
+    subgraph Cards["2. Core Set card fixes (resolved)"]
+        I154["#154 Cosmic Flight Gate<br/>RESOLVED (608a19a)"]
+        I133["#133 Hydra Bomber + HERO audit<br/>RESOLVED (9f8320c)"]
+        I132["#132 Imminent Overload<br/>RESOLVED (e289645)"]
+        I131["#131 Rocket Boots / timed traits<br/>RESOLVED (32aa400)"]
+        I207["#207 Wakanda sequence pausing<br/>RESOLVED (a6c5397, df01659)"]
     end
 
-    %% Dependencies & Flows
-    I194 --> I183
-    I172 --> I184
-    I184 --> I158
+    subgraph Prereq["3. Engine prerequisites (open)"]
+        I218["#218 Surge keyword"]
+        I219["#219 Hand DISCARD filter / each player"]
+        I220["#220 Per-player iteration"]
+        I221["#221 Damage-dealt gate"]
+        I222["#222 'Your hero' selector"]
+        I223["#223 Named-minion attack"]
+        I225["#225 executeSequence failures"]
+    end
+
+    subgraph Stripped["4. Stripped core encounter cards (open)"]
+        C01191["01191 Exhaustion (Surge)"]
+        C01179["01179 Yon-Rogg's Treason"]
+        C01169["01169 Vulture's Plans"]
+        C01174["01174 Electromagnetic Backlash"]
+        C01159["01159 Ritual Combat"]
+        C01168["01168 Sweeping Swoop"]
+        C01164["01164 Titania's Fury"]
+    end
+
+    subgraph WC["5. Wrecking Crew MC03 (open)"]
+        I210["#210 Encounter decks"]
+        I211["#211 Side schemes"]
+        I212["#212 Targeting / Guard / win"]
+        I213["#213 Active counter"]
+        I214["#214 Scenario plugin"]
+        I215["#215 Remove legacy fields"]
+    end
+
+    %% Resolved flows
+    I172 --> I158
     I122 --> I154
-    I181 --> I185
-    I185 --> I179
-    I180 --> I186
-    I180 --> I175
 
-    %% Dark Mode Styles
+    %% Prerequisites unblock cards
+    I218 --> C01191
+    I219 --> C01179
+    I219 --> C01169
+    I220 --> C01169
+    I220 --> C01174
+    I219 --> C01174
+    I222 --> C01159
+    I222 --> C01168
+    I222 --> C01164
+    I221 --> C01168
+    I223 --> C01164
+
+    %% Wrecking Crew chain
+    I194 --> I210
+    I194 --> I211
+    I194 --> I212
+    I194 --> I213
+    I194 --> I215
+    I210 --> I214
+    I211 --> I214
+    I212 --> I214
+    I213 --> I214
+
     classDef resolved fill:#064e3b,stroke:#059669,stroke-width:2px,color:#ecfdf5;
-    classDef active fill:#0c4a6e,stroke:#0284c7,stroke-width:2px,color:#f0f9ff;
     classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
+    classDef stripped fill:#78350f,stroke:#d97706,stroke-width:1px,color:#fffbeb;
 
-    class I194,I183,I172,I184,I181,I186,I185,I179,I180,I175,I122,I154,I158 resolved;
-    class I192,I196 open;
+    class I194,I122,I158,I172,I154,I133,I132,I131,I207 resolved;
+    class I218,I219,I220,I221,I222,I223,I225,I210,I211,I212,I213,I214,I215 open;
+    class C01191,C01179,C01169,C01174,C01159,C01168,C01164 stripped;
 ```
 
-
+Resolved items from the original scope that are not drawn (#175, #179-#181, #183-#186, #192, #195-#202, #129, #135, #161) are listed in section 3 with their commits.
 
 ---
 
@@ -83,7 +124,7 @@ flowchart TD
 | **#186** | **For Justice! (01060) Mental resource bonus** | Cost Engine & Dynamic Formulas: `context.resourcesSpent` propagation. | 🟢 **Closed** (`052032e`). Added `PAID_WITH_RESOURCE` / `RESOURCES_SPENT` dynamicBonus, purged `bonusWithMental`. |
 | **#194** | **Replace state.villain/mainScheme legacy pointers [AUD-F003]** | Architecture & State: about 520 references to legacy singleton pointers `state.villain` and `state.mainScheme`. | 🟢 **Resolved** (`ba31d33`, `09c80bd`, `1c8a74f`, `a3fc747`, `11067bc`). `villains[]` / `mainSchemes[]` plus `activeVillainId` are canonical, accessors and setters in `models/state.ts`, legacy fields `@deprecated` (ADR-0076). Follow-ups: #215 (field removal), #210-#214 (Wrecking Crew prerequisites). |
 | **#122** | **Extract shared step-gate evaluator** | Pipeline Unification: Unifies ability step gating (`TARGET_TRAIT_MATCH`, conditions) between effect execution and CONSTANT stat/trait loop. | 🟢 **Resolved** (`0acc25f`). `evaluateStepGate` shared by the effect pipeline and the CONSTANT stat loop (ADR-0019 addendum). |
-| **#202** | **Tighten customActionHandlers action:any [AUD-OQ-04]** | Type Safety: Discriminated union contract for custom scenario plugin action handlers in `ScenarioPlugin`. | 🟡 **Open**. Type safety enhancement. |
+| **#202** | **Tighten customActionHandlers action:any [AUD-OQ-04]** | Type Safety: Discriminated union contract for custom scenario plugin action handlers in `ScenarioPlugin`. | 🟢 **Resolved** (`7d6bfb1`). Removed the unused `customActionHandlers` member (nothing set or called it) instead of typing it. |
 
 ---
 
@@ -94,10 +135,10 @@ flowchart TD
 | **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved** (`0fc765e`). Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
 | **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | 🟢 **Resolved** (`608a19a`). ADD_TRAIT honors gates; `01017` gated with `IF_FORM: hero`. |
 | **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🟢 **Resolved** (`2cc63df`, `b205d7c`). All five core obligations integrated: `PlayerState.obligations` zone, hero-set default recipient + optional `recipient` override (proof card `56128b`), `ENTERS_PLAY` resolution ability with `PLAYER_CHOICE` option `gate`/`cost`, `REMOVE_FROM_GAME`, `ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU` + `filter` (ADR-0075). |
-| **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | Deals 2 damage to all heroes instead of engaging player's hero. Scoping parameter needs adjustment in supplemental data. |
-| **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | Iron Man upgrade: +1 HP and Aerial trait generation. Needs supplemental audit to verify constant HP bonus and active ability. |
-| **#132** | **Imminent Overload (01171)** | `core_encounter.json` (`01171`) | Player asks to validate the Crisis icon behavior on this treachery/side scheme. Needs a failing or confirming test against the Crisis legality rules (RR v1.8 Crisis icon). |
-| **#207** | **Wakanda Forever! sequence ignores mid-sequence prompts** | `specials/wakanda-forever.ts` | Steps after a prompting step resolve before it; reproduced with Energy Daggers and a Tough villain (ADR-0038 ordering). Includes follow-up F1 (dead `01047`-`01049` fallbacks). |
+| **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | 🟢 **Resolved** (`9f8320c`). "Take 2 damage" targets only the revealing player (`SELF_IDENTITY`); the `HERO` target had hit every hero-form player. The same-pattern audit (`plan_hero_target_audit.md`) fixed `01191` Exhaustion and stripped six placeholder cards (`01159`, `01164` When Revealed, `01168`, `01169`, `01174`, `01179`) pending engine work #218-#223. |
+| **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | 🟢 **Resolved** (`32aa400`). `ADD_TRAIT` works as an effect step with timed trait modifiers (default: while the source card is in play, or an explicit `PHASE`/`ROUND`/`TURN`); the Hero Action grants Aerial to the identity until the end of the phase. |
+| **#132** | **Imminent Overload (01171)** | `core_encounter.json` (`01171`) | 🟢 **Resolved** (`e289645`, validation only). The card prints an Acceleration icon, not Crisis; the engine matches the printed text. Follow-up #224. |
+| **#207** | **Wakanda Forever! sequence ignores mid-sequence prompts** | `specials/wakanda-forever.ts` | 🟢 **Resolved** (`a6c5397`, `df01659`). Resumable `pendingSpecialSequence`; dead `01047`-`01049` fallbacks removed (ADR-0038 addendum). Follow-up #225. |
 
 ---
 
@@ -108,15 +149,15 @@ flowchart TD
 | **#185** | **Surveillance Team (01064) modal opens with no threat** | `HeroZone.tsx`, `TableauActionModal.tsx`, `tableau-card-legality.ts` | 🟢 **Resolved** (`569274c`). Tableau cards whose Action/Resource abilities fail `canInitiateAbility` are grayed and non-clickable (ADR-0074). |
 | **#179** | **Alpha Flight Station (01015) active on empty hand** | `tableau-card-legality.ts`, `HeroZone.tsx` | 🟢 **Resolved**. Covered by the #185 fix (`569274c`, ADR-0074); regression tests added. |
 | **#180** / **#129** | **Captain Marvel Rechannel & Rhino Attachment payment filtering** | `CardPaymentModal.tsx`, `payment-eligibility.ts` | 🟢 **Resolved** (`c7d970d`). Modal disables hand cards/generators that cannot pay a typed cost (ADR-0072 addendum). |
-| **#161** | **Hero exhausted card layering behind health bar** | `HeroZone.tsx`, CSS/z-index | When hero rotates on exhaustion, the rotated card frame overlaps HUD stats and health bar. Adjust z-index stacking context. |
-| **#192** | **Remove villain-phase step aliases in tests [AUD-F001]** | `villain-phase.ts`, test files | Migrate deprecated exports `step2_villainActivations`, `step4_dealEncounterCards`, `step5_revealEncounterCards` to canonical names. |
-| **#195** | **Fix mismatched log key step4->step3 [AUD-F004]** | `villain-phase.ts:305`, `locales/` | Log key `'villainPhase.step4.encounterCardsDealt'` emitted in Step 3. Change to `'villainPhase.step3.encounterCardsDealt'`. |
-| **#196** | **Remove ambiguous ScenarioDefinition alias [AUD-F005]** | `catalog.ts:71` | Remove re-export alias `ScenarioDefinition = LegacyScenarioDefinition` from `catalog.ts`. |
-| **#197** | **Remove dead isFacedown probes in CardView [AUD-F006]** | `CardView.tsx:80–82` | Remove dead `(instance as any)?.isFacedown` fallback checks. |
-| **#198** | **Remove dead raw field fallbacks in PlayerHandTray [AUD-F007]** | `PlayerHandTray.tsx:41–89` | Remove dead MarvelCDB raw field aliases (`faction_code`, `type_code`, `set_code`). |
-| **#199** | **act(...) warnings on CardView image tests [AUD-OQ-01]** | `CardView.tsx`, test renders | Wrap async test renders with `act()` or use RTL `waitFor` to eliminate console warning spam. |
-| **#200** | **Main JS bundle exceeds 500 kB [AUD-OQ-02]** | `vite.config.ts`, `App.tsx` | Evaluate route lazy loading for `ScenarioSelector`, `MulliganScreen`, and `GameBoard`. |
-| **#201** | **normalizeCardCodeForArt dead export [AUD-OQ-03]** | `card-cache-service.ts` | Verify whether `normalizeCardCodeForArt` is used outside tests; remove if dead. |
+| **#161** | **Hero exhausted card layering behind health bar** | `HeroZone.tsx`, CSS/z-index | 🟢 **Resolved** (`0ed001b`). Stat and HP columns stack above the rotated card (`relative z-10`). |
+| **#192** | **Remove villain-phase step aliases in tests [AUD-F001]** | `villain-phase.ts`, test files | 🟢 **Resolved** (`c89aed1`). Three aliases removed; 17 test files use canonical names. |
+| **#195** | **Fix mismatched log key step4->step3 [AUD-F004]** | `villain-phase.ts`, `locales/` | 🟢 **Resolved** (`c89aed1`). Log key is `villainPhase.step3.encounterCardsDealt`; no locale entry (no engine log key has one). |
+| **#196** | **Remove ambiguous ScenarioDefinition alias [AUD-F005]** | `catalog.ts` | 🟢 **Resolved** (`37e8f43`). |
+| **#197** | **Remove dead isFacedown probes in CardView [AUD-F006]** | `CardView.tsx` | 🟢 **Resolved** (`4480314`). |
+| **#198** | **Remove dead raw field fallbacks in PlayerHandTray [AUD-F007]** | `PlayerHandTray.tsx` | 🟢 **Resolved** (`a41f997`). |
+| **#199** | **act(...) warnings on CardView image tests [AUD-OQ-01]** | `CardView.tsx`, test renders | 🟢 **Closed** as not reproducible (0 warnings in the full suite). |
+| **#200** | **Main JS bundle exceeds 500 kB [AUD-OQ-02]** | `App.tsx` | 🟢 **Resolved** (`0f97520`). Lazy-loaded screens: main chunk 1,230 kB to 860 kB (it still exceeds 500 kB: engine and card data). |
+| **#201** | **normalizeCardCodeForArt dead export [AUD-OQ-03]** | `card-cache-service.ts` | 🟢 **Resolved** (`efcb8a4`). Removed with its test case. |
 
 ---
 
@@ -137,26 +178,31 @@ flowchart TD
 | **P2** | **#129** | Discard Rhino attachment allows invalid resources | UI | Low / Payment Modal | S | 🟢 **Resolved** (`c7d970d`) |
 | **P2** | **#122** | Extract shared step-gate evaluator | Engine | Medium / Stat Calculator | M | 🟢 **Resolved** (`0acc25f`) |
 | **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (`608a19a`) |
-| **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / ~520 Call Sites | L | 🟢 **Resolved** (`ba31d33`..`11067bc`) |
+| **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / ~520 Call Sites | L | 🟢 **Resolved** (`ba31d33`..`5612170`) |
 | **P2** | **#100** | New pass on card supplemental data (postponed, was P0) | Card Data | High / all cards | L | ⏸️ **Postponed** (Phase 6) |
-| **P2** | **#218-#223** | Engine prerequisites for stripped core encounter cards (Surge keyword, hand discard, per-player iteration, damage gate, "your hero" selector, named-minion attack) | Engine | Medium | M each | 🟡 **Open** (Phase 5) |
-| **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (Phase 5, data fix + audit) |
-| **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟢 **Resolved** (Phase 5, validated: no defect) |
-| **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟢 **Resolved** (Phase 5) |
-| **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟢 **Resolved** (Phase 5) |
+| **P2** | **#218** | Surge keyword is parsed but never applied (6 core cards) | Engine | Medium | M | 🟡 **Open** (Phase 5) |
+| **P2** | **#219** | Hand DISCARD: filter, each player, discarded-card results | Engine | Medium | M | 🟡 **Open** (Phase 5) |
+| **P2** | **#222** | Form-literal "your hero" target selector | Engine | Medium | M | 🟡 **Open** (Phase 5) |
+| **P2** | **#225** | `executeSequence` swallows step failures | Engine | Medium | M | 🟡 **Open** |
+| **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (`9f8320c`, data fix + audit) |
+| **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟢 **Resolved** (`e289645`, validated: no defect) |
+| **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟢 **Resolved** (`32aa400`) |
+| **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟢 **Resolved** (`a6c5397`, `df01659`) |
+| **P3** | **#220, #221, #223** | Per-player iteration, damage-dealt gate, named-minion attack (unblock `01174`/`01169`, `01168`, `01164`) | Engine | Medium | M each | 🟡 **Open** (Phase 5) |
 | **P3** | **#210-#215** | Multi-villain follow-ups for MC03 Wrecking Crew (encounter decks, side schemes and scheme threat, targeting/Guard/win, active counter effects, scenario plugin, legacy field removal) | Engine/Data | Medium | M-L | 🟡 **Open** (no immediate impact) |
 | **P3** | **#216** | STAT_VALUE DAMAGE reads nonexistent villain/minion `damage` | Engine | Low | XS | 🟡 **Open** |
 | **P3** | **#217** | Flaky obligation rule 2 test (shuffle-dependent) | Tests | Low | XS | 🟡 **Open** |
-| **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#196** | Remove ambiguous ScenarioDefinition alias [AUD-F005] | Refactor | Low / Catalog Types | XS | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#197** | Remove dead isFacedown probes in CardView [AUD-F006] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#198** | Remove dead raw field fallbacks in PlayerHandTray [AUD-F007] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (Phase 4 group A) |
-| **P3** | **#161** | Exhausted hero card layering behind health bar | UI | Low / CSS Stacking | XS | 🟢 **Resolved** (Phase 4 group B) |
-| **P3** | **#199** | act(...) warnings in CardView image tests [AUD-OQ-01] | Refactor | Low / Vitest Output | S | 🟢 **Resolved** (Phase 4 group B) |
-| **P3** | **#200** | Main JS bundle exceeds 500 kB [AUD-OQ-02] | UI/Perf | Medium / Bundler | M | 🟢 **Resolved** (Phase 4 group B) |
-| **P3** | **#201** | normalizeCardCodeForArt dead export [AUD-OQ-03] | Refactor | Low / Service | XS | 🟢 **Resolved** (Phase 4 group B) |
-| **P3** | **#202** | Tighten customActionHandlers action:any [AUD-OQ-04] | Engine | Low / Types | S | 🟢 **Resolved** (Phase 4 group B) |
+| **P3** | **#224** | Acceleration icons on non-side-scheme cards ignored in step 1 | Engine | Low (outside Core Set) | S | 🟡 **Open** |
+| **P3** | **#192** | Remove villain-phase step aliases in tests [AUD-F001] | Refactor | Low / Tests Only | S | 🟢 **Resolved** (`c89aed1`) |
+| **P3** | **#195** | Fix mismatched log key step4->step3 [AUD-F004] | Refactor | Low / Log Locale | XS | 🟢 **Resolved** (`c89aed1`) |
+| **P3** | **#196** | Remove ambiguous ScenarioDefinition alias [AUD-F005] | Refactor | Low / Catalog Types | XS | 🟢 **Resolved** (`37e8f43`) |
+| **P3** | **#197** | Remove dead isFacedown probes in CardView [AUD-F006] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (`4480314`) |
+| **P3** | **#198** | Remove dead raw field fallbacks in PlayerHandTray [AUD-F007] | Refactor | Low / UI Only | XS | 🟢 **Resolved** (`a41f997`) |
+| **P3** | **#161** | Exhausted hero card layering behind health bar | UI | Low / CSS Stacking | XS | 🟢 **Resolved** (`0ed001b`) |
+| **P3** | **#199** | act(...) warnings in CardView image tests [AUD-OQ-01] | Refactor | Low / Vitest Output | S | 🟢 **Closed** (not reproducible) |
+| **P3** | **#200** | Main JS bundle exceeds 500 kB [AUD-OQ-02] | UI/Perf | Medium / Bundler | M | 🟢 **Resolved** (`0f97520`) |
+| **P3** | **#201** | normalizeCardCodeForArt dead export [AUD-OQ-03] | Refactor | Low / Service | XS | 🟢 **Resolved** (`efcb8a4`) |
+| **P3** | **#202** | Tighten customActionHandlers action:any [AUD-OQ-04] | Engine | Low / Types | S | 🟢 **Resolved** (`7d6bfb1`) |
 
 ---
 
@@ -175,7 +221,7 @@ flowchart TD
 - ✅ **#180 / #129**: *Captain Marvel* (`01010a` Rechannel) & Rhino attachment — payment modal resource type enforcement.
 - ✅ **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
 
-### Phase 3: Architectural Foundation & Shared Gating (Active 🎯)
+### Phase 3: Architectural Foundation & Shared Gating (Completed ✅)
 - ✅ **#122**: Shared step-gate evaluator extracted.
 - ✅ **#154**: Gate Cosmic Flight *Aerial* trait on Hero form.
 - ✅ **#158**: Obligation engine for the five core obligations (zone, recipient, ability-based resolution).
@@ -184,25 +230,54 @@ flowchart TD
 - ✅ **#194**: Migration of the legacy `state.villain` / `state.mainScheme` pointers to accessor helpers (7 batches, ADR-0076).
   - Deferred follow-ups for Wrecking Crew (MC03): **#210** (per-villain encounter decks), **#211** (side schemes and scheme threat), **#212** (multi-villain targeting, Guard, win), **#213** (active counter effects), **#214** (scenario plugin and data), **#215** (remove the legacy fields and migrate test fixtures).
 
-### Phase 4: Code Audit Cleanups & Polish
+### Phase 4: Code Audit Cleanups & Polish (Completed ✅)
 - ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes (plan: `plan_phase4_audit_cleanups_a.md`).
 - ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports (plan: `plan_phase4_audit_cleanups_b.md`). Phase 4 is complete.
 
-### Phase 5: Core Set Card Correctness (Gate 1 release gate) — Next 🎯
+### Phase 5: Core Set Card Correctness (Gate 1 release gate), Active 🎯
 
-Goal: the Core Set cards used by the Rhino vertical slice do what the printed text says. Two tracks:
+Goal: the Core Set cards used by the Rhino vertical slice do what the printed text says. Two tracks.
 
-- **Track A, reported card bugs (do first):**
-  1. ✅ **#133** Hydra Bomber (01110): damage scoped to the revealing player. Audit of the same `HERO` pattern (`plan_hero_target_audit.md`): `01191` fixed, six placeholder cards stripped with ambiguity reports. Engine prerequisites filed: #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 damage gate, #222 form-literal "your hero" selector, #223 named-minion attack.
-  2. ✅ **#132** Imminent Overload (01171): validated by test; the card prints an Acceleration icon (not Crisis) and the engine matches the printed text. Follow-up #224 (acceleration icons outside side schemes).
-  3. ✅ **#131** Rocket Boots (01039): same defect as review item A3 (the Aerial grant is never applied); Tier 2/3, needs an engine primitive and Card Editor parameter work (M).
-  4. ✅ **#207** Wakanda Forever! sequence pausing and follow-up F1 (resumable `pendingSpecialSequence`, ADR-0038 addendum). Follow-up #225 (`executeSequence` swallows step failures). **Track A is complete.**
-- **Track B, core player cards review tracker** (`plan_core_player_cards_review.md`, living, one item at a time): A1 is done (`a6c5397`). Remaining order from the tracker: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A3-A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
+- **Track A, reported card bugs: complete ✅**
+  1. ✅ **#133** Hydra Bomber (`9f8320c`): damage scoped to the revealing player. The audit of the same `HERO` pattern (`plan_hero_target_audit.md`) fixed `01191` Exhaustion and stripped six placeholder cards with ambiguity reports (`docs/ambiguities/core_encounter_*`).
+  2. ✅ **#132** Imminent Overload (`e289645`): validated; the card prints Acceleration, not Crisis.
+  3. ✅ **#131** Rocket Boots (`32aa400`): timed trait modifiers; default duration is "while the source card is in play".
+  4. ✅ **#207** Wakanda Forever! (`a6c5397`, `df01659`): resumable special sequence; follow-up F1 done.
+- **Track A follow-up: engine prerequisites for the stripped cards (open):**
+
+| Card | Blocked by |
+|---|---|
+| `01191` Exhaustion (Surge) | #218 |
+| `01179` Yon-Rogg's Treason | #219 (the conditional surge uses the existing `SURGE` effect) |
+| `01169` The Vulture's Plans | #219, #220 |
+| `01174` Electromagnetic Backlash | #220, #219 |
+| `01159` Ritual Combat | #222 (and confirm choice-time `DISCARDED_CARDS`) |
+| `01168` Sweeping Swoop | #222, #221 |
+| `01164` Titania's Fury | #222, #223 |
+
+- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A3 (`32aa400`) and follow-ups F1/F2 are done. Remaining, in the tracker's order: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
 - **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
-### Phase 6: Supplemental Data Pass (postponed) — #100
+
+### Phase 6: Supplemental Data Pass (postponed), #100
 
 - **#100** "New pass on card supplemental data" is **postponed** (downgraded from P0-blocker to P2-medium).
 - **Why:** Phase 5 and the core review tracker may still change primitives, triggers, filters and parameters; a full pass now would be redone. Start it only after Phase 5 is finished, on a stable engine contract.
+
+### Unscheduled open issues
+
+Not part of any phase yet; pick them deliberately:
+
+| Issue | Title | Labels | Note |
+|---|---|---|---|
+| #37 | Multiplayer Alliance collaborative resource payment and Team-Up validators | P2, engine | Feature, no dependency on Phase 5 |
+| #126 | Remove deprecated attachment discard action forwarder | P2, needs-review | Cleanup |
+| #127 | Replace unsafe dynamic effect and filter contracts with typed boundary adapters | P2, needs-review | Type-safety refactor |
+| #206 | Identity printed traits are the union of hero and alter-ego sides regardless of form | bug | Relates to the "cards are literal" rule; triage priority |
+| #208 | Player-deck obligations go to the play area on draw | P3 | Depends on #158 (done) |
+| #209 | Conditional encounter attachments ("Attach to X. Otherwise ...", 42 cards) | P3 | Independent of #158 |
+| #109 | Observer-scoped minion and enemy reaction triggers | P3 | Feature |
+| #27 | Calibrate the security response SLA in `SECURITY.md` | P3, docs | Documentation |
+| #100 | New pass on card supplemental data | P2 (postponed) | Phase 6 |
 
 ---
 
@@ -214,7 +289,9 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 5, Track B** (core player cards review, one item at a time per `plan_core_player_cards_review.md`) together with the engine issues #218-#223 and #225 that unblock the stripped encounter cards. Next item to pick: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test). Engine issues #218-#223 unblock the six stripped cards (do before or alongside #131/#207). Needs a plan before implementation.
+   - Primary: **Phase 5, Track B** (core player cards review): start with the Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), one item at a time, each with a plan first.
+   - In parallel or next: the engine prerequisites #218 (Surge keyword, six cards) and #219/#222 (two to three cards each) unblock the stripped encounter cards; #225 improves failure visibility for all abilities.
+   - Wrecking Crew (#210-#215) is deferred until MC03 is scheduled.
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

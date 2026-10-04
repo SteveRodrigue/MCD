@@ -126,6 +126,9 @@ Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 
    - Any ability targeting `HERO` or `ALL_HEROES` strictly filters `player.currentForm === 'hero'`. Alter-Egos are immune.
 4. **Consistency in Collective Naming:**
    - All collective/plural selectors strictly carry the **`ALL_`** prefix (e.g. `ALL_HEROES_AND_ALLIES`).
+5. **Cards are read literally (no interpretation):**
+   - Printed "**your hero**" is the resolving player's hero identity and **never** the alter-ego; "take damage" / "your identity" apply to the identity in either form (`SELF_IDENTITY`).
+   - `HERO` is **not** "your hero": it targets every player in hero form. Using it for "your hero" damages other players (#133). A form-literal "your hero" selector is tracked in #222; until it exists, cards that print "your hero" stay without an executable ability (see `docs/ambiguities/`).
 
 ---
 

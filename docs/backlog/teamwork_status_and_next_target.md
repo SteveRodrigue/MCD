@@ -139,7 +139,8 @@ flowchart TD
 | **P2** | **#154** | Cosmic Flight Aerial trait active in Alter-Ego | Card Data | Low / Trait Engine | S | 🟢 **Resolved** (`608a19a`) |
 | **P2** | **#194** | Replace state.villain legacy pointers [AUD-F003] | Engine | High / ~520 Call Sites | L | 🟢 **Resolved** (`ba31d33`..`11067bc`) |
 | **P2** | **#100** | New pass on card supplemental data (postponed, was P0) | Card Data | High / all cards | L | ⏸️ **Postponed** (Phase 6) |
-| **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟡 **Open** (Phase 5) |
+| **P2** | **#218-#223** | Engine prerequisites for stripped core encounter cards (Surge keyword, hand discard, per-player iteration, damage gate, "your hero" selector, named-minion attack) | Engine | Medium | M each | 🟡 **Open** (Phase 5) |
+| **P2** | **#133** | Hydra Bomber (01110) damages both heroes | Card Data | Low / Supplemental Data | XS | 🟢 **Resolved** (Phase 5, data fix + audit) |
 | **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟡 **Open** (Phase 5) |
 | **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟡 **Open** (Phase 5) |
 | **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟡 **Open** (Phase 5) |
@@ -192,8 +193,8 @@ flowchart TD
 Goal: the Core Set cards used by the Rhino vertical slice do what the printed text says. Two tracks:
 
 - **Track A, reported card bugs (do first):**
-  1. 🎯 **#133** Hydra Bomber (01110): scope the 2 damage to the right heroes (XS, data).
-  2. **#132** Imminent Overload (01171): confirm or fix Crisis behavior with a test (S).
+  1. ✅ **#133** Hydra Bomber (01110): damage scoped to the revealing player. Audit of the same `HERO` pattern (`plan_hero_target_audit.md`): `01191` fixed, six placeholder cards stripped with ambiguity reports. Engine prerequisites filed: #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 damage gate, #222 form-literal "your hero" selector, #223 named-minion attack.
+  2. 🎯 **#132** Imminent Overload (01171): confirm or fix Crisis behavior with a test (S).
   3. **#131** Rocket Boots (01039): same defect as review item A3 (the Aerial grant is never applied); Tier 2/3, needs an engine primitive and Card Editor parameter work (M).
   4. **#207** Wakanda Forever! sequence pausing, then follow-up F1 (M).
 - **Track B, core player cards review tracker** (`plan_core_player_cards_review.md`, living, one item at a time): A1 is done (`a6c5397`). Remaining order from the tracker: Tier 1 data-only items (A2 partial, B7, C1-C5, C8, C11, A6 test), then Tier 2 helpers (A3-A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
@@ -213,7 +214,7 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
    rtk npm test
    ```
 2. **Select Active Target:**
-   - Primary: **Phase 5, Track A, step 1: Issue #133** (Hydra Bomber). Then #132, #131 (= review item A3), #207. Needs a plan before implementation.
+   - Primary: **Phase 5, Track A, step 2: Issue #132** (Imminent Overload). Then #131 (= review item A3), #207. Engine issues #218-#223 unblock the six stripped cards (do before or alongside #131/#207). Needs a plan before implementation.
 3. **Follow Standard TDD & Quality Gates:**
    - Author reproduction test in `tests/engine/` or `tests/ui/`.
    - Implement declarative data / generic engine logic.

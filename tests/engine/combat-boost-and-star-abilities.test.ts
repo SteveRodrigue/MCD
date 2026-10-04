@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { GameState, HeroCard, AlterEgoCard, StatusCard } from '@engine/models';
+import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEnemyAttackSynchronously } from '@engine/pipeline';
 
@@ -117,17 +117,6 @@ describe('Sub-Milestone 2B-2: 0-to-Many Boost Queue, Star Abilities (★) & Boos
       // Both boost cards discarded
       expect(state.encounterDiscard.some((c) => c.card.code === '01164')).toBe(true);
       expect(state.encounterDiscard.some((c) => c.card.code === '01103')).toBe(true);
-    });
-
-    it('executes Sweeping Swoop (01168) boost ability to stun defending character', () => {
-      expect(state.players[0].statusCards).not.toContain(StatusCard.STUNNED);
-
-      const sweepingSwoopCard = cardCatalog.getCard('01168')!;
-      state.encounterDeck = [createCardInstance(sweepingSwoopCard), ...state.encounterDeck];
-
-      executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
-
-      expect(state.players[0].statusCards).toContain(StatusCard.STUNNED);
     });
 
     it('executes Electric Whip Attack (01173) boost ability to discard an upgrade from player tableau', () => {

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): _False Alarm_ `01112` surges when you are already confused ([Issue #242](https://github.com/SteveRodrigue/MCD/issues/242))**
+  - **Supplemental Data (`core_encounter.json`):** the printed second sentence is now modelled: after `ADD_STATUS CONFUSED` on `SELF_IDENTITY`, a `SURGE` step gated `IF_ALREADY_HAS_STATUS` (the same pattern as `01105`). The gate reads whether the identity was confused *before* this card. Timing normalised to `WHEN_REVEALED`. Data only, no engine change.
+  - **Automated Verification (`false-alarm-surge.test.ts`):** 4 new tests (hero and alter-ego form, not confused: confused and no surge; already confused: one confused card and exactly one surge). Filler cards on top of the deck keep them deterministic.
+  - **Follow-up:** the `IF_ALREADY_HAS_STATUS` fallback (used only without a previous step result) handles `VILLAIN` only; recorded under WP7 ([#232](https://github.com/SteveRodrigue/MCD/issues/232)).
+
 - **Fix (Data): _Heart-Shaped Herb_ `01158` gives tough status cards instead of an invented heal ([Issue #244](https://github.com/SteveRodrigue/MCD/issues/244), first row)**
   - **Supplemental Data (`core_encounter.json`):** the placeholder "heal the villain 2" is replaced by the printed text: When Revealed `ADD_STATUS TOUGH` on `ENGAGED_ENEMIES` (the villain and each minion engaged with the revealing player), and a new star Boost `ADD_STATUS TOUGH` on `VILLAIN`. Surge stays with the printed keyword (#218). Data only, no engine or schema change.
   - **Automated Verification (`heart-shaped-herb.test.ts`):** 4 new tests (villain and own minion get tough, no healing; another player's minion is untouched; at most one tough; boost during a villain attack).

@@ -1,6 +1,6 @@
 # Plan: #244 (first row), Heart-Shaped Herb `01158` replaces its invented placeholder
 
-> **Status:** implemented 2026-10-05 (approved with option A: `trigger: "BOOST"`; not committed yet). Tier 1 (data only, no engine or schema change). Queue item 1 of section 3.1 in [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md).
+> **Status:** implemented 2026-10-05 (approved with option A: `trigger: "BOOST"`; committed `4d200a5`). Tier 1 (data only, no engine or schema change). Queue item 1 of section 3.1 in [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md).
 > **Scope:** only `01158`. The other rows of #244 (`01185` Biomechanical Upgrades, needs #209; `01121` Weapons Runner) stay open, so the commit says `Refs #244`.
 > **UI / Card Editor impact:** none (no new selector, effect, gate or parameter).
 

@@ -591,12 +591,22 @@
       "abilities": [
         {
           "id": "false_alarm_confuse",
-          "timing": "FORCED_RESPONSE",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
+              "id": "false_alarm_confuse_step",
               "effect": "ADD_STATUS",
               "effectParams": {
+                "status": "CONFUSED",
+                "target": "SELF_IDENTITY"
+              }
+            },
+            {
+              "id": "false_alarm_surge_step",
+              "effect": "SURGE",
+              "gate": "IF_ALREADY_HAS_STATUS",
+              "gateParams": {
                 "status": "CONFUSED",
                 "target": "SELF_IDENTITY"
               }
@@ -606,9 +616,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T21:30",
-        "reviewedAt": "2026-10-04T21:30",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-05T08:40",
+        "reviewedAt": "2026-10-05T08:40",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 98,
         "originalText": "<b>When Revealed</b>: You are confused. If you are already confused, this card gains surge."

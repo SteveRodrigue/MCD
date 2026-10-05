@@ -24,3 +24,6 @@ On Windows, the agent tool execution environment already runs directly inside Po
    - Spawning nested `powershell.exe` child instances wastes 1–2 seconds per invocation booting a redundant .NET runtime and host.
    - Quoting arguments inside `-Command "..."` causes command-line parser stripping, breaking nested quotes, parentheses, and script blocks.
    - Prefixing CLI commands with `rtk` condenses terminal output by 60–90%, preserving context window budget while keeping all errors, warnings, and exit codes.
+
+4. **PowerShell Syntax (Not Bash):**
+   - `&&` and `||` do not exist in Windows PowerShell 5.1 and `(cmd1; cmd2) | ...` is a parse error. Chain with `;`, or use `@(cmd1) + @(cmd2)` and `if ($?) { ... }`.

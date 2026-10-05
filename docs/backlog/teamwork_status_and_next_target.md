@@ -1,9 +1,9 @@
 # MCD Backlog: Status, Work Queue and Handoff
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last work commit `5d01ec3` (#234, chosen vs event target). Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit `ecc52ba` (#248, pausable `executeSequence`). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,850 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,853 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -34,7 +34,8 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | #242 | False Alarm `01112`: surge when already confused (`IF_ALREADY_HAS_STATUS`) | `7686171` |
 | Triage of #233 to #240 | 8 in-app reports diagnosed; #235, #236, #239 closed as duplicates of #234; #245, #246 filed from two new reports | GitHub only |
 | #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | `5d01ec3` |
-| #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `pending` |
+| #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
+| Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
 
 ---
 
@@ -82,6 +83,9 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |
 | 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **owner decision:** Gate 1 or Gate 3 | 15 direct `winner` writes |
+| 3f | Spider-Tracer `01007` removes threat and discards side scheme prematurely (Crowd Control 4-3=1 threat remaining) | [#249](https://github.com/SteveRodrigue/MCD/issues/249) | incorrect scheme defeat | |
+| 3g | Webbed Up `01009` does not trigger / replace properly when villain is already Stunned | [#250](https://github.com/SteveRodrigue/MCD/issues/250) | replacement timing bug | |
+| 3h | Lead from the Front `01070` did not prompt to choose a player | [#251](https://github.com/SteveRodrigue/MCD/issues/251) | missing player choice prompt | |
 | — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
 | 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | blocked on #209 for a faithful model: **apply the circuit-breaker now** (strip, ambiguity report) so WP5 can pass with zero exemptions |
 

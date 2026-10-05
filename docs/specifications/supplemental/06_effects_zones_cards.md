@@ -321,6 +321,14 @@ Supported `discardAttribute` inspection modes:
 
 ---
 
+### `ATTACH_FACEDOWN_CARDS_FROM_HAND` and `RETURN_TO_HAND` (cards underneath)
+
+`ATTACH_FACEDOWN_CARDS_FROM_HAND` (no parameters): each player with a non-empty hand moves one random card from it to `cardsUnderneath` of the **host in play** that owns the source card (today: a side scheme in `state.sideSchemes`; the engine looks the host up by `instanceId`, never trusting the reveal-time instance). The card keeps `ownerId` = the player it came from. Players with an empty hand are skipped.
+
+`RETURN_TO_HAND`, when the source card has cards underneath: each goes to the hand of its `ownerId` and `cardsUnderneath` is emptied. Otherwise it returns the source card itself (ally or tableau card) to its controller's hand.
+
+Ordering on defeat (ADR-0034 addendum): the scheme's "When Defeated" abilities run **before** its attachments and cards underneath are discarded, so a card can return what is underneath. Anything still underneath afterwards is discarded.
+
 ### `CHANGE_FORM` (alias `FLIP_FORM`)
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)`; `form` and `optional` added in Issue #158.

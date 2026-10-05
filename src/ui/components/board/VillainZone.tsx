@@ -400,17 +400,34 @@ export const VillainZone: React.FC<VillainZoneProps> = ({
 
             {sideSchemes.length > 0 ? (
               <div className="flex flex-wrap gap-3 items-center pt-1 overflow-visible">
-                {sideSchemes.map((scheme) => (
-                  <div
-                    key={scheme.instanceId}
-                    className="flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50"
-                  >
-                    <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
-                    <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm">
-                      ⚠️ {scheme.threat} THREAT
-                    </span>
-                  </div>
-                ))}
+                {sideSchemes.map((scheme) => {
+                  const stackedPx =
+                    (scheme.attachments?.length ?? 0) * 70 +
+                    (scheme.cardsUnderneath?.length ?? 0) * 12;
+                  return (
+                    <div
+                      key={scheme.instanceId}
+                      className={`flex flex-col items-center gap-1 relative z-10 hover:z-50 focus-within:z-50 ${
+                        stackedPx > 0 ? 'ml-4 sm:ml-6' : ''
+                      }`}
+                      style={stackedPx > 0 ? { marginBottom: `${stackedPx}px` } : undefined}
+                    >
+                      <div className="relative flex flex-col items-center">
+                        <div className="relative z-30">
+                          <CardView card={scheme.card} size="sm" enableHoverZoom={true} />
+                        </div>
+                        <CardAttachmentFan
+                          attachments={scheme.attachments}
+                          cardsUnderneath={scheme.cardsUnderneath}
+                          mode="staircase"
+                        />
+                      </div>
+                      <span className="bg-comic-yellow text-comic-black border border-comic-black font-comic text-[10px] px-1.5 py-0.5 rounded-full shadow-comic-sm relative z-40">
+                        ⚠️ {scheme.threat} THREAT
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-3 text-center text-xs text-slate-400 font-semibold border-2 border-dashed border-slate-300 rounded-lg">

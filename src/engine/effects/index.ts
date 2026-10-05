@@ -365,6 +365,18 @@ export function discardCardInstance(
 }
 
 /**
+ * Returns the in-play zone entity that stands for `source`, so effects mutate the real host
+ * instead of a reveal-time copy. Side schemes live as `SideSchemeState` in `state.sideSchemes`.
+ */
+function resolveSourceHostZone(
+  state: GameState,
+  source?: CardInstance,
+): { cardsUnderneath?: CardInstance[] } | undefined {
+  if (!source) return undefined;
+  return state.sideSchemes.find((s) => s.instanceId === source.instanceId);
+}
+
+/**
  * Universal helper to process character defeat when cards are attached (RR v1.8 p. 6, 13).
  * Triggers all 'HOST_DEFEATED' interrupt abilities on attached cards, then cleanly discards them.
  */
@@ -457,10 +469,7 @@ export function defeatSideScheme(
       state.players[0];
   const targetPlayerId = player?.id || state.players[0]?.id || 'p1';
 
-  // 1. Process host attachments and tucked cards
-  processHostDefeated(state, defeatedInstance, { player });
-
-  // 2. Dispatch canonical defeat triggers
+  // 1. Dispatch canonical defeat triggers
   const defeatContext = {
     targetPlayerId,
     sourceInstanceId: defeatedInstance.instanceId,
@@ -469,7 +478,8 @@ export function defeatSideScheme(
   dispatchTrigger(state, 'DEFEATED', defeatContext);
   dispatchTrigger(state, 'SCHEME_DEFEATED', defeatContext);
 
-  // 3. Resolve 'When Defeated' reward abilities declared on the scheme itself
+  // 2. Resolve 'When Defeated' abilities declared on the scheme itself, before its attachments and
+  // facedown cards are cleaned up, so "return each card here" still sees them (#238)
   const defeatedAbilities = sideScheme.card.enrichment?.abilities || [];
   for (const ability of defeatedAbilities) {
     const trigger = ability.trigger as string | undefined;
@@ -487,6 +497,9 @@ export function defeatSideScheme(
       });
     }
   }
+
+  // 3. Clean up whatever is still attached or underneath (attachments, tucked cards)
+  processHostDefeated(state, defeatedInstance, { player });
 
   // 4. Route to Victory Display or the appropriate discard pile (RR v1.8 p. 30, ADR-0034)
   const destinationPile = sideScheme.ownerId
@@ -4582,16 +4595,13 @@ export function executeStep(
     }
 
     case 'RETURN_TO_HAND': {
-      if (
-        context.sourceCardInstance?.attachments &&
-        context.sourceCardInstance.attachments.length > 0
-      ) {
-        for (const card of context.sourceCardInstance.attachments) {
-          const ownerId = (card as any).ownerId;
-          const owner = state.players.find((p) => p.id === ownerId) || player;
+      const underneath = context.sourceCardInstance?.cardsUnderneath;
+      if (underneath && underneath.length > 0) {
+        for (const card of underneath) {
+          const owner = state.players.find((p) => p.id === card.ownerId) || player;
           owner.hand.push(card);
         }
-        context.sourceCardInstance.attachments = [];
+        context.sourceCardInstance!.cardsUnderneath = [];
         return {
           state,
           success: true,
@@ -5191,25 +5201,25 @@ export function executeStep(
     }
 
     case 'ATTACH_FACEDOWN_CARDS_FROM_HAND': {
+      // Cards go under the host as it exists in state, not under the reveal-time instance (#238).
+      const host = resolveSourceHostZone(state, context.sourceCardInstance);
+      if (!host) {
+        return { state, success: false, error: 'No host in play to place facedown cards under' };
+      }
       for (const p of state.players) {
         if (p.hand.length > 0) {
           const randIdx = Math.floor(Math.random() * p.hand.length);
           const [removed] = p.hand.splice(randIdx, 1);
-          if (context.sourceCardInstance) {
-            if (!context.sourceCardInstance.attachments)
-              context.sourceCardInstance.attachments = [];
-            context.sourceCardInstance.attachments.push({
-              ...removed,
-              ownerId: p.id,
-            } as any);
-          }
+          removed.ownerId = p.id;
+          if (!host.cardsUnderneath) host.cardsUnderneath = [];
+          host.cardsUnderneath.push(removed);
         }
       }
       return {
         state,
         success: true,
         mutatedState: true,
-        onomatopoeia: 'CARDS ATTACHED FACEDOWN!',
+        onomatopoeia: 'CARDS PLACED FACEDOWN!',
       };
     }
 

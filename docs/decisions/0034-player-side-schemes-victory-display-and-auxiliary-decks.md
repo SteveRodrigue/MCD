@@ -91,3 +91,7 @@ export interface GameState {
 ### Implementation Status Note
 
 - **Zero cards in the currently-loaded Core Set catalog use `player_side_scheme` or the `Victory` keyword** (only Core Set packs are synced per ADR-0006); this delivery is a forward-looking engine capability verified with synthetic test fixtures (`tests/engine/player-side-schemes-and-victory-display.test.ts`), consistent with how ADR-0035/ADR-0036 built primitives ahead of card availability. No `src/data/supplemental/pack/*.json` retrofit was needed or performed.
+
+## Addendum (2026-10-05, #238): "When Defeated" resolves before host cleanup
+
+`defeatSideScheme` used to discard a scheme's attachments and cards underneath first and run its "When Defeated" abilities afterwards, so Highway Robbery's "return each facedown card here to its owner's hand" found nothing and the cards were lost. **Decision:** run the scheme's own "When Defeated" abilities first, then `processHostDefeated` (attached cards' host-defeated interrupts and the discard of whatever remains), then route the scheme to its discard pile. Facedown cards placed "here" live in `cardsUnderneath` of the `SideSchemeState` (not `attachments`), and effects resolve the host from `state.sideSchemes` rather than from the reveal-time instance.

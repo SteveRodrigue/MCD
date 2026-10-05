@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-05
 > **Repository state:** `main`, last work commit `ecc52ba` (#248, pausable `executeSequence`). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,853 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,860 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -35,6 +35,7 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | Triage of #233 to #240 | 8 in-app reports diagnosed; #235, #236, #239 closed as duplicates of #234; #245, #246 filed from two new reports | GitHub only |
 | #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | `5d01ec3` |
 | #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
+| #238 | Highway Robbery: real host, `cardsUnderneath`, "When Defeated" before host cleanup, facedown stack UI | `git log --grep "#238"` |
 | Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
 
 ---
@@ -78,7 +79,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | :-- | :-- | :-- | :-- | :-- |
 | 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05, [plan](plan_issue_244_heart_shaped_herb.md)) | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
 | 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05 ([plan](plan_issue_248_pausable_execute_sequence.md)); `pendingSpecialSequence` retired |
-| 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | evidence in the issue |
+| 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05 ([plan](plan_issue_238_highway_robbery.md)); seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | check Great Responsibility `01061` too |
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |

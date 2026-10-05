@@ -127,35 +127,4 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
       expect(player.exhausted).toBe(false);
     });
   });
-
-  describe('Encounter: Highway Robbery (01166)', () => {
-    it('Attaches facedown card from each player hand and returns to owner on defeat', () => {
-      const player = state.players[0];
-      const cardA = createCardInstance(cardCatalog.getCard('01005')!);
-      player.hand = [cardA];
-
-      const schemeInstance = createCardInstance(cardCatalog.getCard('01166')!);
-
-      // When Revealed
-      executeEffect(
-        state,
-        { effect: 'ATTACH_FACEDOWN_CARDS_FROM_HAND' },
-        { playerId: 'p1', sourceCardInstance: schemeInstance },
-      );
-
-      expect(player.hand.length).toBe(0);
-      expect(schemeInstance.attachments?.length).toBe(1);
-
-      // When Defeated
-      executeEffect(
-        state,
-        { effect: 'RETURN_TO_HAND' },
-        { playerId: 'p1', sourceCardInstance: schemeInstance },
-      );
-
-      expect(player.hand.length).toBe(1);
-      expect(player.hand[0].instanceId).toBe(cardA.instanceId);
-      expect(schemeInstance.attachments?.length).toBe(0);
-    });
-  });
 });

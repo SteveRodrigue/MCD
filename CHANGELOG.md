@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + UI): Highway Robbery `01166` no longer loses the cards it takes ([Issue #238](https://github.com/SteveRodrigue/MCD/issues/238))**
+  - **Engine:** `ATTACH_FACEDOWN_CARDS_FROM_HAND` placed the cards on a reveal-time copy of the side scheme instead of the one in `state.sideSchemes`, so they vanished from the game. It now resolves the real host and stores the cards in `cardsUnderneath` with their `ownerId` (no more `attachments` / `as any`).
+  - **Engine, defeat order:** `defeatSideScheme` now resolves the scheme's own "When Defeated" abilities before cleaning up its attachments and cards underneath, so `RETURN_TO_HAND` still finds the facedown cards. `RETURN_TO_HAND` returns each card to its owner and reads `cardsUnderneath`. Cards left underneath after the abilities are discarded as before.
+  - **UI:** cards underneath any host stack like attachments (staircase or vertical) and show the player (or encounter) card back only; side schemes now render their stack. The "N Underneath" pill is retired.
+  - **Tests:** new `tests/engine/highway-robbery.test.ts` and `tests/ui/side-scheme-facedown-stack.test.tsx`; the old unit test that called the effects with a scheme not in state was removed (it asserted the buggy behaviour).
+
 - **Fix (Engine): pausable `executeSequence` and general resumable execution ([Issue #248](https://github.com/SteveRodrigue/MCD/issues/248))**
   - **Engine, pausable sequences:** `executeSequence` (`src/engine/effects/index.ts`) detects when any step enqueues a decision prompt into `pendingDecisionQueue` and pauses subsequent steps into `state.pendingSequences` (preserving remaining steps, context, `previousResult`, step results map, and dynamic values).
   - **Engine, resumable execution:** `dispatchAction` in `action-dispatcher.ts` automatically resumes pending sequences via `resumePendingSequence` once the active decision prompt queue is cleared.

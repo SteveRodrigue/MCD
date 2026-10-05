@@ -6,7 +6,7 @@ import {
   ActionResult,
   CardAbility,
 } from '../models';
-import { executeEffect } from '../effects';
+import { executeEffect, hasPendingSequence, resumePendingSequence } from '../effects';
 import { abilityHasValidTarget } from '../effects/target-choice';
 import {
   executeAbilityCost,
@@ -324,8 +324,13 @@ export function resolveDecisionPrompt(
       }
     }
 
+    let finalState = nextState;
+    if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
+      finalState = resumePendingSequence(finalState);
+    }
+
     return {
-      state: nextState,
+      state: finalState,
       result: { success: true, onomatopoeia: 'PASSED' },
     };
   }
@@ -444,8 +449,13 @@ export function resolveDecisionPrompt(
       }
     }
 
+    let finalState = nextState;
+    if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
+      finalState = resumePendingSequence(finalState);
+    }
+
     return {
-      state: nextState,
+      state: finalState,
       result: {
         success: true,
         onomatopoeia: effectRes.onomatopoeia || 'ABILITY TRIGGERED!',
@@ -543,8 +553,13 @@ export function resolveDecisionPrompt(
   // The chosen option may have changed state later prompts depend on (e.g. a form flip)
   refreshPromptOptionAvailability(effectRes.state, peekDecisionPrompt(effectRes.state));
 
+  let finalState = effectRes.state;
+  if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
+    finalState = resumePendingSequence(finalState);
+  }
+
   return {
-    state: effectRes.state,
+    state: finalState,
     result: {
       success: true,
       onomatopoeia: effectRes.onomatopoeia || 'CHOICE RESOLVED!',

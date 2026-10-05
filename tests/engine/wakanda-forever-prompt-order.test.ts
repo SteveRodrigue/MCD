@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { cardCatalog } from '../../src/data/importer/card-loader';
-import { executeEffect } from '@engine/effects';
+import { executeEffect, resumePendingSequence } from '@engine/effects';
 import { dispatchAction, peekDecisionPrompt } from '@engine/pipeline';
 import { enqueueDecisionPrompt, popDecisionPrompt } from '@engine/pipeline/prompt-queue';
-import { resumePendingSpecialSequence } from '@engine/specials/special-registry';
 import { GameState, StatusCard, getActiveVillain, getActiveMainScheme } from '@engine/models';
 
 /**
@@ -140,7 +139,7 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
     const res = playWakandaForever(state, [daggers.instanceId, claws.instanceId]);
     const after = chooseVillainTarget(choosePlayer(res.state, 'p2'));
     expect(peekDecisionPrompt(after)).toBeUndefined();
-    expect((after as any).pendingSpecialSequence).toBeUndefined();
+    expect(after.pendingSequences?.length ?? 0).toBe(0);
   });
 
   it('a prompt-free sequence still resolves immediately (no pending state)', () => {
@@ -155,7 +154,7 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
     expect(peekDecisionPrompt(res.state)).toBeUndefined();
     expect(getActiveVillain(res.state).health).toBe(hp - 2);
     expect(getActiveMainScheme(res.state).threat).toBe(3);
-    expect((res.state as any).pendingSpecialSequence).toBeUndefined();
+    expect(res.state.pendingSequences?.length ?? 0).toBe(0);
   });
   it('does not resume early while an unrelated prompt is still queued, then completes once it is gone', () => {
     const state = buildGame();
@@ -184,12 +183,12 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
 
     const answered = choosePlayer(afterDaggersPrompt, 'p2');
     expect(peekDecisionPrompt(answered)?.promptId).toBe('unrelated');
-    expect(answered.pendingSpecialSequence?.remainingUpgradeIds).toEqual([genius.instanceId]);
+    expect(answered.pendingSequences?.length).toBe(1);
     expect(getActiveMainScheme(answered).threat).toBe(5);
 
     popDecisionPrompt(answered);
-    const resumed = resumePendingSpecialSequence(answered);
+    const resumed = resumePendingSequence(answered);
     expect(getActiveMainScheme(resumed).threat).toBe(3);
-    expect(resumed.pendingSpecialSequence).toBeUndefined();
+    expect(resumed.pendingSequences?.length ?? 0).toBe(0);
   });
 });

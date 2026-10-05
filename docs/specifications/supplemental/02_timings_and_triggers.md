@@ -28,7 +28,7 @@ The `timing` field specifies when an ability can be initiated or how it intercep
 | `'ALTER_EGO_RESPONSE'`  | Reaction            | Response restricted to Alter-Ego form.                                   | Alter-Ego only |
 | `'WHEN_REVEALED'`       | Encounter Mandatory | Triggered when encounter card is revealed in Step 4 or spawned.          | Encounter      |
 | `'CONSTANT'`            | Static / Aura       | Continuous passive modifier while card remains face-up in play.          | Any            |
-| `'SPECIAL'`             | Composite Trigger   | Triggered specifically by a parent event (e.g. _Wakanda Forever!_). Steps run in order; a step that opens a decision prompt pauses the rest (`pendingSpecialSequence`) until the prompt is answered. | Any            |
+| `'SPECIAL'`             | Composite Trigger   | Triggered specifically by a parent event (e.g. _Wakanda Forever!_). Steps run in order; any sequence step that opens a decision prompt pauses subsequent steps (`pendingSequences`, #248) until the prompt is answered. | Any            |
 | `'SETUP'`               | Scenario Setup      | Executed during Step 4/8 of game setup (e.g. _T'Challa_ upgrade search). | Setup Phase    |
 | `'BOOST'`               | Boost Resolution    | Triggered when card is flipped as a Villain or Minion boost card.        | Step 2/3 Boost |
 

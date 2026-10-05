@@ -34,6 +34,7 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | #242 | False Alarm `01112`: surge when already confused (`IF_ALREADY_HAS_STATUS`) | `7686171` |
 | Triage of #233 to #240 | 8 in-app reports diagnosed; #235, #236, #239 closed as duplicates of #234; #245, #246 filed from two new reports | GitHub only |
 | #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | `5d01ec3` |
+| #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `pending` |
 
 ---
 
@@ -75,7 +76,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | # | Item | Issue | Why now | Notes |
 | :-- | :-- | :-- | :-- | :-- |
 | 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05, [plan](plan_issue_244_heart_shaped_herb.md)) | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
-| 2 | **Next (owner decision 2026-10-05):** resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | consider #225 (same function, swallowed failures) in the same plan; retire the special-only `pendingSpecialSequence` |
+| 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05 ([plan](plan_issue_248_pausable_execute_sequence.md)); `pendingSpecialSequence` retired |
 | 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | evidence in the issue |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | check Great Responsibility `01061` too |
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |

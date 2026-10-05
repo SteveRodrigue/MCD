@@ -403,16 +403,17 @@ export interface EncounterExecutionContext {
 }
 
 /**
- * An ordered special-ability sequence (e.g. Wakanda Forever!) that paused because one of its steps
- * opened a decision prompt. The remaining steps resume once the prompt queue is empty (#207).
+ * A multi-step ability sequence that paused because one of its steps opened a decision prompt.
+ * The remaining steps resume once the prompt queue is empty (#248).
  */
-export interface PendingSpecialSequence {
-  specialId: string;
-  playerId: string;
-  /** Instance ids of the steps still to resolve, in order. */
-  remainingUpgradeIds: string[];
-  targetEnemyId?: string;
-  targetSchemeId?: string;
+export interface PendingSequence {
+  sequenceId?: string;
+  remainingSteps: AbilityStep[];
+  context: Record<string, any>;
+  previousResult?: Record<string, any>;
+  stepResultsMap?: Record<string, any>;
+  onomatopoeias?: string[];
+  anyStepMutated?: boolean;
 }
 
 export interface PendingActivation {
@@ -449,8 +450,8 @@ export interface GameState {
   pendingDecisionPrompt?: PendingDecisionPrompt;
   /** Ordered enemy activation queue for Villain Phase (ADR-0068) */
   pendingActivations?: PendingActivation[];
-  /** Special-ability sequence paused on a decision prompt (#207) */
-  pendingSpecialSequence?: PendingSpecialSequence;
+  /** Ordered multi-step ability sequences paused on a decision prompt (#248) */
+  pendingSequences?: PendingSequence[];
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;

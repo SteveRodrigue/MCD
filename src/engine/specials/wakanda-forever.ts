@@ -1,4 +1,4 @@
-import { GameState, CardInstance } from '../models';
+import { GameState, CardInstance, AbilityStep } from '../models';
 import { EffectExecutionContext, EffectResult, executeSequence } from '../effects';
 import { SpecialAbilityHandler, registerSpecialHandler } from './special-registry';
 import { enqueueDecisionPrompt } from '../pipeline/prompt-queue';
@@ -20,90 +20,12 @@ export function getPlayerBlackPantherUpgrades(playerState: {
   );
 }
 
-/**
- * Resolves a single Black Panther upgrade Special ability (ADR-0038 / RR v1.8 p. 28).
- */
-export function resolveSingleWakandaUpgrade(
-  state: GameState,
-  upgrade: CardInstance,
-  playerId: string,
-  isFinalStep: boolean,
-  targetEnemyId?: string,
-  targetSchemeId?: string,
-): void {
-  const player = state.players.find((p) => p.id === playerId) || state.players[0];
-
-  const specialAbility =
-    upgrade.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
-    cardCatalog
-      .getCard(upgrade.card.code)
-      ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL');
-  if (specialAbility && specialAbility.steps?.length) {
-    executeSequence(state, specialAbility.steps, {
-      playerId: player.id,
-      sourceCardInstance: upgrade,
-      chosenTargetInstanceId: targetEnemyId || targetSchemeId,
-      isFinalStep,
-    });
-    return;
-  }
-}
-
-/**
- * Resolves the pending Wakanda Forever! upgrades one at a time, in the chosen order. When a step
- * opens a decision prompt (e.g. Energy Daggers choosing a player) and more steps remain, the
- * sequence pauses with the rest saved in `state.pendingSpecialSequence`; `resume` continues it once
- * the prompt is answered (#207). The finisher flag is fixed by list position (the last step).
- */
-function runWakandaSequence(state: GameState): { resolved: number; paused: boolean } {
-  const pending = state.pendingSpecialSequence;
-  if (!pending) return { resolved: 0, paused: false };
-  const player = state.players.find((p) => p.id === pending.playerId) || state.players[0];
-  let resolved = 0;
-
-  while (pending.remainingUpgradeIds.length > 0) {
-    const upgradeId = pending.remainingUpgradeIds.shift()!;
-    const isFinal = pending.remainingUpgradeIds.length === 0;
-    const upgrade = player.tableau.find((t) => t.instanceId === upgradeId);
-    if (!upgrade) continue;
-
-    const promptsBefore = state.pendingDecisionQueue?.length ?? 0;
-    resolveSingleWakandaUpgrade(
-      state,
-      upgrade,
-      player.id,
-      isFinal,
-      pending.targetEnemyId,
-      pending.targetSchemeId,
-    );
-    resolved++;
-
-    const opensPrompt = (state.pendingDecisionQueue?.length ?? 0) > promptsBefore;
-    if (opensPrompt && pending.remainingUpgradeIds.length > 0) {
-      return { resolved, paused: true };
-    }
-  }
-
-  delete state.pendingSpecialSequence;
-  return { resolved, paused: false };
-}
-
 export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
   id: 'WAKANDA_FOREVER',
   validatePlayCondition: (state: GameState, context: EffectExecutionContext): boolean => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
     const upgrades = getPlayerBlackPantherUpgrades(player);
     return upgrades.length > 0;
-  },
-  resume: (state: GameState): EffectResult => {
-    const { resolved, paused } = runWakandaSequence(state);
-    return {
-      state,
-      success: true,
-      mutatedState: resolved > 0,
-      value: resolved,
-      onomatopoeia: paused ? 'SELECT WAKANDA TARGET ➔' : '⚡ WAKANDA FOREVER! ⚡',
-    };
   },
   execute: (state: GameState, context: EffectExecutionContext, payload?: any): EffectResult => {
     const player = state.players.find((p) => p.id === context.playerId) || state.players[0];
@@ -117,27 +39,39 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
       };
     }
 
-    const startSequence = (upgrades: CardInstance[]) => {
-      state.pendingSpecialSequence = {
-        specialId: 'WAKANDA_FOREVER',
+    const startSequence = (upgrades: CardInstance[]): EffectResult => {
+      const allSteps: AbilityStep[] = [];
+      for (let i = 0; i < upgrades.length; i++) {
+        const upg = upgrades[i];
+        const isFinal = i === upgrades.length - 1;
+        const special =
+          upg.card.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL') ||
+          cardCatalog
+            .getCard(upg.card.code)
+            ?.enrichment?.abilities?.find((a) => a.timing === 'SPECIAL');
+        if (special?.steps) {
+          for (const step of special.steps) {
+            allSteps.push({
+              ...step,
+              sourceCardInstance: upg,
+              isFinalStep: isFinal,
+            } as any);
+          }
+        }
+      }
+      const seqRes = executeSequence(state, allSteps, {
         playerId: player.id,
-        remainingUpgradeIds: upgrades.map((u) => u.instanceId),
-        targetEnemyId: payload?.targetEnemyId,
-        targetSchemeId: payload?.targetSchemeId,
+        chosenTargetInstanceId: payload?.targetEnemyId || payload?.targetSchemeId,
+      });
+      return {
+        ...seqRes,
+        value: upgrades.length,
       };
-      return runWakandaSequence(state);
     };
 
     // 1. Single upgrade in play: Immediately resolves with Finisher bonus
     if (availableUpgrades.length === 1) {
-      startSequence(availableUpgrades);
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: 1,
-        onomatopoeia: '⚡ WAKANDA FOREVER! ⚡',
-      };
+      return startSequence(availableUpgrades);
     }
 
     // 2. Explicit sequence order supplied (e.g. from Drag & Drop Modal or test)
@@ -157,17 +91,7 @@ export const wakandaForeverSpecialHandler: SpecialAbilityHandler = {
         }
       }
 
-      const { resolved, paused } = startSequence(orderedUpgrades);
-
-      return {
-        state,
-        success: true,
-        mutatedState: true,
-        value: resolved,
-        onomatopoeia: paused
-          ? 'SELECT WAKANDA TARGET ➔'
-          : `⚡ WAKANDA FOREVER! (${orderedUpgrades.length} UPGRADES RESOLVED) ⚡`,
-      };
+      return startSequence(orderedUpgrades);
     }
 
     // 3. Multiple upgrades in play & no sequence order yet: Enqueue Interactive Decision Prompt (ADR-0038 / ADR-0032)

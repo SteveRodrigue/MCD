@@ -52,6 +52,8 @@ import {
   processHostDefeated,
   defeatSideScheme,
   resetCardState,
+  hasPendingSequence,
+  resumePendingSequence,
 } from '../effects';
 import {
   advanceVillainPhaseStep,
@@ -79,7 +81,7 @@ import {
   finishAttackDamageAndPostResolution,
   continueAttackAfterInitiation,
 } from './combat-pipeline';
-import { getSpecialHandler, resumePendingSpecialSequence } from '../specials/special-registry';
+import { getSpecialHandler } from '../specials/special-registry';
 import {
   attachCardToHost,
   initializeCardUses,
@@ -237,16 +239,22 @@ function resolveAttackedVillain(
 
 /**
  * Pure state reducer / action dispatcher executing player commands in accordance with RR v1.8.
- * After a successful action, a special-ability sequence that paused on a decision prompt resumes
- * as soon as the prompt queue is empty (#207).
+ * After a successful action, an ability sequence that paused on a decision prompt resumes
+ * as soon as the prompt queue is empty (#248).
  */
 export function dispatchAction(
   state: GameState,
   action: GameAction,
 ): { state: GameState; result: ActionResult } {
   const outcome = dispatchSingleAction(state, action);
-  if (!outcome.result.success || !outcome.state.pendingSpecialSequence) return outcome;
-  return { state: resumePendingSpecialSequence(outcome.state), result: outcome.result };
+  if (
+    !outcome.result.success ||
+    !hasPendingSequence(outcome.state) ||
+    peekDecisionPrompt(outcome.state)
+  ) {
+    return outcome;
+  }
+  return { state: resumePendingSequence(outcome.state), result: outcome.result };
 }
 
 function dispatchSingleAction(

@@ -24,6 +24,7 @@ import {
   getActiveMainScheme,
   getVillainsInPlay,
   getVillainById,
+  PendingSequence,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -38,7 +39,11 @@ import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
 import { chooseStepTarget } from './target-choice';
-import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
+import {
+  enqueueDecisionPrompt,
+  enqueueDistributionPrompt,
+  peekDecisionPrompt,
+} from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { applyDamageToTarget } from '../pipeline/damage-pipeline';
 import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
@@ -853,6 +858,50 @@ function dealDamageToEnemies(
   return state;
 }
 
+export function pushPendingSequence(state: GameState, sequence: PendingSequence): void {
+  if (!state.pendingSequences) {
+    state.pendingSequences = [];
+  }
+  state.pendingSequences.push(sequence);
+}
+
+export function popPendingSequence(state: GameState): PendingSequence | undefined {
+  return state.pendingSequences?.pop();
+}
+
+export function peekPendingSequence(state: GameState): PendingSequence | undefined {
+  if (!state.pendingSequences || state.pendingSequences.length === 0) return undefined;
+  return state.pendingSequences[state.pendingSequences.length - 1];
+}
+
+export function hasPendingSequence(state: GameState): boolean {
+  return Boolean(state.pendingSequences && state.pendingSequences.length > 0);
+}
+
+export function resumePendingSequence(state: GameState): GameState {
+  let currentState = state;
+  while (!peekDecisionPrompt(currentState) && hasPendingSequence(currentState)) {
+    const pending = popPendingSequence(currentState);
+    if (!pending) break;
+    const stepResultsMap = new Map<string, StepResolutionResult>(
+      Object.entries(pending.stepResultsMap || {}),
+    );
+    const res = executeSequence(
+      currentState,
+      pending.remainingSteps,
+      pending.context as EffectExecutionContext,
+      {
+        prevResult: pending.previousResult as StepResolutionResult,
+        stepResultsMap,
+        onomatopoeias: pending.onomatopoeias,
+        anyStepMutated: pending.anyStepMutated,
+      },
+    );
+    currentState = res.state;
+  }
+  return currentState;
+}
+
 /**
  * Executes a declarative sequence of sub-action steps.
  */
@@ -860,14 +909,22 @@ export function executeSequence(
   state: GameState,
   steps: AbilityStep[],
   context: EffectExecutionContext,
+  resumeState?: {
+    prevResult?: StepResolutionResult;
+    stepResultsMap?: Map<string, StepResolutionResult>;
+    onomatopoeias?: string[];
+    anyStepMutated?: boolean;
+  },
 ): EffectResult {
   let currentState = state;
-  let prevResult: StepResolutionResult | undefined = context.previousResult;
-  let anyStepMutated = false;
-  const stepResultsMap = new Map<string, StepResolutionResult>();
-  const onomatopoeias: string[] = [];
+  let prevResult: StepResolutionResult | undefined =
+    resumeState?.prevResult ?? context.previousResult;
+  let anyStepMutated = resumeState?.anyStepMutated ?? false;
+  const stepResultsMap = resumeState?.stepResultsMap ?? new Map<string, StepResolutionResult>();
+  const onomatopoeias: string[] = resumeState?.onomatopoeias ? [...resumeState.onomatopoeias] : [];
 
-  for (const step of steps) {
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i];
     const shouldRun = shouldExecuteStep(
       step.gate,
       prevResult,
@@ -900,6 +957,9 @@ export function executeSequence(
 
     const stepContext: EffectExecutionContext = {
       ...context,
+      sourceCardInstance: (step as any).sourceCardInstance ?? context.sourceCardInstance,
+      isFinalStep:
+        (step as any).isFinalStep ?? (i === steps.length - 1 ? context.isFinalStep : false),
       previousResult: prevResult,
       distinctFromId: isDistinctFromPrevious
         ? prevResult?.targetId || context.chosenTargetInstanceId
@@ -911,6 +971,7 @@ export function executeSequence(
           : context.chosenTargetInstanceId,
     };
 
+    const promptsBefore = currentState.pendingDecisionQueue?.length ?? 0;
     const res = executeStep(currentState, normalizedStep, stepContext);
     currentState = res.state;
 
@@ -950,6 +1011,31 @@ export function executeSequence(
 
     if (res.onomatopoeia) {
       onomatopoeias.push(res.onomatopoeia);
+    }
+
+    // Check if this step enqueued a decision prompt that pauses execution of subsequent steps (#248)
+    const promptsAfter = currentState.pendingDecisionQueue?.length ?? 0;
+    if (promptsAfter > promptsBefore && i + 1 < steps.length) {
+      pushPendingSequence(currentState, {
+        remainingSteps: steps.slice(i + 1),
+        context: {
+          ...context,
+          previousResult: prevResult,
+        },
+        previousResult: prevResult,
+        stepResultsMap: Object.fromEntries(stepResultsMap.entries()),
+        onomatopoeias,
+        anyStepMutated,
+      });
+
+      return {
+        state: currentState,
+        success: true,
+        mutatedState: anyStepMutated,
+        value: prevResult?.value,
+        conditionMet: prevResult?.conditionMet,
+        onomatopoeia: onomatopoeias.length > 0 ? onomatopoeias.join(' ➔ ') : 'SEQUENCE PAUSED',
+      };
     }
   }
 

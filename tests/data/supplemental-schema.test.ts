@@ -353,6 +353,22 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       }
     });
 
+    it('Rejects the retired card-named surge composites in AbilityStepSchema (#218)', () => {
+      for (const effect of [
+        'HEAL_DAMAGE_WITH_SURGE',
+        'ADD_STATUS_WITH_SURGE',
+        'REVEAL_ENCOUNTER_CARD_WITH_SURGE',
+        'DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE',
+      ]) {
+        expect(
+          AbilityStepSchema.safeParse({ effect, effectParams: {} }).success,
+          `Expected ${effect} to be rejected by AbilityStepSchema`,
+        ).toBe(false);
+      }
+      // The generic SURGE effect stays: conditional "this card gains surge".
+      expect(AbilityStepSchema.safeParse({ effect: 'SURGE' }).success).toBe(true);
+    });
+
     it('Rejects obsolete SCRY_AND_SELECT_TRAIT, RESOLVE_SCRY_SELECTION, and SEARCH_DECK_FOR_CARD in AbilityStepSchema (Issue #39, #78)', () => {
       const obsoleteEffects = [
         'SCRY_AND_SELECT_TRAIT',

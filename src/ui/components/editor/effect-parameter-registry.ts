@@ -225,25 +225,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  HEAL_DAMAGE_WITH_SURGE: {
-    effect: 'HEAL_DAMAGE_WITH_SURGE',
-    description: 'Heal damage from target and trigger Surge keyword.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Heal Amount',
-        type: 'number',
-        defaultValue: 1,
-      },
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'VILLAIN',
-      },
-    ],
-  },
   TRANSFER_DAMAGE: {
     effect: 'TRANSFER_DAMAGE',
     description: 'Move damage from one character to another.',
@@ -383,26 +364,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'CHOSEN_ENEMY',
-      },
-    ],
-  },
-  ADD_STATUS_WITH_SURGE: {
-    effect: 'ADD_STATUS_WITH_SURGE',
-    description: 'Apply status card and trigger Surge keyword.',
-    parameters: [
-      {
-        key: 'status',
-        label: 'Status Card',
-        type: 'select',
-        options: STATUS_OPTIONS,
-        defaultValue: 'TOUGH',
-      },
-      {
-        key: 'target',
-        label: 'Target',
-        type: 'select',
-        options: TARGET_OPTIONS,
-        defaultValue: 'VILLAIN',
       },
     ],
   },
@@ -1173,11 +1134,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   REVEAL_ENCOUNTER_CARD: {
     effect: 'REVEAL_ENCOUNTER_CARD',
     description: 'Reveal top card of encounter deck.',
-    parameters: [],
-  },
-  REVEAL_ENCOUNTER_CARD_WITH_SURGE: {
-    effect: 'REVEAL_ENCOUNTER_CARD_WITH_SURGE',
-    description: 'Reveal encounter card and trigger Surge.',
     parameters: [],
   },
   DEAL_ADDITIONAL_BOOST_CARD: {

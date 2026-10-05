@@ -92,6 +92,24 @@ import { supplementalRegistry } from '../supplemental';
 import { CardEnrichment, Keyword } from '@engine/models';
 
 /**
+ * True when the card prints `keyword` as its own sentence of a text line (`Surge.`,
+ * `Surge <i>(reminder)</i>`, `Surge .`, a bare `Surge`, `Toughness.` on a second line), ignoring
+ * italic reminder text and bold tags. A card that merely mentions the word to grant it ("this card
+ * gains surge.") does not print the keyword. Optional trailing number (`Retaliate 2`).
+ */
+export function hasPrintedKeyword(text: string | undefined, keyword: string): boolean {
+  if (!text) return false;
+  const pattern = new RegExp(`^${keyword.toLowerCase().replace(/[^a-z]/g, '')}(\\s+\\d+)?$`);
+  for (const line of text.split(/\r?\n|<hr\s*\/?>/i)) {
+    const stripped = line.replace(/<i>[\s\S]*?<\/i>/gi, '').replace(/<\/?b>/gi, '');
+    for (const sentence of stripped.split('.')) {
+      if (pattern.test(sentence.trim().toLowerCase())) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Parses printed and supplemental keywords for a card.
  */
 export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment): Keyword[] {
@@ -141,7 +159,7 @@ export function parseKeywords(raw: RawUpstreamCard, enrichment?: CardEnrichment)
   } else if (text.includes('retaliate') || text.includes('<b>retaliate</b>')) {
     keywords.add(Keyword.RETALIATE);
   }
-  if (text.includes('surge.') || text.includes('<b>surge</b>') || text.includes('surge <i>')) {
+  if (hasPrintedKeyword(raw.text, 'surge')) {
     keywords.add(Keyword.SURGE);
   }
   if (text.includes('toughness.') || text.includes('<b>toughness</b>') || text.includes('toughness <i>')) {

@@ -247,3 +247,12 @@ export const TargetSelectorSchema = z.enum([
 **Decision:** add `SELF_HERO`: the resolving player's identity while in hero form, nothing in alter-ego form, never another player. The name follows the `SELF_` family (the anchor is "the player resolving the ability", Rules Reference "YOU, YOUR"). `ACTIVE_` was rejected: `ACTIVE_PLAYER` is the turn player, a different anchor. `SELF_ALTER_EGO` is added only when a card needs it.
 
 **Hygiene:** `target` inside `effectParams` is not schema-validated, so four values outside `TargetSelectorSchema` had accumulated. `THIS_SIDE_SCHEME` and `DEFENDING_PLAYER` are real, working selectors and were added to the enum; `ACTIVE_IDENTITY` (misleading alias of `SELF_IDENTITY`) was removed and its only card (`01112`) migrated; `ATTACHED_VILLAIN` was a never-read key on `01098` and was removed. A data test now requires every `target` string in the packs to be a valid selector. Remaining engine-only strings (`HERO`, `IDENTITY`, `ALTER_EGO`) and the `TRIGGERING_HERO` overlap are tracked under WP7 (#232).
+
+
+---
+
+## Addendum (2026-10-05, #218): one Surge path, strict printed-keyword detection
+
+The Surge keyword was parsed but never acted on, and the importer tagged **every** card whose text contained `surge.` (17 core encounter cards that only "gain surge" next to the 6 that print it). Nine hand-rolled surge sites existed, four of them card-named composites (`HEAL_DAMAGE_WITH_SURGE`, `ADD_STATUS_WITH_SURGE`, `REVEAL_ENCOUNTER_CARD_WITH_SURGE`, `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE`) used by no pack, two of them bypassing the deck reshuffle with `encounterDeck.shift()`.
+
+**Decision:** (1) Surge is read from the importer through `hasPrintedKeyword` (a whole sentence of a text line); the other keywords still use substring matching and are tracked in #243. (2) A single `dealSurgeCard` helper (draw through `drawEncounterCard`, deal facedown to the resolving player, flag the active encounter context) serves the keyword (fired at the end of `resolveActiveEncounterCardAfterInterrupt`, not when the When Revealed was cancelled), the `SURGE` effect and `DISCARD` `fallback: "SURGE"`; a card surges at most once per reveal. (3) The four dead card-named composites were removed from the engine, the `EffectTypeSchema`, the editor registry and the effect union type (ADR-0021).

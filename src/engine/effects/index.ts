@@ -37,6 +37,7 @@ import {
 import type { SearchZone } from '../../data/supplemental/schema';
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
+import { dealSurgeCard } from '../pipeline/surge';
 import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { applyDamageToTarget } from '../pipeline/damage-pipeline';
@@ -1273,8 +1274,7 @@ export function executeDiscard(
 
     if (matchingCards.length === 0) {
       if (fallback === 'SURGE') {
-        const surgeCard = drawEncounterCard(state);
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
+        dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
         return { state, success: true, mutatedState: true, onomatopoeia: 'SURGE!' };
       }
       return { state, success: true, mutatedState: false };
@@ -3424,40 +3424,6 @@ export function executeStep(
       };
     }
 
-    case 'HEAL_DAMAGE_WITH_SURGE': {
-      // Hard to Keep Down (01104): Rhino heals 4 HP. If 0 healed -> surge
-      const amount = (step.effectParams?.amount as number) || 4;
-      const healed = Math.min(
-        getActiveVillain(state).maxHealth - getActiveVillain(state).health,
-        amount,
-      );
-      if (healed > 0) {
-        getActiveVillain(state).health += healed;
-        return {
-          state,
-          success: true,
-          onomatopoeia: `RHINO HEALED +${healed} HP!`,
-        };
-      } else {
-        // Surge -> deal 1 extra encounter card
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      }
-    }
-
-    case 'ADD_STATUS_WITH_SURGE': {
-      // "I'm Tough" (01105): Give Rhino Tough. If already Tough -> surge
-      if (!getActiveVillain(state).statusCards.includes(StatusCard.TOUGH)) {
-        getActiveVillain(state).statusCards.push(StatusCard.TOUGH);
-        return { state, success: true, onomatopoeia: 'RHINO GAINS TOUGH!' };
-      } else {
-        const surgeCard = state.encounterDeck.shift();
-        if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-        return { state, success: true, onomatopoeia: 'SURGE!' };
-      }
-    }
-
     case 'ATTACH_TO_HOST': {
       const targetHost = step.effectParams?.target as string;
       const sourceCard = context.sourceCardInstance;
@@ -4062,18 +4028,6 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'GANG UP!' };
     }
 
-    case 'REVEAL_ENCOUNTER_CARD_WITH_SURGE': {
-      // 1. Surge: deal 1 card facedown to player
-      const surgeCard = state.encounterDeck.shift();
-      if (surgeCard) player.dealtEncounterCards.push(surgeCard);
-
-      // 2. Extra card drawn to be revealed immediately
-      const extraCard = state.encounterDeck.shift();
-      if (extraCard) player.dealtEncounterCards.unshift(extraCard);
-
-      return { state, success: true, onomatopoeia: 'UNDER FIRE!' };
-    }
-
     case 'PUT_INTO_PLAY': {
       const fromZone = (step.effectParams?.from as string) || 'SET_ASIDE';
       const toZone = (step.effectParams?.to as string) || 'ENGAGED_WITH_PLAYER';
@@ -4397,23 +4351,8 @@ export function executeStep(
     }
 
     case 'SURGE': {
-      const surgeCard = drawEncounterCard(state);
-      if (surgeCard) {
-        player.dealtEncounterCards.push(surgeCard);
-      }
+      dealSurgeCard(state, player, context.sourceCardInstance?.card.name);
       const onomatopoeia = 'SURGE!';
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        key: 'encounter.surge.triggered',
-        params: {
-          card: context.sourceCardInstance?.card.name || 'Encounter',
-          player: player.name,
-        },
-        onomatopoeia,
-      });
       return {
         state,
         success: true,

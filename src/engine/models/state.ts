@@ -393,6 +393,8 @@ export interface EncounterExecutionContext {
   targetPlayerId: string;
   cancelled?: boolean;
   cancellationReason?: string;
+  /** The card already surged during this reveal (keyword or effect): it cannot surge twice. */
+  surged?: boolean;
 }
 
 /**

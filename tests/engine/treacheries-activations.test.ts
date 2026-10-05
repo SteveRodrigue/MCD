@@ -214,7 +214,7 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     expect(resNoScheme.state.sideSchemes.length).toBe(1);
   });
 
-  it('01193 Under Fire: Deals 1 extra encounter card via surge and reveals top card', () => {
+  it('01193 Under Fire: the When Revealed ability reveals the top card (the Surge keyword deals the extra one in the reveal path)', () => {
     const underFireCard = cardCatalog.getCard('01193')!;
     const underFireInst = createCardInstance(underFireCard);
     const ability = underFireCard.enrichment!.abilities![0];
@@ -226,6 +226,8 @@ describe('Standard Set & Modular Extra Activation Treacheries', () => {
     });
 
     expect(res.success).toBe(true);
-    expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealt + 2);
+    // One card from "Reveal the top card of the encounter deck"; Surge is the printed keyword,
+    // covered by tests/engine/surge-keyword.test.ts.
+    expect(res.state.players[0].dealtEncounterCards.length).toBe(initialDealt + 1);
   });
 });

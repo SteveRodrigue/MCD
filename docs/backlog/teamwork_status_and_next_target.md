@@ -1,119 +1,171 @@
-# MCD Backlog Dependency, Prioritization Map & Teamwork Status
+# MCD Backlog: Status, Work Queue and Handoff
 
-> **Last Updated:** 2026-10-04 (Phases 1-4 and Phase 5 Track A complete)  
-> **Repository Commit:** `df01659` (`origin/main`)  
-> **Release Gate:** Gate 1 ("Rhino Release" Vertical Slice — 100% Core 5 Heroes vs. Rhino)  
-> **Verification Status:** 🟢 All 1,706 tests passing (0 failed, 0 skipped), 0 TS diagnostics, 0 ESLint warnings
-
----
-
-## 1. Executive Summary
-
-**State at `df01659`:** 32 open issues on GitHub (25 plus #226-#232, the `effectParams` remediation packages). Phases 1-4 are complete and Phase 5 Track A (reported Core Set card bugs) is complete. The Rhino vertical slice (Gate 1) work that remains is Phase 5 Track B (the core player cards review) plus the engine prerequisites that unblock six core encounter cards whose placeholder abilities were removed.
-
-The 25 open issues group as follows:
-1. **Engine prerequisites for stripped core encounter cards (7):** #218 Surge keyword, #219 hand discard, #220 per-player iteration, #221 "damage dealt" gate, #222 form-literal "your hero" selector, #223 named-minion attack, #225 `executeSequence` swallows step failures.
-2. **Wrecking Crew (MC03) chain (6):** #210 per-villain encounter decks, #211 side schemes and scheme threat, #212 multi-villain targeting/Guard/win, #213 active counter effects, #214 scenario plugin and data, #215 remove the legacy villain fields. No immediate impact on Gate 1.
-3. **Small defects and test hygiene (3):** #216 (`STAT_VALUE DAMAGE` reads a nonexistent field), #217 (flaky obligation rule 2 test), #224 (acceleration icons outside side schemes).
-4. **Unscheduled backlog (9):** #27, #37, #100 (postponed, Phase 6), #109, #126, #127, #206, #208, #209. See section 5, "Unscheduled open issues".
-
-Everything in the original scope (#172-#202, the card fixes #131-#133/#154/#158/#175, the UI items) is resolved; the tables below keep that history with commit references.
+> **Last updated:** 2026-10-05
+> **Repository state:** `main`, last work commit `9a0830d` (Surge keyword). Check `git log -1` and `git status` first: commits after `28fa59a` may not be pushed yet.
+> **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
+> **Verification baseline:** 🟢 1,830 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
 
-## 2. Dependency Graph
+## 1. Where we are
+
+Phases 1 to 4 (combat flow, ability legality, shared gating, audit cleanups) are complete. **Phase 5** (core set card correctness, the Gate 1 gate) has two tracks:
+
+- **Track A, reported card bugs: complete.** Hydra Bomber, Imminent Overload, Rocket Boots, Wakanda Forever!.
+- **Track B, correctness of the core player and encounter cards.** Driven by two living trackers:
+  - [plan_core_player_cards_review.md](plan_core_player_cards_review.md): the line-by-line review of every core player card against its printed text (items A, B, C, D).
+  - [plan_effect_params_remediation.md](plan_effect_params_remediation.md): the audit of untyped `effectParams` keys (WP1 to WP8) and its fixes.
+
+Done since 2026-10-03 (each has a plan file in this folder and a changelog entry):
+
+| Item | What | Commit |
+| :-- | :-- | :-- |
+| Energy Daggers A1, Wakanda Forever! #207 | target set, resumable special sequence | `a6c5397`, `df01659` |
+| Rocket Boots A3 / #131 | timed trait modifiers | `32aa400` |
+| Counter-Punch A2 | cost 0, in-hand reaction scan (shared `scanHandReactions`), "that enemy", `triggerFilter.defenderType` | `647f435` |
+| Med Team B7 | friendly characters only | `8dc2fe7` |
+| Mark V Helmet WP1 / #226, Jessica Jones C1 | new gate `IF_CONDITION_NOT_MET`, Patrol for multi-scheme removal, cap removed | `8762323` |
+| Iron Man WP2 / #227 | hand size cap per official errata, 1..10 clamp removed | `2a3aeb2` |
+| Kree Manipulator WP4 / #229, Electric Whip Attack WP8 boost | condition `UNDEFENDED_ATTACK` | `b2ab514` |
+| #222 and #241 | `SELF_HERO` selector; Sweeping Swoop (When Revealed), Electric Whip Attack (When Revealed), Ritual Combat; selector hygiene | `28fa59a` |
+| #218 | Surge keyword, one shared surge path, strict printed-keyword detection for Surge | `9a0830d` |
+
+---
+
+## 2. Rules of this repository (digest; the sources are authoritative)
+
+Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gates, command execution, RTK, post-task checklist), the skills in `.claude/skills/` (`card-integration-protocol`, `bug-fix`, `feature-delivery`, `commit-and-push`, `next-task`, `problem-report-triage`).
+
+1. **Plan first, stop for approval.** For any change to `src/`, `tests/`, supplemental data, dependencies or config: write `docs/backlog/plan_<topic>.md` (rules analysis, printed text, original data, proposed data, why, tests, files, open decisions, UI/Card Editor impact) and wait for the owner's approval. A plan may be pre-authorised for follow-ups only when the owner says so.
+2. **TDD.** Write the failing test first and watch it fail for the right reason. Never add skipped or todo tests.
+3. **Cards are read literally.** "Your hero" is never the alter-ego (selector `SELF_HERO`); "take damage" or "you" is the identity in either form (`SELF_IDENTITY`). Never interpret card text. **Never add or edit `audit.comment`.**
+4. **Official errata beat the printed text** (`references/rules/appendices/05_card_errata.md`). Do not open the raw PDF; use `npm run rule -- <term>` or `references/rules/`.
+5. **Engine stays headless; card behaviour stays declarative.** Engine primitives are generic, never named after a card (ADR-0021). No legacy shims or aliases.
+6. **Schema change rule.** Any new or renamed effect, condition, gate, selector, filter or parameter updates in the same change: `schema.ts`, regenerated `schema.json` (`npm run schema:generate`), the spec in `docs/specifications/supplemental/`, the Card Editor (`src/ui/components/editor/`, mainly `effect-parameter-registry.ts`), and a test. Add an ADR or ADR addendum for design decisions.
+7. **Circuit-breaker.** If a card cannot be modelled faithfully (missing primitive, ambiguity), strip its executable ability, set `audit.confidence` below 95, write `docs/ambiguities/<pack>_<code>_<slug>.md`, set `audit.ambiguityFile`, and file the engine issue. Never ship a placeholder that contradicts the printed text.
+8. **Out-of-scope gaps become GitHub issues** (with printed text, evidence, acceptance criteria), not silent notes.
+9. **Gates before reporting done:** `npm test`, `npm run typecheck`, `npm run lint`, `npx prettier --check "src/**/*.{ts,tsx}" "tests/**/*.{ts,tsx}"` (all green), then `npm run report:declarations` after any supplemental change.
+10. **After each item:** update `CHANGELOG.md` `[Unreleased]`, the relevant plan file, the two living trackers and this file.
+11. **Commit and push only when the owner asks.** Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after pushing.
+
+### Practical pitfalls
+
+- Shell commands start with `rtk` where the RTK policy applies (`rtk git status`, `rtk npm test`).
+- **Never run Prettier on whole folders** such as `src/engine` (it reformats unrelated JSON and README files). Format only files you changed.
+- Heredocs that contain apostrophes can break in the shell tool. Write multi-line files and scripts with the file-writing tool.
+- Pack JSON round trip: `core_encounter.json` and `core.json` use CRLF in the working tree. Either edit textually or load with `json`, change, and dump with `indent=2, ensure_ascii=False` plus a trailing newline and the original line endings. Keep canonical card-id order. Check `git diff --stat` is small.
+- A supplemental `target` value must be a member of `TargetSelectorSchema` (a data test enforces it); keys inside `effectParams` are **not** validated yet (see WP5), so check by hand that the engine really reads every key you use.
+- Importer keyword tags are substring-based except Surge (see #243): do not trust `hasKeyword` for the other keywords on cards that merely mention them.
+- Quick data lookups: `npm run card:get -- <code>` (upstream plus supplemental), `npm run rule -- <term>`.
+- Test helpers worth reusing: reveal path `step4_revealEncounterCards` (see `tests/engine/self-hero-cards.test.ts`), attack path `executeEnemyAttackSynchronously` (see `tests/engine/kree-manipulator-boost.test.ts`), ability use `dispatchAction({ type: 'USE_CARD_ABILITY' })` (see `tests/engine/mark-v-helmet.test.ts`).
+
+---
+
+## 3. Work queue (ordered; the first ready item is the next task)
+
+"Ready" means every prerequisite is done. Every item needs a plan file and the owner's approval before code (rule 1). Items marked **owner decision** wait for an answer in chat.
+
+### 3.1 Cards that execute wrong behaviour today (do these first)
+
+| # | Item | Issue | Why now | Notes |
+| :-- | :-- | :-- | :-- | :-- |
+| 1 | Heart-Shaped Herb `01158` has an **active invented placeholder** (heals the villain 2); `01185` and `01121` have no entry | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | misplays a card in real games | correct or strip `01158` first; `01185` needs conditional attachment (#209) |
+| 2 | False Alarm `01112` never surges when already confused | [#242](https://github.com/SteveRodrigue/MCD/issues/242) | small, uses the `SURGE` effect and `IF_ALREADY_HAS_STATUS` | Tier 1 |
+| 3 | **Untriaged in-app bug reports** from 2026-10-04: [#233](https://github.com/SteveRodrigue/MCD/issues/233) Caught Off Guard, [#234](https://github.com/SteveRodrigue/MCD/issues/234) and [#239](https://github.com/SteveRodrigue/MCD/issues/239) Daredevil, [#235](https://github.com/SteveRodrigue/MCD/issues/235) Interrogation Room, [#236](https://github.com/SteveRodrigue/MCD/issues/236) Mockingbird, [#237](https://github.com/SteveRodrigue/MCD/issues/237) Yon-Rogg's Treason, [#238](https://github.com/SteveRodrigue/MCD/issues/238) Highway Robbery, [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency | listed | real play reports, not yet read by the agents who did the work above | use the `problem-report-triage` and `bug-fix` skills; deduplicate against existing issues (#234 and #239 look like duplicates; #237 overlaps #219) |
+| 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | blocked on #209 for a faithful model: **apply the circuit-breaker now** (strip, ambiguity report) so WP5 can pass with zero exemptions |
+
+### 3.2 Engine prerequisites that unblock stripped cards
+
+| # | Item | Issue | Unblocks | Notes |
+| :-- | :-- | :-- | :-- | :-- |
+| 5 | Hand `DISCARD` with filter, each-player targets and discarded-card results | [#219](https://github.com/SteveRodrigue/MCD/issues/219) | `01179` Yon-Rogg's Treason, `01169`, `01174` | ready |
+| 6 | Per-player iteration inside one ability | [#220](https://github.com/SteveRodrigue/MCD/issues/220) | `01169` The Vulture's Plans, `01174` Electromagnetic Backlash | needs #219 first for the two cards |
+| 7 | Gate "this activation dealt damage" | [#221](https://github.com/SteveRodrigue/MCD/issues/221) | `01168` Sweeping Swoop boost | ready; the boost data is in its ambiguity report |
+| 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | ready (its hero selector exists: `SELF_HERO`) |
+| 9 | `executeSequence` swallows step failures and always reports success | [#225](https://github.com/SteveRodrigue/MCD/issues/225) | visibility of every ability failure | cross-cutting, Tier 2; do before adding more complex sequences |
+
+### 3.3 The `effectParams` remediation ([plan_effect_params_remediation.md](plan_effect_params_remediation.md))
+
+| # | Item | Issue | Depends on |
+| :-- | :-- | :-- | :-- |
+| 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | item 4 (so it passes with zero exemptions) |
+| 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives (`MODIFY_HAND_SIZE` already done) | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | WP5 not required, but CONSTANT `MODIFY_STAT` must evaluate dynamic amounts |
+| 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5 |
+
+### 3.4 Core player cards review ([plan_core_player_cards_review.md](plan_core_player_cards_review.md))
+
+Remaining, in the tracker's order: Tier 1 data-only items C2 to C5, C8, C11 and the A6 test (Luke Cage Toughness); Tier 2 helpers A5, B1/B3, B6, B8, C6, C7; items needing the owner first: B4 (canonical defeat trigger), C9 (Alpha Flight Station form), C10 (identity timing convention), C13 (`maxPerDeck`), and the Repulsor Blast FAQ question. Read the item text in the tracker; each still needs its own plan.
+
+### 3.5 Importer and data quality
+
+| # | Item | Issue | Notes |
+| :-- | :-- | :-- | :-- |
+| 13 | Keyword tags are detected by substring for 15 keywords (hundreds of phantom tags across all packs) | [#243](https://github.com/SteveRodrigue/MCD/issues/243) | high impact; reuse `hasPrintedKeyword`; run the corpus comparison as a test |
+| 14 | One-off read-through of every core encounter card's data against its printed text | _(not filed)_ | recommended after the items above; the key audit cannot catch semantic errors (found `01173`, `01178`, `01112`, `01158` this way) |
+
+### 3.6 Smaller engine defects
+
+[#216](https://github.com/SteveRodrigue/MCD/issues/216) `STAT_VALUE DAMAGE` reads a nonexistent field; [#217](https://github.com/SteveRodrigue/MCD/issues/217) flaky obligation test (shuffle-dependent); [#224](https://github.com/SteveRodrigue/MCD/issues/224) acceleration icons outside side schemes; [#206](https://github.com/SteveRodrigue/MCD/issues/206) identity printed traits ignore the form.
+
+### 3.7 Deferred (do not start without the owner)
+
+- **Wrecking Crew (MC03) chain:** [#210](https://github.com/SteveRodrigue/MCD/issues/210), [#211](https://github.com/SteveRodrigue/MCD/issues/211), [#212](https://github.com/SteveRodrigue/MCD/issues/212), [#213](https://github.com/SteveRodrigue/MCD/issues/213), [#214](https://github.com/SteveRodrigue/MCD/issues/214), [#215](https://github.com/SteveRodrigue/MCD/issues/215). No effect on Gate 1.
+- **Other features and cleanups:** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments (42 cards), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
+- **Phase 6, [#100](https://github.com/SteveRodrigue/MCD/issues/100):** the full supplemental data pass, postponed until Phase 5 is finished and the engine contract is stable.
+- **Known gap outside Gate 1:** 53 core encounter cards with rules text and no supplemental entry (Klaw, Ultron, Masters of Evil, Hydra, Doomsday Chair sets: `01113` to `01154`, `01180` to `01183`). Their scenario plugins exist under `src/engine/scenarios/built-in/`, but no card abilities are modelled. Tracked with the Surge cards in #244.
+
+### Dependency picture (open work only)
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#0b0f19', 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#475569', 'lineColor': '#64748b', 'secondaryColor': '#0f172a', 'tertiaryColor': '#1e293b' }}}%%
 flowchart TD
-    subgraph Foundations["1. Foundations (resolved)"]
-        I194["#194 Accessor Migration<br/>RESOLVED (ba31d33..5612170)"]
-        I122["#122 Step-Gate Evaluator<br/>RESOLVED (0acc25f)"]
-        I158["#158 Obligations Engine<br/>RESOLVED (2cc63df, b205d7c)"]
-        I172["#172 Prompt Rollback<br/>RESOLVED (8681c23)"]
-    end
-
-    subgraph Cards["2. Core Set card fixes (resolved)"]
-        I154["#154 Cosmic Flight Gate<br/>RESOLVED (608a19a)"]
-        I133["#133 Hydra Bomber + HERO audit<br/>RESOLVED (9f8320c)"]
-        I132["#132 Imminent Overload<br/>RESOLVED (e289645)"]
-        I131["#131 Rocket Boots / timed traits<br/>RESOLVED (32aa400)"]
-        I207["#207 Wakanda sequence pausing<br/>RESOLVED (a6c5397, df01659)"]
-    end
-
-    subgraph Prereq["3. Engine prerequisites (open)"]
-        I218["#218 Surge keyword"]
-        I219["#219 Hand DISCARD filter / each player"]
-        I220["#220 Per-player iteration"]
-        I221["#221 Damage-dealt gate"]
-        I222["#222 'Your hero' selector"]
-        I223["#223 Named-minion attack"]
-        I225["#225 executeSequence failures"]
-    end
-
-    subgraph Stripped["4. Stripped core encounter cards (open)"]
-        C01191["01191 Exhaustion (Surge)"]
-        C01179["01179 Yon-Rogg's Treason"]
-        C01169["01169 Vulture's Plans"]
-        C01174["01174 Electromagnetic Backlash"]
-        C01159["01159 Ritual Combat"]
-        C01168["01168 Sweeping Swoop"]
-        C01164["01164 Titania's Fury"]
-    end
-
-    subgraph WC["5. Wrecking Crew MC03 (open)"]
-        I210["#210 Encounter decks"]
-        I211["#211 Side schemes"]
-        I212["#212 Targeting / Guard / win"]
-        I213["#213 Active counter"]
-        I214["#214 Scenario plugin"]
-        I215["#215 Remove legacy fields"]
-    end
-
-    %% Resolved flows
-    I172 --> I158
-    I122 --> I154
-
-    %% Prerequisites unblock cards
-    I218 --> C01191
-    I219 --> C01179
-    I219 --> C01169
-    I220 --> C01169
-    I220 --> C01174
+    I219["#219 hand DISCARD filter"] --> C01179["01179 Yon-Rogg"]
+    I219 --> C01169["01169 Vulture's Plans"]
+    I220["#220 per-player iteration"] --> C01169
+    I220 --> C01174["01174 Electromagnetic Backlash"]
     I219 --> C01174
-    I222 --> C01159
-    I222 --> C01168
-    I222 --> C01164
-    I221 --> C01168
-    I223 --> C01164
-
-    %% Wrecking Crew chain
-    I194 --> I210
-    I194 --> I211
-    I194 --> I212
-    I194 --> I213
-    I194 --> I215
-    I210 --> I214
-    I211 --> I214
-    I212 --> I214
-    I213 --> I214
-
-    classDef resolved fill:#064e3b,stroke:#059669,stroke-width:2px,color:#ecfdf5;
-    classDef open fill:#1e293b,stroke:#475569,stroke-width:1px,color:#cbd5e1;
-    classDef stripped fill:#78350f,stroke:#d97706,stroke-width:1px,color:#fffbeb;
-
-    class I194,I122,I158,I172,I154,I133,I132,I131,I207 resolved;
-    class I218,I219,I220,I221,I222,I223,I225,I210,I211,I212,I213,I214,I215 open;
-    class C01191,C01179,C01169,C01174,C01159,C01168,C01164 stripped;
+    I221["#221 damage gate"] --> C01168["01168 Sweeping Swoop boost"]
+    I223["#223 named minion attack"] --> C01164["01164 Titania's Fury"]
+    WP3["#228 01163 (circuit-breaker now)"] --> WP5["#230 guard test"]
+    WP5 --> WP7["#232 docs gaps / ad-hoc selectors"]
+    I209["#209 conditional attachments"] --> C01185["01185 / 01163 full models"]
 ```
-
-Resolved items from the original scope that are not drawn (#175, #179-#181, #183-#186, #192, #195-#202, #129, #135, #161) are listed in section 3 with their commits.
 
 ---
 
-## 3. Domain Classification & Issue Breakdown
+## 4. Handoff protocol (start here)
 
-### Domain A: Engine Primitives (Core Rules & Framework)
+1. **Sync and verify**
+   ```powershell
+   rtk git pull origin main
+   rtk git status
+   rtk npm test
+   ```
+   Expect the baseline of the header. If a test fails, check whether it is #217 (rerun) before assuming your change broke it.
+2. **Read**, in order: [AGENTS.md](../../AGENTS.md), this file, the plan file of the item you pick (and the living tracker it belongs to), the issue text.
+3. **Pick** the first *ready* item of section 3 that nobody else is working on. Say which one in chat (or comment on the issue).
+4. **Plan** (`docs/backlog/plan_<topic>.md`, follow the structure of any recent plan, for example [plan_issue_222_self_hero_selector.md](plan_issue_222_self_hero_selector.md) or [plan_issue_218_surge_keyword.md](plan_issue_218_surge_keyword.md)) and **stop for approval**.
+5. **Implement with TDD**, then run the gates of rule 9, regenerate the report if data changed, and update the changelog, plan, trackers and this file.
+6. **Hand back**: summarise what changed, what you verified, what you found, and which GitHub issues you filed. Commit and push only when asked.
+
+A ready-to-paste prompt for a new agent is in [handoff_prompt.md](handoff_prompt.md).
+
+---
+
+## 5. Open decisions waiting for the owner
+
+- B4 (which defeat trigger is canonical), C9 (does Alpha Flight Station match Captain Marvel's hero form), C10 (one timing naming convention for identity abilities), C13 (where deck limits like "Max 1 per deck" live), Repulsor Blast single-hit versus two-hit question: see [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
+- Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
+
+---
+
+## 6. Archive: resolved history (kept for commit references)
+
+The tables below record the items resolved before 2026-10-04 and are not updated any more. Current status lives in sections 1 and 3.
+
+### 6.1 Domain Classification & Issue Breakdown
+
+#### Domain A: Engine Primitives (Core Rules & Framework)
 
 | Issue # | Title | Core Mechanic / Target Area | Status & Fix Strategy |
 |---|---|---|---|
@@ -128,7 +180,7 @@ Resolved items from the original scope that are not drawn (#175, #179-#181, #183
 
 ---
 
-### Domain B: Card Fixes (Supplemental Data & Declarative Modeling)
+#### Domain B: Card Fixes (Supplemental Data & Declarative Modeling)
 
 | Issue # | Title | Target File / Code | Problem Statement & Fix Strategy |
 |---|---|---|---|
@@ -142,7 +194,7 @@ Resolved items from the original scope that are not drawn (#175, #179-#181, #183
 
 ---
 
-### Domain C: UI & Code Refactors (Visuals, Test Hygiene & Architecture)
+#### Domain C: UI & Code Refactors (Visuals, Test Hygiene & Architecture)
 
 | Issue # | Title | Primary Files | Problem Statement & Remediations |
 |---|---|---|---|
@@ -161,7 +213,7 @@ Resolved items from the original scope that are not drawn (#175, #179-#181, #183
 
 ---
 
-## 4. Prioritization & Risk Matrix
+### 6.2 Prioritization & Risk Matrix
 
 | Priority | Issue # | Title | Domain | Risk / Blast Radius | Effort | Status |
 |---|---|---|---|---|---|---|
@@ -206,22 +258,22 @@ Resolved items from the original scope that are not drawn (#175, #179-#181, #183
 
 ---
 
-## 5. Execution Roadmap & Phase Plan
+### 6.3 Execution Roadmap & Phase Plan
 
-### Phase 1: Core Combat & Card Play Flow (Completed ✅)
+#### Phase 1: Core Combat & Card Play Flow (Completed ✅)
 - ✅ **#183** (Spider-Man defense damage mitigation in combat pipeline)
 - ✅ **#172** (Voluntary decision prompt cancellation & hand refund)
 - ✅ **#181** (Scheme targeting Crisis icon & Patrol legality)
 - ✅ **#184** (Caught Off Guard player choice modal)
 - ✅ **#186 / #135** (For Justice! declarative resource payment kicker)
 
-### Phase 2: Ability Usability & Action Legality Pre-checks (Completed ✅)
+#### Phase 2: Ability Usability & Action Legality Pre-checks (Completed ✅)
 - ✅ **#185**: *Surveillance Team* (`01064`) — gray out action when total removable threat across legal schemes is 0.
 - ✅ **#179**: *Alpha Flight Station* (`01015`) — gray out action when hand is empty.
 - ✅ **#180 / #129**: *Captain Marvel* (`01010a` Rechannel) & Rhino attachment — payment modal resource type enforcement.
 - ✅ **#175**: *Charge* (`01099`) — change attachment timing from When Revealed to constant attachment.
 
-### Phase 3: Architectural Foundation & Shared Gating (Completed ✅)
+#### Phase 3: Architectural Foundation & Shared Gating (Completed ✅)
 - ✅ **#122**: Shared step-gate evaluator extracted.
 - ✅ **#154**: Gate Cosmic Flight *Aerial* trait on Hero form.
 - ✅ **#158**: Obligation engine for the five core obligations (zone, recipient, ability-based resolution).
@@ -230,84 +282,6 @@ Resolved items from the original scope that are not drawn (#175, #179-#181, #183
 - ✅ **#194**: Migration of the legacy `state.villain` / `state.mainScheme` pointers to accessor helpers (7 batches, ADR-0076).
   - Deferred follow-ups for Wrecking Crew (MC03): **#210** (per-villain encounter decks), **#211** (side schemes and scheme threat), **#212** (multi-villain targeting, Guard, win), **#213** (active counter effects), **#214** (scenario plugin and data), **#215** (remove the legacy fields and migrate test fixtures).
 
-### Phase 4: Code Audit Cleanups & Polish (Completed ✅)
+#### Phase 4: Code Audit Cleanups & Polish (Completed ✅)
 - ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes (plan: `plan_phase4_audit_cleanups_a.md`).
 - ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports (plan: `plan_phase4_audit_cleanups_b.md`). Phase 4 is complete.
-
-### Phase 5: Core Set Card Correctness (Gate 1 release gate), Active 🎯
-
-Goal: the Core Set cards used by the Rhino vertical slice do what the printed text says. Two tracks.
-
-- **Track A, reported card bugs: complete ✅**
-  1. ✅ **#133** Hydra Bomber (`9f8320c`): damage scoped to the revealing player. The audit of the same `HERO` pattern (`plan_hero_target_audit.md`) fixed `01191` Exhaustion and stripped six placeholder cards with ambiguity reports (`docs/ambiguities/core_encounter_*`).
-  2. ✅ **#132** Imminent Overload (`e289645`): validated; the card prints Acceleration, not Crisis.
-  3. ✅ **#131** Rocket Boots (`32aa400`): timed trait modifiers; default duration is "while the source card is in play".
-  4. ✅ **#207** Wakanda Forever! (`a6c5397`, `df01659`): resumable special sequence; follow-up F1 done.
-- **Track A follow-up: engine prerequisites for the stripped cards (open):**
-
-| Card | Blocked by |
-|---|---|
-| `01191` Exhaustion (Surge) | #218 |
-| `01179` Yon-Rogg's Treason | #219 (the conditional surge uses the existing `SURGE` effect) |
-| `01169` The Vulture's Plans | #219, #220 |
-| `01174` Electromagnetic Backlash | #220, #219 |
-| `01159` Ritual Combat | #222 (and confirm choice-time `DISCARDED_CARDS`) |
-| `01168` Sweeping Swoop | #222, #221 |
-| `01164` Titania's Fury | #222, #223 |
-
-- **Track B, core player cards review** (`plan_core_player_cards_review.md`, living tracker, one item at a time): A1 (`a6c5397`), A2 (Counter-Punch, uncommitted: cost, hand reaction, attacker target, shared in-hand reaction scan), A3 (`32aa400`) and follow-ups F1/F2 are done. B7 (Med Team, uncommitted) is done. Remaining in the approved order of 2026-10-04 (functional bugs before cosmetics): C1, WP1/WP2/WP4, #218 Surge (then #219, #222), WP5, then the Tier 1 cosmetics (C2-C5, C8, C11, A6 test), then Tier 2 helpers (A4, A5, B1/B3, B6, B8, C6, C7), then items needing a decision (B4, C9, C10, C13).
-- **`effectParams` remediation** ([plan_effect_params_remediation.md](plan_effect_params_remediation.md), audit: `docs/reports/effect_params_orphan_audit.md`): C1, then WP1-WP7 ([#226](https://github.com/SteveRodrigue/MCD/issues/226) to [#232](https://github.com/SteveRodrigue/MCD/issues/232)). Four core cards ship `effectParams` keys the engine never reads (`01037`, `01029a`, `01163`, `01178`); the permanent fix is a guard test (WP5) after the card fixes.
-- **Rules:** each item follows the card-integration protocol and the plan-then-approve rule before any supplemental or engine edit.
-
-### Phase 6: Supplemental Data Pass (postponed), #100
-
-- **#100** "New pass on card supplemental data" is **postponed** (downgraded from P0-blocker to P2-medium).
-- **Why:** Phase 5 and the core review tracker may still change primitives, triggers, filters and parameters; a full pass now would be redone. Start it only after Phase 5 is finished, on a stable engine contract.
-
-### Known gap outside Gate 1 (from the #218 audit)
-
-53 core encounter cards with rules text have no supplemental entry: the Klaw, Ultron, Masters of Evil, Hydra and Doomsday Chair sets (`01113`-`01154`, `01180`-`01183`). Their scenario plugins exist under `src/engine/scenarios/built-in/`, but no card abilities are modelled, so those scenarios cannot be played faithfully. Tracked with the three Surge cards in [#244](https://github.com/SteveRodrigue/MCD/issues/244). Substring keyword detection for the other 15 keywords (hundreds of phantom tags across all packs): [#243](https://github.com/SteveRodrigue/MCD/issues/243).
-
-### Unscheduled open issues
-
-Not part of any phase yet; pick them deliberately:
-
-| Issue | Title | Labels | Note |
-|---|---|---|---|
-| #37 | Multiplayer Alliance collaborative resource payment and Team-Up validators | P2, engine | Feature, no dependency on Phase 5 |
-| #126 | Remove deprecated attachment discard action forwarder | P2, needs-review | Cleanup |
-| #127 | Replace unsafe dynamic effect and filter contracts with typed boundary adapters | P2, needs-review | Type-safety refactor |
-| #206 | Identity printed traits are the union of hero and alter-ego sides regardless of form | bug | Relates to the "cards are literal" rule; triage priority |
-| #208 | Player-deck obligations go to the play area on draw | P3 | Depends on #158 (done) |
-| #209 | Conditional encounter attachments ("Attach to X. Otherwise ...", 42 cards) | P3 | Independent of #158 |
-| #109 | Observer-scoped minion and enemy reaction triggers | P3 | Feature |
-| #27 | Calibrate the security response SLA in `SECURITY.md` | P3, docs | Documentation |
-| #100 | New pass on card supplemental data | P2 (postponed) | Phase 6 |
-| #226-#232 | `effectParams` remediation work packages WP1-WP7 | P2-P3, bug/enhancement | Ordered in `plan_effect_params_remediation.md`; WP1, WP2, WP4 first (independent) |
-
----
-
-## 6. Handoff Protocol for Resuming Agents & Developers
-
-1. **Verify Clean Working Tree:**
-   ```powershell
-   rtk git pull origin main
-   rtk npm test
-   ```
-2. **Select Active Target:**
-   - Primary: **Phase 5, Track B** in the **approved order of 2026-10-04** (functional bugs before cosmetics), one item at a time, each with a plan first:
-     1. ~~**C1** Jessica Jones cap~~ done 2026-10-04, uncommitted ([plan](plan_core_review_c1_jessica_jones.md))
-     2. **WP1, WP2, WP4** (WP1 Mark V Helmet done 2026-10-04 (`8762323`): [plan](plan_core_review_wp1_mark_v_helmet.md); WP2 Iron Man hand size done 2026-10-04 (`2a3aeb2`): [plan](plan_core_review_wp2_iron_man_hand_size.md); WP4 Kree Manipulator done 2026-10-04 (`b2ab514`): [plan](plan_core_review_wp4_kree_manipulator.md); WP8 Electric Whip Attack done 2026-10-04 (boost `b2ab514`, When Revealed with #222): [plan](plan_core_review_wp8_electric_whip_attack.md); Mark V Helmet #226, Iron Man hand size #227, Kree Manipulator #229): independent, can run in parallel
-     3. **#222 `SELF_HERO` selector** (done 2026-10-04, `28fa59a`: [plan](plan_issue_222_self_hero_selector.md); unblocks `01168` and `01173` When Revealed, maybe `01159`), then **#218 Surge** (done 2026-10-05, uncommitted: [plan](plan_issue_218_surge_keyword.md); the importer fix covers Surge only, the other 15 keywords are [#243](https://github.com/SteveRodrigue/MCD/issues/243); three Surge cards with missing or wrong data are [#244](https://github.com/SteveRodrigue/MCD/issues/244)) and #219
-     4. **WP5** guard test #230 (after WP1-WP4, zero exemptions); WP3 #228 after #209 and #218
-     5. **Remaining Tier 1 cosmetics** (C2-C5, C8, C11, A6 test), then WP6 #231 and WP7 #232
-     Full detail: [plan_effect_params_remediation.md](plan_effect_params_remediation.md).
-   - In parallel or next: the engine prerequisites #218 (Surge keyword, six cards) and #219/#222 (two to three cards each) unblock the stripped encounter cards; #225 improves failure visibility for all abilities.
-   - Wrecking Crew (#210-#215) is deferred until MC03 is scheduled.
-3. **Follow Standard TDD & Quality Gates:**
-   - Author reproduction test in `tests/engine/` or `tests/ui/`.
-   - Implement declarative data / generic engine logic.
-   - Run: `rtk npm test -- <test_file>`, `rtk npm run typecheck`, `rtk npm run lint`.
-4. **Delivery:**
-   - Update `CHANGELOG.md` under `[Unreleased]` and update status in this document.
-   - Run `/commit-and-push` when approved.

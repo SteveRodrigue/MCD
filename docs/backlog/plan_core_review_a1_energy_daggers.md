@@ -1,6 +1,6 @@
 # Plan: Core Review A1, Energy Daggers `01046`
 
-Parent tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md). **Status: implemented 2026-10-03, uncommitted. Deviation from plan: instead of routing through `resolveTargets`, I extracted the existing `ALL_ENEMIES` loop into a shared `dealDamageToEnemies` helper (same Tough/defeat path, no third copy).**
+Parent tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md). **Status: implemented 2026-10-03, committed `a6c5397`. Deviation from plan: instead of routing through `resolveTargets`, I extracted the existing `ALL_ENEMIES` loop into a shared `dealDamageToEnemies` helper (same Tough/defeat path, no third copy).**
 
 ## 1. Printed text (`card.text`)
 

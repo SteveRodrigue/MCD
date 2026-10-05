@@ -1,6 +1,6 @@
 # Plan: Issue #131 — Rocket Boots (01039) never grants Aerial (review item A3)
 
-> Status: **Implemented (uncommitted)**, 2026-10-04. Tests: 13 across 3 files, full suite green.
+> Status: **Implemented (committed `32aa400`)**, 2026-10-04. Tests: 13 across 3 files, full suite green.
 > Roadmap: `teamwork_status_and_next_target.md`, Phase 5, Track A, step 3. Tracker: `plan_core_player_cards_review.md` item A3.
 > Tier 2 (new generic engine mechanism). UI / Card Editor impact: yes, one new `duration` parameter on `ADD_TRAIT` in the editor registry; no board UI change (timed traits flow through the existing dynamic-trait pills).
 

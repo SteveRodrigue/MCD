@@ -1,6 +1,6 @@
 # Plan: Issue #207 — Wakanda Forever! sequence must pause for mid-sequence prompts
 
-> Status: **Implemented (uncommitted)**, 2026-10-04. All five decisions approved as recommended; #225 filed for decision 3.
+> Status: **Implemented (committed `a6c5397`, `df01659`)**, 2026-10-04. All five decisions approved as recommended; #225 filed for decision 3.
 > Roadmap: `teamwork_status_and_next_target.md`, Phase 5, Track A, step 4. Includes tracker follow-up F1 (`plan_core_player_cards_review.md`).
 > Tier 2 (small state addition plus a handler hook; no change to supplemental card data). UI / Card Editor impact: none.
 

@@ -1,6 +1,6 @@
 # Plan: Phase 4, group B — #161, #199, #200, #201, #202
 
-> Status: **Delivered (uncommitted).** #199 closed on GitHub; #200 result: main chunk 1,230 kB to 860 kB, kept.
+> Status: **Delivered (committed).** #199 closed on GitHub; #200 result: main chunk 1,230 kB to 860 kB, kept.
 > Source: `teamwork_status_and_next_target.md`, Phase 4 second line ("#161, #199, #200, #201, #202").
 > No gameplay rules involved. UI impact: #161 (visual) and #200 (load behavior). No Card Editor impact.
 

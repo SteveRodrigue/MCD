@@ -1,6 +1,6 @@
 # Plan: Core review B7, Med Team `01080` heals "a friendly character", not any character
 
-> **Status:** implemented 2026-10-04 (approved; uncommitted). Tier 1 (data only, plus tests). Tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
+> **Status:** implemented 2026-10-04 (approved; committed `8dc2fe7`). Tier 1 (data only, plus tests). Tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
 > **UI / Card Editor impact:** none. `CHOSEN_FRIENDLY_CHARACTER` is already in `TargetSelectorSchema`, so the editor dropdowns and the spec (`03_costs_and_targeting.md`) already list it. No new schema.
 
 ## 1. Printed text (upstream `core` 01080, support, Protection, cost 3, trait S.H.I.E.L.D.)

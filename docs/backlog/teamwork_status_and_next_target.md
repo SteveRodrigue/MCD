@@ -1,7 +1,7 @@
 # MCD Backlog: Status, Work Queue and Handoff
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last pushed work commit `7686171` (False Alarm); #234 is implemented in the working tree, not committed yet. Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit `5d01ec3` (#234, chosen vs event target). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
 > **Verification baseline:** 🟢 1,850 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
@@ -33,7 +33,7 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | #244 (first row) | Heart-Shaped Herb `01158`: tough status cards (When Revealed and Boost) replace the invented heal | `4d200a5` |
 | #242 | False Alarm `01112`: surge when already confused (`IF_ALREADY_HAS_STATUS`) | `7686171` |
 | Triage of #233 to #240 | 8 in-app reports diagnosed; #235, #236, #239 closed as duplicates of #234; #245, #246 filed from two new reports | GitHub only |
-| #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | _not committed yet_ |
+| #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | `5d01ec3` |
 
 ---
 

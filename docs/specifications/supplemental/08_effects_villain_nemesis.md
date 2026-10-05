@@ -135,3 +135,19 @@ Per ADR-0029, monolithic `SPAWN_NEMESIS` has been fully decomposed into a compos
 }
 ```
 
+---
+
+### `SURGE` and the Surge keyword
+
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` (#218; [`pipeline/surge.ts`](../../../src/engine/pipeline/surge.ts), [`resolveActiveEncounterCardAfterInterrupt`](../../../src/engine/pipeline/villain-phase.ts))
+* **Rule (RR v1.8 "Surge"):** Surge is equivalent to *When Revealed: deal yourself 1 facedown encounter card*. The player resolving the card is dealt the top card of the encounter deck (deck exhaustion applies: reshuffle and acceleration). The extra card is revealed only after the original card, including any pending choice, has fully resolved.
+* **Printed Surge** is detected by the importer, not declared in supplemental data: a card prints the keyword when a whole sentence of a text line is `Surge` (`Surge.`, `Surge <i>(reminder)</i>`, `Surge .`, bare `Surge`). Text that only mentions the word ("this card gains surge.") does not (`hasPrintedKeyword`, `card-loader.ts`). Do **not** add a `SURGE` step to a card that prints the keyword: the engine already surges it.
+* **Conditional surge** ("If ..., this card gains surge") is the `SURGE` effect (or `DISCARD` with `fallback: "SURGE"`), usually behind a gate (`IF_AMOUNT_ZERO`, `IF_ALREADY_HAS_STATUS`, `IF_CARD_IN_PLAY`):
+
+```json
+{ "effect": "SURGE", "gate": "IF_CARD_IN_PLAY", "gateParams": { "cardCode": "01167" } }
+```
+
+* **At most once per reveal:** the keyword and the effect share one helper that sets a flag on the active encounter context, so a card that prints Surge and also gains it by effect surges once.
+* **Cancelled When Revealed:** Surge is a When Revealed ability, so cancelling the card's When Revealed effects (Enhanced Spider-Sense `01004`, Get Behind Me! `01078`) cancels the surge too.
+* The former card-named composites `HEAL_DAMAGE_WITH_SURGE`, `ADD_STATUS_WITH_SURGE`, `REVEAL_ENCOUNTER_CARD_WITH_SURGE` and `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE` were removed (unused by every pack, banned by ADR-0021): express them as the ordinary effect plus a gated `SURGE` step.

@@ -264,6 +264,10 @@ Goal: the Core Set cards used by the Rhino vertical slice do what the printed te
 - **#100** "New pass on card supplemental data" is **postponed** (downgraded from P0-blocker to P2-medium).
 - **Why:** Phase 5 and the core review tracker may still change primitives, triggers, filters and parameters; a full pass now would be redone. Start it only after Phase 5 is finished, on a stable engine contract.
 
+### Known gap outside Gate 1 (from the #218 audit)
+
+53 core encounter cards with rules text have no supplemental entry: the Klaw, Ultron, Masters of Evil, Hydra and Doomsday Chair sets (`01113`-`01154`, `01180`-`01183`). Their scenario plugins exist under `src/engine/scenarios/built-in/`, but no card abilities are modelled, so those scenarios cannot be played faithfully. Tracked with the three Surge cards in [#244](https://github.com/SteveRodrigue/MCD/issues/244). Substring keyword detection for the other 15 keywords (hundreds of phantom tags across all packs): [#243](https://github.com/SteveRodrigue/MCD/issues/243).
+
 ### Unscheduled open issues
 
 Not part of any phase yet; pick them deliberately:
@@ -294,7 +298,7 @@ Not part of any phase yet; pick them deliberately:
    - Primary: **Phase 5, Track B** in the **approved order of 2026-10-04** (functional bugs before cosmetics), one item at a time, each with a plan first:
      1. ~~**C1** Jessica Jones cap~~ done 2026-10-04, uncommitted ([plan](plan_core_review_c1_jessica_jones.md))
      2. **WP1, WP2, WP4** (WP1 Mark V Helmet done 2026-10-04 (`8762323`): [plan](plan_core_review_wp1_mark_v_helmet.md); WP2 Iron Man hand size done 2026-10-04 (`2a3aeb2`): [plan](plan_core_review_wp2_iron_man_hand_size.md); WP4 Kree Manipulator done 2026-10-04 (`b2ab514`): [plan](plan_core_review_wp4_kree_manipulator.md); WP8 Electric Whip Attack done 2026-10-04 (boost `b2ab514`, When Revealed with #222): [plan](plan_core_review_wp8_electric_whip_attack.md); Mark V Helmet #226, Iron Man hand size #227, Kree Manipulator #229): independent, can run in parallel
-     3. **#222 `SELF_HERO` selector** (done 2026-10-04, uncommitted: [plan](plan_issue_222_self_hero_selector.md); unblocks `01168` and `01173` When Revealed, maybe `01159`), then **#218 Surge** (unblocks six stripped encounter cards) and #219
+     3. **#222 `SELF_HERO` selector** (done 2026-10-04, `28fa59a`: [plan](plan_issue_222_self_hero_selector.md); unblocks `01168` and `01173` When Revealed, maybe `01159`), then **#218 Surge** (done 2026-10-05, uncommitted: [plan](plan_issue_218_surge_keyword.md); the importer fix covers Surge only, the other 15 keywords are [#243](https://github.com/SteveRodrigue/MCD/issues/243); three Surge cards with missing or wrong data are [#244](https://github.com/SteveRodrigue/MCD/issues/244)) and #219
      4. **WP5** guard test #230 (after WP1-WP4, zero exemptions); WP3 #228 after #209 and #218
      5. **Remaining Tier 1 cosmetics** (C2-C5, C8, C11, A6 test), then WP6 #231 and WP7 #232
      Full detail: [plan_effect_params_remediation.md](plan_effect_params_remediation.md).

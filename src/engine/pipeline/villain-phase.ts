@@ -26,6 +26,7 @@ import {
 import { initiateEnemyAttack, CombatOptions } from './combat-pipeline';
 export type { CombatOptions };
 import { drawEncounterCard } from './deck-exhaustion';
+import { dealSurgeCard } from './surge';
 import { resolveRevealedObligation } from './obligations';
 export { drawEncounterCard };
 import { peekDecisionPrompt } from './prompt-queue';
@@ -734,6 +735,13 @@ export function resolveActiveEncounterCardAfterInterrupt(
       params: { card: card.name },
       onomatopoeia: isCancelled ? 'CANCELLED!' : 'TREACHERY!',
     });
+  }
+
+  // Surge keyword: equivalent to "When Revealed: deal yourself 1 facedown encounter card", so a
+  // cancelled When Revealed also cancels it, and a card that already surged by effect does not
+  // surge twice. The extra card is only dealt here; it is revealed after this card has resolved.
+  if (!isCancelled && hasKeyword(card, Keyword.SURGE) && !state.activeEncounterContext?.surged) {
+    dealSurgeCard(state, player, card.name);
   }
 
   state.activeEncounterContext = undefined;

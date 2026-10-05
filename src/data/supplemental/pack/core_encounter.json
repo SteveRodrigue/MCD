@@ -1797,7 +1797,7 @@
       "audit": {
         "createdAt": "2026-08-27T23:00",
         "updatedAt": "2026-10-04T10:44",
-        "reviewedAt": "2026-10-04T10:44",
+        "reviewedAt": "2026-10-05T09:10",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 90,
@@ -1840,10 +1840,6 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "id": "under_fire_surge",
-              "effect": "SURGE"
-            },
-            {
               "id": "under_fire_reveal",
               "effect": "REVEAL_ENCOUNTER_CARD"
             }
@@ -1852,8 +1848,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-13T22:00:00Z",
-        "reviewedAt": "2026-09-13T22:00:00Z",
+        "updatedAt": "2026-10-05T09:10",
+        "reviewedAt": "2026-10-05T09:10",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,

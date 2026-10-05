@@ -1,6 +1,6 @@
 # Plan: Core review A2, Counter-Punch `01077` (cost and "that enemy")
 
-> **Status:** implemented 2026-10-04 (approved by the user; uncommitted). Shared helper option (b); hero-defender rule enforced via the new `triggerFilter.defenderType`.
+> **Status:** implemented 2026-10-04 (approved by the user; committed `647f435`). Shared helper option (b); hero-defender rule enforced via the new `triggerFilter.defenderType`.
 > **Tier:** Part 1 is Tier 1 (data). Part 2 is Tier 2 (generic engine helper) with a refactor of three existing dispatcher paths, so I treat its blast radius as the upper end of Tier 2 and guard it with characterization tests. Tracker: [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
 > **UI / Card Editor impact:** none (no new parameter or effect name; the prompt reuses the existing optional-trigger prompt).
 

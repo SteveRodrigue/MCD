@@ -10,16 +10,18 @@ Order approved by the user on 2026-10-04. Order matters: fix the cards first, th
 
 | Order | Package | Item | GitHub | Tier | Depends on | Status |
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 | **C1** | Jessica Jones `01059` invented `maxBonus` cap (engine default 4 too) | _(tracker item, no issue)_ | 1 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_c1_jessica_jones.md) |
-| 2 | **WP1** | Mark V Helmet `01037` `aerialAllSchemes` ignored (supersedes review item A4) | [#226](https://github.com/SteveRodrigue/MCD/issues/226) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp1_mark_v_helmet.md) |
+| 1 | **C1** | Jessica Jones `01059` invented `maxBonus` cap (engine default 4 too) | _(tracker item, no issue)_ | 1 | none | **Done 2026-10-04 (`8762323`):** [plan](plan_core_review_c1_jessica_jones.md) |
+| 2 | **WP1** | Mark V Helmet `01037` `aerialAllSchemes` ignored (supersedes review item A4) | [#226](https://github.com/SteveRodrigue/MCD/issues/226) | 2 | none | **Done 2026-10-04 (`8762323`):** [plan](plan_core_review_wp1_mark_v_helmet.md) |
 | 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | **Done 2026-10-04 (`2a3aeb2`):** [plan](plan_core_review_wp2_iron_man_hand_size.md) |
 | 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | **Done 2026-10-04 (`b2ab514`):** [plan](plan_core_review_wp4_kree_manipulator.md) |
 | 4b | **WP8** | Electric Whip Attack `01173`: invented +1 ATTACK, wrong boost filter, no undefended gate, When Revealed choice unmodelled | [#241](https://github.com/SteveRodrigue/MCD/issues/241) | 2-3 | WP4 (undefended condition); When Revealed needs #222 | **Done 2026-10-04:** boost in `b2ab514`, When Revealed with #222 (`28fa59a`), [plan](plan_core_review_wp8_electric_whip_attack.md) |
 | 4c | _(found in #222)_ | False Alarm `01112`: "if you are already confused, this card gains surge" not modelled | [#242](https://github.com/SteveRodrigue/MCD/issues/242) | 1 | none (uses the `SURGE` effect) | Not started |
-| 5 | **WP3** | Genetically Enhanced `01163` invented key, printed text unmodelled | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | 3 | #209, #218 | Not started |
+| 5 | **WP3** | Genetically Enhanced `01163` invented key, printed text unmodelled | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | 3 | #209 for a faithful model (Surge #218 is done) | Not started. **Next action: apply the circuit-breaker now** (strip the `bonusAttack` ability, ambiguity report, keep #228 open for #209) so WP5 can pass with zero exemptions |
 | 6 | **WP5** | Guard: unknown `effectParams` key fails the data test | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 2 | C1, WP1-WP4 | Not started |
 | 7 | **WP6** | Retire `scaling`/`multiplier`/`maxBonus` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 2 | C1, WP2 | Not started |
 | 8 | **WP7** | Close documentation gaps, remove decorative keys (audit class B) | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | 1-2 | WP5 (guard must pass without exceptions) | Not started |
+
+**Position on 2026-10-05:** C1, WP1, WP2, WP4, WP8 and the `target` slice of WP5 are done. Next: WP3 circuit-breaker, then WP5 (the remaining `effectParams` keys), then WP6 and WP7. Overall queue and handoff: [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md).
 
 WP1, WP2 and WP4 are independent and can run in parallel by different agents. WP3 is likely blocked on #209 and #218; if so, apply the circuit-breaker (strip the placeholder ability, write an ambiguity report) and move on. WP5 must land after WP1-WP4 so it passes with zero exemptions (no skipped tests, no baseline list that hides known orphans). WP6 and WP7 can run in parallel after WP5.
 

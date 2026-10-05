@@ -1,6 +1,6 @@
 # Plan: #218, implement the Surge keyword
 
-> **Status:** implemented 2026-10-05 (approved with decision 8 = (a), remove the dead composites; uncommitted). Tier 2 (new reveal-path behaviour, one shared helper, importer fix for one keyword). Engine prerequisite for the Rhino slice: the six cards that print Surge never reveal the extra card today.
+> **Status:** implemented 2026-10-05 (approved with decision 8 = (a), remove the dead composites; committed `9a0830d`). Tier 2 (new reveal-path behaviour, one shared helper, importer fix for one keyword). Engine prerequisite for the Rhino slice: the six cards that print Surge never reveal the extra card today.
 > **UI / Card Editor impact:** none (no schema change).
 
 ## 1. Rule (`npm run rule -- surge`)

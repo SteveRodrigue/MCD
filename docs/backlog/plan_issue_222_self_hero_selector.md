@@ -1,6 +1,6 @@
 # Plan: #222, form-literal "your hero" target selector `SELF_HERO`
 
-> **Status:** implemented 2026-10-04 (approved; uncommitted). **Decision taken by the user: the selector is named `SELF_HERO` (option A of the naming comparison); the related selector cleanup in section 2b is part of this change.** Tier 2 (new generic selector, schema + engine + editor + docs) plus card integration of the cards it unblocks. Engine prerequisite for the Rhino slice; unblocks `01168` (When Revealed), `01173` (When Revealed, closes #241) and, once the discard-then-choose amount is confirmed, `01159`. `01164` also needs #223.
+> **Status:** implemented 2026-10-04 (approved; committed `28fa59a`). **Decision taken by the user: the selector is named `SELF_HERO` (option A of the naming comparison); the related selector cleanup in section 2b is part of this change.** Tier 2 (new generic selector, schema + engine + editor + docs) plus card integration of the cards it unblocks. Engine prerequisite for the Rhino slice; unblocks `01168` (When Revealed), `01173` (When Revealed, closes #241) and, once the discard-then-choose amount is confirmed, `01159`. `01164` also needs #223.
 > **UI / Card Editor impact:** the selector appears in every target dropdown automatically (they are built from `TargetSelectorSchema`); a registry test pins it.
 
 ## 1. Problem

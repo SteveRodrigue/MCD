@@ -1,6 +1,6 @@
 # Plan: WP4, Kree Manipulator `01178` boost fires on every attack ([#229](https://github.com/SteveRodrigue/MCD/issues/229))
 
-> **Status:** implemented 2026-10-04 (approved; uncommitted). Tier 2 (new generic step condition plus attack context passed to boost resolution). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md). A second card with the same missing condition, Electric Whip Attack `01173`, is split into WP8 ([#241](https://github.com/SteveRodrigue/MCD/issues/241)) and planned immediately after this item.
+> **Status:** implemented 2026-10-04 (approved; committed `b2ab514`). Tier 2 (new generic step condition plus attack context passed to boost resolution). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md). A second card with the same missing condition, Electric Whip Attack `01173`, is split into WP8 ([#241](https://github.com/SteveRodrigue/MCD/issues/241)) and planned immediately after this item.
 > **UI / Card Editor impact:** the new condition appears in the editor's condition dropdown automatically (built from `StepConditionSchema`); the gate parameter panel gains an `attackerKind` field for it.
 
 ## 1. Printed text (upstream `core_encounter` 01178, treachery, star boost)

@@ -1,6 +1,6 @@
 # Plan: Issue #185 — Gray out Surveillance Team (01064) when no threat can be removed
 
-> Status: **Implemented** (uncommitted). Decisions: gray for any reason the player can't act; grayed cards are not clickable (hover zoom stays); applies to all tableau cards with Action/Resource abilities. Tests live in `tests/ui/tableau-card-actionability.test.tsx`. Documented in ADR-0074.
+> Status: **Implemented** (committed `569274c`). Decisions: gray for any reason the player can't act; grayed cards are not clickable (hover zoom stays); applies to all tableau cards with Action/Resource abilities. Tests live in `tests/ui/tableau-card-actionability.test.tsx`. Documented in ADR-0074.
 
 ## 1. Root cause
 

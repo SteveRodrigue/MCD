@@ -1,6 +1,6 @@
 # Plan: WP2, Iron Man `01029a` hand size cap is never enforced ([#227](https://github.com/SteveRodrigue/MCD/issues/227))
 
-> **Status:** implemented 2026-10-04 (approved; decision 9 = option (a), remove the clamp; uncommitted). Tier 2 (generic dynamic amount in the hand-size calculator). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md); also retires the `PER_MATCHING_CARD` pseudo-primitive, the `MODIFY_HAND_SIZE` part of WP6 ([#231](https://github.com/SteveRodrigue/MCD/issues/231)).
+> **Status:** implemented 2026-10-04 (approved; decision 9 = option (a), remove the clamp; committed `2a3aeb2`). Tier 2 (generic dynamic amount in the hand-size calculator). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md); also retires the `PER_MATCHING_CARD` pseudo-primitive, the `MODIFY_HAND_SIZE` part of WP6 ([#231](https://github.com/SteveRodrigue/MCD/issues/231)).
 > **UI / Card Editor impact:** yes: `MODIFY_HAND_SIZE.amount` becomes a dynamic value in the editor registry; `scaling`, `multiplier` and `filter` leave its parameter list.
 
 ## 1. Printed text: the official errata governs

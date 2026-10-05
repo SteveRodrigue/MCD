@@ -1,6 +1,6 @@
 # Plan: WP1 / review A4, Mark V Helmet `01037` ignores `aerialAllSchemes` ([#226](https://github.com/SteveRodrigue/MCD/issues/226))
 
-> **Status:** implemented 2026-10-04 (approved with decisions 1(a) and 2: new gate and Patrol included; uncommitted). Tier 2 (new generic gate + executor fix). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md); supersedes review item A4 in [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
+> **Status:** implemented 2026-10-04 (approved with decisions 1(a) and 2: new gate and Patrol included; committed `8762323`). Tier 2 (new generic gate + executor fix). Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md); supersedes review item A4 in [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
 > **UI / Card Editor impact:** yes, if decision 1 (a) is approved: a new gate `IF_CONDITION_NOT_MET` (editor gate dropdown and its trait/condition fields). Otherwise none.
 
 ## 1. Printed text (upstream `core` 01037, upgrade, Hero, cost 1, traits Armor. Tech., unique)

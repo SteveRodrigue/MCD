@@ -730,14 +730,28 @@
     "01158": {
       "abilities": [
         {
-          "id": "heart_shaped_herb",
-          "timing": "FORCED_RESPONSE",
+          "id": "heart_shaped_herb_when_revealed",
+          "timing": "WHEN_REVEALED",
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
-              "effect": "HEAL_DAMAGE",
+              "effect": "ADD_STATUS",
               "effectParams": {
-                "amount": 2,
+                "status": "TOUGH",
+                "target": "ENGAGED_ENEMIES"
+              }
+            }
+          ]
+        },
+        {
+          "id": "heart_shaped_herb_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "TOUGH",
                 "target": "VILLAIN"
               }
             }
@@ -745,10 +759,11 @@
         }
       ],
       "audit": {
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-05T08:01",
+        "reviewedAt": "2026-10-05T08:01",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
+        "confidence": 98,
         "originalText": "Surge <i>(After this card resolves, reveal 1 additional encounter card)</i>\n<b>When Revealed</b>: Give the villain and each minion engaged with you a tough status card.\n<hr />\n[star] <b>Boost</b>: Give the villain a tough status card."
       }
     },

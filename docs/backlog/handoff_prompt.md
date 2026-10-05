@@ -9,7 +9,7 @@ Last reviewed 2026-10-05. If the repository has moved on, trust `git log` and th
 ```text
 Continue work on Marvel Champions Digital in C:\Users\steve\repos\MCD (branch main).
 
-1. Run `git pull`, `git status`, `npm test` (baseline: 1,830 tests green; #217 is a known flaky test, rerun it).
+1. Run `git pull`, `git status`, `npm test` (baseline: 1,834 tests green; #217 is a known flaky test, rerun it).
 2. Read in order: AGENTS.md, docs/backlog/README.md, docs/backlog/teamwork_status_and_next_target.md.
 3. Take the first READY item of section 3 of the status file that nobody else has claimed (3.1 first: cards that
    misplay today; then the engine prerequisites). Say which item you took.
@@ -57,7 +57,7 @@ Be concise. Lead with the next action, number multi-step work, and ask me one qu
 ## Good first items for a new person (all independent, all small)
 
 1. [#242](https://github.com/SteveRodrigue/MCD/issues/242): False Alarm `01112` surge when already confused (Tier 1, data plus a test).
-2. [#244](https://github.com/SteveRodrigue/MCD/issues/244), first row only: correct or strip the active placeholder on Heart-Shaped Herb `01158`.
+2. [#244](https://github.com/SteveRodrigue/MCD/issues/244): Weapons Runner `01121` has no supplemental entry (`01158` is done; `01185` waits on #209).
 3. Triage the in-app bug reports [#233](https://github.com/SteveRodrigue/MCD/issues/233) to [#240](https://github.com/SteveRodrigue/MCD/issues/240) with the `problem-report-triage` skill and deduplicate them.
 4. [#221](https://github.com/SteveRodrigue/MCD/issues/221) (damage gate) or [#223](https://github.com/SteveRodrigue/MCD/issues/223) (named minion attack): self-contained engine primitives, each unblocks one stripped card.
 

@@ -750,6 +750,61 @@ export function shouldExecuteStep(
 }
 
 /**
+ * Damage to a player's identity (hero or alter-ego): Tough absorbs it, otherwise the DAMAGE_TAKEN
+ * interrupt window opens and the hit points drop. Shared by the identity selectors (`SELF_IDENTITY`,
+ * `SELF_HERO`).
+ */
+function dealDamageToIdentity(
+  state: GameState,
+  player: PlayerState,
+  amount: number,
+  context: EffectContext,
+): void {
+  const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
+  if (toughIdx !== -1) {
+    player.statusCards.splice(toughIdx, 1);
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      key: 'card.effect.dealDamage',
+      params: {
+        player: player.name,
+        target: 'hero',
+        amount: 0,
+        toughAbsorbed: true,
+      },
+      onomatopoeia: 'CLANG! (TOUGH)',
+    });
+  } else {
+    const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
+      targetPlayerId: player.id,
+      targetType: 'player',
+      damageAmount: amount,
+      triggerChain: context.triggerChain,
+    });
+    const finalDmg = prevResult.damageAmount ?? amount;
+    player.health = Math.max(0, player.health - finalDmg);
+    if (player.health <= 0) state.winner = 'VILLAIN';
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      key: 'card.effect.dealDamage',
+      params: {
+        player: player.name,
+        target: 'hero',
+        amount: finalDmg,
+        remainingHealth: player.health,
+      },
+      onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
+    });
+  }
+}
+
+/**
  * Deals damage to the villain and to every minion engaged with the given players.
  * Tough is removed instead of damage; defeated minions are processed and discarded.
  */
@@ -1940,54 +1995,24 @@ export function executeStep(
         targetParam === 'ALL_HEROES' ||
         targetParam === 'HERO' ||
         targetParam === 'SELF_IDENTITY' ||
+        targetParam === 'SELF_HERO' ||
         targetParam === 'IDENTITY' ||
         targetParam === 'SELF'
           ? 'hero'
           : context.targetType || 'villain';
 
-      if (targetParam === 'SELF_IDENTITY' || targetParam === 'IDENTITY' || targetParam === 'SELF') {
-        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          player.statusCards.splice(toughIdx, 1);
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.dealDamage',
-            params: {
-              player: player.name,
-              target: 'hero',
-              amount: 0,
-              toughAbsorbed: true,
-            },
-            onomatopoeia: 'CLANG! (TOUGH)',
-          });
-        } else {
-          const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
-            targetPlayerId: player.id,
-            targetType: 'player',
-            damageAmount: amount,
-            triggerChain: context.triggerChain,
-          });
-          const finalDmg = prevResult.damageAmount ?? amount;
-          player.health = Math.max(0, player.health - finalDmg);
-          if (player.health <= 0) state.winner = 'VILLAIN';
-          state.log.push({
-            id: `log_${Date.now()}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            key: 'card.effect.dealDamage',
-            params: {
-              player: player.name,
-              target: 'hero',
-              amount: finalDmg,
-              remainingHealth: player.health,
-            },
-            onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
-          });
-        }
+      if (targetParam === 'SELF_HERO' && player.currentForm !== 'hero') {
+        // "Your hero" while in alter-ego form: nothing to damage, never fall back to the alter-ego.
+        return { state, success: true, mutatedState: false, value: 0 };
+      }
+
+      if (
+        targetParam === 'SELF_IDENTITY' ||
+        targetParam === 'SELF_HERO' ||
+        targetParam === 'IDENTITY' ||
+        targetParam === 'SELF'
+      ) {
+        dealDamageToIdentity(state, player, amount, context);
         return {
           state,
           success: true,
@@ -3958,6 +3983,7 @@ export function executeStep(
         sourceCardInstanceId: context.sourceCardInstance?.instanceId,
         triggerSourceCard: context.sourceCardInstance?.card,
         options,
+        discardedCards: context.discardedCards,
         isVoluntary: (step.effectParams?.isVoluntary as boolean) ?? false,
         completion:
           context.sourceCardInstance?.card.type === CardType.OBLIGATION

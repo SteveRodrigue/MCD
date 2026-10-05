@@ -8,23 +8,23 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
  * Their placeholder abilities were removed (card-integration-protocol circuit-breaker) so the engine
  * never executes behavior that contradicts the printed text. Each must point at its ambiguity report.
  */
-const BLOCKED: Record<string, { keepsBoostOnly?: boolean }> = {
-  '01159': {},
-  '01164': { keepsBoostOnly: true },
-  '01168': {},
+const BLOCKED: Record<string, { keeps?: 'BOOST' | 'WHEN_REVEALED' }> = {
+  '01164': { keeps: 'BOOST' },
+  // When Revealed integrated with #222 (SELF_HERO); only the boost still waits on #221.
+  '01168': { keeps: 'WHEN_REVEALED' },
   '01169': {},
   '01174': {},
   '01179': {},
 };
 
 describe('Blocked core encounter cards declare no placeholder abilities', () => {
-  it.each(Object.keys(BLOCKED))('%s has no executable When Revealed ability', (code) => {
+  it.each(Object.keys(BLOCKED))('%s declares only the abilities that are modeled', (code) => {
     const card = cardCatalog.getCard(code)!;
     const abilities = card.enrichment?.abilities ?? [];
-    expect(abilities.some((a) => a.trigger === 'WHEN_REVEALED')).toBe(false);
-    if (BLOCKED[code].keepsBoostOnly) {
+    const keeps = BLOCKED[code].keeps;
+    if (keeps) {
       expect(abilities.length).toBeGreaterThan(0);
-      expect(abilities.every((a) => a.trigger === 'BOOST')).toBe(true);
+      expect(abilities.every((a) => a.trigger === keeps)).toBe(true);
     } else {
       expect(abilities).toHaveLength(0);
     }

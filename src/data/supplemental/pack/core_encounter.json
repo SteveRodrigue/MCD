@@ -126,8 +126,7 @@
               "effect": "ATTACHMENT_DAMAGE_SHIELD",
               "effectParams": {
                 "mode": "PREVENT_ALL_AND_DISCARD",
-                "maxAbsorb": 5,
-                "target": "ATTACHED_VILLAIN"
+                "maxAbsorb": 5
               }
             }
           ]
@@ -135,8 +134,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T21:30",
+        "reviewedAt": "2026-10-04T21:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -599,7 +598,7 @@
               "effect": "ADD_STATUS",
               "effectParams": {
                 "status": "CONFUSED",
-                "target": "ACTIVE_IDENTITY"
+                "target": "SELF_IDENTITY"
               }
             }
           ]
@@ -607,8 +606,8 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-04T21:30",
+        "reviewedAt": "2026-10-04T21:30",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
         "confidence": 98,
@@ -755,14 +754,68 @@
     },
     "01159": {
       "audit": {
-        "updatedAt": "2026-10-04T10:44",
-        "reviewedAt": "2026-10-04T10:44",
+        "updatedAt": "2026-10-04T21:45",
+        "reviewedAt": "2026-10-04T21:45",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01159_ritual-combat.md",
+        "confidence": 98,
         "originalText": "<b>When Revealed</b>: Discard the top card of the encounter deck. Then, choose to either deal X damage to your hero or place X threat on the main scheme. X is 1 more than the number of boost icons on the discarded encounter card."
-      }
+      },
+      "abilities": [
+        {
+          "id": "ritual_combat_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "id": "ritual_combat_discard",
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "TOP",
+                "count": 1
+              }
+            },
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Ritual Combat",
+                "description": "Choose an effect to resolve for Ritual Combat's When Revealed trigger (X is 1 more than the boost icons on the discarded card):",
+                "options": [
+                  {
+                    "id": "deal_damage",
+                    "label": "Deal X damage to your hero",
+                    "description": "X is 1 more than the number of boost icons on the discarded encounter card.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "target": "SELF_HERO",
+                      "amount": {
+                        "from": "DISCARDED_CARDS",
+                        "discardAttribute": "BOOST_ICONS",
+                        "offset": 1
+                      }
+                    }
+                  },
+                  {
+                    "id": "place_threat",
+                    "label": "Place X threat on the main scheme",
+                    "description": "X is 1 more than the number of boost icons on the discarded encounter card.",
+                    "effect": "ADD_THREAT",
+                    "params": {
+                      "target": "MAIN_SCHEME",
+                      "amount": {
+                        "from": "DISCARDED_CARDS",
+                        "discardAttribute": "BOOST_ICONS",
+                        "offset": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     "01160": {
       "abilities": [
@@ -1054,14 +1107,37 @@
     "01168": {
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T10:44",
-        "reviewedAt": "2026-10-04T10:44",
+        "updatedAt": "2026-10-04T21:30",
+        "reviewedAt": "2026-10-04T21:30",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 70,
         "ambiguityFile": "docs/ambiguities/core_encounter_01168_sweeping-swoop.md",
         "originalText": "<b>When Revealed</b>: Stun your hero. If Vulture is in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to a friendly character, stun that character."
-      }
+      },
+      "abilities": [
+        {
+          "id": "sweeping_swoop_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "SELF_HERO"
+              }
+            },
+            {
+              "effect": "SURGE",
+              "gate": "IF_CARD_IN_PLAY",
+              "gateParams": {
+                "cardCode": "01167"
+              }
+            }
+          ]
+        }
+      ]
     },
     "01169": {
       "audit": {
@@ -1219,6 +1295,54 @@
     "01173": {
       "abilities": [
         {
+          "id": "electric_whip_attack_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "PLAYER_CHOICE",
+              "effectParams": {
+                "title": "Electric Whip Attack",
+                "description": "Choose an effect to resolve for Electric Whip Attack's When Revealed trigger:",
+                "options": [
+                  {
+                    "id": "deal_damage",
+                    "label": "Deal 1 damage to your hero for each upgrade you control",
+                    "description": "Deal 1 damage to your hero for each upgrade you control.",
+                    "effect": "DEAL_DAMAGE",
+                    "params": {
+                      "target": "SELF_HERO",
+                      "amount": {
+                        "from": "ENTITY_COUNT",
+                        "filter": {
+                          "types": [
+                            "upgrade"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "discard_upgrade",
+                    "label": "Choose and discard an upgrade you control",
+                    "description": "Choose and discard an upgrade you control.",
+                    "effect": "DISCARD",
+                    "params": {
+                      "source": "TABLEAU",
+                      "filter": {
+                        "types": [
+                          "upgrade"
+                        ]
+                      },
+                      "target": "DEFENDING_PLAYER"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
           "id": "electric_whip_attack_boost",
           "timing": "BOOST",
           "trigger": "BOOST",
@@ -1245,13 +1369,12 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T20:10",
-        "reviewedAt": "2026-10-04T20:10",
+        "updatedAt": "2026-10-04T21:30",
+        "reviewedAt": "2026-10-04T21:30",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control.",
-        "ambiguityFile": "docs/ambiguities/core_encounter_01173_electric-whip-attack.md"
+        "confidence": 98,
+        "originalText": "<b>When Revealed</b>: Choose to either deal 1 damage to your hero for each upgrade you control or choose and discard an upgrade you control.\n<hr />\n[star] <b>Boost</b>: If the villain is making an undefended attack, choose and discard an upgrade you control."
       }
     },
     "01174": {

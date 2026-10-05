@@ -14,6 +14,7 @@ import {
   DynamicValueSourceSchema,
   StepConditionSchema,
   ConditionGateSchema,
+  TargetSelectorSchema,
   AddCountersParamsSchema,
   SpendCountersParamsSchema,
   DiscardParamsSchema,
@@ -909,6 +910,41 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
         expect(step.condition).toBe('UNDEFENDED_ATTACK');
         expect(step.gateParams).toEqual({ attackerKind: 'VILLAIN' });
         expect(step.effectParams.condition).toBeUndefined();
+      });
+
+      it('Every `target` value used in any pack is a valid TargetSelector (zero exemptions)', () => {
+        const valid = new Set<string>(TargetSelectorSchema.options);
+        const invalid: string[] = [];
+        const walk = (node: unknown, code: string) => {
+          if (Array.isArray(node)) {
+            node.forEach((n) => walk(n, code));
+          } else if (node && typeof node === 'object') {
+            for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+              if (key === 'target' && typeof value === 'string' && !valid.has(value)) {
+                invalid.push(`${code}: ${value}`);
+              }
+              walk(value, code);
+            }
+          }
+        };
+        for (const file of packFiles) {
+          const pack = JSON.parse(fs.readFileSync(path.join(packDir, file), 'utf8')) as Record<
+            string,
+            any
+          >;
+          const cards = pack.cards ?? pack;
+          for (const [code, card] of Object.entries(cards)) {
+            if (card && typeof card === 'object') walk(card, `${file}/${code}`);
+          }
+        }
+        expect(invalid).toEqual([]);
+      });
+
+      it('Accepts the SELF_HERO, THIS_SIDE_SCHEME and DEFENDING_PLAYER selectors', () => {
+        for (const selector of ['SELF_HERO', 'THIS_SIDE_SCHEME', 'DEFENDING_PLAYER']) {
+          expect(TargetSelectorSchema.safeParse(selector).success).toBe(true);
+        }
+        expect(TargetSelectorSchema.safeParse('ACTIVE_IDENTITY').success).toBe(false);
       });
 
       it('Iron Man (01029a) hand size is a dynamic amount with a +6 clamp and the official errata text', () => {

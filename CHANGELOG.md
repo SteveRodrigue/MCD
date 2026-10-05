@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Data): _Heart-Shaped Herb_ `01158` gives tough status cards instead of an invented heal ([Issue #244](https://github.com/SteveRodrigue/MCD/issues/244), first row)**
+  - **Supplemental Data (`core_encounter.json`):** the placeholder "heal the villain 2" is replaced by the printed text: When Revealed `ADD_STATUS TOUGH` on `ENGAGED_ENEMIES` (the villain and each minion engaged with the revealing player), and a new star Boost `ADD_STATUS TOUGH` on `VILLAIN`. Surge stays with the printed keyword (#218). Data only, no engine or schema change.
+  - **Automated Verification (`heart-shaped-herb.test.ts`):** 4 new tests (villain and own minion get tough, no healing; another player's minion is untouched; at most one tough; boost during a villain attack).
+  - **Follow-up:** the never-dispatched trigger `BOOST_STAR_RESOLVED` (Kree Manipulator `01178`) is recorded under WP7 ([#232](https://github.com/SteveRodrigue/MCD/issues/232)). `01185` and `01121` remain open in #244.
+
 - **Feat (Engine & Importer): the Surge keyword; one Surge path ([Issue #218](https://github.com/SteveRodrigue/MCD/issues/218))**
   - **Engine:** a card that prints Surge now deals the resolving player 1 facedown encounter card when it finishes resolving (`resolveActiveEncounterCardAfterInterrupt`), revealed afterwards by the reveal loop; so the original card and any pending choice complete first (RR v1.8 "Surge"). A cancelled When Revealed also cancels it; a card surges at most once per reveal. New `pipeline/surge.ts` (`dealSurgeCard`) is shared with the `SURGE` effect and `DISCARD` `fallback: "SURGE"`, so deck exhaustion (reshuffle, acceleration) applies everywhere.
   - **Importer (`card-loader.ts`):** new `hasPrintedKeyword`; Surge is tagged only when the card prints it as its own sentence. Before, any text containing `surge.` was tagged, which wrongly tagged 17 core encounter cards that only "gain surge" (`01104`, `01105`, `01106`, `01111`, `01112`, `01124`, `01146`, `01163`, `01164`, `01165`, `01168`, `01175`, `01179`, `01187` to `01190`) and missed `Surge .` and bare `Surge` formats. The same substring problem for the other 15 keywords is [#243](https://github.com/SteveRodrigue/MCD/issues/243).

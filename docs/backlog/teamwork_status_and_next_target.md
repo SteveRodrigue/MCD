@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-05
 > **Repository state:** `main`, last work commit `9a0830d` (Surge keyword). Check `git log -1` and `git status` first: commits after `28fa59a` may not be pushed yet.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,830 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,834 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -30,6 +30,7 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | Kree Manipulator WP4 / #229, Electric Whip Attack WP8 boost | condition `UNDEFENDED_ATTACK` | `b2ab514` |
 | #222 and #241 | `SELF_HERO` selector; Sweeping Swoop (When Revealed), Electric Whip Attack (When Revealed), Ritual Combat; selector hygiene | `28fa59a` |
 | #218 | Surge keyword, one shared surge path, strict printed-keyword detection for Surge | `9a0830d` |
+| #244 (first row) | Heart-Shaped Herb `01158`: tough status cards (When Revealed and Boost) replace the invented heal | _not committed yet_ |
 
 ---
 
@@ -70,7 +71,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 
 | # | Item | Issue | Why now | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| 1 | Heart-Shaped Herb `01158` has an **active invented placeholder** (heals the villain 2); `01185` and `01121` have no entry | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | misplays a card in real games | correct or strip `01158` first; `01185` needs conditional attachment (#209) |
+| 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05, [plan](plan_issue_244_heart_shaped_herb.md)) | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
 | 2 | False Alarm `01112` never surges when already confused | [#242](https://github.com/SteveRodrigue/MCD/issues/242) | small, uses the `SURGE` effect and `IF_ALREADY_HAS_STATUS` | Tier 1 |
 | 3 | **Untriaged in-app bug reports** from 2026-10-04: [#233](https://github.com/SteveRodrigue/MCD/issues/233) Caught Off Guard, [#234](https://github.com/SteveRodrigue/MCD/issues/234) and [#239](https://github.com/SteveRodrigue/MCD/issues/239) Daredevil, [#235](https://github.com/SteveRodrigue/MCD/issues/235) Interrogation Room, [#236](https://github.com/SteveRodrigue/MCD/issues/236) Mockingbird, [#237](https://github.com/SteveRodrigue/MCD/issues/237) Yon-Rogg's Treason, [#238](https://github.com/SteveRodrigue/MCD/issues/238) Highway Robbery, [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency | listed | real play reports, not yet read by the agents who did the work above | use the `problem-report-triage` and `bug-fix` skills; deduplicate against existing issues (#234 and #239 look like duplicates; #237 overlaps #219) |
 | 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | blocked on #209 for a faithful model: **apply the circuit-breaker now** (strip, ambiguity report) so WP5 can pass with zero exemptions |

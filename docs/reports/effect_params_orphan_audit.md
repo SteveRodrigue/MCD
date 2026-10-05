@@ -47,7 +47,7 @@ Limits: a key can be read by a different effect than the one that declares it, a
 
 ## Tracking
 
-Every recommendation below is a work package with a GitHub issue and acceptance criteria in [plan_effect_params_remediation.md](../backlog/plan_effect_params_remediation.md): WP1 #226 (Mark V Helmet), WP2 #227 (Iron Man hand size), WP3 #228 (Genetically Enhanced), WP4 #229 (Kree Manipulator), WP5 #230 (guard test), WP6 #231 (retire pseudo-primitives), WP7 #232 (documentation gaps).
+Every recommendation below is a work package with a GitHub issue carrying its acceptance criteria: WP1 #226 (Mark V Helmet), WP2 #227 (Iron Man hand size), WP3 #228 (Genetically Enhanced), WP4 #229 (Kree Manipulator), WP5 #230 (guard test), WP6 #231 (retire pseudo-primitives), WP7 #232 (documentation gaps).
 
 ## Recommendations
 

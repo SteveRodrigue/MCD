@@ -11,7 +11,7 @@ date_logged: "2026-10-04"
 
 * **MarvelCDB Link:** https://marvelcdb.com/card/01169
 * **Official Printed Text:** `"When Revealed: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way."`
-* **Tracked in:** #219, #220 (audit: `docs/backlog/plan_hero_target_audit.md`)
+* **Tracked in:** #219, #220
 
 ---
 

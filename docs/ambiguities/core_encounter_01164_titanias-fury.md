@@ -11,7 +11,7 @@ date_logged: "2026-10-04"
 
 * **MarvelCDB Link:** https://marvelcdb.com/card/01164
 * **Official Printed Text:** `"When Revealed: Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge. |  | [star] Boost: Give the villain 1 additional boost card for this activation."`
-* **Tracked in:** #223 (the hero selector of #222 is done: `SELF_HERO`) (audit: `docs/backlog/plan_hero_target_audit.md`)
+* **Tracked in:** #223 (the hero selector of #222 is done: `SELF_HERO`)
 
 ---
 

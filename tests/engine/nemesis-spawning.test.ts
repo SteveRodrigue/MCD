@@ -3,6 +3,7 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 import { GameState, HeroCard, AlterEgoCard } from '@engine/models';
 import { setupGame, createCardInstance } from '@engine/state/game-setup';
 import { executeEffect } from '@engine/effects';
+import { peekDecisionPrompt, resolveDecisionPrompt } from '@engine/pipeline/prompt-queue';
 
 describe('Nemesis Spawning Pipeline (Rules Reference v1.8 p. 19)', () => {
   let state: GameState;
@@ -46,12 +47,19 @@ describe('Nemesis Spawning Pipeline (Rules Reference v1.8 p. 19)', () => {
     const shadowInst = createCardInstance(shadowCard);
     const ability = shadowCard.enrichment!.abilities![0];
 
-    const res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: shadowInst });
+    let res = executeEffect(state, ability, { playerId: 'p1', sourceCardInstance: shadowInst });
     expect(res.success).toBe(true);
 
     // 1. Nemesis minion (Vulture 01167) enters play engaged with Player 1
     const vulture = res.state.players[0].engagedMinions.find((m) => m.card.code === '01167');
     expect(vulture).toBeDefined();
+
+    // Quickstrike initiates an attack, pausing the sequence on the defender prompt.
+    // Resolving the prompt resumes the sequence to spawn the side scheme and shuffle remaining cards.
+    const prompt = peekDecisionPrompt(res.state);
+    if (prompt) {
+      res = resolveDecisionPrompt(res.state, 'p1', prompt.options[0].id) as any;
+    }
 
     // 2. Nemesis side scheme (Highway Robbery 01166) enters play
     const vultureScheme = res.state.sideSchemes.find((s) => s.card.code === '01166');

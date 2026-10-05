@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): pausable `executeSequence` and general resumable execution ([Issue #248](https://github.com/SteveRodrigue/MCD/issues/248))**
+  - **Engine, pausable sequences:** `executeSequence` (`src/engine/effects/index.ts`) detects when any step enqueues a decision prompt into `pendingDecisionQueue` and pauses subsequent steps into `state.pendingSequences` (preserving remaining steps, context, `previousResult`, step results map, and dynamic values).
+  - **Engine, resumable execution:** `dispatchAction` in `action-dispatcher.ts` automatically resumes pending sequences via `resumePendingSequence` once the active decision prompt queue is cleared.
+  - **Unification & Cleanup:** retired the special-only `pendingSpecialSequence` and `SpecialAbilityHandler.resume` hook in favor of unified `executeSequence` steps. Wakanda Forever! now constructs unified ability steps and delegates entirely to `executeSequence`.
+  - **Cards now resolved in correct order:** Hulk `01050` (step 2 "deal 2 damage to an enemy" pauses; step 3 "1 damage to each character" and step 4 "discard Hulk" resolve strictly after player target selection); Wakanda Forever! continues resolving Black Panther upgrade sequences with prompt pauses across targets/players.
+  - **Documentation:** updated `02_timings_and_triggers.md` for `pendingSequences`.
+  - **Automated Verification (`hulk-prompt-order.test.ts`, `wakanda-forever-prompt-order.test.ts`):** 3 new tests for Hulk pause/resume lifecycle and order validation; all 5 Wakanda Forever prompt ordering tests updated and verified passing.
+
 - **Fix (Engine & Data): abilities that target "an enemy" / "a scheme" let the player choose ([Issue #234](https://github.com/SteveRodrigue/MCD/issues/234); duplicates #235, #236, #239)**
   - **Engine, context split (ADR-0077):** `EffectExecutionContext` replaces `targetInstanceId` / `targetType` with `chosenTarget*` (the player's choice) and `eventTarget*` (the triggering event's target). Triggered abilities no longer treat the event's target (the thwarted scheme, the defeated minion) as the chosen one.
   - **Engine, step-level target choice:** new `effects/target-choice.ts`, called from `executeStep`. A single-target `CHOSEN_*` step without a chosen target computes the valid targets when it runs (RR v1.8 "Target": already stunned, no threat, undamaged, already exhausted/ready are not valid): none → nothing happens, one → used, two or more → "Choose an Enemy" / "Choose a Scheme" prompt. Works for Responses, Forced Responses, `PLAYER_CHOICE` options and special sequences. `PendingDecisionPrompt.isFinalStep` keeps a finisher bonus through the prompt.

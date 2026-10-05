@@ -113,7 +113,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       executeEffect(state, ability, {
         playerId: 'p1',
-        targetInstanceId: minionInst.instanceId,
+        chosenTargetInstanceId: minionInst.instanceId,
         resourcesSpent: ['physical'],
       });
 
@@ -176,7 +176,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
 
       executeEffect(state, ability, {
         playerId: 'p1',
-        targetInstanceId: whiplashInst.instanceId,
+        chosenTargetInstanceId: whiplashInst.instanceId,
       });
 
       // Hero took 1 retaliate damage from Whiplash

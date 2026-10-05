@@ -64,7 +64,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
       const result = executeEffect(
         state,
         { effect: 'EXHAUST', effectParams: { target: 'CHOSEN_ALLY' } },
-        { playerId: 'p1', targetType: 'ally', targetInstanceId: ally.instanceId },
+        { playerId: 'p1', chosenTargetType: 'ally', chosenTargetInstanceId: ally.instanceId },
       );
 
       expect(result.success).toBe(true);
@@ -162,7 +162,7 @@ describe('Universal EXHAUST and READY Primitives (#65)', () => {
       const result = executeEffect(
         state,
         { effect: 'READY', effectParams: { target: 'CHOSEN_ALLY' } },
-        { playerId: 'p1', targetType: 'ally', targetInstanceId: ally.instanceId },
+        { playerId: 'p1', chosenTargetType: 'ally', chosenTargetInstanceId: ally.instanceId },
       );
 
       expect(result.success).toBe(true);

@@ -245,8 +245,8 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
 
     const res = executeEffect(state, attackAbility, {
       playerId: 'p1',
-      targetType: 'minion',
-      targetInstanceId: minionInstance.instanceId,
+      chosenTargetType: 'minion',
+      chosenTargetInstanceId: minionInstance.instanceId,
     });
 
     expect(res.success).toBe(true);

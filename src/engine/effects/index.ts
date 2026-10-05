@@ -8,7 +8,6 @@ import {
   AbilityStep,
   CardType,
   SideSchemeCard,
-  SideSchemeState,
   ConditionGate,
   StepResolutionResult,
   DecisionPromptOption,
@@ -38,6 +37,7 @@ import type { SearchZone } from '../../data/supplemental/schema';
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
 import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
+import { chooseStepTarget } from './target-choice';
 import { enqueueDecisionPrompt, enqueueDistributionPrompt } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import { applyDamageToTarget } from '../pipeline/damage-pipeline';
@@ -94,22 +94,27 @@ function filterResolvedTargets(
   });
 }
 
+export type EffectTargetType =
+  'villain' | 'minion' | 'main_scheme' | 'side_scheme' | 'ally' | 'hero' | 'character' | 'identity';
+
 export interface EffectExecutionContext {
   playerId: string;
   targetPlayerId?: string;
   sourceCardInstance?: CardInstance;
   targetCardInstance?: CardInstance;
   sourceCardId?: string;
-  targetType?:
-    | 'villain'
-    | 'minion'
-    | 'main_scheme'
-    | 'side_scheme'
-    | 'ally'
-    | 'hero'
-    | 'character'
-    | 'identity';
-  targetInstanceId?: string;
+  /**
+   * The target the player chose for this ability: the UI selection carried by a player action,
+   * or the answer to a target prompt. Never the target of the triggering event.
+   */
+  chosenTargetType?: EffectTargetType;
+  chosenTargetInstanceId?: string;
+  /**
+   * The target of the event that triggered this ability (the thwarted scheme, the defeated minion,
+   * the attacking enemy). Read by TRIGGERING_* selectors and "that" references only.
+   */
+  eventTargetType?: string;
+  eventTargetInstanceId?: string;
   resourcesSpent?: string[];
   previousResult?: StepResolutionResult;
   collectedCardInstanceIds?: string[];
@@ -183,7 +188,7 @@ export function resolveNumericAmount(
     fallback,
     state: options?.state || (context as any)?.state,
     player: options?.player || (context as any)?.player,
-    targetInstanceId: options?.targetInstanceId || (context as any)?.targetInstanceId,
+    targetInstanceId: options?.targetInstanceId || context?.chosenTargetInstanceId,
     targetCardInstance: options?.targetCardInstance || (context as any)?.targetCardInstance,
     sourceCardInstance: options?.sourceCardInstance || context?.sourceCardInstance,
   });
@@ -897,13 +902,13 @@ export function executeSequence(
       ...context,
       previousResult: prevResult,
       distinctFromId: isDistinctFromPrevious
-        ? prevResult?.targetId || context.targetInstanceId
+        ? prevResult?.targetId || context.chosenTargetInstanceId
         : context.distinctFromId,
-      targetInstanceId: isDistinctFromPrevious
+      chosenTargetInstanceId: isDistinctFromPrevious
         ? undefined
         : effectParams.target === 'PREVIOUS_TARGET'
-          ? (prevResult?.targetId ?? context.targetInstanceId)
-          : context.targetInstanceId,
+          ? (prevResult?.targetId ?? context.chosenTargetInstanceId)
+          : context.chosenTargetInstanceId,
     };
 
     const res = executeStep(currentState, normalizedStep, stepContext);
@@ -934,7 +939,8 @@ export function executeSequence(
       mutatedState: stepMutated,
       value: res.value,
       conditionMet: res.conditionMet,
-      targetId: res.targetId || res.selectedCardInstanceIds?.[0] || stepContext.targetInstanceId,
+      targetId:
+        res.targetId || res.selectedCardInstanceIds?.[0] || stepContext.chosenTargetInstanceId,
       discardedCards: res.discardedCards ?? prevResult?.discardedCards,
     };
 
@@ -1242,7 +1248,7 @@ export function executeDiscard(
 
   // 4. DISCARD FROM TABLEAU
   if (source === 'TABLEAU') {
-    const targetInstanceId = (params.targetInstanceId || context.targetInstanceId) as
+    const targetInstanceId = (params.targetInstanceId || context.chosenTargetInstanceId) as
       string | undefined;
     if (targetInstanceId) {
       const targetCard = player.tableau.find((c) => c.instanceId === targetInstanceId);
@@ -1430,6 +1436,21 @@ export function executeStep(
     gateParams: getStepGateParams(step),
   };
 
+  // "an enemy", "a scheme": the player chooses among the valid targets (#234, RR v1.8 "Target").
+  const targetChoice = chooseStepTarget(state, player, step, context);
+  if (targetChoice.kind === 'PROMPTED') {
+    return { state, success: true, mutatedState: true, onomatopoeia: 'CHOOSE TARGET!' };
+  }
+  if (targetChoice.kind === 'NO_VALID_TARGET') {
+    return { state, success: true, mutatedState: false, value: 0, onomatopoeia: 'NO VALID TARGET' };
+  }
+  if (targetChoice.kind === 'CHOSEN') {
+    step = {
+      ...step,
+      effectParams: { ...step.effectParams, targetInstanceId: targetChoice.targetInstanceId },
+    };
+  }
+
   switch (step.effect) {
     case 'DISCARD':
     case 'DISCARD_CARDS': {
@@ -1444,7 +1465,7 @@ export function executeStep(
               player,
               sourceCardInstance: context.sourceCardInstance,
               targetInstanceId:
-                (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+                (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
             })
           : undefined;
       if (step.effectParams?.dynamicBonus) {
@@ -1453,7 +1474,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         });
         count = (count ?? 1) + bonus;
       }
@@ -1462,8 +1483,9 @@ export function executeStep(
       const targetPlayerId =
         (step.effectParams?.targetPlayerId as string) ||
         (step.effectParams?.playerId as string) ||
-        (context.targetInstanceId && state.players.some((p) => p.id === context.targetInstanceId)
-          ? context.targetInstanceId
+        (context.chosenTargetInstanceId &&
+        state.players.some((p) => p.id === context.chosenTargetInstanceId)
+          ? context.chosenTargetInstanceId
           : undefined);
 
       const getPlayerTargetLimit = (p: PlayerState): number | undefined => {
@@ -1629,7 +1651,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         },
       );
       if (step.effectParams?.dynamicBonus) {
@@ -1638,7 +1660,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         });
         amount += bonus;
       }
@@ -1790,11 +1812,11 @@ export function executeStep(
               }
             }
           }
-        } else if (context.targetInstanceId) {
+        } else if (context.chosenTargetInstanceId) {
           let ally: CardInstance | undefined;
           let allyController: PlayerState | undefined;
           for (const p of state.players) {
-            const found = p.allies.find((a) => a.instanceId === context.targetInstanceId);
+            const found = p.allies.find((a) => a.instanceId === context.chosenTargetInstanceId);
             if (found) {
               ally = found;
               allyController = p;
@@ -1829,7 +1851,7 @@ export function executeStep(
             }
           } else {
             const targetPlayer =
-              state.players.find((pl) => pl.id === context.targetInstanceId) || player;
+              state.players.find((pl) => pl.id === context.chosenTargetInstanceId) || player;
             const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
             if (toughIdx !== -1) {
               targetPlayer.statusCards.splice(toughIdx, 1);
@@ -1999,7 +2021,7 @@ export function executeStep(
         targetParam === 'IDENTITY' ||
         targetParam === 'SELF'
           ? 'hero'
-          : context.targetType || 'villain';
+          : context.chosenTargetType || 'villain';
 
       if (targetParam === 'SELF_HERO' && player.currentForm !== 'hero') {
         // "Your hero" while in alter-ego form: nothing to damage, never fall back to the alter-ego.
@@ -2022,7 +2044,10 @@ export function executeStep(
         };
       }
 
-      if (targetParam === 'ALL_HEROES' || (targetType === 'hero' && !context.targetInstanceId)) {
+      if (
+        targetParam === 'ALL_HEROES' ||
+        (targetType === 'hero' && !context.chosenTargetInstanceId)
+      ) {
         for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
           const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
           if (toughIdx !== -1) {
@@ -2078,8 +2103,8 @@ export function executeStep(
       const targetMinionId =
         step.effectParams?.target === 'TRIGGERING_MINION' ||
         step.effectParams?.target === 'TRIGGERING_ENEMY'
-          ? context.targetInstanceId || (step.effectParams?.targetInstanceId as string)
-          : (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
+          ? context.eventTargetInstanceId || (step.effectParams?.targetInstanceId as string)
+          : (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
 
       if (targetMinionId) {
         for (const p of state.players) {
@@ -2317,7 +2342,7 @@ export function executeStep(
         state,
         player,
         sourceCardInstance: context.sourceCardInstance,
-        targetInstanceId: (stepParams.targetInstanceId as string) || context.targetInstanceId,
+        targetInstanceId: (stepParams.targetInstanceId as string) || context.chosenTargetInstanceId,
       });
       const allocationDomain = (stepParams.allocationDomain as any) || 'DAMAGE';
       const targetScope =
@@ -2863,7 +2888,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         });
         amount += bonus;
       }
@@ -2876,8 +2901,8 @@ export function executeStep(
         'MAIN_SCHEME';
       const targetContext: EffectContext = {
         ...context,
-        targetInstanceId:
-          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+        chosenTargetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
       };
       let removed = 0;
       let targetSchemeName = getActiveMainScheme(state)?.card?.name || 'Main Scheme';
@@ -2899,294 +2924,52 @@ export function executeStep(
         ? { key: 'card.effect.threatBlockedByCrisis', onomatopoeia: 'CRISIS BLOCKS!' }
         : { key: 'card.effect.threatBlockedByPatrol', onomatopoeia: 'PATROL BLOCKS!' };
 
-      const isDistinct = Boolean(
-        step.distinctFrom === 'PREVIOUS_TARGET' ||
-        step.effectParams?.distinctFrom === 'PREVIOUS_TARGET' ||
-        step.effectParams?.distinctFrom ||
-        context.distinctFromId,
-      );
-
       let targetSchemes: SchemeTarget[];
 
-      if (isDistinct) {
-        const excludedId =
-          context.distinctFromId || context.previousResult?.targetId || context.targetInstanceId;
-
-        const isMainSchemeExcluded = Boolean(
-          isMainSchemeBlocked ||
-          (excludedId &&
-            (excludedId === 'main_scheme' ||
-              (getActiveMainScheme(state)?.instanceId &&
-                excludedId === getActiveMainScheme(state).instanceId) ||
-              (getActiveMainScheme(state)?.card?.code &&
-                excludedId === getActiveMainScheme(state).card.code))),
+      const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
+      if (isMainSchemeBlocked) {
+        const nonMainSchemes = schemes.filter(
+          (s) =>
+            s.entityType !== 'main_scheme' &&
+            s.id !== 'main_scheme' &&
+            s.id !== getActiveMainScheme(state)?.instanceId &&
+            s.id !== getActiveMainScheme(state)?.card?.code,
         );
-
-        const isSideSchemeExcluded = (s: SideSchemeState) =>
-          Boolean(
-            excludedId && (s.instanceId === excludedId || (s.card && s.card.code === excludedId)),
-          );
-
-        const eligibleSchemes: (
-          | { kind: 'main_scheme'; id: string; name: string; threat: number; code?: string }
-          | {
-              kind: 'side_scheme';
-              id: string;
-              instanceId: string;
-              name: string;
-              threat: number;
-              code?: string;
-              scheme: SideSchemeState;
-            }
-        )[] = [];
-
-        if (getActiveMainScheme(state) && !isMainSchemeExcluded) {
-          eligibleSchemes.push({
-            kind: 'main_scheme',
-            id: getActiveMainScheme(state).instanceId || 'main_scheme',
-            name: getActiveMainScheme(state).card?.name || 'Main Scheme',
-            threat: getActiveMainScheme(state).threat || 0,
-            code: getActiveMainScheme(state).card?.code,
+        if (nonMainSchemes.length === 0) {
+          state.log.push({
+            id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'ability',
+            key: mainSchemeBlock.key,
+            params: {
+              player: player.name,
+              scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
+            },
+            onomatopoeia: mainSchemeBlock.onomatopoeia,
           });
-        }
-        for (const s of state.sideSchemes || []) {
-          if (!isSideSchemeExcluded(s)) {
-            eligibleSchemes.push({
-              kind: 'side_scheme',
-              id: s.instanceId,
-              instanceId: s.instanceId,
-              name: s.card?.name || 'Side Scheme',
-              threat: s.threat || 0,
-              code: s.card?.code,
-              scheme: s,
-            });
-          }
-        }
-
-        if (eligibleSchemes.length === 0) {
           return {
             state,
             success: true,
             mutatedState: false,
             value: 0,
-            onomatopoeia: 'NO DIFFERENT SCHEME!',
+            onomatopoeia: mainSchemeBlock.onomatopoeia,
           };
         }
-
-        if (eligibleSchemes.length >= 2) {
-          const options: DecisionPromptOption[] = eligibleSchemes.map((es) => {
-            if (es.kind === 'main_scheme') {
-              return {
-                id: 'main_scheme',
-                label: `${es.name} (${es.threat} Threat)`,
-                description: `Remove ${amount} threat from ${es.name}`,
-                cardCode: es.code,
-                effect: 'REMOVE_THREAT',
-                params: { amount, target: 'MAIN_SCHEME', resourcesSpent: context.resourcesSpent },
-              };
-            }
-            return {
-              id: es.instanceId,
-              label: `${es.name} (${es.threat || 0} Threat)`,
-              description: `Remove ${amount} threat from ${es.name}`,
-              cardCode: es.code,
-              effect: 'REMOVE_THREAT',
-              params: {
-                amount,
-                target: 'SIDE_SCHEME',
-                targetInstanceId: es.instanceId,
-                resourcesSpent: context.resourcesSpent,
-              },
-            };
-          });
-
-          enqueueDecisionPrompt(state, {
-            promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            playerId: player.id,
-            title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
-            description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
-            sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
-            sourceCardCode: context.sourceCardInstance?.card.code,
-            options,
-          });
-
-          return {
-            state,
-            success: true,
-            mutatedState: true,
-            onomatopoeia: 'CHOOSE SCHEME!',
-          };
-        }
-
-        // Exactly 1 eligible different scheme remains -> auto-target that single different scheme without prompting
-        const singleTarget = eligibleSchemes[0];
+        targetSchemes = nonMainSchemes;
+      } else {
         targetSchemes =
-          singleTarget.kind === 'main_scheme'
-            ? [
+          schemes.length > 0
+            ? schemes
+            : [
                 {
                   kind: 'scheme' as const,
                   entityType: 'main_scheme' as const,
                   entity: getActiveMainScheme(state),
                   id: getActiveMainScheme(state).instanceId || 'main_scheme',
                 },
-              ]
-            : [
-                {
-                  kind: 'scheme' as const,
-                  entityType: 'side_scheme' as const,
-                  entity: singleTarget.scheme,
-                  id: singleTarget.id,
-                },
               ];
-      } else {
-        if (
-          targetParam === 'CHOSEN_SCHEME' &&
-          !step.effectParams?.targetInstanceId &&
-          !context.targetInstanceId &&
-          (state.sideSchemes || []).length > 0
-        ) {
-          const sideSchemes = state.sideSchemes || [];
-          const isMainEligible = Boolean(getActiveMainScheme(state)) && !isMainSchemeBlocked;
-
-          const options: DecisionPromptOption[] = [];
-          if (isMainEligible) {
-            options.push({
-              id: 'main_scheme',
-              label: `${getActiveMainScheme(state).card.name} (${getActiveMainScheme(state).threat} Threat)`,
-              description: `Remove ${amount} threat from ${getActiveMainScheme(state).card.name}`,
-              cardCode: getActiveMainScheme(state).card.code,
-              effect: 'REMOVE_THREAT',
-              params: { amount, target: 'MAIN_SCHEME', resourcesSpent: context.resourcesSpent },
-            });
-          }
-          for (const s of sideSchemes) {
-            options.push({
-              id: s.instanceId,
-              label: `${s.card.name} (${s.threat || 0} Threat)`,
-              description: `Remove ${amount} threat from ${s.card.name}`,
-              cardCode: s.card.code,
-              effect: 'REMOVE_THREAT',
-              params: {
-                amount,
-                target: 'SIDE_SCHEME',
-                targetInstanceId: s.instanceId,
-                resourcesSpent: context.resourcesSpent,
-              },
-            });
-          }
-
-          if (options.length >= 2) {
-            enqueueDecisionPrompt(state, {
-              promptId: `choose_scheme_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-              playerId: player.id,
-              title: `${context.sourceCardInstance?.card.name || 'Scheme'}: Choose a Scheme`,
-              description: `${context.sourceCardInstance?.card.name ? `${context.sourceCardInstance.card.name}: ` : ''}Select a scheme to remove ${amount} threat from:`,
-              sourceCardName: context.sourceCardInstance?.card.name || 'Scheme',
-              sourceCardCode: context.sourceCardInstance?.card.code,
-              options,
-            });
-
-            return {
-              state,
-              success: true,
-              mutatedState: true,
-              onomatopoeia: 'CHOOSE SCHEME!',
-            };
-          }
-
-          if (options.length === 1) {
-            const single = options[0];
-            targetSchemes =
-              single.id === 'main_scheme'
-                ? [
-                    {
-                      kind: 'scheme' as const,
-                      entityType: 'main_scheme' as const,
-                      entity: getActiveMainScheme(state),
-                      id: getActiveMainScheme(state).instanceId || 'main_scheme',
-                    },
-                  ]
-                : [
-                    {
-                      kind: 'scheme' as const,
-                      entityType: 'side_scheme' as const,
-                      entity: (state.sideSchemes || []).find((s) => s.instanceId === single.id)!,
-                      id: single.id,
-                    },
-                  ];
-          } else {
-            if (isMainSchemeBlocked) {
-              state.log.push({
-                id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-                timestamp: Date.now(),
-                round: state.roundNumber,
-                phase: state.phase,
-                category: 'ability',
-                key: mainSchemeBlock.key,
-                params: {
-                  player: player.name,
-                  scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
-                },
-                onomatopoeia: mainSchemeBlock.onomatopoeia,
-              });
-            }
-            return {
-              state,
-              success: true,
-              mutatedState: false,
-              value: 0,
-              onomatopoeia: isMainSchemeBlocked
-                ? mainSchemeBlock.onomatopoeia
-                : 'NO SCHEME THREAT!',
-            };
-          }
-        } else {
-          const schemes = resolveSchemeTargets(state, targetParam as any, targetContext);
-          if (isMainSchemeBlocked) {
-            const nonMainSchemes = schemes.filter(
-              (s) =>
-                s.entityType !== 'main_scheme' &&
-                s.id !== 'main_scheme' &&
-                s.id !== getActiveMainScheme(state)?.instanceId &&
-                s.id !== getActiveMainScheme(state)?.card?.code,
-            );
-            if (nonMainSchemes.length === 0) {
-              state.log.push({
-                id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-                timestamp: Date.now(),
-                round: state.roundNumber,
-                phase: state.phase,
-                category: 'ability',
-                key: mainSchemeBlock.key,
-                params: {
-                  player: player.name,
-                  scheme: getActiveMainScheme(state)?.card?.name || 'Main Scheme',
-                },
-                onomatopoeia: mainSchemeBlock.onomatopoeia,
-              });
-              return {
-                state,
-                success: true,
-                mutatedState: false,
-                value: 0,
-                onomatopoeia: mainSchemeBlock.onomatopoeia,
-              };
-            }
-            targetSchemes = nonMainSchemes;
-          } else {
-            targetSchemes =
-              schemes.length > 0
-                ? schemes
-                : [
-                    {
-                      kind: 'scheme' as const,
-                      entityType: 'main_scheme' as const,
-                      entity: getActiveMainScheme(state),
-                      id: getActiveMainScheme(state).instanceId || 'main_scheme',
-                    },
-                  ];
-          }
-        }
       }
 
       for (const st of targetSchemes) {
@@ -3282,8 +3065,8 @@ export function executeStep(
       const targetParam = (step.effectParams?.target as string) || 'VILLAIN';
       const targetContext: EffectContext = {
         ...context,
-        targetInstanceId:
-          (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+        chosenTargetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
       };
       const targetCharacters = resolveCharacterTargets(state, targetParam as any, targetContext);
       for (const targetChar of targetCharacters) {
@@ -3389,8 +3172,8 @@ export function executeStep(
       for (const r of resolved) {
         targets.push(r.entity);
       }
-      if (targets.length === 0 && context.targetInstanceId) {
-        const fallback = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (targets.length === 0 && context.chosenTargetInstanceId) {
+        const fallback = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
         if (fallback) targets.push(fallback.entity);
       }
 
@@ -3435,7 +3218,7 @@ export function executeStep(
         state,
         sourceCard,
         targetHost,
-        context.targetInstanceId || context.targetPlayerId || context.playerId,
+        context.chosenTargetInstanceId || context.targetPlayerId || context.playerId,
       );
       return {
         state,
@@ -4401,8 +4184,8 @@ export function executeStep(
         'MAIN_SCHEME';
       const targetContext: EffectContext = {
         ...context,
-        targetInstanceId:
-          (step.effectParams?.targetInstanceId as string) || context?.targetInstanceId,
+        chosenTargetInstanceId:
+          (step.effectParams?.targetInstanceId as string) || context?.chosenTargetInstanceId,
       };
 
       if (targetParam === 'ALL_SIDE_SCHEMES') {
@@ -5070,7 +4853,7 @@ export function executeStep(
               state,
               card,
               (step.effectParams?.target as string) || 'VILLAIN',
-              context.targetInstanceId || context.targetPlayerId || targetPlayer.id,
+              context.chosenTargetInstanceId || context.targetPlayerId || targetPlayer.id,
             );
           }
         }
@@ -5260,7 +5043,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         },
       );
       if (step.effectParams?.dynamicBonus) {
@@ -5269,7 +5052,7 @@ export function executeStep(
           player,
           sourceCardInstance: context.sourceCardInstance,
           targetInstanceId:
-            (step.effectParams?.targetInstanceId as string) || context.targetInstanceId,
+            (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId,
         });
         amount += bonus;
       }
@@ -5278,7 +5061,7 @@ export function executeStep(
       }
 
       const targetEnemyId =
-        (step.effectParams?.targetInstanceId as string) || context.targetInstanceId;
+        (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
       if (
         targetEnemyId &&
@@ -5352,7 +5135,7 @@ export function executeStep(
       const duration = (stepParams.duration as 'PHASE' | 'ROUND' | 'TURN') || 'PHASE';
       const cardFilter = stepParams.cardFilter || (stepParams.filter as any) || step.filter;
       const targetPlayerId = (context.targetPlayerId ||
-        context.targetInstanceId ||
+        context.chosenTargetInstanceId ||
         stepParams.targetPlayerId) as string | undefined;
 
       // In multiplayer mode, if targeting CHOSEN_PLAYER and no target player specified yet, prompt player to choose
@@ -5503,8 +5286,10 @@ export function executeStep(
       }
 
       // Check Option B: Direct targeted play when targetInstanceId is pre-supplied (e.g. from tests or bot)
-      if (context.targetInstanceId) {
-        const matched = candidates.find((c) => c.instance.instanceId === context.targetInstanceId);
+      if (context.chosenTargetInstanceId) {
+        const matched = candidates.find(
+          (c) => c.instance.instanceId === context.chosenTargetInstanceId,
+        );
         if (matched) {
           const chosenCard = matched.instance;
           const ownerPlayer = matched.owner;

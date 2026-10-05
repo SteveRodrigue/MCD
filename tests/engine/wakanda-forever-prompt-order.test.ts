@@ -67,6 +67,18 @@ function choosePlayer(state: GameState, targetPlayerId: string) {
   } as any).state;
 }
 
+// Panther Claws deals damage to "an enemy": with Rhino and a minion in play the player chooses (#234).
+function chooseVillainTarget(state: GameState) {
+  const villainId = getActiveVillain(state).instanceId;
+  const prompt = peekDecisionPrompt(state)!;
+  expect(prompt.options.some((o) => o.id === villainId)).toBe(true);
+  return dispatchAction(state, {
+    type: 'RESOLVE_DECISION_PROMPT',
+    playerId: 'p1',
+    selectedOptionId: villainId,
+  } as any).state;
+}
+
 describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () => {
   it('Daggers then Claws vs a Tough villain: Daggers removes Tough first, Claws deals the 4-damage finisher', () => {
     const state = buildGame();
@@ -84,8 +96,9 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
     expect(getActiveVillain(res.state).health).toBe(hp);
     expect(getActiveVillain(res.state).statusCards).toContain(StatusCard.TOUGH);
 
-    const after = choosePlayer(res.state, 'p2');
-    expect(getActiveVillain(after).statusCards ?? []).not.toContain(StatusCard.TOUGH);
+    const afterDaggers = choosePlayer(res.state, 'p2');
+    expect(getActiveVillain(afterDaggers).statusCards ?? []).not.toContain(StatusCard.TOUGH);
+    const after = chooseVillainTarget(afterDaggers);
     expect(getActiveVillain(after).health).toBe(hp - 4);
     expect(peekDecisionPrompt(after)).toBeUndefined();
   });
@@ -105,12 +118,15 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
       genius.instanceId,
     ]);
 
-    // Claws (step 1, base 2 damage) resolved; Tactical Genius (final) has not.
-    expect(peekDecisionPrompt(res.state)).toBeDefined();
-    expect(getActiveVillain(res.state).health).toBe(hp - 2);
-    expect(getActiveMainScheme(res.state).threat).toBe(5);
+    // Claws (step 1) asks for its enemy first; nothing later has resolved.
+    expect(getActiveVillain(res.state).health).toBe(hp);
+    const afterClaws = chooseVillainTarget(res.state);
+    // Claws (base 2 damage) resolved; Daggers waits on its prompt; Tactical Genius (final) has not.
+    expect(peekDecisionPrompt(afterClaws)).toBeDefined();
+    expect(getActiveVillain(afterClaws).health).toBe(hp - 2);
+    expect(getActiveMainScheme(afterClaws).threat).toBe(5);
 
-    const after = choosePlayer(res.state, 'p2');
+    const after = choosePlayer(afterClaws, 'p2');
     // Daggers (step 2, base 1 damage), then Tactical Genius finisher (2 threat).
     expect(getActiveVillain(after).health).toBe(hp - 3);
     expect(getActiveMainScheme(after).threat).toBe(3);
@@ -122,13 +138,14 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
     const claws = upgrade('01047');
     state.players[0].tableau = [daggers, claws];
     const res = playWakandaForever(state, [daggers.instanceId, claws.instanceId]);
-    const after = choosePlayer(res.state, 'p2');
+    const after = chooseVillainTarget(choosePlayer(res.state, 'p2'));
     expect(peekDecisionPrompt(after)).toBeUndefined();
     expect((after as any).pendingSpecialSequence).toBeUndefined();
   });
 
   it('a prompt-free sequence still resolves immediately (no pending state)', () => {
     const state = buildGame();
+    state.players[1].engagedMinions = []; // Rhino is the only enemy: Claws needs no choice
     const claws = upgrade('01047');
     const genius = upgrade('01048');
     state.players[0].tableau = [claws, genius];
@@ -153,7 +170,7 @@ describe('Wakanda Forever! pauses for a mid-sequence decision (Issue #207)', () 
       daggers.instanceId,
       genius.instanceId,
     ]);
-    const afterDaggersPrompt = res.state;
+    const afterDaggersPrompt = chooseVillainTarget(res.state); // Claws' enemy, then Daggers asks
     // Another prompt arrives behind Daggers' prompt.
     enqueueDecisionPrompt(afterDaggersPrompt, {
       promptId: 'unrelated',

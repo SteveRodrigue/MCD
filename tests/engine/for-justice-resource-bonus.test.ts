@@ -229,7 +229,11 @@ describe('For Justice! (01060) Resource Bonus Acceptance Test Suite (Issue #186)
     expect(prompt).toBeDefined();
 
     // Resolve decision prompt choosing main scheme
-    const resolved = resolveDecisionPrompt(effectRes.state, p1.id, 'main_scheme');
+    const resolved = resolveDecisionPrompt(
+      effectRes.state,
+      p1.id,
+      effectRes.state.mainScheme.instanceId!,
+    );
     expect(resolved.result.success).toBe(true);
     // Main scheme removes 4 threat (5 - 4 = 1)
     expect(resolved.state.mainScheme.threat).toBe(1);

@@ -361,6 +361,11 @@ export interface PendingDecisionPrompt {
    * card").
    */
   discardedCards?: CardInstance[];
+  /**
+   * Set when the step that opened this prompt was the final step of a sequence (e.g. a Wakanda
+   * Forever! finisher). Handed back to the chosen option so its finisher bonus still applies.
+   */
+  isFinalStep?: boolean;
   revealedCards?: RevealedCardDisplay[];
   isVoluntary?: boolean;
   parentFrameId?: string;

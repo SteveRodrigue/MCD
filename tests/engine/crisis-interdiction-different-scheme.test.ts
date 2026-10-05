@@ -226,7 +226,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     // Side Scheme A must be excluded
     expect(optionIds).not.toContain('side-A');
     // Must contain Main Scheme and Side Scheme B
-    expect(optionIds).toContain('main_scheme');
+    expect(optionIds).toContain(res.state.mainScheme.instanceId);
     expect(optionIds).toContain('side-B');
     expect(prompt.options.length).toBe(2);
   });
@@ -301,7 +301,7 @@ describe('Crisis Interdiction (01012) — Generic distinctFrom: PREVIOUS_TARGET'
     const resolveRes = dispatchAction(playRes.state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: 'player-1',
-      selectedOptionId: 'main_scheme',
+      selectedOptionId: playRes.state.mainScheme.instanceId!,
     });
 
     expect(resolveRes.result.success).toBe(true);

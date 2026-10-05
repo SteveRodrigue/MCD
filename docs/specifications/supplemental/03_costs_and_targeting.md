@@ -100,10 +100,10 @@ Defines which game entity is chosen or affected by the ability:
 | `'ALL_FRIENDLY_CHARACTERS'`     | All hero identities and allies in play across all players.                                                            | Tablewide friendly target.                              |
 | `'CHOSEN_CHARACTER'`            | Player chooses 1 character (friend or foe) in play.                                                                   | Universal character selector.                           |
 | `'ALL_CHARACTERS'`              | All heroes, allies, villain, and minions in play.                                                                     | Universal character target.                             |
-| `'PREVIOUS_TARGET'`             | Re-uses target from previous ability step or the triggering combat context.                                           | Step result or event entity.                            |
+| `'PREVIOUS_TARGET'`             | Re-uses the target of the previous step of the same ability (or the target the player chose for it). Never the event's target: use `TRIGGERING_ENEMY` for "the attacked enemy" (#234). | Step result or chosen target; nothing otherwise. |
 | `'PREVIOUS_SELECTED_CARD'`      | Re-uses card instance selected in immediate preceding search step.                                                    | Search result card.                                     |
-| `'TRIGGERING_MINION'`           | The specific minion that triggered the event (e.g. minion entering play for Hawkeye `01066`).                         | Direct minion reference via `context.targetInstanceId`. |
-| `'TRIGGERING_ENEMY'`            | The specific enemy that triggered the event (falls back to the active villain when the trigger names none). `ATTACK_DEFENDED` names the attacking villain or minion, so Counter-Punch `01077` hits "that enemy". | Direct enemy reference via `context.targetInstanceId`.  |
+| `'TRIGGERING_MINION'`           | The specific minion that triggered the event (e.g. minion entering play for Hawkeye `01066`). Nothing when the event names no minion. | Event target (`context.eventTargetInstanceId`). |
+| `'TRIGGERING_ENEMY'`            | The specific enemy of the triggering event ("that enemy", "the attacked enemy"). The active villain only when the event names the villain by type (`eventTargetType: villain`, e.g. `ATTACK_RESOLVED` on Rhino); nothing otherwise. Counter-Punch `01077`, Superhuman Strength `01028`. | Event target (`context.eventTargetInstanceId` / `eventTargetType`). |
 
 ### Orthogonal Collective Target Scopes (Rules Authority & Form Invariants)
 
@@ -207,6 +207,14 @@ Target evaluation implements a systemic two-layer architecture separating struct
 
 4. **Pre-Play Targeting UI (`CardPaymentModal.tsx`)**:
    - Displays comic badge target selectors directly inside the payment modal for cards requiring heal targets, ally targets, scheme targets, or minion targets, avoiding unexpected mid-action prompts.
+
+5. **Layer 3: Step-level target choice for every execution path (#234, ADR-0077)** — [`target-choice.ts`](../../../src/engine/effects/target-choice.ts):
+   - Applies to the single-target selectors `CHOSEN_ENEMY`, `CHOSEN_MINION`, `CHOSEN_ENGAGED_MINION`, `CHOSEN_CHARACTER`, `CHOSEN_ALLY`, `CHOSEN_CONTROLLED_ALLY`, `CHOSEN_CONTROLLED_CHARACTER`, `CHOSEN_FRIENDLY_CHARACTER`, `CHOSEN_SCHEME`, `CHOSEN_SIDE_SCHEME` (`CHOSEN_PLAYER` keeps its own "Choose a Player" prompts).
+   - When a step runs and nobody has chosen (no `chosenTargetInstanceId` in the context, no `effectParams.targetInstanceId`), the **valid** targets are computed from the board **at that moment** (RR v1.8 "Target": a target is valid only if the ability can affect it): `ADD_STATUS` skips targets that already hold the status (Steady, Stalwart respected); `REMOVE_THREAT` skips schemes with no threat (crisis and Patrol respected); `HEAL_DAMAGE` skips undamaged characters; `EXHAUST` / `READY` skip targets already in that state; `distinctFrom: PREVIOUS_TARGET` excludes the previous step's target.
+   - **0** valid targets: the step does nothing. **1**: used without a prompt. **2 or more**: a "Choose an Enemy" / "Choose a Scheme" prompt, one option per target (id = the target's instance id), which re-runs the same step with the chosen target.
+   - This covers triggered abilities (Responses, Forced Responses), `PLAYER_CHOICE` options (Nick Fury `01084`) and special sequences (Wakanda Forever!). Triggered abilities never inherit the triggering event's target as their chosen target (see spec 02, trigger context).
+   - **Optional abilities stay optional** (RR v1.8 "Initiating Abilities"): the "Do you want to use…? Yes / No" prompt always comes first; an optional ability whose effect needs a target and has no valid target is not offered; on "Yes" the check runs again **before** the cost is paid, and the ability aborts with no cost paid if no valid target remains. The target prompt has no cancel option.
+   - **No guessing:** the resolver returns nothing for a `CHOSEN_*`, `TRIGGERING_*` or `PREVIOUS_TARGET` selector without a chosen, event or previous target. The former fallbacks (first engaged minion, active villain) are removed.
 
 ---
 

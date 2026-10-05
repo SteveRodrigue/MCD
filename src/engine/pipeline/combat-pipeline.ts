@@ -152,7 +152,7 @@ export function step1_preAttackAndStunCheck(
       executeEffect(state, ability, {
         playerId: owner.id,
         sourceCardInstance: att,
-        targetInstanceId,
+        eventTargetInstanceId: targetInstanceId,
       });
 
       state.log.push({

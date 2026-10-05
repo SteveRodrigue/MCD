@@ -12,6 +12,7 @@ import {
 import { TriggerFilter } from '../../data/supplemental/schema';
 import { matchesCardFilter } from '../filters/card-filter';
 import { executeEffect, type EffectExecutionContext } from '../effects';
+import { abilityHasValidTarget } from '../effects/target-choice';
 import {
   executeAbilityCost,
   canPayAbilityCost,
@@ -371,6 +372,7 @@ function scanHandReactions(
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, c).allowed) return false;
+        if (!abilityHasValidTarget(state, p, a, c)) return false;
         return matchesTriggerFilter(a.triggerFilter, context, p, c, trigger);
       });
       if (ability) {
@@ -566,10 +568,10 @@ export function dispatchTrigger(
           player.usedAbilitiesThisPhase[ability.id] =
             (player.usedAbilitiesThisPhase[ability.id] || 0) + 1;
         }
-        const effCtx = {
+        const effCtx: EffectExecutionContext = {
           playerId: player.id,
-          targetType: context.targetType as any,
-          targetInstanceId: context.targetInstanceId,
+          eventTargetType: context.targetType,
+          eventTargetInstanceId: context.targetInstanceId,
           threatAmount: currentThreat,
           damageAmount: currentDamage,
           interceptedValue: currentThreat || currentDamage,
@@ -594,6 +596,8 @@ export function dispatchTrigger(
         // Optional Identity Ability: Check cost & limits before prompting
         const costCheck = canPayAbilityCost(state, player, ability);
         if (!costCheck.allowed) continue;
+        // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
+        if (!abilityHasValidTarget(state, player, ability)) continue;
 
         if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
           continue;
@@ -739,11 +743,11 @@ export function dispatchTrigger(
               if (!costCheck.allowed) continue;
               executeAbilityCost(state, controller, ability, cardInst);
             }
-            const effCtx = {
+            const effCtx: EffectExecutionContext = {
               playerId: controller.id,
               sourceCardInstance: cardInst,
-              targetType: context.targetType as any,
-              targetInstanceId: context.targetInstanceId,
+              eventTargetType: context.targetType,
+              eventTargetInstanceId: context.targetInstanceId,
               resourcesSpent: context.resourcesSpent,
               threatAmount: currentThreat,
               damageAmount: currentDamage,
@@ -765,6 +769,8 @@ export function dispatchTrigger(
             }
             const costCheck = canPayAbilityCost(state, controller, ability, cardInst);
             if (!costCheck.allowed) continue;
+            // RR v1.8 "Target": an ability that requires a target needs at least one valid target.
+            if (!abilityHasValidTarget(state, controller, ability, cardInst)) continue;
 
             if (
               ability.limit === 'ONCE_PER_ROUND' &&
@@ -1019,8 +1025,8 @@ export function dispatchTrigger(
           executeEffect(state, ability, {
             playerId: p.id,
             sourceCardInstance: card,
-            targetType: context.targetType as EffectExecutionContext['targetType'],
-            targetInstanceId: context.targetInstanceId,
+            eventTargetType: context.targetType,
+            eventTargetInstanceId: context.targetInstanceId,
             triggerChain: chain,
           });
         },

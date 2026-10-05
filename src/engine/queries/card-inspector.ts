@@ -8,7 +8,6 @@ export interface CardLocatorContext {
   player?: PlayerState;
   sourceCardInstance?: CardInstance;
   targetCardInstance?: CardInstance;
-  targetInstanceId?: string;
 }
 
 /**

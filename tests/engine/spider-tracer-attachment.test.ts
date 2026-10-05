@@ -307,15 +307,16 @@ describe('Spider-Tracer & Engaged Minion Attachment Engine Invariants (Issue #13
     const prompt = peekDecisionPrompt(res.state);
     expect(prompt).toBeDefined();
     expect(prompt?.title).toContain('Choose a Scheme');
+    const mainSchemeId = res.state.mainScheme.instanceId!;
     expect(prompt?.options.map((o) => o.id)).toEqual(
-      expect.arrayContaining(['main_scheme', nonCrisisScheme.instanceId]),
+      expect.arrayContaining([mainSchemeId, nonCrisisScheme.instanceId]),
     );
 
     // Resolve choice for Main Scheme
     const resolveRes = dispatchAction(res.state, {
       type: 'RESOLVE_DECISION_PROMPT',
       playerId: 'p1',
-      selectedOptionId: 'main_scheme',
+      selectedOptionId: mainSchemeId,
     });
 
     expect(resolveRes.result.success).toBe(true);

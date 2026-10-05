@@ -111,7 +111,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         } as any,
         {
           playerId: player.id,
-          targetInstanceId: 'v1',
+          chosenTargetInstanceId: 'v1',
           resourcesSpent: ['energy', 'physical', 'physical'],
         },
       );
@@ -133,7 +133,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         } as any,
         {
           playerId: player.id,
-          targetInstanceId: 'v1',
+          chosenTargetInstanceId: 'v1',
           resourcesSpent: ['physical', 'physical', 'mental'],
         },
       );
@@ -154,7 +154,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         } as any,
         {
           playerId: player.id,
-          targetInstanceId: 'v1',
+          chosenTargetInstanceId: 'v1',
           resourcesSpent: ['wild', 'physical', 'physical'],
         },
       );
@@ -189,7 +189,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         } as any,
         {
           playerId: player.id,
-          targetInstanceId: 'v1',
+          chosenTargetInstanceId: 'v1',
           resourcesSpent: ['energy', 'physical'],
         },
       );
@@ -203,7 +203,7 @@ describe('Resource Payment Kicker & Gate Parameters Engine (Issue #107, ADR-0060
         } as any,
         {
           playerId: player.id,
-          targetInstanceId: 'v1',
+          chosenTargetInstanceId: 'v1',
           resourcesSpent: ['energy', 'energy'],
         },
       );

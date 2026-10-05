@@ -282,7 +282,6 @@ export function evaluateDynamicAmount(
           player,
           sourceCardInstance: options.sourceCardInstance || context.sourceCardInstance,
           targetCardInstance: options.targetCardInstance || context.targetCardInstance,
-          targetInstanceId: options.targetInstanceId || context.targetInstanceId,
         });
       } else {
         targetEntity =

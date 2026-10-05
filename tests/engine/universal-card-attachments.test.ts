@@ -86,7 +86,11 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
           timing: 'ACTION',
           steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'CHOSEN_ALLY' } }],
         },
-        { playerId: 'p1', sourceCardInstance: honoraryAvenger, targetInstanceId: ally.instanceId },
+        {
+          playerId: 'p1',
+          sourceCardInstance: honoraryAvenger,
+          chosenTargetInstanceId: ally.instanceId,
+        },
       );
       expect(resAlly.success).toBe(true);
       const updatedAlly = resAlly.state.players[0].allies.find(
@@ -105,7 +109,7 @@ describe('Universal Card Attachment & Tucked Card Engine (Issue #40, RR v1.8 p. 
           timing: 'ACTION',
           steps: [{ effect: 'ATTACH_TO_HOST', effectParams: { target: 'CHOSEN_MINION' } }],
         },
-        { playerId: 'p1', sourceCardInstance: webbedUp, targetInstanceId: minion.instanceId },
+        { playerId: 'p1', sourceCardInstance: webbedUp, chosenTargetInstanceId: minion.instanceId },
       );
       expect(resMinion.success).toBe(true);
       const updatedMinion = resMinion.state.players[0].engagedMinions.find(

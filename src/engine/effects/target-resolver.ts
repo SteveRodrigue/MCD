@@ -248,7 +248,21 @@ export function resolveTargets(
       ];
     }
 
-    case 'ACTIVE_IDENTITY':
+    // "Your hero" (#222): the resolving player's identity only while it is in hero form. In
+    // alter-ego form it resolves to nothing, never to the alter-ego, and never to another player.
+    case 'SELF_HERO': {
+      if (resolvingPlayer.currentForm !== 'hero') return [];
+      return [
+        {
+          kind: 'character',
+          entityType: 'hero',
+          entity: resolvingPlayer,
+          id: resolvingPlayer.id,
+          player: resolvingPlayer,
+        },
+      ];
+    }
+
     case 'IDENTITY':
     case 'SELF_IDENTITY': {
       return [
@@ -1609,10 +1623,22 @@ export function getEligibleTargets(
       break;
     }
 
+    case 'SELF_HERO': {
+      if (resolvingPlayer.currentForm === 'hero') {
+        candidates.push({
+          kind: 'character',
+          entityType: 'hero',
+          entity: resolvingPlayer,
+          id: resolvingPlayer.id,
+          player: resolvingPlayer,
+        });
+      }
+      break;
+    }
+
     case 'SELF':
     case 'SELF_IDENTITY':
-    case 'IDENTITY':
-    case 'ACTIVE_IDENTITY': {
+    case 'IDENTITY': {
       candidates.push({
         kind: 'character',
         entityType: resolvingPlayer.currentForm === 'hero' ? 'hero' : 'alter_ego',

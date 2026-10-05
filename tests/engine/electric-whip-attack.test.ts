@@ -109,9 +109,9 @@ describe('Electric Whip Attack (01173): boost discards an upgrade only on an und
     expect(peekDecisionPrompt(state)).toBeUndefined();
   });
 
-  it('has no abilities beyond the printed boost (no invented CONSTANT +1 ATTACK)', () => {
+  it('has no abilities beyond the printed When Revealed and boost (no invented CONSTANT +1 ATTACK)', () => {
     const abilities = getCardEnrichment(ELECTRIC_WHIP)!.abilities ?? [];
-    expect(abilities.map((a) => a.timing)).toEqual(['BOOST']);
+    expect(abilities.map((a) => a.timing).sort()).toEqual(['BOOST', 'WHEN_REVEALED']);
     expect(JSON.stringify(abilities)).not.toContain('MODIFY_STAT');
   });
 });

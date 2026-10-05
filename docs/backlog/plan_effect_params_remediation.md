@@ -12,9 +12,10 @@ Order approved by the user on 2026-10-04. Order matters: fix the cards first, th
 | :-- | :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 | **C1** | Jessica Jones `01059` invented `maxBonus` cap (engine default 4 too) | _(tracker item, no issue)_ | 1 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_c1_jessica_jones.md) |
 | 2 | **WP1** | Mark V Helmet `01037` `aerialAllSchemes` ignored (supersedes review item A4) | [#226](https://github.com/SteveRodrigue/MCD/issues/226) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp1_mark_v_helmet.md) |
-| 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp2_iron_man_hand_size.md) |
-| 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | **Done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp4_kree_manipulator.md) |
-| 4b | **WP8** | Electric Whip Attack `01173`: invented +1 ATTACK, wrong boost filter, no undefended gate, When Revealed choice unmodelled | [#241](https://github.com/SteveRodrigue/MCD/issues/241) | 2-3 | WP4 (undefended condition); When Revealed needs #222 | **Boost done 2026-10-04 (uncommitted):** [plan](plan_core_review_wp8_electric_whip_attack.md). **Issue stays open:** When Revealed blocked on #222 (ambiguity report) |
+| 3 | **WP2** | Iron Man `01029a` hand size cap 7 never enforced | [#227](https://github.com/SteveRodrigue/MCD/issues/227) | 1-2 | none | **Done 2026-10-04 (`2a3aeb2`):** [plan](plan_core_review_wp2_iron_man_hand_size.md) |
+| 4 | **WP4** | Kree Manipulator `01178` undefended-attack boost condition never evaluated | [#229](https://github.com/SteveRodrigue/MCD/issues/229) | 2 | none | **Done 2026-10-04 (`b2ab514`):** [plan](plan_core_review_wp4_kree_manipulator.md) |
+| 4b | **WP8** | Electric Whip Attack `01173`: invented +1 ATTACK, wrong boost filter, no undefended gate, When Revealed choice unmodelled | [#241](https://github.com/SteveRodrigue/MCD/issues/241) | 2-3 | WP4 (undefended condition); When Revealed needs #222 | **Done 2026-10-04:** boost in `b2ab514`, When Revealed with #222 (uncommitted), [plan](plan_core_review_wp8_electric_whip_attack.md) |
+| 4c | _(found in #222)_ | False Alarm `01112`: "if you are already confused, this card gains surge" not modelled | [#242](https://github.com/SteveRodrigue/MCD/issues/242) | 1 | none (uses the `SURGE` effect) | Not started |
 | 5 | **WP3** | Genetically Enhanced `01163` invented key, printed text unmodelled | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | 3 | #209, #218 | Not started |
 | 6 | **WP5** | Guard: unknown `effectParams` key fails the data test | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 2 | C1, WP1-WP4 | Not started |
 | 7 | **WP6** | Retire `scaling`/`multiplier`/`maxBonus` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 2 | C1, WP2 | Not started |
@@ -79,6 +80,7 @@ Printed: *Jessica Jones gets +1 THW for each side scheme in play.* Data has `max
 ### WP5: Guard against unknown `effectParams` keys ([#230](https://github.com/SteveRodrigue/MCD/issues/230))
 
 - **Goal:** adding a key that the engine does not read, for an effect that does not list it, fails `tests/data/supplemental-schema.test.ts`.
+- **Partly delivered with #222:** the `target` key slice (every `target` string in the packs is a valid `TargetSelector`, enforced by a data test with zero exemptions). Remaining: all other `effectParams` keys.
 - **Direction:** per-effect allowed-key table or typed per-effect `effectParams` schemas, ideally one source of truth shared with the editor registry and a spec check. Capture the audit's "read through a params object" check as a repeatable script under `tools/audit/`.
 - **Acceptance:** fails on a fabricated unknown key; passes on all packs with **zero exemptions**; record the decision in an ADR or an ADR addendum.
 
@@ -91,6 +93,8 @@ Printed: *Jessica Jones gets +1 THW for each side scheme in play.* Data has `max
 - **Acceptance:** no `scaling`/`multiplier`/`maxBonus` read in `src/engine/`; existing behavior tests for the four cards pass unchanged.
 
 ### WP7: Documentation gaps and decorative keys ([#232](https://github.com/SteveRodrigue/MCD/issues/232))
+
+**Added from the #222 selector survey:** (a) the engine-only selector strings `HERO` (`DEAL_DAMAGE`, resolver), `IDENTITY` (resolver, formula evaluator; the narrow `SELF | IDENTITY` counter-param enum is legitimate and stays) and `ALTER_EGO` (resolver candidates) are not in `TargetSelectorSchema` and no pack uses them: replace by a schema selector or delete; (b) `TRIGGERING_HERO` is documented as "the hero that triggered the event" but implemented as the resolving player's hero (overlaps `SELF_HERO`): implement its documented meaning or remove it; (c) `ATTACHED_VILLAIN` on Charge `01098` is removed in #222 (decorative); `ATTACHMENT_DAMAGE_SHIELD.mode` stays here.
 
 Audit class B. Document and add to the registry the honored-but-missing keys; remove the keys the engine never reads (`TRANSFER_DAMAGE.from/to`, `ATTACHMENT_DAMAGE_SHIELD.mode/target`, and after a per-effect review the `target` on `PREVENT_DAMAGE`, `RETURN_TO_HAND`, `VILLAIN_ATTACKS`); remove the undocumented `threshold` alias for `maxAbsorb` in `damage-pipeline.ts`. Full key list: the audit report and issue #232.
 

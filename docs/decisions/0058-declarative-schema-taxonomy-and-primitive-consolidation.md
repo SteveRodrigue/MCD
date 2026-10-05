@@ -236,3 +236,14 @@ export const TargetSelectorSchema = z.enum([
 - **Potential semantic drift:** A mechanical rename may hide a shape change. Mitigation: hand-write decompositions for the five bespoke primitives and validate every declaration against the Zod schema.
 - **Cross-player targeting risk:** Controlled and friendly selectors may be confused. Mitigation: encode the distinction in selector names, engine contract tests, and editor descriptors.
 - **Scope expansion:** Expansion cards and non-Rhino scenarios remain outside this migration’s active release scope under the repository’s Rhino-first boundary.
+
+
+---
+
+## Addendum (2026-10-04, #222): `SELF_HERO`, selector naming and selector hygiene
+
+**Problem:** printed "your hero" had no selector. `SELF_IDENTITY` resolves the identity in either form, `ALL_HEROES` hits every player in hero form, and the ad-hoc `HERO` (handled in `DEAL_DAMAGE` and the resolver, not in `TargetSelectorSchema`) did the same. Cards were wrong (#133) or had to be stripped (`01159`, `01164`, `01168`, `01173`).
+
+**Decision:** add `SELF_HERO`: the resolving player's identity while in hero form, nothing in alter-ego form, never another player. The name follows the `SELF_` family (the anchor is "the player resolving the ability", Rules Reference "YOU, YOUR"). `ACTIVE_` was rejected: `ACTIVE_PLAYER` is the turn player, a different anchor. `SELF_ALTER_EGO` is added only when a card needs it.
+
+**Hygiene:** `target` inside `effectParams` is not schema-validated, so four values outside `TargetSelectorSchema` had accumulated. `THIS_SIDE_SCHEME` and `DEFENDING_PLAYER` are real, working selectors and were added to the enum; `ACTIVE_IDENTITY` (misleading alias of `SELF_IDENTITY`) was removed and its only card (`01112`) migrated; `ATTACHED_VILLAIN` was a never-read key on `01098` and was removed. A data test now requires every `target` string in the packs to be a valid selector. Remaining engine-only strings (`HERO`, `IDENTITY`, `ALTER_EGO`) and the `TRIGGERING_HERO` overlap are tracked under WP7 (#232).

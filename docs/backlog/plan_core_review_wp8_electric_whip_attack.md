@@ -1,6 +1,6 @@
 # Plan: WP8, Electric Whip Attack `01173` ([#241](https://github.com/SteveRodrigue/MCD/issues/241))
 
-> **Status:** implemented 2026-10-04 (WP8 was pre-authorised by the user to follow WP4 without a further stop unless a decision was needed; none was). Boost fixed and tested; the When Revealed half is stripped under the circuit-breaker and blocked on #222, so **#241 stays open**. Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md).
+> **Status:** boost implemented 2026-10-04; When Revealed completed with #222 (see `plan_issue_222_self_hero_selector.md`) and #241 closed there. Originally: implemented 2026-10-04 (WP8 was pre-authorised by the user to follow WP4 without a further stop unless a decision was needed; none was). Boost fixed and tested; the When Revealed half is stripped under the circuit-breaker and blocked on #222, so **#241 stays open**. Part of [plan_effect_params_remediation.md](plan_effect_params_remediation.md).
 > **Tier:** 1 (data and tests; the engine work is WP4's `UNDEFENDED_ATTACK`). **UI / Card Editor impact:** none.
 
 ## 1. Printed text (upstream `core_encounter` 01173, treachery, star boost)

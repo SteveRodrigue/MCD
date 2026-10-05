@@ -67,8 +67,10 @@ Defines which game entity is chosen or affected by the ability:
 | :------------------------------ | :-------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
 | `'SELF'`                        | The host card instance executing the ability (in tableau), or the player identity if executed from an identity event. | Bound to card instance or player.                       |
 | `'SELF_IDENTITY'`               | The player identity controlling the card.                                                                             | Resolves controlling player.                            |
+| `'SELF_HERO'`                   | **"Your hero"** (#222): the resolving player's identity while it is in **hero form**; nothing in alter-ego form (never the alter-ego, never another player). | Resolves resolving player, form-gated.      |
 | `'ACTIVE_PLAYER'`               | The player currently taking a turn in Player Phase.                                                                   | `state.players[state.activePlayerIndex]`                |
 | `'ALL_PLAYERS'`                 | Every player currently in the game session.                                                                           | Iterates all players.                                   |
+| `'DEFENDING_PLAYER'`            | The player being attacked by the attack currently resolving (falls back to the resolving player outside an attack).    | Attack context.                             |
 | `'ALL_HEROES'`                  | Every hero identity currently in play.                                                                                | Iterates all heroes.                                    |
 | `'ALL_HEROES_AND_ALLIES'`       | All identities strictly in Hero form plus all allies across all players.                                              | Batch hero and ally target.                             |
 | `'TRIGGERING_HERO'`             | Hero identity that initiated or suffered the trigger event.                                                           | Context hero reference.                                 |
@@ -77,6 +79,7 @@ Defines which game entity is chosen or affected by the ability:
 | `'MAIN_SCHEME'`                 | The active Main Scheme stage (`getActiveMainScheme(state)`).                                                          | Direct main scheme reference.                           |
 | `'CHOSEN_SCHEME'`               | Player chooses between Main Scheme and any Side Scheme.                                                               | Interactive selector.                                   |
 | `'CHOSEN_SIDE_SCHEME'`          | Player chooses 1 side scheme currently in play.                                                                       | Interactive selector.                                   |
+| `'THIS_SIDE_SCHEME'`            | The side scheme that is the source card of the ability (the only side scheme in play when the source is not one).     | Source-bound scheme reference.              |
 | `'ALL_SCHEMES'`                 | Main scheme plus all active side schemes in play.                                                                     | Batch scheme target.                                    |
 | `'TRIGGERING_SCHEME'`           | Scheme that triggered the event.                                                                                      | Direct scheme reference.                                |
 | `'CHOSEN_ENEMY'`                | Player chooses between the Villain and any Minion in play.                                                            | Interactive selector.                                   |
@@ -128,19 +131,22 @@ Per RR v1.8 p. 11 ("Damage"), p. 13 ("Identity"), p. 14 ("Indirect Damage"), p. 
    - All collective/plural selectors strictly carry the **`ALL_`** prefix (e.g. `ALL_HEROES_AND_ALLIES`).
 5. **Cards are read literally (no interpretation):**
    - Printed "**your hero**" is the resolving player's hero identity and **never** the alter-ego; "take damage" / "your identity" apply to the identity in either form (`SELF_IDENTITY`).
-   - `HERO` is **not** "your hero": it targets every player in hero form. Using it for "your hero" damages other players (#133). A form-literal "your hero" selector is tracked in #222; until it exists, cards that print "your hero" stay without an executable ability (see `docs/ambiguities/`).
+   - `SELF_HERO` is "your hero": the resolving player's hero identity while it is in hero form, and **nothing** in alter-ego form (the step is skipped; there is no fallback to the alter-ego). Use `SELF_IDENTITY` for "you" / "take damage" / "your identity", which applies in either form.
+   - `ALL_HEROES` is "each hero" (every player in hero form). Using it, or the retired ad-hoc `HERO`, for "your hero" damages other players (#133).
+   - Selector names are `PREFIX_NOUN` families anchored to an entity (`SELF_`, `ALL_`, `CHOSEN_`, `TRIGGERING_`, `HOST_`). `SELF_` means the player resolving the ability (Rules Reference "YOU, YOUR"); `ACTIVE_PLAYER` is the **turn player** and is a different anchor, so there is no `ACTIVE_HERO`. The ad-hoc `ACTIVE_IDENTITY` alias was removed (use `SELF_IDENTITY`).
+   - Every `target` value in a pack must be a member of `TargetSelectorSchema`; `tests/data/supplemental-schema.test.ts` enforces it.
 
 ---
 
 ## 3. The Orthogonal Target Taxonomy Model
 
-Target selection in Marvel Champions Digital is modeled as an orthogonal product space between **Scope / Quantifier** and **Entity Type** ($\text{Scope} \times \text{Entity Type}$), standardizing all 36 canonical members of `TargetSelectorSchema` ([ADR-0058](../../decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md), [ADR-0064](../../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)).
+Target selection in Marvel Champions Digital is modeled as an orthogonal product space between **Scope / Quantifier** and **Entity Type** ($\text{Scope} \times \text{Entity Type}$), standardizing all 42 canonical members of `TargetSelectorSchema` ([ADR-0058](../../decisions/0058-declarative-schema-taxonomy-and-primitive-consolidation.md), [ADR-0064](../../decisions/0064-canonical-target-scopes-and-interactive-distribution-modal.md)).
 
 ### 1. The Orthogonal Target Taxonomy Matrix
 
 | Scope / Quantifier      | IDENTITY (Hero / Alter-Ego) | PLAYER (Participant) | ALLY                     | CHARACTER (Hero + Ally + Enemy)                                        | ENEMY (Villain + Minion) | MINION                                      | VILLAIN           | SCHEME (Main + Side)                               |
 | :---------------------- | :-------------------------- | :------------------- | :----------------------- | :--------------------------------------------------------------------- | :----------------------- | :------------------------------------------ | :---------------- | :------------------------------------------------- |
-| **SELF**                | `SELF_IDENTITY`             | `ACTIVE_PLAYER`      | `SELF` _(if ally)_       | `SELF` _(if host card)_                                                | —                        | —                                           | —                 | `SELF` _(if scheme)_                               |
+| **SELF**                | `SELF_IDENTITY` / `SELF_HERO` | `ACTIVE_PLAYER`      | `SELF` _(if ally)_       | `SELF` _(if host card)_                                                | —                        | —                                           | —                 | `SELF` _(if scheme)_                               |
 | **CHOSEN (Controlled)** | —                           | —                    | `CHOSEN_CONTROLLED_ALLY` | `CHOSEN_CONTROLLED_CHARACTER`                                          | —                        | —                                           | —                 | —                                                  |
 | **CHOSEN (Table-Wide)** | —                           | `CHOSEN_PLAYER`      | `CHOSEN_ALLY`            | `CHOSEN_FRIENDLY_CHARACTER` / `CHOSEN_CHARACTER`                       | `CHOSEN_ENEMY`           | `CHOSEN_MINION`                             | `VILLAIN`         | `CHOSEN_SCHEME` / `CHOSEN_SIDE_SCHEME`             |
 | **ENGAGED**             | —                           | —                    | —                        | —                                                                      | `ENGAGED_ENEMIES`        | `CHOSEN_ENGAGED_MINION` / `ENGAGED_MINIONS` | —                 | —                                                  |

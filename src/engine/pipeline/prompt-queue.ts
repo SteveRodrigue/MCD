@@ -508,6 +508,7 @@ export function resolveDecisionPrompt(
     sourceCardInstance: promptCardInst,
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
     resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
+    discardedCards: prompt.discardedCards,
   });
 
   // Completion default for obligations: discard unless an option already removed it from play

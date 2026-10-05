@@ -97,8 +97,10 @@ export const TriggerTypeSchema = z.enum([
 export const TargetSelectorSchema = z.enum([
   'SELF',
   'SELF_IDENTITY',
+  'SELF_HERO',
   'ACTIVE_PLAYER',
   'ALL_PLAYERS',
+  'DEFENDING_PLAYER',
   'ALL_HEROES',
   'ALL_HEROES_AND_ALLIES',
   'TRIGGERING_HERO',
@@ -125,6 +127,7 @@ export const TargetSelectorSchema = z.enum([
   'ALL_FRIENDLY_CHARACTERS',
   'ALL_CHARACTERS',
   'CHOSEN_SIDE_SCHEME',
+  'THIS_SIDE_SCHEME',
   'ALL_SIDE_SCHEMES',
   'ALL_SCHEMES',
   'TRIGGERING_SCHEME',

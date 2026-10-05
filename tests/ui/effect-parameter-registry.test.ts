@@ -286,6 +286,13 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(TARGET_OPTIONS).toContain('ALL_HEROES_AND_ALLIES');
   });
 
+  it('exposes SELF_HERO, THIS_SIDE_SCHEME and DEFENDING_PLAYER, and none of the retired ad-hoc aliases', () => {
+    expect(TARGET_OPTIONS).toEqual(
+      expect.arrayContaining(['SELF_HERO', 'THIS_SIDE_SCHEME', 'DEFENDING_PLAYER']),
+    );
+    expect(TARGET_OPTIONS).not.toContain('ACTIVE_IDENTITY');
+  });
+
   it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain, targetScope, capRule, and allowPartialIfCapacityLow', () => {
     const desc = getEffectDescriptor('DISTRIBUTE_AMOUNT');
     expect(desc.effect).toBe('DISTRIBUTE_AMOUNT');

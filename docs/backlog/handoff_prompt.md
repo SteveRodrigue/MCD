@@ -10,11 +10,11 @@ Last reviewed 2026-10-05 (after commit `ecc52ba`). If the repository has moved o
 Continue work on Marvel Champions Digital in C:\Users\steve\repos\MCD (branch main, Windows, PowerShell).
 
 START
-1. Run `git pull`, `git status`, `npm test`. Baseline: 1,853 tests green, 0 skipped, typecheck/lint/Prettier
+1. Run `git pull`, `git status`, `npm test`. Baseline: 1,860 tests green, 0 skipped, typecheck/lint/Prettier
    clean. #217 is a known flaky test (shuffle-dependent): rerun it once before assuming you broke something.
 2. Read, in order: AGENTS.md, docs/backlog/README.md, docs/backlog/teamwork_status_and_next_target.md
    (sections 1 to 4), then the plan and issue of the item you take.
-3. Your task is the first item of section 3.1 of the status file that is not done. Today that is #238 (see
+3. Your task is the first item of section 3.1 of the status file that is not done. Today that is #240 (see
    "Next task" below). Say which item you took, in one line.
 
 FOR EVERY ITEM
@@ -45,12 +45,11 @@ Be concise. Lead with the next action, number multi-step work, ask me one questi
 
 ---
 
-## Next task: #238, Highway Robbery `01166` (P1)
+## Next task: #240, Emergency `01085`
 
-- **Problem:** Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand").
-- **Why now:** **P1** bug causing cards to be permanently lost from players' hands during play.
-- **Expected direction:** implement deterministic attachment / zone transfer for stolen cards and properly return them to each player's hand when Highway Robbery is defeated.
-- **Alternative next tasks:** [#244](https://github.com/SteveRodrigue/MCD/issues/244) Weapons Runner `01121`, or [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency `01085`.
+- **Problem:** Emergency `01085` is offered for every threat placement (setup included), not only "when the villain schemes". Check Great Responsibility `01061` for the same pattern.
+- **Done just before:** #238 Highway Robbery (see its plan). Seeded RNG ([#252](https://github.com/SteveRodrigue/MCD/issues/252)) is not on the critical path.
+- **Alternative next tasks:** [#245](https://github.com/SteveRodrigue/MCD/issues/245) Masterplan `01192`, [#244](https://github.com/SteveRodrigue/MCD/issues/244) Weapons Runner `01121`.
 
 ## What changed recently (read before touching sequences or targeting)
 
@@ -62,14 +61,13 @@ Be concise. Lead with the next action, number multi-step work, ask me one questi
 
 ## Queue (status file section 3.1, in order)
 
-1. [#238](https://github.com/SteveRodrigue/MCD/issues/238) **P1** Highway Robbery `01166` loses the card taken from each hand.
-2. [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency `01085` is offered for every threat placement (setup included), not only "when the villain schemes".
-3. [#245](https://github.com/SteveRodrigue/MCD/issues/245) Masterplan `01192`: the "no side scheme → discard until one, reveal it" sentence is missing.
-4. [#247](https://github.com/SteveRodrigue/MCD/issues/247) Chase Them Down `01052` is never offered (no hand Response scan after a defeat; filter too narrow).
-5. [#246](https://github.com/SteveRodrigue/MCD/issues/246) player elimination and game-over screen: **ask the owner first** (Gate 1 or Gate 3).
-6. [#249](https://github.com/SteveRodrigue/MCD/issues/249) Spider-Tracer `01007` threat removal premature side scheme defeat.
-7. [#250](https://github.com/SteveRodrigue/MCD/issues/250) Webbed Up `01009` trigger / replacement with Stunned villain.
-8. [#251](https://github.com/SteveRodrigue/MCD/issues/251) Lead from the Front `01070` missing player choice prompt.
+1. [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency `01085` is offered for every threat placement (setup included), not only "when the villain schemes".
+2. [#245](https://github.com/SteveRodrigue/MCD/issues/245) Masterplan `01192`: the "no side scheme → discard until one, reveal it" sentence is missing.
+3. [#247](https://github.com/SteveRodrigue/MCD/issues/247) Chase Them Down `01052` is never offered (no hand Response scan after a defeat; filter too narrow).
+4. [#246](https://github.com/SteveRodrigue/MCD/issues/246) player elimination and game-over screen: **ask the owner first** (Gate 1 or Gate 3).
+5. [#249](https://github.com/SteveRodrigue/MCD/issues/249) Spider-Tracer `01007` threat removal premature side scheme defeat.
+6. [#250](https://github.com/SteveRodrigue/MCD/issues/250) Webbed Up `01009` trigger / replacement with Stunned villain.
+7. [#251](https://github.com/SteveRodrigue/MCD/issues/251) Lead from the Front `01070` missing player choice prompt.
 
 Then the rest of section 3 (Weapons Runner #244, Genetically Enhanced #228, engine prerequisites #219 to #223, `effectParams` WP5 to WP7, core player review items).
 

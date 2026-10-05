@@ -10,6 +10,20 @@ export interface CardAttachmentFanProps {
   className?: string;
 }
 
+// Small offsets (percent of the host card) so facedown cards read as a stack, not as visible cards.
+const FACEDOWN_PEEK_TOP_PERCENT = 6;
+const FACEDOWN_PEEK_LEFT_PERCENT = 3;
+
+const FacedownUnderneathCard: React.FC<{ card: CardInstance }> = ({ card }) => (
+  <div
+    title={card.ownerId ? `Facedown card (${card.ownerId})` : 'Facedown card'}
+    data-testid="underneath-facedown-card"
+  >
+    {/* Facedown: only the card back is rendered, never the front (hidden information) */}
+    <CardView card={card.card} instance={card} size="sm" isFacedown />
+  </div>
+);
+
 export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
   attachments = [],
   cardsUnderneath = [],
@@ -32,17 +46,6 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
           : `flex flex-col items-center w-full relative ${className}`
       }
     >
-      {/* 1. Tucked Face-Down Cards Underneath Badge (RR v1.8 p. 6) */}
-      {hasCardsUnderneath && (
-        <div
-          className="my-1 flex items-center gap-1.5 px-2.5 py-0.5 bg-slate-900 text-amber-300 border-2 border-amber-400 rounded-full text-[10px] font-comic uppercase tracking-wider shadow-comic-sm z-30 pointer-events-auto"
-          title="Face-down cards placed under this card (Out of play)"
-        >
-          <span>📦</span>
-          <span>{cardsUnderneath.length} Underneath</span>
-        </div>
-      )}
-
       {/* 2. Staircase Fan-Down Mode (Issue #83 & #84) */}
       {hasAttachments && mode === 'staircase' && (
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
@@ -100,6 +103,25 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* 2b. Facedown cards underneath are only a reminder: they peek out a few pixels behind the host */}
+      {hasCardsUnderneath && mode === 'staircase' && (
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          {cardsUnderneath.map((tucked, i) => (
+            <div
+              key={tucked.instanceId || `under_${i}`}
+              className="absolute pointer-events-none"
+              style={{
+                top: `${(i + 1) * FACEDOWN_PEEK_TOP_PERCENT}%`,
+                left: `${(i + 1) * -FACEDOWN_PEEK_LEFT_PERCENT}%`,
+                zIndex: cardsUnderneath.length - i,
+              }}
+            >
+              <FacedownUnderneathCard card={tucked} />
+            </div>
+          ))}
         </div>
       )}
 
@@ -169,6 +191,17 @@ export const CardAttachmentFan: React.FC<CardAttachmentFanProps> = ({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* 3b. Facedown cards underneath: only a thin strip of each card back shows (a reminder) */}
+      {hasCardsUnderneath && mode === 'vertical' && (
+        <div className="flex flex-col items-center w-full">
+          {cardsUnderneath.map((tucked, i) => (
+            <div key={tucked.instanceId || `under_${i}`} className="relative h-3 overflow-hidden">
+              <FacedownUnderneathCard card={tucked} />
+            </div>
+          ))}
         </div>
       )}
     </div>

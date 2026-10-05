@@ -11,7 +11,7 @@ date_logged: "2026-10-04"
 
 * **MarvelCDB Link:** https://marvelcdb.com/card/01168
 * **Official Printed Text:** `"When Revealed: Stun your hero. If Vulture is in play, this card gains surge. |  | [star] Boost: If this activation deals damage to a friendly character, stun that character."`
-* **Tracked in:** #221 (When Revealed integrated with #222) (audit: `docs/backlog/plan_hero_target_audit.md`)
+* **Tracked in:** #221 (When Revealed integrated with #222)
 
 ---
 

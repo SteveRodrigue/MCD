@@ -4,7 +4,7 @@ import path from 'path';
 import { cardCatalog } from '../../src/data/importer/card-loader';
 
 /**
- * Core encounter cards whose printed text cannot be modeled yet (docs/backlog/plan_hero_target_audit.md).
+ * Core encounter cards whose printed text cannot be modeled yet.
  * Their placeholder abilities were removed (card-integration-protocol circuit-breaker) so the engine
  * never executes behavior that contradicts the printed text. Each must point at its ambiguity report.
  */

@@ -1,7 +1,7 @@
-# MCD Backlog: Status, Work Queue and Handoff
+# MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last work commit `ecc52ba` (#248, pausable `executeSequence`). Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit `8f20d39` (#238, Highway Robbery). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
 > **Verification baseline:** 🟢 1,860 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
@@ -13,11 +13,9 @@
 Phases 1 to 4 (combat flow, ability legality, shared gating, audit cleanups) are complete. **Phase 5** (core set card correctness, the Gate 1 gate) has two tracks:
 
 - **Track A, reported card bugs: complete.** Hydra Bomber, Imminent Overload, Rocket Boots, Wakanda Forever!.
-- **Track B, correctness of the core player and encounter cards.** Driven by two living trackers:
-  - [plan_core_player_cards_review.md](plan_core_player_cards_review.md): the line-by-line review of every core player card against its printed text (items A, B, C, D).
-  - [plan_effect_params_remediation.md](plan_effect_params_remediation.md): the audit of untyped `effectParams` keys (WP1 to WP8) and its fixes.
+- **Track B, correctness of the core player and encounter cards.** Driven by GitHub issues: the `effectParams` audit (#228, #230, #231, #232) and the line-by-line review of the core player cards (#253 to #261). Each issue carries its own evidence and acceptance; there are no tracker files.
 
-Done since 2026-10-03 (each has a plan file in this folder and a changelog entry):
+Done since 2026-10-03 (each has a changelog entry; plans were deleted after their commits):
 
 | Item | What | Commit |
 | :-- | :-- | :-- |
@@ -53,7 +51,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 7. **Circuit-breaker.** If a card cannot be modelled faithfully (missing primitive, ambiguity), strip its executable ability, set `audit.confidence` below 95, write `docs/ambiguities/<pack>_<code>_<slug>.md`, set `audit.ambiguityFile`, and file the engine issue. Never ship a placeholder that contradicts the printed text.
 8. **Out-of-scope gaps become GitHub issues** (with printed text, evidence, acceptance criteria), not silent notes.
 9. **Gates before reporting done:** `npm test`, `npm run typecheck`, `npm run lint`, `npx prettier --check "src/**/*.{ts,tsx}" "tests/**/*.{ts,tsx}"` (all green), then `npm run report:declarations` after any supplemental change.
-10. **After each item:** update `CHANGELOG.md` `[Unreleased]`, the relevant plan file, the two living trackers and this file.
+10. **After each item:** update `CHANGELOG.md` `[Unreleased]`, the relevant plan file (then delete it after the commit) and this file.
 11. **Commit and push only when the owner asks.** Conventional Commits, one commit per issue where possible, `Fixes #N` only when the issue is fully done (`Refs #N` otherwise), end with the `Co-Authored-By` line used in recent commits. Verify the issue state after pushing.
 
 ### Practical pitfalls
@@ -77,9 +75,9 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 
 | # | Item | Issue | Why now | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05, [plan](plan_issue_244_heart_shaped_herb.md)) | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
-| 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05 ([plan](plan_issue_248_pausable_execute_sequence.md)); `pendingSpecialSequence` retired |
-| 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05 ([plan](plan_issue_238_highway_robbery.md)); seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
+| 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05 | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
+| 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05; `pendingSpecialSequence` retired |
+| 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05; seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | check Great Responsibility `01061` too |
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |
@@ -100,7 +98,7 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | ready (its hero selector exists: `SELF_HERO`) |
 | 9 | `executeSequence` swallows step failures and always reports success | [#225](https://github.com/SteveRodrigue/MCD/issues/225) | visibility of every ability failure | cross-cutting, Tier 2; do before adding more complex sequences |
 
-### 3.3 The `effectParams` remediation ([plan_effect_params_remediation.md](plan_effect_params_remediation.md))
+### 3.3 The `effectParams` remediation (evidence: [../reports/effect_params_orphan_audit.md](../reports/effect_params_orphan_audit.md))
 
 | # | Item | Issue | Depends on |
 | :-- | :-- | :-- | :-- |
@@ -108,9 +106,9 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives (`MODIFY_HAND_SIZE` already done) | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | WP5 not required, but CONSTANT `MODIFY_STAT` must evaluate dynamic amounts |
 | 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5 |
 
-### 3.4 Core player cards review ([plan_core_player_cards_review.md](plan_core_player_cards_review.md))
+### 3.4 Core player cards review
 
-Remaining, in the tracker's order: Tier 1 data-only items C2 to C5, C8, C11 and the A6 test (Luke Cage Toughness); Tier 2 helpers A5, B1/B3, B6, B8, C6, C7; items needing the owner first: B4 (canonical defeat trigger), C9 (Alpha Flight Station form), C10 (identity timing convention), C13 (`maxPerDeck`), and the Repulsor Blast FAQ question. Read the item text in the tracker; each still needs its own plan.
+Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, C8, C11) and [#253](https://github.com/SteveRodrigue/MCD/issues/253) (Luke Cage Toughness). Tier 2: [#254](https://github.com/SteveRodrigue/MCD/issues/254) (rename `EXECUTE_WAKANDA_FOREVER`), [#255](https://github.com/SteveRodrigue/MCD/issues/255) (Black Widow trigger), [#256](https://github.com/SteveRodrigue/MCD/issues/256) (Backflip attack filter), [#257](https://github.com/SteveRodrigue/MCD/issues/257) (Tigra and Superhuman Strength attacker guard), [#259](https://github.com/SteveRodrigue/MCD/issues/259) (Relentless Assault, player-trait condition, attach timing); Emergency is [#240](https://github.com/SteveRodrigue/MCD/issues/240), Lead from the Front is [#251](https://github.com/SteveRodrigue/MCD/issues/251). Re-verification of low-confidence entries: [#260](https://github.com/SteveRodrigue/MCD/issues/260). Owner questions: [#261](https://github.com/SteveRodrigue/MCD/issues/261).
 
 ### 3.5 Importer and data quality
 
@@ -148,28 +146,18 @@ flowchart TD
 
 ---
 
-## 4. Handoff protocol (start here)
+## 4. Handoff protocol
 
-1. **Sync and verify**
-   ```powershell
-   rtk git pull origin main
-   rtk git status
-   rtk npm test
-   ```
-   Expect the baseline of the header. If a test fails, check whether it is #217 (rerun) before assuming your change broke it.
-2. **Read**, in order: [AGENTS.md](../../AGENTS.md), this file, the plan file of the item you pick (and the living tracker it belongs to), the issue text.
-3. **Pick** the first *ready* item of section 3 that nobody else is working on. Say which one in chat (or comment on the issue).
-4. **Plan** (`docs/backlog/plan_<topic>.md`, follow the structure of any recent plan, for example [plan_issue_222_self_hero_selector.md](plan_issue_222_self_hero_selector.md) or [plan_issue_218_surge_keyword.md](plan_issue_218_surge_keyword.md)) and **stop for approval**.
-5. **Implement with TDD**, then run the gates of rule 9, regenerate the report if data changed, and update the changelog, plan, trackers and this file.
-6. **Hand back**: summarise what changed, what you verified, what you found, and which GitHub issues you filed. Commit and push only when asked.
-
-A ready-to-paste prompt for a new agent is in [handoff_prompt.md](handoff_prompt.md).
+See [README.md](README.md) ("Start here", owner preferences, pitfalls, where to find things). Read sections 1 to 4 of this file, then take the first ready item of section 3.
 
 ---
 
 ## 5. Open decisions waiting for the owner
 
-- B4 (which defeat trigger is canonical), C9 (does Alpha Flight Station match Captain Marvel's hero form), C10 (one timing naming convention for identity abilities), C13 (where deck limits like "Max 1 per deck" live), Repulsor Blast single-hit versus two-hit question: see [plan_core_player_cards_review.md](plan_core_player_cards_review.md).
+- [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
+- [#246](https://github.com/SteveRodrigue/MCD/issues/246): player elimination in Gate 1 or Gate 3?
+- [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
+- 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---
@@ -202,7 +190,7 @@ The tables below record the items resolved before 2026-10-04 and are not updated
 | **#175** | **Charge (01099)** | `core_encounter.json` (`01098`, `01099`, `01100`) | 🟢 **Resolved** (`0fc765e`). Removed the `WHEN_REVEALED` attach ability from the three Rhino attachments; the engine attaches intrinsically (data-only fix). |
 | **#154** | **Cosmic Flight Aerial trait in Alter-Ego** | `core.json` (`01017`) | 🟢 **Resolved** (`608a19a`). ADD_TRAIT honors gates; `01017` gated with `IF_FORM: hero`. |
 | **#158** | **Family Emergency (01175)** | `core_encounter.json` (`01175`) | 🟢 **Resolved** (`2cc63df`, `b205d7c`). All five core obligations integrated: `PlayerState.obligations` zone, hero-set default recipient + optional `recipient` override (proof card `56128b`), `ENTERS_PLAY` resolution ability with `PLAYER_CHOICE` option `gate`/`cost`, `REMOVE_FROM_GAME`, `ADD_ACCELERATION`, `ALL_CONTROLLED_TABLEAU` + `filter` (ADR-0075). |
-| **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | 🟢 **Resolved** (`9f8320c`). "Take 2 damage" targets only the revealing player (`SELF_IDENTITY`); the `HERO` target had hit every hero-form player. The same-pattern audit (`plan_hero_target_audit.md`) fixed `01191` Exhaustion and stripped six placeholder cards (`01159`, `01164` When Revealed, `01168`, `01169`, `01174`, `01179`) pending engine work #218-#223. |
+| **#133** | **Hydra Bomber (01110)** | `core_encounter.json` (`01110`) | 🟢 **Resolved** (`9f8320c`). "Take 2 damage" targets only the revealing player (`SELF_IDENTITY`); the `HERO` target had hit every hero-form player. The same-pattern audit fixed `01191` Exhaustion and stripped six placeholder cards (`01159`, `01164` When Revealed, `01168`, `01169`, `01174`, `01179`) pending engine work #218-#223. |
 | **#131** | **Rocket Boots (01039)** | `core.json` (`01039`) | 🟢 **Resolved** (`32aa400`). `ADD_TRAIT` works as an effect step with timed trait modifiers (default: while the source card is in play, or an explicit `PHASE`/`ROUND`/`TURN`); the Hero Action grants Aerial to the identity until the end of the phase. |
 | **#132** | **Imminent Overload (01171)** | `core_encounter.json` (`01171`) | 🟢 **Resolved** (`e289645`, validation only). The card prints an Acceleration icon, not Crisis; the engine matches the printed text. Follow-up #224. |
 | **#207** | **Wakanda Forever! sequence ignores mid-sequence prompts** | `specials/wakanda-forever.ts` | 🟢 **Resolved** (`a6c5397`, `df01659`). Resumable `pendingSpecialSequence`; dead `01047`-`01049` fallbacks removed (ADR-0038 addendum). Follow-up #225. |
@@ -298,5 +286,5 @@ The tables below record the items resolved before 2026-10-04 and are not updated
   - Deferred follow-ups for Wrecking Crew (MC03): **#210** (per-villain encounter decks), **#211** (side schemes and scheme threat), **#212** (multi-villain targeting, Guard, win), **#213** (active counter effects), **#214** (scenario plugin and data), **#215** (remove the legacy fields and migrate test fixtures).
 
 #### Phase 4: Code Audit Cleanups & Polish (Completed ✅)
-- ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes (plan: `plan_phase4_audit_cleanups_a.md`).
-- ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports (plan: `plan_phase4_audit_cleanups_b.md`). Phase 4 is complete.
+- ✅ **#192, #195, #196, #197, #198**: Removed dead aliases, fixed the log key, and eliminated dead `as any` probes.
+- ✅ **#161, #199, #200, #201, #202**: UI layering fix, #199 closed as not reproducible, lazy-loaded screens (main chunk 1,230 kB to 860 kB), removal of two unused exports. Phase 4 is complete.

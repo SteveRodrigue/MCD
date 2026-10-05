@@ -11,7 +11,7 @@ date_logged: "2026-10-04"
 
 * **MarvelCDB Link:** https://marvelcdb.com/card/01174
 * **Official Printed Text:** `"When Revealed: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage."`
-* **Tracked in:** #220, #219 (audit: `docs/backlog/plan_hero_target_audit.md`)
+* **Tracked in:** #220, #219
 
 ---
 

@@ -11,7 +11,7 @@ date_logged: "2026-10-04"
 
 * **MarvelCDB Link:** https://marvelcdb.com/card/01179
 * **Official Printed Text:** `"When Revealed: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."`
-* **Tracked in:** #219, #218 (audit: `docs/backlog/plan_hero_target_audit.md`)
+* **Tracked in:** #219, #218
 
 ---
 

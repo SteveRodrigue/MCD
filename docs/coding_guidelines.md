@@ -1,5 +1,7 @@
 # Marvel Champions Digital (MCD) — Coding Guidelines & Best Practices
 
+> **Agents:** the short, enforceable subset of these guidelines (types, tests, formatting, commits) is in [`.agents/rules/coding-and-testing-rules.md`](../.agents/rules/coding-and-testing-rules.md), which is always loaded. Keep the two consistent; put new enforceable rules there and explanations here.
+
 To maintain high code quality, rules accuracy, and architectural integrity across all contributors (human and AI), all code written for **Marvel Champions Digital** must strictly adhere to these guidelines.
 
 ---

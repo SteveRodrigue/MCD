@@ -5,6 +5,8 @@ The canonical shared policies and quality gates are in
 The shell policy is in [`.agents/rules/command-execution.md`](.agents/rules/command-execution.md),
 the RTK token reduction policy is in
 [`.agents/rules/antigravity-rtk-rules.md`](.agents/rules/antigravity-rtk-rules.md),
+the coding and testing rules are in
+[`.agents/rules/coding-and-testing-rules.md`](.agents/rules/coding-and-testing-rules.md),
 and the post-task procedure is in
 [`.agents/rules/post-task-checklist.md`](.agents/rules/post-task-checklist.md).
 

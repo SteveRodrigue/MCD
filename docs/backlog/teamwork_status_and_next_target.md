@@ -56,10 +56,10 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 
 ### Practical pitfalls
 
+Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.agents/rules/coding-and-testing-rules.md`; PowerShell syntax in `.agents/rules/command-execution.md`.
+
 - Shell commands start with `rtk` where the RTK policy applies (`rtk git status`, `rtk npm test`).
-- **Never run Prettier on whole folders** such as `src/engine` (it reformats unrelated JSON and README files). Format only files you changed.
 - Heredocs that contain apostrophes can break in the shell tool. Write multi-line files and scripts with the file-writing tool.
-- Pack JSON round trip: `core_encounter.json` and `core.json` use CRLF in the working tree. Either edit textually or load with `json`, change, and dump with `indent=2, ensure_ascii=False` plus a trailing newline and the original line endings. Keep canonical card-id order. Check `git diff --stat` is small.
 - A supplemental `target` value must be a member of `TargetSelectorSchema` (a data test enforces it); keys inside `effectParams` are **not** validated yet (see WP5), so check by hand that the engine really reads every key you use.
 - Importer keyword tags are substring-based except Surge (see #243): do not trust `hasKeyword` for the other keywords on cards that merely mention them.
 - Quick data lookups: `npm run card:get -- <code>` (upstream plus supplemental), `npm run rule -- <term>`.
@@ -148,7 +148,7 @@ flowchart TD
 
 ## 4. Handoff protocol
 
-See [README.md](README.md) ("Start here", owner preferences, pitfalls, where to find things). Read sections 1 to 4 of this file, then take the first ready item of section 3.
+See [README.md](README.md) (session start, plan anatomy, owner preferences, where to find things). Read sections 1 to 4 of this file, then take the first ready item of section 3.
 
 ---
 

@@ -1,6 +1,6 @@
 # Handoff prompt (paste to a new agent or send to a developer)
 
-Last reviewed 2026-10-05 (after commit `5d01ec3`). If the repository has moved on, trust `git log`, the GitHub issues and the status file over this text.
+Last reviewed 2026-10-05 (after commit `ecc52ba`). If the repository has moved on, trust `git log`, the GitHub issues and the status file over this text.
 
 ---
 
@@ -10,16 +10,16 @@ Last reviewed 2026-10-05 (after commit `5d01ec3`). If the repository has moved o
 Continue work on Marvel Champions Digital in C:\Users\steve\repos\MCD (branch main, Windows, PowerShell).
 
 START
-1. Run `git pull`, `git status`, `npm test`. Baseline: 1,850 tests green, 0 skipped, typecheck/lint/Prettier
+1. Run `git pull`, `git status`, `npm test`. Baseline: 1,853 tests green, 0 skipped, typecheck/lint/Prettier
    clean. #217 is a known flaky test (shuffle-dependent): rerun it once before assuming you broke something.
 2. Read, in order: AGENTS.md, docs/backlog/README.md, docs/backlog/teamwork_status_and_next_target.md
    (sections 1 to 4), then the plan and issue of the item you take.
-3. Your task is the first item of section 3.1 of the status file that is not done. Today that is #248 (see
+3. Your task is the first item of section 3.1 of the status file that is not done. Today that is #238 (see
    "Next task" below). Say which item you took, in one line.
 
 FOR EVERY ITEM
-4. Write docs/backlog/plan_<topic>.md (copy the shape of plan_issue_234_triggered_chosen_targets.md or
-   plan_issue_222_self_hero_selector.md) and STOP for my approval. For a card change, show: printed text,
+4. Write docs/backlog/plan_<topic>.md (copy the shape of plan_issue_248_pausable_execute_sequence.md or
+   plan_issue_234_triggered_chosen_targets.md) and STOP for my approval. For a card change, show: printed text,
    original data, proposed data, why (card-integration-protocol skill). One open question at a time.
 5. After approval: failing test first (see it fail for the right reason), then the fix, then the docs:
    spec in docs/specifications/supplemental/, ADR or addendum for design decisions, Card Editor when the
@@ -45,28 +45,31 @@ Be concise. Lead with the next action, number multi-step work, ask me one questi
 
 ---
 
-## Next task: #248, pausable `executeSequence` (finishes Hulk `01050`)
+## Next task: #238, Highway Robbery `01166` (P1)
 
-- **Problem:** `executeSequence` (`src/engine/effects/index.ts`) does not stop when a step opens a decision prompt; later steps of the same ability run before the player answers. Wakanda Forever! is the only exception: it has its own special-only pause (`pendingSpecialSequence`, #207).
-- **Why now:** since #234 every "an enemy" / "a scheme" step can open a target prompt. Hulk `01050` ("deal 2 damage to an enemy" is step 2 of 4; with a wild resource, "1 damage to each character" and "discard Hulk" follow) now resolves out of order.
-- **Owner decision (2026-10-05):** do this next, then finish Hulk.
-- **Expected direction (to confirm in the plan):** one general resumable sequence (remaining steps plus the sequence context: previous result, step results, chosen targets, `isFinalStep`), resumed when the prompt resolves; retire `pendingSpecialSequence` in favour of it (one path). Consider #225 (same function: step failures are swallowed) in the same plan, and say whether you include it.
-- **Careful:** #225 is **not** the pause problem (an earlier plan mixed them up). Always read the issue text before citing an issue number.
+- **Problem:** Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand").
+- **Why now:** **P1** bug causing cards to be permanently lost from players' hands during play.
+- **Expected direction:** implement deterministic attachment / zone transfer for stolen cards and properly return them to each player's hand when Highway Robbery is defeated.
+- **Alternative next tasks:** [#244](https://github.com/SteveRodrigue/MCD/issues/244) Weapons Runner `01121`, or [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency `01085`.
 
-## What changed recently (read before touching targeting)
+## What changed recently (read before touching sequences or targeting)
 
+- **#248 (`ecc52ba`):** Pausable `executeSequence` and general resumable execution. When a sequence step opens a decision prompt, subsequent steps pause into `state.pendingSequences` (preserving context, dynamic values, `previousResult`, step results). Resumed automatically via `resumePendingSequence` on action dispatch or prompt queue drain. `pendingSpecialSequence` is retired; Wakanda Forever delegates directly to `executeSequence`.
 - **ADR-0077 / #234 (`5d01ec3`):** the effect context has `chosenTargetInstanceId` / `chosenTargetType` (what the player chose) and `eventTargetInstanceId` / `eventTargetType` (the triggering event's target). There is no `targetInstanceId` in `EffectExecutionContext` any more. `TriggerContext` (the event payload) still uses `targetInstanceId`.
 - `CHOSEN_*` steps choose through `src/engine/effects/target-choice.ts` (valid targets only, 0 / 1 / 2+ rule). `TRIGGERING_*` reads the event target. The resolver never guesses a target.
 - "The attacked enemy" / "that enemy" is `TRIGGERING_ENEMY`, not `PREVIOUS_TARGET`.
-- Specs: `02_timings_and_triggers.md` (event target vs chosen target), `03_costs_and_targeting.md` (Layer 3).
+- Specs: `02_timings_and_triggers.md` (event target vs chosen target, `pendingSequences`), `03_costs_and_targeting.md` (Layer 3).
 
-## Queue after #248 (status file section 3.1, in order)
+## Queue (status file section 3.1, in order)
 
-1. [#238](https://github.com/SteveRodrigue/MCD/issues/238) **P1** Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand"). Evidence in the issue.
+1. [#238](https://github.com/SteveRodrigue/MCD/issues/238) **P1** Highway Robbery `01166` loses the card taken from each hand.
 2. [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency `01085` is offered for every threat placement (setup included), not only "when the villain schemes".
 3. [#245](https://github.com/SteveRodrigue/MCD/issues/245) Masterplan `01192`: the "no side scheme → discard until one, reveal it" sentence is missing.
 4. [#247](https://github.com/SteveRodrigue/MCD/issues/247) Chase Them Down `01052` is never offered (no hand Response scan after a defeat; filter too narrow).
 5. [#246](https://github.com/SteveRodrigue/MCD/issues/246) player elimination and game-over screen: **ask the owner first** (Gate 1 or Gate 3).
+6. [#249](https://github.com/SteveRodrigue/MCD/issues/249) Spider-Tracer `01007` threat removal premature side scheme defeat.
+7. [#250](https://github.com/SteveRodrigue/MCD/issues/250) Webbed Up `01009` trigger / replacement with Stunned villain.
+8. [#251](https://github.com/SteveRodrigue/MCD/issues/251) Lead from the Front `01070` missing player choice prompt.
 
 Then the rest of section 3 (Weapons Runner #244, Genetically Enhanced #228, engine prerequisites #219 to #223, `effectParams` WP5 to WP7, core player review items).
 

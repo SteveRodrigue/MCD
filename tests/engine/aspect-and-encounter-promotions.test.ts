@@ -69,7 +69,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
       const result = executeEffect(
         state,
         { effect: 'READY', effectParams: { target: 'CHOSEN_ALLY' } },
-        { playerId: 'p1', targetType: 'ally', targetInstanceId: vision.instanceId },
+        { playerId: 'p1', chosenTargetType: 'ally', chosenTargetInstanceId: vision.instanceId },
       );
 
       expect(result.success).toBe(true);

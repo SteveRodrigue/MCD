@@ -129,7 +129,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       // CHOSEN_CONTROLLED_ALLY for p1
       const chosen = resolveCharacterTargets(state, 'CHOSEN_CONTROLLED_ALLY', {
         playerId: 'p1',
-        targetInstanceId: blackCat.instanceId,
+        chosenTargetInstanceId: blackCat.instanceId,
       });
       expect(chosen).toHaveLength(1);
       expect(chosen[0].id).toBe(blackCat.instanceId);
@@ -164,7 +164,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
 
       const chosen = resolveCharacterTargets(state, 'CHOSEN_FRIENDLY_CHARACTER', {
         playerId: 'p1',
-        targetInstanceId: warMachine.instanceId,
+        chosenTargetInstanceId: warMachine.instanceId,
       });
       expect(chosen).toHaveLength(1);
       expect(chosen[0].id).toBe(warMachine.instanceId);
@@ -219,14 +219,14 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
 
       // Targeting villain
       const villainTarget = resolveCharacterTargets(state, 'CHOSEN_ENEMY', {
-        targetType: 'villain',
+        chosenTargetType: 'villain',
       });
       expect(villainTarget).toHaveLength(1);
       expect(villainTarget[0].entityType).toBe('villain');
 
       // Targeting minion
       const minionTarget = resolveCharacterTargets(state, 'CHOSEN_ENEMY', {
-        targetInstanceId: shockerMinion.instanceId,
+        chosenTargetInstanceId: shockerMinion.instanceId,
       });
       expect(minionTarget).toHaveLength(1);
       expect(minionTarget[0].id).toBe(shockerMinion.instanceId);
@@ -264,7 +264,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       expect(engagedMinions[0].id).toBe(shocker1.instanceId);
 
       const chosenMinion = resolveCharacterTargets(state, 'CHOSEN_MINION', {
-        targetInstanceId: shocker2.instanceId,
+        chosenTargetInstanceId: shocker2.instanceId,
       });
       expect(chosenMinion).toHaveLength(1);
       expect(chosenMinion[0].id).toBe(shocker2.instanceId);
@@ -278,7 +278,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       state.players[0].allies.push(blackCat);
 
       const charTarget = resolveCharacterTargets(state, 'CHOSEN_CHARACTER', {
-        targetInstanceId: blackCat.instanceId,
+        chosenTargetInstanceId: blackCat.instanceId,
       });
       expect(charTarget).toHaveLength(1);
       expect(charTarget[0].id).toBe(blackCat.instanceId);
@@ -321,7 +321,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       expect(main[0].entityType).toBe('main_scheme');
 
       const side = resolveSchemeTargets(state, 'CHOSEN_SIDE_SCHEME', {
-        targetInstanceId: 'bomb-scare-1',
+        chosenTargetInstanceId: 'bomb-scare-1',
       });
       expect(side).toHaveLength(1);
       expect(side[0].id).toBe('bomb-scare-1');
@@ -343,7 +343,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
 
       const targets = resolveTargets(state, 'PREVIOUS_TARGET', {
         playerId: 'p1',
-        targetInstanceId: shocker.instanceId,
+        chosenTargetInstanceId: shocker.instanceId,
       });
       expect(targets).toHaveLength(1);
       expect(targets[0].id).toBe(shocker.instanceId);
@@ -361,7 +361,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       };
       const addRes = executeEffect(state, { steps: [addStep] } as any, {
         playerId: 'p1',
-        targetInstanceId: shocker.instanceId,
+        chosenTargetInstanceId: shocker.instanceId,
       });
       expect(addRes.success).toBe(true);
       expect(shocker.statusCards).toContain(StatusCard.STUNNED);
@@ -373,7 +373,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       };
       const removeRes = executeEffect(state, { steps: [removeStep] } as any, {
         playerId: 'p1',
-        targetInstanceId: shocker.instanceId,
+        chosenTargetInstanceId: shocker.instanceId,
       });
       expect(removeRes.success).toBe(true);
       expect(shocker.statusCards).not.toContain(StatusCard.STUNNED);
@@ -391,7 +391,7 @@ describe('Target Resolution Engine Contract Tests (Issue #68 & RR v1.8)', () => 
       expect(target).toBeUndefined();
 
       const targets = resolveTargets(state, 'CHOSEN_MINION', {
-        targetInstanceId: shocker.instanceId,
+        chosenTargetInstanceId: shocker.instanceId,
       });
       // Should not find the discarded minion
       expect(targets.find((t) => t.id === shocker.instanceId)).toBeUndefined();

@@ -7,6 +7,7 @@ import {
   CardAbility,
 } from '../models';
 import { executeEffect } from '../effects';
+import { abilityHasValidTarget } from '../effects/target-choice';
 import {
   executeAbilityCost,
   executeResourceCostPayment,
@@ -355,11 +356,28 @@ export function resolveDecisionPrompt(
         player?.hand.find((c) => c.instanceId === sourceCardInstanceId)
       : undefined;
 
-    if (optAbility.cost && player) {
+    // RR v1.8 "Initiating Abilities" steps 2-5: the board may have changed since the ability was
+    // offered. Without a valid target it cannot be initiated: abort before paying any cost.
+    const canInitiate =
+      !player || abilityHasValidTarget(nextState, player, optAbility, sourceCardInst);
+    if (!canInitiate) {
+      nextState.log.push({
+        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'ability',
+        key: 'ability.aborted.noValidTarget',
+        params: { player: playerName, ability: optAbility.id },
+        onomatopoeia: 'NO VALID TARGET!',
+      });
+    }
+
+    if (canInitiate && optAbility.cost && player) {
       executeAbilityCost(nextState, player, optAbility, sourceCardInst, paymentOptions);
     }
 
-    if (player) {
+    if (canInitiate && player) {
       if (optAbility.limit === 'ONCE_PER_ROUND') {
         if (!player.usedAbilitiesThisRound) player.usedAbilitiesThisRound = {};
         player.usedAbilitiesThisRound[optAbility.id] =
@@ -371,19 +389,22 @@ export function resolveDecisionPrompt(
       }
     }
 
-    const effectRes = executeEffect(nextState, optAbility, {
-      playerId,
-      sourceCardInstance: sourceCardInst,
-      targetType: optContext?.targetType,
-      targetInstanceId: optContext?.targetInstanceId,
-      threatAmount: optContext?.threatAmount,
-      damageAmount: optContext?.damageAmount,
-      interceptedValue:
-        optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
-      resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
-    });
+    const effectRes = canInitiate
+      ? executeEffect(nextState, optAbility, {
+          playerId,
+          sourceCardInstance: sourceCardInst,
+          eventTargetType: optContext?.targetType,
+          eventTargetInstanceId: optContext?.targetInstanceId,
+          threatAmount: optContext?.threatAmount,
+          damageAmount: optContext?.damageAmount,
+          interceptedValue:
+            optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
+          resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
+        })
+      : { state: nextState, success: true, mutatedState: false, onomatopoeia: 'NO VALID TARGET!' };
 
     if (
+      canInitiate &&
       optAbility.steps?.some(
         (s) =>
           s.effect === 'CANCEL_WHEN_REVEALED' ||
@@ -396,16 +417,18 @@ export function resolveDecisionPrompt(
       }
     }
 
-    nextState.log.push({
-      id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      timestamp: Date.now(),
-      round: nextState.roundNumber,
-      phase: nextState.phase,
-      category: 'ability',
-      key: `ability.${optAbility.id}.triggered`,
-      params: { player: playerName },
-      onomatopoeia: 'ABILITY TRIGGERED!',
-    });
+    if (canInitiate) {
+      nextState.log.push({
+        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        timestamp: Date.now(),
+        round: nextState.roundNumber,
+        phase: nextState.phase,
+        category: 'ability',
+        key: `ability.${optAbility.id}.triggered`,
+        params: { player: playerName },
+        onomatopoeia: 'ABILITY TRIGGERED!',
+      });
+    }
 
     // If resolving an encounter card interrupt (e.g. WHEN_REVEALED / TREACHERY_REVEALED)
     if (nextState.activeEncounterContext) {
@@ -509,6 +532,7 @@ export function resolveDecisionPrompt(
     sourceCardId: prompt.sourceCardInstanceId || prompt.sourceCardCode,
     resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
     discardedCards: prompt.discardedCards,
+    isFinalStep: prompt.isFinalStep,
   });
 
   // Completion default for obligations: discard unless an option already removed it from play

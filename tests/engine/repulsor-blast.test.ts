@@ -79,7 +79,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
-      targetType: 'villain',
+      chosenTargetType: 'villain',
     });
 
     expect(result.success).toBe(true);
@@ -191,7 +191,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
-      targetType: 'villain',
+      chosenTargetType: 'villain',
     });
 
     expect(result.success).toBe(true);
@@ -237,7 +237,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
-      targetType: 'villain',
+      chosenTargetType: 'villain',
     });
 
     expect(result.success).toBe(true);
@@ -321,7 +321,7 @@ describe('Repulsor Blast (01031) Contract Tests — RR v1.8 & Issue #112', () =>
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: createCardInstance(repulsorCard),
-      targetType: 'villain',
+      chosenTargetType: 'villain',
     });
 
     expect(result.success).toBe(true);

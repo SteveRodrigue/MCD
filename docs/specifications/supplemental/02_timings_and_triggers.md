@@ -73,6 +73,17 @@ When an ability is an Interrupt or Response, `trigger` binds it to an engine dis
 | `'VILLAIN_PHASE_ENDED'`    | Villain phase completes (Step 6b after Step 5 token pass).                                                                                             | `round-upkeep.ts` (`step6_endVillainPhaseAndRound`)  |
 | `'DEFEATED'`               | Side/Player Side Scheme reduced to 0 threat - resolves 'When Defeated' rewards declared on the scheme card (e.g. _Highway Robbery_ `01166`, ADR-0034). | `action-dispatcher.ts` (`BASIC_THWART`)   |
 
+### Trigger context: event target vs. chosen target (#234, ADR-0077)
+
+The event payload (`TriggerContext`) names the event's own target in `targetInstanceId` / `targetType` (the thwarted scheme, the defeated minion, the attacking enemy). When a trigger path runs an ability, it copies them into the effect context as **`eventTargetInstanceId` / `eventTargetType`**, never as the chosen target:
+
+| Effect context field | Meaning | Read by |
+| :-- | :-- | :-- |
+| `eventTargetInstanceId`, `eventTargetType` | the target of the event that triggered the ability | `TRIGGERING_MINION`, `TRIGGERING_ENEMY`, `TRIGGERING_SCHEME`, the `HOST` fallback |
+| `chosenTargetInstanceId`, `chosenTargetType` | the target the player chose (UI selection of a player action, or a target-prompt answer) | every `CHOSEN_*` selector, `PREVIOUS_TARGET`, `PREVIOUS_SELECTED_CARD`, dynamic formulas |
+
+So "deal 1 damage to **an enemy**" after a thwart (Daredevil `01058`) lets the player choose (spec 03, Layer 3), and "stun **the attacked enemy**" (Superhuman Strength `01028`) uses `TRIGGERING_ENEMY`.
+
 ---
 
 ## 3. Event Trigger Filters (`TriggerFilter`)

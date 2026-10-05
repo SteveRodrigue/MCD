@@ -1,9 +1,9 @@
 # MCD Backlog: Status, Work Queue and Handoff
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last work commit `9a0830d` (Surge keyword). Check `git log -1` and `git status` first: commits after `28fa59a` may not be pushed yet.
+> **Repository state:** `main`, last pushed work commit `7686171` (False Alarm); #234 is implemented in the working tree, not committed yet. Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,838 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,850 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -31,7 +31,9 @@ Done since 2026-10-03 (each has a plan file in this folder and a changelog entry
 | #222 and #241 | `SELF_HERO` selector; Sweeping Swoop (When Revealed), Electric Whip Attack (When Revealed), Ritual Combat; selector hygiene | `28fa59a` |
 | #218 | Surge keyword, one shared surge path, strict printed-keyword detection for Surge | `9a0830d` |
 | #244 (first row) | Heart-Shaped Herb `01158`: tough status cards (When Revealed and Boost) replace the invented heal | `4d200a5` |
-| #242 | False Alarm `01112`: surge when already confused (`IF_ALREADY_HAS_STATUS`) | _not committed yet_ |
+| #242 | False Alarm `01112`: surge when already confused (`IF_ALREADY_HAS_STATUS`) | `7686171` |
+| Triage of #233 to #240 | 8 in-app reports diagnosed; #235, #236, #239 closed as duplicates of #234; #245, #246 filed from two new reports | GitHub only |
+| #234 | Chosen target vs event target (ADR-0077); "an enemy" / "a scheme" let the player choose (Daredevil, Interrogation Room, Mockingbird, She-Hulk, Nick Fury, Panther Claws); Superhuman Strength `TRIGGERING_ENEMY`; resolver guesses removed | _not committed yet_ |
 
 ---
 
@@ -73,7 +75,13 @@ Sources: [AGENTS.md](../../AGENTS.md), `.agents/rules/*.md` (shared quality gate
 | # | Item | Issue | Why now | Notes |
 | :-- | :-- | :-- | :-- | :-- |
 | 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05, [plan](plan_issue_244_heart_shaped_herb.md)) | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
-| 3 | **Untriaged in-app bug reports** from 2026-10-04: [#233](https://github.com/SteveRodrigue/MCD/issues/233) Caught Off Guard, [#234](https://github.com/SteveRodrigue/MCD/issues/234) and [#239](https://github.com/SteveRodrigue/MCD/issues/239) Daredevil, [#235](https://github.com/SteveRodrigue/MCD/issues/235) Interrogation Room, [#236](https://github.com/SteveRodrigue/MCD/issues/236) Mockingbird, [#237](https://github.com/SteveRodrigue/MCD/issues/237) Yon-Rogg's Treason, [#238](https://github.com/SteveRodrigue/MCD/issues/238) Highway Robbery, [#240](https://github.com/SteveRodrigue/MCD/issues/240) Emergency | listed | real play reports, not yet read by the agents who did the work above | use the `problem-report-triage` and `bug-fix` skills; deduplicate against existing issues (#234 and #239 look like duplicates; #237 overlaps #219) |
+| 2 | **Next (owner decision 2026-10-05):** resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | consider #225 (same function, swallowed failures) in the same plan; retire the special-only `pendingSpecialSequence` |
+| 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, `Math.random`, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | evidence in the issue |
+| 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | check Great Responsibility `01061` too |
+| 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
+| 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |
+| 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **owner decision:** Gate 1 or Gate 3 | 15 direct `winner` writes |
+| — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
 | 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | blocked on #209 for a faithful model: **apply the circuit-breaker now** (strip, ambiguity report) so WP5 can pass with zero exemptions |
 
 ### 3.2 Engine prerequisites that unblock stripped cards

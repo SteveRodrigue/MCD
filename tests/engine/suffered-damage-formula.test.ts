@@ -242,7 +242,7 @@ describe('SUFFERED_DAMAGE Formula for Variable Damage Scaling (Issue #5 & RR v1.
 
       const result = executeEffect(gameState, ability, {
         playerId: player.id,
-        targetInstanceId: minionInstance.instanceId,
+        chosenTargetInstanceId: minionInstance.instanceId,
       });
 
       expect(result.success).toBe(true);

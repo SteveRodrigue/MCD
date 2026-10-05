@@ -186,7 +186,9 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
 
     p1.engagedMinions.push(minionInst);
 
-    // Add a side scheme so Spider-Tracer prompts for scheme choice
+    // Add a side scheme so Spider-Tracer prompts for scheme choice. Both schemes need threat to be
+    // valid targets for "remove 3 threat" (RR v1.8 "Target", #234).
+    state.mainScheme.threat = 3;
     const sideSchemeCard = cardCatalog.getCard('01104')!; // Bomb Scare
     const sideSchemeInst = createCardInstance(sideSchemeCard);
     (sideSchemeInst as any).threat = 3;

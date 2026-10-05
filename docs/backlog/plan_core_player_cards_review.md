@@ -75,7 +75,7 @@ Legend: **Tier** = blast radius per `shared-quality-gates.md`. **Verified** = I 
 | B5 | Tigra `01051` | After **Tigra attacks** and defeats a minion | `CHARACTER_DEFEATED` + `targetType: MINION` | the ally guard in the dispatcher only covers `THWART_RESOLVED`/`ATTACK_RESOLVED`. Test `defeat-trigger-filtering.test.ts` covers only "ally defeated". Add a test where a *different* character defeats a minion. If it heals, add an attacker-is-self filter | Suspected (test gap) |
 | B6 | Lead from the Front `01070` | **Choose a player**; each character *that player* controls | `ALL_FRIENDLY_CHARACTERS` | chosen-player scope. Also uses bespoke `atkBonus`/`thwBonus` instead of two `MODIFY_STAT` steps | Verified in data |
 | B7 | Med Team `01080` | heal 2 from a **friendly** character | `CHOSEN_CHARACTER` (allows enemies) | `CHOSEN_FRIENDLY_CHARACTER` (exists in `target-resolver.ts` L526) | Verified in data |
-| B8 | Superhuman Strength `01028` | After **She-Hulk** attacks, discard → stun the attacked enemy | `ATTACK_RESOLVED`, target `PREVIOUS_TARGET` | the same attacker guard question as B5, now for upgrades (the guard only covers allies). Use the attacked-enemy selector in place of `PREVIOUS_TARGET`. Audit confidence is 80 | Suspected |
+| B8 | Superhuman Strength `01028` | After **She-Hulk** attacks, discard → stun the attacked enemy | `ATTACK_RESOLVED`, target `PREVIOUS_TARGET` | the same attacker guard question as B5, now for upgrades (the guard only covers allies). Use the attacked-enemy selector in place of `PREVIOUS_TARGET`. Audit confidence is 80 | **Selector done in #234** (`TRIGGERING_ENEMY`, 2026-10-05); the attacker guard is still open |
 
 ---
 

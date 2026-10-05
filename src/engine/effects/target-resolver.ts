@@ -383,13 +383,13 @@ export function resolveTargets(
         );
         if (p) return [{ kind: 'player', entity: p, id: p.id }];
       }
-      if (context?.targetInstanceId) {
+      if (context?.chosenTargetInstanceId) {
         const p = state.players.find(
           (pl) =>
-            pl.id === context.targetInstanceId ||
-            pl.hero?.code === context.targetInstanceId ||
-            pl.alterEgo?.code === context.targetInstanceId ||
-            pl.activeFormCard?.code === context.targetInstanceId,
+            pl.id === context.chosenTargetInstanceId ||
+            pl.hero?.code === context.chosenTargetInstanceId ||
+            pl.alterEgo?.code === context.chosenTargetInstanceId ||
+            pl.activeFormCard?.code === context.chosenTargetInstanceId,
         );
         if (p) return [{ kind: 'player', entity: p, id: p.id }];
       }
@@ -407,8 +407,8 @@ export function resolveTargets(
     // 3. CONTROLLED ENTITIES
     case 'CHOSEN_CONTROLLED_ALLY': {
       const ally =
-        (context?.targetInstanceId
-          ? resolvingPlayer.allies?.find((a) => a.instanceId === context.targetInstanceId)
+        (context?.chosenTargetInstanceId
+          ? resolvingPlayer.allies?.find((a) => a.instanceId === context.chosenTargetInstanceId)
           : undefined) || resolvingPlayer.allies?.[0];
       if (ally) {
         return [
@@ -445,8 +445,8 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_CONTROLLED_CHARACTER': {
-      if (context?.targetInstanceId) {
-        if (context.targetInstanceId === resolvingPlayer.id) {
+      if (context?.chosenTargetInstanceId) {
+        if (context.chosenTargetInstanceId === resolvingPlayer.id) {
           return [
             {
               kind: 'character',
@@ -457,7 +457,9 @@ export function resolveTargets(
             },
           ];
         }
-        const ally = resolvingPlayer.allies?.find((a) => a.instanceId === context.targetInstanceId);
+        const ally = resolvingPlayer.allies?.find(
+          (a) => a.instanceId === context.chosenTargetInstanceId,
+        );
         if (ally) {
           return [
             {
@@ -505,9 +507,11 @@ export function resolveTargets(
 
     // 4. FRIENDLY ENTITIES (Across Table)
     case 'CHOSEN_ALLY': {
-      if (context?.targetInstanceId) {
+      if (context?.chosenTargetInstanceId) {
         for (const p of state.players) {
-          const ally = (p.allies || []).find((a) => a.instanceId === context.targetInstanceId);
+          const ally = (p.allies || []).find(
+            (a) => a.instanceId === context.chosenTargetInstanceId,
+          );
           if (ally) {
             return [
               {
@@ -554,8 +558,8 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_FRIENDLY_CHARACTER': {
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.chosenTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
         if (
           found &&
           found.kind === 'character' &&
@@ -654,7 +658,7 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_ENEMY': {
-      if (context?.targetType === 'villain') {
+      if (context?.chosenTargetType === 'villain') {
         const activeVillain = getActiveVillain(state);
         if (activeVillain) {
           return [
@@ -667,8 +671,8 @@ export function resolveTargets(
           ];
         }
       }
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.chosenTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
         if (
           found &&
           found.kind === 'character' &&
@@ -677,30 +681,7 @@ export function resolveTargets(
           return [found];
         }
       }
-      // Fallback: active player's first engaged minion, or villain
-      const firstEngaged = resolvingPlayer.engagedMinions?.[0];
-      if (firstEngaged) {
-        return [
-          {
-            kind: 'character',
-            entityType: 'minion',
-            entity: firstEngaged,
-            id: firstEngaged.instanceId,
-            player: resolvingPlayer,
-          },
-        ];
-      }
-      const activeVillain = getActiveVillain(state);
-      if (activeVillain) {
-        return [
-          {
-            kind: 'character',
-            entityType: 'villain',
-            entity: activeVillain,
-            id: activeVillain.instanceId || 'villain',
-          },
-        ];
-      }
+      // Nobody chose: never guess (the player chooses before resolution, #234).
       return [];
     }
 
@@ -752,10 +733,10 @@ export function resolveTargets(
     }
 
     case 'CHOSEN_MINION': {
-      if (context?.targetInstanceId) {
+      if (context?.chosenTargetInstanceId) {
         for (const p of state.players) {
           const m = (p.engagedMinions || []).find(
-            (em) => em.instanceId === context.targetInstanceId,
+            (em) => em.instanceId === context.chosenTargetInstanceId,
           );
           if (m) {
             return [
@@ -770,40 +751,16 @@ export function resolveTargets(
           }
         }
       }
-      // Fallback: active player's first engaged minion or first minion at table
-      const activeMinion = resolvingPlayer.engagedMinions?.[0];
-      if (activeMinion) {
-        return [
-          {
-            kind: 'character',
-            entityType: 'minion',
-            entity: activeMinion,
-            id: activeMinion.instanceId,
-            player: resolvingPlayer,
-          },
-        ];
-      }
-      for (const p of state.players) {
-        if (p.engagedMinions && p.engagedMinions.length > 0) {
-          return [
-            {
-              kind: 'character',
-              entityType: 'minion',
-              entity: p.engagedMinions[0],
-              id: p.engagedMinions[0].instanceId,
-              player: p,
-            },
-          ];
-        }
-      }
+      // Nobody chose: never guess (the player chooses before resolution, #234).
       return [];
     }
 
     case 'CHOSEN_ENGAGED_MINION': {
-      const m =
-        (context?.targetInstanceId
-          ? resolvingPlayer.engagedMinions?.find((em) => em.instanceId === context.targetInstanceId)
-          : undefined) || resolvingPlayer.engagedMinions?.[0];
+      const m = context?.chosenTargetInstanceId
+        ? resolvingPlayer.engagedMinions?.find(
+            (em) => em.instanceId === context.chosenTargetInstanceId,
+          )
+        : undefined;
       if (m) {
         return [
           {
@@ -845,30 +802,19 @@ export function resolveTargets(
     }
 
     case 'TRIGGERING_MINION': {
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.eventTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.eventTargetInstanceId);
         if (found && found.kind === 'character' && found.entityType === 'minion') {
           return [found];
         }
       }
-      const firstM = resolvingPlayer.engagedMinions?.[0];
-      if (firstM) {
-        return [
-          {
-            kind: 'character',
-            entityType: 'minion',
-            entity: firstM,
-            id: firstM.instanceId,
-            player: resolvingPlayer,
-          },
-        ];
-      }
+      // The event named no minion: there is no "that minion" to resolve.
       return [];
     }
 
     case 'TRIGGERING_ENEMY': {
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.eventTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.eventTargetInstanceId);
         if (
           found &&
           found.kind === 'character' &&
@@ -877,8 +823,9 @@ export function resolveTargets(
           return [found];
         }
       }
+      // A villain event may name the villain by type only (e.g. ATTACK_RESOLVED on the villain).
       const activeVillain = getActiveVillain(state);
-      if (activeVillain) {
+      if (activeVillain && String(context?.eventTargetType ?? '').toLowerCase() === 'villain') {
         return [
           {
             kind: 'character',
@@ -961,8 +908,8 @@ export function resolveTargets(
         }
       }
       // 5. Fallback to targetInstanceId from context
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.eventTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.eventTargetInstanceId);
         if (found) {
           if (selector === 'HOST_ENEMY') {
             if (
@@ -981,8 +928,8 @@ export function resolveTargets(
 
     // 6. UNIVERSAL CHARACTERS
     case 'CHOSEN_CHARACTER': {
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.chosenTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
         if (found && found.kind === 'character') {
           return [found];
         }
@@ -1086,10 +1033,11 @@ export function resolveTargets(
 
     case 'SIDE_SCHEME':
     case 'CHOSEN_SIDE_SCHEME': {
-      if (context?.targetInstanceId) {
+      if (context?.chosenTargetInstanceId) {
         const side = (state.sideSchemes || []).find(
           (s) =>
-            s.instanceId === context.targetInstanceId || s.card?.code === context.targetInstanceId,
+            s.instanceId === context.chosenTargetInstanceId ||
+            s.card?.code === context.chosenTargetInstanceId,
         );
         if (side) {
           return [
@@ -1132,13 +1080,13 @@ export function resolveTargets(
       const isMainBlocked =
         !ignoresCrisis && isPlayerSource && (hasCrisisInPlay(state) || hasPatrol);
 
-      if (context?.targetInstanceId) {
+      if (context?.chosenTargetInstanceId) {
         const chosenMainScheme = getActiveMainScheme(state);
         if (
           chosenMainScheme &&
-          (context.targetInstanceId === chosenMainScheme.instanceId ||
-            context.targetInstanceId === 'main_scheme' ||
-            context.targetInstanceId === chosenMainScheme.card?.code)
+          (context.chosenTargetInstanceId === chosenMainScheme.instanceId ||
+            context.chosenTargetInstanceId === 'main_scheme' ||
+            context.chosenTargetInstanceId === chosenMainScheme.card?.code)
         ) {
           if (isMainBlocked) {
             return [];
@@ -1154,7 +1102,8 @@ export function resolveTargets(
         }
         const side = (state.sideSchemes || []).find(
           (s) =>
-            s.instanceId === context.targetInstanceId || s.card?.code === context.targetInstanceId,
+            s.instanceId === context.chosenTargetInstanceId ||
+            s.card?.code === context.chosenTargetInstanceId,
         );
         if (side) {
           return [
@@ -1228,8 +1177,8 @@ export function resolveTargets(
     }
 
     case 'TRIGGERING_SCHEME': {
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.eventTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.eventTargetInstanceId);
         if (found && found.kind === 'scheme') {
           return [found];
         }
@@ -1249,16 +1198,13 @@ export function resolveTargets(
     }
 
     // 8. CONTINUITY
-    case 'ATTACK_TARGET':
-    case 'ATTACKED_ENEMY':
-    case 'TARGET_ENEMY':
     case 'PREVIOUS_TARGET': {
-      const targetId = context?.targetInstanceId || context?.previousResult?.targetId;
+      const targetId = context?.chosenTargetInstanceId || context?.previousResult?.targetId;
       if (targetId) {
         const found = resolveEntityByInstanceId(state, targetId);
         if (found) return [found];
       }
-      if (context?.targetType === 'villain') {
+      if (context?.chosenTargetType === 'villain') {
         const activeVillain = getActiveVillain(state);
         if (activeVillain) {
           return [
@@ -1271,7 +1217,7 @@ export function resolveTargets(
           ];
         }
       }
-      if (context?.targetType === 'hero' || context?.targetType === 'identity') {
+      if (context?.chosenTargetType === 'hero' || context?.chosenTargetType === 'identity') {
         return [
           {
             kind: 'character',
@@ -1282,32 +1228,7 @@ export function resolveTargets(
           },
         ];
       }
-      if (context?.targetType === 'minion') {
-        const firstM = resolvingPlayer.engagedMinions?.[0];
-        if (firstM) {
-          return [
-            {
-              kind: 'character',
-              entityType: 'minion',
-              entity: firstM,
-              id: firstM.instanceId,
-              player: resolvingPlayer,
-            },
-          ];
-        }
-      }
-      // Fallback: villain
-      const activeVillain = getActiveVillain(state);
-      if (activeVillain) {
-        return [
-          {
-            kind: 'character',
-            entityType: 'villain',
-            entity: activeVillain,
-            id: activeVillain.instanceId || 'villain',
-          },
-        ];
-      }
+      // No previous or chosen target: never guess one.
       return [];
     }
 
@@ -1315,7 +1236,7 @@ export function resolveTargets(
       const cardId =
         context?.collectedCardInstanceIds?.[0] ||
         context?.previousResult?.selectedCardInstanceIds?.[0] ||
-        context?.targetInstanceId;
+        context?.chosenTargetInstanceId;
       if (cardId) {
         const found = resolveEntityByInstanceId(state, cardId);
         if (found && found.kind === 'card') return [found];
@@ -1325,8 +1246,8 @@ export function resolveTargets(
 
     default: {
       // Fallback for custom or direct instance id strings
-      if (context?.targetInstanceId) {
-        const found = resolveEntityByInstanceId(state, context.targetInstanceId);
+      if (context?.chosenTargetInstanceId) {
+        const found = resolveEntityByInstanceId(state, context.chosenTargetInstanceId);
         if (found) return [found];
       }
       // Check if selector matches a side scheme card code or id

@@ -238,8 +238,8 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res = executeEffect(state, strikeAbility as any, {
         playerId: 'p1',
-        targetInstanceId: 'm1',
-        targetType: 'minion',
+        chosenTargetInstanceId: 'm1',
+        chosenTargetType: 'minion',
       });
 
       expect(res.success).toBe(true);
@@ -277,8 +277,8 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res = executeEffect(state, strikeAbility as any, {
         playerId: 'p1',
-        targetInstanceId: 'm1',
-        targetType: 'minion',
+        chosenTargetInstanceId: 'm1',
+        chosenTargetType: 'minion',
       });
 
       expect(res.success).toBe(true);
@@ -324,8 +324,8 @@ describe('Explicit Condition Evaluation & IF_CONDITION_MET Sequential Gating (AD
 
       const res = executeEffect(state, ability as any, {
         playerId: 'p1',
-        targetInstanceId: 'm1',
-        targetType: 'minion',
+        chosenTargetInstanceId: 'm1',
+        chosenTargetType: 'minion',
       });
 
       expect(res.success).toBe(true);

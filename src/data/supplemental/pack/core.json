@@ -1032,7 +1032,7 @@
               "effect": "ADD_STATUS",
               "effectParams": {
                 "status": "STUNNED",
-                "target": "PREVIOUS_TARGET"
+                "target": "TRIGGERING_ENEMY"
               }
             }
           ]
@@ -1040,9 +1040,9 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
-        "reviewedAt": "2026-09-14T18:37:00Z",
-        "reviewedBy": "antigravity",
+        "updatedAt": "2026-10-05T14:30",
+        "reviewedAt": "2026-10-05T14:30",
+        "reviewedBy": "claude",
         "rulesVersion": "v1.8",
         "confidence": 80,
         "originalText": "She-Hulk gets +2 ATK.\n<b>Forced Response</b>: After She-Hulk attacks, discard Superhuman Strength → stun the attacked enemy."

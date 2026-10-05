@@ -133,6 +133,16 @@ describe('Wakanda Forever! Special Ability Sequential Chaining (Issue #18, ADR-0
 
     expect(result.success).toBe(true);
 
+    // Panther Claws deals its finisher to "an enemy": Rhino and Armored Guard are both valid,
+    // so the player chooses (#234). Choose Rhino.
+    const targetPrompt = peekDecisionPrompt(result.state)!;
+    expect(targetPrompt.options.map((o) => o.id)).toContain(result.state.villain.instanceId);
+    result.state = dispatchAction(result.state, {
+      type: 'RESOLVE_DECISION_PROMPT',
+      playerId: 'p1',
+      selectedOptionId: result.state.villain.instanceId!,
+    }).state;
+
     // 1. Threat: 4 - 1 = 3
     expect(result.state.mainScheme.threat).toBe(3);
 

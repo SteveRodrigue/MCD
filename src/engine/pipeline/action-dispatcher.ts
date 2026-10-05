@@ -1691,8 +1691,8 @@ function dispatchSingleAction(
         for (const ability of abilities) {
           executeEffect(nextState, ability, {
             playerId: action.playerId,
-            targetType,
-            targetInstanceId: eventTargetId,
+            chosenTargetType: targetType,
+            chosenTargetInstanceId: eventTargetId,
             sourceCardInstance: playedCardInstance,
             resourcesSpent,
           });
@@ -2013,7 +2013,7 @@ function dispatchSingleAction(
       const effectRes = executeEffect(nextState, effectiveAbility, {
         playerId: action.playerId,
         sourceCardInstance: targetCardInst,
-        targetInstanceId: abilityTargetId,
+        chosenTargetInstanceId: abilityTargetId,
       });
 
       if (effectRes.success) {
@@ -2877,8 +2877,8 @@ function dispatchSingleAction(
           for (const ability of abilities) {
             executeEffect(poppedState, ability, {
               playerId: ownerId,
-              targetType,
-              targetInstanceId: chosenTargetId,
+              chosenTargetType: targetType,
+              chosenTargetInstanceId: chosenTargetId,
               sourceCardInstance: playedCardInstance,
               resourcesSpent,
             });
@@ -2915,7 +2915,7 @@ function dispatchSingleAction(
           const effectRes = executeEffect(poppedState, effectiveAbility, {
             playerId: executingPlayerId,
             sourceCardInstance: sourceCardInst,
-            targetInstanceId: chosenTargetId,
+            chosenTargetInstanceId: chosenTargetId,
           });
 
           const actPlayer = getPlayer(poppedState, executingPlayerId);

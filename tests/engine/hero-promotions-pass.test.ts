@@ -121,8 +121,8 @@ describe('Sub-Milestone 2D-3: Core Set Hero Cards Promotion Pass (Part 1)', () =
       state.villain.statusCards = [];
       executeEffect(
         state,
-        { effect: 'ADD_STATUS', effectParams: { status: 'STUNNED', target: 'ATTACK_TARGET' } },
-        { playerId: 'p1', targetType: 'villain' },
+        { effect: 'ADD_STATUS', effectParams: { status: 'STUNNED', target: 'TRIGGERING_ENEMY' } },
+        { playerId: 'p1', eventTargetType: 'villain' },
       );
       expect(state.villain.statusCards).toContain(StatusCard.STUNNED);
     });

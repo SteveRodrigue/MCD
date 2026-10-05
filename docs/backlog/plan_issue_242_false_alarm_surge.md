@@ -1,6 +1,6 @@
 # Plan: #242, False Alarm `01112` surges when you are already confused
 
-> **Status:** implemented 2026-10-05 (approved; not committed yet). The two "already confused" tests failed before the data change; 1,838 tests green after it, and 15 repeated runs of the new file were all green. Tier 1 (data only, no engine or schema change). Queue item 2 of section 3.1 in [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md). Closes #242 (`Fixes #242`).
+> **Status:** implemented 2026-10-05 (approved; committed `7686171`). The two "already confused" tests failed before the data change; 1,838 tests green after it, and 15 repeated runs of the new file were all green. Tier 1 (data only, no engine or schema change). Queue item 2 of section 3.1 in [teamwork_status_and_next_target.md](teamwork_status_and_next_target.md). Closes #242 (`Fixes #242`).
 > **UI / Card Editor impact:** none (existing effect, gate and selector).
 
 ## 1. Printed card text

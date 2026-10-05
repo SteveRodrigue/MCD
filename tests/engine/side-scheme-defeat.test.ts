@@ -104,7 +104,7 @@ describe('Canonical Side Scheme Defeat & Zero-Threat Scheme Pipeline (Issue #149
 
       const result = executeEffect(state, removeThreatAbility as any, {
         playerId: player.id,
-        targetInstanceId: 'psyche_inst_1',
+        chosenTargetInstanceId: 'psyche_inst_1',
       });
 
       expect(result.success).toBe(true);

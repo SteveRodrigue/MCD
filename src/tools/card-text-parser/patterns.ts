@@ -275,8 +275,9 @@ export const EFFECT_PATTERNS: EffectPattern[] = [
     handler: (m) => {
       const targetStr = m[1].toLowerCase();
       let target = 'CHOSEN_ENEMY';
-      if (targetStr.includes('attacked')) target = 'ATTACK_TARGET';
-      else if (targetStr.includes('villain')) target = 'VILLAIN';
+      if (targetStr.includes('attacked') || targetStr.includes('that enemy')) {
+        target = 'TRIGGERING_ENEMY';
+      } else if (targetStr.includes('villain')) target = 'VILLAIN';
       return [
         {
           effect: 'ADD_STATUS',

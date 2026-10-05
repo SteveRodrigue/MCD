@@ -42,7 +42,7 @@ export function resolveSingleWakandaUpgrade(
     executeSequence(state, specialAbility.steps, {
       playerId: player.id,
       sourceCardInstance: upgrade,
-      targetInstanceId: targetEnemyId || targetSchemeId,
+      chosenTargetInstanceId: targetEnemyId || targetSchemeId,
       isFinalStep,
     });
     return;

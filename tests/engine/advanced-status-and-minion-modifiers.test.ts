@@ -67,7 +67,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
             },
           ],
         },
-        { playerId: 'p1', targetInstanceId: minionInst.instanceId },
+        { playerId: 'p1', chosenTargetInstanceId: minionInst.instanceId },
       );
 
       expect(stunRes.success).toBe(true);
@@ -89,7 +89,7 @@ describe('Advanced Status Dynamics & Minion Modifiers (ADR-0036, RR v1.8 p. 14, 
             },
           ],
         },
-        { playerId: 'p1', targetInstanceId: minionInst.instanceId },
+        { playerId: 'p1', chosenTargetInstanceId: minionInst.instanceId },
       );
 
       expect(confuseRes.success).toBe(true);

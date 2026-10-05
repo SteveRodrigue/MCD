@@ -112,7 +112,7 @@ describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
     const result = executeEffect(state, ability, {
       playerId: 'p1',
       sourceCardInstance: explosionInst,
-      targetInstanceId: allyInst.instanceId,
+      chosenTargetInstanceId: allyInst.instanceId,
     });
 
     expect(result.success).toBe(true);
@@ -356,7 +356,7 @@ describe('Explosion (01111) Contract Tests — RR v1.8 & Issue #114', () => {
       const result = executeEffect(state2, ability, {
         playerId: 'p1',
         sourceCardInstance: explosionInst,
-        targetInstanceId: mariaHillInst.instanceId,
+        chosenTargetInstanceId: mariaHillInst.instanceId,
       });
 
       expect(result.success).toBe(true);

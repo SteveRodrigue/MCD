@@ -186,6 +186,8 @@ export interface CardAbility {
   labels?: ('ATTACK' | 'THWART' | 'DEFENSE')[];
   tags?: string[];
   cost?: AbilityCost;
+  /** The whole step list resolves once per player in player order ("each player ... that player"). */
+  forEachPlayer?: boolean;
   steps: AbilityStep[];
 }
 

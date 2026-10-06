@@ -576,6 +576,37 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     expect((screen.getByTestId('ability-label-THWART-0') as HTMLInputElement).checked).toBe(false);
   });
 
+  it('toggles forEachPlayer on an ability (#220)', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+    render(
+      <StatefulAbilityFormBuilder
+        initial={{
+          audit: { comment: 'Test' },
+          abilities: [
+            {
+              id: 'test_each_player_ab',
+              timing: 'WHEN_REVEALED',
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
+            },
+          ],
+        }}
+        onChange={handleChange}
+      />,
+    );
+    const box = screen.getByTestId('ability-for-each-player-0') as HTMLInputElement;
+    expect(box.checked).toBe(false);
+    await user.click(box);
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        abilities: [expect.objectContaining({ forEachPlayer: true })],
+      }),
+    );
+    await user.click(box);
+    const last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(last.abilities[0].forEachPlayer).toBeUndefined();
+  });
+
   describe('Real-Time Live Zod Validation', () => {
     it('displays compliant status badge when card passes schema', () => {
       render(

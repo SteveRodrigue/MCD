@@ -39,6 +39,7 @@ import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/
 import {
   discardFromEncounterDeckUntil,
   drawEncounterCard,
+  exhaustPlayerDeck,
   drawPlayerCard,
 } from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
@@ -955,6 +956,16 @@ export function resumePendingSequence(state: GameState): GameState {
       Object.entries(pending.stepResultsMap || {}),
     );
     const pendingBefore = currentState.pendingSequences?.length ?? 0;
+    const forEachPlayerIds = pending.context.forEachPlayerIds as string[] | undefined;
+    if (forEachPlayerIds) {
+      currentState = executeForEachPlayer(
+        currentState,
+        pending.remainingSteps,
+        pending.context as EffectExecutionContext,
+        forEachPlayerIds,
+      ).state;
+      continue;
+    }
     const res = executeSequence(
       currentState,
       pending.remainingSteps,
@@ -972,6 +983,60 @@ export function resumePendingSequence(state: GameState): GameState {
     }
   }
   return currentState;
+}
+
+/** Player ids in player order: the first player, then clockwise (RR v1.8 "Player Order"). */
+function playerIdsInOrder(state: GameState): string[] {
+  const count = state.players.length;
+  const first = state.firstPlayerIndex ?? 0;
+  return state.players.map((_, i) => state.players[(first + i) % count].id);
+}
+
+/**
+ * Resolves a step list once per player, in the given order ("each player ... that player",
+ * ability `forEachPlayer`, #220). Each pass starts without the results of the previous one, so
+ * `previousResult` and `discardedCards` belong to one player. When a pass opens a prompt, the
+ * players not yet resolved wait in a pending entry placed beneath the rest of that pass.
+ */
+function executeForEachPlayer(
+  state: GameState,
+  steps: AbilityStep[],
+  context: EffectExecutionContext,
+  playerIds: string[],
+): EffectResult {
+  let currentState = state;
+  let anyStepMutated = false;
+  for (let i = 0; i < playerIds.length; i++) {
+    const pendingBefore = currentState.pendingSequences?.length ?? 0;
+    const promptsBefore = currentState.pendingDecisionQueue?.length ?? 0;
+    const res = executeSequence(currentState, steps, {
+      ...context,
+      playerId: playerIds[i],
+      targetPlayerId: undefined,
+      chosenTargetInstanceId: undefined,
+      previousResult: undefined,
+      discardedCards: undefined,
+    });
+    currentState = res.state;
+    anyStepMutated = anyStepMutated || Boolean(res.mutatedState);
+
+    const remaining = playerIds.slice(i + 1);
+    const paused = (currentState.pendingDecisionQueue?.length ?? 0) > promptsBefore;
+    if (paused && remaining.length > 0) {
+      currentState.pendingSequences ??= [];
+      currentState.pendingSequences.splice(pendingBefore, 0, {
+        remainingSteps: steps,
+        context: { ...context, forEachPlayerIds: remaining },
+      });
+      break;
+    }
+  }
+  return {
+    state: currentState,
+    success: true,
+    mutatedState: anyStepMutated,
+    onomatopoeia: 'EACH PLAYER RESOLVED!',
+  };
 }
 
 /**
@@ -1193,6 +1258,9 @@ export function executeEffect(
     if ((abilityOrStep as CardAbility).timing) {
       context.ability = abilityOrStep as CardAbility;
     }
+    if ((abilityOrStep as CardAbility).forEachPlayer) {
+      return executeForEachPlayer(state, abilityOrStep.steps, context, playerIdsInOrder(state));
+    }
     if ((abilityOrStep as CardAbility).labels?.includes('ATTACK')) {
       // An "(attack)" ability is one attack by the player's identity (RR v1.8 glossary L)
       const attackContext: EffectExecutionContext = {
@@ -1317,6 +1385,12 @@ export function executeDiscard(
     const addedToHandCards: CardInstance[] = [];
     const matchingDestination = params.matchingDestination as string | undefined;
     for (let i = 0; i < count; i++) {
+      // RR v1.8 "Player Deck": a deck that empties while discarding is reset, but no further card
+      // is discarded from the new deck.
+      if (i > 0 && player.deck.length === 0) {
+        exhaustPlayerDeck(state, player.id);
+        break;
+      }
       const card = drawPlayerCard(state, player.id);
       if (card) {
         if (matchingDestination && filter && matchCardFilter(card.card, filter, player)) {

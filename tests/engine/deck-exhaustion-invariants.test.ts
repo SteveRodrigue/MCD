@@ -237,7 +237,7 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(player.deck.length + player.discard.length).toBe(3);
     });
 
-    it('mid-action Black Cat DISCARD reshuffles and deals penalty when deck runs dry', () => {
+    it('mid-action Black Cat DISCARD reshuffles and deals penalty when deck runs dry, without discarding from the new deck', () => {
       const player = state.players[0];
       const mentalCard1 = createCardInstance(cardCatalog.getCard('01089')!); // Genius (Mental)
       const mentalCard2 = createCardInstance(cardCatalog.getCard('01089')!);
@@ -262,8 +262,10 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       );
 
       expect(res.success).toBe(true);
-      // Hand received 2 mental cards (1 from deck, 1 from reshuffled discard)
-      expect(player.hand.length).toBe(2);
+      // RR v1.8 "Player Deck": no further card is discarded from the newly shuffled deck, so only
+      // the card that was left in the deck reaches the hand; the old discard pile is the new deck.
+      expect(player.hand.length).toBe(1);
+      expect(player.deck.map((c) => c.instanceId)).toEqual([mentalCard2.instanceId]);
       expect(player.dealtEncounterCards.length).toBe(1);
     });
 

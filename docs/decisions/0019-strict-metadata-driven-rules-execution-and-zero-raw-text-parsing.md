@@ -76,3 +76,6 @@ Gate evaluation (`gate`, `gateParams`, `condition`) lives in one module, `src/en
 
 Trait computation (`getEffectivePlayerTraits*`, `hasPlayerTrait`, `getEffectiveCardTraits*`) honors `gate`/`gateParams` on `CONSTANT` `ADD_TRAIT` steps. `IF_FORM` needs only the player (`evaluateFormGate`), so UI callers without a `GameState` get correct results; other state gates are evaluated when an optional `state` argument is supplied and skipped otherwise. *Cosmic Flight* (`01017`) now declares `IF_FORM: hero`, so Aerial is not granted in Alter-Ego form.
 
+### Addendum (2026-10-06): Per-player resolution is an ability header flag (Issue #220)
+
+"Each player ... that player" resolves a step list once per player. The loop is a declarative boolean on the ability header, `forEachPlayer` (default `false`, next to `timing` and `trigger`), not a nested `steps` list or a new effect: ability -> steps -> effect stays the only shape. `executeEffect` runs the whole step list once per player in player order with a clean `previousResult` / `discardedCards` per pass; a prompt in one pass leaves the remaining players in a pending entry beneath the rest of that pass (same `pendingSequences` stack as #248). Abilities that mix per-player and run-once steps are #272. Specification: `10_sequences_and_prompts.md`.

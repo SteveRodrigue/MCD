@@ -832,6 +832,8 @@ export interface CardAbility {
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   cost?: AbilityCost;
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
+  /** The whole step list resolves once per player in player order ("each player ... that player"). */
+  forEachPlayer?: boolean;
   errata?: string | null;
   steps: AbilityStep[];
 }
@@ -856,6 +858,7 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
     labels: z.array(AbilityLabelSchema).min(1).optional(),
+    forEachPlayer: z.boolean().optional(),
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
   })

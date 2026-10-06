@@ -15,6 +15,7 @@ import {
 
 const TITANIAS_FURY = '01164';
 const TITANIA = '01162';
+const INERT_SIDE_SCHEME = '01107'; // Breakin' & Takin'
 
 describe("ENEMY_ATTACKS: Titania's Fury (01164) and Titania's attack X (01162), #223", () => {
   let state: GameState;
@@ -37,7 +38,10 @@ describe("ENEMY_ATTACKS: Titania's Fury (01164) and Titania's attack X (01162), 
       mainScheme: cardCatalog.getCard('01097b') as any,
       encounterCards: cardCatalog.getCardsBySet('rhino'),
       skipMulligan: true,
+      shuffleFn: (cards) => cards,
     });
+    // A surge reveals the top encounter card; keep it one that cannot start an attack.
+    state.encounterDeck.unshift(createCardInstance(cardCatalog.getCard(INERT_SIDE_SCHEME)!));
     state.players[0].currentForm = 'hero';
     state.players[0].activeFormCard = state.players[0].hero;
     titania = createCardInstance(cardCatalog.getCard(TITANIA) as MinionCard);

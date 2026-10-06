@@ -71,7 +71,7 @@ export interface EffectiveHeroStats {
  * constant abilities, and in-play attachments (e.g. Enhanced Ivory Horn, Charge, Webbed Up).
  */
 export function getEffectiveVillainStats(
-  _state: GameState,
+  state: GameState,
   villain: VillainState,
 ): EffectiveVillainStats {
   let attack = villain.card?.attack ?? (villain.card as any)?.atk ?? 0;
@@ -85,8 +85,13 @@ export function getEffectiveVillainStats(
         for (const step of ab.steps || []) {
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            if (stepParams.stat === 'ATTACK') attack += (stepParams.amount as number) || 0;
-            if (stepParams.stat === 'SCHEME') scheme += (stepParams.amount as number) || 0;
+            const amount = evaluateDynamicAmount(
+              stepParams.amount as number | DynamicValueSource | undefined,
+              {},
+              { state, sourceCardInstance: attachment },
+            );
+            if (stepParams.stat === 'ATTACK') attack += amount;
+            if (stepParams.stat === 'SCHEME') scheme += amount;
           }
           if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
             keywords.push(stepParams.keyword as string);
@@ -120,17 +125,13 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
       for (const step of ab.steps || []) {
         const stepParams = getStepEffectParams(step);
         if (step.effect === 'MODIFY_STAT') {
-          if (stepParams.stat === 'THWART') {
-            if (stepParams.scaling === 'PER_SIDE_SCHEME') {
-              const sideSchemeCount = (state.sideSchemes || []).length;
-              thwart += sideSchemeCount * ((stepParams.multiplier as number) || 1);
-            } else if (stepParams.amount) {
-              thwart += (stepParams.amount as number) || 0;
-            }
-          }
-          if (stepParams.stat === 'ATTACK') {
-            attack += (stepParams.amount as number) || 0;
-          }
+          const amount = evaluateDynamicAmount(
+            stepParams.amount as number | DynamicValueSource | undefined,
+            {},
+            { state, sourceCardInstance: ally, targetCardInstance: ally },
+          );
+          if (stepParams.stat === 'THWART') thwart += amount;
+          if (stepParams.stat === 'ATTACK') attack += amount;
         }
       }
     }
@@ -144,8 +145,13 @@ export function getEffectiveAllyStats(state: GameState, ally: CardInstance): Eff
         for (const step of ab.steps || []) {
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            if (stepParams.stat === 'THWART') thwart += (stepParams.amount as number) || 0;
-            if (stepParams.stat === 'ATTACK') attack += (stepParams.amount as number) || 0;
+            const amount = evaluateDynamicAmount(
+              stepParams.amount as number | DynamicValueSource | undefined,
+              {},
+              { state, sourceCardInstance: attachment, targetCardInstance: ally },
+            );
+            if (stepParams.stat === 'THWART') thwart += amount;
+            if (stepParams.stat === 'ATTACK') attack += amount;
           }
           if (step.effect === 'GRANT_KEYWORD' && stepParams.keyword) {
             keywords.push(stepParams.keyword as string);
@@ -415,7 +421,11 @@ export function getEffectiveHeroStats(state: GameState, player: PlayerState): Ef
 
           const stepParams = getStepEffectParams(step);
           if (step.effect === 'MODIFY_STAT') {
-            const amount = (stepParams.amount as number) || 0;
+            const amount = evaluateDynamicAmount(
+              stepParams.amount as number | DynamicValueSource | undefined,
+              {},
+              { state, player, sourceCardInstance: item },
+            );
             if (stepParams.stat === 'THWART') thwart += amount;
             if (stepParams.stat === 'ATTACK') attack += amount;
             if (stepParams.stat === 'DEFENSE') defense += amount;

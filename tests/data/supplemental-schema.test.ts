@@ -533,6 +533,11 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
       expect(res.success).toBe(false);
     });
 
+    it('Rejects uses.max: the engine never read it and counters have no ceiling (Energy Channel goes beyond 5)', () => {
+      const res = CardUsesSchema.safeParse({ count: 0, counterType: 'energy', max: 5 });
+      expect(res.success).toBe(false);
+    });
+
     it('Rejects unknown/undeclared properties in CardEnrichmentSchema (.strict() enforcement)', () => {
       const cardWithUnknownKey = {
         audit: { comment: 'Invalid key card' },

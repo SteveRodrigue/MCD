@@ -373,6 +373,12 @@ export function canPayAbilityCost(
             };
           }
         }
+        if (maxCount && options.discardCardInstanceIds.length > maxCount) {
+          return {
+            allowed: false,
+            reason: `Too many cards selected to discard as cost (up to ${maxCount}, selected ${options.discardCardInstanceIds.length}).`,
+          };
+        }
         if (!maxCount && options.discardCardInstanceIds.length < requiredCount) {
           return {
             allowed: false,
@@ -550,6 +556,16 @@ export function canPayAbilityCost(
   return { allowed: true };
 }
 
+export interface AbilityCostResult {
+  state: GameState;
+  discardedCount: number;
+  /** Cards discarded as part of the cost, read by `DISCARDED_CARDS` amounts of the ability's steps. */
+  discardedCards: CardInstance[];
+  resourcesPaid: number;
+  /** Resource types spent, read by `RESOURCES_SPENT` amounts of the ability's steps. */
+  resourcesSpent: string[];
+}
+
 /**
  * Deducts and executes all prerequisites and costs for an ability.
  */
@@ -559,7 +575,7 @@ export function executeAbilityCost(
   ability: CardAbility,
   sourceCardInst?: CardInstance,
   options?: AbilityPaymentOptions,
-): { state: GameState; discardedCount: number; resourcesPaid: number } {
+): AbilityCostResult {
   const hasInHandEventCost =
     ability.zone === 'HAND' &&
     sourceCardInst?.card &&
@@ -570,8 +586,9 @@ export function executeAbilityCost(
   const cost =
     ability.cost ?? (hasInHandEventCost ? ({} as NonNullable<CardAbility['cost']>) : undefined);
   let discardedCount = 0;
+  const discardedCards: CardInstance[] = [];
   if (!cost) {
-    return { state, discardedCount: 0, resourcesPaid: 0 };
+    return { state, discardedCount: 0, discardedCards, resourcesPaid: 0, resourcesSpent: [] };
   }
 
   // 1. Exhaustion
@@ -654,6 +671,7 @@ export function executeAbilityCost(
   if (cost.discardSelf && sourceCardInst) {
     removeCardFromAllZones(state, sourceCardInst.instanceId);
     player.discard.push(sourceCardInst);
+    discardedCards.push(sourceCardInst);
     discardedCount += 1;
   }
 
@@ -692,6 +710,7 @@ export function executeAbilityCost(
           if (idx !== -1) {
             const [discarded] = player.hand.splice(idx, 1);
             player.discard.push(discarded);
+            discardedCards.push(discarded);
             discardedCount++;
           }
         }
@@ -702,6 +721,7 @@ export function executeAbilityCost(
           const randIdx = Math.floor(Math.random() * player.hand.length);
           const [discarded] = player.hand.splice(randIdx, 1);
           player.discard.push(discarded);
+          discardedCards.push(discarded);
           discardedCount++;
         }
       } else if (maxCount) {
@@ -709,18 +729,21 @@ export function executeAbilityCost(
         const countToDiscard = Math.min(player.hand.length, maxCount);
         const discarded = player.hand.splice(0, countToDiscard);
         player.discard.push(...discarded);
-        discardedCount = countToDiscard;
+        discardedCards.push(...discarded);
+        discardedCount += countToDiscard;
       } else {
         const countToDiscard = Math.min(player.hand.length, cost.discardCard.count || 1);
         const discarded = player.hand.splice(0, countToDiscard);
         player.discard.push(...discarded);
-        discardedCount = countToDiscard;
+        discardedCards.push(...discarded);
+        discardedCount += countToDiscard;
       }
     }
   }
 
   // 5. Resource Cost Payment (cost.resourceCost / cost.resources)
   let resourcesPaid = 0;
+  let resourcesSpent: string[] = [];
   let resCost = extractResourceCost(cost);
   if (
     !resCost.hasCost &&
@@ -752,9 +775,10 @@ export function executeAbilityCost(
     );
     resourcesPaid += paymentRes.resourcesPaid;
     discardedCount += paymentRes.discardedCount;
+    resourcesSpent = paymentRes.resourcesSpent;
   }
 
-  return { state, discardedCount, resourcesPaid };
+  return { state, discardedCount, discardedCards, resourcesPaid, resourcesSpent };
 }
 
 export interface ResourceCostPaymentResult {

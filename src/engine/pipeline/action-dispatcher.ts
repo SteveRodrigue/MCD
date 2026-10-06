@@ -1857,7 +1857,7 @@ function dispatchSingleAction(
       }
 
       // Execute cost payment
-      const { discardedCount, resourcesPaid } = executeAbilityCost(
+      const { discardedCards, resourcesSpent } = executeAbilityCost(
         nextState,
         player,
         ability,
@@ -1875,53 +1875,13 @@ function dispatchSingleAction(
         checkAndDiscardZeroCounterCard(nextState, player, targetCardInst);
       }
 
-      // Dynamic parameter scaling (e.g. Legal Practice 01023: Remove 1 threat per discarded card)
-      let effectiveAbility = ability;
-      const scalingStep = ability.steps?.find(
-        (s) => s.effectParams?.scaling === 'PER_DISCARDED_CARD',
-      );
-      if (scalingStep) {
-        effectiveAbility = {
-          ...ability,
-          steps: ability.steps.map((s) =>
-            s === scalingStep
-              ? {
-                  ...s,
-                  effectParams: {
-                    ...s.effectParams,
-                    amount: discardedCount * ((s.effectParams?.multiplier as number) || 1),
-                  },
-                }
-              : s,
-          ),
-        };
-      }
-
-      // Dynamic parameter scaling per resource spent (e.g. Energy Channel 01018: Add 1 counter per energy spent)
-      const resourceScalingStep = ability.steps?.find(
-        (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
-      );
-      if (resourceScalingStep) {
-        effectiveAbility = {
-          ...effectiveAbility,
-          steps: effectiveAbility.steps.map((s) =>
-            s === resourceScalingStep
-              ? {
-                  ...s,
-                  effectParams: {
-                    ...s.effectParams,
-                    amount: resourcesPaid * ((s.effectParams?.multiplier as number) || 1),
-                  },
-                }
-              : s,
-          ),
-        };
-      }
+      // The cost results feed the steps' dynamic amounts (`DISCARDED_CARDS`, `RESOURCES_SPENT`).
+      const costContext = { discardedCards, resourcesSpent };
 
       let abilityTargetId = action.targetInstanceId;
       let requiredAbilityScope: string | undefined;
       let abilityFilterOpts: TargetFilterOptions | undefined;
-      for (const step of effectiveAbility.steps || []) {
+      for (const step of ability.steps || []) {
         if (isStepGateClosedByState(step, nextState, { playerId: action.playerId })) continue;
         const stepParams = getStepEffectParams(step);
         const tgt = stepParams.target as string | undefined;
@@ -1982,10 +1942,11 @@ function dispatchSingleAction(
               effect: 'ABILITY_CHOSEN_TARGET',
               params: {
                 isAbilityTargetChoice: true,
-                effectiveAbility,
+                ability,
                 sourceCardInst: targetCardInst,
                 abilityKey,
                 playerId: action.playerId,
+                ...costContext,
               },
             };
           });
@@ -2009,10 +1970,11 @@ function dispatchSingleAction(
       }
 
       // Execute effect primitive
-      const effectRes = executeEffect(nextState, effectiveAbility, {
+      const effectRes = executeEffect(nextState, ability, {
         playerId: action.playerId,
         sourceCardInstance: targetCardInst,
         chosenTargetInstanceId: abilityTargetId,
+        ...costContext,
       });
 
       if (effectRes.success) {
@@ -2892,8 +2854,8 @@ function dispatchSingleAction(
         const { state: poppedState } = popDecisionPrompt(nextState);
         const selectedOption = activePrompt.options.find((o) => o.id === action.selectedOptionId);
         const chosenTargetId = selectedOption ? selectedOption.id : activePrompt.options[0].id;
-        const effectiveAbility = (selectedOption?.params?.effectiveAbility ||
-          activePrompt.options[0]?.params?.effectiveAbility) as CardAbility | undefined;
+        const promptAbility = (selectedOption?.params?.ability ||
+          activePrompt.options[0]?.params?.ability) as CardAbility | undefined;
         const sourceCardInst = (selectedOption?.params?.sourceCardInst ||
           activePrompt.options[0]?.params?.sourceCardInst) as CardInstance | undefined;
         const abilityKey = (selectedOption?.params?.abilityKey ||
@@ -2902,11 +2864,15 @@ function dispatchSingleAction(
           activePrompt.options[0]?.params?.playerId ||
           action.playerId) as string;
 
-        if (effectiveAbility) {
-          const effectRes = executeEffect(poppedState, effectiveAbility, {
+        if (promptAbility) {
+          const effectRes = executeEffect(poppedState, promptAbility, {
             playerId: executingPlayerId,
             sourceCardInstance: sourceCardInst,
             chosenTargetInstanceId: chosenTargetId,
+            discardedCards: (selectedOption?.params?.discardedCards ||
+              activePrompt.options[0]?.params?.discardedCards) as CardInstance[] | undefined,
+            resourcesSpent: (selectedOption?.params?.resourcesSpent ||
+              activePrompt.options[0]?.params?.resourcesSpent) as string[] | undefined,
           });
 
           const actPlayer = getPlayer(poppedState, executingPlayerId);

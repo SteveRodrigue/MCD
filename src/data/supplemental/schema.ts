@@ -875,7 +875,6 @@ export const CardUsesSchema = z
   .object({
     count: z.number().int().nonnegative(),
     counterType: z.string().optional(),
-    max: z.number().int().positive().optional(),
     discardOnEmpty: z.boolean().optional(),
   })
   .strict();

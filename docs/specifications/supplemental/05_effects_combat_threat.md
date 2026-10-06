@@ -206,7 +206,7 @@
  
  ## 3. Dynamic Value Sources & Numeric Amount Resolution
  
- The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, and `PREVENT_DAMAGE`:
+ The engine supports dynamic numeric resolution via `resolveNumericAmount` for parameters such as `amount` in `DEAL_DAMAGE`, `REMOVE_THREAT`, `HEAL_DAMAGE`, `PREVENT_DAMAGE`, `ADD_COUNTERS` and `MODIFY_STAT`. For an activated ability, the results of its cost are part of the formula context: `DISCARDED_CARDS` reads the cards discarded as the cost (_Legal Practice_ `01023`: one threat removed per card discarded) and `RESOURCES_SPENT` the resources paid (_Energy Channel_ `01018`: one counter per energy spent):
 
 ```json
 {
@@ -247,7 +247,7 @@
 | Parameter    | Type                                   | Required | Default   | Description                                              |
 | :----------- | :------------------------------------- | :------- | :-------- | :------------------------------------------------------- |
 | `stat`       | `"ATK" \| "THW" \| "DEF" \| "REC"`    | Yes      | `"ATK"`   | The stat to modify.                                       |
-| `amount`     | `number`                               | Yes      | `1`       | The additive bonus amount.                               |
+| `amount`     | `number \| DynamicValueSource`         | Yes      | `1`       | The additive bonus amount, flat or a formula (`CONSTANT` abilities re-evaluate it on every stat read, e.g. _Jessica Jones_ `01059`: `ENTITY_COUNT` of side schemes). |
 | `duration`   | `"PHASE" \| "ROUND"`                   | Yes      | `"PHASE"` | Expiry window per RR v1.8 timing boundaries.             |
 | `target`     | `TargetSelector`                       | Yes      | `"SELF"`  | Who receives the modifier.                               |
 | `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATK"` when used with `ALL_CONTROLLED_CHARACTERS`. |

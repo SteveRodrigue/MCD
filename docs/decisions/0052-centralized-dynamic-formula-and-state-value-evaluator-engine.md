@@ -89,3 +89,11 @@ We need a centralized, card-agnostic dynamic evaluation engine adhering to RR v1
 ### Negative Consequences / Risks & Mitigations
 - **Risk:** Existing unit tests referencing `amountFormula` will fail if not updated.
 - **Mitigation:** Update test assertions in `suffered-damage-formula.test.ts`, `universal-counter-engine.test.ts`, and `effect-parameter-registry.test.ts` to expect `DynamicValueSource`.
+
+---
+
+## Addendum (2026-10-06, Issue #231): cost results are formula context; pseudo-primitives retired
+
+- `executeAbilityCost` returns `discardedCards` and `resourcesSpent` next to the counts. `USE_CARD_ABILITY` passes them in the `executeEffect` context (and in the target-choice prompt params, so a chosen target does not lose them), so `DISCARDED_CARDS` and `RESOURCES_SPENT` amounts work for activated abilities.
+- The `scaling` (`PER_SIDE_SCHEME`, `PER_DISCARDED_CARD`, `PER_RESOURCE_SPENT`), `multiplier` and `maxBonus` effect parameters and their pre-processing in `action-dispatcher.ts` and `stat-calculator.ts` are removed. Jessica Jones `01059`, Legal Practice `01023` and Energy Channel `01018` use `ENTITY_COUNT`, `DISCARDED_CARDS` and `RESOURCES_SPENT`.
+- `MODIFY_STAT` (CONSTANT stat loops and the effect itself) and `ADD_COUNTERS` / `REMOVE_COUNTERS` evaluate dynamic amounts through `evaluateDynamicAmount` instead of reading `amount` as a bare number.

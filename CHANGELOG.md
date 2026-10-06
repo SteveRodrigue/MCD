@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Engine + Data + Card Editor): retire `scaling` / `multiplier` / `maxBonus` ([Issue #231](https://github.com/SteveRodrigue/MCD/issues/231), WP6)**
+  - Jessica Jones `01059` (`ENTITY_COUNT` of side schemes), Legal Practice `01023` (`DISCARDED_CARDS`) and Energy Channel `01018` (`RESOURCES_SPENT`, energy) now use generic dynamic amounts. The three pre-processing blocks in `action-dispatcher.ts` and `stat-calculator.ts` are deleted, as is the `effectiveAbility` copy.
+  - `executeAbilityCost` returns `discardedCards` and `resourcesSpent`; `USE_CARD_ABILITY` passes them into the effect context and the target-choice prompt (Legal Practice with a scheme choice keeps its count). CONSTANT `MODIFY_STAT` (ally, ally attachments, hero upgrades, villain attachments), the effect-time `MODIFY_STAT` and `ADD_COUNTERS` / `REMOVE_COUNTERS` evaluate dynamic amounts.
+  - "Up to N" discard costs now reject more than N selected cards (`canPayAbilityCost`; Legal Practice "up to 5"). Legal Practice played from hand via `PLAY_CARD` pays no discard cost: filed as [#277](https://github.com/SteveRodrigue/MCD/issues/277), `audit.confidence` unchanged.
+  - Payment modal: `scalesWithResources` replaces the `scaling` string. Card Editor registry, `EFFECT_PARAM_KEYS` and specs lose the three keys; the guard test rejects them. ADR-0052 addendum.
+
+- **Fix (Data + Card Editor): `uses.max` removed**
+  - Nothing in the engine read `uses.max`; Energy Channel `01018` was the only card that set it (`5`), while the card has no counter ceiling (only its damage is capped at 10). Removed from the card, `CardUsesSchema` (now rejects it), the Card Editor "Max Limit" input and the spec. Test: `tests/data/supplemental-schema.test.ts`.
+
 - **Test (Data + Card Editor): guard for unknown `effectParams` keys ([Issue #230](https://github.com/SteveRodrigue/MCD/issues/230), WP5)**
   - `src/data/supplemental/effect-params.ts`: per-effect allowed-key table typed over `EffectType`. `tests/data/effect-params-keys.test.ts` fails on any key outside the table in all three packs (nested `PLAYER_CHOICE` option steps included), naming card, effect and key. `AbilityStepSchema` is unchanged.
   - Card Editor registry keys now equal the table keys per effect (test); the registry gained the missing parameters. Pseudo-primitive keys stay allowed for now, marked for removal in #231 / #232.

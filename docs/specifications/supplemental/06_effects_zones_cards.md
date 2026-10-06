@@ -69,6 +69,8 @@
 
 > **Retired parameters:** `scaling: "PER_MATCHING_CARD"`, `filter`, `multiplier`, `maxHandSize`, `minHandSize` and `applicableForm` were removed. The first three are replaced by the dynamic `amount` above. `maxHandSize` was never read by the engine and `minHandSize` never existed in it. `applicableForm` is redundant: identity abilities are read from the active form card only, so the hero card's ability is inert in alter-ego form.
 >
+> **Retired in #231:** the `scaling` values `PER_SIDE_SCHEME`, `PER_DISCARDED_CARD` and `PER_RESOURCE_SPENT`, with `multiplier` and `maxBonus`, on `MODIFY_STAT`, `REMOVE_THREAT` and `ADD_COUNTERS`. Use `ENTITY_COUNT`, `DISCARDED_CARDS` and `RESOURCES_SPENT` amounts (see `09_dynamic_formulas.md`).
+>
 > **Errata:** the official errata for Iron Man (`references/rules/appendices/05_card_errata.md`) caps the *bonus* at +6 rather than the total at 7 (same result for his printed hand size of 1). Data follows the errata; the ability records the errata text in its `errata` field.
 
 ---

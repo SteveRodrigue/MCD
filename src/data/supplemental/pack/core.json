@@ -658,8 +658,7 @@
       "maxPerPlayer": 1,
       "uses": {
         "counterType": "energy",
-        "count": 0,
-        "max": 5
+        "count": 0
       },
       "abilities": [
         {
@@ -676,9 +675,10 @@
               "effectParams": {
                 "target": "SELF",
                 "counterType": "energy",
-                "amount": 1,
-                "scaling": "PER_RESOURCE_SPENT",
-                "multiplier": 1
+                "amount": {
+                  "from": "RESOURCES_SPENT",
+                  "resource": "energy"
+                }
               }
             }
           ]
@@ -877,8 +877,10 @@
               "effect": "REMOVE_THREAT",
               "effectParams": {
                 "target": "CHOSEN_SCHEME",
-                "scaling": "PER_DISCARDED_CARD",
-                "multiplier": 1
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "COUNT"
+                }
               }
             }
           ]
@@ -2249,8 +2251,14 @@
               "effect": "MODIFY_STAT",
               "effectParams": {
                 "stat": "THWART",
-                "scaling": "PER_SIDE_SCHEME",
-                "multiplier": 1
+                "amount": {
+                  "from": "ENTITY_COUNT",
+                  "filter": {
+                    "types": [
+                      "side_scheme"
+                    ]
+                  }
+                }
               }
             }
           ]

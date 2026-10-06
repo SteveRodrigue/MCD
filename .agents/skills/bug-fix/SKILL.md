@@ -1,11 +1,19 @@
 ---
 name: bug-fix
 description: 'Deterministic 8-step TDD and GitHub issue lifecycle for triaging, reproducing, fixing, and verifying bugs across engine, UI, and data layers. Trigger whenever a bug is reported or prefixed with "bug-fix:".'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/plan-gate.mjs"'
 ---
 
 # 🛠️ Bug-Fix Protocol (Standard TDD & GitHub Issue Lifecycle Workflow)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies. Classify fixes by the canonical 3-tier blast radius before modifying code.
+
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
 ---
 
@@ -76,27 +84,9 @@ Apply these rules:
 
 ### Step 2: Open Tracked GitHub Issue (`gh issue create`)
 
-Create a standardized, well-structured GitHub issue using the GitHub CLI:
+Create a standardized GitHub issue using the GitHub CLI (strict template: keep these headings):
 
-```bash
-gh issue create \
-  --title "fix(<subsystem>): <concise bug title>" \
-  --label "bug,<subsystem>" \
-  --body "### 🐛 Bug Description
-<Detailed description of what is happening vs what should happen>
-
-### 📜 Rules Reference / Spec
-- Marvel Champions Rules Reference v1.8: <citation or N/A>
-
-### 🔍 Reproduction Context
-- Subsystem: <engine | ui | data | assets>
-- GameState Snapshot: <logs/gamestates/... if applicable>
-
-### 🛠️ Planned Remediation
-1. Add automated failing regression test in \`tests/<subsystem>/...\`
-2. Apply surgical fix
-3. Full verification suite passing"
-```
+Use the command and body in [`issue-template.md`](issue-template.md) (strict: keep every heading).
 
 - **Extract Issue Number:** Capture the created issue number `#<NUM>` for subsequent commit and log cross-references.
 - **Graceful Fallback:** If `gh` CLI is unauthenticated or offline, note the issue details in the implementation plan and proceed without blocking execution.
@@ -110,7 +100,7 @@ gh issue create \
 - For Engine / Rules / Data bugs:
   - Create a new test case in `tests/engine/` or `tests/data/` recreating the exact game state sequence where the bug occurs.
   - Assert the expected behavior according to official RR v1.8 rules.
-  - Run the single test file (`npx vitest run tests/<file>.test.ts`) to confirm it **fails** for the exact bug reported (**Red**).
+  - Run the single test file (`npx vitest run tests/<file>.test.ts`) to confirm it **fails** for the exact bug reported (**Red**). If it passes or fails for a different reason, go back and rewrite the test.
 - For UI / Visual bugs:
   - Inspect the component props, state transitions, or CSS utility classes. If visual/unit testable (e.g. formatters, hooks, layouts), write a unit test in `tests/ui/`.
 
@@ -124,7 +114,7 @@ gh issue create \
   2. **Blast-Radius Classification:** Tier 1, 2, or 3.
   3. **Proposed Code Fix:** Exact lines and files to modify.
   4. **Regression Verification Strategy:** Specific test files to run.
-- **STOP AND WAIT:** Set `request_feedback: true` in artifact metadata. Wait for explicit user review and approval before modifying source code.
+- **STOP AND WAIT:** Set `request_feedback: true` in artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; fixing before approval skips the review gate.
 
 ---
 
@@ -136,7 +126,7 @@ gh issue create \
   2. **Official Rules Fidelity:** Strictly adhere to Marvel Champions Rules Reference v1.8.
   3. **Declarative Enrichment:** Fix card mechanics in `src/data/supplemental/` rather than hardcoding card codes into the engine.
   4. **Local-First Reliability:** Never add external runtime network dependencies.
-- Run the reproduction test to verify it now **passes** (**Green**).
+- Run the reproduction test to verify it now **passes** (**Green**). If it still fails, go back to Step 4 and re-diagnose.
 
 ---
 
@@ -146,9 +136,7 @@ gh issue create \
   1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for any cards that share the affected mechanic.
   2. **Retrofit Card Definitions:** Apply the corrected declarations across all affected card entries.
   3. **Update Audit Metadata:** For every modified card entry, update:
-     - `"updatedAt"`: Current ISO timestamp with `HH:MM` (e.g. `2026-09-01T09:48:00Z`).
-     - `"reviewedAt"`: Current ISO timestamp with `HH:MM`.
-     - `"reviewedBy"`: `"antigravity"` (or current agent identity).
+     - `updatedAt`, `reviewedAt`, `reviewedBy`: per the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).
 
 ---
 
@@ -160,7 +148,7 @@ Execute the full verification suite across engine, tests, schemas, build, lint, 
 rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
 ```
 
-- **Enforce Zero Skipped Tests Invariant:** Confirm all tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail. Never use `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions to mask or defer failing tests.
+- **Enforce Zero Skipped Tests Invariant:** Confirm all tests pass with **0 failed and 0 skipped** (`passed: N, failed: 0, skipped: 0`). A hook blocks skipped, todo, and focused tests in `tests/**`; do not comment out assertions either.
 - Confirm 0 TypeScript compilation errors (`tsc --noEmit`).
 - Confirm 0 ESLint warnings/errors and Prettier format compliance.
 - Confirm production bundle succeeds (`vite build`).

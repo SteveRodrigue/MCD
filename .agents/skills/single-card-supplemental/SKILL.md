@@ -5,6 +5,8 @@ description: 'Translate and generate minimal supplemental card data for a single
 
 # Single Card Supplemental Data Generator
 
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and Python 3 (for `npm run rule`).
+
 This skill defines the canonical methodology to analyze a single Marvel Champions card and generate its schema-compliant supplemental data into a minimal markdown file at `temp/supp_<card-id>.md`.
 
 > [!IMPORTANT]
@@ -66,14 +68,17 @@ Consult the authoritative schema and modular specifications to ensure exact para
    - Combat & Threat: `docs/specifications/supplemental/05_effects_combat_threat.md`
    - Zones & Search: `docs/specifications/supplemental/06_effects_zones_cards.md`
    - Status & Economy: `docs/specifications/supplemental/07_effects_status_economy.md`
-   - Formulas & Math: `docs/specifications/supplemental/08_dynamic_formulas.md`
+   - Villain & Nemesis: `docs/specifications/supplemental/08_effects_villain_nemesis.md`
+   - Formulas & Math: `docs/specifications/supplemental/09_dynamic_formulas.md`
+   - Sequences & Prompts: `docs/specifications/supplemental/10_sequences_and_prompts.md`
+   - Universal Card Filter: `docs/specifications/supplemental/04_universal_card_filter.md`
 
 3. **Drafting Invariants:**
    - **Generic Primitives Only (ADR-0021):** Never invent card-specific effect names (e.g. do not use `DANCE_OF_DEATH_ATTACK`; use generic `DEAL_DAMAGE`).
    - **Exact Enum Values:** All effect, timing, and target strings must match the TypeScript enums in `schema.ts` exactly.
    - **Strict Schema Compliance:** `CardEnrichmentSchema` is strict; undeclared or hallucinated properties will cause validation failure.
    - **Exact Printed Text:** In `audit.originalText`, use the exact text from Step 1.
-   - **Card Comments Policy (ADR-0067):** Never add or modify `audit.comment`.
+   - **`audit.comment` (ADR-0067):** Leave it out; a hook blocks it in pack files and the output file never needs it.
 
 ---
 

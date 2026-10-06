@@ -1,11 +1,19 @@
 ---
 name: card-integration-protocol
 description: 'Standard protocol for analyzing, translating, mocking up, validating, and integrating Marvel Champions cards into src/data/supplemental/ and the rules engine. Trigger whenever adding, translating, or refining any card.'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/plan-gate.mjs"'
 ---
 
 # Card Integration Protocol (8-Step Standard Workflow)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies. Classify changes using the canonical 3-tier blast radius before editing code.
+
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and Python 3 (for `npm run rule`).
 
 ---
 
@@ -69,18 +77,21 @@ flowchart TD
 - Fetch the exact printed card text from upstream. Do not paraphrase, summarize, or alter upstream text during analysis.
 - **Ingest Existing Supplemental Baseline (If Present):** Load existing supplemental data strictly as a comparison baseline. **CRITICAL:** Do **NOT** assume the existing supplemental data is correct or complete. Treat it strictly as a snapshot that may be outdated or flawed relative to current specifications.
 
-### Step 2: Literal Semantic Mapping & 8-Point Socratic Q&A Deconstruction
+### Step 2: Literal Semantic Mapping & 8-Point Deconstruction Checklist
 
+- **Vanilla fork:** If the card has no printed rules text, skip the 8-point checklist and the Step 5-6 audits. Draft the `noSupplementalNeeded: true` entry and continue at Step 7 (peer review still applies).
 - Per **ADR-0018** & **ADR-0019**, never interpret or guess unstated card rules.
 - **MANDATORY SPECIFICATION CONSULTATION & EVOLUTION CHECK:** Before drafting schema, you **MUST** consult the modular specification suite in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) and [`docs/guidelines/`](../../../docs/guidelines/hero_creation_guide.md):
   - `01_metadata_and_audit.md` (Metadata & Audit standards)
   - `02_timings_and_triggers.md` (Timings & Triggers matrix)
   - `03_costs_and_targeting.md` (Costs, TargetSelectors, exhaustive FilterSchema)
-  - `04_effects_combat_threat.md` / `05_effects_zones_cards.md` / `06_effects_status_economy.md` / `07_effects_villain_nemesis.md` (Effect primitives)
-  - `08_dynamic_formulas.md` (Formulas & Math tokens)
-  - `09_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
+  - `04_universal_card_filter.md` (Universal card filter)
+  - `05_effects_combat_threat.md` / `06_effects_zones_cards.md` / `07_effects_status_economy.md` / `08_effects_villain_nemesis.md` (Effect primitives)
+  - `09_dynamic_formulas.md` (Formulas & Math tokens)
+  - `10_sequences_and_prompts.md` (Multi-action sequences & Decision prompts)
+  - `11_play_requirements.md` (Play requirements)
 - **Specification Evolution Awareness:** If `docs/specifications/` has evolved or received updates, existing supplemental data may be outdated or could be refactored into cleaner, more canonical forms. Map the card directly against current specifications without assuming existing card JSON is up to date.
-- Before drafting schema, rigorously answer the **8-Point Socratic Q&A Checklist**:
+- Before drafting schema, answer the **8-Point Deconstruction Checklist** and record the eight answers as a table in the review artifact:
   1. **Q1 (Trigger & Timing):** What exact event triggers this? Is it optional (`ACTION`/`INTERRUPT`/`RESPONSE`) or mandatory (`FORCED_`/`WHEN_REVEALED`)?
   2. **Q2 (Costs & Prerequisites):** What must be paid before execution (`exhaustSelf`, `discardSelf`, `removeCounter`, `resourceCost`, form requirement)?
   3. **Q3 (Primary Target/Subject):** What exact entity is affected or searched (e.g. `the villain`, `an enemy`, `a minion`, specific card code)?
@@ -102,7 +113,7 @@ flowchart TD
     - Outdated structures or legacy representations in existing data that can be refactored.
     - Missing engine primitives or specification gaps not yet captured in `docs/specifications/`.
     - Card-specific ambiguities or subtle rule edge cases that were previously missed or oversimplified.
-- **SUPPLEMENTAL CARD COMMENTS POLICY & AGENT PROHIBITION (ADR-0067):** The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must NEVER autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
+- **`audit.comment` (ADR-0067):** Do not add or update it; a hook blocks it. Policy and exception are in [`shared-quality-gates.md`](../../rules/shared-quality-gates.md). Log card ambiguities in `docs/ambiguities/`.
 - **MANDATORY EXECUTABLE ABILITIES REQUIREMENT:** Every card with printed rules text (Actions, When Revealed, Interrupts, Responses, Keywords, Passives, Scheme Icons) **MUST** have its logic fully encoded in `abilities: [...]` (or explicit schema properties).
 - **STRICT BAN ON CARD-SPECIFIC EFFECT NAMES (ADR-0021):**
   - **An effect primitive name MUST NEVER contain the name, title, or code of a specific card.**
@@ -111,51 +122,13 @@ flowchart TD
   - Multi-choice cards MUST be modeled with a generic composable schema (e.g. `PLAYER_CHOICE` with nested `options: [{ id, label, effect, params }]`).
 - **100% PARAMETER COMPLETENESS & FULLY QUALIFIED ZONES:** Every parameter identified in the 8-point Q&A checklist **MUST** be explicitly declared in `params` with **Fully Qualified Game Zones** (e.g. `searchZones: ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"]`, `shuffleDeck: "ENCOUNTER_DECK"`, `revealTarget: true`). Generic unqualified strings like `["DECK", "DISCARD"]` are strictly prohibited as ambiguous and engine-breaking.
 - `noSupplementalNeeded: true` is **ONLY** valid for pure vanilla cards with zero rules text (e.g. double resources, basic allies without abilities, or villain stages without abilities). Any card with rules text marked `noSupplementalNeeded: true` is an invalid schema error.
-- Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json`:
+- Compose the JSON entry in `src/data/supplemental/pack/{pack_code}.json` (strict template, must match the schema exactly):
 
-```json
-"{card_code}": {
-  "audit": {
-    "createdAt": "YYYY-MM-DDTHH:mm",
-    "updatedAt": "YYYY-MM-DDTHH:mm",
-    "reviewedAt": "YYYY-MM-DDTHH:mm",
-    "reviewedBy": "antigravity",
-    "rulesVersion": "v1.8",
-    "confidence": 98,
-    "originalText": "<Exact printed card text from upstream/printed card>"
-  },
-  "abilities": [
-    {
-      "id": "<card_name_ability_slug>",
-      "timing": "<TIMING>",
-      "trigger": "<TRIGGER_IF_REACTIVE>",
-      "limit": "<ONCE_PER_ROUND | ONCE_PER_PHASE>",
-      "cost": {
-        "exhaustSelf": true,
-        "removeCounter": 1,
-        "discardSelf": true,
-        "resourceCost": { "physical": 1 }
-      },
-      "steps": [
-        {
-          "id": "<optional_step_id>",
-          "effect": "<EFFECT_PRIMITIVE>",
-          "gate": "<ALWAYS | THEN | IF_AMOUNT_ZERO | IF_ALREADY_HAS_STATUS | IF_FAILED>",
-          "params": {
-            "searchZones": ["ENCOUNTER_DECK", "ENCOUNTER_DISCARD"],
-            "shuffleDeck": "ENCOUNTER_DECK",
-            "revealTarget": true
-          }
-        }
-      ]
-    }
-  ]
-}
-```
+Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-template.md).
 
 ### Step 4: Consult Ground Truth References (`references/`)
 
-- Check [`mc_rulesreference_v18_compressed.pdf`](../../../references/mc_rulesreference_v18_compressed.pdf) for official timing rules and [`docs/algorithmic_rules_reference.md`](../../../docs/algorithmic_rules_reference.md) for the project algorithmic mapping.
+- Use `npm run rule -- <term>` and `references/rules/` for official timing rules (open [the raw PDF](../../../references/mc_rulesreference_v18_compressed.pdf) only if confidence stays below 95%), and [`docs/algorithmic_rules_reference.md`](../../../docs/algorithmic_rules_reference.md) for the project algorithmic mapping.
 - Consult [`references/links.md`](../../../references/links.md) for:
   - Official FAQ & Errata: `https://marvelcdb.com/faqs`
   - Card-specific discussion: `https://marvelcdb.com/card/{card_code}`
@@ -213,7 +186,7 @@ flowchart TD
 
 ### Step 7: Differential Comparison, Blast-Radius Gate & Mandatory User Peer Review
 
-- **Mandatory User Peer Review for Supplemental Changes:**
+- **Mandatory User Peer Review for Supplemental Changes:** Create `temp/.plan-pending` when you post the review and delete it once the user approves; while it exists a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`.
   Any addition, refinement, or refactoring of a card's supplemental data **MUST** be peer-reviewed and approved by the user before writing changes to `src/data/supplemental/` or proceeding to delivery. When presenting the change for user review (in an implementation plan, prompt response, or review recap), always present:
   1. **Printed Card Text (`card.text`):** The exact printed rules text from `data/upstream/pack/{pack_code}.json`.
   2. **Original Supplemental Data:** The existing JSON entry in `src/data/supplemental/pack/{pack_code}.json` (or `None` if brand new).
@@ -230,15 +203,13 @@ flowchart TD
 ### Step 8: Stamp Audit Metadata (HH:MM), Codify Specs & Prune Ambiguity
 
 1. **Audit Timestamping:**
-   - If creating a new card: set `createdAt`, `updatedAt`, and `reviewedAt` to current ISO timestamp with `HH:mm` (e.g. `"2026-08-28T08:47"`).
-   - If modifying logic/fixing a bug: bump `updatedAt` and `reviewedAt` to current timestamp.
-   - If auditing/confirming an existing card with no code changes: bump `reviewedAt` only.
+   - Apply the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp): new card sets `createdAt`, `updatedAt`, `reviewedAt`; logic change or bug fix bumps `updatedAt` and `reviewedAt`; confirming an unchanged card bumps `reviewedAt` only.
 2. **Synchronous Specification Feedback Loop:**
    - Whenever an engine primitive, trigger, or parameter is implemented or refactored:
      1. Immediately update the corresponding specification file in [`docs/specifications/supplemental/`](../../../docs/specifications/supplemental/README.md) to mark it 🟢 `IMPLEMENTED (v1.0)` with code links.
      2. Run `rtk vitest run tests/data/supplemental-schema.test.ts` to ensure schema conformance.
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
-4. **Canonical Card ID Sorting:** When saving `src/data/supplemental/pack/*.json`, always preserve canonical ascending card ID order (numerically by code with `a`/`b` identity letters, e.g. `01001a` -> `01001b` -> `01002`). Never append new keys out-of-order at the bottom of the file.
+4. **Canonical Card ID Sorting:** Keep `src/data/supplemental/pack/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
 5. **Regenerate Usage Audit & Verification:**
    - **In Single-Card Mode:** Run `rtk npm run report:declarations` (or `rtk npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md). Run full verification suite: `rtk npm test; rtk npm run typecheck; rtk npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
    - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations` and the full verification suite (`rtk npm test; rtk npm run typecheck; rtk npm run build`) **once as a single consolidated check** at the end of the batch.
@@ -258,7 +229,7 @@ When an agent or user requests a supplemental data mockup for card text without 
    - Adhere to the **Cross-Cutting Rules Protocol**: inspect the primary glossary entry, follow all `See also:` / `Referenced by:` links, and verify the relevant cluster in `references/rules/TOPIC_MAP.md`.
    - Identify core mechanics (e.g. separate attacks vs multi-instance damage, targeting constraints, timing priority).
 
-3. **Phase C: 8-Point Socratic Q&A Deconstruction:**
+3. **Phase C: 8-Point Deconstruction Checklist:**
    - Deconstruct the ability into the canonical 8 points: Trigger/Timing (Q1), Costs (Q2), Target Scope (Q3), Fully Qualified Zones (Q4), State Mutation (Q5), Post-Resolution Side-Effects (Q6), Source Destination (Q7), and Branching/Contingencies (Q8).
 
 4. **Phase D: Declarative Composable Assembly:**

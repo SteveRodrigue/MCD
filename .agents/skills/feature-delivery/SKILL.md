@@ -1,11 +1,19 @@
 ---
 name: feature-delivery
 description: 'Specification-driven protocol for designing, testing, and shipping new engine capabilities, primitives, UI components, and milestones. Trigger when building features or prefixed with "feature-delivery:".'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/plan-gate.mjs"'
 ---
 
 # 🚀 Feature Delivery Protocol (Specification-Driven Development & Milestone Lifecycle)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
+
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, Python 3 (for `npm run rule`), and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
 This skill guides the agent through an authoritative, rules-verified, specification-first, and milestone-tracked protocol to deliver new features cleanly, composably, and with zero regressions.
 
@@ -19,12 +27,12 @@ Before writing any implementation code or tests for a new feature, verify the fo
    - Research rules using structured Markdown in `references/rules/` (or `npm run rule -- <term>`). Follow `See also:` links and consult `references/rules/TOPIC_MAP.md`. Do not open the raw PDF unless confidence is $< 95\%$.
    - **Strict Confidence Threshold ($\ge 95\%$):** If confidence in how the rules operate is $< 95\%$, **STOP IMMEDIATELY** and trigger the **Ambiguity RFC Circuit Breaker** below. Never implement speculative heuristics.
 2. **Approved Architecture Decision Record (ADR):**
-   - Check [`docs/decisions/`](../../docs/decisions/) to identify the controlling ADR.
+   - Check [`docs/decisions/`](../../../docs/decisions/) to identify the controlling ADR.
    - If introducing a new paradigm, draft a **Proposed ADR** first using [`docs/decisions/template.md`](../../../docs/decisions/template.md) and register it in `docs/decisions/README.md`.
 3. **Schema & Model Design Alignment:**
-   - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../docs/specifications/).
-   - If extending game state, update [`src/engine/models/state.ts`](../../src/engine/models/state.ts).
-   - Keep the Card Supplemental Editor aligned per [`docs/specifications/tooling/card_supplemental_editor.md`](../../docs/specifications/tooling/card_supplemental_editor.md).
+   - If introducing effect primitives or supplemental fields, update [`src/data/supplemental/schema.ts`](../../../src/data/supplemental/schema.ts) with strict Zod types and update [`docs/specifications/`](../../../docs/specifications/).
+   - If extending game state, update [`src/engine/models/state.ts`](../../../src/engine/models/state.ts).
+   - Keep the Card Supplemental Editor aligned per [`docs/specifications/tooling/card_supplemental_editor.md`](../../../docs/specifications/tooling/card_supplemental_editor.md).
 4. **Core Invariants (from `shared-quality-gates.md`):**
    - Headless & decoupled engine (`src/engine/` contains no UI/DOM/CSS dependencies).
    - Declarative data-first (generic primitives in `src/engine/effects/`, card-specific parameters in `src/data/supplemental/`).
@@ -40,41 +48,7 @@ If the rules interpretation, timing trigger sequence, or card interactions are a
 
 1. **Halt Execution:** Do NOT proceed to writing acceptance tests or modifying code.
 2. **Post RFC Peer Review Comment on GitHub Issue:**
-   Use `gh issue comment <NUM> --body "..."` with this structured template:
-
-   ```markdown
-   ### 📢 RFC / Peer Review Request: Rules Ambiguity on Feature #<NUM>
-
-   **Confidence Level:** <XX>% (< 95% threshold required for automated implementation)
-
-   #### ❓ The Ambiguity / Edge Case
-
-   <Detailed description of the conflicting rules interpretations, timing windows, or underspecified state interactions>
-
-   #### 📜 Rules Reference Citations
-
-   - Marvel Champions Rules Reference v1.8 Section: `<Citation>`
-   - Official Rulings / Precedents: `<Citation or N/A>`
-
-   #### ⚖️ Architectural Options for Review
-
-   - **Option A (<Short Title>):**
-     - _Implementation:_ <How it works mechanically>
-     - _Pros:_ <Advantages>
-     - _Cons / Risks:_ <Drawbacks / Potential edge cases>
-   - **Option B (<Short Title>):**
-     - _Implementation:_ <How it works mechanically>
-     - _Pros:_ <Advantages>
-     - _Cons / Risks:_ <Drawbacks / Potential edge cases>
-
-   #### 💡 Architect Recommendation
-
-   <Clear recommendation with underlying rationale>
-
-   ---
-
-   _Awaiting peer review and alignment before proceeding with implementation._
-   ```
+   Use the template in [`rfc-template.md`](rfc-template.md) (strict: keep every heading), posted with `gh issue comment <NUM> --body-file <file>`.
 
 3. **Tag GitHub Issue:**
    ```bash
@@ -104,7 +78,7 @@ flowchart TD
 
 ### Step 1: Scope & GitHub Issue Linkage
 
-1. Identify the controlling Roadmap Milestone in [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md) (e.g. Milestone 2C, Milestone 2D, Phase 3).
+1. Identify the controlling Roadmap Milestone in [`docs/roadmap_and_milestones.md`](../../../docs/roadmap_and_milestones.md) (e.g. Milestone 2C, Milestone 2D, Phase 3).
 2. Check existing open GitHub issues (`gh issue list`) or create a new tracked feature issue:
 
    ```bash
@@ -130,7 +104,7 @@ flowchart TD
 
 ### Step 2: Rules Reference Audit (RR v1.8) & ADR Alignment
 
-1. **Audit Rules Reference:** Thoroughly inspect `references/mc_rulesreference_v18_compressed.pdf` for all timing, cost, and trigger definitions.
+1. **Audit Rules Reference:** Use `npm run rule -- <term>` and `references/rules/` for all timing, cost, and trigger definitions. Open the raw PDF only if confidence stays below 95%.
 2. **Evaluate Confidence:** Assess confidence level ($0–100\%$). If $< 95\%$, trigger the **Ambiguity RFC Circuit Breaker** and stop.
 3. **Audit ADR & Schemas:**
    - Read the controlling ADR in `docs/decisions/`.
@@ -144,7 +118,7 @@ flowchart TD
 
 ### Step 3: Author Implementation Plan & Wait for User Approval 🛑
 
-- **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing:
+- **MANDATORY REVIEW GATE:** Because of the complexity of Marvel Champions rules and state invariants, you MUST always create an `implementation_plan.md` artifact detailing (strict structure: all five sections, in this order):
   1. **Rules Reference & Spec Analysis:** Exact citations from RR v1.8, timing priority, and active ADRs.
   2. **Proposed Changes:** File-by-file breakdown (`[NEW]`, `[MODIFY]`) across engine pipelines, effect primitives, and supplemental data.
   3. **UI and Card Editor Impact:** Explicitly state the impact and required files. If neither surface is affected, include exactly:
@@ -159,7 +133,7 @@ flowchart TD
 
   4. **Verification Plan:** Complete test inventory covering engine/data behavior, integration contracts, boundary conditions, and UI/Card Editor behavior whenever affected. Every planned code path must have a corresponding test or an explicit rationale for why an existing test is sufficient.
   5. **Open Questions & Design Decisions:** Any trade-offs or design choices highlighted for user review.
-- **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. You MUST NOT proceed to writing code or modifying files until the user explicitly reviews and approves the implementation plan.
+- **STOP AND WAIT:** Set `request_feedback: true` in the artifact metadata. Create `temp/.plan-pending` when you post the plan and delete it once the user approves. While it exists, a hook blocks edits under `src/`, `tests/`, `data/`, `tools/` and `scripts/`; implementing before approval skips the review gate.
 - **Execution Handoff:** Before approval, feature-delivery must stop and must not delegate implementation. After explicit approval, hand the approved plan to `/execute-plan`; `/execute-plan` performs its own ambiguity gate and delegates execution only for the plan's unambiguous, explicitly authorized work. Feature-delivery must not interpret missing requirements or bypass that handoff.
 
 ---
@@ -174,8 +148,8 @@ flowchart TD
   - **Happy Path:** Standard execution and expected state transitions.
   - **Edge Cases:** Boundary conditions, 0-amount scenarios, empty decks, defeated characters.
   - **Rules Invariants:** Unicity checks, form restrictions, timing priorities.
-- **Zero Skipped Tests Invariant:** Tests must strictly pass or fail. NEVER write `it.skip`, `describe.skip`, `test.skip`, `it.todo`, or commented-out assertions.
-- Run the test suite (`npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**).
+- **Zero Skipped Tests Invariant:** Tests must pass or fail. A hook blocks skipped, todo, and focused tests in `tests/**`; do not comment out assertions either.
+- Run the test suite (`npx vitest run tests/<file>.test.ts`) and confirm it fails because the capability is not yet implemented (**Red**). If it passes before implementation, go back and tighten the test.
 
 ---
 
@@ -189,7 +163,7 @@ flowchart TD
   - **UI Components:** `src/ui/components/` (React presentation, Tailwind styling, Pop-Art aesthetic).
 - Keep the Card Supplemental Editor usable for the new canonical shape. Update the relevant editor registry, form builder, validation, persistence, and round-trip tests whenever the feature changes what a card can express or how it is reviewed.
 - Remove confirmed legacy/orphan implementations and references made obsolete by the feature. Do not leave duplicate code paths or dead compatibility branches behind.
-- Run the acceptance test suite to confirm all tests pass cleanly (**Green**).
+- Run the acceptance test suite to confirm all tests pass cleanly (**Green**). If any fail, fix the implementation and re-run before moving to Step 6.
 
 ---
 
@@ -199,9 +173,7 @@ flowchart TD
   1. **Search Supplemental Data:** Search all pack files in `src/data/supplemental/pack/*.json` for every card that utilizes or is affected by the new capability.
   2. **Retrofit Card Definitions:** Apply the new declarative schema and primitives to all affected card entries.
   3. **Update Audit Metadata:** For every modified card entry, update:
-     - `"updatedAt"`: Current ISO timestamp with `HH:MM` (e.g. `2026-09-01T09:48:00Z`).
-     - `"reviewedAt"`: Current ISO timestamp with `HH:MM`.
-     - `"reviewedBy"`: `"antigravity"` (or current agent identity).
+     - `updatedAt`, `reviewedAt`, `reviewedBy`: per the [audit stamp rules](../../rules/shared-quality-gates.md#audit-stamp).
   4. **Card Promotion & Ambiguity Pruning:** If previously blocked, promote `audit.confidence: 1.0` and prune resolved ambiguity files in `docs/ambiguities/` (Inbox Zero).
    5. **Run Declarations Analyzer:** Execute `rtk npm run report:declarations` to ensure zero schema violations.
 
@@ -215,8 +187,7 @@ Execute the full multi-tier verification suite:
 rtk npm run format:check && rtk npm run lint && rtk npm run typecheck && rtk npm test && rtk npm run build && rtk npm run report:declarations
 ```
 
-- **Vitest Suite:** All test files and suites pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`). Tests must strictly pass or fail; never introduce `it.skip` or commented-out assertions.
-- **TypeScript:** 0 compilation errors (`tsc --noEmit`).
+- **Vitest Suite:** All test files and suites pass with 0 failures and **0 skipped tests** (Zero Skipped Tests Invariant: `passed: N, failed: 0, skipped: 0`).- **TypeScript:** 0 compilation errors (`tsc --noEmit`).
 - **Vite Production Build:** Production bundle compiles cleanly without warnings.
 - **Declarations Analyzer:** `docs/reports/supplemental_declarations_usage_report.md` compiles with 0 schema violations.
 

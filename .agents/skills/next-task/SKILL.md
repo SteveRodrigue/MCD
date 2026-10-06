@@ -7,11 +7,13 @@ description: 'Evaluates open GitHub issues, milestones, and catalog ROI to recom
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, scope, plan, verification, and delivery policies.
 
-This skill acts as the **Automated Release Orchestrator & Technical Product Manager** for MCD. It computes real-time, data-driven recommendations for what the developer or agent should implement next by balancing:
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, Python 3 (for `npm run rule`), and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
 
-1. **Gate 1 Scope Boundary (Rhino Release):** Focuses strictly on Core Set Player cards (101 cards across 5 Heroes + 4 Aspects + Basic) and Rhino Scenario encounters (34 cards: Standard, Expert, Bomb Scare, 5 Nemesis Sets). Expansion tasks are flagged as post-Rhino deferred.
+This skill computes real-time, data-driven recommendations for what the developer or agent should implement next by balancing:
+
+1. **Gate 1 Scope Boundary (Rhino Release):** Focuses strictly on the Core Set player cards and Rhino scenario encounters defined in the roadmap. Expansion tasks are flagged as post-Rhino deferred.
 2. **GitHub Issue Priority:** P0 (Rhino Blocker) vs P1 (High) vs P2 (Medium) vs P3 (Low).
-3. **Active Roadmap Milestone:** Focuses on current Gate 1 deliverables in [`docs/roadmap_and_milestones.md`](../../docs/roadmap_and_milestones.md).
+3. **Active Roadmap Milestone:** Focuses on current Gate 1 deliverables in [`docs/roadmap_and_milestones.md`](../../../docs/roadmap_and_milestones.md).
 4. **Architectural Blast Radius:** High-impact engine invariants vs localized supplemental data definitions.
 
 ---
@@ -30,7 +32,7 @@ flowchart TD
     subgraph Phase2["Phase 2: Task Selection & Mandatory Plan Review Gate"]
         S4 --> S5["5. User Selects Option (e.g. 'Option 1')"]
         S5 --> S6["6. Agent Researches RR v1.8 Rules & Codebase"]
-        S6 --> S7["7. Agent Creates 'implementation_plan.md' (request_feedback: true)"]
+        S6 --> S7["7. Agent Creates 'implementation_plan.md' (request user review)"]
         S7 --> S8["🛑 HARD STOP: Interactive Review UI ('Approve / Proceed')"]
         S8 --> S9["8. User Reviews & Approves → Execution Begins"]
     end
@@ -53,10 +55,9 @@ flowchart TD
 When the user selects an option (e.g., replying `"Option 1"`, `"1"`, or triggering `feature-delivery: ...`):
 
 1. **Do NOT write or modify code yet.**
-2. **Research Rules & Codebase:** Audit `references/mc_rulesreference_v18_compressed.pdf`, relevant ADRs, and related engine pipelines.
+2. **Research Rules & Codebase:** Use `npm run rule -- <term>` and `references/rules/` (raw PDF only if confidence stays below 95%), relevant ADRs, and related engine pipelines.
 3. **Create `implementation_plan.md` Artifact:**
-   Create `<appDataDir>\brain\<conversation-id>/implementation_plan.md` with:
-   - **`ArtifactMetadata: { RequestFeedback: true, UserFacing: true }`**
+   Create `implementation_plan.md` in the host's plan location (see `AGENTS.md`) and request user review there, with:
    - Detailed Rules Reference analysis
    - Proposed file changes (`[NEW]`, `[MODIFY]`)
    - Acceptance / contract tests plan
@@ -65,37 +66,9 @@ When the user selects an option (e.g., replying `"Option 1"`, `"1"`, or triggeri
 
 ---
 
-## 📊 Standard Presentation Template
+## 📊 Presentation
 
-```markdown
-### 🎯 Next-Task Recommendations: Ranked Priority & Card ROI
-
-Here are the Top ranked candidates evaluated against active roadmap milestones, issue priorities, and card catalog ROI:
-
-|   Rank    | Issue                                                              |  Priority & Impact   | Target Milestone | Card ROI / Impact           |   Score    |
-| :-------: | :----------------------------------------------------------------- | :------------------: | :--------------: | :-------------------------- | :--------: |
-| 🥇 **#1** | **[#XX](https://github.com/SteveRodrigue/MCD/issues/XX)**: _Title_ | `P1` / `impact:high` |   Milestone 2D   | 43 cards across 170 packs   | **90 pts** |
-| 🥈 **#2** | **[#YY](https://github.com/SteveRodrigue/MCD/issues/YY)**: _Title_ | `P1` / `impact:high` |   Milestone 2D   | 100 cards (Deck exhaustion) | **90 pts** |
-| 🥉 **#3** | **[#ZZ](https://github.com/SteveRodrigue/MCD/issues/ZZ)**: _Title_ | `P1` / `impact:high` |   Milestone 2D   | 28 cards (Search/look)      | **81 pts** |
-
----
-
-### 🚀 Ready-to-Run Action Options:
-
-1. **Option 1 (Top Pick):**
-   - **Prompt:** \`feature-delivery: <Title> (Issue #XX)\`
-   - **Why:** <Concise rationale explaining milestone and card value>
-
-2. **Option 2 (Runner-Up):**
-   - **Prompt:** \`feature-delivery: <Title> (Issue #YY)\`
-   - **Why:** <Concise rationale>
-
-3. **Option 3 (High Value):**
-   - **Prompt:** \`feature-delivery: <Title> (Issue #ZZ)\`
-   - **Why:** <Concise rationale>
-
-_Reply with your choice (e.g. "1" or "Let's do Option 1"). I will immediately author the detailed \`implementation_plan.md\` and prompt you for review and approval before modifying any code!_
-```
+Present the ranked candidates and ready-to-run options using [`presentation-template.md`](presentation-template.md) (default format: keep the table columns and the option list; adapt the wording).
 
 ---
 

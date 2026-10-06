@@ -10,6 +10,8 @@ disable-model-invocation: false
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, preservation, plan, and verification policies.
 
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
+
 Use this skill to turn GitHub Dependabot alerts into evidence-backed remediation plans before making any dependency or source changes.
 
 ## Safety Rules

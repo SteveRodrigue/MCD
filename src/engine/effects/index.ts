@@ -50,7 +50,7 @@ import {
   enqueueDistributionPrompt,
   peekDecisionPrompt,
 } from '../pipeline/prompt-queue';
-import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
+import { beginEnemyAttack, resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
 import {
   applyDamageToTarget,
   type DamageRequest,
@@ -2648,24 +2648,15 @@ export function executeStep(
     }
 
     case 'HEAL_DAMAGE': {
-      const amount = resolveNumericAmount(step.effectParams?.amount, context, 0, { state, player });
+      const amount =
+        step.effectParams?.amount === 'ALL'
+          ? Number.MAX_SAFE_INTEGER
+          : resolveNumericAmount(step.effectParams?.amount, context, 0, { state, player });
       const target = (step.effectParams?.target as string) || 'SELF';
       let healed = 0;
 
       const targetCharacters = resolveCharacterTargets(state, target as any, context);
-      const charsToHeal =
-        targetCharacters.length > 0
-          ? targetCharacters
-          : [
-              {
-                kind: 'character' as const,
-                entityType:
-                  player.currentForm === 'hero' ? ('hero' as const) : ('alter_ego' as const),
-                entity: player,
-                id: player.id,
-                player,
-              },
-            ];
+      const charsToHeal = targetCharacters;
 
       let isFullyHealed = true;
       for (const targetChar of charsToHeal) {
@@ -3782,6 +3773,43 @@ export function executeStep(
     case 'VILLAIN_ATTACKS': {
       executeVillainAttackAgainstPlayer(state, player);
       return { state, success: true, onomatopoeia: 'VILLAIN ATTACKS!' };
+    }
+
+    case 'ENEMY_ATTACKS': {
+      // A specific enemy (card code) attacks the resolving player's hero or identity. The result
+      // is `success` and `mutatedState` only when the attack happened, so a later step can gate
+      // on "if it did not attack" with `IF_FAILED`; `targetId` is the enemy, attacked or not.
+      const enemyCode = step.effectParams?.enemy as string | undefined;
+      const targetParam = (step.effectParams?.target as string) || 'SELF_HERO';
+      const minion = state.players
+        .flatMap((p) => p.engagedMinions)
+        .find((m) => m.card.code === enemyCode);
+      const villain = getVillainsInPlay(state).find((v) => v.card.code === enemyCode);
+      const enemy = minion ?? villain;
+      const noAttack = (targetId?: string): EffectResult => ({
+        state,
+        success: false,
+        mutatedState: false,
+        targetId,
+        onomatopoeia: 'NO ATTACK!',
+      });
+      if (!enemy) return noAttack();
+      const enemyId = enemy.instanceId;
+      if (targetParam === 'SELF_HERO' && player.currentForm !== 'hero') {
+        // "Your hero" in alter-ego form: there is no hero to attack.
+        return noAttack(enemyId);
+      }
+      const attacker = minion
+        ? { type: 'MINION' as const, card: minion }
+        : { type: 'VILLAIN' as const, villainId: villain!.instanceId };
+      const begun = beginEnemyAttack(state, attacker, player.id);
+      return {
+        state: begun.state,
+        success: begun.attacked,
+        mutatedState: begun.attacked,
+        targetId: enemyId,
+        onomatopoeia: begun.attacked ? 'ENEMY ATTACKS!' : 'NO ATTACK!',
+      };
     }
 
     case 'VILLAIN_AND_ENGAGED_MINIONS_ATTACK': {

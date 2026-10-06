@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T18:25:14.515Z`  
+> **Generated:** `2026-10-06T18:51:43.497Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -12,34 +12,33 @@
 | **Total Cards Registered** | **158** | Total cards present in `src/data/supplemental/` |
 | **Active Declared Cards** | **145** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **11** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
-| **Open Ambiguity Reports** | **3** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
+| **Open Ambiguity Reports** | **2** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **164** | Total individual ability definitions declared |
+| **Total Abilities Declared** | **165** | Total individual ability definitions declared |
 | **Single-Step Abilities (1 Step)** | **135** | Abilities with exactly 1 atomic execution step |
-| **Multi-Step Abilities (2+ Steps)** | **29** | Abilities decomposed into sequenced execution pipelines |
-| **Cards with Multi-Step Sequences** | **29** | Cards containing at least 1 ability with 2+ steps |
-| **Cards with Multiple Abilities (2+)** | **18** | Cards declaring more than 1 distinct ability header |
-| **Unique Effects In Use** | **43** | Distinct effect primitive types actively declared |
-| **Unique Target Selectors In Use** | **28** | Distinct target selectors actively declared |
+| **Multi-Step Abilities (2+ Steps)** | **30** | Abilities decomposed into sequenced execution pipelines |
+| **Cards with Multi-Step Sequences** | **30** | Cards containing at least 1 ability with 2+ steps |
+| **Cards with Multiple Abilities (2+)** | **19** | Cards declaring more than 1 distinct ability header |
+| **Unique Effects In Use** | **44** | Distinct effect primitive types actively declared |
+| **Unique Target Selectors In Use** | **29** | Distinct target selectors actively declared |
 | **Unique Triggers In Use** | **20** | Distinct trigger window types actively declared |
 | **Unique Timings In Use** | **17** | Distinct timing categories actively declared |
 | **Unique Condition Gates In Use** | **11** | Distinct condition gate types actively declared |
 | **Unique Step Conditions In Use** | **4** | Distinct step condition types actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
-| **Unique Effect Param Keys In Use** | **55** | Distinct parameter keys passed into effect steps |
-| **Unique Dynamic Value Sources In Use** | **11** | Distinct dynamic value resolver shapes actively declared |
+| **Unique Effect Param Keys In Use** | **56** | Distinct parameter keys passed into effect steps |
+| **Unique Dynamic Value Sources In Use** | **12** | Distinct dynamic value resolver shapes actively declared |
 | **Unique Filter Criteria Keys In Use** | **5** | Distinct UniversalCardFilter criteria properties actively declared |
 
 ---
 
-## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 3 Cards)
+## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 2 Cards)
 
-These **3 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
+These **2 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
 
 | Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `01163` | **Genetically Enhanced** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01163_genetically-enhanced.md`](../ambiguities/core_encounter_01163_genetically-enhanced.md) |
-| `01164` | **Titania** | `core_encounter` | `80%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01164_titanias-fury.md`](../ambiguities/core_encounter_01164_titanias-fury.md) |
 | `56128b` | **Now It** | `cw_encounter` | `50%` | `MISSING_ENGINE_PRIMITIVE` | [`cw_56128b_now-its-personal.md`](../ambiguities/cw_56128b_now-its-personal.md) |
 
 ---
@@ -112,7 +111,7 @@ These **3 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | :--- | :--- | :--- |
 | `WHEN_REVEALED` | **31** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+26 more)* |
 | `HERO_ACTION` | **26** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01010a` Captain Marvel (hero), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event) *(+21 more)* |
-| `CONSTANT` | **19** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+12 more)* |
+| `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
 | `FORCED_RESPONSE` | **18** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+12 more)* |
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01015` Alpha Flight Station (support), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event) *(+11 more)* |
 | `RESPONSE` | **11** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+6 more)* |
@@ -197,7 +196,7 @@ These **3 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | Limit: `ONCE_PER_ROUND` | **6** | `01001b` Peter Parker (alter_ego), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01019b` Jennifer Walters (alter_ego), `01029b` Tony Stark (alter_ego) *(+1 more)* |
 | Zone: `HAND` | **8** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01024` One-Two Punch (event), `01052` Chase Them Down (event), `01061` Great Responsibility (event) *(+3 more)* |
 
-### 📋 Cards with Multiple Abilities (2+ Abilities Declared — 18 Cards)
+### 📋 Cards with Multiple Abilities (2+ Abilities Declared — 19 Cards)
 
 | Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -214,6 +213,7 @@ These **3 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | `01100` | **Enhanced Ivory Horn** | `attachment` | `core_encounter` | **2** | • `ivory_horn_atk_bonus` (`CONSTANT`, **1 step**)<br/>• `ivory_horn_discard_action` (`HERO_ACTION`, **1 step**) |
 | `01102` | **Sandman** | `minion` | `core_encounter` | **2** | • `sandman_toughness` (`SETUP`, **1 step**)<br/>• `sandman_attack_discard` (`FORCED_RESPONSE` / `MINION_ATTACKED`, **1 step**) |
 | `01158` | **Heart-Shaped Herb** | `treachery` | `core_encounter` | **2** | • `heart_shaped_herb_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **1 step**)<br/>• `heart_shaped_herb_boost` (`BOOST` / `BOOST`, **1 step**) |
+| `01164` | **Titania's Fury** | `treachery` | `core_encounter` | **2** | • `titanias_fury_when_revealed` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **3 steps**)<br/>• `titanias_fury_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01166` | **Highway Robbery** | `side_scheme` | `core_encounter` | **2** | • `highway_robbery_when_revealed` (`WHEN_REVEALED`, **1 step**)<br/>• `highway_robbery_when_defeated` (`FORCED_RESPONSE` / `DEFEATED`, **1 step**) |
 | `01168` | **Sweeping Swoop** | `treachery` | `core_encounter` | **2** | • `sweeping_swoop_when_revealed` (`WHEN_REVEALED` / `WHEN_REVEALED`, **2 steps**)<br/>• `sweeping_swoop_boost` (`BOOST` / `BOOST`, **1 step**) |
 | `01172` | **Whiplash** | `minion` | `core_encounter` | **2** | • `whiplash_response` (`FORCED_RESPONSE` / `WHEN_REVEALED`, **1 step**)<br/>• `whiplash_retaliate` (`CONSTANT`, **1 step**) |
@@ -228,8 +228,8 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 
 | Target Selector | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `SELF` | **16** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01042` Ancestral Knowledge (event) *(+11 more)* |
 | `CHOSEN_ENEMY` | **16** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+11 more)* |
+| `SELF` | **15** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01042` Ancestral Knowledge (event) *(+10 more)* |
 | `SELF_IDENTITY` | **14** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01039` Rocket Boots (upgrade) *(+9 more)* |
 | `CHOSEN_SCHEME` | **11** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+5 more)* |
 | `CHOSEN_PLAYER` | **4** | `01010b` Carol Danvers (alter_ego), `01034` Stark Tower (support), `01091` Avengers Mansion (support), `01092` Helicarrier (support) |
@@ -243,6 +243,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `CHOSEN_ALLY` | **2** | `01069` Get Ready (event), `01074` Inspired (upgrade) |
 | `ALL_HEROES` | **2** | `01096` Rhino (villain), `01103` Shocker (minion) |
 | `THIS_SIDE_SCHEME` | **2** | `01107` Breakin' & Takin' (side_scheme), `01109` Bomb Scare (side_scheme) |
+| `SELF_HERO` | **2** | `01164` Titania's Fury (treachery), `01168` Sweeping Swoop (treachery) |
 | `HOST_ENEMY` | **1** | `01009` Webbed Up (upgrade) |
 | `ALL_SCHEMES` | **1** | `01037` Mark V Helmet (upgrade) |
 | `ALL_CHARACTERS` | **1** | `01050` Hulk (ally) |
@@ -251,7 +252,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `CHOSEN_FRIENDLY_CHARACTER` | **1** | `01080` Med Team (support) |
 | `CHOSEN_CHARACTER` | **1** | `01086` First Aid (event) |
 | `ALL_HEROES_AND_ALLIES` | **1** | `01111` Explosion (treachery) |
-| `SELF_HERO` | **1** | `01168` Sweeping Swoop (treachery) |
+| `PREVIOUS_TARGET` | **1** | `01164` Titania's Fury (treachery) |
 | `DAMAGED_CHARACTER` | **1** | `01168` Sweeping Swoop (treachery) |
 | `DEFENDING_PLAYER` | **1** | `01173` Electric Whip Attack (treachery) |
 | `ACTIVE_PLAYER` | **1** | `01188` Caught Off Guard (treachery) |
@@ -268,7 +269,6 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `ALL_FRIENDLY_CHARACTERS` | 🟡 **0** | *Unused in supplemental declarations* |
 | `CHOSEN_SIDE_SCHEME` | 🟡 **0** | *Unused in supplemental declarations* |
 | `TRIGGERING_SCHEME` | 🟡 **0** | *Unused in supplemental declarations* |
-| `PREVIOUS_TARGET` | 🟡 **0** | *Unused in supplemental declarations* |
 | `PREVIOUS_SELECTED_CARD` | 🟡 **0** | *Unused in supplemental declarations* |
 | `HOST` | 🟡 **0** | *Unused in supplemental declarations* |
 
@@ -282,6 +282,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `IF_FORM` | **7** | `01017` Cosmic Flight (upgrade), `01106` Stampede (treachery), `01187` Assault (treachery), `01189` Gang-Up (treachery) |
 | `IF_CONDITION_MET` | **6** | `01012` Crisis Interdiction (event), `01016` Captain Marvel's Helmet (upgrade), `01037` Mark V Helmet (upgrade), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) *(+1 more)* |
 | `IF_RESOURCE_MATCH` | **4** | `01013` Photonic Blast (event), `01050` Hulk (ally) |
+| `IF_FAILED` | **3** | `01164` Titania's Fury (treachery), `01190` Shadow of the Past (treachery) |
 | `IF_AMOUNT_ZERO` | **2** | `01104` Hard to Keep Down (treachery), `01179` Yon-Rogg's Treason (treachery) |
 | `IF_ALREADY_HAS_STATUS` | **2** | `01105` "I'm Tough" (treachery), `01112` False Alarm (treachery) |
 | `IF_CARD_IN_PLAY` | **2** | `01111` Explosion (treachery), `01168` Sweeping Swoop (treachery) |
@@ -289,7 +290,6 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `IF_CONDITION_NOT_MET` | **1** | `01037` Mark V Helmet (upgrade) |
 | `IF_CARD_NOT_IN_PLAY` | **1** | `01111` Explosion (treachery) |
 | `IF_ACTIVATION_DEALT_DAMAGE` | **1** | `01168` Sweeping Swoop (treachery) |
-| `IF_FAILED` | **1** | `01190` Shadow of the Past (treachery) |
 | `ALWAYS` | 🟡 **0** | *Unused in supplemental declarations* |
 | `IF_PREVIOUS_SUCCESS` | 🟡 **0** | *Unused in supplemental declarations* |
 | `IF_ZERO_HEALED` | 🟡 **0** | *Unused in supplemental declarations* |
@@ -301,11 +301,11 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `trait` | **4** | `01012` Crisis Interdiction (event), `01016` Captain Marvel's Helmet (upgrade), `01037` Mark V Helmet (upgrade) |
 | `resource` | **4** | `01013` Photonic Blast (event), `01050` Hulk (ally) |
 | `cardCode` | **3** | `01111` Explosion (treachery), `01168` Sweeping Swoop (treachery) |
+| `targetStepId` | **3** | `01164` Titania's Fury (treachery), `01190` Shadow of the Past (treachery) |
 | `status` | **2** | `01105` "I'm Tough" (treachery), `01112` False Alarm (treachery) |
 | `target` | **2** | `01105` "I'm Tough" (treachery), `01112` False Alarm (treachery) |
 | `attackerKind` | **2** | `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
 | `count` | **1** | `01013` Photonic Blast (event) |
-| `targetStepId` | **1** | `01190` Shadow of the Past (treachery) |
 | `zone` | **1** | `01192` Masterplan (treachery) |
 
 ### Declarative Step Conditions (`StepConditionSchema`):
@@ -333,16 +333,16 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | Effect Primitive | Card Count | Example Cards |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | **25** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+21 more)* |
-| `ADD_STATUS` | **18** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade) *(+12 more)* |
+| `ADD_STATUS` | **17** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade) *(+11 more)* |
 | `DISCARD` | **16** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01031` Repulsor Blast (event) *(+12 more)* |
+| `MODIFY_STAT` | **13** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+8 more)* |
 | `REMOVE_THREAT` | **12** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
-| `MODIFY_STAT` | **12** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+7 more)* |
+| `SURGE` | **11** | `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery), `01106` Stampede (treachery) *(+8 more)* |
 | `DRAW` | **10** | `01001a` Spider-Man (hero), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego) *(+7 more)* |
 | `PLAYER_CHOICE` | **10** | `01068` Vision (ally), `01084` Nick Fury (ally), `01110` Hydra Bomber (minion) *(+7 more)* |
-| `SURGE` | **10** | `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery), `01106` Stampede (treachery) *(+7 more)* |
 | `ADD_THREAT` | **10** | `01107` Breakin' & Takin' (side_scheme), `01109` Bomb Scare (side_scheme), `01161` Personal Challenge (side_scheme) *(+6 more)* |
+| `HEAL_DAMAGE` | **6** | `01006` Aunt May (support), `01051` Tigra (ally), `01080` Med Team (support) *(+3 more)* |
 | `SEARCH` | **6** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego) *(+3 more)* |
-| `HEAL_DAMAGE` | **5** | `01006` Aunt May (support), `01051` Tigra (ally), `01080` Med Team (support) *(+2 more)* |
 | `READY` | **5** | `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01069` Get Ready (event) *(+2 more)* |
 | `CHANGE_FORM` | **5** | `01155` Affairs of State (obligation), `01160` Legal Work (obligation), `01165` Eviction Notice (obligation) *(+2 more)* |
 
@@ -354,6 +354,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `ATTACHMENT_DAMAGE_SHIELD` | `01098` | Armored Rhino Suit (attachment) (core_encounter) | `armored_rhino_suit_shield` |
 | `CANCEL_ATTACK` | `01009` | Webbed Up (upgrade) (core) | `webbed_up_interrupt` |
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | `01075` | Black Widow (ally) (core) | `black_widow_cancel` |
+| `ENEMY_ATTACKS` | `01164` | Titania's Fury (treachery) (core_encounter) | `titanias_fury_when_revealed` |
 | `EXHAUST` | `01191` | Exhaustion (treachery) (core_encounter) | `exhaustion_when_revealed` |
 | `FLIP_FORM` | `01025` | Split Personality (event) (core) | `split_personality` |
 | `GIVE_ADDITIONAL_BOOST_CARD` | `01164` | Titania's Fury (treachery) (core_encounter) | `titanias_fury_boost` |
@@ -371,16 +372,16 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | **25** | `01005` (Swinging Web Kick (event)), `01013` (Photonic Blast (event)), `01018` (Energy Channel (upgrade)), `01019a` (She-Hulk (hero)), `01021` (Gamma Slam (event)), `01022` (Ground Stomp (event)), `01030` (War Machine (ally)), `01031` (Repulsor Blast (event)), `01032` (Supersonic Punch (event)), `01038` (Powered Gauntlets (upgrade)), `01046` (Energy Daggers (upgrade)), `01047` (Panther Claws (upgrade)), `01050` (Hulk (ally)), `01053` (Relentless Assault (event)), `01054` (Uppercut (event)), `01056` (Tac Team (support)), `01058` (Daredevil (ally)), `01061` (Great Responsibility (event)), `01066` (Hawkeye (ally)), `01077` (Counter-Punch (event)), `01087` (Haymaker (event)), `01103` (Shocker (minion)), `01111` (Explosion (treachery)), `01174` (Electromagnetic Backlash (treachery)) |
-| `ADD_STATUS` | **18** | `01009` (Webbed Up (upgrade)), `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01162` (Titania (minion)), `01168` (Sweeping Swoop (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
+| `ADD_STATUS` | **17** | `01009` (Webbed Up (upgrade)), `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01168` (Sweeping Swoop (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
 | `DISCARD` | **16** | `01002` (Black Cat (ally)), `01009` (Webbed Up (upgrade)), `01031` (Repulsor Blast (event)), `01050` (Hulk (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01159` (Ritual Combat (treachery)), `01169` (The Vulture's Plans (treachery)), `01173` (Electric Whip Attack (treachery)), `01174` (Electromagnetic Backlash (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01188` (Caught Off Guard (treachery)), `01192` (Masterplan (treachery)), `01195` (Unknown Card #01195) |
+| `MODIFY_STAT` | **13** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01070` (Lead from the Front (event)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)), `01162` (Titania (minion)) |
 | `REMOVE_THREAT` | **12** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
-| `MODIFY_STAT` | **12** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01070` (Lead from the Front (event)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
+| `SURGE` | **11** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01164` (Titania's Fury (treachery)), `01168` (Sweeping Swoop (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01187` (Assault (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)) |
 | `DRAW` | **10** | `01001a` (Spider-Man (hero)), `01010a` (Captain Marvel (hero)), `01010b` (Carol Danvers (alter_ego)), `01013` (Photonic Blast (event)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
 | `PLAYER_CHOICE` | **10** | `01068` (Vision (ally)), `01084` (Nick Fury (ally)), `01110` (Hydra Bomber (minion)), `01155` (Affairs of State (obligation)), `01159` (Ritual Combat (treachery)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01173` (Electric Whip Attack (treachery)), `01175` (Family Emergency (obligation)) |
-| `SURGE` | **10** | `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01168` (Sweeping Swoop (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01187` (Assault (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)) |
 | `ADD_THREAT` | **10** | `01107` (Breakin' & Takin' (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01161` (Personal Challenge (side_scheme)), `01169` (The Vulture's Plans (treachery)), `01171` (Imminent Overload (side_scheme)), `01176` (The Psyche-Magnitron (side_scheme)), `01177` (Yon-Rogg (minion)), `01178` (Kree Manipulator (treachery)), `01192` (Masterplan (treachery)) |
+| `HEAL_DAMAGE` | **6** | `01006` (Aunt May (support)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)), `01164` (Titania's Fury (treachery)) |
 | `SEARCH` | **6** | `01029b` (Tony Stark (alter_ego)), `01034` (Stark Tower (support)), `01040b` (T'Challa (alter_ego)), `01041` (Shuri (ally)), `01042` (Ancestral Knowledge (event)), `01095` (Rhino (villain)) |
-| `HEAL_DAMAGE` | **5** | `01006` (Aunt May (support)), `01051` (Tigra (ally)), `01080` (Med Team (support)), `01086` (First Aid (event)), `01104` (Hard to Keep Down (treachery)) |
 | `READY` | **5** | `01024` (One-Two Punch (event)), `01035` (Arc Reactor (upgrade)), `01069` (Get Ready (event)), `01082` (Indomitable (upgrade)), `01093` (Tenacity (upgrade)) |
 | `CHANGE_FORM` | **5** | `01155` (Affairs of State (obligation)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01175` (Family Emergency (obligation)) |
 | `GRANT_KEYWORD` | **4** | `01040a` (Black Panther (hero)), `01099` (Charge (attachment)), `01101` (Hydra Mercenary (minion)), `01172` (Whiplash (minion)) |
@@ -406,6 +407,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER` | **1** | `01075` (Black Widow (ally)) |
 | `REDUCE_NEXT_CARD_COST` | **1** | `01092` (Helicarrier (support)) |
 | `ATTACHMENT_DAMAGE_SHIELD` | **1** | `01098` (Armored Rhino Suit (attachment)) |
+| `ENEMY_ATTACKS` | **1** | `01164` (Titania's Fury (treachery)) |
 | `GIVE_ADDITIONAL_BOOST_CARD` | **1** | `01164` (Titania's Fury (treachery)) |
 | `ATTACH_FACEDOWN_CARDS_FROM_HAND` | **1** | `01166` (Highway Robbery (side_scheme)) |
 | `VILLAIN_SCHEMES` | **1** | `01186` (Advance (treachery)) |
@@ -441,13 +443,13 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 ### Effect Parameter Keys (`effectParams`):
 | Parameter Key | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `target` | **98** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade) *(+82 more)* |
-| `amount` | **75** | `01001b` Peter Parker (alter_ego), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade), `01008` Web-Shooter (upgrade) *(+63 more)* |
+| `target` | **99** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade) *(+82 more)* |
+| `amount` | **77** | `01001b` Peter Parker (alter_ego), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade), `01008` Web-Shooter (upgrade) *(+65 more)* |
 | `source` | **23** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01029b` Tony Stark (alter_ego), `01031` Repulsor Blast (event), `01034` Stark Tower (support) *(+17 more)* |
 | `count` | **17** | `01001a` Spider-Man (hero), `01002` Black Cat (ally), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01013` Photonic Blast (event) *(+12 more)* |
-| `status` | **17** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade), `01076` Luke Cage (ally), `01083` Mockingbird (ally) *(+9 more)* |
+| `status` | **16** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade), `01076` Luke Cage (ally), `01083` Mockingbird (ally) *(+8 more)* |
 | `filter` | **12** | `01002` Black Cat (ally), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego), `01041` Shuri (ally), `01071` Make the Call (event) *(+5 more)* |
-| `stat` | **11** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade), `01059` Jessica Jones (ally), `01065` Heroic Intuition (upgrade) *(+4 more)* |
+| `stat` | **12** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade), `01059` Jessica Jones (ally), `01065` Heroic Intuition (upgrade) *(+5 more)* |
 | `title` | **10** | `01068` Vision (ally), `01084` Nick Fury (ally), `01110` Hydra Bomber (minion), `01155` Affairs of State (obligation), `01159` Ritual Combat (treachery) *(+5 more)* |
 | `description` | **10** | `01068` Vision (ally), `01084` Nick Fury (ally), `01110` Hydra Bomber (minion), `01155` Affairs of State (obligation), `01159` Ritual Combat (treachery) *(+5 more)* |
 | `options` | **10** | `01068` Vision (ally), `01084` Nick Fury (ally), `01110` Hydra Bomber (minion), `01155` Affairs of State (obligation), `01159` Ritual Combat (treachery) *(+5 more)* |
@@ -492,6 +494,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `destination` | **1** | `01071` Make the Call (event) |
 | `control` | **1** | `01071` Make the Call (event) |
 | `maxAbsorb` | **1** | `01098` Armored Rhino Suit (attachment) |
+| `enemy` | **1** | `01164` Titania's Fury (treachery) |
 | `cardCode` | **1** | `01177` Yon-Rogg (minion) |
 | `fallback` | **1** | `01188` Caught Off Guard (treachery) |
 | `toDeck` | **1** | `01190` Shadow of the Past (treachery) |
@@ -508,6 +511,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `INTERCEPTED_VALUE` | **2** | `01061` Great Responsibility (event) |
 | `STAT_VALUE (stat: ATTACK)` | **2** | `01077` Counter-Punch (event) |
 | `CARD_ATTRIBUTE (attr: THREAT)` | **2** | `01111` Explosion (treachery) |
+| `CARD_ATTRIBUTE (attr: REMAINING_HIT_POINTS)` | **2** | `01162` Titania (minion) |
 | `DISCARDED_CARDS (attr: DIFFERENT_RESOURCES)` | **2** | `01169` The Vulture's Plans (treachery) |
 | `HAS_IDENTITY` | **1** | `01015` Alpha Flight Station (support) |
 | `PAID_WITH_RESOURCE` | **1** | `01060` For Justice! (event) |
@@ -583,7 +587,6 @@ The following schema enums are defined in `src/data/supplemental/schema.ts` but 
 | `TargetSelectorSchema` | `ALL_FRIENDLY_CHARACTERS` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `CHOSEN_SIDE_SCHEME` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `TRIGGERING_SCHEME` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
-| `TargetSelectorSchema` | `PREVIOUS_TARGET` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `PREVIOUS_SELECTED_CARD` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `HOST` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `ConditionGateSchema` | `ALWAYS` | 🟡 `0 Cards` | Defined in schema; no card currently declares this condition gate. |

@@ -28,6 +28,30 @@ export interface EffectiveVillainStats {
   keywords: string[];
 }
 
+/**
+ * A minion's effective attack: the printed value (an X attack is stored as -1 and counts as 0)
+ * plus its own CONSTANT `MODIFY_STAT` `ATTACK` steps, whose amounts may be dynamic formulas
+ * (Titania: "X is equal to Titania's remaining hit points").
+ */
+export function getEffectiveMinionAttack(state: GameState, minion: CardInstance): number {
+  const printed = (minion.card as { attack?: number }).attack;
+  let attack = printed === undefined ? 1 : Math.max(0, printed);
+  for (const ab of minion.card.enrichment?.abilities || []) {
+    if (ab.timing !== 'CONSTANT') continue;
+    for (const step of ab.steps || []) {
+      const stepParams = getStepEffectParams(step);
+      if (step.effect === 'MODIFY_STAT' && stepParams.stat === 'ATTACK') {
+        attack += evaluateDynamicAmount(
+          stepParams.amount as number | DynamicValueSource | undefined,
+          {},
+          { state, sourceCardInstance: minion, targetCardInstance: minion },
+        );
+      }
+    }
+  }
+  return Math.max(0, attack);
+}
+
 export interface EffectiveAllyStats {
   thwart: number;
   attack: number;

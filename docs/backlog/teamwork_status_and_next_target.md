@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-06
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,085 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,088 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -44,6 +44,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #219 | Hand `DISCARD`: `filter`, every target player, `discardedCards`/`value` always returned; Yon-Rogg's Treason `01179` and The Vulture's Plans `01169` modelled (confidence 95) | `git log --grep "#219"` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
 | #220 | `CardAbility.forEachPlayer` (whole step list once per player, player order, pausable); Electromagnetic Backlash `01174` modelled (confidence 95); deck `DISCARD` no longer continues into a reshuffled deck; mixed case filed as #272 | `git log --grep "#220"` |
+| #223 | `ENEMY_ATTACKS` (a specific minion or named villain attacks; the step fails if it did not attack); minion Attack X (`getEffectiveMinionAttack`, `REMAINING_HIT_POINTS`); Titania's Fury `01164` modelled (confidence 95) | `git log --grep "#223"` |
 
 ---
 
@@ -105,7 +106,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 5 | Hand `DISCARD` with filter, each-player targets and discarded-card results | [#219](https://github.com/SteveRodrigue/MCD/issues/219) | `01179` Yon-Rogg's Treason, `01169`, `01174` | 🟢 **Done** 2026-10-06; `01179` and `01169` modelled |
 | 6 | Per-player iteration inside one ability | [#220](https://github.com/SteveRodrigue/MCD/issues/220) | `01174` Electromagnetic Backlash | 🟢 **Done** 2026-10-06; ability-level `forEachPlayer`; mixed per-player / run-once abilities: [#272](https://github.com/SteveRodrigue/MCD/issues/272) (`01148`) |
 | 7 | Gate "this activation dealt damage" | [#221](https://github.com/SteveRodrigue/MCD/issues/221) | `01168` Sweeping Swoop boost | 🟢 **Done** 2026-10-06; gate `IF_ACTIVATION_DEALT_DAMAGE` + selector `DAMAGED_CHARACTER`, deferred boost resolved in `applyCalculatedAttackDamage` (ADR-0019 addendum) |
-| 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | ready (its hero selector exists: `SELF_HERO`) |
+| 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | 🟢 **Done** 2026-10-06; effect `ENEMY_ATTACKS`, minion Attack X (`01162`), `HEAL_DAMAGE` `amount: ALL` |
 | 9 | `executeSequence` swallows step failures and always reports success | [#225](https://github.com/SteveRodrigue/MCD/issues/225) | visibility of every ability failure | cross-cutting, Tier 2; do before adding more complex sequences |
 
 ### 3.3 The `effectParams` remediation (evidence: [../reports/effect_params_orphan_audit.md](../reports/effect_params_orphan_audit.md))

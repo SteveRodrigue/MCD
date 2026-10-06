@@ -20,6 +20,7 @@ import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
   getEffectiveHeroStats,
   getEffectiveVillainStats,
+  getEffectiveMinionAttack,
   getEffectiveRetaliate,
   hasEntityKeyword,
   consumeEntityStatusCards,
@@ -190,6 +191,19 @@ export function initiateEnemyAttack(
   targetPlayerId: string,
   options?: CombatOptions,
 ): GameState {
+  return beginEnemyAttack(state, attacker, targetPlayerId, options).state;
+}
+
+/**
+ * Starts an enemy attack and reports whether it happened. An attack that Stun or a
+ * `HOST_WOULD_ATTACK` interrupt cancels in step 1 did not happen ("if X did not attack").
+ */
+export function beginEnemyAttack(
+  state: GameState,
+  attacker: { type: 'VILLAIN' | 'MINION'; card?: CardInstance; villainId?: string },
+  targetPlayerId: string,
+  options?: CombatOptions,
+): { state: GameState; attacked: boolean } {
   state.lastCombatOutcome = undefined;
   // The attacking villain is fixed now: moving the active counter mid-activation must not change it.
   const attackerVillain =
@@ -199,7 +213,7 @@ export function initiateEnemyAttack(
       : undefined;
 
   const player = state.players.find((p) => p.id === targetPlayerId);
-  if (!player) return state;
+  if (!player) return { state, attacked: false };
 
   // Step 1: Pre-Attack & Stun check
   const isCancelled = step1_preAttackAndStunCheck(
@@ -209,7 +223,7 @@ export function initiateEnemyAttack(
     player,
     attackerVillain,
   );
-  if (isCancelled) return state;
+  if (isCancelled) return { state, attacked: false };
 
   // Step 2: Initiation Triggers (Spider-Sense draws card BEFORE defender is declared)
   const initResult = step2_dispatchInitiationTriggers(
@@ -230,7 +244,7 @@ export function initiateEnemyAttack(
     hasOverkill = villainStats.keywords.includes('OVERKILL');
     hasPiercing = villainStats.keywords.includes('PIERCING');
   } else if (attacker.card) {
-    baseAttack = (attacker.card.card as any).attack || 1;
+    baseAttack = getEffectiveMinionAttack(state, attacker.card);
     hasOverkill = hasKeyword(attacker.card, Keyword.OVERKILL);
     hasPiercing = hasKeyword(attacker.card, Keyword.PIERCING);
   }
@@ -253,10 +267,10 @@ export function initiateEnemyAttack(
 
   if (initResult.hasPendingPrompt) {
     state.activeAttackContext = attackContext;
-    return state;
+    return { state, attacked: true };
   }
 
-  return continueAttackAfterInitiation(state, attackContext);
+  return { state: continueAttackAfterInitiation(state, attackContext), attacked: true };
 }
 
 /**

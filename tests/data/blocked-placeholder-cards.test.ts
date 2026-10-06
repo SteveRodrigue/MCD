@@ -10,7 +10,6 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
  */
 const BLOCKED: Record<string, { keeps?: 'BOOST' | 'WHEN_REVEALED' }> = {
   '01163': {},
-  '01164': { keeps: 'BOOST' },
 };
 
 describe('Blocked core encounter cards declare no placeholder abilities', () => {

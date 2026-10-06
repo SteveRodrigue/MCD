@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Feat (Engine + UI): player elimination and a game-over screen ([Issue #246](https://github.com/SteveRodrigue/MCD/issues/246))**
+  - **Engine:** a hero reduced to 0 hit points eliminates that player only, per RR v1.8 *Player Elimination*; the game is lost when **all** heroes are eliminated, in a solo multi-handed game as in a multiplayer one. `eliminatePlayer` passes the first player token, moves engaged minions (with their tokens, attachments and status cards) to the next clockwise player, sends cards the player does not own to their owner's discard pile, sends the player's own cards to the player's discard pile and removes the player from `state.players` (kept in `state.eliminatedPlayers`). It replaces the eleven direct `winner = 'VILLAIN'` writes on hero defeat: the damage pipeline, the two hand-written damage copies in distribute-points (now through `applyDamageToTarget`), the enemy attack and its Overkill spillover. An attack whose target was eliminated ends.
+  - **Per-player icon:** `getPerPlayerCount` counts the players who started the scenario, so escalation threat, side scheme threat, `perPlayer` amounts and scenario stage values do not shrink after an elimination.
+  - **Loops:** the encounter reveal loop and the `ALL_CHARACTERS` damage loop iterate player snapshots, so no hero is skipped or hit twice when one is eliminated mid-loop.
+  - **UI:** `GameOverScreen` (victory or defeat, every hero listed, the fallen marked defeated); `GameBoard` falls back to the last seat and shows only that screen when no hero is left.
+  - Permanent cards in an eliminated play area: [#274](https://github.com/SteveRodrigue/MCD/issues/274). ADR-0079; ADR-0078 and spec `05` updated. `tests/engine/player-elimination.test.ts`, `tests/ui/GameOverScreen.test.tsx`, `tests/ui/gameboard-player-elimination.test.tsx`; five existing tests now assert elimination instead of an immediate loss.
+
 - **Fix (Engine + UI): `executeSequence` no longer swallows step failures ([Issue #225](https://github.com/SteveRodrigue/MCD/issues/225))**
   - A step that fails **with an `error`** (unsupported target, missing parameter) stops the sequence and the ability returns `success: false` with that error, also through `forEachPlayer`; steps already applied are kept. A failure **without** an error is an outcome (for example `ENEMY_ATTACKS` "did not attack") and later `IF_FAILED` gates still run. Each error writes an `engine.stepError` log entry.
   - **Dev Mode:** a dismissible banner shows the latest step error and the combat log lists it; both are hidden outside Dev Mode.

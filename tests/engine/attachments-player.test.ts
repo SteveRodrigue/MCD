@@ -131,7 +131,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     const tracerCard = cardCatalog.getCard('01007')!;
     const tracerInstance = createCardInstance(tracerCard);
 
-    const sideSchemeCard = cardCatalog.getCard('01107')! as any; // Bomb Scare (3 threat)
+    const sideSchemeCard = cardCatalog.getCard('01109')! as any; // Bomb Scare (3 threat)
     const sideSchemeInstance: SideSchemeState = {
       instanceId: 'side_scheme_bomb_scare',
       card: sideSchemeCard,
@@ -178,7 +178,7 @@ describe('Player Attachments & Upgrades Subsystem (Inspired, Webbed Up, Spider-T
     expect(resolveRes.state.sideSchemes.length).toBe(0);
     expect(
       resolveRes.state.encounterDiscard.some(
-        (c) => c.instanceId === 'side_scheme_bomb_scare' || c.card.code === '01107',
+        (c) => c.instanceId === 'side_scheme_bomb_scare' || c.card.code === '01109',
       ),
     ).toBe(true);
     // Main scheme threat untouched

@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "description": "Klaw is operating an illegal underground weapons network. Intercept him before his sonic converter destroys the city!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
-  
+
   "villainSetup": {
     "villainName": "Klaw",
     "stages": {

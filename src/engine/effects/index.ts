@@ -4276,6 +4276,7 @@ export function executeStep(
       if (targetParam === 'ALL_SIDE_SCHEMES') {
         if (state.sideSchemes.length > 0) {
           let totalPlaced = 0;
+          let paused = false;
           for (const s of state.sideSchemes) {
             const { result } = applyThreatPlacement(state, {
               targetType: 'side_scheme',
@@ -4286,11 +4287,12 @@ export function executeStep(
               sourcePlayerId: player.id,
             });
             totalPlaced += result.threatPlaced;
+            paused ||= result.paused === true;
           }
           return {
             state,
             success: true,
-            mutatedState: totalPlaced > 0,
+            mutatedState: totalPlaced > 0 || paused,
             value: totalPlaced,
             onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!`,
           };
@@ -4346,7 +4348,7 @@ export function executeStep(
           return {
             state,
             success: true,
-            mutatedState: result.threatPlaced > 0,
+            mutatedState: result.threatPlaced > 0 || result.paused === true,
             value: result.threatPlaced,
             onomatopoeia: result.onomatopoeia,
           };
@@ -4363,7 +4365,7 @@ export function executeStep(
           return {
             state,
             success: true,
-            mutatedState: result.threatPlaced > 0,
+            mutatedState: result.threatPlaced > 0 || result.paused === true,
             value: result.threatPlaced,
             onomatopoeia: result.onomatopoeia,
           };
@@ -4389,6 +4391,7 @@ export function executeStep(
       const targetSchemes = resolveSchemeTargets(state, targetParam as any, targetContext);
       if (targetSchemes.length > 0) {
         let totalPlaced = 0;
+        let paused = false;
         let lastResult: any;
         for (const st of targetSchemes) {
           const isSide =
@@ -4404,12 +4407,13 @@ export function executeStep(
             sourcePlayerId: player.id,
           });
           totalPlaced += result.threatPlaced;
+          paused ||= result.paused === true;
           lastResult = result;
         }
         return {
           state,
           success: true,
-          mutatedState: totalPlaced > 0,
+          mutatedState: totalPlaced > 0 || paused,
           value: totalPlaced,
           onomatopoeia: lastResult?.onomatopoeia || `SCHEME THREAT +${totalPlaced}!`,
         };

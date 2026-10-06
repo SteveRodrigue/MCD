@@ -17,6 +17,7 @@ export function startPlayerPhase(state: GameState): GameState {
   delete state.activeEncounterContext;
   delete state.activeBoostCard;
   delete state.pendingActivations;
+  delete state.pendingThreatPlacements;
 
   // Reset phase-level ability limits and expire phase cost reductions for all players
   for (const player of state.players) {

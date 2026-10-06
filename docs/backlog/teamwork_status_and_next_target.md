@@ -1,9 +1,9 @@
 # MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last work commit: the #240 commit (Emergency, setup), after `41a41b0` (#244). Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit: the #266 commit (pausable threat placement), after `9985c4f` (#240). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,901 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,921 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -35,6 +35,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
 | #238 | Highway Robbery: real host, `cardsUnderneath`, "When Defeated" before host cleanup, facedown stack UI | `git log --grep "#238"` |
 | Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
+| #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `git log --grep "#266"` |
 | #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `git log --grep "#240"` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
 
@@ -81,7 +82,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05; `pendingSpecialSequence` retired |
 | 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05; seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | 🟢 **Done** 2026-10-05; no player ability during setup |
-| 3b2 | Accepting a threat interrupt prompt (Emergency, Great Responsibility, "I Object!") does not reduce the threat already placed | [#266](https://github.com/SteveRodrigue/MCD/issues/266) | **Gate 1**: the card is spent for nothing | placement must pause and resume around the prompt (like #248) |
+| 3b2 | Accepting a threat interrupt prompt (Emergency, Great Responsibility, "I Object!") does not reduce the threat already placed | [#266](https://github.com/SteveRodrigue/MCD/issues/266) | **Gate 1**: the card is spent for nothing | 🟢 **Done** 2026-10-05; other hand triggers: [#267](https://github.com/SteveRodrigue/MCD/issues/267) |
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |
 | 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **owner decision:** Gate 1 or Gate 3 | 15 direct `winner` writes |

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine): accepting a threat interrupt from its prompt changes the threat placed ([Issue #266](https://github.com/SteveRodrigue/MCD/issues/266))**
+  - **Engine, pausable threat placement:** `applyThreatPlacement` waits when its "would be placed" window opens prompts: the placement is stored in `state.pendingThreatPlacements` (live amount) and placed by `finishPendingThreatPlacements` once every prompt is answered, before paused sequences resume (one `resumeAfterPromptResolved` helper replaces the three resume spots in `prompt-queue.ts`). An accepted interrupt reads and changes the live amount, not the snapshot taken when the prompt opened. The stepped villain phase step event shows the final threat.
+  - **Engine, several reactions (RR v1.8 glossary I, R, F):** in the threat window every eligible hand card is offered (copies included), first player first, then in player order. When nothing is left to place (Great Responsibility, a replacement, or reductions to 0), the remaining prompts close without cost; a queued prompt whose card is no longer usable is dropped.
+  - **Cards now resolved as printed:** Emergency `01085`, Great Responsibility `01061`, Jennifer Walters "I Object!" `01019b`.
+  - **Documentation:** spec `02` (`THREAT_WOULD_BE_PLACED` window), ADR-0020 addendum.
+  - **Automated Verification:** new `threat-interrupt-prompt.test.ts` (20 tests through the real prompt path: accept, pass, boosts, Great Responsibility damage from the live amount, "I Object!" limit, two players, first-player order, stepped phase, sequences, scheme completion after the answer, several cards for one placement).
+  - **Follow-up:** the other hand-reaction triggers still offer one card per player in seat order: [#267](https://github.com/SteveRodrigue/MCD/issues/267).
+
 - **Fix (Engine + Data): _Emergency_ `01085` only when the villain schemes; no player ability during setup ([Issue #240](https://github.com/SteveRodrigue/MCD/issues/240))**
   - **Supplemental Data (`core.json`):** Emergency gets `triggerFilter: { threatSource: "VILLAIN_SCHEME" }` ("When the villain schemes", RR v1.8 glossary *Scheme (Enemy Activation)*). It is no longer offered for villain phase step 1, minion schemes, When Revealed, card effects or Incite. Approved by the owner.
   - **Engine, threat source:** `applyThreatPlacement` passes `threatSource` (its `sourceType`) in the `THREAT_WOULD_BE_PLACED` context; new `TriggerFilter.threatSource` (rejects a different or missing source).

@@ -406,6 +406,30 @@ export interface EncounterExecutionContext {
  * A multi-step ability sequence that paused because one of its steps opened a decision prompt.
  * The remaining steps resume once the prompt queue is empty (#248).
  */
+/**
+ * A threat placement paused while its interrupt prompts are answered (#266). `amount` is the live
+ * amount left after the interrupts resolved so far.
+ */
+export interface PendingThreatPlacement {
+  id: string;
+  request: {
+    targetType: 'main_scheme' | 'side_scheme';
+    targetInstanceId?: string;
+    amount: number;
+    sourceType:
+      | 'VILLAIN_PHASE_STEP_1'
+      | 'VILLAIN_SCHEME'
+      | 'MINION_SCHEME'
+      | 'CARD_EFFECT'
+      | 'INCITE'
+      | 'HAZARD';
+    sourceEntityName?: string;
+    sourcePlayerId?: string;
+    boostIcons?: number;
+  };
+  amount: number;
+}
+
 export interface PendingSequence {
   sequenceId?: string;
   remainingSteps: AbilityStep[];
@@ -458,6 +482,8 @@ export interface GameState {
   pendingActivations?: PendingActivation[];
   /** Ordered multi-step ability sequences paused on a decision prompt (#248) */
   pendingSequences?: PendingSequence[];
+  /** Threat placements waiting for their interrupt prompts to be answered (#266) */
+  pendingThreatPlacements?: PendingThreatPlacement[];
   /** Ordered player queue for End of Player Phase voluntary cleanup (RR v1.8 p. 23) */
   pendingCleanUpPlayerIds?: string[];
   scenarioId?: string;

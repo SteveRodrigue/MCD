@@ -8,9 +8,9 @@ import {
   ConditionGateSchema,
   StepConditionSchema,
   EffectTypeSchema,
-  KeywordSchema,
 } from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
+import { auditSchemaEngineCoverage } from './schema-engine-coverage';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +19,12 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
-const OUTPUT_REPORT_PATH = path.join(
+
+// Output paths
+const REPORTS_BASE_DIR = path.join(ROOT_DIR, 'docs/reports/supplemental_data');
+const DETAILED_REPORTS_DIR = path.join(REPORTS_BASE_DIR, 'detailed_reports');
+const MAIN_REPORT_PATH = path.join(REPORTS_BASE_DIR, 'usage_report.md');
+const LEGACY_POINTER_PATH = path.join(
   ROOT_DIR,
   'docs/reports/supplemental_declarations_usage_report.md',
 );
@@ -264,10 +269,18 @@ function loadAllAmbiguityReports(): Map<string, AmbiguityReportInfo> {
   return map;
 }
 
+function anchorId(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function runDeclarationsAudit() {
   const upstreamCards = loadAllUpstreamCards();
   const supplementalPacks = loadAllSupplementalPacks();
   const ambiguityReports = loadAllAmbiguityReports();
+  const coverageAudit = auditSchemaEngineCoverage();
 
   // Usage Maps
   const timingsUsage = new Map<string, UsageOccurrence[]>();
@@ -306,6 +319,17 @@ export function runDeclarationsAudit() {
     pack: string;
     abilitiesCount: number;
     abilities: { id: string; timing: string; trigger?: string; stepsCount: number }[];
+  }[] = [];
+
+  const multiStepCards: {
+    code: string;
+    name: string;
+    type: string;
+    pack: string;
+    abilityId: string;
+    timing: string;
+    stepsCount: number;
+    effectsSummary: string;
   }[] = [];
 
   let totalCardsInSupplemental = 0;
@@ -394,6 +418,18 @@ export function runDeclarationsAudit() {
         totalSingleStepAbilities += 1;
       } else if (ability.steps.length >= 2) {
         totalMultiStepAbilities += 1;
+        multiStepCards.push({
+          code,
+          name: cardName,
+          type: upstreamCards.get(code)?.type_code || 'unknown',
+          pack,
+          abilityId,
+          timing: ability.timing || 'ACTION',
+          stepsCount: ability.steps.length,
+          effectsSummary: ability.steps
+            .map((s, idx) => `[${idx + 1}] ${s.effect || 'UNKNOWN'}`)
+            .join(' ➔ '),
+        });
       }
 
       for (const step of ability.steps) {
@@ -568,296 +604,98 @@ export function runDeclarationsAudit() {
     }
   }
 
-  function formatExamples(occurrences: UsageOccurrence[], max = 3): string {
-    const uniqueCards = Array.from(new Set(occurrences.map((o) => `\`${o.code}\` ${o.cardName}`)));
-    const sample = uniqueCards.slice(0, max).join(', ');
-    return uniqueCards.length > max ? `${sample} *(+${uniqueCards.length - max} more)*` : sample;
+  function formatCardListTable(occurrences: UsageOccurrence[]): string {
+    const uniqueMap = new Map<
+      string,
+      { code: string; name: string; pack: string; abilityIds: Set<string> }
+    >();
+    for (const occ of occurrences) {
+      if (!uniqueMap.has(occ.code)) {
+        uniqueMap.set(occ.code, {
+          code: occ.code,
+          name: occ.cardName,
+          pack: occ.pack,
+          abilityIds: new Set<string>(),
+        });
+      }
+      uniqueMap.get(occ.code)!.abilityIds.add(occ.abilityId);
+    }
+
+    const rows = Array.from(uniqueMap.values()).sort((a, b) =>
+      a.code.localeCompare(b.code, undefined, { numeric: true }),
+    );
+
+    const lines: string[] = [];
+    lines.push(`| Card Code | Card Name | Pack | Declared In Abilities |`);
+    lines.push(`| :--- | :--- | :--- | :--- |`);
+    for (const r of rows) {
+      const abilities = Array.from(r.abilityIds)
+        .map((id) => `\`${id}\``)
+        .join(', ');
+      lines.push(`| \`${r.code}\` | **${r.name}** | \`${r.pack}\` | ${abilities} |`);
+    }
+    return lines.join('\n');
   }
 
-  // Markdown Report Generator
-  const reportLines: string[] = [];
+  // Ensure output directories exist
+  if (!fs.existsSync(DETAILED_REPORTS_DIR)) {
+    fs.mkdirSync(DETAILED_REPORTS_DIR, { recursive: true });
+  }
+
   const timestamp = new Date().toISOString();
 
-  reportLines.push(`# Supplemental Card Declarations Usage & Impact Report`);
-  reportLines.push(``);
-  reportLines.push(`> **Generated:** \`${timestamp}\`  `);
-  reportLines.push(
-    `> **Source Packs Scanned:** \`${Array.from(supplementalPacks.keys()).join(', ')}\``,
+  // =========================================================================
+  // DETAILED REPORT 1: Vanilla & Passive Cards
+  // =========================================================================
+  const vanillaReportLines: string[] = [];
+  vanillaReportLines.push(`# 🟢 Vanilla & Passive Cards Inventory (\`noSupplementalNeeded\`)`);
+  vanillaReportLines.push(``);
+  vanillaReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  vanillaReportLines.push(``);
+  vanillaReportLines.push(
+    `> **Generated:** \`${timestamp}\` | **Total Verified Vanilla Cards:** **${noSupplementalCards.length}**`,
   );
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 📊 1. Executive Summary`);
-  reportLines.push(``);
-  reportLines.push(`| Metric | Count | Description |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  reportLines.push(
-    `| **Total Cards Registered** | **${totalCardsInSupplemental}** | Total cards present in \`src/data/supplemental/\` |`,
+  vanillaReportLines.push(``);
+  vanillaReportLines.push(
+    `These cards require zero declarative engine hooks (e.g. vanilla resources, base stats only, or passive encounter cards without triggers).`,
   );
-  reportLines.push(
-    `| **Active Declared Cards** | **${totalCardsWithAbilities}** | Cards with executable \`abilities: [...]\` |`,
+  vanillaReportLines.push(``);
+  vanillaReportLines.push(
+    `| Card Code | Card Name | Type | Faction / Aspect | Pack | Audit Comment / Justification |`,
   );
-  reportLines.push(
-    `| **No Supplemental Needed** | **${noSupplementalCards.length}** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |`,
-  );
-  reportLines.push(
-    `| **Open Ambiguity Reports** | **${ambiguityReports.size}** | Blocked cards isolated in \`docs/ambiguities/\` (Inbox Zero Queue) |`,
-  );
-  reportLines.push(
-    `| **False-Vanilla Violations** | **${falseVanillaViolations.length}** | 🚨 Cards marked \`noSupplementalNeeded\` that have printed rules text |`,
-  );
-  reportLines.push(
-    `| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | Total individual ability definitions declared |`,
-  );
-  reportLines.push(
-    `| **Single-Step Abilities (1 Step)** | **${totalSingleStepAbilities}** | Abilities with exactly 1 atomic execution step |`,
-  );
-  reportLines.push(
-    `| **Multi-Step Abilities (2+ Steps)** | **${totalMultiStepAbilities}** | Abilities decomposed into sequenced execution pipelines |`,
-  );
-  reportLines.push(
-    `| **Cards with Multi-Step Sequences** | **${totalCardsWithMultiStep}** | Cards containing at least 1 ability with 2+ steps |`,
-  );
-  reportLines.push(
-    `| **Cards with Multiple Abilities (2+)** | **${multiAbilityCards.length}** | Cards declaring more than 1 distinct ability header |`,
-  );
-  reportLines.push(
-    `| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Target Selectors In Use** | **${targetsUsage.size}** | Distinct target selectors actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Triggers In Use** | **${triggersUsage.size}** | Distinct trigger window types actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Timings In Use** | **${timingsUsage.size}** | Distinct timing categories actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Condition Gates In Use** | **${gatesUsage.size}** | Distinct condition gate types actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Step Conditions In Use** | **${stepConditionsUsage.size}** | Distinct step condition types actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Cost Keys In Use** | **${costsUsage.size}** | Distinct ability cost types actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Effect Param Keys In Use** | **${effectParamsUsage.size}** | Distinct parameter keys passed into effect steps |`,
-  );
-  reportLines.push(
-    `| **Unique Dynamic Value Sources In Use** | **${dynamicValuesUsage.size}** | Distinct dynamic value resolver shapes actively declared |`,
-  );
-  reportLines.push(
-    `| **Unique Filter Criteria Keys In Use** | **${filterCriteriaUsage.size}** | Distinct UniversalCardFilter criteria properties actively declared |`,
-  );
-  reportLines.push(``);
-
-  if (falseVanillaViolations.length > 0) {
-    reportLines.push(`---`);
-    reportLines.push(``);
-    reportLines.push(`## 🚨 2. False-Vanilla Violations (Immediate Action Required)`);
-    reportLines.push(``);
-    reportLines.push(
-      `The following **${falseVanillaViolations.length} cards** are marked \`"noSupplementalNeeded": true\`, but have active printed rules text in \`data/upstream/\`! Per Step 3 of the Card Integration Protocol, they must be converted to active abilities or isolated in \`docs/ambiguities/\`:`,
-    );
-    reportLines.push(``);
-    reportLines.push(`| Card Code | Card Name | Type | Pack | Printed Rules Text |`);
-    reportLines.push(`| :--- | :--- | :--- | :--- | :--- |`);
-    for (const v of falseVanillaViolations) {
-      const cleanText = v.printedText
-        .replace(/\r?\n|\r/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      reportLines.push(
-        `| \`${v.code}\` | **${v.name}** | \`${v.type}\` | \`${v.pack}\` | ${cleanText} |`,
-      );
-    }
-    reportLines.push(``);
-  }
-
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(
-    `## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — ${ambiguityReports.size} Cards)`,
-  );
-  reportLines.push(``);
-  reportLines.push(
-    `These **${ambiguityReports.size} cards** are currently isolated in [\`docs/ambiguities/\`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\\ge 95\\%$ confidence, its file is deleted to achieve **Inbox Zero**:`,
-  );
-  reportLines.push(``);
-  reportLines.push(
-    `| Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |`,
-  );
-  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
-
-  const sortedAmbiguities = Array.from(ambiguityReports.values()).sort((a, b) =>
-    a.code.localeCompare(b.code, undefined, { numeric: true }),
-  );
-  for (const amb of sortedAmbiguities) {
-    reportLines.push(
-      `| \`${amb.code}\` | **${amb.name}** | \`${amb.pack}\` | \`${amb.confidence}%\` | \`${amb.blockerCategory}\` | [\`${amb.filename}\`](../ambiguities/${amb.filename}) |`,
-    );
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 🃏 3. Card-Level Declarations Inventory (\`CardEnrichmentSchema\`)`);
-  reportLines.push(``);
-  reportLines.push(
-    `### 🟢 Vanilla / Passive Cards (\`"noSupplementalNeeded": true\` — ${noSupplementalCards.length} Cards)`,
-  );
-  reportLines.push(``);
-  reportLines.push(
-    `| Card Code | Card Name | Type | Faction / Aspect | Pack | Description / Comment |`,
-  );
-  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
-
+  vanillaReportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
   noSupplementalCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
   for (const c of noSupplementalCards) {
-    reportLines.push(
+    vanillaReportLines.push(
       `| \`${c.code}\` | **${c.name}** | \`${c.type}\` | \`${c.faction}\` | \`${c.pack}\` | ${c.comment} |`,
     );
   }
-
-  reportLines.push(``);
-  reportLines.push(`### Play Requirements (\`PlayRequirementsSchema\`):`);
-  reportLines.push(`| Requirement Property | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [req, list] of Array.from(playReqsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${req}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Card Uses & Counters (\`CardUsesSchema\`):`);
-  reportLines.push(`| Uses Descriptor | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [uses, list] of Array.from(usesUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${uses}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Card Keywords (\`KeywordEntrySchema\`):`);
-  reportLines.push(`| Keyword | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [kw, list] of Array.from(keywordsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${kw}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const kw of KeywordSchema.options) {
-    if (!keywordsUsage.has(kw)) {
-      reportLines.push(`| \`${kw}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Player Recipient Overrides (\`PlayerRecipientSchema\`):`);
-  reportLines.push(`| Recipient Type | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [rec, list] of Array.from(recipientsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${rec}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Stat & Rule Overrides:`);
-  reportLines.push(`| Override Key | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [ov, list] of Array.from(cardOverridesUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${ov}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## ⚡ 4. Ability Headers & Trigger Windows (\`CardAbilitySchema\`)`);
-  reportLines.push(``);
-  reportLines.push(`### Ability Timings (\`TimingTypeSchema\`):`);
-  reportLines.push(`| Timing | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [timing, list] of Array.from(timingsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${timing}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const timing of TimingTypeSchema.options) {
-    if (!timingsUsage.has(timing)) {
-      reportLines.push(`| \`${timing}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Trigger Windows (\`TriggerTypeSchema\`):`);
-  reportLines.push(`| Trigger Window | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [trigger, list] of Array.from(triggersUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${trigger}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const trigger of TriggerTypeSchema.options) {
-    if (!triggersUsage.has(trigger)) {
-      reportLines.push(`| \`${trigger}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Trigger Filters (\`TriggerFilterSchema\`):`);
-  reportLines.push(`| Filter Property | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [tf, list] of Array.from(triggerFiltersUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${tf}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Cost Primitives (\`AbilityCostSchema\`):`);
-  reportLines.push(`| Cost Key | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [cost, list] of Array.from(costsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${cost}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Ability Limits & Zones:`);
-  reportLines.push(`| Limit / Zone | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [lim, list] of Array.from(limitsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| Limit: \`${lim}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-  for (const [z, list] of Array.from(zonesUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| Zone: \`${z}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(
-    `### 📋 Cards with Multiple Abilities (2+ Abilities Declared — ${multiAbilityCards.length} Cards)`,
+  vanillaReportLines.push(``);
+  vanillaReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'vanilla_and_passive_cards.md'),
+    vanillaReportLines.join('\n'),
+    'utf-8',
   );
-  reportLines.push(``);
-  reportLines.push(
+
+  // =========================================================================
+  // DETAILED REPORT 2: Multi-Ability & Multi-Step Cards
+  // =========================================================================
+  const multiReportLines: string[] = [];
+  multiReportLines.push(`# 📋 Multi-Ability & Multi-Step Pipelines Inventory`);
+  multiReportLines.push(``);
+  multiReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  multiReportLines.push(``);
+  multiReportLines.push(`> **Generated:** \`${timestamp}\``);
+  multiReportLines.push(``);
+  multiReportLines.push(
+    `## 1. Cards with Multiple Abilities (2+ Declared Abilities — ${multiAbilityCards.length} Cards)`,
+  );
+  multiReportLines.push(``);
+  multiReportLines.push(
     `| Card Code | Card Name | Type | Pack | Ability Count | Declared Abilities Summary |`,
   );
-  reportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
-
+  multiReportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
   multiAbilityCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
   for (const m of multiAbilityCards) {
     const abList = m.abilities
@@ -866,276 +704,686 @@ export function runDeclarationsAudit() {
         return `• \`${a.id}\` (\`${a.timing}\`${triggerStr}, **${a.stepsCount} step${a.stepsCount === 1 ? '' : 's'}**)`;
       })
       .join('<br/>');
-    reportLines.push(
+    multiReportLines.push(
       `| \`${m.code}\` | **${m.name}** | \`${m.type}\` | \`${m.pack}\` | **${m.abilitiesCount}** | ${abList} |`,
     );
   }
 
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 🎯 5. Target Selectors Inventory (\`TargetSelectorSchema\`)`);
-  reportLines.push(``);
-  reportLines.push(
-    `This inventory tracks all target selectors declared on ability steps (\`step.target\` or \`step.effectParams.target\`):`,
+  multiReportLines.push(``);
+  multiReportLines.push(
+    `## 2. Multi-Step Execution Pipelines (2+ Steps — ${multiStepCards.length} Pipelines Across ${totalCardsWithMultiStep} Cards)`,
   );
-  reportLines.push(``);
-  reportLines.push(`| Target Selector | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-
-  for (const [target, list] of Array.from(targetsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${target}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const target of TargetSelectorSchema.options) {
-    if (!targetsUsage.has(target)) {
-      reportLines.push(`| \`${target}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  if (distinctFromUsage.size > 0) {
-    reportLines.push(``);
-    reportLines.push(`### Target Differentiation (\`DistinctFromSchema\`):`);
-    reportLines.push(`| Distinct Mode | Occurrences | Cards |`);
-    reportLines.push(`| :--- | :--- | :--- |`);
-    for (const [df, list] of Array.from(distinctFromUsage.entries()).sort(
-      (a, b) => b[1].length - a[1].length,
-    )) {
-      reportLines.push(`| \`${df}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(
-    `## 🚦 6. Condition Gates & Step Conditions (\`ConditionGateSchema\`, \`StepConditionSchema\`)`,
+  multiReportLines.push(``);
+  multiReportLines.push(
+    `| Card Code | Card Name | Pack | Ability ID | Timing | Steps | Pipeline Execution Sequence |`,
   );
-  reportLines.push(``);
-  reportLines.push(`### Condition Gates (\`ConditionGateSchema\`):`);
-  reportLines.push(`| Condition Gate | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [gate, list] of Array.from(gatesUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${gate}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  multiReportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- | :--- |`);
+  multiStepCards.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  for (const p of multiStepCards) {
+    multiReportLines.push(
+      `| \`${p.code}\` | **${p.name}** | \`${p.pack}\` | \`${p.abilityId}\` | \`${p.timing}\` | **${p.stepsCount}** | \`${p.effectsSummary}\` |`,
+    );
+  }
+  multiReportLines.push(``);
+  multiReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'multi_ability_and_multistep_cards.md'),
+    multiReportLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // DETAILED REPORT 3: Effects Usage
+  // =========================================================================
+  const effectsReportLines: string[] = [];
+  effectsReportLines.push(`# 💥 Effect Primitives Usage Inventory (\`EffectTypeSchema\`)`);
+  effectsReportLines.push(``);
+  effectsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  effectsReportLines.push(``);
+  effectsReportLines.push(
+    `> **Generated:** \`${timestamp}\` | **Active Effects In Use:** **${effectsUsage.size}/${EffectTypeSchema.options.length}**`,
+  );
+  effectsReportLines.push(``);
+  effectsReportLines.push(
+    `This detailed catalog groups cards declaring each effect primitive in \`src/data/supplemental/\`.`,
+  );
+  effectsReportLines.push(``);
+
+  const sortedEffects = Array.from(effectsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+
+  for (const [effect, occs] of sortedEffects) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    effectsReportLines.push(
+      `### <a id="${anchorId(effect)}"></a>\`${effect}\` (${uniqueCards} Cards, ${occs.length} Step Occurrences)`,
+    );
+    effectsReportLines.push(``);
+    effectsReportLines.push(formatCardListTable(occs));
+    effectsReportLines.push(``);
+  }
+  effectsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'effects_usage.md'),
+    effectsReportLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // DETAILED REPORT 4: Target Selectors Usage
+  // =========================================================================
+  const targetsReportLines: string[] = [];
+  targetsReportLines.push(`# 🎯 Target Selectors Usage Inventory (\`TargetSelectorSchema\`)`);
+  targetsReportLines.push(``);
+  targetsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  targetsReportLines.push(``);
+  targetsReportLines.push(
+    `> **Generated:** \`${timestamp}\` | **Active Target Selectors In Use:** **${targetsUsage.size}/${TargetSelectorSchema.options.length}**`,
+  );
+  targetsReportLines.push(``);
+
+  const sortedTargets = Array.from(targetsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+
+  for (const [target, occs] of sortedTargets) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    targetsReportLines.push(
+      `### <a id="${anchorId(target)}"></a>\`${target}\` (${uniqueCards} Cards, ${occs.length} Declarations)`,
+    );
+    targetsReportLines.push(``);
+    targetsReportLines.push(formatCardListTable(occs));
+    targetsReportLines.push(``);
+  }
+  targetsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'target_selectors_usage.md'),
+    targetsReportLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // DETAILED REPORT 5: Timing & Triggers Usage
+  // =========================================================================
+  const timingTriggersReportLines: string[] = [];
+  timingTriggersReportLines.push(`# ⚡ Timing & Triggers Usage Inventory`);
+  timingTriggersReportLines.push(``);
+  timingTriggersReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  timingTriggersReportLines.push(``);
+  timingTriggersReportLines.push(`> **Generated:** \`${timestamp}\``);
+  timingTriggersReportLines.push(``);
+  timingTriggersReportLines.push(
+    `## 1. Ability Timings (\`TimingTypeSchema\` — ${timingsUsage.size}/${TimingTypeSchema.options.length} In Use)`,
+  );
+  timingTriggersReportLines.push(``);
+
+  const sortedTimings = Array.from(timingsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+  for (const [timing, occs] of sortedTimings) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    timingTriggersReportLines.push(
+      `### <a id="${anchorId(timing)}"></a>\`${timing}\` (${uniqueCards} Cards)`,
+    );
+    timingTriggersReportLines.push(``);
+    timingTriggersReportLines.push(formatCardListTable(occs));
+    timingTriggersReportLines.push(``);
   }
 
-  for (const gate of ConditionGateSchema.options) {
-    if (!gatesUsage.has(gate)) {
-      reportLines.push(`| \`${gate}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+  timingTriggersReportLines.push(
+    `## 2. Trigger Windows (\`TriggerTypeSchema\` — ${triggersUsage.size}/${TriggerTypeSchema.options.length} In Use)`,
+  );
+  timingTriggersReportLines.push(``);
+  const sortedTriggers = Array.from(triggersUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+  for (const [trigger, occs] of sortedTriggers) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    timingTriggersReportLines.push(
+      `### <a id="${anchorId(trigger)}"></a>\`${trigger}\` (${uniqueCards} Cards)`,
+    );
+    timingTriggersReportLines.push(``);
+    timingTriggersReportLines.push(formatCardListTable(occs));
+    timingTriggersReportLines.push(``);
+  }
+  timingTriggersReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'timing_and_triggers_usage.md'),
+    timingTriggersReportLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // DETAILED REPORT 6: Condition Gates & Step Conditions Usage
+  // =========================================================================
+  const conditionsReportLines: string[] = [];
+  conditionsReportLines.push(`# 🚦 Condition Gates & Step Conditions Usage Inventory`);
+  conditionsReportLines.push(``);
+  conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  conditionsReportLines.push(``);
+  conditionsReportLines.push(`> **Generated:** \`${timestamp}\``);
+  conditionsReportLines.push(``);
+  conditionsReportLines.push(
+    `## 1. Condition Gates (\`ConditionGateSchema\` — ${gatesUsage.size}/${ConditionGateSchema.options.length} In Use)`,
+  );
+  conditionsReportLines.push(``);
+
+  const sortedGates = Array.from(gatesUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+  for (const [gate, occs] of sortedGates) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    conditionsReportLines.push(
+      `### <a id="${anchorId(gate)}"></a>\`${gate}\` (${uniqueCards} Cards)`,
+    );
+    conditionsReportLines.push(``);
+    conditionsReportLines.push(formatCardListTable(occs));
+    conditionsReportLines.push(``);
+  }
+
+  conditionsReportLines.push(
+    `## 2. Step Conditions (\`StepConditionSchema\` — ${stepConditionsUsage.size}/${StepConditionSchema.options.length} In Use)`,
+  );
+  conditionsReportLines.push(``);
+  const sortedStepConds = Array.from(stepConditionsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+  );
+  for (const [sc, occs] of sortedStepConds) {
+    const uniqueCards = new Set(occs.map((o) => o.code)).size;
+    conditionsReportLines.push(`### <a id="${anchorId(sc)}"></a>\`${sc}\` (${uniqueCards} Cards)`);
+    conditionsReportLines.push(``);
+    conditionsReportLines.push(formatCardListTable(occs));
+    conditionsReportLines.push(``);
+  }
+  conditionsReportLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'condition_gates_usage.md'),
+    conditionsReportLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // DETAILED REPORT 7: Full Schema <-> Engine Code Path Audit
+  // =========================================================================
+  const schemaAuditLines: string[] = [];
+  schemaAuditLines.push(`# 🔍 Schema Primitives Code Path Verification Matrix`);
+  schemaAuditLines.push(``);
+  schemaAuditLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  schemaAuditLines.push(``);
+  schemaAuditLines.push(
+    `> **Generated:** \`${timestamp}\` | **Overall Coverage:** **${coverageAudit.overallCoverageRate.toFixed(1)}%**`,
+  );
+  schemaAuditLines.push(``);
+  schemaAuditLines.push(
+    `This matrix audits every schema primitive defined in \`src/data/supplemental/schema.ts\` across 3 dimensions:`,
+  );
+  schemaAuditLines.push(`1. **In Schema**: Is the enum option formally defined in schema.ts?`);
+  schemaAuditLines.push(`2. **In Supplemental Data**: Is it declared by active card packages?`);
+  schemaAuditLines.push(
+    `3. **In Engine / Pipeline**: Does a live code path (handler / evaluator / resolver) exist in \`src/engine/\`?`,
+  );
+  schemaAuditLines.push(``);
+  schemaAuditLines.push(`### Health Status Legend:`);
+  schemaAuditLines.push(
+    `- 🟢 **Active / Healthy**: Defined in Schema + Code Path Implemented + Used by Cards.`,
+  );
+  schemaAuditLines.push(
+    `- 🔵 **Engine-Ready (Unused)**: Defined in Schema + Code Path Implemented + 0 Cards (ready for new cards).`,
+  );
+  schemaAuditLines.push(
+    `- 🔴 **Missing Engine Handler**: Declared by Cards + **No Engine Code Path** (Runtime failure risk!).`,
+  );
+  schemaAuditLines.push(
+    `- ⚠️ **Schema Ghost / Dead Schema**: Defined in Schema + **No Code Path** + 0 Cards (Unused schema debt).`,
+  );
+  schemaAuditLines.push(``);
+
+  function generateAuditTable(
+    enumTitle: string,
+    options: readonly string[],
+    usageMap: Map<string, UsageOccurrence[]>,
+    handledSet: Set<string>,
+    handlerLocation: string,
+  ): string[] {
+    const lines: string[] = [];
+    lines.push(`### ${enumTitle}`);
+    lines.push(``);
+    lines.push(
+      `| Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |`,
+    );
+    lines.push(`| :--- | :---: | :---: | :---: | :--- |`);
+
+    for (const opt of options) {
+      const cardCount = usageMap.get(opt)?.length || 0;
+      const hasEngine = handledSet.has(opt);
+
+      let status = '';
+      let note = '';
+      if (hasEngine && cardCount > 0) {
+        status = '🟢 Active';
+        note = `Handled in ${handlerLocation}; declared by ${cardCount} card(s).`;
+      } else if (hasEngine && cardCount === 0) {
+        status = '🔵 Engine-Ready';
+        note = `Handled in ${handlerLocation}; 0 cards currently declare this.`;
+      } else if (!hasEngine && cardCount > 0) {
+        status = '🔴 Missing Handler';
+        note = `🚨 DECLARED BY ${cardCount} CARD(S) BUT NO ENGINE CODE PATH FOUND!`;
+      } else {
+        status = '⚠️ Schema Ghost';
+        note = `Defined in schema but no engine handler and 0 cards. Candidate for cleanup.`;
+      }
+
+      lines.push(
+        `| \`${opt}\` | ${hasEngine ? '✅ Yes' : '❌ No'} | **${cardCount}** | ${status} | ${note} |`,
+      );
+    }
+    lines.push(``);
+    return lines;
+  }
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `1. Effect Primitives (\`EffectTypeSchema\` — ${coverageAudit.effectsCoverageRate.toFixed(1)}% Engine Coverage)`,
+      EffectTypeSchema.options,
+      effectsUsage,
+      coverageAudit.effectsHandledSet,
+      '`src/engine/effects/index.ts` / specialized pipelines',
+    ),
+  );
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `2. Target Selectors (\`TargetSelectorSchema\` — ${coverageAudit.targetsCoverageRate.toFixed(1)}% Engine Coverage)`,
+      TargetSelectorSchema.options,
+      targetsUsage,
+      coverageAudit.targetsHandledSet,
+      '`src/engine/effects/target-resolver.ts`',
+    ),
+  );
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `3. Condition Gates (\`ConditionGateSchema\` — ${coverageAudit.gatesCoverageRate.toFixed(1)}% Engine Coverage)`,
+      ConditionGateSchema.options,
+      gatesUsage,
+      coverageAudit.gatesHandledSet,
+      '`src/engine/pipeline/step-gate-evaluator.ts`',
+    ),
+  );
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `4. Step Conditions (\`StepConditionSchema\` — ${coverageAudit.stepConditionsCoverageRate.toFixed(1)}% Engine Coverage)`,
+      StepConditionSchema.options,
+      stepConditionsUsage,
+      coverageAudit.stepConditionsHandledSet,
+      '`src/engine/effects/index.ts` / `step-gate-evaluator.ts`',
+    ),
+  );
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `5. Trigger Windows (\`TriggerTypeSchema\` — ${coverageAudit.triggersCoverageRate.toFixed(1)}% Engine Coverage)`,
+      TriggerTypeSchema.options,
+      triggersUsage,
+      coverageAudit.triggersHandledSet,
+      '`src/engine/triggers/` & scenario pipelines',
+    ),
+  );
+
+  schemaAuditLines.push(
+    ...generateAuditTable(
+      `6. Ability Timings (\`TimingTypeSchema\` — ${coverageAudit.timingsCoverageRate.toFixed(1)}% Engine Coverage)`,
+      TimingTypeSchema.options,
+      timingsUsage,
+      coverageAudit.timingsHandledSet,
+      '`src/engine/` timing evaluation paths',
+    ),
+  );
+
+  schemaAuditLines.push(`[← Back to Main Usage Report](../usage_report.md)`);
+  fs.writeFileSync(
+    path.join(DETAILED_REPORTS_DIR, 'schema_code_path_audit.md'),
+    schemaAuditLines.join('\n'),
+    'utf-8',
+  );
+
+  // =========================================================================
+  // MAIN DASHBOARD: docs/reports/supplemental_data/usage_report.md
+  // =========================================================================
+  const mainReportLines: string[] = [];
+  mainReportLines.push(`# Supplemental Card Declarations Usage & Impact Report`);
+  mainReportLines.push(``);
+  mainReportLines.push(`> **Generated:** \`${timestamp}\`  `);
+  mainReportLines.push(
+    `> **Source Packs Scanned:** \`${Array.from(supplementalPacks.keys()).join(', ')}\``,
+  );
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 📊 1. Executive Summary & Code Path Health`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Metric | Count | Health / Coverage | Description |`);
+  mainReportLines.push(`| :--- | :---: | :---: | :--- |`);
+  mainReportLines.push(
+    `| **Total Cards Registered** | **${totalCardsInSupplemental}** | 100% | Total cards present in \`src/data/supplemental/\` |`,
+  );
+  mainReportLines.push(
+    `| **Active Declared Cards** | **${totalCardsWithAbilities}** | - | Cards with executable \`abilities: [...]\` |`,
+  );
+  mainReportLines.push(
+    `| **No Supplemental Needed** | [${noSupplementalCards.length}](detailed_reports/vanilla_and_passive_cards.md) | Verified | Vanilla / passive cards explicitly requiring no supplemental hooks |`,
+  );
+  mainReportLines.push(
+    `| **Open Ambiguity Reports** | **${ambiguityReports.size}** | Blocked | Cards isolated in \`docs/ambiguities/\` (Inbox Zero Queue) |`,
+  );
+  mainReportLines.push(
+    `| **False-Vanilla Violations** | **${falseVanillaViolations.length}** | ${falseVanillaViolations.length === 0 ? '🟢 0' : '🚨 ALERT'} | Cards marked \`noSupplementalNeeded\` that have printed rules text |`,
+  );
+  mainReportLines.push(
+    `| **Overall Schema Engine Coverage** | **${coverageAudit.overallCoverageRate.toFixed(1)}%** | [Matrix](detailed_reports/schema_code_path_audit.md) | Percentage of all schema primitives with active engine code paths |`,
+  );
+  mainReportLines.push(
+    `| **Effect Types Code Path Coverage** | **${coverageAudit.effectsCoverageRate.toFixed(1)}%** | **${coverageAudit.effectsHandledSet.size}/${EffectTypeSchema.options.length}** | [${effectsUsage.size} In Use](detailed_reports/effects_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Target Selectors Code Path Coverage** | **${coverageAudit.targetsCoverageRate.toFixed(1)}%** | **${coverageAudit.targetsHandledSet.size}/${TargetSelectorSchema.options.length}** | [${targetsUsage.size} In Use](detailed_reports/target_selectors_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Condition Gates Code Path Coverage** | **${coverageAudit.gatesCoverageRate.toFixed(1)}%** | **${coverageAudit.gatesHandledSet.size}/${ConditionGateSchema.options.length}** | [${gatesUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Step Conditions Code Path Coverage** | **${coverageAudit.stepConditionsCoverageRate.toFixed(1)}%** | **${coverageAudit.stepConditionsHandledSet.size}/${StepConditionSchema.options.length}** | [${stepConditionsUsage.size} In Use](detailed_reports/condition_gates_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Trigger Types Code Path Coverage** | **${coverageAudit.triggersCoverageRate.toFixed(1)}%** | **${coverageAudit.triggersHandledSet.size}/${TriggerTypeSchema.options.length}** | [${triggersUsage.size} In Use](detailed_reports/timing_and_triggers_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Timing Types Code Path Coverage** | **${coverageAudit.timingsCoverageRate.toFixed(1)}%** | **${coverageAudit.timingsHandledSet.size}/${TimingTypeSchema.options.length}** | [${timingsUsage.size} In Use](detailed_reports/timing_and_triggers_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Total Abilities Declared** | **${totalAbilitiesDeclared}** | - | Total individual ability definitions declared |`,
+  );
+  mainReportLines.push(
+    `| **Multi-Step Pipelines (2+ Steps)** | [${totalMultiStepAbilities}](detailed_reports/multi_ability_and_multistep_cards.md) | - | Abilities decomposed into sequenced execution pipelines |`,
+  );
+  mainReportLines.push(
+    `| **Cards with Multiple Abilities (2+)** | [${multiAbilityCards.length}](detailed_reports/multi_ability_and_multistep_cards.md) | - | Cards declaring more than 1 distinct ability header |`,
+  );
+
+  if (falseVanillaViolations.length > 0) {
+    mainReportLines.push(``);
+    mainReportLines.push(`---`);
+    mainReportLines.push(`## 🚨 2. False-Vanilla Violations (Immediate Action Required)`);
+    mainReportLines.push(``);
+    mainReportLines.push(`| Card Code | Card Name | Type | Pack | Printed Rules Text |`);
+    mainReportLines.push(`| :--- | :--- | :--- | :--- | :--- |`);
+    for (const v of falseVanillaViolations) {
+      const cleanText = v.printedText
+        .replace(/\r?\n|\r/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      mainReportLines.push(
+        `| \`${v.code}\` | **${v.name}** | \`${v.type}\` | \`${v.pack}\` | ${cleanText} |`,
+      );
     }
   }
 
-  reportLines.push(``);
-  reportLines.push(`### Gate Parameters (\`gateParams\`):`);
-  reportLines.push(`| Parameter Key | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [gp, list] of Array.from(gateParamsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${gp}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Declarative Step Conditions (\`StepConditionSchema\`):`);
-  reportLines.push(`| Step Condition | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [cond, list] of Array.from(stepConditionsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${cond}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const cond of StepConditionSchema.options) {
-    if (!stepConditionsUsage.has(cond)) {
-      reportLines.push(`| \`${cond}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 💥 7. Effect Primitives Inventory (\`EffectTypeSchema\`)`);
-  reportLines.push(``);
-  reportLines.push(`### High-Impact Effects (Blast-Radius $\\ge 5$ Cards):`);
-  reportLines.push(`| Effect Primitive | Card Count | Example Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-
-  const highImpactEffects = Array.from(effectsUsage.entries())
-    .filter(([_, list]) => list.length >= 5)
-    .sort((a, b) => b[1].length - a[1].length);
-
-  for (const [effect, list] of highImpactEffects) {
-    reportLines.push(`| \`${effect}\` | **${list.length}** | ${formatExamples(list, 3)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Single-Use Effects (Card Count = 1):`);
-  reportLines.push(`| Effect Primitive | Card Code | Card Name & Pack | Ability ID |`);
-  reportLines.push(`| :--- | :--- | :--- | :--- |`);
-
-  const singleUseEffects = Array.from(effectsUsage.entries())
-    .filter(([_, list]) => list.length === 1)
-    .sort((a, b) => a[0].localeCompare(b[0]));
-
-  for (const [effect, list] of singleUseEffects) {
-    const item = list[0];
-    reportLines.push(
-      `| \`${effect}\` | \`${item.code}\` | ${item.cardName} (${item.pack}) | \`${item.abilityId}\` |`,
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `## 🔴 2. Active Ambiguity & Blocker Queue (${ambiguityReports.size} Cards)`,
+  );
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `These cards are currently isolated in [\`docs/ambiguities/\`](../../ambiguities/README.md) pending rules engine primitives or targeting extensions:`,
+  );
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `| Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |`,
+  );
+  mainReportLines.push(`| :--- | :--- | :--- | :--- | :--- | :--- |`);
+  const sortedAmbiguities = Array.from(ambiguityReports.values()).sort((a, b) =>
+    a.code.localeCompare(b.code, undefined, { numeric: true }),
+  );
+  for (const amb of sortedAmbiguities) {
+    mainReportLines.push(
+      `| \`${amb.code}\` | **${amb.name}** | \`${amb.pack}\` | \`${amb.confidence}%\` | \`${amb.blockerCategory}\` | [\`${amb.filename}\`](../../ambiguities/${amb.filename}) |`,
     );
   }
 
-  reportLines.push(``);
-  reportLines.push(`### Complete Effects Inventory:`);
-  reportLines.push(`| Effect Primitive | Occurrences | Declaring Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-
-  const allEffectsSorted = Array.from(effectsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 🃏 3. Card-Level Declarations Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Category | Active Count | Detailed Breakdown |`);
+  mainReportLines.push(`| :--- | :---: | :--- |`);
+  mainReportLines.push(
+    `| **Vanilla / Passive Cards** | **${noSupplementalCards.length}** | [View Full List](detailed_reports/vanilla_and_passive_cards.md) |`,
   );
-  for (const [effect, list] of allEffectsSorted) {
-    const cards = Array.from(new Set(list.map((o) => `\`${o.code}\` (${o.cardName})`))).join(', ');
-    reportLines.push(`| \`${effect}\` | **${list.length}** | ${cards} |`);
-  }
-
-  for (const eff of EffectTypeSchema.options) {
-    if (!effectsUsage.has(eff)) {
-      reportLines.push(`| \`${eff}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(
-    `## 🔧 8. Effect Parameters & Dynamic Values (\`effectParams\`, \`DynamicValueSourceSchema\`)`,
+  mainReportLines.push(
+    `| **Play Requirements** | **${playReqsUsage.size}** | ${Array.from(playReqsUsage.keys())
+      .map((k) => `\`${k}\` (${playReqsUsage.get(k)!.length})`)
+      .join(', ')} |`,
   );
-  reportLines.push(``);
-  reportLines.push(`### Effect Parameter Keys (\`effectParams\`):`);
-  reportLines.push(`| Parameter Key | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [ep, list] of Array.from(effectParamsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${ep}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`### Dynamic Value Sources (\`DynamicValueSourceSchema\`):`);
-  reportLines.push(`| Dynamic Value Resolver | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [dv, list] of Array.from(dynamicValuesUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${dv}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(
-    `## 🔍 9. Universal Card Filters & Compositions (\`UniversalCardFilterSchema\`)`,
+  mainReportLines.push(
+    `| **Card Uses & Counters** | **${usesUsage.size}** | ${Array.from(usesUsage.keys())
+      .map((k) => `\`${k}\` (${usesUsage.get(k)!.length})`)
+      .join(', ')} |`,
   );
-  reportLines.push(``);
-  reportLines.push(`### Filter Predicate Criteria:`);
-  reportLines.push(`| Filter Criterion Key | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [fc, list] of Array.from(filterCriteriaUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${fc}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
+  mainReportLines.push(
+    `| **Keywords** | **${keywordsUsage.size}** | ${
+      keywordsUsage.size > 0
+        ? Array.from(keywordsUsage.keys())
+            .map((k) => `\`${k}\` (${keywordsUsage.get(k)!.length})`)
+            .join(', ')
+        : '*(None declared directly in supplemental)*'
+    } |`,
+  );
+  mainReportLines.push(
+    `| **Player Recipient Overrides** | **${recipientsUsage.size}** | ${Array.from(
+      recipientsUsage.keys(),
+    )
+      .map((k) => `\`${k}\` (${recipientsUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
+  mainReportLines.push(
+    `| **Stat & Rule Overrides** | **${cardOverridesUsage.size}** | ${Array.from(
+      cardOverridesUsage.keys(),
+    )
+      .map((k) => `\`${k}\` (${cardOverridesUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
 
-  reportLines.push(``);
-  reportLines.push(`### Filter Logical Compositions:`);
-  reportLines.push(`| Composition Branch | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [comp, list] of Array.from(filterCompositionsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(
-      `| \`${comp}\` (combinator) | **${list.length}** | ${formatExamples(list, 5)} |`,
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## ⚡ 4. Ability Headers, Timings & Triggers Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Component | In Use | Schema Total | Coverage | Detailed Report |`);
+  mainReportLines.push(`| :--- | :---: | :---: | :---: | :--- |`);
+  mainReportLines.push(
+    `| **Ability Timings** | **${timingsUsage.size}** | ${TimingTypeSchema.options.length} | ${coverageAudit.timingsCoverageRate.toFixed(1)}% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md) |`,
+  );
+  mainReportLines.push(
+    `| **Trigger Windows** | **${triggersUsage.size}** | ${TriggerTypeSchema.options.length} | ${coverageAudit.triggersCoverageRate.toFixed(1)}% | [View Declaring Cards](detailed_reports/timing_and_triggers_usage.md#2-trigger-windows-triggertypeschema) |`,
+  );
+  mainReportLines.push(
+    `| **Trigger Filters** | **${triggerFiltersUsage.size}** | - | - | ${Array.from(
+      triggerFiltersUsage.keys(),
+    )
+      .map((k) => `\`${k}\` (${triggerFiltersUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
+  mainReportLines.push(
+    `| **Cost Primitives** | **${costsUsage.size}** | - | - | ${Array.from(costsUsage.keys())
+      .map((k) => `\`${k}\` (${costsUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
+  mainReportLines.push(
+    `| **Multi-Ability Cards (2+)** | **${multiAbilityCards.length}** | - | - | [View ${multiAbilityCards.length} Cards](detailed_reports/multi_ability_and_multistep_cards.md) |`,
+  );
+
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 🎯 5. Target Selectors Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Top Target Selectors | Occurrences | Cards Count | Link to Details |`);
+  mainReportLines.push(`| :--- | :---: | :---: | :--- |`);
+  for (const [target, occs] of Array.from(targetsUsage.entries())
+    .sort((a, b) => b[1].length - a[1].length)
+    .slice(0, 10)) {
+    const uniqueCount = new Set(occs.map((o) => o.code)).size;
+    mainReportLines.push(
+      `| \`${target}\` | **${occs.length}** | ${uniqueCount} | [Inspect Cards](detailed_reports/target_selectors_usage.md#${anchorId(target)}) |`,
     );
   }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## ⚠️ 10. Global Zero-Usage & Schema Gap Detection`);
-  reportLines.push(``);
-  reportLines.push(
-    `The following schema enums are defined in \`src/data/supplemental/schema.ts\` but currently have **0 card declarations** across the active supplemental data packs:`,
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `> 🔗 **[View all ${targetsUsage.size} Target Selectors in Use →](detailed_reports/target_selectors_usage.md)**`,
   );
-  reportLines.push(``);
-  reportLines.push(`| Schema / Enum | Unused Enum Value | Status | Notes |`);
-  reportLines.push(`| :--- | :--- | :--- | :--- |`);
 
-  for (const eff of EffectTypeSchema.options) {
-    if (!effectsUsage.has(eff)) {
-      reportLines.push(
-        `| \`EffectTypeSchema\` | \`${eff}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this effect. |`,
-      );
-    }
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 🚦 6. Condition Gates & Step Conditions Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Mechanism | In Use | Schema Total | Coverage | Detailed Breakdown |`);
+  mainReportLines.push(`| :--- | :---: | :---: | :---: | :--- |`);
+  mainReportLines.push(
+    `| **Condition Gates** | **${gatesUsage.size}** | ${ConditionGateSchema.options.length} | ${coverageAudit.gatesCoverageRate.toFixed(1)}% | [View Gates Breakdown](detailed_reports/condition_gates_usage.md#1-condition-gates-conditiongateschema) |`,
+  );
+  mainReportLines.push(
+    `| **Step Conditions** | **${stepConditionsUsage.size}** | ${StepConditionSchema.options.length} | ${coverageAudit.stepConditionsCoverageRate.toFixed(1)}% | [View Step Conditions](detailed_reports/condition_gates_usage.md#2-step-conditions-stepconditionschema) |`,
+  );
+  mainReportLines.push(
+    `| **Gate Parameters** | **${gateParamsUsage.size}** | - | - | ${Array.from(
+      gateParamsUsage.keys(),
+    )
+      .map((k) => `\`${k}\` (${gateParamsUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
+
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 💥 7. Effect Primitives Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`### High-Impact Effects (Blast Radius $\\ge 5$ Cards):`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Effect Primitive | Declaring Cards | Occurrences | Detailed Card List |`);
+  mainReportLines.push(`| :--- | :---: | :---: | :--- |`);
+  const highImpact = Array.from(effectsUsage.entries())
+    .map(([eff, occs]) => ({
+      eff,
+      uniqueCards: new Set(occs.map((o) => o.code)).size,
+      totalOccs: occs.length,
+    }))
+    .filter((e) => e.uniqueCards >= 5)
+    .sort((a, b) => b.uniqueCards - a.uniqueCards);
+
+  for (const h of highImpact) {
+    mainReportLines.push(
+      `| \`${h.eff}\` | **${h.uniqueCards} cards** | ${h.totalOccs} steps | [View Cards](detailed_reports/effects_usage.md#${anchorId(h.eff)}) |`,
+    );
   }
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `> 🔗 **[View all ${effectsUsage.size} Effects in Use →](detailed_reports/effects_usage.md)**`,
+  );
 
-  for (const tr of TriggerTypeSchema.options) {
-    if (!triggersUsage.has(tr)) {
-      reportLines.push(
-        `| \`TriggerTypeSchema\` | \`${tr}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this trigger window. |`,
-      );
-    }
-  }
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## 🔍 8. Dynamic Values & Universal Filters Summary`);
+  mainReportLines.push(``);
+  mainReportLines.push(`| Feature | In Use | Declared Keys / Resolvers |`);
+  mainReportLines.push(`| :--- | :---: | :--- |`);
+  mainReportLines.push(
+    `| **Dynamic Value Sources** | **${dynamicValuesUsage.size}** | ${Array.from(
+      dynamicValuesUsage.keys(),
+    )
+      .slice(0, 6)
+      .map((k) => `\`${k}\``)
+      .join(
+        ', ',
+      )}${dynamicValuesUsage.size > 6 ? ` *(+${dynamicValuesUsage.size - 6} more)*` : ''} |`,
+  );
+  mainReportLines.push(
+    `| **Filter Criteria Keys** | **${filterCriteriaUsage.size}** | ${Array.from(
+      filterCriteriaUsage.keys(),
+    )
+      .map((k) => `\`${k}\` (${filterCriteriaUsage.get(k)!.length})`)
+      .join(', ')} |`,
+  );
+  mainReportLines.push(
+    `| **Filter Compositions** | **${filterCompositionsUsage.size}** | ${
+      filterCompositionsUsage.size > 0
+        ? Array.from(filterCompositionsUsage.keys())
+            .map((k) => `\`${k}\` (${filterCompositionsUsage.get(k)!.length})`)
+            .join(', ')
+        : '*(None declared)*'
+    } |`,
+  );
 
-  for (const tm of TimingTypeSchema.options) {
-    if (!timingsUsage.has(tm)) {
-      reportLines.push(
-        `| \`TimingTypeSchema\` | \`${tm}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this timing category. |`,
-      );
-    }
-  }
+  mainReportLines.push(``);
+  mainReportLines.push(`---`);
+  mainReportLines.push(``);
+  mainReportLines.push(`## ⚠️ 9. Code Path Verification & Zero-Usage Detection`);
+  mainReportLines.push(``);
+  mainReportLines.push(
+    `Every schema primitive is verified for a matching engine handler. Check the complete **[Schema Primitives Code Path Matrix](detailed_reports/schema_code_path_audit.md)** for status on all ${EffectTypeSchema.options.length + TargetSelectorSchema.options.length + ConditionGateSchema.options.length + StepConditionSchema.options.length + TriggerTypeSchema.options.length + TimingTypeSchema.options.length} schema definitions.`,
+  );
+  mainReportLines.push(``);
+  mainReportLines.push(`### Summary of Unhandled or Zero-Usage Primitives:`);
+  mainReportLines.push(
+    `| Category | Schema Total | Unused in Cards (0 Cards) | Missing Engine Handler |`,
+  );
+  mainReportLines.push(`| :--- | :---: | :---: | :---: |`);
+  mainReportLines.push(
+    `| **Effects** | ${EffectTypeSchema.options.length} | ${EffectTypeSchema.options.length - effectsUsage.size} | ${coverageAudit.unhandledEffects.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledEffects.length}`} |`,
+  );
+  mainReportLines.push(
+    `| **Targets** | ${TargetSelectorSchema.options.length} | ${TargetSelectorSchema.options.length - targetsUsage.size} | ${coverageAudit.unhandledTargets.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTargets.length}`} |`,
+  );
+  mainReportLines.push(
+    `| **Gates** | ${ConditionGateSchema.options.length} | ${ConditionGateSchema.options.length - gatesUsage.size} | ${coverageAudit.unhandledGates.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledGates.length}`} |`,
+  );
+  mainReportLines.push(
+    `| **Step Conditions** | ${StepConditionSchema.options.length} | ${StepConditionSchema.options.length - stepConditionsUsage.size} | ${coverageAudit.unhandledStepConditions.length === 0 ? '🟢 0' : `⚠️ ${coverageAudit.unhandledStepConditions.length} (${coverageAudit.unhandledStepConditions.join(', ')})`} |`,
+  );
+  mainReportLines.push(
+    `| **Triggers** | ${TriggerTypeSchema.options.length} | ${TriggerTypeSchema.options.length - triggersUsage.size} | ${coverageAudit.unhandledTriggers.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTriggers.length}`} |`,
+  );
+  mainReportLines.push(
+    `| **Timings** | ${TimingTypeSchema.options.length} | ${TimingTypeSchema.options.length - timingsUsage.size} | ${coverageAudit.unhandledTimings.length === 0 ? '🟢 0' : `🔴 ${coverageAudit.unhandledTimings.length}`} |`,
+  );
 
-  for (const ts of TargetSelectorSchema.options) {
-    if (!targetsUsage.has(ts)) {
-      reportLines.push(
-        `| \`TargetSelectorSchema\` | \`${ts}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this target selector. |`,
-      );
-    }
-  }
+  fs.writeFileSync(MAIN_REPORT_PATH, mainReportLines.join('\n'), 'utf-8');
 
-  for (const cg of ConditionGateSchema.options) {
-    if (!gatesUsage.has(cg)) {
-      reportLines.push(
-        `| \`ConditionGateSchema\` | \`${cg}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this condition gate. |`,
-      );
-    }
-  }
-
-  for (const sc of StepConditionSchema.options) {
-    if (!stepConditionsUsage.has(sc)) {
-      reportLines.push(
-        `| \`StepConditionSchema\` | \`${sc}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this step condition. |`,
-      );
-    }
-  }
-
-  for (const kw of KeywordSchema.options) {
-    if (!keywordsUsage.has(kw)) {
-      reportLines.push(
-        `| \`KeywordSchema\` | \`${kw}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this keyword directly in supplemental data. |`,
-      );
-    }
-  }
-
-  // Ensure docs/reports directory exists
-  const reportsDir = path.dirname(OUTPUT_REPORT_PATH);
-  if (!fs.existsSync(reportsDir)) {
-    fs.mkdirSync(reportsDir, { recursive: true });
-  }
-
-  fs.writeFileSync(OUTPUT_REPORT_PATH, reportLines.join('\n'), 'utf-8');
+  // =========================================================================
+  // LEGACY POINTER
+  // =========================================================================
+  const legacyPointerContent = [
+    `# Supplemental Card Declarations Usage & Impact Report`,
+    ``,
+    `> **NOTICE:** This report has moved to a scalable, modular format:`,
+    `> 👉 **[docs/reports/supplemental_data/usage_report.md](supplemental_data/usage_report.md)**`,
+    ``,
+    `### Detailed Reports:`,
+    `- [Vanilla & Passive Cards](supplemental_data/detailed_reports/vanilla_and_passive_cards.md)`,
+    `- [Multi-Ability & Multi-Step Pipelines](supplemental_data/detailed_reports/multi_ability_and_multistep_cards.md)`,
+    `- [Effects Usage Inventory](supplemental_data/detailed_reports/effects_usage.md)`,
+    `- [Target Selectors Usage Inventory](supplemental_data/detailed_reports/target_selectors_usage.md)`,
+    `- [Timing & Triggers Inventory](supplemental_data/detailed_reports/timing_and_triggers_usage.md)`,
+    `- [Condition Gates & Step Conditions Inventory](supplemental_data/detailed_reports/condition_gates_usage.md)`,
+    `- [Schema Primitives Code Path Verification Matrix](supplemental_data/detailed_reports/schema_code_path_audit.md)`,
+    ``,
+  ].join('\n');
+  fs.writeFileSync(LEGACY_POINTER_PATH, legacyPointerContent, 'utf-8');
 
   console.log(`\n========================================================`);
   console.log(`📊 SUPPLEMENTAL DECLARATIONS USAGE AUDIT COMPLETE`);
@@ -1150,16 +1398,9 @@ export function runDeclarationsAudit() {
   console.log(`Multi-Step Abilities (>=2): ${totalMultiStepAbilities}`);
   console.log(`Cards with Multi-Step:      ${totalCardsWithMultiStep}`);
   console.log(`Cards with 2+ Abilities:    ${multiAbilityCards.length}`);
-  console.log(`Unique Effect Types:        ${effectsUsage.size}`);
-  console.log(`Unique Target Selectors:    ${targetsUsage.size}`);
-  console.log(`Unique Trigger Types:       ${triggersUsage.size}`);
-  console.log(`Unique Timing Types:        ${timingsUsage.size}`);
-  console.log(`Unique Condition Gates:     ${gatesUsage.size}`);
-  console.log(`Unique Step Conditions:     ${stepConditionsUsage.size}`);
-  console.log(`Unique Effect Param Keys:   ${effectParamsUsage.size}`);
-  console.log(`Unique Dynamic Values:      ${dynamicValuesUsage.size}`);
-  console.log(`Unique Filter Criteria:     ${filterCriteriaUsage.size}`);
-  console.log(`Report Written To:          ${OUTPUT_REPORT_PATH}`);
+  console.log(`Overall Code Path Coverage: ${coverageAudit.overallCoverageRate.toFixed(1)}%`);
+  console.log(`Main Report Written To:     ${MAIN_REPORT_PATH}`);
+  console.log(`Detailed Reports Dir:       ${DETAILED_REPORTS_DIR}`);
   console.log(`========================================================\n`);
 }
 

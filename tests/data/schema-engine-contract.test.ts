@@ -63,6 +63,24 @@ describe('Supplemental Schema <-> Engine Contract Tests', () => {
     });
   });
 
+  describe('TargetSelectorSchema Coverage', () => {
+    it('verifies 100% of TargetSelectorSchema selectors have active resolution branches in target-resolver', () => {
+      expect(
+        result.unhandledTargets,
+        `Found target selectors defined in TargetSelectorSchema without target-resolver cases: ${result.unhandledTargets.join(', ')}`,
+      ).toEqual([]);
+    });
+  });
+
+  describe('ConditionGateSchema Coverage', () => {
+    it('verifies 100% of ConditionGateSchema gates have active evaluator branches in step-gate-evaluator', () => {
+      expect(
+        result.unhandledGates,
+        `Found condition gates defined in ConditionGateSchema without evaluator branches: ${result.unhandledGates.join(', ')}`,
+      ).toEqual([]);
+    });
+  });
+
   it('passes complete bidirectional schema-engine alignment audit', () => {
     expect(result.success).toBe(true);
   });

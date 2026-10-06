@@ -44,7 +44,7 @@ flowchart TD
    - For selective commits: `rtk git add <file1> <file2> ...`
 2. If supplemental card data (`src/data/supplemental/`) was modified:
    - **Always run:** `rtk npm run report:declarations`
-   - Stage the updated report: `rtk git add docs/reports/supplemental_declarations_usage_report.md`
+   - Stage the updated reports: `rtk git add docs/reports/supplemental_data/ docs/reports/supplemental_declarations_usage_report.md`
 3. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
 4. Stage by name only. A hook blocks `git add .`, `-A`, `--all`, and `git commit -a`, because a broad stage commits unrelated work.
 

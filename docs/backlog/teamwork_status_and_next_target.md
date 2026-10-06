@@ -46,6 +46,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #220 | `CardAbility.forEachPlayer` (whole step list once per player, player order, pausable); Electromagnetic Backlash `01174` modelled (confidence 95); deck `DISCARD` no longer continues into a reshuffled deck; mixed case filed as #272 | `git log --grep "#220"` |
 | #223 | `ENEMY_ATTACKS` (a specific minion or named villain attacks; the step fails if it did not attack); minion Attack X (`getEffectiveMinionAttack`, `REMAINING_HIT_POINTS`); Titania's Fury `01164` modelled (confidence 95) | `git log --grep "#223"` |
 | #225 | `executeSequence` stops on a step that fails with an `error` (also `forEachPlayer`), logs `engine.stepError`; Dev Mode banner and combat log entry; outcomes without an error keep `IF_FAILED` working (ADR-0019 addendum) | `git log --grep "#225"` |
+| #246 | Player elimination: a defeated hero eliminates that player only, the group loses with the last hero; per-player icon counts the starting players; game-over screen (ADR-0079) | `git log --grep "#246"` |
 
 ---
 
@@ -93,7 +94,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 3b2 | Accepting a threat interrupt prompt (Emergency, Great Responsibility, "I Object!") does not reduce the threat already placed | [#266](https://github.com/SteveRodrigue/MCD/issues/266) | **Gate 1**: the card is spent for nothing | 🟢 **Done** 2026-10-05; other hand triggers: [#267](https://github.com/SteveRodrigue/MCD/issues/267) |
 | 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | 🟢 **Done** 2026-10-05; the fallback was hidden in `ADD_THREAT`, now declared and a real reveal |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | 🟢 **Done** 2026-10-06; one damage pipeline (ADR-0078), attack label; follow-ups [#269](https://github.com/SteveRodrigue/MCD/issues/269) (enemy damage), [#270](https://github.com/SteveRodrigue/MCD/issues/270) (thwart/defense labels, status cancel) |
-| 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **owner decision:** Gate 1 or Gate 3 | 15 direct `winner` writes |
+| 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **Gate 1** (owner decision 2026-10-06): a defeated hero eliminates that player only; the game is lost when **all** heroes are defeated, in solo multi-handed games too | 15 direct `winner` writes; 🟢 **Done** 2026-10-06 (`eliminatePlayer`, `getPerPlayerCount`, `GameOverScreen`, ADR-0079); permanent cards: [#274](https://github.com/SteveRodrigue/MCD/issues/274) |
 | 3f | Spider-Tracer `01007` removes threat and discards side scheme prematurely (Crowd Control 4-3=1 threat remaining) | [#249](https://github.com/SteveRodrigue/MCD/issues/249) | incorrect scheme defeat | 🟢 **Closed** 2026-10-06, not reproduced; 16 regression tests added; reopen with steps or a snapshot |
 | 3g | Webbed Up `01009` does not trigger / replace properly when villain is already Stunned | [#250](https://github.com/SteveRodrigue/MCD/issues/250) | replacement timing bug | 🟢 **Closed** 2026-10-06, not a bug: status cards have timing priority (RR Status Cards), Test 3 asserts it |
 | 3h | Lead from the Front `01070` did not prompt to choose a player | [#251](https://github.com/SteveRodrigue/MCD/issues/251) | missing player choice prompt | 🟢 **Done** 2026-10-06; `MODIFY_STAT` `targetPlayer: CHOSEN_PLAYER`, `ALL_CONTROLLED_CHARACTERS` |
@@ -164,9 +165,9 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 ## 5. Open decisions waiting for the owner
 
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
-- [#246](https://github.com/SteveRodrigue/MCD/issues/246): player elimination in Gate 1 or Gate 3?
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
+- Next ready item: item 10, #230 (plan `plan_issue_230_effectparams_key_guard.md`, awaiting approval).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

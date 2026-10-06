@@ -19,6 +19,7 @@ import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
 import { DevStepErrorBanner } from './DevStepErrorBanner';
+import { GameOverScreen } from './GameOverScreen';
 import { DecisionPromptModal } from './DecisionPromptModal';
 import { DailyBugleActionNewspaper } from './DailyBugleActionNewspaper';
 import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
@@ -44,8 +45,21 @@ const SPEED_MAP: Record<string, number> = {
   fast: 90, // High-speed glide
 };
 
-export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
-  const [activeSeatIndex, setActiveSeatIndex] = useState<number>(0);
+/**
+ * The table, or the end screen alone when every hero is eliminated (#246): with no player left
+ * there is no seat to show.
+ */
+export const GameBoard: React.FC<GameBoardProps> = (props) =>
+  props.gameState.players.length === 0 ? (
+    <GameOverScreen gameState={props.gameState} onReset={props.onReset} />
+  ) : (
+    <GameTable {...props} />
+  );
+
+const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAction }) => {
+  const [selectedSeatIndex, setActiveSeatIndex] = useState<number>(0);
+  // An eliminated hero leaves the table (#246): a seat past the last one falls back to the last.
+  const activeSeatIndex = Math.min(selectedSeatIndex, gameState.players.length - 1);
   const [isLogOpen, setIsLogOpen] = useState<boolean>(true);
   const [isNewspaperOpen, setIsNewspaperOpen] = useState<boolean>(false);
   const [isEndTurnPromptOpen, setIsEndTurnPromptOpen] = useState<boolean>(false);
@@ -623,6 +637,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         devMode={devMode}
       />
       <DevStepErrorBanner logs={gameState.log} devMode={devMode} />
+      <GameOverScreen gameState={gameState} onReset={onReset} />
 
       {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
       <DecisionPromptModal

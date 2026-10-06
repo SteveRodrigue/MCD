@@ -590,27 +590,30 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
     });
   });
 
-  describe('5. A hero reduced to 0 by ability damage ends the game for the villain', () => {
-    const lethal = [
-      ['identity', { amount: 99, target: 'SELF_IDENTITY' }, {}],
-      ['all heroes', { amount: 99, target: 'ALL_HEROES' }, {}],
-      ['all characters', { amount: 99, target: 'ALL_CHARACTERS' }, {}],
-    ] as const;
+  describe('5. A hero reduced to 0 by ability damage is eliminated; the game is lost with the last hero (#246)', () => {
+    it('identity: only that player is eliminated, the game goes on', () => {
+      run({ amount: 99, target: 'SELF_IDENTITY' });
+      expect(state.winner).toBeNull();
+      expect(state.players.map((p) => p.id)).toEqual(['p2']);
+      expect(defeats('DEFEATED').some((d) => d.context.targetType === 'PLAYER')).toBe(true);
+    });
 
-    for (const [name, params, ctx] of lethal) {
-      it(`${name}: winner is VILLAIN`, () => {
-        run({ ...params }, { ...ctx });
+    for (const target of ['ALL_HEROES', 'ALL_CHARACTERS']) {
+      it(`${target}: every hero eliminated, winner is VILLAIN`, () => {
+        run({ amount: 99, target });
         expect(state.winner).toBe('VILLAIN');
+        expect(state.players).toHaveLength(0);
         expect(defeats('DEFEATED').some((d) => d.context.targetType === 'PLAYER')).toBe(true);
       });
     }
 
-    it('explosion assignment: winner is VILLAIN', () => {
+    it('explosion assignment: the hero that took the damage is eliminated, the other plays on', () => {
       run({ amount: 99, target: 'ALL_HEROES_AND_ALLIES' }, { assignments: { p2: 99 } });
-      expect(state.winner).toBe('VILLAIN');
+      expect(state.winner).toBeNull();
+      expect(state.players.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('the pipeline sets the winner itself for a player target', () => {
+    it('the pipeline eliminates the player itself for a player target', () => {
       const p = state.players[0];
       applyDamageToTarget(state, {
         target: {
@@ -625,7 +628,8 @@ describe('One damage pipeline for ability damage (#247 part 1)', () => {
         sourcePlayerId: 'p1',
       });
       expect(p.health).toBe(0);
-      expect(state.winner).toBe('VILLAIN');
+      expect(state.players.map((pl) => pl.id)).toEqual(['p2']);
+      expect(state.winner).toBeNull();
     });
 
     it('a hero that survives does not end the game', () => {

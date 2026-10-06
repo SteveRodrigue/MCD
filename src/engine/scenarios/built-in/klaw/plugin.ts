@@ -12,6 +12,7 @@ import {
   setActiveVillain,
   replaceVillain,
   replaceActiveMainScheme,
+  getPerPlayerCount,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
@@ -217,7 +218,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
-    const numPlayers = state.players.length || 1;
+    const numPlayers = getPerPlayerCount(state) || 1;
 
     // Skirmish Mode: Stage I defeated -> Immediate Victory
     if (difficulty === 'SKIRMISH') {
@@ -342,7 +343,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     if (immortalCard) {
       getActiveVillain(state).attachments.push(immortalCard);
       // Immortal Klaw grants +10 health per player
-      const bonusHealth = 10 * (state.players.length || 1);
+      const bonusHealth = 10 * (getPerPlayerCount(state) || 1);
       getActiveVillain(state).health += bonusHealth;
       getActiveVillain(state).maxHealth += bonusHealth;
 
@@ -365,7 +366,7 @@ export class KlawScenarioPlugin implements ScenarioPlugin {
     advancedStage?: boolean;
     defeat?: boolean;
   } {
-    const numPlayers = state.players.length || 1;
+    const numPlayers = getPerPlayerCount(state) || 1;
     const currentStage = getActiveMainScheme(state).stage;
 
     if (currentStage === '1B') {

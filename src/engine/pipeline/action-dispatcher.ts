@@ -23,6 +23,7 @@ import {
   getActiveMainScheme,
   getVillainsInPlay,
   getVillainById,
+  getPerPlayerCount,
 } from '@engine/models';
 import {
   getPlayer,
@@ -49,6 +50,7 @@ import {
 import {
   executeEffect,
   moveDefeatedCardToPile,
+  dealDistributedDamageToPlayer,
   processHostDefeated,
   defeatSideScheme,
   resetCardState,
@@ -140,7 +142,8 @@ export function routeCardInstances(
       if (card.card.type === CardType.SIDE_SCHEME) {
         const sideSchemeCard = card.card as SideSchemeCard;
         const baseThreat =
-          sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+          sideSchemeCard.baseThreat *
+          (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
         state.sideSchemes.push({
           instanceId: card.instanceId,
           card: sideSchemeCard,
@@ -1706,7 +1709,7 @@ function dispatchSingleAction(
           SideSchemeCard | PlayerSideSchemeCard;
         const baseThreat =
           (schemeCard.baseThreat ?? 0) *
-          (schemeCard.baseThreatFixed ? 1 : nextState.players.length);
+          (schemeCard.baseThreatFixed ? 1 : getPerPlayerCount(nextState));
 
         nextState.sideSchemes.push({
           instanceId: playedCardInstance.instanceId,
@@ -2275,13 +2278,7 @@ function dispatchSingleAction(
                   : getVillainById(poppedState, targetId);
 
               if (targetPlayer) {
-                const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
-                if (toughIdx !== -1) {
-                  targetPlayer.statusCards.splice(toughIdx, 1);
-                } else {
-                  targetPlayer.health = Math.max(0, targetPlayer.health - amount);
-                  if (targetPlayer.health <= 0) poppedState.winner = 'VILLAIN';
-                }
+                dealDistributedDamageToPlayer(poppedState, targetPlayer, amount);
               } else if (targetVillain) {
                 const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
                 if (vToughIdx !== -1) {

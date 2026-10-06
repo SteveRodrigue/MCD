@@ -62,8 +62,11 @@ describe('Per-player iteration, ability-level forEachPlayer (#220)', () => {
     }
   });
 
-  const p1 = () => state.players[0];
-  const p2 = () => state.players[1];
+  // By id: a player who takes lethal damage leaves state.players (#246).
+  const byId = (id: string) =>
+    [...state.players, ...(state.eliminatedPlayers ?? [])].find((p) => p.id === id)!;
+  const p1 = () => byId('p1');
+  const p2 = () => byId('p2');
   const reveal = (revealingId = 'p1') => {
     state.players
       .find((p) => p.id === revealingId)!

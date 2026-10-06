@@ -11,7 +11,7 @@
 - **Always through the damage pipeline (#247, ADR-0078):** every target kind (chosen minion, villain, `ENGAGED_ENEMIES`, `ALL_ENEMIES`, `ALL_CHARACTERS`, the identity selectors, `ALL_HEROES`, the `ALL_HEROES_AND_ALLIES` assignment) builds its target list and calls `applyDamageToTarget` once per target. So Tough, damage shields ("would be dealt" / "would be taken"), defeat triggers, Overkill, excess damage and the hero-defeat loss are applied the same way for every target, and `isAttack` (from `effectParams.isAttack` or the context) decides Retaliate and attack-only shields. The step's prompts (choose a player, explosion distribution) are unchanged.
 - **Overkill:** when the step has Overkill (`overkill`, `overkillOnCondition` with its kicker met, or the Overkill keyword) and the target is a minion that is defeated, the damage beyond the minion's remaining hit points is dealt to the active villain through the pipeline (so the villain's Tough and shields apply).
 - **Excess and defeat:** the pipeline result carries `excessDamage` and `targetDefeated`; a chosen-minion step with `condition: "EXCESS_DAMAGE_DEALT"` reads the first, `condition: "TARGET_DEFEATED"` the second.
-- **Hero defeat:** a hero reduced to 0 hit points sets `state.winner = 'VILLAIN'`, in the pipeline only.
+- **Hero defeat:** a hero reduced to 0 hit points is eliminated (`eliminatePlayer`, ADR-0079), in the pipeline only. The remaining heroes keep playing; the game is lost when the last hero is eliminated.
 
 ```json
 {

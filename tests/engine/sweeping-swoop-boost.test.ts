@@ -195,15 +195,16 @@ describe('Sweeping Swoop (01168): boost stuns the friendly character the activat
     expect(addStatusLogs()).toHaveLength(0);
   });
 
-  it('5b. the damage defeats the hero: game over, the stun is not applied', () => {
+  it('5b. the damage defeats the hero: the player is eliminated, the stun is not applied', () => {
     stack(swoop());
-    state.players[0].health = 1;
+    const hero = state.players[0];
+    hero.health = 1;
 
     executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
-    expect(state.players[0].health).toBe(0);
-    expect(state.winner).toBe('VILLAIN');
-    expect(stunned(state.players[0])).toBe(0);
+    expect(hero.health).toBe(0);
+    expect(state.eliminatedPlayers?.map((p) => p.id)).toEqual(['p1']);
+    expect(stunned(hero)).toBe(0);
   });
 
   describe('6. prevention prompt path', () => {

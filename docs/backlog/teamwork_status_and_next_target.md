@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-05
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,921 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,938 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -35,6 +35,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
 | #238 | Highway Robbery: real host, `cardsUnderneath`, "When Defeated" before host cleanup, facedown stack UI | `git log --grep "#238"` |
 | Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
+| #245 | Masterplan: second sentence declared (`DISCARD` `UNTIL_MATCH` + `REVEAL`, `ZONE_EMPTY`); hidden `ADD_THREAT` fallback removed; empty-deck rule | `git log --grep "#245"` |
 | #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `d40febb` |
 | #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `9985c4f` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
@@ -83,7 +84,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05; seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | 🟢 **Done** 2026-10-05; no player ability during setup |
 | 3b2 | Accepting a threat interrupt prompt (Emergency, Great Responsibility, "I Object!") does not reduce the threat already placed | [#266](https://github.com/SteveRodrigue/MCD/issues/266) | **Gate 1**: the card is spent for nothing | 🟢 **Done** 2026-10-05; other hand triggers: [#267](https://github.com/SteveRodrigue/MCD/issues/267) |
-| 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | |
+| 3c | Masterplan `01192` second sentence (no side scheme → discard until one, reveal it) | [#245](https://github.com/SteveRodrigue/MCD/issues/245) | card does nothing without side schemes | 🟢 **Done** 2026-10-05; the fallback was hidden in `ADD_THREAT`, now declared and a real reveal |
 | 3d | Chase Them Down `01052` never offered (no hand Response scan after a defeat, filter too narrow) | [#247](https://github.com/SteveRodrigue/MCD/issues/247) | card unusable | |
 | 3e | Player elimination not implemented (one identity at 0 HP ends the game) and no game-over screen | [#246](https://github.com/SteveRodrigue/MCD/issues/246) | **owner decision:** Gate 1 or Gate 3 | 15 direct `winner` writes |
 | 3f | Spider-Tracer `01007` removes threat and discards side scheme prematurely (Crowd Control 4-3=1 threat remaining) | [#249](https://github.com/SteveRodrigue/MCD/issues/249) | incorrect scheme defeat | |

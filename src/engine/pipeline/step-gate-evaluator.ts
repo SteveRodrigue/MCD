@@ -174,6 +174,9 @@ export function evaluateStepGate(
       const kind = gateParams.attackerKind as string | undefined;
       return !kind || kind === 'ANY_ENEMY' || kind === context.attackerType;
     }
+    if (step.condition === 'ZONE_EMPTY') {
+      return isZoneEmpty(state, gateParams.zone as string | undefined, context.playerId);
+    }
     if (step.condition === 'TARGET_TRAIT_MATCH') {
       const requiredTrait =
         (gateParams.trait as string) ||
@@ -195,6 +198,32 @@ export function evaluateStepGate(
 }
 
 /**
+ * `ZONE_EMPTY` condition: true when the zone named by `gateParams.zone` holds no cards. Player
+ * zones (`HAND`, `DECK`, `DISCARD`) are those of the player resolving the ability. An unknown
+ * zone or player is never empty.
+ */
+function isZoneEmpty(state: GameState, zone: string | undefined, playerId: string): boolean {
+  switch (zone) {
+    case 'SIDE_SCHEMES':
+      return (state.sideSchemes || []).length === 0;
+    case 'ENCOUNTER_DECK':
+      return state.encounterDeck.length === 0;
+    case 'ENCOUNTER_DISCARD':
+      return state.encounterDiscard.length === 0;
+    case 'HAND':
+    case 'DECK':
+    case 'DISCARD': {
+      const player = state.players.find((p) => p.id === playerId);
+      if (!player) return false;
+      const pile = zone === 'HAND' ? player.hand : zone === 'DECK' ? player.deck : player.discard;
+      return pile.length === 0;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
  * True when the step carries a gate that depends only on the current game state (never on a
  * previous step's result) and that gate is closed right now, so the step cannot run. Lets callers
  * that look ahead at an ability's steps (chosen-target pre-selection) ignore steps that will be
@@ -212,7 +241,7 @@ export function isStepGateClosedByState(
     gate === 'IF_CARD_IN_PLAY' ||
     gate === 'IF_CARD_NOT_IN_PLAY' ||
     ((gate === 'IF_CONDITION_MET' || gate === 'IF_CONDITION_NOT_MET') &&
-      step.condition === 'TARGET_TRAIT_MATCH');
+      (step.condition === 'TARGET_TRAIT_MATCH' || step.condition === 'ZONE_EMPTY'));
   return isStateOnly && !evaluateStepGate(gate, undefined, state, step, context);
 }
 

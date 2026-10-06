@@ -845,9 +845,10 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         key: 'matchingDestination',
         label: 'Matching Destination',
         type: 'select',
-        options: ['HAND', 'PLAY', 'DISCARD'],
+        options: ['HAND', 'PLAY', 'DISCARD', 'REVEAL'],
         defaultValue: 'DISCARD',
-        description: 'Destination for discarded cards matching filter (e.g. HAND for Black Cat)',
+        description:
+          'Destination for discarded cards matching filter (e.g. HAND for Black Cat, REVEAL for the card found by an encounter deck UNTIL_MATCH)',
       },
     ],
   },

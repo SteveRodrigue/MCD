@@ -97,7 +97,7 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 | **Combat Context** | `UNDEFENDED_ATTACK`        | The attack being resolved has no defender (no hero or ally declared). `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`) optionally restricts who is attacking. False outside an attack. | Boost resolution (_Kree Manipulator_ `01178`, _Electric Whip Attack_ `01173`) |
 | **Resource**       | `RESOURCE_KICKER_MET`      | Resources spent to pay for card match required kicker icon(s).         | _Photonic Blast_ (`01013`), _Relentless Assault_ (`01053`) |
 | **Threshold**      | `COUNTER_THRESHOLD_MET`    | Target upgrade/support has reached or exceeded counter count.          | _Energy Channel_ (`01018`)                                 |
-| **Threshold**      | `ZONE_EMPTY`               | Evaluated zone (e.g. hand, discard) contains 0 cards.                  | Zone check                                                 |
+| **Threshold**      | `ZONE_EMPTY`               | `gateParams.zone` is empty: `SIDE_SCHEMES`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, or the player zones `HAND`, `DECK`, `DISCARD` (of the player resolving the ability). State-only. | _Masterplan_ `01192` ("If there are no side schemes in play") |
 
 ### Example: Undefended Attack Boost (_Kree Manipulator_ `01178`)
 

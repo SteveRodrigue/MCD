@@ -36,7 +36,11 @@ import {
 } from '../pipeline/villain-phase';
 import type { SearchZone } from '../../data/supplemental/schema';
 import { getStepEffectParams, getStepGateParams } from '../../data/supplemental/schema';
-import { drawEncounterCard, drawPlayerCard } from '../pipeline/deck-exhaustion';
+import {
+  discardFromEncounterDeckUntil,
+  drawEncounterCard,
+  drawPlayerCard,
+} from '../pipeline/deck-exhaustion';
 import { dealSurgeCard } from '../pipeline/surge';
 import { chooseStepTarget } from './target-choice';
 import {
@@ -1308,6 +1312,58 @@ export function executeDiscard(
 
   // 3. DISCARD FROM ENCOUNTER DECK
   if (source === 'ENCOUNTER_DECK') {
+    if (mode === 'UNTIL_MATCH') {
+      // "Discard cards from the top of the encounter deck until <match>" (RR v1.8 glossary
+      // "Encounter Deck"): stops at the match, or when the deck is emptied (the effect is then
+      // fulfilled and the deck is reset; it does not continue into the new deck).
+      const untilFilter = params.untilFilter as any;
+      if (!untilFilter) {
+        return { state, success: false, error: 'DISCARD UNTIL_MATCH requires untilFilter' };
+      }
+      const matchingDestination = (params.matchingDestination as string | undefined) ?? 'DISCARD';
+      if (matchingDestination !== 'DISCARD' && matchingDestination !== 'REVEAL') {
+        return {
+          state,
+          success: false,
+          error: `DISCARD from ENCOUNTER_DECK does not support matchingDestination ${matchingDestination}`,
+        };
+      }
+      const { found, discarded } = discardFromEncounterDeckUntil(state, (c) =>
+        matchesCardFilter(c.card, untilFilter, { player, state }),
+      );
+      if (found && matchingDestination === 'DISCARD') {
+        state.encounterDiscard.push(found);
+      }
+      if (discarded.length > 0) {
+        state.log.push({
+          id: `log_${Date.now()}_discard_encounter_until`,
+          timestamp: Date.now(),
+          round: state.roundNumber,
+          phase: state.phase,
+          category: 'combat',
+          key: 'card.discarded.fromDeck',
+          params: {
+            who: 'Encounter',
+            count: discarded.length,
+            source: 'encounter deck',
+            cards: discarded.map((c) => c.card.name).join(', '),
+          },
+          onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
+        });
+      }
+      if (found && matchingDestination === 'REVEAL') {
+        // The player resolving the ability reveals the matching card (RR v1.8 glossary "Reveal").
+        resolveActiveEncounterCardAfterInterrupt(state, found, player, false);
+      }
+      return {
+        state,
+        success: true,
+        mutatedState: discarded.length > 0,
+        value: discarded.length,
+        discardedCards: discarded,
+        onomatopoeia: `DISCARDED ${discarded.length} ENCOUNTER CARDS!`,
+      };
+    }
     let discardedCount = 0;
     const discardedCards: CardInstance[] = [];
     for (let i = 0; i < count; i++) {
@@ -4296,35 +4352,8 @@ export function executeStep(
             value: totalPlaced,
             onomatopoeia: `+${amount} THREAT TO SIDE SCHEMES!`,
           };
-        } else {
-          // Discard until a side scheme is found, then reveal it
-          let foundSideScheme: CardInstance | undefined;
-          while (state.encounterDeck.length > 0) {
-            const card = state.encounterDeck.shift()!;
-            if (card.card.type === CardType.SIDE_SCHEME) {
-              foundSideScheme = card;
-              break;
-            }
-            state.encounterDiscard.push(card);
-          }
-          if (foundSideScheme) {
-            const sideCard = foundSideScheme.card as SideSchemeCard;
-            const baseThreat =
-              sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
-            state.sideSchemes.push({
-              instanceId: foundSideScheme.instanceId,
-              card: sideCard,
-              threat: baseThreat,
-            });
-            return {
-              state,
-              success: true,
-              mutatedState: true,
-              onomatopoeia: 'SIDE SCHEME REVEALED!',
-            };
-          }
-          return { state, success: true, onomatopoeia: 'NO SIDE SCHEMES FOUND' };
         }
+        return { state, success: true, mutatedState: false, onomatopoeia: 'NO SIDE SCHEMES' };
       }
       const cardCode =
         (step.effectParams?.cardCode as string) ||

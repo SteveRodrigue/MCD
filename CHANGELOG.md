@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data): _Masterplan_ `01192` reveals a side scheme when none is in play ([Issue #245](https://github.com/SteveRodrigue/MCD/issues/245))**
+  - **Supplemental Data (`core_encounter.json`):** the second sentence is now declared: a `DISCARD` step from `ENCOUNTER_DECK`, `mode: UNTIL_MATCH`, `untilFilter` side scheme, `matchingDestination: REVEAL`, gated by the new `ZONE_EMPTY` condition on `SIDE_SCHEMES`. Approved by the owner.
+  - **Engine, hidden behaviour removed:** `ADD_THREAT` on `ALL_SIDE_SCHEMES` no longer runs an undeclared "discard until a side scheme" fallback when no side scheme is in play (it put the side scheme in play silently: no reveal, no When Revealed, no log, no deck reset). It now places nothing.
+  - **Engine, `DISCARD` `UNTIL_MATCH` from the encounter deck** (RR v1.8 glossary *Encounter Deck*): discards until the match or until the deck is emptied; an emptied deck fulfils the effect, the deck resets (acceleration token) and the discard does not continue. The match is discarded or revealed through the real reveal path (When Revealed resolves: Breakin' & Takin' gets its extra threat). Discards and reveal are logged.
+  - **Engine, `ZONE_EMPTY` condition:** implemented (it was in the schema but never evaluated): `gateParams.zone` `SIDE_SCHEMES`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, `HAND`, `DECK`, `DISCARD`.
+  - **Engine, `discardFromEncounterDeckUntil`:** puts the discarded cards in the encounter discard pile before a deck reset, so they are part of the reshuffled deck.
+  - **Card Editor:** `DISCARD.matchingDestination` offers `REVEAL`; a `zone` select for `ZONE_EMPTY`.
+  - **Documentation:** spec `06` (`DISCARD` `UNTIL_MATCH`, empty-deck rule), spec `10` (`ZONE_EMPTY` zones).
+  - **Automated Verification:** new `masterplan.test.ts` (side schemes in play, reveal with When Revealed, empty deck with reset, top card, no hidden fallback, `ZONE_EMPTY` zones), 2 `discardFromEncounterDeckUntil` tests, 2 Card Editor tests.
+
 - **Fix (Engine): accepting a threat interrupt from its prompt changes the threat placed ([Issue #266](https://github.com/SteveRodrigue/MCD/issues/266))**
   - **Engine, pausable threat placement:** `applyThreatPlacement` waits when its "would be placed" window opens prompts: the placement is stored in `state.pendingThreatPlacements` (live amount) and placed by `finishPendingThreatPlacements` once every prompt is answered, before paused sequences resume (one `resumeAfterPromptResolved` helper replaces the three resume spots in `prompt-queue.ts`). An accepted interrupt reads and changes the live amount, not the snapshot taken when the prompt opened. The stepped villain phase step event shows the final threat.
   - **Engine, several reactions (RR v1.8 glossary I, R, F):** in the threat window every eligible hand card is offered (copies included), first player first, then in player order. When nothing is left to place (Great Responsibility, a replacement, or reductions to 0), the remaining prompts close without cost; a queued prompt whose card is no longer usable is dropped.

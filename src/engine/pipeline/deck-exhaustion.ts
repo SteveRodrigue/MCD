@@ -88,9 +88,15 @@ export function drawPlayerCard(state: GameState, playerId: string): CardInstance
 /**
  * Discards cards from the encounter deck one by one until a condition is met (RR v1.8 p. 11, 26).
  *
- * Invariant: If the encounter deck runs out of cards before finding a matching card,
- * the search/discard loop immediately STOPS and terminates with found: null.
- * Standard encounter deck exhaustion triggers sequentially AFTER the discard loop terminates.
+ * Every discarded card that does not match is put into `state.encounterDiscard` here, before any
+ * reset, so it is part of the reshuffled deck if the deck runs out. The matching card is returned
+ * in `found` (and is the last entry of `discarded`) but is not put into the discard pile: the
+ * caller routes it. Its text decides where it goes (e.g. revealed).
+ *
+ * Invariant (RR v1.8 glossary "Encounter Deck"): if the encounter deck runs out before a matching
+ * card is found, the discard STOPS with found: null and the effect is fulfilled; encounter deck
+ * exhaustion (acceleration token and reshuffle) then triggers, and the discard does not continue
+ * into the new deck.
  */
 export function discardFromEncounterDeckUntil(
   state: GameState,
@@ -105,10 +111,11 @@ export function discardFromEncounterDeckUntil(
     if (predicate(card)) {
       return { found: card, discarded };
     }
+    state.encounterDiscard.push(card);
   }
 
   // Target wasn't found and deck emptied. Action terminates.
-  // Sequential exhaustion triggers:
+  // Sequential exhaustion triggers (the discarded cards are already in the discard pile):
   exhaustEncounterDeck(state);
 
   return { found: null, discarded };

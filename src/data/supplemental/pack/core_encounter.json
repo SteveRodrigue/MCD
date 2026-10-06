@@ -1868,10 +1868,30 @@
           "trigger": "WHEN_REVEALED",
           "steps": [
             {
+              "id": "step_1_threat_on_each_side_scheme",
               "effect": "ADD_THREAT",
               "effectParams": {
                 "amount": 4,
                 "target": "ALL_SIDE_SCHEMES"
+              }
+            },
+            {
+              "id": "step_2_discard_until_side_scheme_and_reveal",
+              "effect": "DISCARD",
+              "condition": "ZONE_EMPTY",
+              "gate": "IF_CONDITION_MET",
+              "gateParams": {
+                "zone": "SIDE_SCHEMES"
+              },
+              "effectParams": {
+                "source": "ENCOUNTER_DECK",
+                "mode": "UNTIL_MATCH",
+                "untilFilter": {
+                  "types": [
+                    "side_scheme"
+                  ]
+                },
+                "matchingDestination": "REVEAL"
               }
             }
           ]
@@ -1879,7 +1899,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

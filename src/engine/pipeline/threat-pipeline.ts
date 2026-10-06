@@ -39,6 +39,11 @@ export interface ThreatPlacementResult {
   targetThreat?: number;
   stageCompleted: boolean;
   onomatopoeia?: string;
+  /**
+   * True when interrupt prompts are open for this placement (#266): nothing is placed yet, the
+   * placement finishes once every prompt is answered (`finishPendingThreatPlacements`).
+   */
+  paused?: boolean;
 }
 
 export interface ThwartRequest {
@@ -70,15 +75,7 @@ export function applyThreatPlacement(
   state: GameState,
   request: ThreatPlacementRequest,
 ): { state: GameState; result: ThreatPlacementResult } {
-  const {
-    targetType,
-    targetInstanceId,
-    amount,
-    sourceType,
-    sourceEntityName,
-    sourcePlayerId,
-    boostIcons,
-  } = request;
+  const { targetType, targetInstanceId, amount, sourceType, sourcePlayerId } = request;
 
   if (amount <= 0) {
     const schemeName =
@@ -107,6 +104,9 @@ export function applyThreatPlacement(
   // ---------------------------------------------------------------------------
   // STEP 1: "When threat would be placed on a scheme..." (RR v1.8 Prevention/Replacement)
   // ---------------------------------------------------------------------------
+  const promptsBefore = new Set(
+    (state.pendingDecisionQueue ?? []).map((prompt) => prompt.promptId),
+  );
   const triggerRes = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
     targetPlayerId:
       sourcePlayerId || state.players[state.activePlayerIndex]?.id || state.players[0]?.id,
@@ -117,6 +117,68 @@ export function applyThreatPlacement(
   });
 
   const finalThreat = Math.max(0, triggerRes.threatAmount ?? amount);
+
+  // Interrupt prompts opened by the window: the placement waits for every answer (#266).
+  if (triggerRes.hasPendingPrompt) {
+    const newPrompts = (state.pendingDecisionQueue ?? []).filter(
+      (prompt) => !promptsBefore.has(prompt.promptId),
+    );
+    if (newPrompts.length > 0) {
+      const id = `threat_placement_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      for (const prompt of newPrompts) {
+        for (const option of prompt.options) {
+          if (option.effect === 'EXECUTE_OPTIONAL_TRIGGER' && option.params) {
+            option.params = {
+              ...option.params,
+              context: { ...(option.params.context as object), threatPlacementId: id },
+            };
+          }
+        }
+      }
+      state.pendingThreatPlacements = [
+        ...(state.pendingThreatPlacements ?? []),
+        { id, request: { ...request }, amount: finalThreat },
+      ];
+      const target =
+        targetType === 'main_scheme'
+          ? getActiveMainScheme(state)
+          : state.sideSchemes.find((s) => s.instanceId === targetInstanceId);
+      return {
+        state,
+        result: {
+          initialAmount: amount,
+          threatPlaced: 0,
+          preventedAmount: 0,
+          targetSchemeName: target?.card?.name || 'Scheme',
+          currentThreat: target?.threat || 0,
+          stageCompleted: false,
+          paused: true,
+        },
+      };
+    }
+  }
+
+  return placeThreat(state, request, finalThreat);
+}
+
+/**
+ * Places the threat that is left after the interrupt window (RR v1.8 Scheme (Enemy Activation)
+ * steps 2 and 3): tokens, log, main scheme completion, then the THREAT_PLACED triggers.
+ */
+function placeThreat(
+  state: GameState,
+  request: ThreatPlacementRequest,
+  finalThreat: number,
+): { state: GameState; result: ThreatPlacementResult } {
+  const {
+    targetType,
+    targetInstanceId,
+    amount,
+    sourceType,
+    sourceEntityName,
+    sourcePlayerId,
+    boostIcons,
+  } = request;
   const preventedAmount = Math.max(0, amount - finalThreat);
 
   let targetSchemeName = 'Main Scheme';
@@ -253,6 +315,46 @@ export function applyThreatPlacement(
       onomatopoeia,
     },
   };
+}
+
+/**
+ * Keeps the villain phase step event in line with a placement that finished after its prompts
+ * (as `finishAttackDamageAndPostResolution` does for damage).
+ */
+function syncVillainPhaseStepEvent(
+  state: GameState,
+  request: ThreatPlacementRequest,
+  result: ThreatPlacementResult,
+): void {
+  const event = state.villainPhaseStepEvent;
+  if (!event) return;
+  const placed = result.threatPlaced;
+  const isScheme =
+    (request.sourceType === 'VILLAIN_SCHEME' && event.type === 'VILLAIN_SCHEME') ||
+    (request.sourceType === 'MINION_SCHEME' && event.type === 'MINION_SCHEME');
+  if (isScheme && event.targetPlayerId === request.sourcePlayerId) {
+    event.amount = placed;
+    event.description = `${event.sourceName} schemed against ${event.targetName} (+${placed} threat).`;
+  } else if (request.sourceType === 'VILLAIN_PHASE_STEP_1' && event.type === 'THREAT_PLACED') {
+    event.amount = placed;
+    event.description = `${placed} threat placed on ${result.targetSchemeName}.`;
+  }
+}
+
+/**
+ * Places every paused threat placement with its live amount, in order (#266). Called once all the
+ * interrupt prompts of the window are answered.
+ */
+export function finishPendingThreatPlacements(state: GameState): GameState {
+  const pending = state.pendingThreatPlacements ?? [];
+  delete state.pendingThreatPlacements;
+  let current = state;
+  for (const placement of pending) {
+    const placed = placeThreat(current, placement.request, placement.amount);
+    current = placed.state;
+    syncVillainPhaseStepEvent(current, placement.request, placed.result);
+  }
+  return current;
 }
 
 /**

@@ -1236,5 +1236,8 @@ export function executeVillainPhase(state: GameState, options?: CombatOptions): 
   nextState.villainPhaseStep = VillainPhaseStep.VILLAIN_ACTIVATIONS;
   delete nextState.pendingActivations;
 
+  // A step 1 interrupt prompt pauses the phase; it resumes at step 2 once answered (#266).
+  if (peekDecisionPrompt(nextState)) return nextState;
+
   return continueVillainPhase(nextState, options);
 }

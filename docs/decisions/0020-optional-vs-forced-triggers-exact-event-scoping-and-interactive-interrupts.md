@@ -77,3 +77,11 @@ The three in-hand scans in `dispatchTrigger` (damage about to be taken, threat a
 Emergency `01085` ("When the villain schemes, reduce the amount of threat placed on the scheme by 1") was offered for every threat placement. **Decision:** no separate trigger. `applyThreatPlacement` passes its `sourceType` as `threatSource` in the `THREAT_WOULD_BE_PLACED` context, and `TriggerFilter.threatSource` scopes a card to a source (Emergency: `VILLAIN_SCHEME`). Cards that say "any threat" (Great Responsibility, "I Object!") carry no filter.
 
 Setup: opening hands are drawn after the scenario setup (Appendix II step 14), and while `setupState.stage` is `SCENARIO_SETUP` (the whole of `setupGame`) `dispatchTrigger` skips player-controlled abilities (hand reactions, identity, tableau and allies); encounter-side abilities still resolve.
+
+---
+
+## Addendum (2026-10-05, #266): a threat placement waits for its interrupt prompts
+
+`applyThreatPlacement` placed the threat as soon as `THREAT_WOULD_BE_PLACED` was dispatched, even when interrupt prompts were queued, and an accepted prompt ran with a snapshot of the amount, so Emergency, Great Responsibility and "I Object!" accepted from their prompt changed nothing.
+
+**Decision:** when the window enqueues prompts, the placement is stored in `state.pendingThreatPlacements` (`{ id, request, amount }`) and every option of those prompts carries the `threatPlacementId` in its context. Accepting an option runs the ability with the live amount and writes the reduced amount back, so later interrupts (any player) see it. When the prompt queue is empty the paused placements are placed in order (`finishPendingThreatPlacements`), then paused sequences resume (#248). A pending amount of 0 (a replacement such as Great Responsibility, or reductions that use the threat up) closes the window: the remaining prompts for that placement are removed and nothing is paid. A queued prompt is shown only while its card is still in hand, its cost is payable and its limit is unused. For this trigger the hand scan offers every eligible card of each player (copies included), starting with the first player; the other hand triggers keep one card per player (#267). The stepped villain phase updates its step event with the final amount.

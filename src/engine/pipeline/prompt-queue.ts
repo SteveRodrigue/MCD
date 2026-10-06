@@ -6,7 +6,12 @@ import {
   ActionResult,
   CardAbility,
 } from '../models';
-import { executeEffect, hasPendingSequence, resumePendingSequence } from '../effects';
+import {
+  executeEffect,
+  hasPendingSequence,
+  resumePendingSequence,
+  type EffectExecutionContext,
+} from '../effects';
 import { abilityHasValidTarget } from '../effects/target-choice';
 import {
   executeAbilityCost,
@@ -17,6 +22,7 @@ import { resolveActiveEncounterCardAfterInterrupt } from './villain-phase';
 import { evaluateStepGate } from './step-gate-evaluator';
 import { canPayAbilityCost } from './cost-engine';
 import { discardResolvedObligation } from './obligations';
+import { finishPendingThreatPlacements } from './threat-pipeline';
 
 /**
  * Re-evaluates per-option availability (`gate`, `cost`) against the current state (Issue #158).
@@ -246,6 +252,96 @@ export function popExecutionFrame(state: GameState): {
   return { state: nextState, frame: popped };
 }
 
+/** The threat placement a queued interrupt prompt belongs to, if any (#266). */
+function threatPlacementIdOf(prompt: PendingDecisionPrompt): string | undefined {
+  for (const option of prompt.options) {
+    const id = (option.params?.context as { threatPlacementId?: string } | undefined)
+      ?.threatPlacementId;
+    if (id) return id;
+  }
+  return undefined;
+}
+
+/**
+ * True while a queued threat interrupt can still be used: the card is where it was offered, its
+ * cost is payable and its limit is unused (RR v1.8 Initiating Abilities).
+ */
+function isThreatInterruptStillUsable(state: GameState, prompt: PendingDecisionPrompt): boolean {
+  const option = prompt.options.find((o) => o.effect === 'EXECUTE_OPTIONAL_TRIGGER');
+  const ability = option?.params?.ability as CardAbility | undefined;
+  const player = state.players.find((p) => p.id === prompt.playerId);
+  if (!option || !ability || !player) return true;
+
+  if (ability.limit === 'ONCE_PER_ROUND' && player.usedAbilitiesThisRound?.[ability.id]) {
+    return false;
+  }
+  if (ability.limit === 'ONCE_PER_PHASE' && player.usedAbilitiesThisPhase?.[ability.id]) {
+    return false;
+  }
+
+  const sourceId = option.params?.sourceCardInstanceId as string | undefined;
+  if (!sourceId) return canPayAbilityCost(state, player, ability).allowed;
+
+  const source =
+    ability.zone === 'HAND'
+      ? player.hand.find((c) => c.instanceId === sourceId)
+      : [...player.tableau, ...player.allies, ...(player.attachments ?? [])].find(
+          (c) => c.instanceId === sourceId,
+        );
+  return source ? canPayAbilityCost(state, player, ability, source).allowed : false;
+}
+
+/**
+ * Closes the interrupt window of threat placements (#266): prompts of a placement with nothing
+ * left to place are dropped without paying anything, and a queued prompt whose card is no longer
+ * usable is dropped when it comes up.
+ */
+function pruneThreatInterruptPrompts(state: GameState): void {
+  const queue = state.pendingDecisionQueue;
+  if (!queue || queue.length === 0) return;
+  const placements = state.pendingThreatPlacements ?? [];
+  const isOpen = (id: string) => placements.some((p) => p.id === id && p.amount > 0);
+
+  const kept = queue.filter((prompt) => {
+    const id = threatPlacementIdOf(prompt);
+    return !id || isOpen(id);
+  });
+  while (kept.length > 0) {
+    const head = kept[0];
+    if (!threatPlacementIdOf(head)) break;
+    refreshPromptOptionAvailability(state, head);
+    if (isThreatInterruptStillUsable(state, head)) break;
+    kept.shift();
+  }
+
+  if (kept.length === queue.length) return;
+  queue.splice(0, queue.length, ...kept);
+  const total = queue.length;
+  for (let i = 0; i < queue.length; i++) {
+    queue[i].queuePosition = i + 1;
+    queue[i].totalQueued = total;
+  }
+  if (queue.length > 0) refreshPromptOptionAvailability(state, queue[0]);
+}
+
+/**
+ * After a prompt is answered: close the threat interrupt window, and once the queue is empty
+ * finish the paused threat placements, then resume paused sequences (#248, #266).
+ */
+function resumeAfterPromptResolved(state: GameState): GameState {
+  pruneThreatInterruptPrompts(state);
+  if (peekDecisionPrompt(state)) return state;
+
+  let current = state;
+  if (current.pendingThreatPlacements && current.pendingThreatPlacements.length > 0) {
+    current = finishPendingThreatPlacements(current);
+  }
+  if (!peekDecisionPrompt(current) && hasPendingSequence(current)) {
+    current = resumePendingSequence(current);
+  }
+  return current;
+}
+
 /**
  * Resolve the active head decision prompt with player choice or voluntary pass (ADR-0032).
  */
@@ -324,10 +420,7 @@ export function resolveDecisionPrompt(
       }
     }
 
-    let finalState = nextState;
-    if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
-      finalState = resumePendingSequence(finalState);
-    }
+    const finalState = resumeAfterPromptResolved(nextState);
 
     return {
       state: finalState,
@@ -394,19 +487,29 @@ export function resolveDecisionPrompt(
       }
     }
 
+    // A threat interrupt reads and changes the live amount of its paused placement, not the
+    // snapshot taken when the prompt was built (#266).
+    const pendingPlacement = optContext?.threatPlacementId
+      ? nextState.pendingThreatPlacements?.find((p) => p.id === optContext.threatPlacementId)
+      : undefined;
+    const effectContext: EffectExecutionContext = {
+      playerId,
+      sourceCardInstance: sourceCardInst,
+      eventTargetType: optContext?.targetType,
+      eventTargetInstanceId: optContext?.targetInstanceId,
+      threatAmount: pendingPlacement ? pendingPlacement.amount : optContext?.threatAmount,
+      damageAmount: optContext?.damageAmount,
+      interceptedValue: pendingPlacement
+        ? pendingPlacement.amount
+        : (optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount),
+      resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
+    };
     const effectRes = canInitiate
-      ? executeEffect(nextState, optAbility, {
-          playerId,
-          sourceCardInstance: sourceCardInst,
-          eventTargetType: optContext?.targetType,
-          eventTargetInstanceId: optContext?.targetInstanceId,
-          threatAmount: optContext?.threatAmount,
-          damageAmount: optContext?.damageAmount,
-          interceptedValue:
-            optContext?.interceptedValue ?? optContext?.threatAmount ?? optContext?.damageAmount,
-          resourcesSpent: selectedOption?.params?.resourcesSpent || optContext?.resourcesSpent,
-        })
+      ? executeEffect(nextState, optAbility, effectContext)
       : { state: nextState, success: true, mutatedState: false, onomatopoeia: 'NO VALID TARGET!' };
+    if (canInitiate && pendingPlacement && effectContext.threatAmount !== undefined) {
+      pendingPlacement.amount = Math.max(0, effectContext.threatAmount);
+    }
 
     if (
       canInitiate &&
@@ -449,10 +552,7 @@ export function resolveDecisionPrompt(
       }
     }
 
-    let finalState = nextState;
-    if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
-      finalState = resumePendingSequence(finalState);
-    }
+    const finalState = resumeAfterPromptResolved(nextState);
 
     return {
       state: finalState,
@@ -553,10 +653,7 @@ export function resolveDecisionPrompt(
   // The chosen option may have changed state later prompts depend on (e.g. a form flip)
   refreshPromptOptionAvailability(effectRes.state, peekDecisionPrompt(effectRes.state));
 
-  let finalState = effectRes.state;
-  if (!peekDecisionPrompt(finalState) && hasPendingSequence(finalState)) {
-    finalState = resumePendingSequence(finalState);
-  }
+  const finalState = resumeAfterPromptResolved(effectRes.state);
 
   return {
     state: finalState,

@@ -3388,6 +3388,7 @@ function dispatchSingleAction(
               generatorInstanceIds: action.generatorInstanceIds,
             }
           : undefined;
+      const hadPausedThreatPlacement = (nextState.pendingThreatPlacements?.length ?? 0) > 0;
       const promptRes = resolveDecisionPrompt(
         nextState,
         action.playerId,
@@ -3439,6 +3440,8 @@ function dispatchSingleAction(
       if (resultingState.phase === GamePhase.VILLAIN_PHASE && !peekDecisionPrompt(resultingState)) {
         if (resultingState.options?.villainPhaseStepping && resultingState.lastCombatOutcome) {
           // Allow resolved combat state and lastCombatOutcome to return to UI for math modal
+        } else if (resultingState.options?.villainPhaseStepping && hadPausedThreatPlacement) {
+          // Stepped phase: the step event now shows the placed threat (#266); the next step continues.
         } else {
           resultingState = continueVillainPhase(resultingState);
         }

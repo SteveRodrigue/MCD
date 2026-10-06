@@ -300,10 +300,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
         (a) =>
           isResourceAbility(a.timing) ||
           a.steps?.some(
-            (s) =>
-              s.effect === 'GENERATE_RESOURCE' ||
-              s.effect === 'COST_REDUCER' ||
-              s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
+            (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'DOUBLE_RESOURCE_FOR_ASPECT',
           ),
       );
 

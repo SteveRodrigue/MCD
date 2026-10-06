@@ -684,11 +684,7 @@ export function step4_and_5_dealAndResolveBoostCards(
         extraBoostCount += 1;
       } else if (
         villainAbilities.some((a) =>
-          a.steps?.some(
-            (s) =>
-              s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' ||
-              s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
-          ),
+          a.steps?.some((s) => s.effect === 'GIVE_ADDITIONAL_BOOST_CARD'),
         )
       ) {
         extraBoostCount += 1;
@@ -701,11 +697,7 @@ export function step4_and_5_dealAndResolveBoostCards(
           extraBoostCount += 1;
         } else if (
           (att.card.enrichment?.abilities || []).some((a) =>
-            a.steps?.some(
-              (s) =>
-                s.effect === 'DEAL_ADDITIONAL_BOOST_CARD' ||
-                s.effect === 'GIVE_ADDITIONAL_BOOST_CARD',
-            ),
+            a.steps?.some((s) => s.effect === 'GIVE_ADDITIONAL_BOOST_CARD'),
           )
         ) {
           extraBoostCount += 1;

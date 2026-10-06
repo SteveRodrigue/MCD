@@ -516,7 +516,6 @@ export function resolveDecisionPrompt(
       optAbility.steps?.some(
         (s) =>
           s.effect === 'CANCEL_WHEN_REVEALED' ||
-          s.effect === 'CANCEL_WHEN_REVEALED_AND_ATTACK' ||
           s.effect === 'CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER',
       )
     ) {

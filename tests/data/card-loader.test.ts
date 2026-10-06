@@ -328,9 +328,12 @@ describe('Card Loader & Normalizer Unit Tests', () => {
         'black_panther_nemesis',
       ]);
 
+      // Single cards modelled ahead of their set's scan (#244: Weapons Runner, Klaw set)
+      const scannedEncounterCards = new Set(['01121']);
+
       coreEncounterPack.forEach((card) => {
         const enrichment = supplementalRegistry[card.code];
-        if (scannedEncounterSets.has(card.set_code)) {
+        if (scannedEncounterSets.has(card.set_code) || scannedEncounterCards.has(card.code)) {
           expect(enrichment, `Scanned Encounter Card ${card.code} (${card.name}) must have a supplemental entry`).toBeDefined();
           const hasAbilities = enrichment.abilities && enrichment.abilities.length > 0;
           const isMarkedNoSupplemental = enrichment.noSupplementalNeeded === true;

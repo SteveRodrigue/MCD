@@ -624,6 +624,34 @@
         "originalText": "<b>When Revealed</b>: You are confused. If you are already confused, this card gains surge."
       }
     },
+    "01121": {
+      "abilities": [
+        {
+          "id": "weapons_runner_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "id": "step_1_put_self_into_play_engaged",
+              "effect": "PUT_INTO_PLAY",
+              "effectParams": {
+                "target": "SELF",
+                "to": "ENGAGED_WITH_PLAYER"
+              }
+            }
+          ]
+        }
+      ],
+      "audit": {
+        "createdAt": "2026-10-05T12:00",
+        "updatedAt": "2026-10-05T12:00",
+        "reviewedAt": "2026-10-05T12:00",
+        "reviewedBy": "claude",
+        "rulesVersion": "v1.8",
+        "confidence": 100,
+        "originalText": "Surge. <i>(After this card is revealed, reveal 1 additional encounter card.)</i>\n<hr />\n[star] <b>Boost</b>: Put Weapons Runner into play engaged with you."
+      }
+    },
     "01155": {
       "abilities": [
         {
@@ -1743,6 +1771,7 @@
               "effectParams": {
                 "from": "SET_ASIDE",
                 "to": "ENGAGED_WITH_PLAYER",
+                "reveal": true,
                 "filter": {
                   "types": [
                     "minion"
@@ -1759,6 +1788,7 @@
               "effectParams": {
                 "from": "SET_ASIDE",
                 "to": "SIDE_SCHEMES",
+                "reveal": true,
                 "filter": {
                   "types": [
                     "side_scheme"
@@ -1795,7 +1825,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

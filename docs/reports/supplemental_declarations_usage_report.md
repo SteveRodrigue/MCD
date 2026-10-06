@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-05T17:30:27.917Z`  
+> **Generated:** `2026-10-06T00:41:37.440Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -9,13 +9,13 @@
 
 | Metric | Count | Description |
 | :--- | :--- | :--- |
-| **Total Cards Registered** | **157** | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **142** | Cards with executable `abilities: [...]` |
+| **Total Cards Registered** | **158** | Total cards present in `src/data/supplemental/` |
+| **Active Declared Cards** | **143** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **11** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
 | **Open Ambiguity Reports** | **6** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **160** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **135** | Abilities with exactly 1 atomic execution step |
+| **Total Abilities Declared** | **161** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **136** | Abilities with exactly 1 atomic execution step |
 | **Multi-Step Abilities (2+ Steps)** | **25** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **25** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **17** | Cards declaring more than 1 distinct ability header |
@@ -195,12 +195,12 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ATTACH_TO_HOST` | **3** | `01007` (Spider-Tracer (upgrade)), `01009` (Webbed Up (upgrade)), `01074` (Inspired (upgrade)) |
 | `PREVENT_THREAT` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
 | `VILLAIN_ATTACKS` | **3** | `01078` (Get Behind Me! (event)), `01106` (Stampede (treachery)), `01187` (Assault (treachery)) |
+| `PUT_INTO_PLAY` | **3** | `01121` (Weapons Runner (minion)), `01190` (Shadow of the Past (treachery)) |
 | `PREVENT_DAMAGE` | **2** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)) |
 | `CANCEL_WHEN_REVEALED` | **2** | `01004` (Enhanced Spider-Sense (event)), `01078` (Get Behind Me! (event)) |
 | `ADD_TRAIT` | **2** | `01017` (Cosmic Flight (upgrade)), `01039` (Rocket Boots (upgrade)) |
 | `RETURN_TO_HAND` | **2** | `01020` (Hellcat (ally)), `01166` (Highway Robbery (side_scheme)) |
 | `MODIFY_MAX_HEALTH` | **2** | `01036` (Mark V Armor (upgrade)), `01039` (Rocket Boots (upgrade)) |
-| `PUT_INTO_PLAY` | **2** | `01190` (Shadow of the Past (treachery)) |
 | `CANCEL_ATTACK` | **1** | `01009` (Webbed Up (upgrade)) |
 | `ADD_COUNTERS` | **1** | `01018` (Energy Channel (upgrade)) |
 | `FLIP_FORM` | **1** | `01025` (Split Personality (event)) |
@@ -227,11 +227,11 @@ These primitives are declared in schema types or specifications but have **0 act
 | :--- | :--- | :--- |
 | `WHEN_REVEALED` | **32** | `01095` (Rhino (villain)), `01096` (Rhino (villain)), `01103` (Shocker (minion)), `01104` (Hard to Keep Down (treachery)), `01105` ("I'm Tough" (treachery)), `01106` (Stampede (treachery)), `01107` (Breakin' & Takin' (side_scheme)), `01109` (Bomb Scare (side_scheme)), `01110` (Hydra Bomber (minion)), `01111` (Explosion (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01159` (Ritual Combat (treachery)), `01161` (Personal Challenge (side_scheme)), `01162` (Titania (minion)), `01168` (Sweeping Swoop (treachery)), `01171` (Imminent Overload (side_scheme)), `01172` (Whiplash (minion)), `01173` (Electric Whip Attack (treachery)), `01176` (The Psyche-Magnitron (side_scheme)), `01178` (Kree Manipulator (treachery)), `01186` (Advance (treachery)), `01187` (Assault (treachery)), `01188` (Caught Off Guard (treachery)), `01189` (Gang-Up (treachery)), `01190` (Shadow of the Past (treachery)), `01191` (Exhaustion (treachery)), `01192` (Masterplan (treachery)), `01193` (Under Fire (treachery)), `01194` (Unknown Card #01194), `01195` (Unknown Card #01195) |
 | `ENTERS_PLAY` | **10** | `01011` (Spider-Woman (ally)), `01041` (Shuri (ally)), `01067` (Maria Hill (ally)), `01083` (Mockingbird (ally)), `01084` (Nick Fury (ally)), `01155` (Affairs of State (obligation)), `01160` (Legal Work (obligation)), `01165` (Eviction Notice (obligation)), `01170` (Business Problems (obligation)), `01175` (Family Emergency (obligation)) |
+| `BOOST` | **4** | `01121` (Weapons Runner (minion)), `01158` (Heart-Shaped Herb (treachery)), `01164` (Titania's Fury (treachery)), `01173` (Electric Whip Attack (treachery)) |
 | `DAMAGE_WOULD_BE_TAKEN` | **3** | `01003` (Backflip (event)), `01017` (Cosmic Flight (upgrade)), `01098` (Armored Rhino Suit (attachment)) |
 | `TREACHERY_REVEALED` | **3** | `01004` (Enhanced Spider-Sense (event)), `01075` (Black Widow (ally)), `01078` (Get Behind Me! (event)) |
 | `CHARACTER_DEFEATED` | **3** | `01007` (Spider-Tracer (upgrade)), `01051` (Tigra (ally)), `01063` (Interrogation Room (support)) |
 | `THREAT_WOULD_BE_PLACED` | **3** | `01019b` (Jennifer Walters (alter_ego)), `01061` (Great Responsibility (event)), `01085` (Emergency (event)) |
-| `BOOST` | **3** | `01158` (Heart-Shaped Herb (treachery)), `01164` (Titania's Fury (treachery)), `01173` (Electric Whip Attack (treachery)) |
 | `ATTACK_RESOLVED` | **2** | `01028` (Superhuman Strength (upgrade)), `01050` (Hulk (ally)) |
 | `DEFEATED` | **2** | `01052` (Chase Them Down (event)), `01166` (Highway Robbery (side_scheme)) |
 | `ATTACK_DEFENDED` | **2** | `01077` (Counter-Punch (event)), `01082` (Indomitable (upgrade)) |
@@ -262,10 +262,10 @@ These primitives are declared in schema types or specifications but have **0 act
 | `ALTER_EGO_ACTION` | **8** | `01006` Aunt May (support), `01010b` Carol Danvers (alter_ego), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01029b` Tony Stark (alter_ego) *(+3 more)* |
 | `RESOURCE` | **6** | `01001b` Peter Parker (alter_ego), `01033` Pepper Potts (support), `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource) *(+1 more)* |
 | `HERO_INTERRUPT` | **5** | `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01061` Great Responsibility (event), `01078` Get Behind Me! (event), `01082` Indomitable (upgrade) |
+| `BOOST` | **5** | `01121` Weapons Runner (minion), `01158` Heart-Shaped Herb (treachery), `01164` Titania's Fury (treachery), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
 | `INTERRUPT` | **4** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01075` Black Widow (ally), `01085` Emergency (event) |
 | `SETUP` | **4** | `01040b` T'Challa (alter_ego), `01076` Luke Cage (ally), `01096` Rhino (villain), `01102` Sandman (minion) |
 | `SPECIAL` | **4** | `01046` Energy Daggers (upgrade), `01047` Panther Claws (upgrade), `01048` Tactical Genius (upgrade), `01049` Vibranium Suit (upgrade) |
-| `BOOST` | **4** | `01158` Heart-Shaped Herb (treachery), `01164` Titania's Fury (treachery), `01173` Electric Whip Attack (treachery), `01178` Kree Manipulator (treachery) |
 | `FORCED_INTERRUPT` | **3** | `01007` Spider-Tracer (upgrade), `01009` Webbed Up (upgrade), `01098` Armored Rhino Suit (attachment) |
 | `HERO_RESOURCE` | **1** | `01008` Web-Shooter (upgrade) |
 | `HERO_RESPONSE` | **1** | `01019a` She-Hulk (hero) |

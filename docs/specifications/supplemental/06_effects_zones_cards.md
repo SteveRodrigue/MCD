@@ -247,7 +247,12 @@ Supported `discardAttribute` inspection modes:
 ### `PUT_INTO_PLAY`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0029 / _Shadow of the Past_ `01190`, _Rhino Stage II_ `01095`, _Make the Call_ `01071`)
-- **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving all standard entrance lifecycle rules (attaching Toughness/Guard keywords, calculating starting threat for side schemes, and triggering When Revealed / Enters Play responses per RR v1.8 p. 14). Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
+- **Description:** Transfers matching cards from a source zone into play at the specified destination, resolving the standard entrance lifecycle (attaching Toughness, calculating starting threat for side schemes, Quickstrike, the `MINION_ENTERS_PLAY` trigger). Uses [**04. Universal Card Filter**](./04_universal_card_filter.md).
+- **Parameters:**
+  - `from` / `to`: source zone (`SET_ASIDE`, `DISCARD`, `HAND`, `DECK`) and destination (`TABLEAU`, `ENGAGED_WITH_PLAYER`, `SIDE_SCHEMES`).
+  - `target: "SELF"`: the source card itself is put into play instead of cards chosen by `filter` (for example a boost card that puts itself into play). Omitted means filter-based.
+  - `reveal: true`: for printed "reveal ... and put it into play". After the card enters play, its When Revealed abilities (`timing` or `trigger` `WHEN_REVEALED`) and keyword-provided Surge resolve (RR v1.8 glossary R, W). Without `reveal`, the card is only put into play: no When Revealed ability triggers and it does not surge. A forced response fires only from its own trigger, never on entry.
+- **Reference cards:** _Shadow of the Past_ `01190` (`reveal: true`, both steps), _Weapons Runner_ `01121` (`target: "SELF"`, no `reveal`: its Boost puts it into play engaged with the player the activation is against, without Surge).
 
 ```json
 {

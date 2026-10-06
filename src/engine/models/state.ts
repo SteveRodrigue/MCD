@@ -417,9 +417,15 @@ export interface PendingSequence {
 }
 
 export interface PendingActivation {
-  type: 'VILLAIN' | 'MINION';
+  /**
+   * ENGAGED_MINIONS stands for step 2b of one player: it yields the minions engaged with that
+   * player at the moment it is reached, so a minion engaged earlier in step 2 still activates.
+   */
+  type: 'VILLAIN' | 'MINION' | 'ENGAGED_MINIONS';
   playerId: string;
   minionInstanceId?: string;
+  /** ENGAGED_MINIONS only: instance ids that already activated in this step 2b. */
+  activatedMinionIds?: string[];
 }
 
 export interface GameOptions {

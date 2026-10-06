@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-05
 > **Repository state:** `main`, last work commit `8f20d39` (#238, Highway Robbery). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 1,860 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 1,882 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -35,6 +35,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
 | #238 | Highway Robbery: real host, `cardsUnderneath`, "When Defeated" before host cleanup, facedown stack UI | `git log --grep "#238"` |
 | Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
+| #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `git log --grep "#244"` |
 
 ---
 
@@ -75,7 +76,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 | # | Item | Issue | Why now | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| 1 | `01185` Biomechanical Upgrades and `01121` Weapons Runner have no entry (`01158` Heart-Shaped Herb done 2026-10-05 | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | `01185` needs conditional attachment (#209) |
+| 1 | `01121` Weapons Runner boost; step 2 minion activation order; `PUT_INTO_PLAY` reveal | [#244](https://github.com/SteveRodrigue/MCD/issues/244) | missing abilities in real games | 🟢 **Done** 2026-10-05; `01185` moved to [#262](https://github.com/SteveRodrigue/MCD/issues/262) (needs #209), boost loops [#263](https://github.com/SteveRodrigue/MCD/issues/263) |
 | 2 | Resumable `executeSequence` so a mid-sequence prompt pauses the later steps; finishes Hulk `01050` after #234 | [#248](https://github.com/SteveRodrigue/MCD/issues/248) | Hulk resolves steps out of order when it must choose an enemy | 🟢 **Done** 2026-10-05; `pendingSpecialSequence` retired |
 | 3 | Highway Robbery `01166` loses the card taken from each hand (orphaned attachment, discarded before "return to hand") | [#238](https://github.com/SteveRodrigue/MCD/issues/238) | **P1**, cards removed from the game | 🟢 **Done** 2026-10-05; seeded RNG filed as [#252](https://github.com/SteveRodrigue/MCD/issues/252) |
 | 3b | Emergency `01085` offered for every threat placement, setup included, not only "when the villain schemes" | [#240](https://github.com/SteveRodrigue/MCD/issues/240) | wrong prompts during setup | check Great Responsibility `01061` too |
@@ -119,12 +120,12 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 
 ### 3.6 Smaller engine defects
 
-[#216](https://github.com/SteveRodrigue/MCD/issues/216) `STAT_VALUE DAMAGE` reads a nonexistent field; [#217](https://github.com/SteveRodrigue/MCD/issues/217) flaky obligation test (shuffle-dependent); [#224](https://github.com/SteveRodrigue/MCD/issues/224) acceleration icons outside side schemes; [#206](https://github.com/SteveRodrigue/MCD/issues/206) identity printed traits ignore the form.
+[#216](https://github.com/SteveRodrigue/MCD/issues/216) `STAT_VALUE DAMAGE` reads a nonexistent field; [#217](https://github.com/SteveRodrigue/MCD/issues/217) flaky obligation test (shuffle-dependent); [#224](https://github.com/SteveRodrigue/MCD/issues/224) acceleration icons outside side schemes; [#206](https://github.com/SteveRodrigue/MCD/issues/206) identity printed traits ignore the form; [#263](https://github.com/SteveRodrigue/MCD/issues/263) three copies of the boost loop; [#264](https://github.com/SteveRodrigue/MCD/issues/264) villain attack may not resume after declining Spider-Sense (stepped flow, not reproduced yet; owner: later).
 
 ### 3.7 Deferred (do not start without the owner)
 
 - **Wrecking Crew (MC03) chain:** [#210](https://github.com/SteveRodrigue/MCD/issues/210), [#211](https://github.com/SteveRodrigue/MCD/issues/211), [#212](https://github.com/SteveRodrigue/MCD/issues/212), [#213](https://github.com/SteveRodrigue/MCD/issues/213), [#214](https://github.com/SteveRodrigue/MCD/issues/214), [#215](https://github.com/SteveRodrigue/MCD/issues/215). No effect on Gate 1.
-- **Other features and cleanups:** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments (42 cards), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
+- **Other features and cleanups:** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments (42 cards), [#262](https://github.com/SteveRodrigue/MCD/issues/262) Biomechanical Upgrades `01185` (needs #209 and a defeat replacement interrupt), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
 - **Phase 6, [#100](https://github.com/SteveRodrigue/MCD/issues/100):** the full supplemental data pass, postponed until Phase 5 is finished and the engine contract is stable.
 - **Known gap outside Gate 1:** 53 core encounter cards with rules text and no supplemental entry (Klaw, Ultron, Masters of Evil, Hydra, Doomsday Chair sets: `01113` to `01154`, `01180` to `01183`). Their scenario plugins exist under `src/engine/scenarios/built-in/`, but no card abilities are modelled. Tracked with the Surge cards in #244.
 

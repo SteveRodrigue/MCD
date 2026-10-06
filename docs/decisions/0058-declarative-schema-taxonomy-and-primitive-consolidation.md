@@ -256,3 +256,10 @@ export const TargetSelectorSchema = z.enum([
 The Surge keyword was parsed but never acted on, and the importer tagged **every** card whose text contained `surge.` (17 core encounter cards that only "gain surge" next to the 6 that print it). Nine hand-rolled surge sites existed, four of them card-named composites (`HEAL_DAMAGE_WITH_SURGE`, `ADD_STATUS_WITH_SURGE`, `REVEAL_ENCOUNTER_CARD_WITH_SURGE`, `DISCARD_UPGRADE_OR_SUPPORT_OR_SURGE`) used by no pack, two of them bypassing the deck reshuffle with `encounterDeck.shift()`.
 
 **Decision:** (1) Surge is read from the importer through `hasPrintedKeyword` (a whole sentence of a text line); the other keywords still use substring matching and are tracked in #243. (2) A single `dealSurgeCard` helper (draw through `drawEncounterCard`, deal facedown to the resolving player, flag the active encounter context) serves the keyword (fired at the end of `resolveActiveEncounterCardAfterInterrupt`, not when the When Revealed was cancelled), the `SURGE` effect and `DISCARD` `fallback: "SURGE"`; a card surges at most once per reveal. (3) The four dead card-named composites were removed from the engine, the `EffectTypeSchema`, the editor registry and the effect union type (ADR-0021).
+
+
+---
+
+## Addendum (2026-10-05, #244): `PUT_INTO_PLAY_ENGAGED` and `SPAWN_MINION_ENGAGED` removed
+
+The two aliases consolidated into `PUT_INTO_PLAY` by this ADR were still in `EffectTypeSchema`, `schema.json`, the engine and the Card Editor registry, with no card or test using them. They are removed; `PUT_INTO_PLAY` with `target: "SELF"` covers the case (Weapons Runner `01121`). `PUT_INTO_PLAY` also gains `reveal: true` for printed "reveal ... and put it into play".

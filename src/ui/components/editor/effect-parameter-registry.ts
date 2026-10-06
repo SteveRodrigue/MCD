@@ -1055,17 +1055,28 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 'TABLEAU',
       },
       {
+        key: 'target',
+        label: 'Target',
+        type: 'select',
+        options: ['SELF'] as const,
+        description:
+          'SELF puts the source card itself into play (e.g. a boost card). Empty selects cards by filter.',
+      },
+      {
         key: 'filter',
         label: 'Target Card Filter',
         type: 'card-filter',
         description: 'Universal card filter to match eligible card to put into play',
       },
+      {
+        key: 'reveal',
+        label: 'Reveal',
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Reveal the card as it enters play: its When Revealed abilities and Surge resolve (RR v1.8 glossary R, W)',
+      },
     ],
-  },
-  PUT_INTO_PLAY_ENGAGED: {
-    effect: 'PUT_INTO_PLAY_ENGAGED',
-    description: 'Put minion into play engaged with target player.',
-    parameters: [],
   },
   SHUFFLE_INTO_DECK: {
     effect: 'SHUFFLE_INTO_DECK',
@@ -1144,11 +1155,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   GIVE_ADDITIONAL_BOOST_CARD: {
     effect: 'GIVE_ADDITIONAL_BOOST_CARD',
     description: 'Deal additional facedown boost card to activating enemy.',
-    parameters: [],
-  },
-  SPAWN_MINION_ENGAGED: {
-    effect: 'SPAWN_MINION_ENGAGED',
-    description: 'Spawn minion engaged with target player.',
     parameters: [],
   },
 

@@ -3753,34 +3753,6 @@ export function executeStep(
       return { state, success: true, onomatopoeia: 'CHAIN BOOST ADDED!' };
     }
 
-    case 'PUT_INTO_PLAY_ENGAGED':
-    case 'SPAWN_MINION_ENGAGED': {
-      const minionInst = context.sourceCardInstance;
-      if (minionInst) {
-        if (state.activeAttackContext) {
-          (state.activeAttackContext as any).skipBoostDiscard = true;
-        }
-        player.engagedMinions.push(minionInst);
-        state.log.push({
-          id: `log_${Date.now()}`,
-          timestamp: Date.now(),
-          round: state.roundNumber,
-          phase: state.phase,
-          category: 'combat',
-          key: 'minion.entered.play',
-          params: { minion: minionInst.card.name, player: player.name },
-          onomatopoeia: 'MINION ENTERS THE FRAY!',
-        });
-        dispatchTrigger(state, 'MINION_ENTERS_PLAY', {
-          targetPlayerId: player.id,
-          sourceInstanceId: minionInst.instanceId,
-          targetInstanceId: minionInst.instanceId,
-          encounterCardInstance: minionInst,
-        });
-      }
-      return { state, success: true, onomatopoeia: 'MINION ENGAGED!' };
-    }
-
     case 'PLAYER_CHOICE': {
       if (context.choice || step.effectParams?.stat) {
         const amount = (step.effectParams?.amount as number) || 2;
@@ -3915,6 +3887,10 @@ export function executeStep(
       const toZone = (step.effectParams?.to as string) || 'ENGAGED_WITH_PLAYER';
       const filter = (step.effectParams?.filter || step.filter) as Record<string, any> | undefined;
 
+      // "Reveal ... and put it into play" (RR v1.8 glossary R, W): the When Revealed abilities and
+      // keyword-provided Surge resolve. A card only put into play never triggers them.
+      const reveal = step.effectParams?.reveal === true;
+
       let sourceList: CardInstance[] = [];
       if (fromZone === 'SET_ASIDE') {
         sourceList = player.setAsideCards || [];
@@ -3972,13 +3948,18 @@ export function executeStep(
             threat: baseThreat,
           });
 
-          const schemeAbilities = sideCard.enrichment?.abilities || [];
-          for (const ab of schemeAbilities) {
-            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
-              executeEffect(state, ab, {
-                playerId: player.id,
-                sourceCardInstance: cardInst,
-              });
+          if (reveal) {
+            const schemeAbilities = sideCard.enrichment?.abilities || [];
+            for (const ab of schemeAbilities) {
+              if (ab.timing === 'WHEN_REVEALED' || ab.trigger === 'WHEN_REVEALED') {
+                executeEffect(state, ab, {
+                  playerId: player.id,
+                  sourceCardInstance: cardInst,
+                });
+              }
+            }
+            if (hasKeyword(sideCard, Keyword.SURGE)) {
+              dealSurgeCard(state, player, sideCard.name);
             }
           }
         } else if (
@@ -4006,13 +3987,18 @@ export function executeStep(
             executeMinionAttackAgainstPlayer(state, cardInst as MinionCard & CardInstance, player);
           }
 
-          const abilities = cardInst.card.enrichment?.abilities || [];
-          for (const ab of abilities) {
-            if (ab.trigger === 'WHEN_REVEALED' || ab.timing === 'FORCED_RESPONSE') {
-              executeEffect(state, ab, {
-                playerId: player.id,
-                sourceCardInstance: cardInst,
-              });
+          if (reveal) {
+            const abilities = cardInst.card.enrichment?.abilities || [];
+            for (const ab of abilities) {
+              if (ab.timing === 'WHEN_REVEALED' || ab.trigger === 'WHEN_REVEALED') {
+                executeEffect(state, ab, {
+                  playerId: player.id,
+                  sourceCardInstance: cardInst,
+                });
+              }
+            }
+            if (hasKeyword(cardInst.card, Keyword.SURGE)) {
+              dealSurgeCard(state, player, cardInst.card.name);
             }
           }
 

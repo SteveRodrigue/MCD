@@ -75,9 +75,14 @@ export function defaultShuffle<T>(array: T[]): T[] {
  * 10. Main scheme initialized.
  * 11. Shuffle all player obligations into the encounter deck.
  * 12. Shuffle encounter deck.
- * 13. Players draw starting hand equal to Alter-Ego hand size.
- * 14. Sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
- * 15. Start Round 1 (Player Phase begins).
+ * 13. Run the scenario plugin setup (villain, main scheme, encounter deck, When Revealed).
+ * 14. Players draw starting hand equal to Alter-Ego hand size.
+ * 15. Mulligan: sets setupState to MULLIGAN_PHASE (unless skipMulligan is true).
+ * 16. Resolve player Setup abilities.
+ *
+ * The whole call runs in SETUP_PHASE with setupState.stage SCENARIO_SETUP, so no
+ * player-controlled ability can trigger. Afterwards the phase is SETUP_PHASE
+ * (MULLIGAN_PHASE) or PLAYER_PHASE (skipMulligan: Round 1 begins).
  */
 export function setupGame(options: GameSetupOptions): GameState {
   const shuffle = options.shuffleFn || defaultShuffle;
@@ -112,9 +117,8 @@ export function setupGame(options: GameSetupOptions): GameState {
       }
     }
 
-    const handSize = pConfig.alterEgo.handSize;
+    // Step 6: shuffle the deck. The opening hand is drawn at step 14, after the scenario setup.
     const shuffledDeck = shuffle(drawDeckCards.map((c) => createCardInstance(c, pConfig.id)));
-    const hand = shuffledDeck.splice(0, handSize);
 
     const defaultNemesisCards = pConfig.hero.setCode
       ? cardCatalog.getNemesisCardsForHero(pConfig.hero.setCode)
@@ -137,7 +141,7 @@ export function setupGame(options: GameSetupOptions): GameState {
       maxHealth: pConfig.alterEgo.health,
       exhausted: false,
       statusCards: [],
-      hand,
+      hand: [],
       deck: shuffledDeck,
       discard: [],
       tableau: permanentCards,
@@ -204,21 +208,14 @@ export function setupGame(options: GameSetupOptions): GameState {
   const encounterInstances = allEncounterCards.map((c) => createCardInstance(c));
   const shuffledEncounterDeck = shuffle(encounterInstances);
 
-  // 5. Setup State
-  const initialPhase = skipMulligan ? GamePhase.PLAYER_PHASE : GamePhase.SETUP_PHASE;
-  const setupState = skipMulligan
-    ? undefined
-    : {
-        stage: 'MULLIGAN_PHASE' as const,
-        mulliganCompleted: {},
-      };
-
+  // 5. Setup State: the whole setup (Appendix II steps 1 to 16) runs in SETUP_PHASE, with
+  // the SCENARIO_SETUP stage suppressing player-controlled abilities.
   // 6. Initialize Base GameState
   let state: GameState = {
     id: options.id || `game_${Date.now()}`,
     roundNumber: 1,
-    phase: initialPhase,
-    setupState,
+    phase: GamePhase.SETUP_PHASE,
+    setupState: { stage: 'SCENARIO_SETUP', mulliganCompleted: {} },
     scenarioId: options.scenarioId || 'rhino',
     difficulty,
     heroicLevel: options.heroicLevel || 0,
@@ -283,17 +280,31 @@ export function setupGame(options: GameSetupOptions): GameState {
     }
   }
 
-  // 8. Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27)
-  state = step14_resolveCharacterSetupAbilities(state, options);
+  // 8. Step 14: players draw their opening hands (hand size of the alter-ego).
+  for (let i = 0; i < state.players.length; i++) {
+    const player = state.players[i];
+    player.hand.push(...player.deck.splice(0, options.players[i].alterEgo.handSize));
+  }
+
+  // 9. Step 16: Resolve Player Setup Abilities (RR v1.8 p. 27)
+  state = step16_resolvePlayerSetupAbilities(state, options);
+
+  // 10. Setup ends: mulligan (step 15, interactive) or the first player phase.
+  if (skipMulligan) {
+    state.phase = GamePhase.PLAYER_PHASE;
+    state.setupState = undefined;
+  } else {
+    state.setupState = { stage: 'MULLIGAN_PHASE', mulliganCompleted: {} };
+  }
 
   return state;
 }
 
 /**
- * Step 14: Resolve Character Setup Abilities (RR v1.8 p. 27).
+ * Step 16: Resolve Player Setup Abilities (RR v1.8 Appendix II).
  * In player order, each player resolves any "Setup" instructions on their identity card and obligations.
  */
-export function step14_resolveCharacterSetupAbilities(
+export function step16_resolvePlayerSetupAbilities(
   state: GameState,
   options: GameSetupOptions,
 ): GameState {

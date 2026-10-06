@@ -176,6 +176,27 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
             </select>
           </div>
 
+          {/* threatSource */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Threat Source
+            </label>
+            <select
+              data-testid={`trigger-threat-source-${abilityIndex}`}
+              value={currentFilter.threatSource || ''}
+              onChange={(e) => handleFieldChange('threatSource', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="VILLAIN_SCHEME">Villain Scheme</option>
+              <option value="VILLAIN_PHASE_STEP_1">Villain Phase Step 1</option>
+              <option value="MINION_SCHEME">Minion Scheme</option>
+              <option value="CARD_EFFECT">Card Effect</option>
+              <option value="INCITE">Incite</option>
+              <option value="HAZARD">Hazard</option>
+            </select>
+          </div>
+
           {/* targetScope */}
           <div>
             <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">

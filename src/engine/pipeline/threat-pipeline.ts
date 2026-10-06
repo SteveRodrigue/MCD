@@ -113,6 +113,7 @@ export function applyThreatPlacement(
     threatAmount: amount,
     targetType,
     targetInstanceId,
+    threatSource: sourceType,
   });
 
   const finalThreat = Math.max(0, triggerRes.threatAmount ?? amount);

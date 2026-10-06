@@ -130,6 +130,7 @@ describe('Universal Event Interception and Scalar Value Binding (ADR-0049 & Issu
       const dispatchRes = dispatchTrigger(gameState, 'THREAT_WOULD_BE_PLACED', {
         targetPlayerId: 'p1',
         threatAmount: 3,
+        threatSource: 'VILLAIN_SCHEME',
         acceptOptionalTriggers: true,
       });
 

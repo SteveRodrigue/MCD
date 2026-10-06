@@ -158,6 +158,12 @@ export function matchesTriggerFilter(
     }
   }
 
+  if (filter.threatSource) {
+    if (context.threatSource !== filter.threatSource) {
+      return false;
+    }
+  }
+
   if (filter.isEngaged !== undefined) {
     const actualEngaged =
       Boolean(context.targetType) &&
@@ -195,6 +201,8 @@ export interface TriggerContext {
   defenderCardCode?: string;
   defenderName?: string;
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  /** What placed the threat, for THREAT_WOULD_BE_PLACED (e.g. 'VILLAIN_SCHEME' for Emergency). */
+  threatSource?: NonNullable<TriggerFilter['threatSource']>;
   targetCardCode?: string;
   targetName?: string;
   targetCurrentHp?: number;
@@ -347,6 +355,15 @@ interface HandReactionSpec {
 }
 
 /**
+ * True while the game is being set up (Appendix II steps 1 to 16): player-controlled abilities
+ * (hand cards, identity, tableau and allies) cannot be used or triggered; encounter-side
+ * abilities still resolve.
+ */
+function arePlayerAbilitiesSuspended(state: GameState): boolean {
+  return state.setupState?.stage === 'SCENARIO_SETUP';
+}
+
+/**
  * Shared in-hand reaction scan: for each scanned player, picks the first hand card holding an
  * ability on this trigger (zone HAND) that the form, cost and triggerFilter allow, then either
  * resolves it at once (FORCED_ timing or acceptOptionalTriggers) or queues the optional prompt.
@@ -361,6 +378,9 @@ function scanHandReactions(
   spec: HandReactionSpec,
 ): boolean {
   let hasPendingPrompt = false;
+
+  // No player ability can be used before the game begins (Appendix II, setup).
+  if (arePlayerAbilitiesSuspended(state)) return false;
 
   for (const p of players) {
     if (spec.isActive && !spec.isActive()) break;
@@ -512,7 +532,9 @@ export function dispatchTrigger(
   let hasPendingPrompt = false;
 
   // 1. Scan in-play identity card abilities (e.g. Spider-Sense on Spider-Man 01001a)
-  const identityAbilities = player ? player.activeFormCard?.enrichment?.abilities || [] : [];
+  const playerAbilitiesSuspended = arePlayerAbilitiesSuspended(state);
+  const identityAbilities =
+    player && !playerAbilitiesSuspended ? player.activeFormCard?.enrichment?.abilities || [] : [];
   for (const ability of identityAbilities) {
     if (triggersAreEquivalent(ability.trigger, trigger)) {
       if (
@@ -671,11 +693,13 @@ export function dispatchTrigger(
   for (const controller of playersToScanForInPlay) {
     if (hasPendingPrompt) break;
     const inPlayCards: CardInstance[] = [
-      ...(controller.tableau || []),
-      ...(controller.allies || []),
+      ...(playerAbilitiesSuspended ? [] : controller.tableau || []),
+      ...(playerAbilitiesSuspended ? [] : controller.allies || []),
       ...(controller.attachments || []),
       ...(controller.obligations || []),
-      ...(controller.allies || []).flatMap((a) => a.attachments || []),
+      ...(playerAbilitiesSuspended
+        ? []
+        : (controller.allies || []).flatMap((a) => a.attachments || [])),
       ...(controller.engagedMinions || []).flatMap((m) => m.attachments || []),
     ];
     for (const cardInst of inPlayCards) {

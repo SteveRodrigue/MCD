@@ -391,6 +391,16 @@ export const TriggerFilterSchema = z
     targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
     isEngaged: z.boolean().optional(),
     defenderType: z.enum(['HERO', 'ALLY']).optional(),
+    threatSource: z
+      .enum([
+        'VILLAIN_PHASE_STEP_1',
+        'VILLAIN_SCHEME',
+        'MINION_SCHEME',
+        'CARD_EFFECT',
+        'INCITE',
+        'HAZARD',
+      ])
+      .optional(),
   })
   .strict();
 

@@ -56,6 +56,7 @@ describe('PREVENT_THREAT Primitive Acceptance & Contract Tests (Issue #123, ADR-
       const res = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
         targetPlayerId: 'p1',
         threatAmount: 3,
+        threatSource: 'VILLAIN_SCHEME',
         acceptOptionalTriggers: true,
       });
 
@@ -252,6 +253,7 @@ describe('PREVENT_THREAT Primitive Acceptance & Contract Tests (Issue #123, ADR-
       const res = dispatchTrigger(state, 'THREAT_WOULD_BE_PLACED', {
         targetPlayerId: 'p1',
         threatAmount: 3,
+        threatSource: 'VILLAIN_SCHEME',
         acceptOptionalTriggers: false,
       });
 

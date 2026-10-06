@@ -322,3 +322,23 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(capParam?.defaultValue).toBe('NONE');
   });
 });
+
+describe('PUT_INTO_PLAY registry entry (#244)', () => {
+  it('exposes target (with SELF) and reveal', () => {
+    const desc = getEffectDescriptor('PUT_INTO_PLAY');
+    const target = desc.parameters.find((p) => p.key === 'target');
+    const reveal = desc.parameters.find((p) => p.key === 'reveal');
+
+    expect(target?.type).toBe('select');
+    expect(target?.options).toContain('SELF');
+    expect(reveal?.type).toBe('boolean');
+  });
+
+  it('no longer lists the PUT_INTO_PLAY_ENGAGED and SPAWN_MINION_ENGAGED aliases', () => {
+    const effects: readonly string[] = EffectTypeSchema.options;
+    for (const alias of ['PUT_INTO_PLAY_ENGAGED', 'SPAWN_MINION_ENGAGED']) {
+      expect(effects).not.toContain(alias);
+      expect(Object.keys(EFFECT_PARAMETER_REGISTRY)).not.toContain(alias);
+    }
+  });
+});

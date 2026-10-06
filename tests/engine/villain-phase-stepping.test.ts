@@ -310,8 +310,8 @@ describe('Villain Phase Stepping & Pacing Engine (ADR-0068 / Issue #140)', () =>
     expect(state.villainPhaseStepEvent?.type).toBe('VILLAIN_ATTACK');
     expect(state.villainPhaseStepEvent?.targetPlayerId).toBe('p1');
     expect(state.lastCombatOutcome?.targetPlayerId).toBe('p1');
-    // pendingActivations still has p2
-    expect(state.pendingActivations?.length).toBe(1);
+    // pendingActivations still has p1's (empty) 2b entry and p2's villain and 2b entries
+    expect(state.pendingActivations?.length).toBe(3);
 
     // 3. Advance -> Rhino attacks Seat 2
     state = advanceVillainPhaseStep(state, { synchronousPolicy: 'TAKE_UNDEFENDED' });

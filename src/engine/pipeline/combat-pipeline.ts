@@ -791,20 +791,11 @@ export function step4_and_5_dealAndResolveBoostCards(
         onomatopoeia: 'BOOST REVEALED!',
       });
 
-      // 4. Discard Boost Card (unless put into play by an ability like Weapons Runner)
+      // 4. Discard the boost card unless its own Boost put it into play engaged with the player
+      // the activation is against (e.g. Weapons Runner).
       const targetPlayer = state.players.find((p) => p.id === attackContext.targetPlayerId);
-      if (
-        !(attackContext as any).skipBoostDiscard &&
-        !(state as any).skipBoostDiscard &&
-        !(
-          targetPlayer &&
-          targetPlayer.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
-        )
-      ) {
+      if (!targetPlayer?.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)) {
         state.encounterDiscard.push(currentBoost);
-      } else {
-        delete (attackContext as any).skipBoostDiscard;
-        delete (state as any).skipBoostDiscard;
       }
 
       state.activeBoostCard = undefined;

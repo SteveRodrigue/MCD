@@ -221,16 +221,9 @@ export function executeVillainSchemeAgainstPlayer(state: GameState, player: Play
       onomatopoeia: 'BOOST REVEALED!',
     });
 
-    // 4. Discard Boost Card (unless put into play by an ability or flagged skipBoostDiscard)
-    if (
-      !(currentBoost as any).skipBoostDiscard &&
-      !(state as any).skipBoostDiscard &&
-      !player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
-    ) {
+    // 4. Discard the boost card unless its own Boost put it into play engaged with this player.
+    if (!player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)) {
       state.encounterDiscard.push(currentBoost);
-    } else {
-      delete (currentBoost as any).skipBoostDiscard;
-      delete (state as any).skipBoostDiscard;
     }
 
     state.activeBoostCard = undefined;
@@ -374,16 +367,9 @@ export function executeMinionSchemeAgainstPlayer(
         onomatopoeia: 'BOOST REVEALED!',
       });
 
-      // 4. Discard Boost Card (unless put into play or skipBoostDiscard)
-      if (
-        !(currentBoost as any).skipBoostDiscard &&
-        !(state as any).skipBoostDiscard &&
-        !player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)
-      ) {
+      // 4. Discard the boost card unless its own Boost put it into play engaged with this player.
+      if (!player.engagedMinions.some((m) => m.instanceId === currentBoost.instanceId)) {
         state.encounterDiscard.push(currentBoost);
-      } else {
-        delete (currentBoost as any).skipBoostDiscard;
-        delete (state as any).skipBoostDiscard;
       }
 
       state.activeBoostCard = undefined;
@@ -418,6 +404,59 @@ export function executeMinionActivationAgainstPlayer(
 }
 
 /**
+ * Builds the step 2 activation queue (RR v1.8, Villain Phase step 2): in player order, one VILLAIN
+ * entry (2a) and one ENGAGED_MINIONS entry (2b) per player. The ENGAGED_MINIONS entry is expanded
+ * lazily by `takeNextActivation`, so a minion engaged during 2a or 2b still activates in 2b.
+ */
+function buildActivationQueue(state: GameState): PendingActivation[] {
+  const queue: PendingActivation[] = [];
+  for (let i = 0; i < state.players.length; i++) {
+    const player = state.players[(state.firstPlayerIndex + i) % state.players.length];
+    queue.push({ type: 'VILLAIN', playerId: player.id });
+    queue.push({ type: 'ENGAGED_MINIONS', playerId: player.id, activatedMinionIds: [] });
+  }
+  return queue;
+}
+
+function nextUnactivatedMinion(
+  state: GameState,
+  entry: PendingActivation,
+): CardInstance | undefined {
+  const player = state.players.find((p) => p.id === entry.playerId);
+  const activated = entry.activatedMinionIds ?? [];
+  return player?.engagedMinions.find((m) => !activated.includes(m.instanceId));
+}
+
+/**
+ * Pops the next activation. An ENGAGED_MINIONS entry reads the player's engaged minions at this
+ * moment and yields the next one that has not activated in this step, keeping the entry until none
+ * is left.
+ */
+function takeNextActivation(state: GameState): PendingActivation | undefined {
+  const queue = state.pendingActivations;
+  while (queue && queue.length > 0) {
+    const head = queue[0];
+    if (head.type !== 'ENGAGED_MINIONS') return queue.shift();
+    const minion = nextUnactivatedMinion(state, head);
+    if (!minion) {
+      queue.shift();
+      continue;
+    }
+    head.activatedMinionIds = [...(head.activatedMinionIds ?? []), minion.instanceId];
+    return { type: 'MINION', playerId: head.playerId, minionInstanceId: minion.instanceId };
+  }
+  return undefined;
+}
+
+/** True while at least one activation is left, ignoring ENGAGED_MINIONS entries with no minion left. */
+function hasPendingActivation(state: GameState): boolean {
+  return (state.pendingActivations ?? []).some(
+    (entry) =>
+      entry.type !== 'ENGAGED_MINIONS' || nextUnactivatedMinion(state, entry) !== undefined,
+  );
+}
+
+/**
  * Step 2: Villain & Minion Activations (RR v1.8 p. 22: Interleaved Player-by-Player Activation Loop)
  * In player order starting from firstPlayerIndex:
  * 1. The villain activates against the player (Attack if hero, Scheme if alter-ego).
@@ -437,25 +476,10 @@ export function step2_villainAndMinionActivations(
       : options;
 
   if (!state.pendingActivations) {
-    const activations: PendingActivation[] = [];
-    for (let i = 0; i < state.players.length; i++) {
-      const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
-      const player = state.players[playerIdx];
-
-      activations.push({ type: 'VILLAIN', playerId: player.id });
-      for (const minion of player.engagedMinions) {
-        activations.push({
-          type: 'MINION',
-          playerId: player.id,
-          minionInstanceId: minion.instanceId,
-        });
-      }
-    }
-    state.pendingActivations = activations;
+    state.pendingActivations = buildActivationQueue(state);
   }
 
-  while (state.pendingActivations && state.pendingActivations.length > 0) {
-    const act = state.pendingActivations.shift()!;
+  for (let act = takeNextActivation(state); act; act = takeNextActivation(state)) {
     const player = state.players.find((p) => p.id === act.playerId);
     if (!player) continue;
 
@@ -839,27 +863,12 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
   // Case 2: Currently on VILLAIN_ACTIVATIONS
   if (nextState.villainPhaseStep === VillainPhaseStep.VILLAIN_ACTIVATIONS) {
     if (!nextState.pendingActivations) {
-      const activations: PendingActivation[] = [];
-      for (let i = 0; i < nextState.players.length; i++) {
-        const playerIdx = (nextState.firstPlayerIndex + i) % nextState.players.length;
-        const player = nextState.players[playerIdx];
-
-        activations.push({ type: 'VILLAIN', playerId: player.id });
-        for (const minion of player.engagedMinions) {
-          activations.push({
-            type: 'MINION',
-            playerId: player.id,
-            minionInstanceId: minion.instanceId,
-          });
-        }
-      }
-      nextState.pendingActivations = activations;
+      nextState.pendingActivations = buildActivationQueue(nextState);
     }
 
-    const pending = nextState.pendingActivations;
+    const act = takeNextActivation(nextState);
 
-    if (pending && pending.length > 0) {
-      const act = pending.shift()!;
+    if (act) {
       const player = nextState.players.find((p) => p.id === act.playerId);
       if (!player) {
         return advanceVillainPhaseStep(nextState, options);
@@ -908,7 +917,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           if (mutatedState.winner) {
             return mutatedState;
           }
-          if (mutatedState.pendingActivations?.length === 0) {
+          if (!hasPendingActivation(mutatedState)) {
             delete mutatedState.pendingActivations;
             mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
           }
@@ -930,7 +939,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
           if (peekDecisionPrompt(nextState) || nextState.winner) {
             return nextState;
           }
-          if (nextState.pendingActivations?.length === 0) {
+          if (!hasPendingActivation(nextState)) {
             delete nextState.pendingActivations;
             nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
           }
@@ -975,7 +984,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             if (mutatedState.winner) {
               return mutatedState;
             }
-            if (mutatedState.pendingActivations?.length === 0) {
+            if (!hasPendingActivation(mutatedState)) {
               delete mutatedState.pendingActivations;
               mutatedState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
             }
@@ -997,7 +1006,7 @@ export function advanceVillainPhaseStep(state: GameState, options?: CombatOption
             if (peekDecisionPrompt(nextState) || nextState.winner) {
               return nextState;
             }
-            if (nextState.pendingActivations?.length === 0) {
+            if (!hasPendingActivation(nextState)) {
               delete nextState.pendingActivations;
               nextState.villainPhaseStep = VillainPhaseStep.DEAL_ENCOUNTER_CARDS;
             }

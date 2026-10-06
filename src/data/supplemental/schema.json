@@ -134,9 +134,17 @@
                       "enum": [
                         "VILLAIN",
                         "MINION",
+                        "ENEMY",
                         "SCHEME",
                         "CHARACTER",
                         "ALLY"
+                      ]
+                    },
+                    "defeatedByAttackOf": {
+                      "type": "string",
+                      "enum": [
+                        "YOUR_HERO",
+                        "THIS_CARD"
                       ]
                     },
                     "isEngaged": {
@@ -348,6 +356,18 @@
                     "ONCE_PER_ROUND",
                     "ONCE_PER_PHASE"
                   ]
+                },
+                "labels": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "ATTACK",
+                      "THWART",
+                      "DEFENSE"
+                    ]
+                  }
                 },
                 "errata": {
                   "type": [

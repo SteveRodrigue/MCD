@@ -7,7 +7,7 @@ import {
   dispatchAction,
   peekDecisionPrompt,
 } from '@engine/pipeline';
-import { executeEffect, dealDirectDamage } from '@engine/effects';
+import { executeEffect } from '@engine/effects';
 import { dispatchTrigger } from '@engine/triggers/trigger-dispatcher';
 
 describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Damage Invariant', () => {
@@ -169,6 +169,7 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
             effectParams: {
               amount: 2,
               target: 'minion',
+              isAttack: true,
             },
           },
         ],
@@ -184,14 +185,24 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
     });
   });
 
-  describe('Direct Damage Invariant (dealDirectDamage)', () => {
+  describe('Direct Damage Invariant (damage to the hero through the damage pipeline)', () => {
+    const damageHero = (amount: number) =>
+      executeEffect(
+        state,
+        {
+          id: 'direct_damage',
+          timing: 'ACTION',
+          steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount, target: 'SELF_IDENTITY' } }],
+        } as any,
+        { playerId: 'p1' },
+      );
+
     it('direct damage bypasses Hero DEF and cannot be blocked, but is absorbed by Tough', () => {
       state.players[0].statusCards.push(StatusCard.TOUGH);
       const initialHp = state.players[0].health;
 
-      const result = dealDirectDamage(state, 'HERO', 3, 'p1');
+      damageHero(3);
 
-      expect(result.absorbedByTough).toBe(true);
       expect(state.players[0].health).toBe(initialHp);
       expect(state.players[0].statusCards).not.toContain(StatusCard.TOUGH);
     });
@@ -199,10 +210,8 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
     it('direct damage directly reduces hero health when Tough is not present', () => {
       const initialHp = state.players[0].health;
 
-      const result = dealDirectDamage(state, 'HERO', 3, 'p1');
+      damageHero(3);
 
-      expect(result.absorbedByTough).toBe(false);
-      expect(result.damageDealt).toBe(3);
       expect(state.players[0].health).toBe(initialHp - 3);
     });
   });

@@ -15,6 +15,7 @@ import {
 } from '../models';
 import { enqueueDecisionPrompt, popDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
+import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
 import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
   getEffectiveHeroStats,
@@ -27,22 +28,8 @@ import {
 export type DefensePolicy =
   'TAKE_UNDEFENDED' | 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL';
 
-function dispatchCanonicalCharacterDefeat(
-  state: GameState,
-  targetPlayerId: string,
-  sourceInstanceId: string,
-  targetType?: 'ALLY' | 'HERO' | 'MINION' | 'VILLAIN',
-): void {
-  const context = {
-    targetPlayerId,
-    sourceInstanceId,
-    targetInstanceId: sourceInstanceId,
-    entityType: 'CHARACTER' as const,
-    targetType,
-  };
-  dispatchTrigger(state, 'DEFEATED', context);
-  dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
-}
+/** An enemy attack defeated the character. The enemy side of damage is issue #269. */
+const ENEMY_ATTACK_DEFEAT: DefeatSource = { kind: 'ENEMY', byAttack: true };
 
 export interface CombatOptions {
   synchronousPolicy?: DefensePolicy;
@@ -992,7 +979,12 @@ export function applyCalculatedAttackDamage(
             onomatopoeia: 'DEFEATED!',
           });
 
-          dispatchCanonicalCharacterDefeat(state, player.id, ally.instanceId, 'ALLY');
+          dispatchDefeat(state, {
+            targetPlayerId: player.id,
+            targetInstanceId: ally.instanceId,
+            targetType: 'ALLY',
+            defeatSource: ENEMY_ATTACK_DEFEAT,
+          });
 
           // Overkill Check
           if (attackContext.hasOverkill && excessDamage > 0) {
@@ -1073,7 +1065,12 @@ export function applyCalculatedAttackDamage(
       });
 
       if (player.health <= 0) {
-        dispatchCanonicalCharacterDefeat(state, player.id, player.id, 'HERO');
+        dispatchDefeat(state, {
+          targetPlayerId: player.id,
+          targetInstanceId: player.id,
+          targetType: 'HERO',
+          defeatSource: ENEMY_ATTACK_DEFEAT,
+        });
         state.winner = 'VILLAIN';
       }
     }

@@ -177,6 +177,44 @@ describe('TriggerFilterSection', () => {
     await user.selectOptions(screen.getByTestId('trigger-defender-type-0'), '');
     expect(handleChange).toHaveBeenLastCalledWith(undefined);
   });
+  it('selects ENEMY as target entity type and defeatedByAttackOf', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('trigger-target-type-0'), 'ENEMY');
+    expect(handleChange).toHaveBeenCalledWith(expect.objectContaining({ targetType: 'ENEMY' }));
+
+    await user.selectOptions(screen.getByTestId('trigger-defeated-by-attack-of-0'), 'YOUR_HERO');
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ targetType: 'ENEMY', defeatedByAttackOf: 'YOUR_HERO' }),
+    );
+
+    await user.selectOptions(screen.getByTestId('trigger-defeated-by-attack-of-0'), 'THIS_CARD');
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ defeatedByAttackOf: 'THIS_CARD' }),
+    );
+
+    await user.selectOptions(screen.getByTestId('trigger-defeated-by-attack-of-0'), '');
+    const last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(last).toEqual({ targetType: 'ENEMY' });
+  });
+
+  it('shows the Chase Them Down (01052) trigger filter as configured', () => {
+    render(
+      <TriggerFilterSection
+        filter={{ targetType: 'ENEMY', defeatedByAttackOf: 'YOUR_HERO' }}
+        isExpanded={true}
+        onChange={vi.fn()}
+      />,
+    );
+    expect((screen.getByTestId('trigger-target-type-0') as HTMLSelectElement).value).toBe('ENEMY');
+    expect((screen.getByTestId('trigger-defeated-by-attack-of-0') as HTMLSelectElement).value).toBe(
+      'YOUR_HERO',
+    );
+  });
+
   it('selects threatSource', async () => {
     const user = userEvent.setup();
     const handleChange = vi.fn();

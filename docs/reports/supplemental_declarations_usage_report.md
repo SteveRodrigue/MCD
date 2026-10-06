@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T03:29:59.304Z`  
+> **Generated:** `2026-10-06T10:38:59.127Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -174,6 +174,7 @@ These **6 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | :--- | :--- | :--- |
 | `targetPlayerScope` | **3** | `01001a` Spider-Man (hero), `01063` Interrogation Room (support), `01077` Counter-Punch (event) |
 | `targetType` | **3** | `01051` Tigra (ally), `01052` Chase Them Down (event), `01063` Interrogation Room (support) |
+| `defeatedByAttackOf` | **2** | `01051` Tigra (ally), `01052` Chase Them Down (event) |
 | `attackerKind` | **1** | `01001a` Spider-Man (hero) |
 | `targetScope` | **1** | `01007` Spider-Tracer (upgrade) |
 | `sourceCardCode` | **1** | `01050` Hulk (ally) |
@@ -184,7 +185,7 @@ These **6 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | Cost Key | Occurrences | Cards |
 | :--- | :--- | :--- |
 | `exhaustSelf` | **20** | `01006` Aunt May (support), `01008` Web-Shooter (upgrade), `01015` Alpha Flight Station (support), `01026` Superhuman Law Division (support), `01027` Focused Rage (upgrade) *(+15 more)* |
-| `discardSelf` | **12** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+7 more)* |
+| `discardSelf` | **13** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01017` Cosmic Flight (upgrade), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event) *(+8 more)* |
 | `resourceCost` | **9** | `01004` Enhanced Spider-Sense (event), `01018` Energy Channel (upgrade), `01024` One-Two Punch (event), `01026` Superhuman Law Division (support), `01068` Vision (ally) *(+4 more)* |
 | `spendCounters` | **5** | `01008` Web-Shooter (upgrade), `01056` Tac Team (support), `01064` Surveillance Team (support), `01066` Hawkeye (ally), `01080` Med Team (support) |
 | `resources` | **2** | `01010a` Captain Marvel (hero), `01039` Rocket Boots (upgrade) |
@@ -197,7 +198,7 @@ These **6 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | Limit / Zone | Occurrences | Cards |
 | :--- | :--- | :--- |
 | Limit: `ONCE_PER_ROUND` | **6** | `01001b` Peter Parker (alter_ego), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01019b` Jennifer Walters (alter_ego), `01029b` Tony Stark (alter_ego) *(+1 more)* |
-| Zone: `HAND` | **7** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01024` One-Two Punch (event), `01061` Great Responsibility (event), `01077` Counter-Punch (event) *(+2 more)* |
+| Zone: `HAND` | **8** | `01003` Backflip (event), `01004` Enhanced Spider-Sense (event), `01024` One-Two Punch (event), `01052` Chase Them Down (event), `01061` Great Responsibility (event) *(+3 more)* |
 
 ### 📋 Cards with Multiple Abilities (2+ Abilities Declared — 17 Cards)
 

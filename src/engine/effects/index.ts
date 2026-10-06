@@ -49,12 +49,16 @@ import {
   peekDecisionPrompt,
 } from '../pipeline/prompt-queue';
 import { resolveDefenderDeclaration } from '../pipeline/combat-pipeline';
-import { applyDamageToTarget } from '../pipeline/damage-pipeline';
+import {
+  applyDamageToTarget,
+  type DamageRequest,
+  type DamageResult,
+  type TargetEntityRef,
+} from '../pipeline/damage-pipeline';
 import { applyThreatPlacement, applyThwart } from '../pipeline/threat-pipeline';
 import {
   getEffectiveMaxHealth,
   getEffectiveHandSize,
-  getEffectiveRetaliate,
   hasEntityKeyword,
 } from '../pipeline/stat-calculator';
 import { dispatchTrigger, matchesTriggerFilter } from '../triggers/trigger-dispatcher';
@@ -133,6 +137,14 @@ export interface EffectExecutionContext {
   remainingInterceptedValue?: number;
   choice?: string;
   isAttack?: boolean;
+  /**
+   * The resolving ability is labelled "(attack)": its damage is an attack by the player's identity
+   * (RR v1.8 glossary L). One labelled ability is one attack, however many damage instances.
+   */
+  labelledAttack?: boolean;
+  /** The first enemy a labelled attack damaged; ATTACK_RESOLVED is dispatched for it, once. */
+  attackedEnemy?: { targetType: 'villain' | 'minion'; instanceId: string };
+  attackResolvedDispatched?: boolean;
   isFinalStep?: boolean;
   discardedCards?: CardInstance[];
   assignments?: Record<string, number>;
@@ -777,102 +789,141 @@ export function shouldExecuteStep(
   return evaluateStepGate(gate, prevResult, state, step, context, stepResultsMap);
 }
 
+/** How a DEAL_DAMAGE step hands its damage to the pipeline (#247). */
+interface AbilityDamageOptions {
+  sourceType?: DamageRequest['sourceType'];
+  sourcePlayerId: string;
+  sourceCardInstance?: CardInstance;
+  isAttack: boolean;
+  hasPiercing: boolean;
+  triggerChain?: TriggerCallNode[];
+}
+
+function villainTargetRef(villain: VillainState): TargetEntityRef {
+  return {
+    type: 'villain',
+    entity: villain,
+    name: villain.card.name,
+    attachments: villain.attachments,
+    statusCards: villain.statusCards,
+  };
+}
+
+function minionTargetRef(minion: CardInstance, controllerId: string): TargetEntityRef {
+  return {
+    type: 'minion',
+    entity: minion,
+    instanceId: minion.instanceId,
+    name: minion.card.name,
+    targetPlayerId: controllerId,
+    attachments: minion.attachments,
+    statusCards: minion.statusCards,
+  };
+}
+
+function allyTargetRef(ally: CardInstance, controllerId: string): TargetEntityRef {
+  return {
+    type: 'ally',
+    entity: ally,
+    instanceId: ally.instanceId,
+    name: ally.card.name,
+    targetPlayerId: controllerId,
+    attachments: ally.attachments,
+    statusCards: ally.statusCards,
+  };
+}
+
+function playerTargetRef(player: PlayerState): TargetEntityRef {
+  return {
+    type: 'player',
+    entity: player,
+    name: player.name,
+    targetPlayerId: player.id,
+    attachments: player.attachments,
+    statusCards: player.statusCards,
+  };
+}
+
+/** Ability damage to one character: always through the damage pipeline. */
+function applyAbilityDamage(
+  state: GameState,
+  target: TargetEntityRef,
+  amount: number,
+  opts: AbilityDamageOptions,
+  extra: Partial<DamageRequest> = {},
+): { state: GameState; result: DamageResult } {
+  return applyDamageToTarget(state, {
+    target,
+    amount,
+    sourceType: opts.sourceType ?? 'CARD_EFFECT',
+    sourceCardInstance: opts.sourceCardInstance,
+    sourcePlayerId: opts.sourcePlayerId,
+    isAttack: opts.isAttack,
+    hasPiercing: opts.hasPiercing,
+    ...extra,
+  });
+}
+
 /**
- * Damage to a player's identity (hero or alter-ego): Tough absorbs it, otherwise the DAMAGE_TAKEN
- * interrupt window opens and the hit points drop. Shared by the identity selectors (`SELF_IDENTITY`,
- * `SELF_HERO`).
+ * Damage to a player's identity (hero or alter-ego), through the pipeline. Tough and damage shields
+ * apply first, then the DAMAGE_TAKEN interrupt window opens and the hit points drop. Shared by the
+ * identity selectors (`SELF_IDENTITY`, `SELF_HERO`) and `ALL_HEROES`.
  */
 function dealDamageToIdentity(
   state: GameState,
   player: PlayerState,
   amount: number,
-  context: EffectContext,
-): void {
-  const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-  if (toughIdx !== -1) {
-    player.statusCards.splice(toughIdx, 1);
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      key: 'card.effect.dealDamage',
-      params: {
-        player: player.name,
-        target: 'hero',
-        amount: 0,
-        toughAbsorbed: true,
-      },
-      onomatopoeia: 'CLANG! (TOUGH)',
-    });
-  } else {
-    const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
-      targetPlayerId: player.id,
-      targetType: 'player',
-      damageAmount: amount,
-      triggerChain: context.triggerChain,
-    });
-    const finalDmg = prevResult.damageAmount ?? amount;
-    player.health = Math.max(0, player.health - finalDmg);
-    if (player.health <= 0) state.winner = 'VILLAIN';
-    state.log.push({
-      id: `log_${Date.now()}`,
-      timestamp: Date.now(),
-      round: state.roundNumber,
-      phase: state.phase,
-      key: 'card.effect.dealDamage',
-      params: {
-        player: player.name,
-        target: 'hero',
-        amount: finalDmg,
-        remainingHealth: player.health,
-      },
-      onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
-    });
+  opts: AbilityDamageOptions,
+): GameState {
+  return applyAbilityDamage(state, playerTargetRef(player), amount, opts, {
+    dispatchDamageTaken: true,
+    triggerChain: opts.triggerChain,
+  }).state;
+}
+
+/** Damage to an ally (by instance id) or, failing that, to the player with that id. */
+function dealDamageToAllyOrHero(
+  state: GameState,
+  id: string,
+  fallbackPlayer: PlayerState,
+  amount: number,
+  opts: AbilityDamageOptions,
+): GameState {
+  for (const p of state.players) {
+    const ally = p.allies.find((a) => a.instanceId === id);
+    if (ally) return applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, opts).state;
   }
+  const hero = state.players.find((pl) => pl.id === id) || fallbackPlayer;
+  return applyAbilityDamage(state, playerTargetRef(hero), amount, opts).state;
+}
+
+/** Damage to every minion engaged with the given players, last engaged first. */
+function dealDamageToMinions(
+  state: GameState,
+  amount: number,
+  minionOwners: PlayerState[],
+  opts: AbilityDamageOptions,
+): GameState {
+  for (const owner of minionOwners) {
+    for (const minion of [...owner.engagedMinions].reverse()) {
+      state = applyAbilityDamage(state, minionTargetRef(minion, owner.id), amount, opts).state;
+    }
+  }
+  return state;
 }
 
 /**
- * Deals damage to the villain and to every minion engaged with the given players.
- * Tough is removed instead of damage; defeated minions are processed and discarded.
+ * Deals damage to the villain and to every minion engaged with the given players, each through the
+ * pipeline (Tough, shields, defeat and Overkill rules are the pipeline's).
  */
 function dealDamageToEnemies(
   state: GameState,
   amount: number,
   minionOwners: PlayerState[],
+  opts: AbilityDamageOptions,
 ): GameState {
-  const villain = getActiveVillain(state);
-  const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
-  if (villainToughIdx !== -1) {
-    villain.statusCards.splice(villainToughIdx, 1);
-  } else {
-    villain.health = Math.max(0, villain.health - amount);
-    if (villain.health <= 0) {
-      state = handleVillainDefeat(state, villain.instanceId);
-    }
-  }
-
-  for (const p of minionOwners) {
-    for (let i = p.engagedMinions.length - 1; i >= 0; i--) {
-      const minion = p.engagedMinions[i];
-      const minionToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-      if (minionToughIdx !== -1) {
-        minion.statusCards!.splice(minionToughIdx, 1);
-      } else {
-        const currentDmg = minion.tokens?.damage || 0;
-        const newDmg = currentDmg + amount;
-        const minionHp = (minion.card as MinionCard).health || 1;
-        if (newDmg >= minionHp) {
-          processHostDefeated(state, minion, { player: p });
-          p.engagedMinions.splice(i, 1);
-          moveDefeatedCardToPile(state, minion, state.encounterDiscard);
-        } else {
-          minion.tokens = { ...minion.tokens, damage: newDmg };
-        }
-      }
-    }
-  }
-  return state;
+  state = applyAbilityDamage(state, villainTargetRef(getActiveVillain(state)), amount, opts).state;
+  return dealDamageToMinions(state, amount, minionOwners, opts);
 }
 
 export function pushPendingSequence(state: GameState, sequence: PendingSequence): void {
@@ -903,6 +954,7 @@ export function resumePendingSequence(state: GameState): GameState {
     const stepResultsMap = new Map<string, StepResolutionResult>(
       Object.entries(pending.stepResultsMap || {}),
     );
+    const pendingBefore = currentState.pendingSequences?.length ?? 0;
     const res = executeSequence(
       currentState,
       pending.remainingSteps,
@@ -915,6 +967,9 @@ export function resumePendingSequence(state: GameState): GameState {
       },
     );
     currentState = res.state;
+    if ((currentState.pendingSequences?.length ?? 0) <= pendingBefore) {
+      finishLabelledAttack(currentState, pending.context as EffectExecutionContext);
+    }
   }
   return currentState;
 }
@@ -1006,6 +1061,9 @@ export function executeSequence(
     if (stepContext.damageAmount !== undefined) {
       context.damageAmount = stepContext.damageAmount;
     }
+    if (stepContext.attackedEnemy && !context.attackedEnemy) {
+      context.attackedEnemy = stepContext.attackedEnemy;
+    }
 
     const stepMutated = res.mutatedState ?? res.success;
     if (stepMutated) {
@@ -1066,6 +1124,37 @@ export function executeSequence(
   };
 }
 
+function recordAttackedEnemy(
+  context: EffectExecutionContext,
+  targetType: 'villain' | 'minion',
+  instanceId: string,
+): void {
+  if (context.labelledAttack && !context.attackedEnemy) {
+    context.attackedEnemy = { targetType, instanceId };
+  }
+}
+
+/**
+ * After a labelled "(attack)" ability has fully resolved: ATTACK_RESOLVED for the attacked enemy,
+ * once, as a basic attack does ("after your hero attacks" Responses).
+ */
+function finishLabelledAttack(state: GameState, context: EffectExecutionContext): void {
+  const enemy = context.attackedEnemy;
+  if (!context.labelledAttack || !enemy || context.attackResolvedDispatched) return;
+  context.attackResolvedDispatched = true;
+  dispatchTrigger(
+    state,
+    'ATTACK_RESOLVED',
+    enemy.targetType === 'villain'
+      ? { targetPlayerId: context.playerId, targetType: 'villain' }
+      : {
+          targetPlayerId: context.playerId,
+          targetType: 'minion',
+          targetInstanceId: enemy.instanceId,
+        },
+  );
+}
+
 /**
  * Executes a declarative effect or ability on the GameState.
  */
@@ -1103,6 +1192,20 @@ export function executeEffect(
   ) {
     if ((abilityOrStep as CardAbility).timing) {
       context.ability = abilityOrStep as CardAbility;
+    }
+    if ((abilityOrStep as CardAbility).labels?.includes('ATTACK')) {
+      // An "(attack)" ability is one attack by the player's identity (RR v1.8 glossary L)
+      const attackContext: EffectExecutionContext = {
+        ...context,
+        isAttack: true,
+        labelledAttack: true,
+      };
+      const pendingBefore = state.pendingSequences?.length ?? 0;
+      const attackRes = executeSequence(state, abilityOrStep.steps, attackContext);
+      if ((attackRes.state.pendingSequences?.length ?? 0) <= pendingBefore) {
+        finishLabelledAttack(attackRes.state, attackContext);
+      }
+      return attackRes;
     }
     return executeSequence(state, abilityOrStep.steps, context);
   }
@@ -1824,79 +1927,38 @@ export function executeStep(
       }
       const targetParam = step.effectParams?.target as string | undefined;
 
+      const isAttack = Boolean(
+        step.effectParams?.isAttack || context.isAttack || context.labelledAttack,
+      );
+      const hasPiercing = Boolean(
+        step.effectParams?.piercing ||
+        step.effectParams?.keyword === 'Piercing' ||
+        (context.sourceCardInstance?.card as any)?.keywords?.includes('Piercing') ||
+        (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Piercing'),
+      );
+      const damageOpts: AbilityDamageOptions = {
+        // A labelled "(attack)" ability is an attack by the player's identity (#247)
+        sourceType: context.labelledAttack ? 'HERO' : undefined,
+        sourcePlayerId: player.id,
+        sourceCardInstance: context.sourceCardInstance,
+        isAttack,
+        hasPiercing,
+        triggerChain: context.triggerChain,
+      };
+
       if (targetParam === 'ALL_CHARACTERS') {
-        // 1. Damage to Villain
-        const villain = getActiveVillain(state);
-        const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
-        if (villainToughIdx !== -1) {
-          villain.statusCards.splice(villainToughIdx, 1);
-        } else {
-          villain.health = Math.max(0, villain.health - amount);
-          if (villain.health <= 0) {
-            state = handleVillainDefeat(state, villain.instanceId);
-          }
+        // 1. Villain and minions
+        state = dealDamageToEnemies(state, amount, state.players, damageOpts);
+
+        // 2. Heroes
+        for (const p of state.players) {
+          state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
         }
 
-        // 2. Damage to Minions
+        // 3. Allies
         for (const p of state.players) {
-          for (let i = p.engagedMinions.length - 1; i >= 0; i--) {
-            const minion = p.engagedMinions[i];
-            const minionToughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-            if (minionToughIdx !== -1) {
-              minion.statusCards!.splice(minionToughIdx, 1);
-            } else {
-              const currentDmg = minion.tokens?.damage || 0;
-              const newDmg = currentDmg + amount;
-              const minionHp = (minion.card as MinionCard).health || 1;
-              if (newDmg >= minionHp) {
-                processHostDefeated(state, minion, { player: p });
-                p.engagedMinions.splice(i, 1);
-                moveDefeatedCardToPile(state, minion, state.encounterDiscard);
-              } else {
-                minion.tokens = { ...minion.tokens, damage: newDmg };
-              }
-            }
-          }
-        }
-
-        // 3. Damage to Heroes
-        for (const p of state.players) {
-          const heroToughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
-          if (heroToughIdx !== -1) {
-            p.statusCards.splice(heroToughIdx, 1);
-          } else {
-            p.health = Math.max(0, p.health - amount);
-            if (p.health <= 0) state.winner = 'VILLAIN';
-          }
-        }
-
-        // 4. Damage to Allies
-        for (const p of state.players) {
-          for (let i = p.allies.length - 1; i >= 0; i--) {
-            const ally = p.allies[i];
-            const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-            if (allyToughIdx !== -1) {
-              ally.statusCards!.splice(allyToughIdx, 1);
-            } else {
-              const currentDmg = ally.tokens?.damage || 0;
-              const newDmg = currentDmg + amount;
-              const allyHp = (ally.card as any).health || 1;
-              if (newDmg >= allyHp) {
-                p.allies.splice(i, 1);
-                processHostDefeated(state, ally, { player: p });
-                dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                  targetPlayerId: p.id,
-                  targetInstanceId: ally.instanceId,
-                  targetType: 'ally',
-                });
-                const owner =
-                  (ally.ownerId ? state.players.find((pl) => pl.id === ally.ownerId) : undefined) ||
-                  p;
-                owner.discard.push(ally);
-              } else {
-                ally.tokens = { ...ally.tokens, damage: newDmg };
-              }
-            }
+          for (const ally of [...p.allies].reverse()) {
+            state = applyAbilityDamage(state, allyTargetRef(ally, p.id), amount, damageOpts).state;
           }
         }
 
@@ -1918,103 +1980,16 @@ export function executeStep(
         if (context.assignments && typeof context.assignments === 'object') {
           for (const [id, dmg] of Object.entries(context.assignments as Record<string, number>)) {
             if (dmg <= 0) continue;
-
-            let ally: CardInstance | undefined;
-            let allyController: PlayerState | undefined;
-            for (const p of state.players) {
-              const found = p.allies.find((a) => a.instanceId === id);
-              if (found) {
-                ally = found;
-                allyController = p;
-                break;
-              }
-            }
-
-            if (ally && allyController) {
-              const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-              if (allyToughIdx !== -1) {
-                ally.statusCards!.splice(allyToughIdx, 1);
-              } else {
-                const currentDmg = ally.tokens?.damage || 0;
-                const newDmg = currentDmg + dmg;
-                const allyHp = (ally.card as any).health || 1;
-                if (newDmg >= allyHp) {
-                  const idx = allyController.allies.indexOf(ally);
-                  allyController.allies.splice(idx, 1);
-                  processHostDefeated(state, ally, { player: allyController });
-                  dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                    targetPlayerId: allyController.id,
-                    targetInstanceId: ally.instanceId,
-                    targetType: 'ally',
-                  });
-                  const owner =
-                    (ally.ownerId
-                      ? state.players.find((pl) => pl.id === ally.ownerId)
-                      : undefined) || allyController;
-                  owner.discard.push(ally);
-                } else {
-                  ally.tokens = { ...ally.tokens, damage: newDmg };
-                }
-              }
-            } else {
-              const p = state.players.find((pl) => pl.id === id) || player;
-              const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
-              if (toughIdx !== -1) {
-                p.statusCards.splice(toughIdx, 1);
-              } else {
-                p.health = Math.max(0, p.health - dmg);
-                if (p.health <= 0) state.winner = 'VILLAIN';
-              }
-            }
+            state = dealDamageToAllyOrHero(state, id, player, dmg, damageOpts);
           }
         } else if (context.chosenTargetInstanceId) {
-          let ally: CardInstance | undefined;
-          let allyController: PlayerState | undefined;
-          for (const p of state.players) {
-            const found = p.allies.find((a) => a.instanceId === context.chosenTargetInstanceId);
-            if (found) {
-              ally = found;
-              allyController = p;
-              break;
-            }
-          }
-
-          if (ally && allyController) {
-            const allyToughIdx = (ally.statusCards || []).indexOf(StatusCard.TOUGH);
-            if (allyToughIdx !== -1) {
-              ally.statusCards!.splice(allyToughIdx, 1);
-            } else {
-              const currentDmg = ally.tokens?.damage || 0;
-              const newDmg = currentDmg + amount;
-              const allyHp = (ally.card as any).health || 1;
-              if (newDmg >= allyHp) {
-                const idx = allyController.allies.indexOf(ally);
-                allyController.allies.splice(idx, 1);
-                processHostDefeated(state, ally, { player: allyController });
-                dispatchTrigger(state, 'CHARACTER_DEFEATED', {
-                  targetPlayerId: allyController.id,
-                  targetInstanceId: ally.instanceId,
-                  targetType: 'ally',
-                });
-                const owner =
-                  (ally.ownerId ? state.players.find((pl) => pl.id === ally.ownerId) : undefined) ||
-                  allyController;
-                owner.discard.push(ally);
-              } else {
-                ally.tokens = { ...ally.tokens, damage: newDmg };
-              }
-            }
-          } else {
-            const targetPlayer =
-              state.players.find((pl) => pl.id === context.chosenTargetInstanceId) || player;
-            const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
-            if (toughIdx !== -1) {
-              targetPlayer.statusCards.splice(toughIdx, 1);
-            } else {
-              targetPlayer.health = Math.max(0, targetPlayer.health - amount);
-              if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
-            }
-          }
+          state = dealDamageToAllyOrHero(
+            state,
+            context.chosenTargetInstanceId,
+            player,
+            amount,
+            damageOpts,
+          );
         } else if (
           amount > 0 &&
           (context.interactivePrompt || (state as any).interactivePromptMode)
@@ -2063,13 +2038,7 @@ export function executeStep(
           };
         } else {
           // Default: Hero takes the assigned damage
-          const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-          if (toughIdx !== -1) {
-            player.statusCards.splice(toughIdx, 1);
-          } else {
-            player.health = Math.max(0, player.health - amount);
-            if (player.health <= 0) state.winner = 'VILLAIN';
-          }
+          state = applyAbilityDamage(state, playerTargetRef(player), amount, damageOpts).state;
         }
 
         const onomatopoeia = `EXPLOSION! ${amount} DAMAGE ASSIGNED!`;
@@ -2093,7 +2062,7 @@ export function executeStep(
       }
 
       if (targetParam === 'ALL_ENEMIES') {
-        state = dealDamageToEnemies(state, amount, state.players);
+        state = dealDamageToEnemies(state, amount, state.players, damageOpts);
 
         const onomatopoeia = `BOOM! ${amount} DAMAGE TO ALL ENEMIES!`;
         state.log.push({
@@ -2152,7 +2121,7 @@ export function executeStep(
         }
 
         const chosenPlayer = state.players.find((p) => p.id === chosenPlayerId) || player;
-        state = dealDamageToEnemies(state, amount, [chosenPlayer]);
+        state = dealDamageToEnemies(state, amount, [chosenPlayer], damageOpts);
 
         const onomatopoeia = `BOOM! ${amount} DAMAGE TO ${chosenPlayer.name.toUpperCase()}'S ENGAGED ENEMIES!`;
         state.log.push({
@@ -2189,7 +2158,7 @@ export function executeStep(
         targetParam === 'IDENTITY' ||
         targetParam === 'SELF'
       ) {
-        dealDamageToIdentity(state, player, amount, context);
+        state = dealDamageToIdentity(state, player, amount, damageOpts);
         return {
           state,
           success: true,
@@ -2204,48 +2173,7 @@ export function executeStep(
         (targetType === 'hero' && !context.chosenTargetInstanceId)
       ) {
         for (const p of state.players.filter((pl) => pl.currentForm === 'hero')) {
-          const toughIdx = p.statusCards.indexOf(StatusCard.TOUGH);
-          if (toughIdx !== -1) {
-            p.statusCards.splice(toughIdx, 1);
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: state.roundNumber,
-              phase: state.phase,
-              key: 'card.effect.dealDamage',
-              params: {
-                player: p.name,
-                target: 'hero',
-                amount: 0,
-                toughAbsorbed: true,
-              },
-              onomatopoeia: 'CLANG! (TOUGH)',
-            });
-          } else {
-            const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
-              targetPlayerId: p.id,
-              targetType: 'player',
-              damageAmount: amount,
-              triggerChain: context.triggerChain,
-            });
-            const finalDmg = prevResult.damageAmount ?? amount;
-            p.health = Math.max(0, p.health - finalDmg);
-            if (p.health <= 0) state.winner = 'VILLAIN';
-            state.log.push({
-              id: `log_${Date.now()}`,
-              timestamp: Date.now(),
-              round: state.roundNumber,
-              phase: state.phase,
-              key: 'card.effect.dealDamage',
-              params: {
-                player: p.name,
-                target: 'hero',
-                amount: finalDmg,
-                remainingHealth: p.health,
-              },
-              onomatopoeia: `OUCH! ${finalDmg} DAMAGE!`,
-            });
-          }
+          state = dealDamageToIdentity(state, p, amount, damageOpts);
         }
         return {
           state,
@@ -2263,223 +2191,107 @@ export function executeStep(
 
       if (targetMinionId) {
         for (const p of state.players) {
-          const minionIdx = p.engagedMinions.findIndex((m) => m.instanceId === targetMinionId);
-          if (minionIdx !== -1) {
-            const minion = p.engagedMinions[minionIdx];
-            const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-            if (toughIdx !== -1) {
-              minion.statusCards!.splice(toughIdx, 1);
-              const onomatopoeia = 'CLANG!';
-              state.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: state.roundNumber,
-                phase: state.phase,
-                key: 'card.effect.dealDamage',
-                params: {
-                  player: player.name,
-                  target: minion.card.name,
-                  amount: 0,
-                  toughAbsorbed: true,
-                },
-                onomatopoeia,
-              });
-              return { state, success: true, onomatopoeia };
-            }
+          const minion = p.engagedMinions.find((m) => m.instanceId === targetMinionId);
+          if (!minion) continue;
 
-            const currentDmg = minion.tokens?.damage || 0;
-            const newDmg = currentDmg + amount;
-            const minionHp = (minion.card as MinionCard).health || 1;
+          // Overkill: excess damage over the minion goes to the villain (RR v1.8 glossary O)
+          const kickerResource: string | undefined =
+            (step.effectParams?.kickerResource as string | undefined) ||
+            (step.effectParams?.overkillOnPhysical ? 'physical' : undefined);
+          const kickerMet = kickerResource
+            ? Boolean(
+                context.resourcesSpent?.some((r) => {
+                  const lower = String(r).toLowerCase();
+                  return lower === kickerResource.toLowerCase() || lower === 'wild';
+                }),
+              )
+            : false;
+          const hasConditionalOverkill = Boolean(
+            step.effectParams?.overkillOnPhysical || step.effectParams?.overkillOnCondition,
+          );
+          const hasOverkill = Boolean(
+            (step.effectParams?.overkill && !hasConditionalOverkill) ||
+            (hasConditionalOverkill && kickerMet) ||
+            step.effectParams?.keyword === 'Overkill' ||
+            (!hasConditionalOverkill &&
+              ((context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
+                (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'))),
+          );
 
-            if (newDmg >= minionHp) {
-              const excessDmg = newDmg - minionHp;
-              processHostDefeated(state, minion, { player: p });
-              p.engagedMinions.splice(minionIdx, 1);
-              moveDefeatedCardToPile(state, minion, state.encounterDiscard);
+          const minionHp = (minion.card as MinionCard).health || 1;
+          const damageBefore = minion.tokens?.damage || 0;
+          const damageRes = applyAbilityDamage(
+            state,
+            minionTargetRef(minion, p.id),
+            amount,
+            damageOpts,
+            { hasOverkill },
+          );
+          state = damageRes.state;
+          const res = damageRes.result;
+          recordAttackedEnemy(context, 'minion', minion.instanceId);
 
-              // Overkill routing to villain if attack has Overkill
-              const kickerResource: string | undefined =
-                (step.effectParams?.kickerResource as string | undefined) ||
-                (step.effectParams?.overkillOnPhysical ? 'physical' : undefined);
-              const kickerMet = kickerResource
-                ? Boolean(
-                    context.resourcesSpent?.some((r) => {
-                      const lower = String(r).toLowerCase();
-                      return lower === kickerResource.toLowerCase() || lower === 'wild';
-                    }),
-                  )
-                : false;
-              const hasConditionalOverkill = Boolean(
-                step.effectParams?.overkillOnPhysical || step.effectParams?.overkillOnCondition,
-              );
-              const isOverkill = Boolean(
-                (step.effectParams?.overkill && !hasConditionalOverkill) ||
-                (hasConditionalOverkill && kickerMet) ||
-                step.effectParams?.keyword === 'Overkill' ||
-                (!hasConditionalOverkill &&
-                  ((context.sourceCardInstance?.card as any)?.keywords?.includes('Overkill') ||
-                    (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Overkill'))),
-              );
-
-              if (isOverkill && excessDmg > 0) {
-                const villain = getActiveVillain(state);
-                const villainToughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
-                if (villainToughIdx !== -1) {
-                  villain.statusCards.splice(villainToughIdx, 1);
-                  state.log.push({
-                    id: `log_${Date.now()}`,
-                    timestamp: Date.now(),
-                    round: state.roundNumber,
-                    phase: state.phase,
-                    category: 'combat',
-                    key: 'card.effect.dealDamage',
-                    params: {
-                      player: player.name,
-                      target: villain.card.name,
-                      amount: 0,
-                      toughAbsorbed: true,
-                    },
-                    onomatopoeia: 'CLANG! (TOUGH)',
-                  });
-                } else {
-                  villain.health = Math.max(0, villain.health - excessDmg);
-                  state.log.push({
-                    id: `log_${Date.now()}`,
-                    timestamp: Date.now(),
-                    round: state.roundNumber,
-                    phase: state.phase,
-                    category: 'combat',
-                    key: 'overkill.villain.hit',
-                    params: {
-                      damage: excessDmg,
-                      villain: villain.card.name,
-                    },
-                    onomatopoeia: `OVERKILL! ${excessDmg} DAMAGE TO VILLAIN!`,
-                  });
-                  if (villain.health <= 0) {
-                    state = handleVillainDefeat(state, villain.instanceId);
-                  }
-                }
-              }
-
-              const onomatopoeia = 'SMASH! MINION DEFEATED!';
-              state.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: state.roundNumber,
-                phase: state.phase,
-                key: 'card.effect.dealDamage',
-                params: {
-                  player: player.name,
-                  target: minion.card.name,
-                  amount,
-                  defeated: true,
-                },
-                onomatopoeia,
-              });
-
-              let conditionMet: boolean | undefined;
-              let resValue: number = amount;
-              if (step.condition === 'EXCESS_DAMAGE_DEALT') {
-                conditionMet = excessDmg > 0;
-                resValue = excessDmg;
-              } else if (step.condition === 'TARGET_DEFEATED') {
-                conditionMet = true;
-              }
-
-              return {
-                state,
-                success: true,
-                mutatedState: true,
-                value: resValue,
-                conditionMet,
-                onomatopoeia,
-              };
-            } else {
-              minion.tokens = { ...minion.tokens, damage: newDmg };
-
-              // Retaliate check if minion survives (RR v1.8 p. 24, ADR-0054)
-              const retaliateX = getEffectiveRetaliate(minion, state);
-              if (retaliateX > 0) {
-                player.health = Math.max(0, player.health - retaliateX);
-                state.log.push({
-                  id: `log_${Date.now()}`,
-                  timestamp: Date.now(),
-                  round: state.roundNumber,
-                  phase: state.phase,
-                  category: 'combat',
-                  key: 'retaliate.hit',
-                  params: {
-                    damage: retaliateX,
-                    source: minion.card.name,
-                    player: player.name,
-                  },
-                  onomatopoeia: 'RETALIATE!',
-                });
-              }
-
-              const onomatopoeia = 'WHAM!';
-              state.log.push({
-                id: `log_${Date.now()}`,
-                timestamp: Date.now(),
-                round: state.roundNumber,
-                phase: state.phase,
-                key: 'card.effect.dealDamage',
-                params: {
-                  player: player.name,
-                  target: minion.card.name,
-                  amount,
-                  remainingHealth: minionHp - newDmg,
-                },
-                onomatopoeia,
-              });
-
-              let conditionMet: boolean | undefined;
-              let resValue: number = amount;
-              if (step.condition === 'EXCESS_DAMAGE_DEALT') {
-                conditionMet = false;
-                resValue = 0;
-              } else if (step.condition === 'TARGET_DEFEATED') {
-                conditionMet = false;
-              }
-
-              return {
-                state,
-                success: true,
-                mutatedState: true,
-                value: resValue,
-                conditionMet,
-                onomatopoeia,
-              };
-            }
+          if (res.toughRemoved && res.damageTaken === 0) {
+            const onomatopoeia = 'CLANG!';
+            state.log.push({
+              id: `log_${Date.now()}`,
+              timestamp: Date.now(),
+              round: state.roundNumber,
+              phase: state.phase,
+              key: 'card.effect.dealDamage',
+              params: {
+                player: player.name,
+                target: minion.card.name,
+                amount: 0,
+                toughAbsorbed: true,
+              },
+              onomatopoeia,
+            });
+            return { state, success: true, onomatopoeia };
           }
+
+          const onomatopoeia = res.targetDefeated ? 'SMASH! MINION DEFEATED!' : 'WHAM!';
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            key: 'card.effect.dealDamage',
+            params: {
+              player: player.name,
+              target: minion.card.name,
+              amount,
+              ...(res.targetDefeated
+                ? { defeated: true }
+                : { remainingHealth: minionHp - damageBefore - res.damageTaken }),
+            },
+            onomatopoeia,
+          });
+
+          let conditionMet: boolean | undefined;
+          let resValue: number = amount;
+          if (step.condition === 'EXCESS_DAMAGE_DEALT') {
+            conditionMet = res.excessDamage > 0;
+            resValue = res.excessDamage;
+          } else if (step.condition === 'TARGET_DEFEATED') {
+            conditionMet = res.targetDefeated;
+          }
+
+          return {
+            state,
+            success: true,
+            mutatedState: true,
+            value: resValue,
+            conditionMet,
+            onomatopoeia,
+          };
         }
       }
 
       // 2. Default: Deal damage to Villain
-      const isAttack = Boolean(step.effectParams?.isAttack || context.isAttack);
-      const hasPiercing = Boolean(
-        step.effectParams?.piercing ||
-        step.effectParams?.keyword === 'Piercing' ||
-        (context.sourceCardInstance?.card as any)?.keywords?.includes('Piercing') ||
-        (context.sourceCardInstance?.card.raw as any)?.keywords?.includes('Piercing'),
-      );
-
-      const damageRes = applyDamageToTarget(state, {
-        target: {
-          type: 'villain',
-          entity: getActiveVillain(state),
-          name: getActiveVillain(state).card.name,
-          attachments: getActiveVillain(state).attachments,
-          statusCards: getActiveVillain(state).statusCards,
-        },
-        amount,
-        sourceType: 'CARD_EFFECT',
-        sourceCardInstance: context.sourceCardInstance,
-        sourcePlayerId: player.id,
-        isAttack,
-        hasPiercing,
-      });
+      const villain = getActiveVillain(state);
+      const damageRes = applyAbilityDamage(state, villainTargetRef(villain), amount, damageOpts);
+      recordAttackedEnemy(context, 'villain', villain.instanceId || 'villain');
 
       state = damageRes.state;
       const onomatopoeia = damageRes.result.onomatopoeia || `KAPOW! ${amount} DAMAGE!`;
@@ -5178,23 +4990,43 @@ export function executeStep(
       const targetEnemyId =
         (step.effectParams?.targetInstanceId as string) || context.chosenTargetInstanceId;
       player.health = Math.min(getEffectiveMaxHealth(player, state), player.health + amount);
-      if (
-        targetEnemyId &&
-        targetEnemyId !== 'villain' &&
-        targetEnemyId !== getActiveVillain(state).instanceId
-      ) {
-        let targetMinion: CardInstance | undefined;
+
+      // The enemy side goes through the damage pipeline like DEAL_DAMAGE (#247): shields, Tough,
+      // Retaliate for an attack, defeat triggers and villain defeat. A labelled "(attack)" ability
+      // is an attack by the player's identity.
+      const damageOpts: AbilityDamageOptions = {
+        sourceType: context.labelledAttack ? 'HERO' : undefined,
+        sourcePlayerId: player.id,
+        sourceCardInstance: context.sourceCardInstance,
+        isAttack: Boolean(
+          step.effectParams?.isAttack || context.isAttack || context.labelledAttack,
+        ),
+        hasPiercing: false,
+        triggerChain: context.triggerChain,
+      };
+      let targetMinionOwner: PlayerState | undefined;
+      let targetMinion: CardInstance | undefined;
+      if (targetEnemyId && targetEnemyId !== 'villain') {
         for (const p of state.players) {
           targetMinion = p.engagedMinions.find((m) => m.instanceId === targetEnemyId);
-          if (targetMinion) break;
+          if (targetMinion) {
+            targetMinionOwner = p;
+            break;
+          }
         }
-        if (targetMinion) {
-          dealDirectDamage(state, { type: 'MINION', instanceId: targetMinion.instanceId }, amount);
-        } else {
-          dealDirectDamage(state, 'VILLAIN', amount);
-        }
+      }
+      if (targetMinion && targetMinionOwner) {
+        state = applyAbilityDamage(
+          state,
+          minionTargetRef(targetMinion, targetMinionOwner.id),
+          amount,
+          damageOpts,
+        ).state;
+        recordAttackedEnemy(context, 'minion', targetMinion.instanceId);
       } else {
-        dealDirectDamage(state, 'VILLAIN', amount);
+        const villain = getActiveVillain(state);
+        state = applyAbilityDamage(state, villainTargetRef(villain), amount, damageOpts).state;
+        recordAttackedEnemy(context, 'villain', villain.instanceId || 'villain');
       }
 
       return {
@@ -5565,77 +5397,4 @@ export function executeStep(
     default:
       return { state, success: true, onomatopoeia: 'RESOLVED!' };
   }
-}
-
-/**
- * Executes direct damage dealing outside standard basic/event combat attacks.
- * Direct damage bypasses Hero DEF and Ally block mitigation, but is absorbed by Tough and universal prevention.
- */
-export function dealDirectDamage(
-  state: GameState,
-  target:
-    | 'HERO'
-    | 'VILLAIN'
-    | { type: 'MINION'; instanceId: string }
-    | { type: 'ALLY'; instanceId: string },
-  amount: number,
-  playerId?: string,
-  triggerChain?: TriggerCallNode[],
-): { damageDealt: number; absorbedByTough: boolean } {
-  if (amount <= 0) return { damageDealt: 0, absorbedByTough: false };
-
-  if (target === 'HERO') {
-    const player = state.players.find((p) => p.id === playerId) || state.players[0];
-    const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-    if (toughIdx !== -1) {
-      player.statusCards.splice(toughIdx, 1);
-      return { damageDealt: 0, absorbedByTough: true };
-    }
-    const prevResult = dispatchTrigger(state, 'DAMAGE_TAKEN', {
-      targetPlayerId: player.id,
-      damageAmount: amount,
-      triggerChain,
-    });
-    const finalDmg = prevResult.damageAmount ?? amount;
-    player.health = Math.max(0, player.health - finalDmg);
-    return { damageDealt: finalDmg, absorbedByTough: false };
-  }
-
-  if (target === 'VILLAIN') {
-    const villain = getActiveVillain(state);
-    const toughIdx = villain.statusCards.indexOf(StatusCard.TOUGH);
-    if (toughIdx !== -1) {
-      villain.statusCards.splice(toughIdx, 1);
-      return { damageDealt: 0, absorbedByTough: true };
-    }
-    villain.health = Math.max(0, villain.health - amount);
-    return { damageDealt: amount, absorbedByTough: false };
-  }
-
-  if (typeof target === 'object' && target.type === 'MINION') {
-    for (const p of state.players) {
-      const minionIdx = p.engagedMinions.findIndex((m) => m.instanceId === target.instanceId);
-      if (minionIdx !== -1) {
-        const minion = p.engagedMinions[minionIdx];
-        const toughIdx = (minion.statusCards || []).indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          minion.statusCards!.splice(toughIdx, 1);
-          return { damageDealt: 0, absorbedByTough: true };
-        }
-        const currentDmg = minion.tokens?.damage || 0;
-        const newDmg = currentDmg + amount;
-        const minionHp = (minion.card as MinionCard).health || 1;
-        if (newDmg >= minionHp) {
-          processHostDefeated(state, minion, { player: p });
-          p.engagedMinions.splice(minionIdx, 1);
-          moveDefeatedCardToPile(state, minion, state.encounterDiscard);
-        } else {
-          minion.tokens = { ...minion.tokens, damage: newDmg };
-        }
-        return { damageDealt: amount, absorbedByTough: false };
-      }
-    }
-  }
-
-  return { damageDealt: amount, absorbedByTough: false };
 }

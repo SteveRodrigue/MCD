@@ -178,6 +178,12 @@ export interface CardAbility {
   triggerFilter?: TriggerFilter;
   zone?: 'HAND' | 'PLAY' | 'DISCARD';
   limit?: 'ONCE_PER_ROUND' | 'ONCE_PER_PHASE';
+  /**
+   * Printed labels "(attack)", "(thwart)", "(defense)". An ability labelled `ATTACK` is an attack
+   * made by the resolving player's identity (RR v1.8 glossary L). `THWART` and `DEFENSE` are
+   * declared but not yet read by the engine.
+   */
+  labels?: ('ATTACK' | 'THWART' | 'DEFENSE')[];
   tags?: string[];
   cost?: AbilityCost;
   steps: AbilityStep[];

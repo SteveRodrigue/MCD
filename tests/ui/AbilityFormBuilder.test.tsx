@@ -511,6 +511,71 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     expect(parsed.success).toBe(true);
   });
 
+  it('edits ability labels (ATTACK, THWART, DEFENSE) with a multi-select and removes the key when empty', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulAbilityFormBuilder
+        initial={{
+          audit: { comment: 'Test' },
+          abilities: [
+            {
+              id: 'test_label_ab',
+              timing: 'HERO_ACTION',
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
+            },
+          ],
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const attack = screen.getByTestId('ability-label-ATTACK-0') as HTMLInputElement;
+    const thwart = screen.getByTestId('ability-label-THWART-0') as HTMLInputElement;
+    const defense = screen.getByTestId('ability-label-DEFENSE-0') as HTMLInputElement;
+    expect(attack.checked).toBe(false);
+    expect(thwart.checked).toBe(false);
+    expect(defense.checked).toBe(false);
+
+    await user.click(attack);
+    expect(handleChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        abilities: [expect.objectContaining({ labels: ['ATTACK'] })],
+      }),
+    );
+
+    await user.click(defense);
+    let last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(last.abilities[0].labels).toEqual(['ATTACK', 'DEFENSE']);
+    expect(CardAbilitySchema.safeParse(last.abilities[0]).success).toBe(true);
+
+    await user.click(attack);
+    await user.click(defense);
+    last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect('labels' in last.abilities[0]).toBe(false);
+  });
+
+  it('shows the labels already declared on an ability', () => {
+    render(
+      <StatefulAbilityFormBuilder
+        initial={{
+          audit: { comment: 'Test' },
+          abilities: [
+            {
+              id: 'labelled',
+              timing: 'HERO_ACTION',
+              labels: ['ATTACK'],
+              steps: [{ effect: 'DEAL_DAMAGE', effectParams: { amount: 1 } }],
+            },
+          ],
+        }}
+      />,
+    );
+    expect((screen.getByTestId('ability-label-ATTACK-0') as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByTestId('ability-label-THWART-0') as HTMLInputElement).checked).toBe(false);
+  });
+
   describe('Real-Time Live Zod Validation', () => {
     it('displays compliant status badge when card passes schema', () => {
       render(

@@ -165,6 +165,8 @@ export function chooseStepTarget(
       params: {
         ...(step.effectParams ?? {}),
         targetInstanceId: target.id,
+        // The ability's labels travel with the choice, unchanged, so the resumed step keeps them
+        ...(context.ability?.labels ? { labels: context.ability.labels } : {}),
         ...(context.resourcesSpent ? { resourcesSpent: context.resourcesSpent } : {}),
       },
     };

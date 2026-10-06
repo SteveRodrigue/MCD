@@ -147,7 +147,24 @@ export function matchesTriggerFilter(
 
   if (filter.targetType) {
     const actualType = context.targetType?.toUpperCase();
-    if (!actualType || actualType !== filter.targetType) {
+    // ENEMY: the villain or a minion (RR v1.8 glossary E)
+    const typeMatches =
+      filter.targetType === 'ENEMY'
+        ? actualType === 'VILLAIN' || actualType === 'MINION'
+        : actualType === filter.targetType;
+    if (!actualType || !typeMatches) {
+      return false;
+    }
+  }
+
+  if (filter.defeatedByAttackOf) {
+    // "After your hero attacks and defeats ..." / "After <this card> attacks and defeats ..."
+    // (RR v1.8 glossary Y: an ally's attack is not an attack by your hero).
+    const source = context.defeatSource;
+    if (!source || !source.byAttack) return false;
+    if (filter.defeatedByAttackOf === 'YOUR_HERO') {
+      if (source.kind !== 'HERO' || !player || source.playerId !== player.id) return false;
+    } else if (!cardInst || source.instanceId !== cardInst.instanceId) {
       return false;
     }
   }
@@ -174,6 +191,20 @@ export function matchesTriggerFilter(
   }
 
   return true;
+}
+
+/**
+ * Who or what defeated a character (#247). Filled by the damage pipeline from the damage request
+ * and carried on the DEFEATED / CHARACTER_DEFEATED contexts.
+ */
+export interface DefeatSource {
+  kind: 'HERO' | 'ALLY' | 'ENEMY' | 'EFFECT';
+  /** The player whose hero, ally or effect dealt the damage. */
+  playerId?: string;
+  /** The card (ally, enemy or effect source) that dealt the damage. */
+  instanceId?: string;
+  /** True when the damage was dealt as part of an attack. */
+  byAttack: boolean;
 }
 
 export interface TriggerContext {
@@ -207,6 +238,8 @@ export interface TriggerContext {
   targetName?: string;
   targetCurrentHp?: number;
   targetMaxHp?: number;
+  /** For DEFEATED / CHARACTER_DEFEATED: what defeated the character. */
+  defeatSource?: DefeatSource;
   /** Active chain of trigger nodes leading to this invocation (ADR-0053) */
   triggerChain?: TriggerCallNode[];
   triggerDepth?: number;
@@ -354,6 +387,8 @@ interface HandReactionSpec {
   promptFields?: (player: PlayerState, ability: CardAbility, card: CardInstance) => object;
   /** Context stored on the prompt option and replayed when the player accepts. */
   promptContext?: () => Partial<TriggerContext>;
+  /** Further triggers a hand ability may declare and still match this scan (one scan per event). */
+  alsoTriggers?: TriggerType[];
 }
 
 /**
@@ -398,7 +433,10 @@ function scanHandReactions(
       if (spec.isActive && !spec.isActive()) break;
       if (!p.hand.includes(card)) continue;
       const ability = (card.card.enrichment?.abilities || []).find((a) => {
-        if (!triggersAreEquivalent(a.trigger, trigger) || a.zone !== 'HAND') return false;
+        const triggerMatches =
+          triggersAreEquivalent(a.trigger, trigger) ||
+          (spec.alsoTriggers ?? []).some((t) => triggersAreEquivalent(a.trigger, t));
+        if (!triggerMatches || a.zone !== 'HAND') return false;
         if (a.timing.startsWith('HERO_') && p.currentForm !== 'hero') return false;
         if (a.timing.startsWith('ALTER_EGO_') && p.currentForm !== 'alter_ego') return false;
         if (!canPayAbilityCost(state, p, a, card).allowed) return false;
@@ -1055,6 +1093,30 @@ export function dispatchTrigger(
   if (triggersAreEquivalent('ATTACK_DEFENDED', trigger)) {
     if (
       scanHandReactions(state, trigger, context, currentChain, state.players, {
+        resolve: ({ player: p, card, ability, chain }) => {
+          executeEffect(state, ability, {
+            playerId: p.id,
+            sourceCardInstance: card,
+            eventTargetType: context.targetType,
+            eventTargetInstanceId: context.targetInstanceId,
+            triggerChain: chain,
+          });
+        },
+      })
+    ) {
+      hasPendingPrompt = true;
+    }
+  }
+
+  // 7. In-hand Responses after a character is defeated (e.g. Chase Them Down 01052). One scan per
+  // defeat, on the DEFEATED dispatch only (dispatchDefeat also fires CHARACTER_DEFEATED); hand
+  // abilities on either trigger match, every eligible card is offered, first player first. A
+  // Response happens after the event, so there is no window to close.
+  if (trigger === 'DEFEATED' && context.entityType === 'CHARACTER') {
+    if (
+      scanHandReactions(state, trigger, context, currentChain, playersInTurnOrder(state), {
+        allEligibleCards: true,
+        alsoTriggers: ['CHARACTER_DEFEATED'],
         resolve: ({ player: p, card, ability, chain }) => {
           executeEffect(state, ability, {
             playerId: p.id,

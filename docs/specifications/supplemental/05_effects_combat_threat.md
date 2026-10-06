@@ -8,6 +8,10 @@
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts:L43`](../../../src/engine/effects/index.ts#L43))
 - **Description:** Deals flat or dynamically calculated damage to target enemy or character. Handles Tough status removal, overkill, and character defeat.
+- **Always through the damage pipeline (#247, ADR-0078):** every target kind (chosen minion, villain, `ENGAGED_ENEMIES`, `ALL_ENEMIES`, `ALL_CHARACTERS`, the identity selectors, `ALL_HEROES`, the `ALL_HEROES_AND_ALLIES` assignment) builds its target list and calls `applyDamageToTarget` once per target. So Tough, damage shields ("would be dealt" / "would be taken"), defeat triggers, Overkill, excess damage and the hero-defeat loss are applied the same way for every target, and `isAttack` (from `effectParams.isAttack` or the context) decides Retaliate and attack-only shields. The step's prompts (choose a player, explosion distribution) are unchanged.
+- **Overkill:** when the step has Overkill (`overkill`, `overkillOnCondition` with its kicker met, or the Overkill keyword) and the target is a minion that is defeated, the damage beyond the minion's remaining hit points is dealt to the active villain through the pipeline (so the villain's Tough and shields apply).
+- **Excess and defeat:** the pipeline result carries `excessDamage` and `targetDefeated`; a chosen-minion step with `condition: "EXCESS_DAMAGE_DEALT"` reads the first, `condition: "TARGET_DEFEATED"` the second.
+- **Hero defeat:** a hero reduced to 0 hit points sets `state.winner = 'VILLAIN'`, in the pipeline only.
 
 ```json
 {
@@ -64,7 +68,7 @@
 ### `TRANSFER_DAMAGE`
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` ([`effects/index.ts`](../../../src/engine/effects/index.ts))
-- **Description:** Moves / transfers damage from one character (e.g. hero) to an enemy (Villain or engaged minion). Heals the source and deals direct damage to the target.
+- **Description:** Moves / transfers damage from one character (e.g. hero) to an enemy (Villain or engaged minion). Heals the source and deals the damage to the target through the damage pipeline like `DEAL_DAMAGE` (#247, ADR-0078): Tough, damage shields, defeat triggers and villain defeat apply, and in an ability labelled `ATTACK` it is an attack by the player's identity (Retaliate applies).
 
 ```json
 {

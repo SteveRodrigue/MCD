@@ -2,6 +2,7 @@ import React from 'react';
 import {
   TimingTypeSchema,
   TriggerTypeSchema,
+  AbilityLabelSchema,
   CardEnrichmentSchema,
   CardAbilitySchema,
 } from '../../../data/supplemental/schema';
@@ -467,6 +468,44 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                         <option value="DISCARD">From Discard (DISCARD)</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Ability Labels: printed "(attack)", "(thwart)", "(defense)" (RR v1.8 glossary L) */}
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">
+                      Ability Labels (printed in parentheses)
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {AbilityLabelSchema.options.map((label) => {
+                        const checked = (ability.labels ?? []).includes(label);
+                        return (
+                          <label
+                            key={label}
+                            className="flex items-center gap-1 text-xs font-bold cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              data-testid={`ability-label-${label}-${aIdx}`}
+                              checked={checked}
+                              onChange={() => {
+                                const current = ability.labels ?? [];
+                                const next = AbilityLabelSchema.options.filter((l) =>
+                                  l === label ? !checked : current.includes(l),
+                                );
+                                handleUpdateAbility(aIdx, {
+                                  labels: next.length > 0 ? next : undefined,
+                                });
+                              }}
+                            />
+                            {label}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-gray-500 mt-1">
+                      Only ATTACK changes engine behaviour; THWART and DEFENSE are declared, not yet
+                      read.
+                    </p>
                   </div>
 
                   {/* Ability Errata Field */}

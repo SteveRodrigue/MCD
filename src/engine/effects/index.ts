@@ -1024,6 +1024,14 @@ function executeForEachPlayer(
     });
     currentState = res.state;
     anyStepMutated = anyStepMutated || Boolean(res.mutatedState);
+    if (!res.success) {
+      return {
+        state: currentState,
+        success: false,
+        error: res.error,
+        mutatedState: anyStepMutated,
+      };
+    }
 
     const remaining = playerIds.slice(i + 1);
     const paused = (currentState.pendingDecisionQueue?.length ?? 0) > promptsBefore;
@@ -1042,6 +1050,29 @@ function executeForEachPlayer(
     mutatedState: anyStepMutated,
     onomatopoeia: 'EACH PLAYER RESOLVED!',
   };
+}
+
+/**
+ * Writes an `engine.stepError` log entry for a step that failed with an error (#225). The engine
+ * always records it; the UI shows it in Dev Mode only.
+ */
+function logStepError(
+  state: GameState,
+  step: AbilityStep,
+  error: string,
+  context: EffectExecutionContext,
+): void {
+  const cardCode = context.sourceCardInstance?.card.code;
+  state.log.push({
+    id: `log_${Date.now()}_step_error_${state.log.length}`,
+    timestamp: Date.now(),
+    round: state.roundNumber,
+    phase: state.phase,
+    category: 'ability',
+    key: 'engine.stepError',
+    params: { effect: step.effect, error, ...(cardCode ? { card: cardCode } : {}) },
+    text: `${cardCode ? `${cardCode} ` : ''}${step.effect} failed: ${error}`,
+  });
 }
 
 /**
@@ -1138,6 +1169,18 @@ export function executeSequence(
     const stepMutated = res.mutatedState ?? res.success;
     if (stepMutated) {
       anyStepMutated = true;
+    }
+
+    // A step that fails with an `error` is malformed data or an unsupported input: report it and
+    // stop. A failure without one is an outcome ("did not attack") that later gates may read (#225).
+    if (!res.success && res.error) {
+      logStepError(currentState, step, res.error, context);
+      return {
+        state: currentState,
+        success: false,
+        error: res.error,
+        mutatedState: anyStepMutated,
+      };
     }
 
     prevResult = {

@@ -109,8 +109,12 @@ describe('ADD_TRAIT as an effect step (Issue #131)', () => {
   });
 
   it('grants nothing for an unsupported target or a missing trait', () => {
-    grant({ target: 'ALL_ENEMIES' });
-    grant({ trait: '  ' });
+    const unsupported = grant({ target: 'ALL_ENEMIES' });
+    expect(unsupported.res.success).toBe(false);
+    expect(unsupported.res.error).toContain('SELF_IDENTITY');
+    const blank = grant({ trait: '  ' });
+    expect(blank.res.success).toBe(false);
+    expect(blank.res.error).toContain('requires a trait');
     expect(player().activeTraitModifiers ?? []).toHaveLength(0);
     expect(getEffectivePlayerTraits(player(), state)).not.toContain('Aerial');
   });

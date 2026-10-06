@@ -18,6 +18,7 @@ import { VillainZone } from './VillainZone';
 import { HeroZone } from './HeroZone';
 import { PlayerHandTray } from './PlayerHandTray';
 import { CombatLogDrawer } from './CombatLogDrawer';
+import { DevStepErrorBanner } from './DevStepErrorBanner';
 import { DecisionPromptModal } from './DecisionPromptModal';
 import { DailyBugleActionNewspaper } from './DailyBugleActionNewspaper';
 import { EndTurnConfirmationModal } from './EndTurnConfirmationModal';
@@ -61,7 +62,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
     };
   } | null>(null);
 
-  const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing } = useGameSettings();
+  const { edgeScrollSpeed, villainPhasePacing, setVillainPhasePacing, devMode } = useGameSettings();
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
   const [activeCombatOutcome, setActiveCombatOutcome] = useState<CombatResolutionSummary | null>(
     null,
@@ -619,7 +620,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onReset, onDisp
         onClose={() => setIsLogOpen(false)}
         logs={gameState.log}
         gameState={gameState}
+        devMode={devMode}
       />
+      <DevStepErrorBanner logs={gameState.log} devMode={devMode} />
 
       {/* 8. Interactive Decision Prompt Modal (ADR-0020 / ADR-0032 / ADR-0038) */}
       <DecisionPromptModal

@@ -9,6 +9,8 @@ description: 'Inspect staged/unstaged changes, run quality gates, format Convent
 
 A commit and push only ever happen in response to the user's explicit request in the current message (e.g. "commit and push", "commit this", or the skill's trigger prefix); the agent never initiates delivery on its own.
 
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
+
 
 ---
 
@@ -19,7 +21,7 @@ flowchart TD
     S1["1. Inspect Working Tree & Status (rtk git status, rtk git diff)"] --> S2["2. Stage Changes & Clean Working Tree (rtk git add)"]
     S2 --> S3["3. Execute Quality Gates (rtk npm run format/lint/typecheck/test)"]
     S3 --> S4["4. Categorize & Select Scope (Conventional Commits)"]
-    S5 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
+    S4 --> S5["5. Formulate Concise Commit Message (Auto-Generate if Absent)"]
       S5 --> S6["6. Validate issue references, then commit (rtk git commit)"]
       S6 --> S7["7. Push and run final verification (rtk git push)"]
 ```
@@ -44,13 +46,13 @@ flowchart TD
    - **Always run:** `rtk npm run report:declarations`
    - Stage the updated report: `rtk git add docs/reports/supplemental_declarations_usage_report.md`
 3. Re-run `rtk git diff --cached --name-status` and confirm every staged path belongs to the intended file set.
-4. Never use `git add .` or a formatter's broad staging command as automatic recovery; review and stage only the files intentionally changed by this task.
+4. Stage by name only. A hook blocks `git add .`, `-A`, `--all`, and `git commit -a`, because a broad stage commits unrelated work.
 
 ---
 
 ## 🛡️ Step 3: Run Automated Quality Gates
 
-Before committing, run the project's quality verification pipeline using `rtk` to condense output:
+Before committing, run the project's quality verification pipeline using `rtk` to condense output. If any gate fails, fix it, re-stage only the intended files, and re-run from the start of this step:
 
 1. **Prettier Format Check:**
 
@@ -80,7 +82,7 @@ Before committing, run the project's quality verification pipeline using `rtk` t
    ```sh
    rtk npm test
    ```
-   _Requirement:_ All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). Any skipped test (`it.skip`, `describe.skip`, `test.skip`, `it.todo`) is tech debt and strictly blocks commit and push until resolved or pruned. Tests must strictly pass or fail: no lingering code, no lingering problems.
+   _Requirement:_ All unit, integration, and contract tests must pass with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`). A skipped or todo test blocks commit and push until resolved or pruned (a hook also blocks adding one under `tests/`).
 
 ---
 
@@ -176,7 +178,7 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
 
 1. Since the user's request already authorized commit and push together, push to the remote tracking branch directly after a successful commit:
    ```sh
-   rtk git push origin main
+   rtk git push
    ```
 2. Verify the pre-push hook executes `npm test` cleanly with **0 failures and 0 skipped tests** (`passed: N, failed: 0, skipped: 0`).
 3. Re-query every referenced issue after push:
@@ -188,4 +190,4 @@ _Note:_ The pre-commit hook in `.githooks/pre-commit` will automatically execute
    - If the expected state is not reached, report the post-push discrepancy explicitly instead of treating the delivery as fully verified.
 4. Run `rtk git status` to verify:
    - Working tree is clean (`nothing to commit, working tree clean`).
-   - Branch is up to date with remote (`Your branch is up to date with 'origin/main'`).
+   - Branch is up to date with its remote tracking branch (`Your branch is up to date with 'origin/<branch>'`).

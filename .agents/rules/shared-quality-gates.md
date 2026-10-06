@@ -28,6 +28,16 @@ This file is the canonical source for policies shared by MCD agent workflows. Sk
 
 The `comment` field resides strictly inside `audit.comment` and is reserved for human/user notes. Agents must never autonomously add or update `audit.comment`. If explicitly instructed by the user to add or update a comment, the agent must clearly state the reason in the review recap and commit message. Card ambiguities or defects must be resolved with user interaction or in `docs/ambiguities/`, never by embedding informal notes in `audit.comment`.
 
+Enforced by `.claude/hooks/no-audit-comment.mjs` (Claude Code). When the user explicitly asks for a comment, create `temp/.allow-audit-comment` before the edit and delete it afterwards.
+
+## Audit stamp
+
+Supplemental card entries carry `audit.createdAt`, `audit.updatedAt`, `audit.reviewedAt` and `audit.reviewedBy`.
+
+- Timestamps use `YYYY-MM-DDTHH:mm:ssZ` (e.g. `2026-09-14T18:37:00Z`).
+- `reviewedBy` is the current agent identity (for example `claude`), not a fixed value.
+- New card: set `createdAt`, `updatedAt`, `reviewedAt`. Logic change or bug fix: bump `updatedAt` and `reviewedAt`. Re-confirming an unchanged card: bump `reviewedAt` only.
+
 ## Plan and approval gate
 
 Before modifying source, tests, supplemental data, dependencies, or configuration:

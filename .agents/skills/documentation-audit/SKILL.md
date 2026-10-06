@@ -2,13 +2,21 @@
 name: documentation-audit
 description: 'Audit, correct, and synchronize documentation and ADRs against the codebase truth in src/ (read-only with respect to code). Trigger on docs review or prefixed with "documentation-audit:".'
 argument-hint: '<scope> e.g. "all", "docs/decisions", "specifications/supplemental", "ADR graph only"'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/audit-readonly.mjs" docs'
 ---
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, preservation, verification, and delivery policies.
 
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)), Node.js with `npm ci`, and the GitHub CLI authenticated via `gh auth login` (check with `gh auth status`).
+
 # 📚 Documentation Audit Protocol (Technical Writer & Code-Truth Synchronization)
 
-You are acting as the project's **Technical Writer**. Documentation is a _derived artifact_: the
+Documentation is a _derived artifact_: the
 authoritative truth is (1) the code in `src/`, (2) the accepted ADRs in `docs/decisions/`, and
 (3) the official Marvel Champions Rules Reference (`references/rules/`, RR v1.8).
 Whenever prose disagrees with code, **the code wins** — unless the code violates an Accepted ADR
@@ -17,15 +25,20 @@ or RR v1.8, in which case flag it as a defect instead of documenting the bug as 
 
 ---
 
+## ⚡ Gate summary
+
+- Code is never edited here; only `*.md` (hook-enforced). Code defects become GitHub issues.
+- Every finding carries a confidence score and a file:line citation; nothing below 80% is written.
+- Critical findings (D1, D7) always stop for approval, even at 100%.
+- Auto-apply only for Minor/Major findings at 95% or higher.
+- Never delete an ADR; never invent primitives; docs are never evidence for themselves.
+
 ## 🛑 Non-Negotiable Guardrails
 
-1. **Read-only with respect to code — absolute.** This skill has a **write allow-list of exactly
-   one thing: `*.md` files** (including the Mermaid blocks inside them). It MUST NOT create, edit,
-   delete, move, or reformat any file under `src/`, `tests/`, `tools/`, `scripts/`, `data/`,
-   `public/`, nor any `.ts`, `.tsx`, `.json`, `.js`, `.css`, or config file — not even a typo,
-   a comment, a rename, or a "trivial" one-line fix. Not even if the fix is obvious. Not even if
-   the user asked for a docs fix that would be easier to solve in code.
-   _Reading_ code is not just allowed, it is mandatory (Step 2) — but never writing.
+1. **Read-only with respect to code.** Write only `*.md` files (including their Mermaid blocks);
+   a hook blocks every other Edit/Write for the rest of the session, so start a new session
+   for code changes. Reading code is mandatory (Step 2); writing it is never allowed, however
+   small or obvious the fix. Why: a "trivial" code fix inside an audit hides the defect from review.
 2. **Code defects become GitHub issues, never edits.** If the audit concludes the code is wrong
    (docs correct, `src/` violates an Accepted ADR or RR v1.8), you MUST:
    a. Stop analyzing that thread — do **not** attempt a fix, workaround, or "while I'm here" patch.
@@ -85,7 +98,7 @@ Cap confidence at **≤ 79%** — i.e. ask, never assume — whenever any of the
 - The claim concerns **why** a decision was made, not **what** the code does.
 - Deciding whether an ADR is **Superseded** vs merely **extended/refined** by a later ADR.
 - Deciding whether a partially implemented primitive is 🟢 IMPLEMENTED or 🟡 ROADMAP.
-- An RR v1.8 page/rule citation you could not locate verbatim in `references/mc_rulesreference_v18_compressed.pdf`.
+- An RR v1.8 page/rule citation you could not locate verbatim in `references/rules/` (or in the PDF, if the structured reference lacks it).
 - Two authoritative sources disagree (code vs ADR vs RR v1.8).
 - The correct fix would require adding a **new** doc file, section, or Mermaid lineage group.
 - You cannot name the exact file (and ideally line) that proves the claim.
@@ -154,7 +167,7 @@ Step 4 when any ADR, engine primitive, or architectural concept is touched.
 
 ### Step 2 — Build the Code-Truth Index
 
-Extract the real vocabulary from source before reading a single prose claim. Use `grep_search`
+Extract the real vocabulary from source before reading a single prose claim. Use Grep
 with regex over `src/` and record exact symbol lists:
 
 - **Effect primitives:** every `case '<EFFECT_NAME>':` in `src/engine/effects/index.ts`.
@@ -189,7 +202,7 @@ Severity: **Critical** (D1, D7 — actively misleading), **Major** (D3, D4, D5),
 
 > [!IMPORTANT]
 > Every RR v1.8 citation (e.g. "RR v1.8 p. 16") must be verified against
-> `references/mc_rulesreference_v18_compressed.pdf`. A wrong page reference is a Critical finding.
+> `references/rules/` (open `references/mc_rulesreference_v18_compressed.pdf` only if the structured reference cannot confirm it). A wrong page reference is a Critical finding.
 
 ---
 
@@ -274,30 +287,7 @@ Then stop. Never resolve an open question by picking the most plausible reading.
 issue. The issue must be self-contained enough for a **peer reviewer to assert the defect without
 re-running the audit**:
 
-```bash
-gh issue create --title "<subsystem>: <one-line symptom>" \
-  --label bug --label needs-triage \
-  --body "Filed by the \`documentation-audit\` skill — **not verified by a human yet.**
-
-### Authority
-<ADR-XXXX §section | RR v1.8 p. N \"Rule Name\">
-
-### Expected behaviour
-<what the authority mandates>
-
-### Actual behaviour in code
-\`src/<path>\`:<line> — <exact symbol / snippet and what it does instead>
-
-### How this surfaced
-Documentation claim in \`<doc file>\` that the code contradicts.
-
-### Suggested reproduction
-<test file + scenario, or the state path that exercises it>
-
-### Reviewer decision needed
-Confirm whether this is a genuine defect, an intentional deviation (then the ADR/doc should record
-it), or a documentation error instead. No code was changed by this audit."
-```
+Use the template in [`code-defect-issue-template.md`](code-defect-issue-template.md) (strict: keep every heading).
 
 Record the issue number in the audit log and findings table, then **move on**. Do not fix, patch, or
 prototype the code. A human reviewer triages the issue and, if confirmed, runs the `bug-fix` skill
@@ -330,7 +320,7 @@ Editing standards:
 
 - **Only write findings that cleared the gate.** Re-check the confidence band immediately before
   each edit; if new context lowered it below the threshold, abandon the edit and raise a question.
-- Prefer surgical `replace_string_in_file` edits over rewriting files.
+- Prefer surgical Edit-tool edits over rewriting files.
 - When adding a primitive, include: name, purpose, parameter table, a minimal JSON example, the
   implementing source file, and the status badge.
 - **Write only what the evidence states.** Do not embellish with rationale, motivation, or expected
@@ -382,7 +372,7 @@ The audit is complete only when **all** hold:
 - [ ] `docs/decisions/README.md` table is complete, ID-ordered, and status-accurate.
 - [ ] The Mermaid ADR lineage graph covers every lineage-participating ADR, parses cleanly, and its supersede edges match ADR statuses.
 - [ ] All relative links and ADR references resolve.
-- [ ] RR v1.8 citations verified against `references/mc_rulesreference_v18_compressed.pdf`.
+- [ ] RR v1.8 citations verified against `references/rules/` (PDF only as fallback).
 - [ ] `git status` proves **only `.md` files changed** — no code was written, reformatted, or deleted.
 - [ ] Every suspected code defect has a filed, peer-reviewable GitHub issue (`#XX`) — no workarounds, no silent doc-to-bug alignment.
 - [ ] Every Critical/architectural finding was explicitly approved by the user before editing.

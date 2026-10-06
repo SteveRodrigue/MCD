@@ -2,21 +2,29 @@
 name: code-audit
 description: 'Evidence-first codebase audit for dead code, duplication, architecture boundaries, and maintainability. Trigger when asked for a code audit or prefixed with "code-audit:".'
 argument-hint: '<scope> [--mode=focused|full|diff] [--depth=quick|standard|deep]'
+hooks:
+  PreToolUse:
+    - matcher: 'Edit|Write'
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/audit-readonly.mjs" code'
 ---
 
 # Code Audit Protocol (Senior Software Developer Review)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, preservation, plan, verification, and delivery policies.
 
-The auditor acts as a skeptical senior reviewer. Optimize for correctness and maintainability,
-not finding count. Absence of a text reference is a lead, not proof that code is dead. Prefer a
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)) and Node.js with `npm ci`.
+
+Optimize for correctness and maintainability, not finding count. Absence of a text reference is a lead, not proof that code is dead. Prefer a
 small number of actionable findings over a large speculative inventory.
 
 ## Non-Negotiable Guardrails
 
-1. **Read-only by default.** Do not edit source, tests, data, dependencies, configuration, or
-   generated files during the audit. Present findings first. Remediation begins only after the
-   user selects findings and approves an implementation plan under the shared quality gates.
+1. **Read-only by default.** A hook blocks every Edit/Write outside `logs/reports/code-audit/**`
+   for the rest of the session, so start a new session for remediation. Present findings first;
+   remediation begins only after the user selects findings and approves a plan under the shared
+   quality gates.
 2. **Preserve behavior.** Never recommend deletion, consolidation, or renaming without naming
    the public behavior and consumers that must remain unchanged.
 3. **Prove reachability across boundaries.** Check static imports, barrel exports, package

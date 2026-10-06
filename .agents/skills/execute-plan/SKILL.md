@@ -1,22 +1,30 @@
 ---
 name: execute-plan
-description: 'Executes an approved implementation plan by delegating the mechanical edits and test runs to a fast, low-reasoning worker subagent (Flash tier on Google Antigravity, Haiku on Claude Code). Triggers automatically on plan approval, clicking "Proceed", or prefixed with "execute-plan:".'
+description: 'Executes an approved implementation plan by delegating the mechanical edits and test runs to a fast, low-reasoning worker subagent (Haiku on Claude Code, Flash on Google Antigravity). Triggers automatically on plan approval, clicking "Proceed", or prefixed with "execute-plan:".'
 ---
 
 # ⚡ Execute-Plan Protocol (Subagent Direct Implementation)
 
 **Shared rules:** Apply [`.agents/rules/shared-quality-gates.md`](../../rules/shared-quality-gates.md), including path, command, verification, and delivery authorization policies.
 
+**Needs:** `rtk` (see [`antigravity-rtk-rules.md`](../../rules/antigravity-rtk-rules.md)) and Node.js with `npm ci`.
 
----
+## 🛑 Hard rules (read first)
 
-## 🎯 Purpose & Philosophy
+- **Plan fidelity:** User approval is not permission to interpret an ambiguous plan. Stop and request validation using the **Why This Is Blocking** / **What I Need From You** format before any delegation or edit that depends on an unstated decision.
+- **Always delegate:** Execution goes to a worker subagent on a fast, low-reasoning model tier. The worker designs and decides nothing; it only applies the plan and runs tests.
+- **Worker never commits or pushes.**
+- **Circuit breaker:** If the worker reports compile errors or broken test contracts that cannot be resolved in 2 iterations, the primary agent resumes control, inspects the failure, and gives the user an actionable diagnosis.
+- **Drift:** If files named in the plan have drifted significantly, halt and inform the user before attempting any unguided structural refactor.
 
-Once an `implementation_plan.md` has been reviewed and approved by the user, the deliberative planning phase is complete. To minimize turn latency, eliminate redundant reasoning loops, and avoid repetitive meta-analysis:
+## 🔌 Host adapter
 
-1. **Mandatory Subagent Execution:** Execution is **always delegated by default** to a dedicated worker subagent running on a fast, low-reasoning model tier (the "worker": the `'flash'` Flash subagent on Google Antigravity, a `haiku` subagent on Claude Code). The worker does not design or decide anything: it only creates/updates code and runs tests exactly as the plan states.
-2. **Zero Meta-Analysis:** The worker strictly applies the approved code modifications and runs verification tests.
-3. **Reactive Wakeup:** The primary orchestrator agent steps aside while the worker runs, resuming automatically upon completion to perform post-task hygiene and present results.
+Spawn the worker with the file for the host you are running in:
+
+- Claude Code: [`hosts/claude-code.md`](hosts/claude-code.md)
+- Google Antigravity: [`hosts/antigravity.md`](hosts/antigravity.md)
+
+Both use the worker instructions in Step 2 below.
 
 ---
 
@@ -26,15 +34,17 @@ Once an `implementation_plan.md` has been reviewed and approved by the user, the
 sequenceDiagram
     actor User
     participant Primary as Primary Agent (Orchestrator)
-    participant Subagent as Worker Subagent (Flash / Haiku)
+    participant Subagent as Worker Subagent (fast tier)
 
     User->>Primary: Approves implementation plan
-    Primary->>Subagent: invoke_subagent (Antigravity, "flash") or Agent tool (Claude Code, "haiku")
+    Primary->>Subagent: Spawn worker (see host adapter)
     Note over Subagent: Ingests plan<br/>Applies file edits<br/>Runs verification pipeline
     Subagent-->>Primary: Returns test output & summary of changes
-    Note over Primary: Executes post-task checklist<br/>Updates CHANGELOG & walkthrough.md
+    Note over Primary: Executes post-task checklist<br/>Updates CHANGELOG & walkthrough
     Primary->>User: Displays concise completion report
 ```
+
+The primary agent steps aside while the worker runs and resumes when it finishes.
 
 ---
 
@@ -63,39 +73,16 @@ When the user clicks "Proceed" or approves:
 <the concrete choice, confirmation, or plan revision required>
 ```
 
-Do not invoke a subagent, edit files, or continue implementation until the user resolves the ambiguity. A prior approval authorizes only the plan's unambiguous, explicitly stated work; it does not authorize interpretation. 5. Delegate only after every ambiguity is resolved explicitly by the user or by a revised plan that removes it.
+Do not invoke a subagent, edit files, or continue implementation until the user resolves the ambiguity. A prior approval authorizes only the plan's unambiguous, explicitly stated work; it does not authorize interpretation.
+
+5. Delegate only after every ambiguity is resolved explicitly by the user or by a revised plan that removes it.
 
 ### Step 2: Spawn Worker Subagent
 
-Use the variant for the host you are running in. Both use the same worker instructions.
-
-#### Google Antigravity (`invoke_subagent`, Flash)
-
-```typescript
-invoke_subagent({
-  Subagents: [
-    {
-      TypeName: 'self',
-      Role: 'Plan Implementation Worker',
-      Model: 'flash',
-      Prompt: `<the shared worker instructions from the prompt in the Claude Code block below, followed by the approved plan>`,
-    },
-  ],
-});
-```
-
-_Note: Stop calling tools immediately after launching the subagent to end the turn and let the subagent execute._
-
-#### Claude Code (`Agent` tool, Haiku)
-
-Use `subagent_type: "general-purpose"` and `model: "haiku"` (the fast tier; use `"sonnet"` only if the plan involves many interdependent edits). Paste the full approved plan into the prompt, since the worker starts with no context:
+Use the spawn call from your host file. Paste the full approved plan after these worker instructions, since the worker starts with no context:
 
 ```text
-Agent({
-  description: "Execute approved plan",
-  subagent_type: "general-purpose",
-  model: "haiku",
-  prompt: `Execute the approved implementation plan exactly as written. The full plan follows at the end of this prompt.
+Execute the approved implementation plan exactly as written. The full plan follows at the end of this prompt.
 1. Apply the file modifications specified in the plan (target files and changes only).
 2. Run the automated verification commands using `rtk` to condense output:
    - rtk npm test -- <relevant_tests> (enforcing 0 failures and 0 skipped tests)
@@ -105,34 +92,21 @@ Agent({
 4. Do not commit or push.
 5. Conclude with a concise diff summary and verification pass/fail status. Avoid meta-analysis or multi-step retrospectives.
 
-<approved plan>`,
-})
+<approved plan>
 ```
 
-_Note: The worker runs in the background and notifies the primary agent when it finishes. End the turn after launching it; do not poll or duplicate its work._
+The worker runs in the background. End the turn after launching it; do not poll or duplicate its work.
 
 ### Step 3: Worker Subagent Execution
 
-The worker executes the plan:
-
-1. Applies code changes using the host's file tools (`replace_file_content` / `write_to_file` on Antigravity; `Edit` / `Write` on Claude Code).
-2. Runs the test suite, typecheck, and lint through the shell using `rtk` (`run_command` on Antigravity) (confirming 0 failed and 0 skipped tests).
-3. Reports completion and test logs back to the primary agent.
+The worker applies the code changes with the host's file tools, runs the test suite, typecheck, and lint through the shell using `rtk` (0 failed and 0 skipped tests), and reports completion and test logs back to the primary agent.
 
 ### Step 4: Post-Task Hygiene & Walkthrough (Primary Agent)
 
-Upon receiving the subagent's completion message:
+Upon receiving the worker's completion message:
 
 1. Verify that all tests succeeded with **0 failures and 0 skipped tests** (Zero Skipped Tests Invariant).
 2. Update `CHANGELOG.md` under `[Unreleased]` with what was implemented.
 3. If card supplemental JSON was modified, run `rtk npm run report:declarations`.
 4. Create or update the walkthrough/recap in the host's user-facing artifact location when available.
 5. Present the walkthrough and verification results to the user. If the user's original request already authorized delivery (e.g. "implement and commit/push this plan"), proceed directly through commit and push; otherwise wait for an explicit commit/push request before delivering.
-
----
-
-## 🛑 Circuit Breaker & Guardrails
-
-- **Plan Fidelity:** User approval is not permission to interpret an ambiguous plan. Stop and request validation using the required **Why This Is Blocking** / **What I Need From You** format before any delegation or edit that depends on an unstated decision.
-- **Subagent Errors:** If the worker subagent reports unexpected compile errors or broken test contracts that cannot be resolved in 2 iterations, the primary agent resumes control, inspects the failure, and prompts the user with an actionable diagnosis.
-- **Merge Conflicts:** If files specified in the plan have drifted significantly, halt and inform the user before attempting unguided structural refactoring.

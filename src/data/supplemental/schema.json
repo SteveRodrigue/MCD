@@ -369,6 +369,9 @@
                     ]
                   }
                 },
+                "forEachPlayer": {
+                  "type": "boolean"
+                },
                 "errata": {
                   "type": [
                     "string",

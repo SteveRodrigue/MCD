@@ -203,6 +203,31 @@ Do not write `"condition": "UNDEFENDED_ATTACK"` inside `effectParams`: nothing r
 }
 ```
 
+### Per-player resolution: `CardAbility.forEachPlayer` (#220)
+
+"Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage." Each player resolves the whole sentence pair for themselves, so the second step must read the first step's result **of that player**. `forEachPlayer: true` on the ability header makes the engine run the ability's whole step list once per player, in player order (the first player, then clockwise, RR v1.8 Player Order):
+
+```json
+{
+  "id": "electromagnetic_backlash_when_revealed",
+  "timing": "WHEN_REVEALED",
+  "trigger": "WHEN_REVEALED",
+  "forEachPlayer": true,
+  "steps": [
+    { "effect": "DISCARD", "effectParams": { "source": "DECK", "mode": "TOP", "count": 5 } },
+    { "effect": "DEAL_DAMAGE",
+      "effectParams": { "target": "SELF_IDENTITY",
+        "amount": { "from": "DISCARDED_CARDS", "discardAttribute": "RESOURCE_ICONS", "resourceType": "energy" } } }
+  ]
+}
+```
+
+- **Default `false`.** An ability without the field runs once for the resolving player, as before. The field exists only on the ability, never on a step.
+- **Resolving player.** In each pass `context.playerId` is that player, so `SELF_IDENTITY`, `SELF_HERO` and the deck `DISCARD` act on them. The previous pass's `previousResult` and `discardedCards` are not visible (scoped per player).
+- **Prompts.** A step that opens a prompt pauses the pass like any sequence (#248). The players who have not resolved yet wait in a pending entry placed beneath the rest of that pass, so the order is: finish this player, then the next one.
+- **Not covered:** an ability that mixes per-player steps with run-once steps ("each player puts a Drone, then place 1 threat for each Drone", _Drone Factory_ `01148`) is [#272](https://github.com/SteveRodrigue/MCD/issues/272). Use `target: "ALL_PLAYERS"` when no step needs the per-player result (_The Vulture's Plans_ `01169`).
+- **Player deck discard.** A deck `DISCARD` that empties the deck mid-way resets the deck and stops there: no card is discarded from the new deck (RR v1.8 Player Deck).
+
 ---
 
 ## 2. Interactive Decision Prompts (`PLAYER_CHOICE`)

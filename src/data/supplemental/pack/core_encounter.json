@@ -1446,13 +1446,41 @@
       }
     },
     "01174": {
+      "abilities": [
+        {
+          "id": "electromagnetic_backlash_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "forEachPlayer": true,
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "DECK",
+                "mode": "TOP",
+                "count": 5
+              }
+            },
+            {
+              "effect": "DEAL_DAMAGE",
+              "effectParams": {
+                "target": "SELF_IDENTITY",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "RESOURCE_ICONS",
+                  "resourceType": "energy"
+                }
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-10-04T10:44",
-        "reviewedAt": "2026-10-04T10:44",
+        "updatedAt": "2026-10-06T12:00",
+        "reviewedAt": "2026-10-06T12:00",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01174_electromagnetic-backlash.md",
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Each player discards the top 5 cards of their deck. For each printed [energy] resource a player discards this way, that player takes 1 damage."
       }
     },

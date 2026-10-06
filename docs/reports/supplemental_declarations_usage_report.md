@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T15:45:22.620Z`  
+> **Generated:** `2026-10-06T16:26:56.827Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -10,14 +10,14 @@
 | Metric | Count | Description |
 | :--- | :--- | :--- |
 | **Total Cards Registered** | **158** | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **144** | Cards with executable `abilities: [...]` |
+| **Active Declared Cards** | **145** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **11** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
-| **Open Ambiguity Reports** | **5** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
+| **Open Ambiguity Reports** | **4** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **162** | Total individual ability definitions declared |
+| **Total Abilities Declared** | **163** | Total individual ability definitions declared |
 | **Single-Step Abilities (1 Step)** | **134** | Abilities with exactly 1 atomic execution step |
-| **Multi-Step Abilities (2+ Steps)** | **28** | Abilities decomposed into sequenced execution pipelines |
-| **Cards with Multi-Step Sequences** | **28** | Cards containing at least 1 ability with 2+ steps |
+| **Multi-Step Abilities (2+ Steps)** | **29** | Abilities decomposed into sequenced execution pipelines |
+| **Cards with Multi-Step Sequences** | **29** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **17** | Cards declaring more than 1 distinct ability header |
 | **Unique Effects In Use** | **43** | Distinct effect primitive types actively declared |
 | **Unique Target Selectors In Use** | **27** | Distinct target selectors actively declared |
@@ -32,16 +32,15 @@
 
 ---
 
-## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 5 Cards)
+## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 4 Cards)
 
-These **5 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
+These **4 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
 
 | Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `01163` | **Genetically Enhanced** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01163_genetically-enhanced.md`](../ambiguities/core_encounter_01163_genetically-enhanced.md) |
 | `01164` | **Titania** | `core_encounter` | `80%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01164_titanias-fury.md`](../ambiguities/core_encounter_01164_titanias-fury.md) |
 | `01168` | **Sweeping Swoop** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01168_sweeping-swoop.md`](../ambiguities/core_encounter_01168_sweeping-swoop.md) |
-| `01174` | **Electromagnetic Backlash** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01174_electromagnetic-backlash.md`](../ambiguities/core_encounter_01174_electromagnetic-backlash.md) |
 | `56128b` | **Now It** | `cw_encounter` | `50%` | `MISSING_ENGINE_PRIMITIVE` | [`cw_56128b_now-its-personal.md`](../ambiguities/cw_56128b_now-its-personal.md) |
 
 ---
@@ -112,7 +111,7 @@ These **5 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 ### Ability Timings (`TimingTypeSchema`):
 | Timing | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `WHEN_REVEALED` | **30** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+25 more)* |
+| `WHEN_REVEALED` | **31** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+26 more)* |
 | `HERO_ACTION` | **26** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01010a` Captain Marvel (hero), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event) *(+21 more)* |
 | `CONSTANT` | **19** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+12 more)* |
 | `FORCED_RESPONSE` | **18** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+12 more)* |
@@ -135,7 +134,7 @@ These **5 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 ### Trigger Windows (`TriggerTypeSchema`):
 | Trigger Window | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `WHEN_REVEALED` | **34** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+29 more)* |
+| `WHEN_REVEALED` | **35** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+30 more)* |
 | `ENTERS_PLAY` | **10** | `01011` Spider-Woman (ally), `01041` Shuri (ally), `01067` Maria Hill (ally), `01083` Mockingbird (ally), `01084` Nick Fury (ally) *(+5 more)* |
 | `BOOST` | **4** | `01121` Weapons Runner (minion), `01158` Heart-Shaped Herb (treachery), `01164` Titania's Fury (treachery), `01173` Electric Whip Attack (treachery) |
 | `DAMAGE_WOULD_BE_TAKEN` | **3** | `01003` Backflip (event), `01017` Cosmic Flight (upgrade), `01098` Armored Rhino Suit (attachment) |
@@ -231,7 +230,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | :--- | :--- | :--- |
 | `SELF` | **16** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01042` Ancestral Knowledge (event) *(+11 more)* |
 | `CHOSEN_ENEMY` | **16** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade), `01019a` She-Hulk (hero) *(+11 more)* |
-| `SELF_IDENTITY` | **13** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01039` Rocket Boots (upgrade) *(+8 more)* |
+| `SELF_IDENTITY` | **14** | `01006` Aunt May (support), `01010a` Captain Marvel (hero), `01024` One-Two Punch (event), `01035` Arc Reactor (upgrade), `01039` Rocket Boots (upgrade) *(+9 more)* |
 | `CHOSEN_SCHEME` | **11** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event), `01026` Superhuman Law Division (support), `01037` Mark V Helmet (upgrade) *(+5 more)* |
 | `CHOSEN_PLAYER` | **4** | `01010b` Carol Danvers (alter_ego), `01034` Stark Tower (support), `01091` Avengers Mansion (support), `01092` Helicarrier (support) |
 | `VILLAIN` | **4** | `01011` Spider-Woman (ally), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery), `01158` Heart-Shaped Herb (treachery) |
@@ -331,9 +330,9 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 ### High-Impact Effects (Blast-Radius $\ge 5$ Cards):
 | Effect Primitive | Card Count | Example Cards |
 | :--- | :--- | :--- |
-| `DEAL_DAMAGE` | **24** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
+| `DEAL_DAMAGE` | **25** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+21 more)* |
 | `ADD_STATUS` | **17** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade) *(+12 more)* |
-| `DISCARD` | **15** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01031` Repulsor Blast (event) *(+11 more)* |
+| `DISCARD` | **16** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01031` Repulsor Blast (event) *(+12 more)* |
 | `REMOVE_THREAT` | **12** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
 | `MODIFY_STAT` | **12** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+7 more)* |
 | `DRAW` | **10** | `01001a` Spider-Man (hero), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego) *(+7 more)* |
@@ -369,9 +368,9 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 ### Complete Effects Inventory:
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
-| `DEAL_DAMAGE` | **24** | `01005` (Swinging Web Kick (event)), `01013` (Photonic Blast (event)), `01018` (Energy Channel (upgrade)), `01019a` (She-Hulk (hero)), `01021` (Gamma Slam (event)), `01022` (Ground Stomp (event)), `01030` (War Machine (ally)), `01031` (Repulsor Blast (event)), `01032` (Supersonic Punch (event)), `01038` (Powered Gauntlets (upgrade)), `01046` (Energy Daggers (upgrade)), `01047` (Panther Claws (upgrade)), `01050` (Hulk (ally)), `01053` (Relentless Assault (event)), `01054` (Uppercut (event)), `01056` (Tac Team (support)), `01058` (Daredevil (ally)), `01061` (Great Responsibility (event)), `01066` (Hawkeye (ally)), `01077` (Counter-Punch (event)), `01087` (Haymaker (event)), `01103` (Shocker (minion)), `01111` (Explosion (treachery)) |
+| `DEAL_DAMAGE` | **25** | `01005` (Swinging Web Kick (event)), `01013` (Photonic Blast (event)), `01018` (Energy Channel (upgrade)), `01019a` (She-Hulk (hero)), `01021` (Gamma Slam (event)), `01022` (Ground Stomp (event)), `01030` (War Machine (ally)), `01031` (Repulsor Blast (event)), `01032` (Supersonic Punch (event)), `01038` (Powered Gauntlets (upgrade)), `01046` (Energy Daggers (upgrade)), `01047` (Panther Claws (upgrade)), `01050` (Hulk (ally)), `01053` (Relentless Assault (event)), `01054` (Uppercut (event)), `01056` (Tac Team (support)), `01058` (Daredevil (ally)), `01061` (Great Responsibility (event)), `01066` (Hawkeye (ally)), `01077` (Counter-Punch (event)), `01087` (Haymaker (event)), `01103` (Shocker (minion)), `01111` (Explosion (treachery)), `01174` (Electromagnetic Backlash (treachery)) |
 | `ADD_STATUS` | **17** | `01009` (Webbed Up (upgrade)), `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01162` (Titania (minion)), `01168` (Sweeping Swoop (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
-| `DISCARD` | **15** | `01002` (Black Cat (ally)), `01009` (Webbed Up (upgrade)), `01031` (Repulsor Blast (event)), `01050` (Hulk (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01159` (Ritual Combat (treachery)), `01169` (The Vulture's Plans (treachery)), `01173` (Electric Whip Attack (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01188` (Caught Off Guard (treachery)), `01192` (Masterplan (treachery)), `01195` (Unknown Card #01195) |
+| `DISCARD` | **16** | `01002` (Black Cat (ally)), `01009` (Webbed Up (upgrade)), `01031` (Repulsor Blast (event)), `01050` (Hulk (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01159` (Ritual Combat (treachery)), `01169` (The Vulture's Plans (treachery)), `01173` (Electric Whip Attack (treachery)), `01174` (Electromagnetic Backlash (treachery)), `01179` (Yon-Rogg's Treason (treachery)), `01188` (Caught Off Guard (treachery)), `01192` (Masterplan (treachery)), `01195` (Unknown Card #01195) |
 | `REMOVE_THREAT` | **12** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
 | `MODIFY_STAT` | **12** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01070` (Lead from the Front (event)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
 | `DRAW` | **10** | `01001a` (Spider-Man (hero)), `01010a` (Captain Marvel (hero)), `01010b` (Carol Danvers (alter_ego)), `01013` (Photonic Blast (event)), `01015` (Alpha Flight Station (support)), `01025` (Split Personality (event)), `01027` (Focused Rage (upgrade)), `01045` (The Golden City (support)), `01067` (Maria Hill (ally)), `01091` (Avengers Mansion (support)) |
@@ -440,10 +439,10 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 ### Effect Parameter Keys (`effectParams`):
 | Parameter Key | Occurrences | Cards |
 | :--- | :--- | :--- |
-| `target` | **96** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade) *(+81 more)* |
-| `amount` | **74** | `01001b` Peter Parker (alter_ego), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade), `01008` Web-Shooter (upgrade) *(+62 more)* |
-| `source` | **22** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01029b` Tony Stark (alter_ego), `01031` Repulsor Blast (event), `01034` Stark Tower (support) *(+16 more)* |
-| `count` | **16** | `01001a` Spider-Man (hero), `01002` Black Cat (ally), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01013` Photonic Blast (event) *(+11 more)* |
+| `target` | **97** | `01001a` Spider-Man (hero), `01003` Backflip (event), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade) *(+82 more)* |
+| `amount` | **75** | `01001b` Peter Parker (alter_ego), `01005` Swinging Web Kick (event), `01006` Aunt May (support), `01007` Spider-Tracer (upgrade), `01008` Web-Shooter (upgrade) *(+63 more)* |
+| `source` | **23** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01029b` Tony Stark (alter_ego), `01031` Repulsor Blast (event), `01034` Stark Tower (support) *(+17 more)* |
+| `count` | **17** | `01001a` Spider-Man (hero), `01002` Black Cat (ally), `01010a` Captain Marvel (hero), `01010b` Carol Danvers (alter_ego), `01013` Photonic Blast (event) *(+12 more)* |
 | `status` | **16** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade), `01076` Luke Cage (ally), `01083` Mockingbird (ally) *(+9 more)* |
 | `filter` | **12** | `01002` Black Cat (ally), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego), `01041` Shuri (ally), `01071` Make the Call (event) *(+5 more)* |
 | `stat` | **11** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade), `01059` Jessica Jones (ally), `01065` Heroic Intuition (upgrade) *(+4 more)* |
@@ -454,6 +453,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `selectedDestination` | **6** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego), `01041` Shuri (ally), `01042` Ancestral Knowledge (event) *(+1 more)* |
 | `autoSelectIfUnambiguous` | **6** | `01029b` Tony Stark (alter_ego), `01034` Stark Tower (support), `01040b` T'Challa (alter_ego), `01041` Shuri (ally), `01042` Ancestral Knowledge (event) *(+1 more)* |
 | `dynamicBonus` | **5** | `01015` Alpha Flight Station (support), `01031` Repulsor Blast (event), `01032` Supersonic Punch (event), `01038` Powered Gauntlets (upgrade), `01060` For Justice! (event) |
+| `mode` | **5** | `01098` Armored Rhino Suit (attachment), `01159` Ritual Combat (treachery), `01169` The Vulture's Plans (treachery), `01174` Electromagnetic Backlash (treachery), `01192` Masterplan (treachery) |
 | `perPlayer` | **5** | `01107` Breakin' & Takin' (side_scheme), `01109` Bomb Scare (side_scheme), `01161` Personal Challenge (side_scheme), `01171` Imminent Overload (side_scheme), `01176` The Psyche-Magnitron (side_scheme) |
 | `form` | **5** | `01155` Affairs of State (obligation), `01160` Legal Work (obligation), `01165` Eviction Notice (obligation), `01170` Business Problems (obligation), `01175` Family Emergency (obligation) |
 | `optional` | **5** | `01155` Affairs of State (obligation), `01160` Legal Work (obligation), `01165` Eviction Notice (obligation), `01170` Business Problems (obligation), `01175` Family Emergency (obligation) |
@@ -464,7 +464,6 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `from` | **4** | `01049` Vibranium Suit (upgrade), `01190` Shadow of the Past (treachery) |
 | `to` | **4** | `01049` Vibranium Suit (upgrade), `01121` Weapons Runner (minion), `01190` Shadow of the Past (treachery) |
 | `aspect` | **4** | `01055` The Power of Aggression (resource), `01062` The Power of Justice (resource), `01072` The Power of Leadership (resource), `01079` The Power of Protection (resource) |
-| `mode` | **4** | `01098` Armored Rhino Suit (attachment), `01159` Ritual Combat (treachery), `01169` The Vulture's Plans (treachery), `01192` Masterplan (treachery) |
 | `scaling` | **3** | `01018` Energy Channel (upgrade), `01023` Legal Practice (event), `01059` Jessica Jones (ally) |
 | `multiplier` | **3** | `01018` Energy Channel (upgrade), `01023` Legal Practice (event), `01059` Jessica Jones (ally) |
 | `promptTitle` | **3** | `01029b` Tony Stark (alter_ego), `01040b` T'Challa (alter_ego), `01041` Shuri (ally) |
@@ -499,6 +498,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 ### Dynamic Value Sources (`DynamicValueSourceSchema`):
 | Dynamic Value Resolver | Occurrences | Cards |
 | :--- | :--- | :--- |
+| `DISCARDED_CARDS (attr: RESOURCE_ICONS)` | **3** | `01031` Repulsor Blast (event), `01174` Electromagnetic Backlash (treachery) |
 | `COUNTERS (counter: energy)` | **2** | `01018` Energy Channel (upgrade) |
 | `STAT_VALUE (stat: SUFFERED_DAMAGE)` | **2** | `01021` Gamma Slam (event) |
 | `ENTITY_COUNT` | **2** | `01029a` Iron Man (hero) |
@@ -508,7 +508,6 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `CARD_ATTRIBUTE (attr: THREAT)` | **2** | `01111` Explosion (treachery) |
 | `DISCARDED_CARDS (attr: DIFFERENT_RESOURCES)` | **2** | `01169` The Vulture's Plans (treachery) |
 | `HAS_IDENTITY` | **1** | `01015` Alpha Flight Station (support) |
-| `DISCARDED_CARDS (attr: RESOURCE_ICONS)` | **1** | `01031` Repulsor Blast (event) |
 | `PAID_WITH_RESOURCE` | **1** | `01060` For Justice! (event) |
 
 ---

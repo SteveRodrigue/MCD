@@ -470,6 +470,21 @@ export const AbilityFormBuilder: React.FC<AbilityFormBuilderProps> = ({
                     </div>
                   </div>
 
+                  {/* Per-player resolution: "each player ... that player" (#220) */}
+                  <label className="flex items-center gap-1 text-xs font-bold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      data-testid={`ability-for-each-player-${aIdx}`}
+                      checked={ability.forEachPlayer === true}
+                      onChange={(e) =>
+                        handleUpdateAbility(aIdx, {
+                          forEachPlayer: e.target.checked ? true : undefined,
+                        })
+                      }
+                    />
+                    Resolve for each player, in player order (forEachPlayer)
+                  </label>
+
                   {/* Ability Labels: printed "(attack)", "(thwart)", "(defense)" (RR v1.8 glossary L) */}
                   <div>
                     <label className="block text-[10px] font-bold uppercase text-gray-600 mb-1">

@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-06
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,061 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,070 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -42,6 +42,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `9985c4f` |
 | #219 | Hand `DISCARD`: `filter`, every target player, `discardedCards`/`value` always returned; Yon-Rogg's Treason `01179` and The Vulture's Plans `01169` modelled (confidence 95) | `git log --grep "#219"` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
+| #220 | `CardAbility.forEachPlayer` (whole step list once per player, player order, pausable); Electromagnetic Backlash `01174` modelled (confidence 95); deck `DISCARD` no longer continues into a reshuffled deck; mixed case filed as #272 | `git log --grep "#220"` |
 
 ---
 
@@ -100,8 +101,8 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 | # | Item | Issue | Unblocks | Notes |
 | :-- | :-- | :-- | :-- | :-- |
-| 5 | Hand `DISCARD` with filter, each-player targets and discarded-card results | [#219](https://github.com/SteveRodrigue/MCD/issues/219) | `01179` Yon-Rogg's Treason, `01169`, `01174` | 🟢 **Done** 2026-10-06; `01179` and `01169` modelled; `01174` still needs #220 |
-| 6 | Per-player iteration inside one ability | [#220](https://github.com/SteveRodrigue/MCD/issues/220) | `01174` Electromagnetic Backlash | #219 done; `01169` did not need it (one `ALL_PLAYERS` discard step) |
+| 5 | Hand `DISCARD` with filter, each-player targets and discarded-card results | [#219](https://github.com/SteveRodrigue/MCD/issues/219) | `01179` Yon-Rogg's Treason, `01169`, `01174` | 🟢 **Done** 2026-10-06; `01179` and `01169` modelled |
+| 6 | Per-player iteration inside one ability | [#220](https://github.com/SteveRodrigue/MCD/issues/220) | `01174` Electromagnetic Backlash | 🟢 **Done** 2026-10-06; ability-level `forEachPlayer`; mixed per-player / run-once abilities: [#272](https://github.com/SteveRodrigue/MCD/issues/272) (`01148`) |
 | 7 | Gate "this activation dealt damage" | [#221](https://github.com/SteveRodrigue/MCD/issues/221) | `01168` Sweeping Swoop boost | ready; the boost data is in its ambiguity report |
 | 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | ready (its hero selector exists: `SELF_HERO`) |
 | 9 | `executeSequence` swallows step failures and always reports success | [#225](https://github.com/SteveRodrigue/MCD/issues/225) | visibility of every ability failure | cross-cutting, Tier 2; do before adding more complex sequences |
@@ -143,9 +144,6 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 flowchart TD
     I219["#219 hand DISCARD filter"] --> C01179["01179 Yon-Rogg"]
     I219 --> C01169["01169 Vulture's Plans"]
-    I220["#220 per-player iteration"] --> C01169
-    I220 --> C01174["01174 Electromagnetic Backlash"]
-    I219 --> C01174
     I221["#221 damage gate"] --> C01168["01168 Sweeping Swoop boost"]
     I223["#223 named minion attack"] --> C01164["01164 Titania's Fury"]
     WP3["#228 01163 (circuit-breaker now)"] --> WP5["#230 guard test"]

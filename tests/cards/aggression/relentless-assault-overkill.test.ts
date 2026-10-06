@@ -189,7 +189,7 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     // Add a side scheme so Spider-Tracer prompts for scheme choice. Both schemes need threat to be
     // valid targets for "remove 3 threat" (RR v1.8 "Target", #234).
     state.mainScheme.threat = 3;
-    const sideSchemeCard = cardCatalog.getCard('01104')!; // Bomb Scare
+    const sideSchemeCard = cardCatalog.getCard('01109')!; // Bomb Scare
     const sideSchemeInst = createCardInstance(sideSchemeCard);
     (sideSchemeInst as any).threat = 3;
     state.sideSchemes.push(sideSchemeInst as any);
@@ -228,6 +228,6 @@ describe('Issue #137 - Relentless Assault (01053) Overkill Invariants', () => {
     expect(activePrompt?.sourceCardName).toBe('Spider-Tracer');
     expect(activePrompt?.sourceCardCode).toBe('01007');
     expect(activePrompt?.options[0]?.cardCode).toBe('01097b');
-    expect(activePrompt?.options[1]?.cardCode).toBe('01104');
+    expect(activePrompt?.options[1]?.cardCode).toBe('01109');
   });
 });

@@ -95,7 +95,7 @@ describe('DecisionPromptModal Card Preview (Issue #104)', () => {
         {
           id: 'side_scheme_1',
           label: 'Crowd Control (2 Threat)',
-          cardCode: '01104',
+          cardCode: '01108',
           effect: 'REMOVE_THREAT',
         },
       ],

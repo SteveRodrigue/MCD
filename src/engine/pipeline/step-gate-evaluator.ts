@@ -24,6 +24,11 @@ export interface StepGateContext {
   attackerType?: 'VILLAIN' | 'MINION';
   /** Who defended that attack; `UNDEFENDED` when no hero or ally was declared. */
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  /**
+   * Final damage the attack being resolved dealt to the defending character (after DEF, Tough and
+   * prevention). Set only while a deferred boost ability resolves after step 6.
+   */
+  activationDamage?: number;
 }
 
 /**
@@ -187,6 +192,12 @@ export function evaluateStepGate(
       }
     }
     return !!evaluatedResult && evaluatedResult.conditionMet === true;
+  }
+
+  // "If this activation deals damage" (RR v1.8 Boost, Tough): only defined once the attack's
+  // damage is known, so it is closed outside a deferred boost resolution.
+  if (gate === 'IF_ACTIVATION_DEALT_DAMAGE') {
+    return (context.activationDamage ?? 0) > 0;
   }
 
   if (gate === 'IF_FORM') {

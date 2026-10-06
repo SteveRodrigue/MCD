@@ -1148,12 +1148,11 @@
     "01168": {
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T21:30",
-        "reviewedAt": "2026-10-04T21:30",
+        "updatedAt": "2026-10-06T12:00",
+        "reviewedAt": "2026-10-06T12:00",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01168_sweeping-swoop.md",
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Stun your hero. If Vulture is in play, this card gains surge.\n<hr />\n[star] <b>Boost</b>: If this activation deals damage to a friendly character, stun that character."
       },
       "abilities": [
@@ -1174,6 +1173,21 @@
               "gate": "IF_CARD_IN_PLAY",
               "gateParams": {
                 "cardCode": "01167"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sweeping_swoop_boost",
+          "timing": "BOOST",
+          "trigger": "BOOST",
+          "steps": [
+            {
+              "effect": "ADD_STATUS",
+              "gate": "IF_ACTIVATION_DEALT_DAMAGE",
+              "effectParams": {
+                "status": "STUNNED",
+                "target": "DAMAGED_CHARACTER"
               }
             }
           ]

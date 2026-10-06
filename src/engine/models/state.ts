@@ -8,7 +8,7 @@ import {
   PlayerSideSchemeCard,
 } from './card';
 import { StatusCard } from './enums';
-import { AbilityStep, AbilityCost, ConditionGate } from './abilities';
+import { AbilityStep, AbilityCost, ConditionGate, CardAbility } from './abilities';
 
 /**
  * Runtime card instance in a zone (hand, deck, discard, or play)
@@ -241,6 +241,19 @@ export interface DefenderDeclaration {
   allyInstanceId?: string;
 }
 
+/** The friendly character an enemy attack damaged (JSON-safe; resolved live by DAMAGED_CHARACTER). */
+export interface DamagedCharacter {
+  type: 'HERO' | 'ALLY';
+  playerId: string;
+  allyInstanceId?: string;
+}
+
+/** A boost ability waiting for the activation's damage (step 6) before it can resolve. */
+export interface DeferredBoostAbility {
+  ability: CardAbility;
+  sourceCardInstance: CardInstance;
+}
+
 export interface AttackExecutionContext {
   attackId: string;
   attackerType: 'VILLAIN' | 'MINION';
@@ -263,6 +276,10 @@ export interface AttackExecutionContext {
   acceptOptionalTriggers?: boolean;
   synchronousPolicy?: 'HERO_IF_READY' | 'ALLY_CHUMP_BLOCK' | 'AUTO_OPTIMAL' | 'TAKE_UNDEFENDED';
   finalDamage?: number;
+  /** Boost abilities gated on the activation's damage; resolved after step 6 (#221). */
+  deferredBoostAbilities?: DeferredBoostAbility[];
+  /** Who took the activation's damage, recorded in step 6 for DAMAGED_CHARACTER. */
+  damagedCharacter?: DamagedCharacter;
   cancelled?: boolean;
   cancellationReason?: string;
 }

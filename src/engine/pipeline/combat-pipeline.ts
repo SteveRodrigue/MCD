@@ -743,6 +743,15 @@ export function step4_and_5_dealAndResolveBoostCards(
         );
 
         for (const boostAbility of boostAbilities) {
+          // "If this activation deals damage ...": the outcome is unknown until step 6, so the
+          // ability waits and resolves after damage (applyCalculatedAttackDamage, #221).
+          if (boostAbility.steps?.some((s) => s.gate === 'IF_ACTIVATION_DEALT_DAMAGE')) {
+            (attackContext.deferredBoostAbilities ??= []).push({
+              ability: boostAbility,
+              sourceCardInstance: currentBoost,
+            });
+            continue;
+          }
           executeEffect(state, boostAbility, {
             playerId: attackContext.targetPlayerId,
             sourceCardInstance: currentBoost,
@@ -906,6 +915,11 @@ export function applyCalculatedAttackDamage(
     );
     if (allyIdx !== -1) {
       const ally = player.allies[allyIdx];
+      attackContext.damagedCharacter = {
+        type: 'ALLY',
+        playerId: player.id,
+        allyInstanceId: ally.instanceId,
+      };
       const allyCard = ally.card as any;
       const allyMaxHp = allyCard.health || 2;
       const currentDamage = ally.tokens?.damage || 0;
@@ -1008,6 +1022,7 @@ export function applyCalculatedAttackDamage(
     }
   } else {
     // Hero or Undefended Identity Takes Attack Damage
+    attackContext.damagedCharacter = { type: 'HERO', playerId: player.id };
     const toughIndex = player.statusCards.indexOf(StatusCard.TOUGH);
     if (toughIndex !== -1 && rawDamage > 0) {
       if (attackContext.hasPiercing) {
@@ -1110,6 +1125,45 @@ export function applyCalculatedAttackDamage(
     hasOverkill: attackContext.hasOverkill,
     hasPiercing: attackContext.hasPiercing,
   };
+
+  resolveDeferredBoostAbilities(state, attackContext);
+}
+
+/**
+ * Resolves the boost abilities that waited for this activation's damage (step 5 deferral, #221).
+ * Called once from `applyCalculatedAttackDamage`, which both the direct step 6 path and the
+ * damage-prevention prompt resume path run, so no path resolves them twice or not at all.
+ * The queue is emptied first so a re-entrant call cannot resolve an ability again.
+ */
+function resolveDeferredBoostAbilities(
+  state: GameState,
+  attackContext: AttackExecutionContext,
+): void {
+  const deferred = attackContext.deferredBoostAbilities;
+  if (!deferred?.length) return;
+  attackContext.deferredBoostAbilities = [];
+
+  for (const { ability, sourceCardInstance } of deferred) {
+    executeEffect(state, ability, {
+      playerId: attackContext.targetPlayerId,
+      sourceCardInstance,
+      attackerType: attackContext.attackerType,
+      defenderType: attackContext.defender?.type ?? 'UNDEFENDED',
+      activationDamage: attackContext.finalDamage ?? 0,
+      damagedCharacter: attackContext.damagedCharacter,
+    });
+
+    state.log.push({
+      id: `log_${Date.now()}`,
+      timestamp: Date.now(),
+      round: state.roundNumber,
+      phase: state.phase,
+      category: 'combat',
+      key: 'villain.boost.starResolved',
+      params: { card: sourceCardInstance.card.name, abilityId: ability.id },
+      onomatopoeia: 'STAR BOOST ACTIVATED!',
+    });
+  }
 }
 
 /**

@@ -387,6 +387,46 @@ describe('AbilityFormBuilder Costs & Multi-Step Resolution Pipeline', () => {
     );
   });
 
+  it('selects the IF_ACTIVATION_DEALT_DAMAGE gate and the DAMAGED_CHARACTER target (#221)', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulAbilityFormBuilder
+        initial={{
+          abilities: [
+            {
+              id: 'deferred_boost',
+              timing: 'BOOST',
+              trigger: 'BOOST',
+              steps: [{ effect: 'ADD_STATUS', effectParams: { status: 'STUNNED' } }],
+            },
+          ],
+        }}
+        onChange={handleChange}
+      />,
+    );
+
+    const gateSelect = screen.getByTestId('step-gate-0-0') as HTMLSelectElement;
+    expect(Array.from(gateSelect.options).map((o) => o.value)).toContain(
+      'IF_ACTIVATION_DEALT_DAMAGE',
+    );
+    await user.selectOptions(gateSelect, 'IF_ACTIVATION_DEALT_DAMAGE');
+
+    const targetSelect = screen.getByTestId('step-target-0-0') as HTMLSelectElement;
+    expect(Array.from(targetSelect.options).map((o) => o.value)).toContain('DAMAGED_CHARACTER');
+    await user.selectOptions(targetSelect, 'DAMAGED_CHARACTER');
+
+    const last = handleChange.mock.calls[handleChange.mock.calls.length - 1][0];
+    expect(CardEnrichmentSchema.safeParse(last).success).toBe(true);
+    expect(last.abilities[0].steps[0]).toEqual(
+      expect.objectContaining({
+        gate: 'IF_ACTIVATION_DEALT_DAMAGE',
+        target: 'DAMAGED_CHARACTER',
+      }),
+    );
+  });
+
   it('mounts DynamicValueBuilder for dynamic amount parameter', () => {
     render(
       <AbilityFormBuilder

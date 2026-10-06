@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + UI): `executeSequence` no longer swallows step failures ([Issue #225](https://github.com/SteveRodrigue/MCD/issues/225))**
+  - A step that fails **with an `error`** (unsupported target, missing parameter) stops the sequence and the ability returns `success: false` with that error, also through `forEachPlayer`; steps already applied are kept. A failure **without** an error is an outcome (for example `ENEMY_ATTACKS` "did not attack") and later `IF_FAILED` gates still run. Each error writes an `engine.stepError` log entry.
+  - **Dev Mode:** a dismissible banner shows the latest step error and the combat log lists it; both are hidden outside Dev Mode.
+  - `tests/engine/sequence-step-failures.test.ts`, `tests/ui/DevStepErrorBanner.test.tsx`; the `ADD_TRAIT` bad-input test now asserts the failure. ADR-0019 addendum.
+
 - **Feat (Engine + Data + Editor): effect `ENEMY_ATTACKS`, Attack X for minions; _Titania's Fury_ `01164`, _Titania_ `01162` ([Issue #223](https://github.com/SteveRodrigue/MCD/issues/223))**
   - **Schema and engine:** new effect `ENEMY_ATTACKS` (`enemy` card code, `target` `SELF_HERO` / `SELF_IDENTITY`): a specific minion or villain attacks through the normal pipeline and the step fails when it did not attack (not in play, Stunned, cancelled, no hero), so later steps gate with `IF_FAILED`. `VILLAIN_ATTACKS` is unchanged. `beginEnemyAttack` reports whether the attack happened. `getEffectiveMinionAttack`: an X attack (stored `-1`) no longer attacks for -1; CONSTANT `MODIFY_STAT` `ATTACK` with dynamic amounts applies; new `CARD_ATTRIBUTE` `REMAINING_HIT_POINTS`. `HEAL_DAMAGE` accepts `amount: "ALL"` and no longer heals the player when its target resolves to nothing.
   - **Supplemental Data (`core_encounter.json`), approved by the owner:** `01164` When Revealed (attack, then heal all and surge if Titania did not attack); `01162` Attack X declared and the invented `ADD_STATUS TOUGH` removed. `01164` confidence 95, ambiguity report deleted.

@@ -11,6 +11,8 @@ interface CombatLogDrawerProps {
   logs: GameLogEntry[];
   currentLocale?: 'en' | 'fr';
   gameState?: GameState;
+  /** Engine step errors (`engine.stepError`) are listed in Dev Mode only (#225). */
+  devMode?: boolean;
 }
 
 type FilterCategory = 'all' | 'heroes' | 'villains' | 'narrator';
@@ -21,6 +23,7 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
   logs,
   currentLocale = 'en',
   gameState,
+  devMode = false,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<FilterCategory>('all');
   const [locale, setLocale] = useState<'en' | 'fr'>(currentLocale);
@@ -49,8 +52,10 @@ export const CombatLogDrawer: React.FC<CombatLogDrawerProps> = ({
 
   // Format all log entries into comic dialogue
   const formattedLogs = useMemo(() => {
-    return logs.map((entry) => formatComicLogEntry(entry, locale, gameState));
-  }, [logs, locale, gameState]);
+    return logs
+      .filter((entry) => devMode || entry.key !== 'engine.stepError')
+      .map((entry) => formatComicLogEntry(entry, locale, gameState));
+  }, [logs, locale, gameState, devMode]);
 
   // Filter logs by selected speaker category
   const filteredLogs = useMemo(() => {

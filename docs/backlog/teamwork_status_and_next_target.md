@@ -38,6 +38,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #247 | Chase Them Down and Tigra after attack defeats; every ability damage through `applyDamageToTarget` (incl. `TRANSFER_DAMAGE`); `labels: ["ATTACK"]` on 13 cards; defeat source and hand Responses to a defeat | `git log --grep "#247"` |
 | #245 | Masterplan: second sentence declared (`DISCARD` `UNTIL_MATCH` + `REVEAL`, `ZONE_EMPTY`); hidden `ADD_THREAT` fallback removed; empty-deck rule | `git log --grep "#245"` |
 | #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `d40febb` |
+| #228 (partial) | Genetically Enhanced `01163`: placeholder stripped, blocked with an ambiguity report | `git log --grep "#228"` |
 | #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `9985c4f` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
 
@@ -92,7 +93,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 3g | Webbed Up `01009` does not trigger / replace properly when villain is already Stunned | [#250](https://github.com/SteveRodrigue/MCD/issues/250) | replacement timing bug | 🟢 **Closed** 2026-10-06, not a bug: status cards have timing priority (RR Status Cards), Test 3 asserts it |
 | 3h | Lead from the Front `01070` did not prompt to choose a player | [#251](https://github.com/SteveRodrigue/MCD/issues/251) | missing player choice prompt | 🟢 **Done** 2026-10-06; `MODIFY_STAT` `targetPlayer: CHOSEN_PLAYER`, `ALL_CONTROLLED_CHARACTERS` |
 | — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
-| 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | blocked on #209 for a faithful model: **apply the circuit-breaker now** (strip, ambiguity report) so WP5 can pass with zero exemptions |
+| 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | 🟢 **Circuit-breaker applied** 2026-10-06 (stripped, ambiguity report, tie: first player chooses); **She-Hulk nemesis card, Gate 1:** not playable until #209 (now Gate 1), a highest-printed-HP selector (tie: first player chooses), a +3 HP modifier and the surge fallback exist; issue stays open, P1 |
 
 ### 3.2 Engine prerequisites that unblock stripped cards
 
@@ -108,7 +109,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 | # | Item | Issue | Depends on |
 | :-- | :-- | :-- | :-- |
-| 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | item 4 (so it passes with zero exemptions) |
+| 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | item 4 done: **ready** |
 | 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives (`MODIFY_HAND_SIZE` already done) | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | WP5 not required, but CONSTANT `MODIFY_STAT` must evaluate dynamic amounts |
 | 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5 |
 
@@ -130,7 +131,8 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 ### 3.7 Deferred (do not start without the owner)
 
 - **Wrecking Crew (MC03) chain:** [#210](https://github.com/SteveRodrigue/MCD/issues/210), [#211](https://github.com/SteveRodrigue/MCD/issues/211), [#212](https://github.com/SteveRodrigue/MCD/issues/212), [#213](https://github.com/SteveRodrigue/MCD/issues/213), [#214](https://github.com/SteveRodrigue/MCD/issues/214), [#215](https://github.com/SteveRodrigue/MCD/issues/215). No effect on Gate 1.
-- **Other features and cleanups:** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments (42 cards), [#262](https://github.com/SteveRodrigue/MCD/issues/262) Biomechanical Upgrades `01185` (needs #209 and a defeat replacement interrupt), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
+- **Moved to Gate 1 (2026-10-06):** [#209](https://github.com/SteveRodrigue/MCD/issues/209) conditional encounter attachments, needed by Genetically Enhanced `01163` (She-Hulk nemesis, [#228](https://github.com/SteveRodrigue/MCD/issues/228)). Schedule it with items 5 to 8 of section 3.2; the other 41 cards stay outside Gate 1.
+- **Other features and cleanups:** [#262](https://github.com/SteveRodrigue/MCD/issues/262) Biomechanical Upgrades `01185` (needs #209 and a defeat replacement interrupt), [#208](https://github.com/SteveRodrigue/MCD/issues/208) player-deck obligations, [#109](https://github.com/SteveRodrigue/MCD/issues/109) observer-scoped reaction triggers, [#37](https://github.com/SteveRodrigue/MCD/issues/37) Alliance payment and Team-Up, [#126](https://github.com/SteveRodrigue/MCD/issues/126), [#127](https://github.com/SteveRodrigue/MCD/issues/127), [#27](https://github.com/SteveRodrigue/MCD/issues/27).
 - **Phase 6, [#100](https://github.com/SteveRodrigue/MCD/issues/100):** the full supplemental data pass, postponed until Phase 5 is finished and the engine contract is stable.
 - **Known gap outside Gate 1:** [#265](https://github.com/SteveRodrigue/MCD/issues/265), 53 core encounter cards with rules text and no supplemental entry (Klaw, Ultron, Masters of Evil, Under Attack, Legions of Hydra, Doomsday Chair sets: `01113` to `01154` except `01121`, `01180` to `01184`). `01121` Weapons Runner is modelled since #244 (an exception in `tests/data/card-loader.test.ts`); `01185` is #262.
 

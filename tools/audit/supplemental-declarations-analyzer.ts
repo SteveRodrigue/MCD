@@ -1,7 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { TriggerTypeSchema, TimingTypeSchema } from '../../src/data/supplemental/schema';
+import {
+  TimingTypeSchema,
+  TriggerTypeSchema,
+  TargetSelectorSchema,
+  ConditionGateSchema,
+  StepConditionSchema,
+  EffectTypeSchema,
+  KeywordSchema,
+} from '../../src/data/supplemental/schema';
 import { detectDuplicateJsonKeys } from '../../src/data/supplemental/duplicate-key-detector';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,7 +18,6 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
 
 const SUPPLEMENTAL_DIR = path.join(ROOT_DIR, 'src/data/supplemental/pack');
 const UPSTREAM_DIR = path.join(ROOT_DIR, 'data/upstream/pack');
-const SPECS_DIR = path.join(ROOT_DIR, 'docs/specifications/supplemental');
 const AMBIGUITIES_DIR = path.join(ROOT_DIR, 'docs/ambiguities');
 const OUTPUT_REPORT_PATH = path.join(
   ROOT_DIR,
@@ -31,7 +38,12 @@ interface CardAudit {
 interface AbilityStep {
   id?: string;
   effect?: string;
+  target?: string;
+  distinctFrom?: string;
   gate?: string;
+  gateParams?: Record<string, unknown>;
+  condition?: string;
+  effectParams?: Record<string, unknown>;
   params?: Record<string, unknown>;
   filter?: Record<string, unknown>;
 }
@@ -40,16 +52,48 @@ interface CardAbility {
   id?: string;
   timing?: string;
   trigger?: string;
+  triggerFilter?: Record<string, unknown>;
   limit?: string;
+  zone?: string;
   cost?: Record<string, unknown>;
   maxPerRound?: number;
   errata?: string | null;
   steps?: AbilityStep[];
 }
 
+interface CardUses {
+  count: number;
+  counterType?: string;
+  max?: number;
+  discardOnEmpty?: boolean;
+}
+
+interface PlayRequirements {
+  identityForm?: string;
+  formTrait?: string;
+  identityTraits?: string[];
+  controlFilter?: Record<string, unknown>;
+  controlZones?: string[];
+  identityNames?: string[];
+}
+
 interface SupplementalEntry {
   noSupplementalNeeded?: boolean;
   abilities?: CardAbility[];
+  playRequirements?: PlayRequirements;
+  uses?: CardUses;
+  keywords?: (string | { keyword: string; amount?: number })[];
+  recipient?: { type: string; codes?: string[] };
+  attackCost?: number;
+  thwartCost?: number;
+  maxPerPlayer?: number;
+  restrictedSlots?: number;
+  additionalBoostCards?: number;
+  playUnderAnyPlayerControl?: boolean;
+  isLandscape?: boolean;
+  victoryPoints?: number;
+  traits?: string[];
+  errata?: string | null;
   audit?: CardAudit;
 }
 
@@ -220,42 +264,38 @@ function loadAllAmbiguityReports(): Map<string, AmbiguityReportInfo> {
   return map;
 }
 
-function discoverSpecifiedPrimitives(): { effects: Set<string>; triggers: Set<string> } {
-  const effects = new Set<string>();
-  const triggers = new Set<string>();
-
-  // Add all triggers from Zod schema
-  for (const option of TriggerTypeSchema.options) {
-    triggers.add(option);
-  }
-
-  // Parse markdown spec files in docs/specifications/supplemental/
-  if (fs.existsSync(SPECS_DIR)) {
-    const specFiles = fs.readdirSync(SPECS_DIR).filter((f) => f.endsWith('.md'));
-    for (const file of specFiles) {
-      const content = fs.readFileSync(path.join(SPECS_DIR, file), 'utf-8');
-      const matches = content.matchAll(/### `([A-Z0-9_]+)`/g);
-      for (const m of matches) {
-        if (m[1]) effects.add(m[1]);
-      }
-    }
-  }
-
-  return { effects, triggers };
-}
-
 export function runDeclarationsAudit() {
   const upstreamCards = loadAllUpstreamCards();
   const supplementalPacks = loadAllSupplementalPacks();
   const ambiguityReports = loadAllAmbiguityReports();
-  const { effects: specifiedEffects, triggers: specifiedTriggers } = discoverSpecifiedPrimitives();
+
+  // Usage Maps
+  const timingsUsage = new Map<string, UsageOccurrence[]>();
+  const triggersUsage = new Map<string, UsageOccurrence[]>();
+  const triggerFiltersUsage = new Map<string, UsageOccurrence[]>();
+  const costsUsage = new Map<string, UsageOccurrence[]>();
+  const limitsUsage = new Map<string, UsageOccurrence[]>();
+  const zonesUsage = new Map<string, UsageOccurrence[]>();
 
   const effectsUsage = new Map<string, UsageOccurrence[]>();
-  const triggersUsage = new Map<string, UsageOccurrence[]>();
-  const timingsUsage = new Map<string, UsageOccurrence[]>();
   const targetsUsage = new Map<string, UsageOccurrence[]>();
-  const costsUsage = new Map<string, UsageOccurrence[]>();
-  const scalingUsage = new Map<string, UsageOccurrence[]>();
+  const gatesUsage = new Map<string, UsageOccurrence[]>();
+  const gateParamsUsage = new Map<string, UsageOccurrence[]>();
+  const stepConditionsUsage = new Map<string, UsageOccurrence[]>();
+  const distinctFromUsage = new Map<string, UsageOccurrence[]>();
+
+  const effectParamsUsage = new Map<string, UsageOccurrence[]>();
+  const dynamicValuesUsage = new Map<string, UsageOccurrence[]>();
+
+  const filterCriteriaUsage = new Map<string, UsageOccurrence[]>();
+  const filterCompositionsUsage = new Map<string, UsageOccurrence[]>();
+
+  // Card Level
+  const playReqsUsage = new Map<string, UsageOccurrence[]>();
+  const usesUsage = new Map<string, UsageOccurrence[]>();
+  const keywordsUsage = new Map<string, UsageOccurrence[]>();
+  const recipientsUsage = new Map<string, UsageOccurrence[]>();
+  const cardOverridesUsage = new Map<string, UsageOccurrence[]>();
 
   const noSupplementalCards: NoSupplementalCardInfo[] = [];
   const falseVanillaViolations: FalseVanillaViolation[] = [];
@@ -281,6 +321,45 @@ export function runDeclarationsAudit() {
     map.get(key)!.push(occ);
   }
 
+  function extractUniversalFilter(filter: unknown, occ: UsageOccurrence) {
+    if (!filter || typeof filter !== 'object') return;
+    const obj = filter as Record<string, unknown>;
+
+    for (const [key, value] of Object.entries(obj)) {
+      if (key === 'all' || key === 'any' || key === 'none') {
+        recordUsage(filterCompositionsUsage, key, occ);
+        if (Array.isArray(value)) {
+          for (const sub of value) {
+            extractUniversalFilter(sub, occ);
+          }
+        }
+      } else {
+        recordUsage(filterCriteriaUsage, key, occ);
+      }
+    }
+  }
+
+  function extractDynamicValue(value: unknown, occ: UsageOccurrence) {
+    if (!value || typeof value !== 'object') return;
+    const obj = value as Record<string, unknown>;
+    if (obj.from && typeof obj.from === 'string') {
+      const descriptor = obj.stat
+        ? `${obj.from} (stat: ${obj.stat})`
+        : obj.counterType
+          ? `${obj.from} (counter: ${obj.counterType})`
+          : obj.discardAttribute
+            ? `${obj.from} (attr: ${obj.discardAttribute})`
+            : obj.attribute
+              ? `${obj.from} (attr: ${obj.attribute})`
+              : obj.from;
+      recordUsage(dynamicValuesUsage, descriptor, occ);
+
+      if (obj.filter) {
+        extractUniversalFilter(obj.filter, occ);
+      }
+    }
+  }
+
   function processAbility(ability: CardAbility, code: string, cardName: string, pack: string) {
     totalAbilitiesDeclared += 1;
     const abilityId = ability.id || 'unnamed_ability';
@@ -288,10 +367,25 @@ export function runDeclarationsAudit() {
 
     if (ability.timing) recordUsage(timingsUsage, ability.timing, occ);
     if (ability.trigger) recordUsage(triggersUsage, ability.trigger, occ);
+    if (ability.limit) recordUsage(limitsUsage, ability.limit, occ);
+    if (ability.zone) recordUsage(zonesUsage, ability.zone, occ);
+
+    if (ability.triggerFilter) {
+      for (const [tfKey, tfVal] of Object.entries(ability.triggerFilter)) {
+        recordUsage(triggerFiltersUsage, tfKey, occ);
+        if (tfKey === 'attackerCardFilter') {
+          extractUniversalFilter(tfVal, occ);
+        }
+      }
+    }
 
     if (ability.cost) {
-      for (const costKey of Object.keys(ability.cost)) {
+      for (const [costKey, costVal] of Object.entries(ability.cost)) {
         recordUsage(costsUsage, costKey, occ);
+        if (costKey === 'discardCard' && costVal && typeof costVal === 'object') {
+          const dcObj = costVal as Record<string, unknown>;
+          if (dcObj.filter) extractUniversalFilter(dcObj.filter, occ);
+        }
       }
     }
 
@@ -304,9 +398,60 @@ export function runDeclarationsAudit() {
 
       for (const step of ability.steps) {
         if (step.effect) recordUsage(effectsUsage, step.effect, occ);
-        if (step.params) {
-          if (step.params.target) recordUsage(targetsUsage, String(step.params.target), occ);
-          if (step.params.scaling) recordUsage(scalingUsage, String(step.params.scaling), occ);
+
+        // Target Selectors (step root, effectParams, or legacy params)
+        const target =
+          step.target ||
+          (step.effectParams && typeof step.effectParams.target === 'string'
+            ? step.effectParams.target
+            : undefined) ||
+          (step.params && typeof step.params.target === 'string' ? step.params.target : undefined);
+
+        if (target) {
+          recordUsage(targetsUsage, target, occ);
+        }
+
+        if (step.distinctFrom) {
+          recordUsage(distinctFromUsage, step.distinctFrom, occ);
+        }
+
+        // Gates & Step Conditions
+        if (step.gate) recordUsage(gatesUsage, step.gate, occ);
+        if (step.condition) recordUsage(stepConditionsUsage, step.condition, occ);
+
+        if (step.gateParams && typeof step.gateParams === 'object') {
+          for (const gpKey of Object.keys(step.gateParams)) {
+            recordUsage(gateParamsUsage, gpKey, occ);
+          }
+        }
+
+        // Effect Params
+        const paramsObj = step.effectParams || step.params;
+        if (paramsObj && typeof paramsObj === 'object') {
+          for (const [epKey, epVal] of Object.entries(paramsObj)) {
+            recordUsage(effectParamsUsage, epKey, occ);
+
+            // Check for dynamic values
+            extractDynamicValue(epVal, occ);
+            if (
+              epKey === 'amount' ||
+              epKey === 'count' ||
+              epKey === 'takeCount' ||
+              epKey === 'lookCount'
+            ) {
+              extractDynamicValue(epVal, occ);
+            }
+
+            // Check for filters inside effect params
+            if (epKey === 'filter' || epKey === 'cardFilter' || epKey === 'untilFilter') {
+              extractUniversalFilter(epVal, occ);
+            }
+          }
+        }
+
+        // Filter on step root
+        if (step.filter) {
+          extractUniversalFilter(step.filter, occ);
         }
       }
     }
@@ -319,9 +464,50 @@ export function runDeclarationsAudit() {
       const cardName = upstream
         ? `${upstream.name} (${upstream.type_code})`
         : `Unknown Card #${code}`;
+      const cardOcc: UsageOccurrence = { code, cardName, pack: packName, abilityId: 'card_root' };
+
+      // Card-level features
+      if (entry.playRequirements) {
+        for (const [prKey, prVal] of Object.entries(entry.playRequirements)) {
+          recordUsage(playReqsUsage, prKey, cardOcc);
+          if (prKey === 'controlFilter') {
+            extractUniversalFilter(prVal, cardOcc);
+          }
+        }
+      }
+
+      if (entry.uses) {
+        const usesType = entry.uses.counterType
+          ? `uses (${entry.uses.counterType})`
+          : 'uses (general)';
+        recordUsage(usesUsage, usesType, cardOcc);
+      }
+
+      if (entry.keywords && Array.isArray(entry.keywords)) {
+        for (const kw of entry.keywords) {
+          const kwStr = typeof kw === 'string' ? kw : `${kw.keyword} ${kw.amount ?? ''}`.trim();
+          recordUsage(keywordsUsage, kwStr, cardOcc);
+        }
+      }
+
+      if (entry.recipient) {
+        recordUsage(recipientsUsage, entry.recipient.type, cardOcc);
+      }
+
+      if (entry.attackCost !== undefined) recordUsage(cardOverridesUsage, 'attackCost', cardOcc);
+      if (entry.thwartCost !== undefined) recordUsage(cardOverridesUsage, 'thwartCost', cardOcc);
+      if (entry.maxPerPlayer !== undefined)
+        recordUsage(cardOverridesUsage, 'maxPerPlayer', cardOcc);
+      if (entry.restrictedSlots !== undefined)
+        recordUsage(cardOverridesUsage, 'restrictedSlots', cardOcc);
+      if (entry.additionalBoostCards !== undefined)
+        recordUsage(cardOverridesUsage, 'additionalBoostCards', cardOcc);
+      if (entry.playUnderAnyPlayerControl !== undefined)
+        recordUsage(cardOverridesUsage, 'playUnderAnyPlayerControl', cardOcc);
+      if (entry.victoryPoints !== undefined)
+        recordUsage(cardOverridesUsage, 'victoryPoints', cardOcc);
 
       if (entry.noSupplementalNeeded) {
-        // Quality Gate Check: Does this card actually have rules text?
         if (upstream && hasActiveRulesText(upstream.text)) {
           falseVanillaViolations.push({
             code,
@@ -382,6 +568,12 @@ export function runDeclarationsAudit() {
     }
   }
 
+  function formatExamples(occurrences: UsageOccurrence[], max = 3): string {
+    const uniqueCards = Array.from(new Set(occurrences.map((o) => `\`${o.code}\` ${o.cardName}`)));
+    const sample = uniqueCards.slice(0, max).join(', ');
+    return uniqueCards.length > max ? `${sample} *(+${uniqueCards.length - max} more)*` : sample;
+  }
+
   // Markdown Report Generator
   const reportLines: string[] = [];
   const timestamp = new Date().toISOString();
@@ -433,13 +625,31 @@ export function runDeclarationsAudit() {
     `| **Unique Effects In Use** | **${effectsUsage.size}** | Distinct effect primitive types actively declared |`,
   );
   reportLines.push(
+    `| **Unique Target Selectors In Use** | **${targetsUsage.size}** | Distinct target selectors actively declared |`,
+  );
+  reportLines.push(
     `| **Unique Triggers In Use** | **${triggersUsage.size}** | Distinct trigger window types actively declared |`,
   );
   reportLines.push(
     `| **Unique Timings In Use** | **${timingsUsage.size}** | Distinct timing categories actively declared |`,
   );
   reportLines.push(
+    `| **Unique Condition Gates In Use** | **${gatesUsage.size}** | Distinct condition gate types actively declared |`,
+  );
+  reportLines.push(
+    `| **Unique Step Conditions In Use** | **${stepConditionsUsage.size}** | Distinct step condition types actively declared |`,
+  );
+  reportLines.push(
     `| **Unique Cost Keys In Use** | **${costsUsage.size}** | Distinct ability cost types actively declared |`,
+  );
+  reportLines.push(
+    `| **Unique Effect Param Keys In Use** | **${effectParamsUsage.size}** | Distinct parameter keys passed into effect steps |`,
+  );
+  reportLines.push(
+    `| **Unique Dynamic Value Sources In Use** | **${dynamicValuesUsage.size}** | Distinct dynamic value resolver shapes actively declared |`,
+  );
+  reportLines.push(
+    `| **Unique Filter Criteria Keys In Use** | **${filterCriteriaUsage.size}** | Distinct UniversalCardFilter criteria properties actively declared |`,
   );
   reportLines.push(``);
 
@@ -493,12 +703,10 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(
-    `## 🟢 3. Cards Explicitly Requiring No Supplemental Data (Vanilla / Passive — ${noSupplementalCards.length} Cards)`,
-  );
+  reportLines.push(`## 🃏 3. Card-Level Declarations Inventory (\`CardEnrichmentSchema\`)`);
   reportLines.push(``);
   reportLines.push(
-    `These **${noSupplementalCards.length} cards** have been audited and explicitly verified as \`"noSupplementalNeeded": true\` (standard double resource generators, vanilla baseline minions, basic identity cards, or schemes with no custom trigger hooks):`,
+    `### 🟢 Vanilla / Passive Cards (\`"noSupplementalNeeded": true\` — ${noSupplementalCards.length} Cards)`,
   );
   reportLines.push(``);
   reportLines.push(
@@ -514,14 +722,135 @@ export function runDeclarationsAudit() {
   }
 
   reportLines.push(``);
+  reportLines.push(`### Play Requirements (\`PlayRequirementsSchema\`):`);
+  reportLines.push(`| Requirement Property | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [req, list] of Array.from(playReqsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${req}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Card Uses & Counters (\`CardUsesSchema\`):`);
+  reportLines.push(`| Uses Descriptor | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [uses, list] of Array.from(usesUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${uses}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Card Keywords (\`KeywordEntrySchema\`):`);
+  reportLines.push(`| Keyword | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [kw, list] of Array.from(keywordsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${kw}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const kw of KeywordSchema.options) {
+    if (!keywordsUsage.has(kw)) {
+      reportLines.push(`| \`${kw}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Player Recipient Overrides (\`PlayerRecipientSchema\`):`);
+  reportLines.push(`| Recipient Type | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [rec, list] of Array.from(recipientsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${rec}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Stat & Rule Overrides:`);
+  reportLines.push(`| Override Key | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [ov, list] of Array.from(cardOverridesUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${ov}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(
-    `## 📋 4. Cards with Multiple Abilities (2+ Abilities Declared — ${multiAbilityCards.length} Cards)`,
-  );
+  reportLines.push(`## ⚡ 4. Ability Headers & Trigger Windows (\`CardAbilitySchema\`)`);
+  reportLines.push(``);
+  reportLines.push(`### Ability Timings (\`TimingTypeSchema\`):`);
+  reportLines.push(`| Timing | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [timing, list] of Array.from(timingsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${timing}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const timing of TimingTypeSchema.options) {
+    if (!timingsUsage.has(timing)) {
+      reportLines.push(`| \`${timing}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Trigger Windows (\`TriggerTypeSchema\`):`);
+  reportLines.push(`| Trigger Window | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [trigger, list] of Array.from(triggersUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${trigger}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const trigger of TriggerTypeSchema.options) {
+    if (!triggersUsage.has(trigger)) {
+      reportLines.push(`| \`${trigger}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Trigger Filters (\`TriggerFilterSchema\`):`);
+  reportLines.push(`| Filter Property | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [tf, list] of Array.from(triggerFiltersUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${tf}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Cost Primitives (\`AbilityCostSchema\`):`);
+  reportLines.push(`| Cost Key | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [cost, list] of Array.from(costsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${cost}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Ability Limits & Zones:`);
+  reportLines.push(`| Limit / Zone | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [lim, list] of Array.from(limitsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| Limit: \`${lim}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+  for (const [z, list] of Array.from(zonesUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| Zone: \`${z}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
   reportLines.push(``);
   reportLines.push(
-    `These **${multiAbilityCards.length} cards** declare multiple distinct ability headers (e.g. dual Hero/Alter-Ego actions, combined Constant modifiers with triggered Actions, or multiple Response triggers):`,
+    `### 📋 Cards with Multiple Abilities (2+ Abilities Declared — ${multiAbilityCards.length} Cards)`,
   );
   reportLines.push(``);
   reportLines.push(
@@ -545,52 +874,108 @@ export function runDeclarationsAudit() {
   reportLines.push(``);
   reportLines.push(`---`);
   reportLines.push(``);
-  reportLines.push(`## 💥 5. High-Impact Primitives (Blast-Radius $\\ge 5$ Cards)`);
+  reportLines.push(`## 🎯 5. Target Selectors Inventory (\`TargetSelectorSchema\`)`);
   reportLines.push(``);
   reportLines.push(
-    `Changing these primitives will affect many cards across the entire game engine:`,
+    `This inventory tracks all target selectors declared on ability steps (\`step.target\` or \`step.effectParams.target\`):`,
   );
   reportLines.push(``);
-  reportLines.push(`| Category | Primitive Name | Card Count | Example Cards |`);
-  reportLines.push(`| :--- | :--- | :--- | :--- |`);
+  reportLines.push(`| Target Selector | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
 
-  function formatExamples(occurrences: UsageOccurrence[], max = 3): string {
-    const uniqueCards = Array.from(new Set(occurrences.map((o) => `\`${o.code}\` ${o.cardName}`)));
-    const sample = uniqueCards.slice(0, max).join(', ');
-    return uniqueCards.length > max ? `${sample} *(+${uniqueCards.length - max} more)*` : sample;
+  for (const [target, list] of Array.from(targetsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${target}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
   }
+
+  for (const target of TargetSelectorSchema.options) {
+    if (!targetsUsage.has(target)) {
+      reportLines.push(`| \`${target}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  if (distinctFromUsage.size > 0) {
+    reportLines.push(``);
+    reportLines.push(`### Target Differentiation (\`DistinctFromSchema\`):`);
+    reportLines.push(`| Distinct Mode | Occurrences | Cards |`);
+    reportLines.push(`| :--- | :--- | :--- |`);
+    for (const [df, list] of Array.from(distinctFromUsage.entries()).sort(
+      (a, b) => b[1].length - a[1].length,
+    )) {
+      reportLines.push(`| \`${df}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(
+    `## 🚦 6. Condition Gates & Step Conditions (\`ConditionGateSchema\`, \`StepConditionSchema\`)`,
+  );
+  reportLines.push(``);
+  reportLines.push(`### Condition Gates (\`ConditionGateSchema\`):`);
+  reportLines.push(`| Condition Gate | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [gate, list] of Array.from(gatesUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${gate}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const gate of ConditionGateSchema.options) {
+    if (!gatesUsage.has(gate)) {
+      reportLines.push(`| \`${gate}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Gate Parameters (\`gateParams\`):`);
+  reportLines.push(`| Parameter Key | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [gp, list] of Array.from(gateParamsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${gp}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Declarative Step Conditions (\`StepConditionSchema\`):`);
+  reportLines.push(`| Step Condition | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [cond, list] of Array.from(stepConditionsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${cond}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  for (const cond of StepConditionSchema.options) {
+    if (!stepConditionsUsage.has(cond)) {
+      reportLines.push(`| \`${cond}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+    }
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(`## 💥 7. Effect Primitives Inventory (\`EffectTypeSchema\`)`);
+  reportLines.push(``);
+  reportLines.push(`### High-Impact Effects (Blast-Radius $\\ge 5$ Cards):`);
+  reportLines.push(`| Effect Primitive | Card Count | Example Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
 
   const highImpactEffects = Array.from(effectsUsage.entries())
     .filter(([_, list]) => list.length >= 5)
     .sort((a, b) => b[1].length - a[1].length);
 
   for (const [effect, list] of highImpactEffects) {
-    reportLines.push(
-      `| **Effect** | \`${effect}\` | **${list.length}** | ${formatExamples(list)} |`,
-    );
-  }
-
-  const highImpactTriggers = Array.from(triggersUsage.entries())
-    .filter(([_, list]) => list.length >= 5)
-    .sort((a, b) => b[1].length - a[1].length);
-
-  for (const [trigger, list] of highImpactTriggers) {
-    reportLines.push(
-      `| **Trigger** | \`${trigger}\` | **${list.length}** | ${formatExamples(list)} |`,
-    );
+    reportLines.push(`| \`${effect}\` | **${list.length}** | ${formatExamples(list, 3)} |`);
   }
 
   reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 🔍 6. Single-Use & Unique Primitives (Card Count = 1)`);
-  reportLines.push(``);
-  reportLines.push(
-    `These primitives are only declared on a single card. They represent high specialization and are prime candidates for decomposition into composable generic primitives:`,
-  );
-  reportLines.push(``);
-  reportLines.push(`| Category | Primitive Name | Card Code | Card Name & Pack | Ability ID |`);
-  reportLines.push(`| :--- | :--- | :--- | :--- | :--- |`);
+  reportLines.push(`### Single-Use Effects (Card Count = 1):`);
+  reportLines.push(`| Effect Primitive | Card Code | Card Name & Pack | Ability ID |`);
+  reportLines.push(`| :--- | :--- | :--- | :--- |`);
 
   const singleUseEffects = Array.from(effectsUsage.entries())
     .filter(([_, list]) => list.length === 1)
@@ -599,56 +984,12 @@ export function runDeclarationsAudit() {
   for (const [effect, list] of singleUseEffects) {
     const item = list[0];
     reportLines.push(
-      `| **Effect** | \`${effect}\` | \`${item.code}\` | ${item.cardName} (${item.pack}) | \`${item.abilityId}\` |`,
-    );
-  }
-
-  const singleUseTriggers = Array.from(triggersUsage.entries())
-    .filter(([_, list]) => list.length === 1)
-    .sort((a, b) => a[0].localeCompare(b[0]));
-
-  for (const [trigger, list] of singleUseTriggers) {
-    const item = list[0];
-    reportLines.push(
-      `| **Trigger** | \`${trigger}\` | \`${item.code}\` | ${item.cardName} (${item.pack}) | \`${item.abilityId}\` |`,
+      `| \`${effect}\` | \`${item.code}\` | ${item.cardName} (${item.pack}) | \`${item.abilityId}\` |`,
     );
   }
 
   reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(
-    `## ⚠️ 7. Zero-Usage / Unused Primitives (In Specifications but 0 Card Declarations)`,
-  );
-  reportLines.push(``);
-  reportLines.push(
-    `These primitives are declared in schema types or specifications but have **0 active card declarations** in supplemental data packs:`,
-  );
-  reportLines.push(``);
-  reportLines.push(`| Category | Specified Primitive | Status | Notes |`);
-  reportLines.push(`| :--- | :--- | :--- | :--- |`);
-
-  for (const specEffect of Array.from(specifiedEffects).sort()) {
-    if (!effectsUsage.has(specEffect)) {
-      reportLines.push(
-        `| **Effect** | \`${specEffect}\` | 🟡 \`0 Cards\` | Documented in \`docs/specifications/supplemental/\` but has 0 card declarations. |`,
-      );
-    }
-  }
-
-  for (const specTrigger of Array.from(specifiedTriggers).sort()) {
-    if (!triggersUsage.has(specTrigger)) {
-      reportLines.push(
-        `| **Trigger** | \`${specTrigger}\` | 🟡 \`0 Cards\` | Defined in \`TriggerTypeSchema\` but has 0 card declarations. |`,
-      );
-    }
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 📑 8. Complete Effects Inventory`);
-  reportLines.push(``);
+  reportLines.push(`### Complete Effects Inventory:`);
   reportLines.push(`| Effect Primitive | Occurrences | Declaring Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
 
@@ -660,60 +1001,132 @@ export function runDeclarationsAudit() {
     reportLines.push(`| \`${effect}\` | **${list.length}** | ${cards} |`);
   }
 
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## ⏱️ 9. Complete Triggers Inventory`);
-  reportLines.push(``);
-  reportLines.push(`| Trigger Window | Occurrences | Declaring Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-
-  const allTriggersSorted = Array.from(triggersUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  );
-  for (const [trigger, list] of allTriggersSorted) {
-    const cards = Array.from(new Set(list.map((o) => `\`${o.code}\` (${o.cardName})`))).join(', ');
-    reportLines.push(`| \`${trigger}\` | **${list.length}** | ${cards} |`);
-  }
-
-  reportLines.push(``);
-  reportLines.push(`---`);
-  reportLines.push(``);
-  reportLines.push(`## 🎯 10. Timings, Costs & Target Selectors Inventory`);
-  reportLines.push(``);
-  reportLines.push(`### Ability Timings:`);
-  reportLines.push(`| Timing | Occurrences | Cards |`);
-  reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [timing, list] of Array.from(timingsUsage.entries()).sort(
-    (a, b) => b[1].length - a[1].length,
-  )) {
-    reportLines.push(`| \`${timing}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
-  }
-
-  for (const timing of TimingTypeSchema.options) {
-    if (!timingsUsage.has(timing)) {
-      reportLines.push(`| \`${timing}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
+  for (const eff of EffectTypeSchema.options) {
+    if (!effectsUsage.has(eff)) {
+      reportLines.push(`| \`${eff}\` | 🟡 **0** | *Unused in supplemental declarations* |`);
     }
   }
 
   reportLines.push(``);
-  reportLines.push(`### Cost Primitives:`);
-  reportLines.push(`| Cost Key | Occurrences | Cards |`);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(
+    `## 🔧 8. Effect Parameters & Dynamic Values (\`effectParams\`, \`DynamicValueSourceSchema\`)`,
+  );
+  reportLines.push(``);
+  reportLines.push(`### Effect Parameter Keys (\`effectParams\`):`);
+  reportLines.push(`| Parameter Key | Occurrences | Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [cost, list] of Array.from(costsUsage.entries()).sort(
+  for (const [ep, list] of Array.from(effectParamsUsage.entries()).sort(
     (a, b) => b[1].length - a[1].length,
   )) {
-    reportLines.push(`| \`${cost}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+    reportLines.push(`| \`${ep}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
   }
 
   reportLines.push(``);
-  reportLines.push(`### Target Selectors:`);
-  reportLines.push(`| Target Selector | Occurrences | Cards |`);
+  reportLines.push(`### Dynamic Value Sources (\`DynamicValueSourceSchema\`):`);
+  reportLines.push(`| Dynamic Value Resolver | Occurrences | Cards |`);
   reportLines.push(`| :--- | :--- | :--- |`);
-  for (const [target, list] of Array.from(targetsUsage.entries()).sort(
+  for (const [dv, list] of Array.from(dynamicValuesUsage.entries()).sort(
     (a, b) => b[1].length - a[1].length,
   )) {
-    reportLines.push(`| \`${target}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+    reportLines.push(`| \`${dv}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(
+    `## 🔍 9. Universal Card Filters & Compositions (\`UniversalCardFilterSchema\`)`,
+  );
+  reportLines.push(``);
+  reportLines.push(`### Filter Predicate Criteria:`);
+  reportLines.push(`| Filter Criterion Key | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [fc, list] of Array.from(filterCriteriaUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(`| \`${fc}\` | **${list.length}** | ${formatExamples(list, 5)} |`);
+  }
+
+  reportLines.push(``);
+  reportLines.push(`### Filter Logical Compositions:`);
+  reportLines.push(`| Composition Branch | Occurrences | Cards |`);
+  reportLines.push(`| :--- | :--- | :--- |`);
+  for (const [comp, list] of Array.from(filterCompositionsUsage.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  )) {
+    reportLines.push(
+      `| \`${comp}\` (combinator) | **${list.length}** | ${formatExamples(list, 5)} |`,
+    );
+  }
+
+  reportLines.push(``);
+  reportLines.push(`---`);
+  reportLines.push(``);
+  reportLines.push(`## ⚠️ 10. Global Zero-Usage & Schema Gap Detection`);
+  reportLines.push(``);
+  reportLines.push(
+    `The following schema enums are defined in \`src/data/supplemental/schema.ts\` but currently have **0 card declarations** across the active supplemental data packs:`,
+  );
+  reportLines.push(``);
+  reportLines.push(`| Schema / Enum | Unused Enum Value | Status | Notes |`);
+  reportLines.push(`| :--- | :--- | :--- | :--- |`);
+
+  for (const eff of EffectTypeSchema.options) {
+    if (!effectsUsage.has(eff)) {
+      reportLines.push(
+        `| \`EffectTypeSchema\` | \`${eff}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this effect. |`,
+      );
+    }
+  }
+
+  for (const tr of TriggerTypeSchema.options) {
+    if (!triggersUsage.has(tr)) {
+      reportLines.push(
+        `| \`TriggerTypeSchema\` | \`${tr}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this trigger window. |`,
+      );
+    }
+  }
+
+  for (const tm of TimingTypeSchema.options) {
+    if (!timingsUsage.has(tm)) {
+      reportLines.push(
+        `| \`TimingTypeSchema\` | \`${tm}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this timing category. |`,
+      );
+    }
+  }
+
+  for (const ts of TargetSelectorSchema.options) {
+    if (!targetsUsage.has(ts)) {
+      reportLines.push(
+        `| \`TargetSelectorSchema\` | \`${ts}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this target selector. |`,
+      );
+    }
+  }
+
+  for (const cg of ConditionGateSchema.options) {
+    if (!gatesUsage.has(cg)) {
+      reportLines.push(
+        `| \`ConditionGateSchema\` | \`${cg}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this condition gate. |`,
+      );
+    }
+  }
+
+  for (const sc of StepConditionSchema.options) {
+    if (!stepConditionsUsage.has(sc)) {
+      reportLines.push(
+        `| \`StepConditionSchema\` | \`${sc}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this step condition. |`,
+      );
+    }
+  }
+
+  for (const kw of KeywordSchema.options) {
+    if (!keywordsUsage.has(kw)) {
+      reportLines.push(
+        `| \`KeywordSchema\` | \`${kw}\` | 🟡 \`0 Cards\` | Defined in schema; no card currently declares this keyword directly in supplemental data. |`,
+      );
+    }
   }
 
   // Ensure docs/reports directory exists
@@ -738,9 +1151,14 @@ export function runDeclarationsAudit() {
   console.log(`Cards with Multi-Step:      ${totalCardsWithMultiStep}`);
   console.log(`Cards with 2+ Abilities:    ${multiAbilityCards.length}`);
   console.log(`Unique Effect Types:        ${effectsUsage.size}`);
+  console.log(`Unique Target Selectors:    ${targetsUsage.size}`);
   console.log(`Unique Trigger Types:       ${triggersUsage.size}`);
-  console.log(`High-Impact Effects (>=5):  ${highImpactEffects.length}`);
-  console.log(`Single-Use Effects (=1):    ${singleUseEffects.length}`);
+  console.log(`Unique Timing Types:        ${timingsUsage.size}`);
+  console.log(`Unique Condition Gates:     ${gatesUsage.size}`);
+  console.log(`Unique Step Conditions:     ${stepConditionsUsage.size}`);
+  console.log(`Unique Effect Param Keys:   ${effectParamsUsage.size}`);
+  console.log(`Unique Dynamic Values:      ${dynamicValuesUsage.size}`);
+  console.log(`Unique Filter Criteria:     ${filterCriteriaUsage.size}`);
   console.log(`Report Written To:          ${OUTPUT_REPORT_PATH}`);
   console.log(`========================================================\n`);
 }

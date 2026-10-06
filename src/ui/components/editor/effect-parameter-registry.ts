@@ -135,6 +135,22 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         allowDynamic: true,
         description: 'Dynamic bonus calculated from game state or discarded cards',
       },
+      {
+        key: 'kickerResource',
+        label: 'Kicker Resource',
+        type: 'text',
+        description: 'Resource type that triggers a kicker bonus',
+      },
+      {
+        key: 'overkillOnCondition',
+        label: 'Overkill On Condition',
+        type: 'boolean',
+      },
+      {
+        key: 'overkillOnPhysical',
+        label: 'Overkill On Physical',
+        type: 'boolean',
+      },
     ],
   },
   DISTRIBUTE_AMOUNT: {
@@ -296,6 +312,24 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         allowDynamic: true,
         description: 'Dynamic bonus calculated from game state or discarded cards',
       },
+      {
+        key: 'distinctFrom',
+        label: 'Distinct From',
+        type: 'text',
+        description: 'Use PREVIOUS_TARGET to pick a different scheme than the prior step',
+      },
+      {
+        key: 'scaling',
+        label: 'Scaling',
+        type: 'text',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
+      {
+        key: 'multiplier',
+        label: 'Multiplier',
+        type: 'number',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
     ],
   },
   ADD_THREAT: {
@@ -321,6 +355,16 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'MAIN_SCHEME',
+      },
+      {
+        key: 'cardCode',
+        label: 'Card Code',
+        type: 'text',
+      },
+      {
+        key: 'condition',
+        label: 'Condition',
+        type: 'json',
       },
     ],
   },
@@ -403,6 +447,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         placeholder: '1',
         description: 'Number of resources to generate',
       },
+      {
+        key: 'fromCard',
+        label: 'From Card',
+        type: 'json',
+        description: 'Card selector whose resources are generated',
+      },
     ],
   },
   DOUBLE_RESOURCE_FOR_ASPECT: {
@@ -455,6 +505,18 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'select',
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
+      },
+      {
+        key: 'scaling',
+        label: 'Scaling',
+        type: 'text',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
+      {
+        key: 'multiplier',
+        label: 'Multiplier',
+        type: 'number',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
       },
     ],
   },
@@ -622,6 +684,24 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         placeholder: 'e.g. 1',
         description: 'Shorthand: THW bonus for every character of the target player',
       },
+      {
+        key: 'maxBonus',
+        label: 'Max Bonus',
+        type: 'number',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
+      {
+        key: 'scaling',
+        label: 'Scaling',
+        type: 'text',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
+      {
+        key: 'multiplier',
+        label: 'Multiplier',
+        type: 'number',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
     ],
   },
   ADD_TRAIT: {
@@ -711,6 +791,16 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         allowDynamic: true,
         placeholder: '1',
+      },
+      {
+        key: 'applicableForm',
+        label: 'Applicable Form',
+        type: 'text',
+      },
+      {
+        key: 'maxHandSize',
+        label: 'Max Hand Size',
+        type: 'number',
       },
     ],
   },
@@ -904,7 +994,14 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     effect: 'REMOVE_FROM_GAME',
     description:
       'Remove the source card from the game (it ends only in the removed-from-game zone).',
-    parameters: [],
+    parameters: [
+      {
+        key: 'target',
+        label: 'Target',
+        type: 'text',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
+    ],
   },
   PLACE_CARD_UNDER_HOST: {
     effect: 'PLACE_CARD_UNDER_HOST',
@@ -940,6 +1037,12 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         options: TARGET_OPTIONS,
         defaultValue: 'VILLAIN',
       },
+      {
+        key: 'mode',
+        label: 'Mode',
+        type: 'text',
+        description: 'Pseudo-primitive key kept for existing card data (#231 / #232)',
+      },
     ],
   },
 
@@ -947,7 +1050,18 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   CHANGE_FORM: {
     effect: 'CHANGE_FORM',
     description: 'Flip between Hero and Alter-Ego identity forms (RR v1.8 p. 8).',
-    parameters: [],
+    parameters: [
+      {
+        key: 'form',
+        label: 'Form',
+        type: 'text',
+      },
+      {
+        key: 'optional',
+        label: 'Optional',
+        type: 'boolean',
+      },
+    ],
   },
   FLIP_FORM: {
     effect: 'FLIP_FORM',
@@ -1124,6 +1238,11 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         label: 'Card Count',
         type: 'number',
         placeholder: 'e.g. 3',
+      },
+      {
+        key: 'filter',
+        label: 'Card Filter',
+        type: 'json',
       },
     ],
   },

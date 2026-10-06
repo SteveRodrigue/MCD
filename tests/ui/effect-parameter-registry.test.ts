@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EffectTypeSchema } from '../../src/data/supplemental/schema';
+import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
 import {
   EFFECT_PARAMETER_REGISTRY,
   TARGET_OPTIONS,
@@ -17,6 +18,15 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
       expect(descriptor.effect).toBe(effect);
       expect(typeof descriptor.description).toBe('string');
       expect(Array.isArray(descriptor.parameters)).toBe(true);
+    }
+  });
+
+  it('registry keys equal the allowed effectParams key table for every effect (#230)', () => {
+    for (const effect of EffectTypeSchema.options) {
+      const registryKeys = EFFECT_PARAMETER_REGISTRY[effect].parameters.map((p) => p.key).sort();
+      expect(registryKeys, `Registry/table drift for ${effect}`).toEqual(
+        [...EFFECT_PARAM_KEYS[effect]].sort(),
+      );
     }
   });
 
@@ -146,7 +156,7 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
   it('MODIFY_HAND_SIZE takes a dynamic amount and no longer lists the PER_MATCHING_CARD pseudo-primitive', () => {
     const desc = getEffectDescriptor('MODIFY_HAND_SIZE');
     const keys = desc.parameters.map((p) => p.key);
-    expect(keys).toEqual(['amount']);
+    expect(keys).toEqual(['amount', 'applicableForm', 'maxHandSize']);
     expect(desc.parameters[0].allowDynamic).toBe(true);
   });
 

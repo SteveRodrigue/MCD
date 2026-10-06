@@ -234,7 +234,7 @@ describe('StepPipelineEditor', () => {
         onChange={vi.fn()}
       />,
     );
-    expect(screen.getByTestId('step-param-discardWhenEmpty-0-0')).toBeDefined();
+    expect(screen.getByTestId('step-param-counterType-0-0')).toBeDefined();
 
     // REMOVE_COUNTERS_MATCHING_FILTER
     rerender(
@@ -250,7 +250,7 @@ describe('StepPipelineEditor', () => {
     // GENERATE_RESOURCE
     rerender(
       <StepPipelineEditor
-        steps={[{ effect: 'GENERATE_RESOURCE', effectParams: { sourceMode: 'STATIC' } }]}
+        steps={[{ effect: 'GENERATE_RESOURCE', effectParams: {} }]}
         abilityIndex={0}
         onChange={vi.fn()}
       />,

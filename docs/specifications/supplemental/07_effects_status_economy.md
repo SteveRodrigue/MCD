@@ -235,8 +235,7 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   "effectParams": {
     "counterType": "web",
     "amount": 1,
-    "target": "SELF",
-    "discardWhenEmpty": true
+    "target": "SELF"
   }
 }
 ```

@@ -156,7 +156,7 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
   it('MODIFY_HAND_SIZE takes a dynamic amount and no longer lists the PER_MATCHING_CARD pseudo-primitive', () => {
     const desc = getEffectDescriptor('MODIFY_HAND_SIZE');
     const keys = desc.parameters.map((p) => p.key);
-    expect(keys).toEqual(['amount', 'applicableForm', 'maxHandSize']);
+    expect(keys).toEqual(['amount']);
     expect(desc.parameters[0].allowDynamic).toBe(true);
   });
 
@@ -309,7 +309,7 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(TARGET_OPTIONS).not.toContain('ACTIVE_IDENTITY');
   });
 
-  it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain, targetScope, capRule, and allowPartialIfCapacityLow', () => {
+  it('DISTRIBUTE_AMOUNT exposes budget, allocationDomain, targetScope, and capRule', () => {
     const desc = getEffectDescriptor('DISTRIBUTE_AMOUNT');
     expect(desc.effect).toBe('DISTRIBUTE_AMOUNT');
     expect(desc.description).toContain('Distribute a pool of damage');
@@ -319,7 +319,6 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(paramKeys).toContain('allocationDomain');
     expect(paramKeys).toContain('targetScope');
     expect(paramKeys).toContain('capRule');
-    expect(paramKeys).toContain('allowPartialIfCapacityLow');
 
     const budgetParam = desc.parameters.find((p) => p.key === 'budget');
     expect(budgetParam?.type).toBe('number');

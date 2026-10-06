@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import type { ZodType } from 'zod';
 import { SupplementalPackSchema } from '../../src/data/supplemental/schema';
+import { EFFECT_PARAM_KEYS } from '../../src/data/supplemental/effect-params';
 
 export type MemberKind = 'field' | 'enum';
 
@@ -134,6 +135,13 @@ export function inventorySchemaMembers(root: ZodType = SupplementalPackSchema): 
 
   walk(root, '', 0);
   return [...members.values()];
+}
+
+/** Every allowed `effectParams` key of every effect (`effectParams.<EFFECT>.<key>`). */
+export function inventoryEffectParamMembers(): SchemaMember[] {
+  return Object.entries(EFFECT_PARAM_KEYS).flatMap(([effect, keys]) =>
+    keys.map((key) => ({ id: `effectParams.${effect}.${key}`, kind: 'field' as const, name: key })),
+  );
 }
 
 function readTree(dir: string, skip: (file: string) => boolean): string {

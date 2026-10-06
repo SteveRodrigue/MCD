@@ -95,30 +95,8 @@ import {
 } from '../effects/target-resolver';
 import { getStepEffectParams } from '../../data/supplemental/schema';
 import { isStepGateClosedByState } from './step-gate-evaluator';
-import { applyDamageToTarget } from './damage-pipeline';
+import { applyDamageToTarget, dispatchDefeat } from './damage-pipeline';
 import { applyThwart, applyThreatPlacement } from './threat-pipeline';
-
-function dispatchCanonicalDefeatTriggers(
-  state: GameState,
-  targetPlayerId: string,
-  sourceInstanceId: string,
-  entityType: 'CHARACTER' | 'SCHEME',
-  targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'SCHEME',
-): void {
-  const context = {
-    targetPlayerId,
-    sourceInstanceId,
-    targetInstanceId: sourceInstanceId,
-    entityType,
-    targetType,
-  };
-  dispatchTrigger(state, 'DEFEATED', context);
-  if (entityType === 'CHARACTER') {
-    dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
-  } else {
-    dispatchTrigger(state, 'SCHEME_DEFEATED', context);
-  }
-}
 
 /**
  * Universal Card Routing Helper for Search, Scry, Look and Mulligan Primitives (RR v1.8 p. 19, 26).
@@ -657,7 +635,12 @@ function dispatchSingleAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
-        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER', 'ALLY');
+        dispatchDefeat(nextState, {
+          targetPlayerId: player.id,
+          targetInstanceId: ally.instanceId,
+          targetType: 'ALLY',
+          defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
+        });
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         resetCardState(ally);
         owner.discard.push(ally);
@@ -726,7 +709,12 @@ function dispatchSingleAction(
       if ((ally.tokens?.damage || 0) >= allyHp) {
         player.allies.splice(allyIdx, 1);
         processHostDefeated(nextState, ally, { player });
-        dispatchCanonicalDefeatTriggers(nextState, player.id, ally.instanceId, 'CHARACTER', 'ALLY');
+        dispatchDefeat(nextState, {
+          targetPlayerId: player.id,
+          targetInstanceId: ally.instanceId,
+          targetType: 'ALLY',
+          defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
+        });
         const owner = (ally.ownerId ? getPlayer(nextState, ally.ownerId) : undefined) || player;
         resetCardState(ally);
         owner.discard.push(ally);
@@ -2256,13 +2244,12 @@ function dispatchSingleAction(
                   const idx = allyController.allies.indexOf(ally);
                   allyController.allies.splice(idx, 1);
                   processHostDefeated(poppedState, ally, { player: allyController });
-                  dispatchCanonicalDefeatTriggers(
-                    poppedState,
-                    allyController.id,
-                    ally.instanceId,
-                    'CHARACTER',
-                    'ALLY',
-                  );
+                  dispatchDefeat(poppedState, {
+                    targetPlayerId: allyController.id,
+                    targetInstanceId: ally.instanceId,
+                    targetType: 'ALLY',
+                    defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
+                  });
                   const owner =
                     (ally.ownerId
                       ? poppedState.players.find((pl) => pl.id === ally.ownerId)
@@ -2321,13 +2308,12 @@ function dispatchSingleAction(
                         processHostDefeated(poppedState, minion, { player: p });
                         p.engagedMinions.splice(mIdx, 1);
                         moveDefeatedCardToPile(poppedState, minion, poppedState.encounterDiscard);
-                        dispatchCanonicalDefeatTriggers(
-                          poppedState,
-                          player.id,
-                          minion.instanceId,
-                          'CHARACTER',
-                          'MINION',
-                        );
+                        dispatchDefeat(poppedState, {
+                          targetPlayerId: player.id,
+                          targetInstanceId: minion.instanceId,
+                          targetType: 'MINION',
+                          defeatSource: { kind: 'EFFECT', playerId: player.id, byAttack: false },
+                        });
                       } else {
                         minion.tokens = { ...minion.tokens, damage: newDmg };
                       }

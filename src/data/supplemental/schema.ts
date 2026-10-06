@@ -388,7 +388,8 @@ export const TriggerFilterSchema = z
     targetPlayerScope: z.enum(['SELF', 'OTHER', 'ANY']).optional(),
     targetScope: z.enum(['HOST', 'SELF', 'OTHER', 'ANY']).optional(),
     targetForm: z.enum(['HERO', 'ALTER_EGO']).optional(),
-    targetType: z.enum(['VILLAIN', 'MINION', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
+    targetType: z.enum(['VILLAIN', 'MINION', 'ENEMY', 'SCHEME', 'CHARACTER', 'ALLY']).optional(),
+    defeatedByAttackOf: z.enum(['YOUR_HERO', 'THIS_CARD']).optional(),
     isEngaged: z.boolean().optional(),
     defenderType: z.enum(['HERO', 'ALLY']).optional(),
     threatSource: z
@@ -836,6 +837,13 @@ export interface CardAbility {
 }
 
 /**
+ * Printed ability labels: "(attack)", "(thwart)", "(defense)" (RR v1.8 glossary L). Only `ATTACK`
+ * is read by the engine (#247, ADR-0078); `THWART` and `DEFENSE` are declared, not yet read.
+ */
+export const AbilityLabelSchema = z.enum(['ATTACK', 'THWART', 'DEFENSE']);
+export type AbilityLabel = z.infer<typeof AbilityLabelSchema>;
+
+/**
  * Card Ability Schema
  */
 export const CardAbilitySchema: z.ZodType<CardAbility> = z
@@ -847,6 +855,7 @@ export const CardAbilitySchema: z.ZodType<CardAbility> = z
     zone: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
     cost: AbilityCostSchema.optional(),
     limit: z.enum(['ONCE_PER_ROUND', 'ONCE_PER_PHASE']).optional(),
+    labels: z.array(AbilityLabelSchema).min(1).optional(),
     errata: z.string().nullable().optional(),
     steps: z.array(AbilityStepSchema).min(1),
   })

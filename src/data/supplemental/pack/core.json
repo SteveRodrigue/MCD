@@ -158,6 +158,9 @@
         {
           "id": "swinging_web_kick",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -171,7 +174,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -477,6 +480,9 @@
         {
           "id": "photonic_blast",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "id": "photonic_blast_damage",
@@ -503,7 +509,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-02T22:50:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-10-02T22:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -683,6 +689,9 @@
           "cost": {
             "discardSelf": true
           },
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -703,7 +712,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -796,6 +805,9 @@
         {
           "id": "gamma_slam_action",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -815,7 +827,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1156,6 +1168,9 @@
         {
           "id": "repulsor_blast",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DISCARD",
@@ -1182,7 +1197,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1195,6 +1210,9 @@
         {
           "id": "supersonic_punch",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -1217,7 +1235,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T20:25:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-16T20:25:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1407,6 +1425,9 @@
           "cost": {
             "exhaustSelf": true
           },
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -1429,7 +1450,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-19T15:53:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-19T15:53:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1823,6 +1844,9 @@
         {
           "id": "panther_claws_special",
           "timing": "SPECIAL",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -1837,7 +1861,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1877,6 +1901,9 @@
         {
           "id": "vibranium_suit_special",
           "timing": "SPECIAL",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "TRANSFER_DAMAGE",
@@ -1892,7 +1919,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -1973,7 +2000,8 @@
           "timing": "RESPONSE",
           "trigger": "CHARACTER_DEFEATED",
           "triggerFilter": {
-            "targetType": "MINION"
+            "targetType": "MINION",
+            "defeatedByAttackOf": "THIS_CARD"
           },
           "steps": [
             {
@@ -1988,7 +2016,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -2002,8 +2030,13 @@
           "id": "chase_them_down",
           "timing": "RESPONSE",
           "trigger": "DEFEATED",
+          "zone": "HAND",
+          "cost": {
+            "discardSelf": true
+          },
           "triggerFilter": {
-            "targetType": "MINION"
+            "targetType": "ENEMY",
+            "defeatedByAttackOf": "YOUR_HERO"
           },
           "steps": [
             {
@@ -2018,7 +2051,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -2031,6 +2064,9 @@
         {
           "id": "relentless_assault",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -2048,7 +2084,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-19T20:50:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-19T20:50:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -2061,6 +2097,9 @@
         {
           "id": "uppercut",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -2074,7 +2113,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -2804,6 +2843,9 @@
           "cost": {
             "discardSelf": true
           },
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -2820,7 +2862,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-10-04T16:40",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-10-04T16:40",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",
@@ -3147,6 +3189,9 @@
         {
           "id": "haymaker",
           "timing": "HERO_ACTION",
+          "labels": [
+            "ATTACK"
+          ],
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
@@ -3160,7 +3205,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-14T18:37:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-14T18:37:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

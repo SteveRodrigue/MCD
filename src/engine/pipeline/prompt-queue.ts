@@ -625,6 +625,10 @@ export function resolveDecisionPrompt(
   const syntheticAbility: CardAbility = {
     id: `${prompt.promptId}_${selectedOption!.id}`,
     timing: 'ACTION',
+    // A target chosen for a labelled ability keeps the ability's labels (#247)
+    ...(Array.isArray(selectedOption?.params?.labels)
+      ? { labels: selectedOption.params.labels as NonNullable<CardAbility['labels']> }
+      : {}),
     steps:
       (selectedOption as any)?.steps && Array.isArray((selectedOption as any).steps)
         ? (selectedOption as any).steps

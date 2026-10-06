@@ -153,9 +153,27 @@ export const TriggerFilterSection: React.FC<TriggerFilterSectionProps> = ({
               <option value="">Any</option>
               <option value="VILLAIN">Villain</option>
               <option value="MINION">Minion</option>
+              <option value="ENEMY">Enemy (villain or minion)</option>
               <option value="SCHEME">Scheme</option>
               <option value="CHARACTER">Character</option>
               <option value="ALLY">Ally</option>
+            </select>
+          </div>
+
+          {/* defeatedByAttackOf */}
+          <div>
+            <label className="block text-[9px] uppercase font-bold text-gray-600 mb-0.5">
+              Defeated By Attack Of
+            </label>
+            <select
+              data-testid={`trigger-defeated-by-attack-of-${abilityIndex}`}
+              value={currentFilter.defeatedByAttackOf || ''}
+              onChange={(e) => handleFieldChange('defeatedByAttackOf', e.target.value || undefined)}
+              className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+            >
+              <option value="">Any</option>
+              <option value="YOUR_HERO">Your hero</option>
+              <option value="THIS_CARD">This card</option>
             </select>
           </div>
 

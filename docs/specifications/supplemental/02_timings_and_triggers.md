@@ -84,6 +84,39 @@ The event payload (`TriggerContext`) names the event's own target in `targetInst
 
 So "deal 1 damage to **an enemy**" after a thwart (Daredevil `01058`) lets the player choose (spec 03, Layer 3), and "stun **the attacked enemy**" (Superhuman Strength `01028`) uses `TRIGGERING_ENEMY`.
 
+### Defeat context: `defeatSource` (#247, ADR-0078)
+
+Every character defeat (villain, minion, ally, hero) is announced by one engine function, `dispatchDefeat` (`damage-pipeline.ts`). It dispatches `DEFEATED`, then `CHARACTER_DEFEATED`, with the same `TriggerContext`, which carries the defeat source:
+
+```ts
+defeatSource?: {
+  kind: 'HERO' | 'ALLY' | 'ENEMY' | 'EFFECT';
+  playerId?: string;   // the player whose hero, ally or effect dealt the damage
+  instanceId?: string; // the ally, enemy or effect source card
+  byAttack: boolean;   // the damage was dealt as part of an attack
+}
+```
+
+The damage pipeline fills it from the `DamageRequest`: `sourceType` `HERO` gives `HERO`, `ALLY` gives `ALLY`, `VILLAIN` and `MINION` give `ENEMY`, `CARD_EFFECT`, `RETALIATE` and `OVERKILL` give `EFFECT`; `byAttack` is the request's `isAttack`. Ability damage (`DEAL_DAMAGE`) is `EFFECT` unless the ability is labelled `ATTACK` (see below), in which case it is `HERO` with `byAttack: true`. The `TriggerFilter` field `defeatedByAttackOf` reads it (section 3).
+
+**Hand Responses to a defeat.** `dispatchDefeat` fires `DEFEATED` and `CHARACTER_DEFEATED` for one defeat, so the hand scan runs **once per defeat**, on the `DEFEATED` dispatch only (character defeats only, not scheme defeats). It matches hand abilities (`zone: "HAND"`) whose trigger is `DEFEATED` or `CHARACTER_DEFEATED`, offers **every** eligible card (copies included), player by player starting with the first player (RR v1.8 First Player). It is a Response: the event has already happened, so no window has to be closed. Each card's `triggerFilter` decides who qualifies (e.g. *Chase Them Down* `01052`: `targetType: "ENEMY"`, `defeatedByAttackOf: "YOUR_HERO"`).
+
+### Ability labels: `CardAbility.labels` (#247, ADR-0078)
+
+Cards print some abilities with a label in parentheses: "(attack)", "(thwart)", "(defense)" (RR v1.8 glossary L). A `CardAbility` declares them with `labels`:
+
+```json
+{ "id": "uppercut", "timing": "HERO_ACTION", "labels": ["ATTACK"], "steps": [ ... ] }
+```
+
+| Label     | Engine behaviour                                                                                                                                                                                                                                                                                                                                       |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ATTACK`  | The ability is an attack made by the resolving player's identity. Its `DEAL_DAMAGE` steps send `isAttack: true` and `sourceType: 'HERO'` to the damage pipeline (so Retaliate, attack-only damage shields and `defeatSource: { kind: 'HERO', byAttack: true }` apply). It is **one attack** however many damage instances it has: after the ability has fully resolved, `ATTACK_RESOLVED` is dispatched once for the first enemy it damaged (`targetPlayerId`, `targetType`, `targetInstanceId`), as for a basic attack. A target chosen from a prompt stays part of the same attack. |
+| `THWART`  | Declared for completeness. **Not yet read by the engine.**                                                                                                                                                                                                                                                                                              |
+| `DEFENSE` | Declared for completeness. **Not yet read by the engine.**                                                                                                                                                                                                                                                                                              |
+
+The 13 core cards that print "(attack)" are labelled: Swinging Web Kick `01005`, Photonic Blast `01013`, Energy Channel `01018`, Gamma Slam `01021`, Repulsor Blast `01031`, Supersonic Punch `01032`, Powered Gauntlets `01038`, Panther Claws `01047`, Vibranium Suit `01049`, Relentless Assault `01053`, Uppercut `01054`, Counter-Punch `01077`, Haymaker `01087`. `01049` damages through `TRANSFER_DAMAGE`, which also goes through the damage pipeline, so it is an attack like the others.
+
 ---
 
 ## 3. Event Trigger Filters (`TriggerFilter`)
@@ -107,7 +140,8 @@ When an ability defines `triggerFilter`, the trigger matcher (`matchesTriggerFil
 | `sourceInstanceId`   | `string`                                                                                                 | Scopes the trigger to a specific runtime card instance identity (ADR-0050).                                                                                              | ✅ Yes               |
 | `targetPlayerScope`  | `'SELF' \| 'OTHER' \| 'ANY'`                                                                             | Constrains whether the attacked/affected player is the card controller (`SELF`), another player, or any.                                                                 | ✅ Yes               |
 | `targetForm`         | `'HERO' \| 'ALTER_EGO'`                                                                                  | Restricts trigger resolution based on the target identity's form.                                                                                                        | ✅ Yes               |
-| `targetType`         | `'VILLAIN' \| 'MINION' \| 'SCHEME' \| 'CHARACTER'`                                                       | Matches the entity classification being targeted or affected.                                                                                                            | ✅ Yes               |
+| `targetType`         | `'VILLAIN' \| 'MINION' \| 'ENEMY' \| 'SCHEME' \| 'CHARACTER' \| 'ALLY'`                                         | Matches the entity classification being targeted or affected. `ENEMY` is the villain or a minion (RR v1.8 glossary E).                                                       | ✅ Yes               |
+| `defeatedByAttackOf` | `'YOUR_HERO' \| 'THIS_CARD'`                                                                                        | On `DEFEATED` / `CHARACTER_DEFEATED`, reads `context.defeatSource`. `YOUR_HERO`: `kind` is `HERO`, `byAttack`, and `playerId` is the responding player (an ally's attack does not match, RR glossary Y; e.g. *Chase Them Down* `01052`). `THIS_CARD`: `byAttack` and `instanceId` is the ability's own card (e.g. *Tigra* `01051`). | ✅ Yes               |
 | `isEngaged`          | `boolean`                                                                                                | Matches whether the target/source enemy is engaged with the triggering player.                                                                                           | ✅ Yes               |
 | `defenderType`       | `'HERO' \| 'ALLY'`                                                                                       | Matches who defended on `ATTACK_DEFENDED`: `HERO` for "your hero defends" (pair with `targetPlayerScope: 'SELF'`), `ALLY` for an ally defender.                          | ✅ Yes               |
 | `threatSource`       | `'VILLAIN_PHASE_STEP_1' \| 'VILLAIN_SCHEME' \| 'MINION_SCHEME' \| 'CARD_EFFECT' \| 'INCITE' \| 'HAZARD'` | Matches what placed the threat on `THREAT_WOULD_BE_PLACED`. Emergency `01085` uses `VILLAIN_SCHEME` ("when the villain schemes"). Absent from the context never matches. | ✅ Yes               |

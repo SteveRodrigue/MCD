@@ -7,11 +7,15 @@ import {
   MinionCard,
   AllyCard,
   CardAbility,
+  getActiveVillain,
 } from '@engine/models';
 import { getEffectiveRetaliate } from './stat-calculator';
 import { handleVillainDefeat } from './scenario-helpers';
-import { dispatchTrigger } from '../triggers/trigger-dispatcher';
+import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
+import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
+
+export type { DefeatSource };
 
 export type DamageTargetType = 'villain' | 'minion' | 'player' | 'ally';
 
@@ -35,6 +39,12 @@ export interface DamageRequest {
   hasPiercing?: boolean;
   hasOverkill?: boolean;
   skipRetaliate?: boolean;
+  /**
+   * Opens the DAMAGE_TAKEN window on a player target, after Tough and the damage shields, so an
+   * interrupt can lower the damage. Used by ability damage to a hero (identity, all heroes).
+   */
+  dispatchDamageTaken?: boolean;
+  triggerChain?: TriggerCallNode[];
 }
 
 export interface ShieldAbsorptionInfo {
@@ -52,25 +62,57 @@ export interface DamageResult {
   toughRemoved: boolean;
   absorbedByShield?: ShieldAbsorptionInfo;
   targetDefeated: boolean;
+  /** Damage beyond the target's remaining hit points when it was defeated, else 0. */
+  excessDamage: number;
   retaliateDamageDealt?: number;
   onomatopoeia?: string;
 }
 
-function dispatchCanonicalDefeat(
-  state: GameState,
-  targetPlayerId: string,
-  sourceInstanceId: string,
-  targetType: 'VILLAIN' | 'MINION' | 'ALLY' | 'PLAYER',
-): void {
+export interface DefeatDispatch {
+  targetPlayerId: string;
+  targetInstanceId: string;
+  entityType?: 'CHARACTER' | 'SCHEME';
+  targetType?: 'VILLAIN' | 'MINION' | 'ALLY' | 'PLAYER' | 'HERO' | 'SCHEME';
+  defeatSource?: DefeatSource;
+}
+
+/**
+ * The one place a defeat is announced (#247): DEFEATED, then CHARACTER_DEFEATED (or
+ * SCHEME_DEFEATED for a scheme), both carrying the defeat source when the caller knows it.
+ */
+export function dispatchDefeat(state: GameState, defeat: DefeatDispatch): void {
+  const entityType = defeat.entityType ?? 'CHARACTER';
   const context = {
-    targetPlayerId,
-    sourceInstanceId,
-    targetInstanceId: sourceInstanceId,
-    entityType: 'CHARACTER' as const,
-    targetType,
+    targetPlayerId: defeat.targetPlayerId,
+    sourceInstanceId: defeat.targetInstanceId,
+    targetInstanceId: defeat.targetInstanceId,
+    entityType,
+    targetType: defeat.targetType,
+    ...(defeat.defeatSource ? { defeatSource: defeat.defeatSource } : {}),
   };
   dispatchTrigger(state, 'DEFEATED', context);
-  dispatchTrigger(state, 'CHARACTER_DEFEATED', context);
+  dispatchTrigger(
+    state,
+    entityType === 'CHARACTER' ? 'CHARACTER_DEFEATED' : 'SCHEME_DEFEATED',
+    context,
+  );
+}
+
+function defeatSourceOf(request: DamageRequest): DefeatSource {
+  const kind: DefeatSource['kind'] =
+    request.sourceType === 'HERO'
+      ? 'HERO'
+      : request.sourceType === 'ALLY'
+        ? 'ALLY'
+        : request.sourceType === 'VILLAIN' || request.sourceType === 'MINION'
+          ? 'ENEMY'
+          : 'EFFECT';
+  return {
+    kind,
+    ...(request.sourcePlayerId ? { playerId: request.sourcePlayerId } : {}),
+    ...(request.sourceCardInstance ? { instanceId: request.sourceCardInstance.instanceId } : {}),
+    byAttack: Boolean(request.isAttack),
+  };
 }
 
 /**
@@ -178,6 +220,7 @@ export function applyDamageToTarget(
   request: DamageRequest,
 ): { state: GameState; result: DamageResult } {
   const { target, amount, isAttack, hasPiercing, skipRetaliate, sourcePlayerId } = request;
+  const defeatSource = defeatSourceOf(request);
 
   let currentDamage = amount;
   let toughRemoved = false;
@@ -253,8 +296,19 @@ export function applyDamageToTarget(
     }
   }
 
+  if (request.dispatchDamageTaken && target.type === 'player' && currentDamage > 0) {
+    const interrupted = dispatchTrigger(state, 'DAMAGE_TAKEN', {
+      targetPlayerId: (target.entity as PlayerState).id,
+      targetType: 'player',
+      damageAmount: currentDamage,
+      triggerChain: request.triggerChain,
+    });
+    currentDamage = interrupted.damageAmount ?? currentDamage;
+  }
+
   const damageTaken = currentDamage;
   let targetDefeated = false;
+  let excessDamage = 0;
 
   // ---------------------------------------------------------------------------
   // STEP 5: Placing of damage on character (RR v1.8 Step 5)
@@ -264,6 +318,7 @@ export function applyDamageToTarget(
     switch (target.type) {
       case 'villain': {
         const villain = target.entity as VillainState;
+        const healthBefore = villain.health;
         villain.health = Math.max(0, villain.health - damageTaken);
         state.log.push({
           id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -283,10 +338,16 @@ export function applyDamageToTarget(
         // STEPS 6-8: Villain Defeat
         if (villain.health <= 0) {
           targetDefeated = true;
+          excessDamage = Math.max(0, damageTaken - healthBefore);
           const instId = villain.instanceId || 'villain';
           const activePlayerId =
             state.players[state.activePlayerIndex]?.id || state.players[0]?.id || '';
-          dispatchCanonicalDefeat(state, sourcePlayerId || activePlayerId, instId, 'VILLAIN');
+          dispatchDefeat(state, {
+            targetPlayerId: sourcePlayerId || activePlayerId,
+            targetInstanceId: instId,
+            targetType: 'VILLAIN',
+            defeatSource,
+          });
           state = handleVillainDefeat(state, instId);
         }
         break;
@@ -319,6 +380,7 @@ export function applyDamageToTarget(
         // STEPS 6-8: Minion Defeat
         if (newDmg >= minionHealth) {
           targetDefeated = true;
+          excessDamage = newDmg - minionHealth;
           const targetPlayer =
             state.players.find((p) =>
               p.engagedMinions.some((m) => m.instanceId === minion.instanceId),
@@ -331,7 +393,12 @@ export function applyDamageToTarget(
             if (idx !== -1) {
               const [defeatedMinion] = targetPlayer.engagedMinions.splice(idx, 1);
               processHostDefeated(state, defeatedMinion);
-              dispatchCanonicalDefeat(state, targetPlayer.id, defeatedMinion.instanceId, 'MINION');
+              dispatchDefeat(state, {
+                targetPlayerId: targetPlayer.id,
+                targetInstanceId: defeatedMinion.instanceId,
+                targetType: 'MINION',
+                defeatSource,
+              });
               moveDefeatedCardToPile(state, defeatedMinion, state.encounterDiscard);
             }
           }
@@ -341,6 +408,7 @@ export function applyDamageToTarget(
 
       case 'player': {
         const player = target.entity as PlayerState;
+        const healthBefore = player.health;
         player.health = Math.max(0, player.health - damageTaken);
         state.log.push({
           id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -360,7 +428,14 @@ export function applyDamageToTarget(
         // STEPS 6-8: Player Defeat
         if (player.health <= 0) {
           targetDefeated = true;
-          dispatchCanonicalDefeat(state, player.id, player.id, 'PLAYER');
+          excessDamage = Math.max(0, damageTaken - healthBefore);
+          dispatchDefeat(state, {
+            targetPlayerId: player.id,
+            targetInstanceId: player.id,
+            targetType: 'PLAYER',
+            defeatSource,
+          });
+          state.winner = 'VILLAIN';
         }
         break;
       }
@@ -392,6 +467,7 @@ export function applyDamageToTarget(
         // STEPS 6-8: Ally Defeat
         if (newDmg >= allyMaxHp) {
           targetDefeated = true;
+          excessDamage = newDmg - allyMaxHp;
           const ownerPlayer =
             state.players.find((p) => p.allies.some((a) => a.instanceId === ally.instanceId)) ||
             state.players.find((p) => p.id === target.targetPlayerId);
@@ -401,13 +477,58 @@ export function applyDamageToTarget(
             if (idx !== -1) {
               const [defeatedAlly] = ownerPlayer.allies.splice(idx, 1);
               processHostDefeated(state, defeatedAlly);
-              dispatchCanonicalDefeat(state, ownerPlayer.id, defeatedAlly.instanceId, 'ALLY');
-              moveDefeatedCardToPile(state, defeatedAlly, ownerPlayer.discard);
+              dispatchDefeat(state, {
+                targetPlayerId: ownerPlayer.id,
+                targetInstanceId: defeatedAlly.instanceId,
+                targetType: 'ALLY',
+                defeatSource,
+              });
+              const discardOwner =
+                (defeatedAlly.ownerId
+                  ? state.players.find((p) => p.id === defeatedAlly.ownerId)
+                  : undefined) || ownerPlayer;
+              moveDefeatedCardToPile(state, defeatedAlly, discardOwner.discard);
             }
           }
         }
         break;
       }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Overkill: excess damage over a defeated minion goes to the villain (RR v1.8 glossary O)
+  // ---------------------------------------------------------------------------
+  if (request.hasOverkill && target.type === 'minion' && targetDefeated && excessDamage > 0) {
+    const villain = getActiveVillain(state);
+    const overkillRes = applyDamageToTarget(state, {
+      target: {
+        type: 'villain',
+        entity: villain,
+        name: villain.card?.name || 'Villain',
+        attachments: villain.attachments,
+        statusCards: villain.statusCards,
+      },
+      amount: excessDamage,
+      sourceType: 'OVERKILL',
+      sourceCardInstance: request.sourceCardInstance,
+      sourcePlayerId,
+      isAttack,
+      hasPiercing,
+      skipRetaliate: true,
+    });
+    state = overkillRes.state;
+    if (overkillRes.result.damageTaken > 0) {
+      state.log.push({
+        id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        timestamp: Date.now(),
+        round: state.roundNumber,
+        phase: state.phase,
+        category: 'combat',
+        key: 'overkill.villain.hit',
+        params: { damage: overkillRes.result.damageTaken, villain: villain.card?.name },
+        onomatopoeia: `OVERKILL! ${overkillRes.result.damageTaken} DAMAGE TO VILLAIN!`,
+      });
     }
   }
 
@@ -504,6 +625,7 @@ export function applyDamageToTarget(
       toughRemoved,
       absorbedByShield,
       targetDefeated,
+      excessDamage,
       retaliateDamageDealt,
       onomatopoeia,
     },

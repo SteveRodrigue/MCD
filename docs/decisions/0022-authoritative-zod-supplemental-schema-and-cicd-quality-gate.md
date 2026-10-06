@@ -49,3 +49,9 @@ Previously, supplemental data was checked only via static TypeScript interfaces.
 
 ### Negative Consequences / Tradeoffs
 * Schema modifications require updating `src/data/supplemental/schema.ts` alongside any engine model changes.
+
+---
+
+## Addendum (2026-10-06, #276)
+
+The CI quality gate also includes `tests/data/schema-member-coverage.test.ts`: every schema member must have a reader in the engine or the UI (ADR-0043 addendum).

@@ -71,7 +71,6 @@ The full mapping contract follows. These tables are copied from Sections 1.1–1
 | :--------------------------- | :---------------------- | :---------------------------------------------------------------------------------- |
 | **`THREAT_WOULD_BE_PLACED`** | Interrupt (Prospective) | Threat is about to be placed on a scheme (Great Responsibility / Emergency window). |
 | **`THREAT_PLACED`**          | Response (Past)         | Threat was successfully added to a scheme.                                          |
-| **`MAIN_SCHEME_ADVANCED`**   | Response (Past)         | Main scheme exceeded threshold and advanced to next stage.                          |
 
 #### D. Form, Status, Phase & Encounter Windows
 
@@ -263,3 +262,7 @@ The Surge keyword was parsed but never acted on, and the importer tagged **every
 ## Addendum (2026-10-05, #244): `PUT_INTO_PLAY_ENGAGED` and `SPAWN_MINION_ENGAGED` removed
 
 The two aliases consolidated into `PUT_INTO_PLAY` by this ADR were still in `EffectTypeSchema`, `schema.json`, the engine and the Card Editor registry, with no card or test using them. They are removed; `PUT_INTO_PLAY` with `target: "SELF"` covers the case (Weapons Runner `01121`). `PUT_INTO_PLAY` also gains `reveal: true` for printed "reveal ... and put it into play".
+
+## Addendum (2026-10-06, #276)
+
+`MAIN_SCHEME_ADVANCED` was removed from `TriggerTypeSchema`: the engine never fired it (see the ADR-0043 addendum).

@@ -52,7 +52,6 @@
                   "type": "string",
                   "enum": [
                     "WHEN_REVEALED",
-                    "BOOST_STAR_RESOLVED",
                     "ENEMY_INITIATES_ATTACK",
                     "DAMAGE_WOULD_BE_TAKEN",
                     "CARD_PLAYED",
@@ -63,12 +62,10 @@
                     "SCHEME_DEFEATED",
                     "HOST_WOULD_ATTACK",
                     "THREAT_WOULD_BE_PLACED",
-                    "MAIN_SCHEME_ADVANCED",
                     "BASIC_ATTACK_PERFORMED",
                     "ATTACK_DEFENDED",
                     "ATTACK_RESOLVED",
                     "THWART_RESOLVED",
-                    "RESOURCE_SPENT",
                     "MINION_ATTACKED",
                     "ATTACK",
                     "ROUND_BEGAN",
@@ -563,12 +560,8 @@
                           "STATUS_APPLIED",
                           "EXCESS_DAMAGE_DEALT",
                           "ALREADY_HAS_STATUS",
-                          "TARGET_ALREADY_EXHAUSTED",
                           "TARGET_TRAIT_MATCH",
-                          "TARGET_FORM_MATCH",
                           "UNDEFENDED_ATTACK",
-                          "RESOURCE_KICKER_MET",
-                          "COUNTER_THRESHOLD_MET",
                           "ZONE_EMPTY"
                         ]
                       }

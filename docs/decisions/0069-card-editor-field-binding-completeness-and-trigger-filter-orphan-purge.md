@@ -78,3 +78,9 @@ Following the development of the Card Supplemental Editor ([ADR-0045](0045-card-
 ## Addendum (2026-10-06): Guard Against Unknown `effectParams` Keys (Issue #230)
 
 `AbilityStepSchema.effectParams` is `z.record(z.string(), z.any())`, so a misspelled or never-read key validated silently (the orphan audit in `docs/reports/effect_params_orphan_audit.md` found four). The allowed keys per effect now live in one table, `EFFECT_PARAM_KEYS` in `src/data/supplemental/effect-params.ts`, typed over `EffectType`. A data test (`tests/data/effect-params-keys.test.ts`) fails on any key outside the table, including keys inside nested `PLAYER_CHOICE` option steps; `AbilityStepSchema` is intentionally not made `.strict()`. The Card Editor registry must expose exactly the table's keys per effect (enforced in `tests/ui/effect-parameter-registry.test.ts`), so the editor and the guard cannot drift. Pseudo-primitive keys (`scaling`, `multiplier`, `maxBonus`, `ATTACHMENT_DAMAGE_SHIELD.mode`, `TRANSFER_DAMAGE.from/to`) remain allowed until #231 / #232. `tools/audit/effect-params-read-check.ts` reports table keys the engine never reads.
+
+---
+
+## Addendum (2026-10-06, #276)
+
+The one-off purge of unread `TriggerFilter` fields is now permanent and schema-wide: `tests/data/schema-member-coverage.test.ts` fails on any schema member (field or enum value) that nothing reads. See the ADR-0043 addendum.

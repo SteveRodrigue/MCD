@@ -1682,7 +1682,7 @@
         {
           "id": "kree_manipulator_boost",
           "timing": "BOOST",
-          "trigger": "BOOST_STAR_RESOLVED",
+          "trigger": "BOOST",
           "steps": [
             {
               "effect": "ADD_THREAT",

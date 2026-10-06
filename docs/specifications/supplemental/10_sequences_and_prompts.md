@@ -101,13 +101,11 @@ Under **ADR-0049**, rather than relying on implicit side-effects, an ability ste
 | **Core Milestone** | `STATUS_APPLIED`           | Status was placed (target did not already possess it & wasn't immune). | `ADD_STATUS` (_Mockingbird_ `01083`)                       |
 | **Core Milestone** | `EXCESS_DAMAGE_DEALT`      | Damage dealt exceeded remaining HP (Overkill damage).                  | `DEAL_DAMAGE` (_Hand Cannon_)                              |
 | **Entity State**   | `ALREADY_HAS_STATUS`       | Target character already possessed status card prior to application.   | `ADD_STATUS` (_I'm Tough_ `01105`)                         |
-| **Entity State**   | `TARGET_ALREADY_EXHAUSTED` | Target was already exhausted.                                          | `EXHAUST`                                                  |
 | **Entity State**   | `TARGET_TRAIT_MATCH`       | Targeted entity possesses specified trait (e.g. `[[AERIAL]]`).         | Card filter                                                |
-| **Entity State**   | `TARGET_FORM_MATCH`        | Identity is in specified form (`hero`, `alter_ego`, etc.).             | Form check                                                 |
 | **Combat Context** | `UNDEFENDED_ATTACK`        | The attack being resolved has no defender (no hero or ally declared). `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`) optionally restricts who is attacking. False outside an attack. | Boost resolution (_Kree Manipulator_ `01178`, _Electric Whip Attack_ `01173`) |
-| **Resource**       | `RESOURCE_KICKER_MET`      | Resources spent to pay for card match required kicker icon(s).         | _Photonic Blast_ (`01013`), _Relentless Assault_ (`01053`) |
-| **Threshold**      | `COUNTER_THRESHOLD_MET`    | Target upgrade/support has reached or exceeded counter count.          | _Energy Channel_ (`01018`)                                 |
 | **Threshold**      | `ZONE_EMPTY`               | `gateParams.zone` is empty: `SIDE_SCHEMES`, `ENCOUNTER_DECK`, `ENCOUNTER_DISCARD`, or the player zones `HAND`, `DECK`, `DISCARD` (of the player resolving the ability). State-only. | _Masterplan_ `01192` ("If there are no side schemes in play") |
+
+> **Removed in #276 (no reader in the engine, a schema member needs a reader and a test):** `TARGET_ALREADY_EXHAUSTED`, `TARGET_FORM_MATCH` (use the gate `IF_FORM`), `RESOURCE_KICKER_MET` (the kicker is `effectParams.kickerResource`) and `COUNTER_THRESHOLD_MET`. Printed cards that would need an exhausted-result or a counter/hit-point threshold (_Earthquake_ `45143`, _Jolt_ `50133`, the three Chief Officers, Absorbing Man's locations `04080` to `04085`, _Giant-Man_ `12012`) wait for the generic comparison condition in [#278](https://github.com/SteveRodrigue/MCD/issues/278).
 
 ### Example: Undefended Attack Boost (_Kree Manipulator_ `01178`)
 

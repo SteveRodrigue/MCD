@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-06T21:35:45.310Z`
+> **Generated:** `2026-10-06T23:35:07.856Z`
 
 ## 1. Condition Gates (`ConditionGateSchema` — 11/14 In Use)
 
@@ -85,7 +85,7 @@
 | :--- | :--- | :--- | :--- |
 | `01025` | **Split Personality (event)** | `core` | `split_personality` |
 
-## 2. Step Conditions (`StepConditionSchema` — 4/13 In Use)
+## 2. Step Conditions (`StepConditionSchema` — 3/9 In Use)
 
 ### <a id="target-trait-match"></a>`TARGET_TRAIT_MATCH` (3 Cards)
 
@@ -101,12 +101,6 @@
 | :--- | :--- | :--- | :--- |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
 | `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
-
-### <a id="resource-kicker-met"></a>`RESOURCE_KICKER_MET` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01053` | **Relentless Assault (event)** | `core` | `relentless_assault` |
 
 ### <a id="zone-empty"></a>`ZONE_EMPTY` (1 Cards)
 

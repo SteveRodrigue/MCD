@@ -885,13 +885,8 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           'EXCESS_DAMAGE_DEALT',
           // Entity States
           'ALREADY_HAS_STATUS',
-          'TARGET_ALREADY_EXHAUSTED',
           'TARGET_TRAIT_MATCH',
-          'TARGET_FORM_MATCH',
-          // Resource Invariants
-          'RESOURCE_KICKER_MET',
-          // Thresholds
-          'COUNTER_THRESHOLD_MET',
+          // Zone states
           'ZONE_EMPTY',
         ] as const;
 
@@ -1129,7 +1124,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
         });
 
-        it('Validates Photonic Blast (01013) full ability data tree with condition & IF_CONDITION_MET', () => {
+        it('Validates Photonic Blast (01013) full ability data tree with kickerResource and IF_CONDITION_MET', () => {
           const ability = {
             id: 'photonic_blast',
             timing: 'HERO_ACTION',
@@ -1140,7 +1135,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'damage_step',
                 effect: 'DEAL_DAMAGE',
-                condition: 'RESOURCE_KICKER_MET',
                 effectParams: {
                   amount: 5,
                   target: 'CHOSEN_ENEMY',
@@ -1161,7 +1155,7 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
           expect(CardAbilitySchema.safeParse(ability).success).toBe(true);
         });
 
-        it('Validates Relentless Assault (01053) full ability data tree with RESOURCE_KICKER_MET', () => {
+        it('Validates Relentless Assault (01053) full ability data tree with kickerResource', () => {
           const ability = {
             id: 'relentless_assault',
             timing: 'HERO_ACTION',
@@ -1172,7 +1166,6 @@ describe('Supplemental Data Schema Validation (CI/CD Quality Gate)', () => {
               {
                 id: 'strike_step',
                 effect: 'DEAL_DAMAGE',
-                condition: 'RESOURCE_KICKER_MET',
                 effectParams: {
                   amount: 5,
                   target: 'CHOSEN_MINION',

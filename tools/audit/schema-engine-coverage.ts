@@ -39,12 +39,6 @@ export const RECOGNIZED_PASSIVE_EFFECTS = new Set<string>([
 export const RECOGNIZED_EFFECT_ALIASES = new Set<string>(['DISCARD_CARDS']);
 
 /**
- * Recognized step conditions evaluated in engine pipelines:
- * - RESOURCE_KICKER_MET is evaluated in DEAL_DAMAGE (kickerMet / kickerResource)
- */
-export const RECOGNIZED_ENGINE_STEP_CONDITIONS = new Set<string>(['RESOURCE_KICKER_MET']);
-
-/**
  * Extracts only top-level case 'XYZ': clauses in switch (step.effect).
  * Tracks curly brace depth so nested switches (e.g. switch (zone)) are ignored.
  */
@@ -121,7 +115,7 @@ export function extractStepConditionEvaluatorCases(
   effectsPath: string,
   gateEvaluatorPath: string,
 ): Set<string> {
-  const conditions = new Set<string>(RECOGNIZED_ENGINE_STEP_CONDITIONS);
+  const conditions = new Set<string>();
   const effectsContent = fs.readFileSync(effectsPath, 'utf8');
   const gateContent = fs.readFileSync(gateEvaluatorPath, 'utf8');
 
@@ -237,7 +231,10 @@ export function auditSchemaEngineCoverage(): DetailedCoverageResult {
   );
 
   // 5. Triggers & Timings
-  const engineFiles = getAllTsFiles(engineDir);
+  // The TypeScript copy of the schema enums is not a dispatcher: exclude it (#276).
+  const engineFiles = getAllTsFiles(engineDir).filter(
+    (f) => !f.split(path.sep).join('/').endsWith('src/engine/models/abilities.ts'),
+  );
   let allEngineCode = '';
   for (const f of engineFiles) {
     allEngineCode += fs.readFileSync(f, 'utf8') + '\n';

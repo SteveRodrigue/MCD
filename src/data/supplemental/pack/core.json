@@ -2621,7 +2621,8 @@
                 "atkBonus": 1,
                 "thwBonus": 1,
                 "duration": "PHASE",
-                "target": "ALL_FRIENDLY_CHARACTERS"
+                "target": "ALL_CONTROLLED_CHARACTERS",
+                "targetPlayer": "CHOSEN_PLAYER"
               }
             }
           ]

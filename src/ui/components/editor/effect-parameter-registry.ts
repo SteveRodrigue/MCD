@@ -600,6 +600,28 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
       },
+      {
+        key: 'targetPlayer',
+        label: 'Target Player',
+        type: 'select',
+        options: ['SELF', 'CHOSEN_PLAYER'] as const,
+        description:
+          'With Target All Controlled Characters: whose characters get the bonus (prompts in multiplayer)',
+      },
+      {
+        key: 'atkBonus',
+        label: 'ATK Bonus',
+        type: 'number',
+        placeholder: 'e.g. 1',
+        description: 'Shorthand: ATK bonus for every character of the target player',
+      },
+      {
+        key: 'thwBonus',
+        label: 'THW Bonus',
+        type: 'number',
+        placeholder: 'e.g. 1',
+        description: 'Shorthand: THW bonus for every character of the target player',
+      },
     ],
   },
   ADD_TRAIT: {

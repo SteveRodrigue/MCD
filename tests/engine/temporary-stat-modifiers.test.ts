@@ -228,7 +228,7 @@ describe('Feature Delivery: Vision (01068) Once-Per-Round Limit & Temporary Stat
       {
         effect: 'MODIFY_STAT',
         effectParams: {
-          target: 'ALL_FRIENDLY_CHARACTERS',
+          target: 'ALL_CONTROLLED_CHARACTERS',
           atkBonus: 1,
           thwBonus: 1,
           duration: 'PHASE',

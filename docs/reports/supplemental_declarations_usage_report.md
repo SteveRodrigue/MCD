@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T10:38:59.127Z`  
+> **Generated:** `2026-10-06T15:06:31.474Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -249,7 +249,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `ALL_CHARACTERS` | **1** | `01050` Hulk (ally) |
 | `TRIGGERING_MINION` | **1** | `01066` Hawkeye (ally) |
 | `ALL_PLAYERS` | **1** | `01067` Maria Hill (ally) |
-| `ALL_FRIENDLY_CHARACTERS` | **1** | `01070` Lead from the Front (event) |
+| `ALL_CONTROLLED_CHARACTERS` | **1** | `01070` Lead from the Front (event) |
 | `CHOSEN_FRIENDLY_CHARACTER` | **1** | `01080` Med Team (support) |
 | `CHOSEN_CHARACTER` | **1** | `01086` First Aid (event) |
 | `ALL_HEROES_AND_ALLIES` | **1** | `01111` Explosion (treachery) |
@@ -266,7 +266,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `ALL_CONTROLLED_TABLEAU` | 🟡 **0** | *Unused in supplemental declarations* |
 | `ALL_ALLIES` | 🟡 **0** | *Unused in supplemental declarations* |
 | `CHOSEN_CONTROLLED_CHARACTER` | 🟡 **0** | *Unused in supplemental declarations* |
-| `ALL_CONTROLLED_CHARACTERS` | 🟡 **0** | *Unused in supplemental declarations* |
+| `ALL_FRIENDLY_CHARACTERS` | 🟡 **0** | *Unused in supplemental declarations* |
 | `CHOSEN_SIDE_SCHEME` | 🟡 **0** | *Unused in supplemental declarations* |
 | `TRIGGERING_SCHEME` | 🟡 **0** | *Unused in supplemental declarations* |
 | `PREVIOUS_TARGET` | 🟡 **0** | *Unused in supplemental declarations* |
@@ -476,13 +476,13 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `trait` | **2** | `01017` Cosmic Flight (upgrade), `01039` Rocket Boots (upgrade) |
 | `lookCount` | **2** | `01029b` Tony Stark (alter_ego), `01042` Ancestral Knowledge (event) |
 | `fromTop` | **2** | `01034` Stark Tower (support), `01042` Ancestral Knowledge (event) |
+| `targetPlayer` | **2** | `01046` Energy Daggers (upgrade), `01070` Lead from the Front (event) |
 | `reveal` | **2** | `01190` Shadow of the Past (treachery) |
 | `distinctFrom` | **1** | `01012` Crisis Interdiction (event) |
 | `counterType` | **1** | `01018` Energy Channel (upgrade) |
 | `limit` | **1** | `01025` Split Personality (event) |
 | `isVoluntary` | **1** | `01029b` Tony Stark (alter_ego) |
 | `fromCard` | **1** | `01033` Pepper Potts (support) |
-| `targetPlayer` | **1** | `01046` Energy Daggers (upgrade) |
 | `kickerResource` | **1** | `01053` Relentless Assault (event) |
 | `overkillOnCondition` | **1** | `01053` Relentless Assault (event) |
 | `overkillOnPhysical` | **1** | `01053` Relentless Assault (event) |
@@ -580,7 +580,7 @@ The following schema enums are defined in `src/data/supplemental/schema.ts` but 
 | `TargetSelectorSchema` | `ALL_CONTROLLED_TABLEAU` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `ALL_ALLIES` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `CHOSEN_CONTROLLED_CHARACTER` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
-| `TargetSelectorSchema` | `ALL_CONTROLLED_CHARACTERS` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
+| `TargetSelectorSchema` | `ALL_FRIENDLY_CHARACTERS` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `CHOSEN_SIDE_SCHEME` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `TRIGGERING_SCHEME` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |
 | `TargetSelectorSchema` | `PREVIOUS_TARGET` | 🟡 `0 Cards` | Defined in schema; no card currently declares this target selector. |

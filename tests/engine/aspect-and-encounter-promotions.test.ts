@@ -85,7 +85,7 @@ describe('Sub-Milestone 2D-4: Aspect Cards & Encounter Promotion Pass (Inbox Zer
         state,
         {
           effect: 'MODIFY_STAT',
-          effectParams: { target: 'ALL_FRIENDLY_CHARACTERS', atkBonus: 1, thwBonus: 1 },
+          effectParams: { target: 'ALL_CONTROLLED_CHARACTERS', atkBonus: 1, thwBonus: 1 },
         },
         { playerId: 'p1' },
       );

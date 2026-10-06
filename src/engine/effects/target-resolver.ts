@@ -263,6 +263,39 @@ export function resolveTargets(
       ];
     }
 
+    // The friendly character the resolving attack damaged (#221). Only set while a deferred boost
+    // ability resolves after step 6. Nothing when that character has since left play (a defeated
+    // ally) or was reduced to 0 HP (game over).
+    case 'DAMAGED_CHARACTER': {
+      const damaged = context?.damagedCharacter;
+      const owner = damaged ? state.players.find((p) => p.id === damaged.playerId) : undefined;
+      if (!damaged || !owner) return [];
+      if (damaged.type === 'ALLY') {
+        const ally = owner.allies.find((a) => a.instanceId === damaged.allyInstanceId);
+        return ally
+          ? [
+              {
+                kind: 'character',
+                entityType: 'ally',
+                entity: ally,
+                id: ally.instanceId,
+                player: owner,
+              },
+            ]
+          : [];
+      }
+      if (owner.health <= 0) return [];
+      return [
+        {
+          kind: 'character',
+          entityType: owner.currentForm === 'hero' ? 'hero' : 'alter_ego',
+          entity: owner,
+          id: owner.id,
+          player: owner,
+        },
+      ];
+    }
+
     case 'IDENTITY':
     case 'SELF_IDENTITY': {
       return [

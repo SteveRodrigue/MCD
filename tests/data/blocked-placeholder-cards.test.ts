@@ -11,8 +11,6 @@ import { cardCatalog } from '../../src/data/importer/card-loader';
 const BLOCKED: Record<string, { keeps?: 'BOOST' | 'WHEN_REVEALED' }> = {
   '01163': {},
   '01164': { keeps: 'BOOST' },
-  // When Revealed integrated with #222 (SELF_HERO); only the boost still waits on #221.
-  '01168': { keeps: 'WHEN_REVEALED' },
 };
 
 describe('Blocked core encounter cards declare no placeholder abilities', () => {

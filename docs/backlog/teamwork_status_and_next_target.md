@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-06
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,070 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,085 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -39,6 +39,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #245 | Masterplan: second sentence declared (`DISCARD` `UNTIL_MATCH` + `REVEAL`, `ZONE_EMPTY`); hidden `ADD_THREAT` fallback removed; empty-deck rule | `git log --grep "#245"` |
 | #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `d40febb` |
 | #228 (partial) | Genetically Enhanced `01163`: placeholder stripped, blocked with an ambiguity report | `git log --grep "#228"` |
+| #221 | Sweeping Swoop `01168` boost: gate `IF_ACTIVATION_DEALT_DAMAGE`, target `DAMAGED_CHARACTER`, boost deferred until damage is known | `git log --grep "#221"` |
 | #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `9985c4f` |
 | #219 | Hand `DISCARD`: `filter`, every target player, `discardedCards`/`value` always returned; Yon-Rogg's Treason `01179` and The Vulture's Plans `01169` modelled (confidence 95) | `git log --grep "#219"` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
@@ -103,7 +104,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | :-- | :-- | :-- | :-- | :-- |
 | 5 | Hand `DISCARD` with filter, each-player targets and discarded-card results | [#219](https://github.com/SteveRodrigue/MCD/issues/219) | `01179` Yon-Rogg's Treason, `01169`, `01174` | 🟢 **Done** 2026-10-06; `01179` and `01169` modelled |
 | 6 | Per-player iteration inside one ability | [#220](https://github.com/SteveRodrigue/MCD/issues/220) | `01174` Electromagnetic Backlash | 🟢 **Done** 2026-10-06; ability-level `forEachPlayer`; mixed per-player / run-once abilities: [#272](https://github.com/SteveRodrigue/MCD/issues/272) (`01148`) |
-| 7 | Gate "this activation dealt damage" | [#221](https://github.com/SteveRodrigue/MCD/issues/221) | `01168` Sweeping Swoop boost | ready; the boost data is in its ambiguity report |
+| 7 | Gate "this activation dealt damage" | [#221](https://github.com/SteveRodrigue/MCD/issues/221) | `01168` Sweeping Swoop boost | 🟢 **Done** 2026-10-06; gate `IF_ACTIVATION_DEALT_DAMAGE` + selector `DAMAGED_CHARACTER`, deferred boost resolved in `applyCalculatedAttackDamage` (ADR-0019 addendum) |
 | 8 | Named minion in play attacks a hero, with an attacked / did-not-attack result | [#223](https://github.com/SteveRodrigue/MCD/issues/223) | `01164` Titania's Fury | ready (its hero selector exists: `SELF_HERO`) |
 | 9 | `executeSequence` swallows step failures and always reports success | [#225](https://github.com/SteveRodrigue/MCD/issues/225) | visibility of every ability failure | cross-cutting, Tier 2; do before adding more complex sequences |
 
@@ -144,7 +145,6 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 flowchart TD
     I219["#219 hand DISCARD filter"] --> C01179["01179 Yon-Rogg"]
     I219 --> C01169["01169 Vulture's Plans"]
-    I221["#221 damage gate"] --> C01168["01168 Sweeping Swoop boost"]
     I223["#223 named minion attack"] --> C01164["01164 Titania's Fury"]
     WP3["#228 01163 (circuit-breaker now)"] --> WP5["#230 guard test"]
     WP5 --> WP7["#232 docs gaps / ad-hoc selectors"]
@@ -250,7 +250,7 @@ The tables below record the items resolved before 2026-10-04 and are not updated
 | **P2** | **#132** | Imminent Overload (01171) Crisis validation | Card Data | Low / Crisis legality | S | 🟢 **Resolved** (`e289645`, validated: no defect) |
 | **P2** | **#131** | Rocket Boots (01039), same as review item A3 | Card Data + Engine | Medium / Tier 2-3 | M | 🟢 **Resolved** (`32aa400`) |
 | **P2** | **#207** | Wakanda Forever! sequence pausing | Engine | Medium / Special handler | M | 🟢 **Resolved** (`a6c5397`, `df01659`) |
-| **P3** | **#220, #221, #223** | Per-player iteration, damage-dealt gate, named-minion attack (unblock `01174`/`01169`, `01168`, `01164`) | Engine | Medium | M each | 🟡 **Open** (Phase 5) |
+| **P3** | **#220, #221, #223** | Per-player iteration, damage-dealt gate, named-minion attack (unblock `01174`/`01169`, `01168`, `01164`) | Engine | Medium | M each | 🟡 **Open** (#220, #221 done; #223 open) |
 | **P3** | **#210-#215** | Multi-villain follow-ups for MC03 Wrecking Crew (encounter decks, side schemes and scheme threat, targeting/Guard/win, active counter effects, scenario plugin, legacy field removal) | Engine/Data | Medium | M-L | 🟡 **Open** (no immediate impact) |
 | **P3** | **#216** | STAT_VALUE DAMAGE reads nonexistent villain/minion `damage` | Engine | Low | XS | 🟡 **Open** |
 | **P3** | **#217** | Flaky obligation rule 2 test (shuffle-dependent) | Tests | Low | XS | 🟡 **Open** |

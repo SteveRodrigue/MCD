@@ -25,6 +25,7 @@ import {
   getVillainsInPlay,
   getVillainById,
   PendingSequence,
+  DamagedCharacter,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -159,6 +160,10 @@ export interface EffectExecutionContext {
   /** Attack being resolved (boost cards): who attacks and who defended, for UNDEFENDED_ATTACK. */
   attackerType?: 'VILLAIN' | 'MINION';
   defenderType?: 'HERO' | 'ALLY' | 'UNDEFENDED';
+  /** Final damage of the activation, set while a deferred boost ability resolves (IF_ACTIVATION_DEALT_DAMAGE). */
+  activationDamage?: number;
+  /** The hero or ally that took that damage, resolved by the DAMAGED_CHARACTER selector. */
+  damagedCharacter?: DamagedCharacter;
 }
 
 export { evaluateDynamicAmount } from './dynamic-formula-evaluator';
@@ -3084,6 +3089,11 @@ export function executeStep(
       const targetCharacters = resolveCharacterTargets(state, targetParam as any, targetContext);
       for (const targetChar of targetCharacters) {
         applyStatusToEntity(targetChar.entity);
+      }
+
+      // Nothing to apply the status to (e.g. the damaged ally has left play): no effect, no log.
+      if (targetCharacters.length === 0) {
+        return { state, success: true, mutatedState: false, value: 0, conditionMet: false };
       }
 
       const firstTarget = targetCharacters[0];

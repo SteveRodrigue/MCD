@@ -104,6 +104,7 @@ export const TargetSelectorSchema = z.enum([
   'ALL_HEROES',
   'ALL_HEROES_AND_ALLIES',
   'TRIGGERING_HERO',
+  'DAMAGED_CHARACTER',
   'CHOSEN_PLAYER',
   'VILLAIN',
   'MAIN_SCHEME',
@@ -188,6 +189,7 @@ export const ConditionGateSchema = z.enum([
   'IF_CARD_IN_PLAY',
   'IF_CARD_NOT_IN_PLAY',
   'IF_FORM',
+  'IF_ACTIVATION_DEALT_DAMAGE',
 ]);
 
 /**

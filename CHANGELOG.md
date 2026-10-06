@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Test (Data + Card Editor): guard for unknown `effectParams` keys ([Issue #230](https://github.com/SteveRodrigue/MCD/issues/230), WP5)**
+  - `src/data/supplemental/effect-params.ts`: per-effect allowed-key table typed over `EffectType`. `tests/data/effect-params-keys.test.ts` fails on any key outside the table in all three packs (nested `PLAYER_CHOICE` option steps included), naming card, effect and key. `AbilityStepSchema` is unchanged.
+  - Card Editor registry keys now equal the table keys per effect (test); the registry gained the missing parameters. Pseudo-primitive keys stay allowed for now, marked for removal in #231 / #232.
+  - `tools/audit/effect-params-read-check.ts` lists table keys with no textual read in `src/engine/` (output only). Spec `10_sequences_and_prompts.md`, ADR-0069 addendum.
+
 - **Feat (Engine + UI): player elimination and a game-over screen ([Issue #246](https://github.com/SteveRodrigue/MCD/issues/246))**
   - **Engine:** a hero reduced to 0 hit points eliminates that player only, per RR v1.8 *Player Elimination*; the game is lost when **all** heroes are eliminated, in a solo multi-handed game as in a multiplayer one. `eliminatePlayer` passes the first player token, moves engaged minions (with their tokens, attachments and status cards) to the next clockwise player, sends cards the player does not own to their owner's discard pile, sends the player's own cards to the player's discard pile and removes the player from `state.players` (kept in `state.eliminatedPlayers`). It replaces the eleven direct `winner = 'VILLAIN'` writes on hero defeat: the damage pipeline, the two hand-written damage copies in distribute-points (now through `applyDamageToTarget`), the enemy attack and its Overkill spillover. An attack whose target was eliminated ends.
   - **Per-player icon:** `getPerPlayerCount` counts the players who started the scenario, so escalation threat, side scheme threat, `perPlayer` amounts and scenario stage values do not shrink after an elimination.

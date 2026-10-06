@@ -115,7 +115,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 
 | # | Item | Issue | Depends on |
 | :-- | :-- | :-- | :-- |
-| 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | item 4 done: **ready** |
+| 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 🟢 **Done** 2026-10-06; table `src/data/supplemental/effect-params.ts`, guard `tests/data/effect-params-keys.test.ts`; `REMOVE_THREAT.aerialAllSchemes` left out (owner decision) |
 | 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives (`MODIFY_HAND_SIZE` already done) | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | WP5 not required, but CONSTANT `MODIFY_STAT` must evaluate dynamic amounts |
 | 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5 |
 
@@ -167,7 +167,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: item 10, #230 (plan `plan_issue_230_effectparams_key_guard.md`, awaiting approval).
+- Next ready item: item 11, #231 (needs a plan and approval).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

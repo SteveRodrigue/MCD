@@ -14,6 +14,15 @@ Under **ADR-0060**, parameters configuring conditional step gates and parameters
 - `effectParams`: Key-value map configuring the effect primitive execution (e.g. damage amount, target selector, draw count).
 - Step-level `params` is obsolete and has been completely purged from `AbilityStepSchema`. All step parameters must reside in `effectParams` or `gateParams`. (Note: in interactive `PLAYER_CHOICE` prompts, individual option items in `options: []` use `params: { ... }` per `DecisionPromptOptionSchema`).
 
+### Allowed `effectParams` Keys (Issue #230)
+
+`AbilityStepSchema.effectParams` is a free-form record, so the schema itself accepts any key. The allowed keys per effect live in one table, `EFFECT_PARAM_KEYS` in `src/data/supplemental/effect-params.ts` (typed over `EffectType`, so a new effect without an entry fails typecheck).
+
+- `tests/data/effect-params-keys.test.ts` walks every supplemental pack (including nested `PLAYER_CHOICE` option steps) and fails on a key that is not in the table for its effect, naming the card, effect, and key.
+- The Card Editor registry (`effect-parameter-registry.ts`) exposes exactly the table's keys per effect; `tests/ui/effect-parameter-registry.test.ts` enforces equality.
+- Pseudo-primitive keys (`scaling`, `multiplier`, `maxBonus`, `ATTACHMENT_DAMAGE_SHIELD.mode`, `TRANSFER_DAMAGE.from/to`, and `target` on a few effects) are allowed for now and tracked for removal in #231 / #232.
+- `tools/audit/effect-params-read-check.ts` prints which table keys are never read in `src/engine/` (a report, not a gate).
+
 ### Conditional Gates:
 
 - `"ALWAYS"` _(Default)_: Executes unconditionally per RR v1.8 p. 2 "Do as much as you can".

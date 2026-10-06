@@ -3628,26 +3628,6 @@ export function executeStep(
       };
     }
 
-    case 'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS':
-    case 'CANCEL_WHEN_REVEALED_AND_ATTACK': {
-      executeVillainAttackAgainstPlayer(state, player);
-      state.log.push({
-        id: `log_${Date.now()}`,
-        timestamp: Date.now(),
-        round: state.roundNumber,
-        phase: state.phase,
-        category: 'ability',
-        key: 'card.effect.getBehindMe',
-        params: { player: player.name },
-        onomatopoeia: 'GET BEHIND ME! (VILLAIN ATTACKS)',
-      });
-      return {
-        state,
-        success: true,
-        onomatopoeia: 'GET BEHIND ME! VILLAIN ATTACKS!',
-      };
-    }
-
     case 'EXHAUST': {
       const targetParam = (step.effectParams?.target as string) || 'SELF_IDENTITY';
       let exhaustTargetName = player.name;
@@ -3712,8 +3692,7 @@ export function executeStep(
       };
     }
 
-    case 'GIVE_ADDITIONAL_BOOST_CARD':
-    case 'DEAL_ADDITIONAL_BOOST_CARD': {
+    case 'GIVE_ADDITIONAL_BOOST_CARD': {
       if (state.activeAttackContext) {
         const extraCard = drawEncounterCard(state);
         if (extraCard) {
@@ -4445,8 +4424,7 @@ export function executeStep(
       };
     }
 
-    case 'ADD_COUNTERS':
-    case 'MODIFY_COUNTER': {
+    case 'ADD_COUNTERS': {
       const targetParam = (step.effectParams?.target as string) || 'SELF';
       const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
       const amount = resolveNumericAmount(step.effectParams?.amount, context, 1, { state, player });
@@ -5057,44 +5035,6 @@ export function executeStep(
       };
     }
 
-    case 'SEARCH_AND_PLAY_UPGRADE': {
-      const traitFilter = step.effectParams?.trait as string | undefined;
-      const typeFilter =
-        (step.effectParams?.type as string) ||
-        (step.effectParams?.type_code as string) ||
-        'upgrade';
-
-      const matchIdx = player.deck.findIndex((c) => {
-        const typeMatch =
-          !typeFilter || c.card.type === typeFilter || c.card.raw.type_code === typeFilter;
-        const traitMatch = !traitFilter || c.card.traits?.includes(traitFilter);
-        return typeMatch && traitMatch;
-      });
-
-      if (matchIdx !== -1) {
-        const [foundCard] = player.deck.splice(matchIdx, 1);
-        player.tableau.push(foundCard);
-        // Shuffle deck after search
-        player.deck = [...player.deck].sort(() => Math.random() - 0.5);
-        return {
-          state,
-          success: true,
-          mutatedState: true,
-          onomatopoeia: `FOUND ${foundCard.card.name}!`,
-        };
-      }
-
-      // Target not found: shuffle deck
-      player.deck = [...player.deck].sort(() => Math.random() - 0.5);
-      return {
-        state,
-        success: true,
-        mutatedState: false,
-        onomatopoeia: 'TARGET NOT FOUND IN DECK',
-      };
-    }
-
-    case 'TRIGGER_WAKANDA_UPGRADES':
     case 'EXECUTE_WAKANDA_FOREVER':
     case 'EXECUTE_SPECIAL': {
       const specialId = (step.effectParams?.specialId as string) || 'WAKANDA_FOREVER';

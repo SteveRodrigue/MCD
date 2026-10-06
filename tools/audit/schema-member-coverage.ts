@@ -172,6 +172,29 @@ export function readAuthoringSources(root: string): string {
 export const isAuthoringMember = (member: SchemaMember): boolean =>
   AUTHORING_METADATA_PREFIXES.some((prefix) => member.id.startsWith(prefix));
 
+/**
+ * Test files that can run engine code: outside `tests/data` (schema and parse tests) and
+ * importing from the engine (`@engine/...` or a relative path to `src/engine`).
+ */
+export function readEngineTestSources(root: string): string {
+  const testsDir = path.join(root, 'tests');
+  const out: string[] = [];
+  const visit = (current: string): void => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      const normalized = full.split(path.sep).join('/');
+      if (entry.isDirectory()) {
+        if (!normalized.endsWith('/tests/data')) visit(full);
+      } else if (/\.test\.tsx?$/.test(entry.name)) {
+        const text = fs.readFileSync(full, 'utf8');
+        if (/from ['"](@engine|(\.\.\/)+(src\/)?engine)/.test(text)) out.push(text);
+      }
+    }
+  };
+  visit(testsDir);
+  return out.join('\n');
+}
+
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /** True when the member name is read in `source` (property access, bracket access, destructuring or enum literal). */
@@ -193,6 +216,53 @@ export function findUnreadMembers(
   return members.filter(
     (member) => !isMemberRead(member, isAuthoringMember(member) ? authoringSource : source),
   );
+}
+
+const PACK_FILES = ['core.json', 'core_encounter.json', 'cw_encounter.json'];
+
+/** Card codes of the shipped packs whose supplemental data declares the member (key, or key with that value). */
+export function shippedCardsUsing(member: SchemaMember, root: string): string[] {
+  const field =
+    member.kind === 'field'
+      ? member.name
+      : member.id.slice(0, member.id.lastIndexOf('=')).split('.').pop()!;
+  const value = member.kind === 'enum' ? member.name : undefined;
+  const codes: string[] = [];
+  const matches = (node: unknown): boolean => {
+    if (Array.isArray(node)) return node.some(matches);
+    if (node === null || typeof node !== 'object') return false;
+    return Object.entries(node as Record<string, unknown>).some(
+      ([key, child]) =>
+        (key === field && (value === undefined || child === value)) || matches(child),
+    );
+  };
+  for (const file of PACK_FILES) {
+    const raw = JSON.parse(
+      fs.readFileSync(path.join(root, 'src/data/supplemental/pack', file), 'utf8'),
+    ) as { cards: Record<string, unknown> };
+    for (const [code, card] of Object.entries(raw.cards)) if (matches(card)) codes.push(code);
+  }
+  return codes;
+}
+
+/**
+ * Members with no engine-level test evidence: no test mentions the member, and no test mentions
+ * the code of a shipped card that declares it (that card's own behaviour test).
+ */
+export function findUntestedMembers(
+  members: SchemaMember[],
+  testSource: string,
+  root?: string,
+): SchemaMember[] {
+  return members.filter((member) => {
+    if (isMemberRead(member, testSource)) return false;
+    if (!root) return true;
+    return !shippedCardsUsing(member, root).some((code) => testSource.includes(code));
+  });
+}
+
+export function formatUntestedMember(member: SchemaMember): string {
+  return `Schema member ${member.id}: no test under tests/ (outside tests/data) that imports the engine mentions it`;
 }
 
 export function formatUnreadMember(member: SchemaMember): string {

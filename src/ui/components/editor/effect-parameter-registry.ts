@@ -592,18 +592,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  MODIFY_COUNTER: {
-    effect: 'MODIFY_COUNTER',
-    description: 'Modify counter token quantity on host card.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Amount (positive or negative)',
-        type: 'number',
-        placeholder: '1',
-      },
-    ],
-  },
 
   // 6. Character Stats & Trait Modifiers
   MODIFY_STAT: {
@@ -808,11 +796,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
 
   // 7. Search & Select Routing Primitives (RR v1.8 p. 19, 26)
-  SEARCH_AND_PLAY_UPGRADE: {
-    effect: 'SEARCH_AND_PLAY_UPGRADE',
-    description: 'Search deck or discard for an upgrade and put into play.',
-    parameters: [],
-  },
 
   // 8. Ready & Exhaust Primitives
   EXHAUST: {
@@ -1059,18 +1042,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
-  COST_REDUCER: {
-    effect: 'COST_REDUCER',
-    description: 'Reduce cost of played cards meeting specific criteria.',
-    parameters: [
-      {
-        key: 'amount',
-        label: 'Reduction Amount',
-        type: 'number',
-        defaultValue: 1,
-      },
-    ],
-  },
   PLAY_FROM_ZONE: {
     effect: 'PLAY_FROM_ZONE',
     description:
@@ -1268,11 +1239,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
     description: 'Reveal top card of encounter deck.',
     parameters: [],
   },
-  DEAL_ADDITIONAL_BOOST_CARD: {
-    effect: 'DEAL_ADDITIONAL_BOOST_CARD',
-    description: 'Deal an additional boost card to villain activation.',
-    parameters: [],
-  },
   GIVE_ADDITIONAL_BOOST_CARD: {
     effect: 'GIVE_ADDITIONAL_BOOST_CARD',
     description: 'Deal additional facedown boost card to activating enemy.',
@@ -1280,19 +1246,9 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   },
 
   // 13. Cancellation & Interrupts
-  CANCEL_TREACHERY_AND_VILLAIN_ATTACKS: {
-    effect: 'CANCEL_TREACHERY_AND_VILLAIN_ATTACKS',
-    description: 'Cancel treachery effect and villain attack initiation.',
-    parameters: [],
-  },
   CANCEL_WHEN_REVEALED: {
     effect: 'CANCEL_WHEN_REVEALED',
     description: 'Cancel the "When Revealed" effect of an encounter card.',
-    parameters: [],
-  },
-  CANCEL_WHEN_REVEALED_AND_ATTACK: {
-    effect: 'CANCEL_WHEN_REVEALED_AND_ATTACK',
-    description: 'Cancel When Revealed effect, but villain initiates attack instead.',
     parameters: [],
   },
   CANCEL_WHEN_REVEALED_AND_REVEAL_ANOTHER: {
@@ -1320,11 +1276,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
   EXECUTE_WAKANDA_FOREVER: {
     effect: 'EXECUTE_WAKANDA_FOREVER',
     description: 'Resolve Black Panther Wakanda Forever multi-upgrade chain.',
-    parameters: [],
-  },
-  TRIGGER_WAKANDA_UPGRADES: {
-    effect: 'TRIGGER_WAKANDA_UPGRADES',
-    description: 'Trigger Black Panther suit upgrades in player-selected sequence.',
     parameters: [],
   },
   PLAYER_CHOICE: {

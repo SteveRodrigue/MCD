@@ -162,9 +162,7 @@ export function getGeneratorProvidedResources(
   const enrichment = gCard.card.enrichment || getCardEnrichment(gCard.card.code);
   const abilities = enrichment?.abilities || [];
   const tableAbility = abilities.find(
-    (a) =>
-      isResourceAbility(a.timing) ||
-      a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+    (a) => isResourceAbility(a.timing) || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
   );
 
   if (!tableAbility) {
@@ -200,9 +198,7 @@ export function getGeneratorProvidedResources(
     if (count <= 0) return 0;
   }
 
-  const genStep = tableAbility.steps?.find(
-    (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
-  );
+  const genStep = tableAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
   if (genStep && getStepEffectParams(genStep).fromCard) {
     const target = locateCard(state, getStepEffectParams(genStep).fromCard!, {
       player,
@@ -886,13 +882,10 @@ export function executeResourceCostPayment(
         const abilities = enrichment?.abilities || [];
         const tableAbility = abilities.find(
           (a) =>
-            isResourceAbility(a.timing) ||
-            a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER'),
+            isResourceAbility(a.timing) || a.steps?.some((s) => s.effect === 'GENERATE_RESOURCE'),
         );
         if (tableAbility) {
-          const genStep = tableAbility.steps?.find(
-            (s) => s.effect === 'GENERATE_RESOURCE' || s.effect === 'COST_REDUCER',
-          );
+          const genStep = tableAbility.steps?.find((s) => s.effect === 'GENERATE_RESOURCE');
           if (genStep?.effectParams?.fromCard) {
             const target = locateCard(state, genStep.effectParams.fromCard, {
               player,

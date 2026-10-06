@@ -19,7 +19,6 @@ const ROOT_DIR = path.resolve(__dirname, '../../');
  * - MODIFY_HAND_SIZE: evaluated dynamically in stat-calculator.ts
  * - MODIFY_MAX_HEALTH: evaluated in stat-calculator.ts and action-dispatcher.ts
  * - ADD_TRAIT: evaluated dynamically in stat-calculator.ts
- * - COST_REDUCER: evaluated in cost-engine.ts
  * - DOUBLE_RESOURCE_FOR_ASPECT: evaluated in cost-engine.ts and legality-checker.ts
  * - RESTRICTED_LIMIT_BONUS: evaluated in legality-checker.ts
  */
@@ -27,7 +26,6 @@ export const RECOGNIZED_PASSIVE_EFFECTS = new Set<string>([
   'MODIFY_HAND_SIZE',
   'MODIFY_MAX_HEALTH',
   'ADD_TRAIT',
-  'COST_REDUCER',
   'DOUBLE_RESOURCE_FOR_ASPECT',
   'RESTRICTED_LIMIT_BONUS',
 ]);

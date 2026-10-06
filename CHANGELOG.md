@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data): _Lead from the Front_ `01070` asks which player ([Issue #251](https://github.com/SteveRodrigue/MCD/issues/251))**
+  - **Engine:** `MODIFY_STAT` with `atkBonus` / `thwBonus` now buffs the identity and allies of one player: the resolving player, or the one chosen with the new `targetPlayer: CHOSEN_PLAYER` (a "Choose a Player" prompt in multiplayer, automatic in solo). Before, the bonus always went to the caster and no prompt existed. The selector `ALL_FRIENDLY_CHARACTERS` is no longer read by `MODIFY_STAT` (it was decorative there); `ALL_CONTROLLED_CHARACTERS` replaces it.
+  - **Supplemental Data (`core.json`), approved by the owner:** `01070` uses `target: ALL_CONTROLLED_CHARACTERS` with `targetPlayer: CHOSEN_PLAYER`.
+  - **Card Editor and spec:** `MODIFY_STAT` gets `targetPlayer`, `atkBonus`, `thwBonus`; `05_effects_combat_threat.md` updated.
+  - `tests/engine/lead-from-the-front.test.ts` (5 tests): prompt with 2 players, the other player buffed and not the caster, self choice, solo without a prompt, declared data.
+
 - **Test (Engine + UI): Spider-Tracer `01007` removes exactly 3 threat per defeated host ([Issue #249](https://github.com/SteveRodrigue/MCD/issues/249))**
   - The reported discard (Crowd Control with 4 threat, 2 players) could not be reproduced: the snapshot was not retained and no engine path misbehaved. Closed on the owner's decision; reopen with steps or a snapshot if it recurs.
   - `tests/engine/spider-tracer-threat-remaining.test.ts` (13 tests): remainders above 3 threat across basic attack, ally attack, event damage, area damage and two players; exactly one removal per Tracer; the multi-scheme prompt with 3 schemes, two Crisis schemes, 0-threat schemes left out, and a single eligible scheme auto-targeted.

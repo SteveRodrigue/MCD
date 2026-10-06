@@ -3293,7 +3293,7 @@ export function executeStep(
       const sourceCardCode = context.sourceCardInstance?.card.code;
 
       if (
-        targetParam === 'ALL_FRIENDLY_CHARACTERS' ||
+        targetParam === 'ALL_CONTROLLED_CHARACTERS' ||
         stepParams.atkBonus !== undefined ||
         stepParams.thwBonus !== undefined
       ) {
@@ -3308,55 +3308,63 @@ export function executeStep(
           (stepParams.stat === 'THW' ? (stepParams.amount as number) : 0) ||
           0;
 
-        // Apply to player identity (Hero/Alter-Ego is a friendly character)
-        if (!player.activeStatModifiers) player.activeStatModifiers = [];
-        if (atkBonus) {
-          player.activeStatModifiers.push({
-            stat: 'ATK',
-            amount: atkBonus,
-            duration,
+        // "Choose a player": the characters that player controls get the bonus
+        const chosenPlayerId =
+          (stepParams.targetPlayerId as string) ||
+          context.targetPlayerId ||
+          (stepParams.targetPlayer === 'CHOSEN_PLAYER' && state.players.length > 1
+            ? undefined
+            : player.id);
+        if (!chosenPlayerId) {
+          const promptId = `prompt_${Date.now()}_choose_player`;
+          state = enqueueDecisionPrompt(state, {
+            promptId,
+            playerId: player.id,
+            title: 'Choose a Player',
+            description: 'Choose a player. Each character that player controls gets the bonus:',
             sourceCardName,
             sourceCardCode,
+            options: state.players.map((p) => ({
+              id: `modify_stat_${p.id}`,
+              label: `${p.name} (${p.hero?.name || 'Hero'})`,
+              description: `+${atkBonus} ATK / +${thwBonus} THW to ${p.name}'s hero and ${p.allies.length} ally(ies)`,
+              effect: 'MODIFY_STAT',
+              params: { ...stepParams, targetPlayerId: p.id },
+            })),
           });
-        }
-        if (thwBonus) {
-          player.activeStatModifiers.push({
-            stat: 'THW',
-            amount: thwBonus,
-            duration,
-            sourceCardName,
-            sourceCardCode,
+          state.log.push({
+            id: `log_${Date.now()}`,
+            timestamp: Date.now(),
+            round: state.roundNumber,
+            phase: state.phase,
+            category: 'ability',
+            key: 'decision.prompt.opened',
+            params: { player: player.name, promptId, source: sourceCardName },
+            onomatopoeia: 'CHOOSE PLAYER!',
           });
+          return { state, success: true, onomatopoeia: 'CHOOSE PLAYER!' };
         }
+        const recipient = state.players.find((p) => p.id === chosenPlayerId) || player;
 
-        // Apply to all allies
-        for (const a of player.allies) {
-          if (!a.activeStatModifiers) a.activeStatModifiers = [];
-          if (atkBonus) {
-            a.activeStatModifiers.push({
-              stat: 'ATK',
-              amount: atkBonus,
-              duration,
-              sourceCardName,
-              sourceCardCode,
-            });
+        const pushBonuses = (mods: { stat: 'ATK' | 'THW'; amount: number }[], into: any) => {
+          if (!into.activeStatModifiers) into.activeStatModifiers = [];
+          for (const m of mods) {
+            into.activeStatModifiers.push({ ...m, duration, sourceCardName, sourceCardCode });
           }
-          if (thwBonus) {
-            a.activeStatModifiers.push({
-              stat: 'THW',
-              amount: thwBonus,
-              duration,
-              sourceCardName,
-              sourceCardCode,
-            });
-          }
-        }
+        };
+        const mods: { stat: 'ATK' | 'THW'; amount: number }[] = [];
+        if (atkBonus) mods.push({ stat: 'ATK', amount: atkBonus });
+        if (thwBonus) mods.push({ stat: 'THW', amount: thwBonus });
+
+        // The recipient's identity (hero or alter-ego) and allies
+        pushBonuses(mods, recipient);
+        for (const a of recipient.allies) pushBonuses(mods, a);
 
         return {
           state,
           success: true,
           mutatedState: true,
-          onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ALL CHARACTERS!`,
+          onomatopoeia: `+${atkBonus} ATK / +${thwBonus} THW TO ${recipient.name.toUpperCase()}'S CHARACTERS!`,
         };
       }
 

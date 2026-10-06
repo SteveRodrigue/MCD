@@ -231,14 +231,14 @@
 ## 4. Temporary Stat Modifier Auras (`MODIFY_STAT`)
 
 - **Status:** 🟢 `IMPLEMENTED (v1.0)` (ADR-0062 / _Vision_ `01068` / _Lead from the Front_ `01070`)
-- **Description:** Pushes a typed `ActiveStatModifier` entry onto `CardInstance.activeStatModifiers` (ally-targeted) or `PlayerState.activeStatModifiers` (hero / all-friendly-characters). The modifier is aggregated at stat-calculation time by `getEffectiveAllyStats` and `getEffectiveHeroStats`, and is automatically expired at the relevant phase or round transition.
+- **Description:** Pushes a typed `ActiveStatModifier` entry onto `CardInstance.activeStatModifiers` (ally-targeted) or `PlayerState.activeStatModifiers` (hero / all controlled characters). The modifier is aggregated at stat-calculation time by `getEffectiveAllyStats` and `getEffectiveHeroStats`, and is automatically expired at the relevant phase or round transition.
 
 ### Targets
 
 | `target` value             | Effect                                                                                           |
 | :------------------------- | :----------------------------------------------------------------------------------------------- |
 | `"SELF"`                   | Applies to the triggering card instance (typically the ally that activated the ability).         |
-| `"ALL_FRIENDLY_CHARACTERS"`| Applies to the triggering player's hero identity AND all allied characters simultaneously.       |
+| `"ALL_CONTROLLED_CHARACTERS"`| With `atkBonus` / `thwBonus`: applies to the identity AND all allies of one player (the resolving player, or the one chosen with `targetPlayer`). |
 | `"TRIGGERING_HERO"`        | Applies to the triggering player's hero identity.                                                |
 | `"CHOSEN_ALLY"`            | Applies to a player-chosen ally (currently routes via `SELF` resolution).                        |
 
@@ -250,8 +250,9 @@
 | `amount`     | `number`                               | Yes      | `1`       | The additive bonus amount.                               |
 | `duration`   | `"PHASE" \| "ROUND"`                   | Yes      | `"PHASE"` | Expiry window per RR v1.8 timing boundaries.             |
 | `target`     | `TargetSelector`                       | Yes      | `"SELF"`  | Who receives the modifier.                               |
-| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATK"` when used with `ALL_FRIENDLY_CHARACTERS`. |
-| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THW"` when used with `ALL_FRIENDLY_CHARACTERS`. |
+| `atkBonus`   | `number`                               | No       | -         | Shorthand for `stat: "ATK"` when used with `ALL_CONTROLLED_CHARACTERS`. |
+| `thwBonus`   | `number`                               | No       | -         | Shorthand for `stat: "THW"` when used with `ALL_CONTROLLED_CHARACTERS`. |
+| `targetPlayer` | `"SELF" \| "CHOSEN_PLAYER"`         | No       | `"SELF"`  | `CHOSEN_PLAYER` opens a "Choose a Player" prompt in multiplayer (the chosen player's characters get the bonus) and auto-resolves on the resolving player in solo. |
 
 ### Expiry Pipeline
 
@@ -288,13 +289,14 @@
 }
 ```
 
-### Example: Lead from the Front `01070` — ALL_FRIENDLY_CHARACTERS buff
+### Example: Lead from the Front `01070` — chosen player's characters
 
 ```json
 {
   "effect": "MODIFY_STAT",
   "effectParams": {
-    "target": "ALL_FRIENDLY_CHARACTERS",
+    "target": "ALL_CONTROLLED_CHARACTERS",
+    "targetPlayer": "CHOSEN_PLAYER",
     "atkBonus": 1,
     "thwBonus": 1,
     "duration": "PHASE"

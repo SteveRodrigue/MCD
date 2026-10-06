@@ -211,7 +211,7 @@ Use the entry shape in [`supplemental-entry-template.md`](supplemental-entry-tem
 3. **Inbox Zero Pruning:** If an open ambiguity file existed in `docs/ambiguities/` for this card, **delete it**.
 4. **Canonical Card ID Sorting:** Keep `src/data/supplemental/pack/*.json` in ascending card ID order (`01001a` -> `01001b` -> `01002`); a hook reports any out-of-order key after each edit. Insert new entries in place, not at the bottom.
 5. **Regenerate Usage Audit & Verification:**
-   - **In Single-Card Mode:** Run `rtk npm run report:declarations` (or `rtk npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_declarations_usage_report.md`](../../../docs/reports/supplemental_declarations_usage_report.md). Run full verification suite: `rtk npm test; rtk npm run typecheck; rtk npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
+   - **In Single-Card Mode:** Run `rtk npm run report:declarations` (or `rtk npx tsx tools/audit/supplemental-declarations-analyzer.ts`) to regenerate [`docs/reports/supplemental_data/usage_report.md`](../../../docs/reports/supplemental_data/usage_report.md). Run full verification suite: `rtk npm test; rtk npm run typecheck; rtk npm run build` (confirming **0 failed and 0 skipped tests** under the Zero Skipped Tests Invariant).
    - **In Batch Mode:** Do **not** run verification repeatedly per card. Execute Step 8 authoring and sorting across all approved cards in the batch first, then execute `rtk npm run report:declarations` and the full verification suite (`rtk npm test; rtk npm run typecheck; rtk npm run build`) **once as a single consolidated check** at the end of the batch.
 
 ---

@@ -1,7 +1,7 @@
 # MCD Backlog: Status and Work Queue
 
 > **Last updated:** 2026-10-05
-> **Repository state:** `main`, last work commit: the #266 commit (pausable threat placement), after `9985c4f` (#240). Check `git log -1` and `git status` first.
+> **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
 > **Verification baseline:** 🟢 1,921 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
@@ -35,8 +35,8 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #248 | Pausable `executeSequence`, Hulk `01050`, `pendingSequences` unified, `pendingSpecialSequence` retired | `ecc52ba` |
 | #238 | Highway Robbery: real host, `cardsUnderneath`, "When Defeated" before host cleanup, facedown stack UI | `git log --grep "#238"` |
 | Triage of #249 to #251 | 3 in-app reports triaged and filed: #249 Spider-Tracer (01007), #250 Webbed Up (01009), #251 Lead from the Front (01070) | GitHub only |
-| #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `git log --grep "#266"` |
-| #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `git log --grep "#240"` |
+| #266 | Pausable threat placement: an accepted Emergency / Great Responsibility / "I Object!" changes the threat placed; every eligible card offered, first player first; window closes when nothing is left | `d40febb` |
+| #240 | Emergency only when the villain schemes (`triggerFilter.threatSource`); hands drawn after scenario setup; no player ability during setup | `9985c4f` |
 | #244 | Weapons Runner boost; minions engaged during step 2 activate in that player's 2b; `PUT_INTO_PLAY` `reveal` (Shadow of the Past now resolves Highway Robbery's When Revealed); dead aliases and `skipBoostDiscard` removed | `41a41b0` |
 
 ---
@@ -123,7 +123,7 @@ Tier 1 data: [#258](https://github.com/SteveRodrigue/MCD/issues/258) (C2 to C5, 
 
 ### 3.6 Smaller engine defects
 
-[#216](https://github.com/SteveRodrigue/MCD/issues/216) `STAT_VALUE DAMAGE` reads a nonexistent field; [#217](https://github.com/SteveRodrigue/MCD/issues/217) flaky obligation test (shuffle-dependent); [#224](https://github.com/SteveRodrigue/MCD/issues/224) acceleration icons outside side schemes; [#206](https://github.com/SteveRodrigue/MCD/issues/206) identity printed traits ignore the form; [#263](https://github.com/SteveRodrigue/MCD/issues/263) three copies of the boost loop; [#264](https://github.com/SteveRodrigue/MCD/issues/264) villain attack may not resume after declining Spider-Sense (stepped flow, not reproduced yet; owner: later).
+[#216](https://github.com/SteveRodrigue/MCD/issues/216) `STAT_VALUE DAMAGE` reads a nonexistent field; [#217](https://github.com/SteveRodrigue/MCD/issues/217) flaky obligation test (shuffle-dependent); [#224](https://github.com/SteveRodrigue/MCD/issues/224) acceleration icons outside side schemes; [#206](https://github.com/SteveRodrigue/MCD/issues/206) identity printed traits ignore the form; [#263](https://github.com/SteveRodrigue/MCD/issues/263) three copies of the boost loop; [#264](https://github.com/SteveRodrigue/MCD/issues/264) villain attack may not resume after declining Spider-Sense (stepped flow, not reproduced yet; owner: later); [#267](https://github.com/SteveRodrigue/MCD/issues/267) non-threat hand reactions offer one card per player in seat order; [#268](https://github.com/SteveRodrigue/MCD/issues/268) pausable damage for prevention prompts, replacing the attack-only `pendingDamage` (do with or after #267).
 
 ### 3.7 Deferred (do not start without the owner)
 

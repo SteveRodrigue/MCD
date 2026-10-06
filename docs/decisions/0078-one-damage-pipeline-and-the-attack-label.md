@@ -50,3 +50,8 @@ Damage was applied by two parallel mechanisms. `applyDamageToTarget` (`damage-pi
 - Damage shields and "would be taken" interrupts now apply uniformly to every `DEAL_DAMAGE` target.
 - Chase Them Down is offered after your hero defeats an enemy by a basic attack or a labelled attack, and not after an ally, an unlabelled effect, or another player's hero. Tigra no longer heals when someone else defeats a minion.
 - With the label, Uppercut and the other labelled attacks provoke Retaliate again, and "after your hero attacks" Responses also follow attack events, not only basic attacks.
+
+## Addendum (#223): enemy attacks by card code, and X attacks
+
+- **`ENEMY_ATTACKS`** starts the attack of a specific enemy (minion or named villain) through `beginEnemyAttack`, the body of `initiateEnemyAttack`, which also reports whether the attack happened (Stun and `HOST_WOULD_ATTACK` cancel it in step 1, before any prompt). The result gates "if it did not attack" with `IF_FAILED`. `VILLAIN_ATTACKS` stays for "the villain" (scenario-dependent).
+- **Minion attack:** `getEffectiveMinionAttack` is the printed value (the importer stores an X attack as `-1`, counted as 0) plus the minion's own `CONSTANT` `MODIFY_STAT` `ATTACK` steps with dynamic amounts. `CARD_ATTRIBUTE` gains `REMAINING_HIT_POINTS`. The old `attack || 1` fallback is gone for printed 0.

@@ -450,6 +450,7 @@
                           "SURGE",
                           "TRANSFER_DAMAGE",
                           "TRIGGER_WAKANDA_UPGRADES",
+                          "ENEMY_ATTACKS",
                           "VILLAIN_AND_ENGAGED_MINIONS_ATTACK",
                           "VILLAIN_ATTACKS",
                           "VILLAIN_SCHEMES",

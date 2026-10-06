@@ -1142,6 +1142,26 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       },
     ],
   },
+  ENEMY_ATTACKS: {
+    effect: 'ENEMY_ATTACKS',
+    description:
+      'A specific enemy (minion, or a named villain) attacks the player. The step fails when it did not attack (not in play, stunned, cancelled, no hero), so a later step can gate on IF_FAILED.',
+    parameters: [
+      {
+        key: 'enemy',
+        label: 'Enemy Card Code',
+        type: 'text',
+        placeholder: 'e.g. 01162',
+      },
+      {
+        key: 'target',
+        label: 'Attacked Character',
+        type: 'select',
+        options: ['SELF_HERO', 'SELF_IDENTITY'],
+        defaultValue: 'SELF_HERO',
+      },
+    ],
+  },
   VILLAIN_SCHEMES: {
     effect: 'VILLAIN_SCHEMES',
     description: 'Induce the Villain to immediately scheme against player.',

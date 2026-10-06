@@ -269,6 +269,12 @@ export function readCardAttribute(
       return typeof damage === 'number' ? damage : 0;
     }
 
+    case 'REMAINING_HIT_POINTS': {
+      const health = (cardData as { health?: number })?.health;
+      const damage = card?.tokens?.damage ?? 0;
+      return typeof health === 'number' ? Math.max(0, health - damage) : 0;
+    }
+
     case 'COUNTERS': {
       if (typeof card?.tokens?.counters === 'number') {
         return card.tokens.counters;

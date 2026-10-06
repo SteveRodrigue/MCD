@@ -19,7 +19,8 @@
 
 ### `VILLAIN_ATTACKS`
 * **Status:** 🟢 `IMPLEMENTED (v1.0)` (*Assault* `01187`)
-* **Description:** In Hero form, causes villain to attack player; in Alter-Ego form, card gains Surge.
+* **Description:** The villain currently in play (scenario-dependent, so no card code) attacks the resolving player, with boost cards. In Hero form it attacks; in Alter-Ego form the card gains Surge.
+* **Use it when** the printed text says "the villain attacks you". Use `ENEMY_ATTACKS` when a *specific* enemy must attack.
 
 ```json
 {
@@ -29,6 +30,43 @@
   }
 }
 ```
+
+---
+
+### `ENEMY_ATTACKS`
+* **Status:** 🟢 `IMPLEMENTED (v1.0)` ([Issue #223](https://github.com/SteveRodrigue/MCD/issues/223), *Titania's Fury* `01164`)
+* **Description:** The specific enemy with card code `enemy` attacks the resolving player: a minion engaged with any player, or a villain in play (the way to name one villain in a multi-villain scenario). It runs the normal attack pipeline (Stun, `HOST_WOULD_ATTACK` interrupts, Spider-Sense, defender declaration, boost cards for a villain).
+* **Parameters:** `enemy` (card code, required); `target`: `SELF_HERO` (default, "your hero": in Alter-Ego form there is no hero, so no attack) or `SELF_IDENTITY`.
+* **Result:** `success` and `mutatedState` are `true` only if the attack happened. The step fails when the enemy is not in play, is Stunned (the Stun is cleared), the attack is cancelled, or the player has no hero. `targetId` is the enemy's instance id whenever it is in play, so `PREVIOUS_TARGET` reaches it. Gate "if X did not attack" steps with `IF_FAILED` and `gateParams.targetStepId` (an in-between step would otherwise replace the previous result).
+
+*Titania's Fury* `01164`: "Titania attacks your hero. If Titania did not attack, heal all damage from Titania and this card gains surge."
+
+```json
+{
+  "steps": [
+    {
+      "id": "titania_attacks",
+      "effect": "ENEMY_ATTACKS",
+      "effectParams": { "enemy": "01162", "target": "SELF_HERO" }
+    },
+    {
+      "id": "titania_heals",
+      "effect": "HEAL_DAMAGE",
+      "gate": "IF_FAILED",
+      "gateParams": { "targetStepId": "titania_attacks" },
+      "effectParams": { "amount": "ALL", "target": "PREVIOUS_TARGET" }
+    },
+    {
+      "id": "titania_surges",
+      "effect": "SURGE",
+      "gate": "IF_FAILED",
+      "gateParams": { "targetStepId": "titania_attacks" }
+    }
+  ]
+}
+```
+
+`HEAL_DAMAGE` accepts `amount: "ALL"` (heal every damage). A step with no resolved target heals nothing; it never falls back to the player.
 
 ---
 

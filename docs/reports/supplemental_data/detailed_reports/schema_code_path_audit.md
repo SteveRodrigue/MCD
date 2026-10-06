@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-06T21:35:45.310Z` | **Overall Coverage:** **98.4%**
+> **Generated:** `2026-10-06T23:35:07.856Z` | **Overall Coverage:** **100.0%**
 
 This matrix audits every schema primitive defined in `src/data/supplemental/schema.ts` across 3 dimensions:
 1. **In Schema**: Is the enum option formally defined in schema.ts?
@@ -151,7 +151,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `IF_FORM` | ✅ Yes | **7** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 7 card(s). |
 | `IF_ACTIVATION_DEALT_DAMAGE` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/pipeline/step-gate-evaluator.ts`; declared by 1 card(s). |
 
-### 4. Step Conditions (`StepConditionSchema` — 76.9% Engine Coverage)
+### 4. Step Conditions (`StepConditionSchema` — 100.0% Engine Coverage)
 
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
@@ -161,12 +161,8 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `STATUS_APPLIED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
 | `EXCESS_DAMAGE_DEALT` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
 | `ALREADY_HAS_STATUS` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; 0 cards currently declare this. |
-| `TARGET_ALREADY_EXHAUSTED` | ❌ No | **0** | ⚠️ Schema Ghost | Defined in schema but no engine handler and 0 cards. Candidate for cleanup. |
 | `TARGET_TRAIT_MATCH` | ✅ Yes | **4** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 4 card(s). |
-| `TARGET_FORM_MATCH` | ❌ No | **0** | ⚠️ Schema Ghost | Defined in schema but no engine handler and 0 cards. Candidate for cleanup. |
 | `UNDEFENDED_ATTACK` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 2 card(s). |
-| `RESOURCE_KICKER_MET` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 1 card(s). |
-| `COUNTER_THRESHOLD_MET` | ❌ No | **0** | ⚠️ Schema Ghost | Defined in schema but no engine handler and 0 cards. Candidate for cleanup. |
 | `ZONE_EMPTY` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/effects/index.ts` / `step-gate-evaluator.ts`; declared by 1 card(s). |
 
 ### 5. Trigger Windows (`TriggerTypeSchema` — 100.0% Engine Coverage)
@@ -174,7 +170,6 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | Primitive Value | In Engine Code Path? | Cards Declaring | Status | Health Rationale / Code Location |
 | :--- | :---: | :---: | :---: | :--- |
 | `WHEN_REVEALED` | ✅ Yes | **35** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 35 card(s). |
-| `BOOST_STAR_RESOLVED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `ENEMY_INITIATES_ATTACK` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `DAMAGE_WOULD_BE_TAKEN` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 3 card(s). |
 | `CARD_PLAYED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
@@ -185,12 +180,10 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `SCHEME_DEFEATED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `HOST_WOULD_ATTACK` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `THREAT_WOULD_BE_PLACED` | ✅ Yes | **3** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 3 card(s). |
-| `MAIN_SCHEME_ADVANCED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `BASIC_ATTACK_PERFORMED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `ATTACK_DEFENDED` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 2 card(s). |
 | `ATTACK_RESOLVED` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 2 card(s). |
 | `THWART_RESOLVED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
-| `RESOURCE_SPENT` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `MINION_ATTACKED` | ✅ Yes | **2** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 2 card(s). |
 | `ATTACK` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `ROUND_BEGAN` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
@@ -204,7 +197,7 @@ This matrix audits every schema primitive defined in `src/data/supplemental/sche
 | `THREAT_PLACED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
 | `FORM_CHANGED` | ✅ Yes | **1** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 1 card(s). |
 | `STATUS_REMOVED` | ✅ Yes | **0** | 🔵 Engine-Ready | Handled in `src/engine/triggers/` & scenario pipelines; 0 cards currently declare this. |
-| `BOOST` | ✅ Yes | **5** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 5 card(s). |
+| `BOOST` | ✅ Yes | **6** | 🟢 Active | Handled in `src/engine/triggers/` & scenario pipelines; declared by 6 card(s). |
 
 ### 6. Ability Timings (`TimingTypeSchema` — 100.0% Engine Coverage)
 

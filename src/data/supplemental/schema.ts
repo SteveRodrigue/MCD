@@ -58,7 +58,6 @@ export const TimingTypeSchema = z.enum([
  */
 export const TriggerTypeSchema = z.enum([
   'WHEN_REVEALED',
-  'BOOST_STAR_RESOLVED',
   'ENEMY_INITIATES_ATTACK',
   'DAMAGE_WOULD_BE_TAKEN',
   'CARD_PLAYED',
@@ -69,12 +68,10 @@ export const TriggerTypeSchema = z.enum([
   'SCHEME_DEFEATED',
   'HOST_WOULD_ATTACK',
   'THREAT_WOULD_BE_PLACED',
-  'MAIN_SCHEME_ADVANCED',
   'BASIC_ATTACK_PERFORMED',
   'ATTACK_DEFENDED',
   'ATTACK_RESOLVED',
   'THWART_RESOLVED',
-  'RESOURCE_SPENT',
   'MINION_ATTACKED',
   'ATTACK',
   'ROUND_BEGAN',
@@ -155,18 +152,12 @@ export const StepConditionSchema = z.enum([
 
   // Entity & Board States
   'ALREADY_HAS_STATUS',
-  'TARGET_ALREADY_EXHAUSTED',
   'TARGET_TRAIT_MATCH',
-  'TARGET_FORM_MATCH',
 
   // Combat Context (evaluated against the attack being resolved, e.g. in a boost)
   'UNDEFENDED_ATTACK',
 
-  // Payment & Resource Invariants
-  'RESOURCE_KICKER_MET',
-
-  // Thresholds & Counters
-  'COUNTER_THRESHOLD_MET',
+  // Board & Zone States
   'ZONE_EMPTY',
 ]);
 

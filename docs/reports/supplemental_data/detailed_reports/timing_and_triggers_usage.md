@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-06T21:35:45.310Z`
+> **Generated:** `2026-10-06T23:35:07.856Z`
 
 ## 1. Ability Timings (`TimingTypeSchema` — 17/19 In Use)
 
@@ -253,7 +253,7 @@
 | :--- | :--- | :--- | :--- |
 | `01019a` | **She-Hulk (hero)** | `core` | `she_hulk_form_change` |
 
-## 2. Trigger Windows (`TriggerTypeSchema` — 20/32 In Use)
+## 2. Trigger Windows (`TriggerTypeSchema` — 19/29 In Use)
 
 ### <a id="when-revealed"></a>`WHEN_REVEALED` (35 Cards)
 
@@ -310,7 +310,7 @@
 | `01170` | **Business Problems (obligation)** | `core_encounter` | `business_problems_resolve` |
 | `01175` | **Family Emergency (obligation)** | `core_encounter` | `family_emergency_resolve` |
 
-### <a id="boost"></a>`BOOST` (5 Cards)
+### <a id="boost"></a>`BOOST` (6 Cards)
 
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
@@ -319,6 +319,7 @@
 | `01164` | **Titania's Fury (treachery)** | `core_encounter` | `titanias_fury_boost` |
 | `01168` | **Sweeping Swoop (treachery)** | `core_encounter` | `sweeping_swoop_boost` |
 | `01173` | **Electric Whip Attack (treachery)** | `core_encounter` | `electric_whip_attack_boost` |
+| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
 
 ### <a id="character-defeated"></a>`CHARACTER_DEFEATED` (3 Cards)
 
@@ -385,12 +386,6 @@
 | Card Code | Card Name | Pack | Declared In Abilities |
 | :--- | :--- | :--- | :--- |
 | `01024` | **One-Two Punch (event)** | `core` | `one_two_punch_response` |
-
-### <a id="boost-star-resolved"></a>`BOOST_STAR_RESOLVED` (1 Cards)
-
-| Card Code | Card Name | Pack | Declared In Abilities |
-| :--- | :--- | :--- | :--- |
-| `01178` | **Kree Manipulator (treachery)** | `core_encounter` | `kree_manipulator_boost` |
 
 ### <a id="card-played"></a>`CARD_PLAYED` (1 Cards)
 

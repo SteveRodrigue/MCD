@@ -2072,7 +2072,6 @@
           "steps": [
             {
               "effect": "DEAL_DAMAGE",
-              "condition": "RESOURCE_KICKER_MET",
               "effectParams": {
                 "amount": 5,
                 "target": "CHOSEN_MINION",

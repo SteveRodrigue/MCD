@@ -92,11 +92,7 @@ To guarantee strict determinism and eliminate ambiguity regarding what `INTERCEP
 | **Core Milestone** | `STATUS_APPLIED` | Status was successfully placed (target was not already afflicted & not immune). | `ADD_STATUS` | *Mockingbird* (`01083`), *Pheromones* (`04036`) |
 | **Core Milestone** | `EXCESS_DAMAGE_DEALT` | Damage dealt exceeded target's remaining HP prior to strike (Overkill). | `DEAL_DAMAGE` | *Relentless Assault* (`01053`), *Hand Cannon* |
 | **Entity State** | `ALREADY_HAS_STATUS` | Target character already possessed the specified status (e.g. Stunned/Tough). | `ADD_STATUS` | *War-Weary* (`45073`), *I'm Tough* (`01105`) |
-| **Entity State** | `TARGET_ALREADY_EXHAUSTED` | Target entity was already in exhausted orientation. | `EXHAUST` | *Sonic Rifle*, *Tackle* |
 | **Entity State** | `TARGET_TRAIT_MATCH` | Targeted card/character possesses specified trait filter (e.g. `[[AERIAL]]`). | Card Filter Criteria | *Aerial Intervention* (`42014`), *Cannonball* (`42020`) |
-| **Entity State** | `TARGET_FORM_MATCH` | Identity is currently in specified form (`hero`, `alter_ego`, `giant`, `tiny`). | Player State | *Lay Down the Law* (`12031`), *Split Personality* (`01025`) |
-| **Resource** | `RESOURCE_KICKER_MET` | Resources spent to pay for the card match required icon(s) or resource card. | `resourcesSpent` | *Relentless Assault* (`01053`), *For Justice!* (`01060`) |
-| **Threshold** | `COUNTER_THRESHOLD_MET` | Target upgrade/support has reached or exceeded specified counter count. | `counters` | *Energy Channel* (`01018`), *Heightened Reflexes* (`50092`) |
 | **Threshold** | `ZONE_EMPTY` | Evaluated zone (e.g. hand, discard, encounter deck) contains 0 cards. | Zone count | *Spiritual Meditation*, *Split Personality* |
 
 ```ts
@@ -111,15 +107,11 @@ export const StepConditionSchema = z.enum([
   
   // Entity & Board States
   'ALREADY_HAS_STATUS',
-  'TARGET_ALREADY_EXHAUSTED',
   'TARGET_TRAIT_MATCH',
-  'TARGET_FORM_MATCH',
   
   // Payment & Resource Invariants
-  'RESOURCE_KICKER_MET',
   
   // Thresholds & Counters
-  'COUNTER_THRESHOLD_MET',
   'ZONE_EMPTY',
 ]);
 ```
@@ -251,3 +243,8 @@ Embed micro-expressions or mini-scripts directly in supplemental JSON (e.g. `amo
 Boost abilities were resolved with no attack facts, so "if the villain is making an undefended attack" had no declarative form and the data hid a made-up `condition` inside `effectParams`, which nothing read (the boost fired on every attack).
 
 **Decision:** a new `StepCondition` `UNDEFENDED_ATTACK`, evaluated by `evaluateStepGate` through `IF_CONDITION_MET` / `IF_CONDITION_NOT_MET` against `attackerType` and `defenderType` carried in the step gate context. The combat pipeline passes both when it resolves a boost card (`defenderType` is `UNDEFENDED` when no hero or ally was declared). Optional `gateParams.attackerKind` (`VILLAIN` / `MINION` / `ANY_ENEMY`, same enum as `triggerFilter.attackerKind`) restricts the attacker. Outside an attack the condition is false. Unlike `TARGET_TRAIT_MATCH` it is not state-only, so `isStepGateClosedByState` does not look at it.
+
+
+## Addendum (2026-10-06, #276)
+
+`TARGET_ALREADY_EXHAUSTED`, `TARGET_FORM_MATCH`, `RESOURCE_KICKER_MET` and `COUNTER_THRESHOLD_MET` were removed from `StepConditionSchema`: the engine never read them (a schema member needs a reader and a test, see ADR-0043 addendum). The tables above keep their historical form minus those rows. A generic value-comparison condition is [#278](https://github.com/SteveRodrigue/MCD/issues/278).

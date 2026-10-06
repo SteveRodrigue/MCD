@@ -19,7 +19,7 @@ sequenceDiagram
     CP->>CP: step1_preAttackAndStunCheck<br/>(Webbed Up / Stun intercepts)
     CP->>TD: step2_dispatchInitiationTriggers<br/>(ENEMY_INITIATES_ATTACK — Spider-Sense window)
     CP->>D: step3_openDefenderDeclarationPrompt<br/>(choose defender or take undefended)
-    CP->>CP: step4_and_5_dealAndResolveBoostCards<br/>(reveal boost, resolve BOOST / BOOST_STAR_RESOLVED)
+    CP->>CP: step4_and_5_dealAndResolveBoostCards<br/>(reveal boost, resolve BOOST)
     CP->>TD: DAMAGE_WOULD_BE_TAKEN window<br/>(Backflip-style prevention)
     CP->>CP: step6_calculateAndApplyAttackDamage<br/>(ATK vs DEF, Piercing/Overkill math)
     CP->>TD: DAMAGE_TAKEN / CHARACTER_DEFEATED (if applicable)
@@ -31,7 +31,7 @@ sequenceDiagram
 | 1    | `step1_preAttackAndStunCheck`          | `HOST_WOULD_ATTACK` (e.g. Webbed Up)            |
 | 2    | `step2_dispatchInitiationTriggers`     | `ENEMY_INITIATES_ATTACK`                         |
 | 3    | `step3_openDefenderDeclarationPrompt`  | _(defender is declared; no trigger fires yet)_   |
-| 4–5  | `step4_and_5_dealAndResolveBoostCards` | `BOOST`, `BOOST_STAR_RESOLVED`                   |
+| 4–5  | `step4_and_5_dealAndResolveBoostCards` | `BOOST`                                          |
 | —    | _(intercept window between 5 and 6)_   | `DAMAGE_WOULD_BE_TAKEN`                          |
 | 6    | `step6_calculateAndApplyAttackDamage`  | `DAMAGE_TAKEN`, `CHARACTER_DEFEATED`, `DEFEATED` |
 | 7    | `step7_resolvePostAttackAndRetaliate`  | `ATTACK_DEFENDED` (hero or ally defended; e.g. Counter-Punch, Indomitable), `ATTACK_RESOLVED` |

@@ -86,3 +86,15 @@ How do we guarantee that every enum and effect declared in supplemental data is 
 
 ### Negative Consequences / Tradeoffs
 - When developing new effect primitives, developers must remember to add the new enum variant to `EffectTypeSchema` and run `npm run schema:generate`. (Enforced by automated Vitest freshness test).
+
+---
+
+## Addendum (2026-10-06, #276): every schema member needs a reader and a test
+
+ADR-0043 guaranteed parity for effect types. The same rule now covers **every** member of the supplemental schema (object fields and enum members), after `CardUses.max` stayed in the schema for weeks with no reader and `RESOURCE_KICKER_MET` was masked by an allow-list.
+
+- **Inventory:** `tools/audit/schema-member-coverage.ts` reads the members from the Zod schemas themselves (shared enums once), so a new member cannot escape.
+- **Reader proof:** `tests/data/schema-member-coverage.test.ts` fails and names every member whose name is not read in `src/engine` (without `src/engine/models/abilities.ts`, the TypeScript copy of the enums) or `src/ui` (without the editor, which only writes data). Authoring metadata (`audit.*`, `noSupplementalNeeded`) is searched in `src/tools` and the editor.
+- **No allow-list.** The only entries are `KNOWN_GAPS`, owner-approved and tied to an issue; the test fails as soon as an entry gets a reader.
+- **Limit:** the check is textual. The runtime proof (fake pack and read tracking) is [#279](https://github.com/SteveRodrigue/MCD/issues/279).
+- **Removed:** step conditions `TARGET_ALREADY_EXHAUSTED`, `TARGET_FORM_MATCH`, `RESOURCE_KICKER_MET`, `COUNTER_THRESHOLD_MET`; triggers `BOOST_STAR_RESOLVED`, `MAIN_SCHEME_ADVANCED`, `RESOURCE_SPENT`.

@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "description": "The sentient artificial intelligence Ultron is manufacturing an army of drones to exterminate humanity!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
-  
+
   "villainSetup": {
     "villainName": "Ultron",
     "stages": {

@@ -7,7 +7,7 @@
   "version": "1.0.0",
   "description": "Rhino is attacking the S.I.T. facility to steal Vibranium. Stop him before he breaches the facility!",
   "supportedDifficulties": ["SKIRMISH", "STANDARD", "EXPERT"],
-  
+
   "villainSetup": {
     "villainName": "Rhino",
     "stages": {

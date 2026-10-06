@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Data: _Genetically Enhanced_ `01163` placeholder stripped, card blocked ([Issue #228](https://github.com/SteveRodrigue/MCD/issues/228))**
+  - **Supplemental Data (`core_encounter.json`), approved by the owner:** the `CONSTANT` `ADD_STATUS` with the unread `bonusAttack: 1` contradicted the printed "+3 hit points" and did nothing; removed per the circuit-breaker (`audit.confidence` 70).
+  - New `docs/ambiguities/core_encounter_01163_genetically-enhanced.md` (needs #209 conditional attach and a minion hit point modifier). Owner decision recorded: on a tie for highest printed hit points, the first player chooses.
+  - `tests/data/blocked-placeholder-cards.test.ts` guards the strip. The last `ADD_STATUS.bonusAttack` orphan is gone, so #230 can land with zero exemptions.
+
 - **Fix (Engine + Data): _Lead from the Front_ `01070` asks which player ([Issue #251](https://github.com/SteveRodrigue/MCD/issues/251))**
   - **Engine:** `MODIFY_STAT` with `atkBonus` / `thwBonus` now buffs the identity and allies of one player: the resolving player, or the one chosen with the new `targetPlayer: CHOSEN_PLAYER` (a "Choose a Player" prompt in multiplayer, automatic in solo). Before, the bonus always went to the caster and no prompt existed. The selector `ALL_FRIENDLY_CHARACTERS` is no longer read by `MODIFY_STAT` (it was decorative there); `ALL_CONTROLLED_CHARACTERS` replaces it.
   - **Supplemental Data (`core.json`), approved by the owner:** `01070` uses `target: ALL_CONTROLLED_CHARACTERS` with `targetPlayer: CHOSEN_PLAYER`.

@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T15:06:31.474Z`  
+> **Generated:** `2026-10-06T15:27:16.729Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -10,12 +10,12 @@
 | Metric | Count | Description |
 | :--- | :--- | :--- |
 | **Total Cards Registered** | **158** | Total cards present in `src/data/supplemental/` |
-| **Active Declared Cards** | **143** | Cards with executable `abilities: [...]` |
+| **Active Declared Cards** | **142** | Cards with executable `abilities: [...]` |
 | **No Supplemental Needed** | **11** | Vanilla / passive cards explicitly verified as requiring no supplemental hooks |
-| **Open Ambiguity Reports** | **6** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
+| **Open Ambiguity Reports** | **7** | Blocked cards isolated in `docs/ambiguities/` (Inbox Zero Queue) |
 | **False-Vanilla Violations** | **0** | 🚨 Cards marked `noSupplementalNeeded` that have printed rules text |
-| **Total Abilities Declared** | **161** | Total individual ability definitions declared |
-| **Single-Step Abilities (1 Step)** | **135** | Abilities with exactly 1 atomic execution step |
+| **Total Abilities Declared** | **160** | Total individual ability definitions declared |
+| **Single-Step Abilities (1 Step)** | **134** | Abilities with exactly 1 atomic execution step |
 | **Multi-Step Abilities (2+ Steps)** | **26** | Abilities decomposed into sequenced execution pipelines |
 | **Cards with Multi-Step Sequences** | **26** | Cards containing at least 1 ability with 2+ steps |
 | **Cards with Multiple Abilities (2+)** | **17** | Cards declaring more than 1 distinct ability header |
@@ -26,18 +26,19 @@
 | **Unique Condition Gates In Use** | **10** | Distinct condition gate types actively declared |
 | **Unique Step Conditions In Use** | **4** | Distinct step condition types actively declared |
 | **Unique Cost Keys In Use** | **9** | Distinct ability cost types actively declared |
-| **Unique Effect Param Keys In Use** | **56** | Distinct parameter keys passed into effect steps |
+| **Unique Effect Param Keys In Use** | **55** | Distinct parameter keys passed into effect steps |
 | **Unique Dynamic Value Sources In Use** | **10** | Distinct dynamic value resolver shapes actively declared |
 | **Unique Filter Criteria Keys In Use** | **5** | Distinct UniversalCardFilter criteria properties actively declared |
 
 ---
 
-## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 6 Cards)
+## 🔴 2. Active Ambiguity & Blocker Queue (Inbox Zero Queue — 7 Cards)
 
-These **6 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
+These **7 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities/README.md) pending rules engine primitives, targeting extensions, or nested resolution stack implementations. As each card is integrated and reaches $\ge 95\%$ confidence, its file is deleted to achieve **Inbox Zero**:
 
 | Card Code | Card Name | Pack | Confidence | Blocker Category | Ambiguity Report File |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| `01163` | **Genetically Enhanced** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01163_genetically-enhanced.md`](../ambiguities/core_encounter_01163_genetically-enhanced.md) |
 | `01164` | **Titania** | `core_encounter` | `80%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01164_titanias-fury.md`](../ambiguities/core_encounter_01164_titanias-fury.md) |
 | `01168` | **Sweeping Swoop** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01168_sweeping-swoop.md`](../ambiguities/core_encounter_01168_sweeping-swoop.md) |
 | `01169` | **The Vulture** | `core_encounter` | `70%` | `MISSING_ENGINE_PRIMITIVE` | [`core_encounter_01169_vultures-plans.md`](../ambiguities/core_encounter_01169_vultures-plans.md) |
@@ -115,7 +116,7 @@ These **6 cards** are currently isolated in [`docs/ambiguities/`](../ambiguities
 | :--- | :--- | :--- |
 | `WHEN_REVEALED` | **28** | `01095` Rhino (villain), `01096` Rhino (villain), `01103` Shocker (minion), `01104` Hard to Keep Down (treachery), `01105` "I'm Tough" (treachery) *(+23 more)* |
 | `HERO_ACTION` | **26** | `01005` Swinging Web Kick (event), `01009` Webbed Up (upgrade), `01010a` Captain Marvel (hero), `01012` Crisis Interdiction (event), `01013` Photonic Blast (event) *(+21 more)* |
-| `CONSTANT` | **20** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+13 more)* |
+| `CONSTANT` | **19** | `01016` Captain Marvel's Helmet (upgrade), `01017` Cosmic Flight (upgrade), `01028` Superhuman Strength (upgrade), `01029a` Iron Man (hero), `01036` Mark V Armor (upgrade) *(+12 more)* |
 | `FORCED_RESPONSE` | **18** | `01002` Black Cat (ally), `01028` Superhuman Strength (upgrade), `01050` Hulk (ally), `01084` Nick Fury (ally), `01102` Sandman (minion) *(+12 more)* |
 | `ACTION` | **16** | `01007` Spider-Tracer (upgrade), `01015` Alpha Flight Station (support), `01018` Energy Channel (upgrade), `01020` Hellcat (ally), `01025` Split Personality (event) *(+11 more)* |
 | `RESPONSE` | **11** | `01011` Spider-Woman (ally), `01024` One-Two Punch (event), `01041` Shuri (ally), `01051` Tigra (ally), `01052` Chase Them Down (event) *(+6 more)* |
@@ -333,7 +334,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | Effect Primitive | Card Count | Example Cards |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | **24** | `01005` Swinging Web Kick (event), `01013` Photonic Blast (event), `01018` Energy Channel (upgrade) *(+20 more)* |
-| `ADD_STATUS` | **18** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade) *(+13 more)* |
+| `ADD_STATUS` | **17** | `01009` Webbed Up (upgrade), `01011` Spider-Woman (ally), `01028` Superhuman Strength (upgrade) *(+12 more)* |
 | `DISCARD` | **13** | `01002` Black Cat (ally), `01009` Webbed Up (upgrade), `01031` Repulsor Blast (event) *(+9 more)* |
 | `REMOVE_THREAT` | **12** | `01007` Spider-Tracer (upgrade), `01012` Crisis Interdiction (event), `01023` Legal Practice (event) *(+7 more)* |
 | `MODIFY_STAT` | **12** | `01016` Captain Marvel's Helmet (upgrade), `01028` Superhuman Strength (upgrade), `01057` Combat Training (upgrade) *(+7 more)* |
@@ -371,7 +372,7 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | Effect Primitive | Occurrences | Declaring Cards |
 | :--- | :--- | :--- |
 | `DEAL_DAMAGE` | **24** | `01005` (Swinging Web Kick (event)), `01013` (Photonic Blast (event)), `01018` (Energy Channel (upgrade)), `01019a` (She-Hulk (hero)), `01021` (Gamma Slam (event)), `01022` (Ground Stomp (event)), `01030` (War Machine (ally)), `01031` (Repulsor Blast (event)), `01032` (Supersonic Punch (event)), `01038` (Powered Gauntlets (upgrade)), `01046` (Energy Daggers (upgrade)), `01047` (Panther Claws (upgrade)), `01050` (Hulk (ally)), `01053` (Relentless Assault (event)), `01054` (Uppercut (event)), `01056` (Tac Team (support)), `01058` (Daredevil (ally)), `01061` (Great Responsibility (event)), `01066` (Hawkeye (ally)), `01077` (Counter-Punch (event)), `01087` (Haymaker (event)), `01103` (Shocker (minion)), `01111` (Explosion (treachery)) |
-| `ADD_STATUS` | **18** | `01009` (Webbed Up (upgrade)), `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01162` (Titania (minion)), `01163` (Genetically Enhanced (attachment)), `01168` (Sweeping Swoop (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
+| `ADD_STATUS` | **17** | `01009` (Webbed Up (upgrade)), `01011` (Spider-Woman (ally)), `01028` (Superhuman Strength (upgrade)), `01076` (Luke Cage (ally)), `01083` (Mockingbird (ally)), `01096` (Rhino (villain)), `01102` (Sandman (minion)), `01105` ("I'm Tough" (treachery)), `01112` (False Alarm (treachery)), `01157` (Killmonger (minion)), `01158` (Heart-Shaped Herb (treachery)), `01162` (Titania (minion)), `01168` (Sweeping Swoop (treachery)), `01172` (Whiplash (minion)), `01194` (Unknown Card #01194) |
 | `DISCARD` | **13** | `01002` (Black Cat (ally)), `01009` (Webbed Up (upgrade)), `01031` (Repulsor Blast (event)), `01050` (Hulk (ally)), `01084` (Nick Fury (ally)), `01100` (Enhanced Ivory Horn (attachment)), `01102` (Sandman (minion)), `01159` (Ritual Combat (treachery)), `01173` (Electric Whip Attack (treachery)), `01188` (Caught Off Guard (treachery)), `01192` (Masterplan (treachery)), `01195` (Unknown Card #01195) |
 | `REMOVE_THREAT` | **12** | `01007` (Spider-Tracer (upgrade)), `01012` (Crisis Interdiction (event)), `01023` (Legal Practice (event)), `01026` (Superhuman Law Division (support)), `01037` (Mark V Helmet (upgrade)), `01048` (Tactical Genius (upgrade)), `01052` (Chase Them Down (event)), `01060` (For Justice! (event)), `01063` (Interrogation Room (support)), `01064` (Surveillance Team (support)) |
 | `MODIFY_STAT` | **12** | `01016` (Captain Marvel's Helmet (upgrade)), `01028` (Superhuman Strength (upgrade)), `01057` (Combat Training (upgrade)), `01059` (Jessica Jones (ally)), `01065` (Heroic Intuition (upgrade)), `01070` (Lead from the Front (event)), `01074` (Inspired (upgrade)), `01081` (Armored Vest (upgrade)), `01099` (Charge (attachment)), `01100` (Enhanced Ivory Horn (attachment)) |
@@ -492,7 +493,6 @@ This inventory tracks all target selectors declared on ability steps (`step.targ
 | `destination` | **1** | `01071` Make the Call (event) |
 | `control` | **1** | `01071` Make the Call (event) |
 | `maxAbsorb` | **1** | `01098` Armored Rhino Suit (attachment) |
-| `bonusAttack` | **1** | `01163` Genetically Enhanced (attachment) |
 | `cardCode` | **1** | `01177` Yon-Rogg (minion) |
 | `fallback` | **1** | `01188` Caught Off Guard (treachery) |
 | `toDeck` | **1** | `01190` Shadow of the Past (treachery) |

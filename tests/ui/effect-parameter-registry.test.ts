@@ -108,6 +108,12 @@ describe('Effect Parameter Registry & 1:1 Engine Grounding', () => {
     expect(takeParam?.allowDynamic).toBe(true);
   });
 
+  it('offers REVEAL as a DISCARD matchingDestination', () => {
+    const desc = getEffectDescriptor('DISCARD');
+    const destination = desc.parameters.find((p) => p.key === 'matchingDestination');
+    expect(destination?.options).toContain('REVEAL');
+  });
+
   it('flags scalable parameters with allowDynamic and allowAll appropriately', () => {
     const discardDesc = getEffectDescriptor('DISCARD');
     const discardCount = discardDesc.parameters.find((p) => p.key === 'count');

@@ -103,6 +103,28 @@
 | `filter`      | `UniversalCardFilter`                                                                         | No       | Card filtering criteria per [**04. Universal Card Filter**](./04_universal_card_filter.md) (e.g. `{ "types": ["upgrade", "support"] }`). |
 | `untilFilter` | `UniversalCardFilter`                                                                         | No       | Predicate for iterative milling until a matching card is found. See [**04. Universal Card Filter**](./04_universal_card_filter.md).      |
 | `fallback`    | `"SURGE" \| "NONE"`                                                                           | No       | Fallback resolution if no matching cards can be discarded (e.g. _Caught Off Guard_).                                                     |
+| `matchingDestination` | `"HAND" \| "PLAY" \| "DISCARD" \| "REVEAL"` | No | Where the card that ends an `UNTIL_MATCH` goes (default `"DISCARD"`). `"REVEAL"` reveals it (encounter deck only). |
+
+#### `ENCOUNTER_DECK` with `mode: "UNTIL_MATCH"` (_Masterplan_ `01192`)
+
+"Discard cards from the top of the encounter deck until a ... is discarded. Reveal it." discards one card at a time until a card matches `untilFilter`. Each non-matching card goes to the encounter discard pile. The matching card goes to `matchingDestination`: `"DISCARD"` (default) puts it in the encounter discard pile; `"REVEAL"` has the player resolving the ability reveal it through the normal reveal path (RR v1.8 glossary "Reveal"), so its When Revealed abilities resolve. `HAND` and `PLAY` are not supported from the encounter deck.
+
+**Empty deck rule** (RR v1.8 glossary "Encounter Deck"): if the encounter deck is emptied before a match is found, the discard stops and the effect is fulfilled; the discard pile (including the cards just discarded) is shuffled into a new encounter deck and an acceleration token is placed. The discard does not continue with the new deck.
+
+```json
+{
+  "effect": "DISCARD",
+  "condition": "ZONE_EMPTY",
+  "gate": "IF_CONDITION_MET",
+  "gateParams": { "zone": "SIDE_SCHEMES" },
+  "effectParams": {
+    "source": "ENCOUNTER_DECK",
+    "mode": "UNTIL_MATCH",
+    "untilFilter": { "types": ["side_scheme"] },
+    "matchingDestination": "REVEAL"
+  }
+}
+```
 
 #### 🧭 Decision Guide: `DISCARD` vs. `SEARCH`
 

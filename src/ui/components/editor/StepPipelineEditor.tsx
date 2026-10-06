@@ -675,6 +675,33 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
                 </div>
               )}
 
+              {step.condition === 'ZONE_EMPTY' && (
+                <div className="bg-yellow-50/70 border border-yellow-300 p-2 rounded shadow-comic-xs space-y-1.5">
+                  <span className="text-[9px] uppercase font-bold text-yellow-800 block">
+                    Zone Empty Parameters
+                  </span>
+                  <div>
+                    <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                      Zone
+                    </label>
+                    <select
+                      data-testid={`gate-param-zone-${abilityIndex}-${sIdx}`}
+                      value={gateParams.zone || ''}
+                      onChange={(e) => updateGateParam('zone', e.target.value)}
+                      className="w-full bg-white border border-black p-1 text-xs rounded font-bold"
+                    >
+                      <option value="">Select a zone</option>
+                      <option value="SIDE_SCHEMES">Side schemes in play</option>
+                      <option value="ENCOUNTER_DECK">Encounter deck</option>
+                      <option value="ENCOUNTER_DISCARD">Encounter discard pile</option>
+                      <option value="HAND">Hand</option>
+                      <option value="DECK">Deck</option>
+                      <option value="DISCARD">Discard pile</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               {/* Effect Primitive Selector & Description */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-0.5">

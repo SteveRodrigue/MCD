@@ -154,6 +154,40 @@ describe('Sub-Milestone 2D-2: Deck Exhaustion Invariants, Search Failures & Disc
       expect(state.accelerationTokens).toBe(1);
     });
 
+    it('puts each non-matching discarded card into the encounter discard pile, not the match', () => {
+      const charge = createCardInstance(cardCatalog.getCard('01099')!);
+      const side = createCardInstance(cardCatalog.getCard('01108')!);
+      const rest = createCardInstance(cardCatalog.getCard('01099')!);
+
+      state.encounterDeck = [charge, side, rest];
+      state.encounterDiscard = [];
+
+      const result = discardFromEncounterDeckUntil(state, (c) => c.card.code === '01108');
+
+      expect(result.found?.instanceId).toBe(side.instanceId);
+      expect(state.encounterDiscard.map((c) => c.instanceId)).toEqual([charge.instanceId]);
+      expect(state.encounterDeck.map((c) => c.instanceId)).toEqual([rest.instanceId]);
+    });
+
+    it('on an empty deck the discarded cards are part of the reshuffled deck', () => {
+      const a = createCardInstance(cardCatalog.getCard('01099')!);
+      const b = createCardInstance(cardCatalog.getCard('01099')!);
+      const earlier = createCardInstance(cardCatalog.getCard('01099')!);
+
+      state.encounterDeck = [a, b];
+      state.encounterDiscard = [earlier];
+      state.accelerationTokens = 0;
+
+      const result = discardFromEncounterDeckUntil(state, (c) => c.card.type === 'minion');
+
+      expect(result.found).toBeNull();
+      expect(state.accelerationTokens).toBe(1);
+      expect(state.encounterDeck.map((c) => c.instanceId).sort()).toEqual(
+        [a.instanceId, b.instanceId, earlier.instanceId].sort(),
+      );
+      expect(state.encounterDiscard).toHaveLength(0);
+    });
+
     it('terminates loop with found: null if player deck runs out of cards without match', () => {
       const player = state.players[0];
       const upgrade1 = createCardInstance(cardCatalog.getCard('01005')!);

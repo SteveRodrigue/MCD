@@ -636,7 +636,7 @@ export const DiscardParamsSchema = z
     filter: FilterSchema.optional(),
     untilFilter: FilterSchema.optional(),
     fallback: z.enum(['SURGE', 'NONE']).optional(),
-    matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD']).optional(),
+    matchingDestination: z.enum(['HAND', 'PLAY', 'DISCARD', 'REVEAL']).optional(),
   })
   .strict();
 

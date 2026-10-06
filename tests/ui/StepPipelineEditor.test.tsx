@@ -481,4 +481,42 @@ describe('StepPipelineEditor', () => {
       expect.objectContaining({ gateParams: { attackerKind: 'ANY_ENEMY' } }),
     ]);
   });
+
+  it('shows a Zone select for the ZONE_EMPTY condition and writes gateParams.zone', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(
+      <StatefulStepPipelineEditor
+        initial={[
+          {
+            effect: 'DISCARD',
+            gate: 'IF_CONDITION_MET',
+            condition: 'ZONE_EMPTY',
+            gateParams: { zone: 'SIDE_SCHEMES' },
+            effectParams: { source: 'ENCOUNTER_DECK' },
+          },
+        ]}
+        onChange={handleChange}
+      />,
+    );
+
+    const zone = screen.getByTestId('gate-param-zone-0-0') as HTMLSelectElement;
+    expect(zone.value).toBe('SIDE_SCHEMES');
+    expect(Array.from(zone.options).map((o) => o.value)).toEqual(
+      expect.arrayContaining([
+        'SIDE_SCHEMES',
+        'ENCOUNTER_DECK',
+        'ENCOUNTER_DISCARD',
+        'HAND',
+        'DECK',
+        'DISCARD',
+      ]),
+    );
+
+    await user.selectOptions(zone, 'ENCOUNTER_DISCARD');
+    expect(handleChange).toHaveBeenLastCalledWith([
+      expect.objectContaining({ gateParams: { zone: 'ENCOUNTER_DISCARD' } }),
+    ]);
+  });
 });

@@ -3,6 +3,7 @@ import path from 'path';
 import { z } from 'zod';
 import {
   inventorySchemaMembers,
+  inventoryEffectParamMembers,
   findUnreadMembers,
   formatUnreadMember,
   readReaderSources,
@@ -63,6 +64,12 @@ describe('schema member coverage (#276)', () => {
       (member) => !(member.id in KNOWN_GAPS),
     );
     expect(unread.map(formatUnreadMember)).toEqual([]);
+  });
+
+  it('every allowed effectParams key has a reader in the engine or the UI', () => {
+    const params = inventoryEffectParamMembers();
+    expect(params.length).toBeGreaterThan(100);
+    expect(findUnreadMembers(params, source).map(formatUnreadMember)).toEqual([]);
   });
 
   it('every approved gap still exists and still has no reader', () => {

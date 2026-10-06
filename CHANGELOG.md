@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Refactor (Data + Card Editor): five unread `effectParams` keys removed, table folded into the guard ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276), part 3)**
+  - Removed (0 cards, no reader): `DISTRIBUTE_AMOUNT.allowPartialIfCapacityLow`, `GENERATE_RESOURCE.sourceMode`, `MODIFY_HAND_SIZE.applicableForm` and `maxHandSize`, `SPEND_COUNTERS.discardWhenEmpty` (also from `SpendCountersParamsSchema`). The Source Mode toggle of the GENERATE_RESOURCE editor stays as a UI-only control; it no longer pretends to be a parameter.
+  - `tests/data/schema-member-coverage.test.ts` now checks all 150 `effectParams` pairs for a reader; `tools/audit/effect-params-read-check.ts` (36 false positives) is deleted.
+
 - **Refactor (Engine + Data + Card Editor): seven effects with no card and no real behaviour removed ([Issue #276](https://github.com/SteveRodrigue/MCD/issues/276), part 2)**
   - `EffectTypeSchema` 64 to 57. Aliases of another effect: `TRIGGER_WAKANDA_UPGRADES` (`EXECUTE_SPECIAL`), `MODIFY_COUNTER` (`ADD_COUNTERS`), `DEAL_ADDITIONAL_BOOST_CARD` (`GIVE_ADDITIONAL_BOOST_CARD`). `CANCEL_TREACHERY_AND_VILLAIN_ATTACKS` and `CANCEL_WHEN_REVEALED_AND_ATTACK` ran a villain attack, the opposite of their names (body, log key `card.effect.getBehindMe` and the cancel marker removed). `COST_REDUCER` was only a marker next to `GENERATE_RESOURCE` (real cost reduction is `REDUCE_NEXT_CARD_COST`). `SEARCH_AND_PLAY_UPGRADE` shuffled with `Math.random` and is superseded by `SEARCH`.
   - Schema, `schema.json`, the effect-params table, the Card Editor registry and the marker checks in `cost-engine`, `CardPaymentModal`, `combat-pipeline`, `villain-phase`, `prompt-queue` follow. No shipped card used any of them.

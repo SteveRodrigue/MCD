@@ -729,71 +729,64 @@ export const StepPipelineEditor: React.FC<StepPipelineEditorProps> = ({
               {/* Dynamic Parameter Fields */}
               {descriptor.parameters.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white/80 p-2.5 border border-black rounded shadow-comic-xs">
+                  {step.effect === 'GENERATE_RESOURCE' && (
+                    <div className="col-span-full space-y-2">
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
+                          Source Mode
+                        </label>
+                        <select
+                          data-testid={`step-param-sourceMode-${abilityIndex}-${sIdx}`}
+                          value={effectParams.fromCard ? 'FROM_CARD' : 'STATIC'}
+                          onChange={(e) => {
+                            if (e.target.value === 'FROM_CARD') {
+                              const next = { ...effectParams };
+                              delete next.resource;
+                              delete next.amount;
+                              next.fromCard = { zone: 'PLAYER_DISCARD', position: 'TOP' };
+                              handleUpdateStep(sIdx, { effectParams: next });
+                            } else {
+                              const next = { ...effectParams };
+                              delete next.fromCard;
+                              next.resource = 'wild';
+                              next.amount = 1;
+                              handleUpdateStep(sIdx, { effectParams: next });
+                            }
+                          }}
+                          className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
+                        >
+                          <option value="STATIC">STATIC (Fixed Resource Amount)</option>
+                          <option value="FROM_CARD">FROM_CARD (Dynamic Card Inspector)</option>
+                        </select>
+                      </div>
+
+                      {Boolean(effectParams.fromCard) && (
+                        <CardLocationSelectorForm
+                          value={effectParams.fromCard}
+                          onChange={(val) => {
+                            const next = { ...effectParams };
+                            if (val) {
+                              next.fromCard = val;
+                            } else {
+                              delete next.fromCard;
+                            }
+                            handleUpdateStep(sIdx, { effectParams: next });
+                          }}
+                          label="Resource Source Card"
+                          testIdPrefix={`generate-resource-from-card-${abilityIndex}-${sIdx}`}
+                        />
+                      )}
+                    </div>
+                  )}
                   {descriptor.parameters.map((param) => {
                     const val = effectParams[param.key];
 
-                    if (step.effect === 'GENERATE_RESOURCE') {
-                      if (param.key === 'sourceMode') {
-                        const isFromCard = Boolean(effectParams.fromCard);
-                        return (
-                          <div key={param.key} className="col-span-full space-y-2">
-                            <div>
-                              <label className="block text-[9px] uppercase font-bold text-gray-500 mb-0.5">
-                                Source Mode
-                              </label>
-                              <select
-                                data-testid={`step-param-sourceMode-${abilityIndex}-${sIdx}`}
-                                value={isFromCard ? 'FROM_CARD' : 'STATIC'}
-                                onChange={(e) => {
-                                  if (e.target.value === 'FROM_CARD') {
-                                    const next = { ...effectParams };
-                                    delete next.resource;
-                                    delete next.amount;
-                                    next.fromCard = { zone: 'PLAYER_DISCARD', position: 'TOP' };
-                                    handleUpdateStep(sIdx, { effectParams: next });
-                                  } else {
-                                    const next = { ...effectParams };
-                                    delete next.fromCard;
-                                    next.resource = 'wild';
-                                    next.amount = 1;
-                                    handleUpdateStep(sIdx, { effectParams: next });
-                                  }
-                                }}
-                                className="w-full bg-white border border-black p-1 text-[11px] font-mono font-bold"
-                              >
-                                <option value="STATIC">STATIC (Fixed Resource Amount)</option>
-                                <option value="FROM_CARD">
-                                  FROM_CARD (Dynamic Card Inspector)
-                                </option>
-                              </select>
-                            </div>
-
-                            {isFromCard && (
-                              <CardLocationSelectorForm
-                                value={effectParams.fromCard}
-                                onChange={(val) => {
-                                  const next = { ...effectParams };
-                                  if (val) {
-                                    next.fromCard = val;
-                                  } else {
-                                    delete next.fromCard;
-                                  }
-                                  handleUpdateStep(sIdx, { effectParams: next });
-                                }}
-                                label="Resource Source Card"
-                                testIdPrefix={`generate-resource-from-card-${abilityIndex}-${sIdx}`}
-                              />
-                            )}
-                          </div>
-                        );
-                      }
-
-                      if (
-                        effectParams.fromCard &&
-                        (param.key === 'resource' || param.key === 'amount')
-                      ) {
-                        return null;
-                      }
+                    if (
+                      step.effect === 'GENERATE_RESOURCE' &&
+                      effectParams.fromCard &&
+                      (param.key === 'resource' || param.key === 'amount')
+                    ) {
+                      return null;
                     }
 
                     if (param.type === 'card-filter') {

@@ -191,14 +191,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         defaultValue: 'NONE',
         description: 'Maximum points assignable to a single target',
       },
-      {
-        key: 'allowPartialIfCapacityLow',
-        label: 'Allow Partial / Shortfall',
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Allow allocation if total target capacity is less than budget (e.g. fewer threat on schemes)',
-      },
     ],
   },
   PREVENT_DAMAGE: {
@@ -407,14 +399,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
       'Generate resources statically or dynamically from a card (e.g. top card of discard pile).',
     parameters: [
       {
-        key: 'sourceMode',
-        label: 'Source Mode',
-        type: 'select',
-        options: ['STATIC', 'FROM_CARD'] as const,
-        defaultValue: 'STATIC',
-        description: 'Static fixed resource or dynamic copy from a card in a zone',
-      },
-      {
         key: 'resource',
         label: 'Resource Type (Static)',
         type: 'select',
@@ -583,13 +567,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         options: TARGET_OPTIONS,
         defaultValue: 'SELF',
       },
-      {
-        key: 'discardWhenEmpty',
-        label: 'Discard When Empty',
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Discard host card when its last counter is spent',
-      },
     ],
   },
 
@@ -738,16 +715,6 @@ export const EFFECT_PARAMETER_REGISTRY: Record<EffectType, EffectDescriptor> = {
         type: 'number',
         allowDynamic: true,
         placeholder: '1',
-      },
-      {
-        key: 'applicableForm',
-        label: 'Applicable Form',
-        type: 'text',
-      },
-      {
-        key: 'maxHandSize',
-        label: 'Max Hand Size',
-        type: 'number',
       },
     ],
   },

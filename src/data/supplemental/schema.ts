@@ -595,7 +595,6 @@ export const SpendCountersParamsSchema = z.object({
   target: z.string().optional(),
   counterType: z.string().optional(),
   amount: z.union([z.number(), z.string(), DynamicValueSourceSchema]),
-  discardWhenEmpty: z.boolean().optional(),
 });
 
 export const RemoveCountersMatchingFilterParamsSchema = z.object({

@@ -1181,13 +1181,40 @@
       ]
     },
     "01169": {
+      "abilities": [
+        {
+          "id": "the_vultures_plans_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "mode": "RANDOM",
+                "count": 1,
+                "target": "ALL_PLAYERS"
+              }
+            },
+            {
+              "effect": "ADD_THREAT",
+              "effectParams": {
+                "target": "MAIN_SCHEME",
+                "amount": {
+                  "from": "DISCARDED_CARDS",
+                  "discardAttribute": "DIFFERENT_RESOURCES"
+                }
+              }
+            }
+          ]
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-10-04T10:44",
+        "updatedAt": "2026-10-06T12:00",
         "reviewedAt": "2026-10-04T10:44",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01169_vultures-plans.md",
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Discard 1 card at random from each player's hand. Place 1 threat on the main scheme for each different resource type discarded this way."
       }
     },
@@ -1604,13 +1631,38 @@
       }
     },
     "01179": {
+      "abilities": [
+        {
+          "id": "yon_roggs_treason_when_revealed",
+          "timing": "WHEN_REVEALED",
+          "trigger": "WHEN_REVEALED",
+          "steps": [
+            {
+              "effect": "DISCARD",
+              "effectParams": {
+                "source": "HAND",
+                "count": "ALL",
+                "target": "SELF_IDENTITY",
+                "filter": {
+                  "resourceIcons": [
+                    "energy"
+                  ]
+                }
+              }
+            },
+            {
+              "effect": "SURGE",
+              "gate": "IF_AMOUNT_ZERO"
+            }
+          ]
+        }
+      ],
       "audit": {
-        "updatedAt": "2026-10-04T10:44",
+        "updatedAt": "2026-10-06T12:00",
         "reviewedAt": "2026-10-04T10:44",
         "reviewedBy": "claude",
         "rulesVersion": "v1.8",
-        "confidence": 70,
-        "ambiguityFile": "docs/ambiguities/core_encounter_01179_yon-roggs-treason.md",
+        "confidence": 95,
         "originalText": "<b>When Revealed</b>: Discard each [energy] resource from your hand. If you discarded no cards this way, this card gains surge."
       }
     },

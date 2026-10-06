@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Fix (Engine + Data): hand DISCARD applies its filter, acts on each player and returns what it discarded; _Yon-Rogg's Treason_ `01179` and _The Vulture's Plans_ `01169` ([Issue #219](https://github.com/SteveRodrigue/MCD/issues/219))**
+  - **Engine (`executeDiscard`, hand source):** one path for every mode. It applies `filter`, acts on every player the `target` resolves to (before, only the first), and `mode: RANDOM` picks among the filtered candidates. It always returns `discardedCards` and `value` (the random path returned none, so `DISCARDED_CARDS` and `IF_AMOUNT_ZERO` could not follow it). One `card.discarded.fromHand` log entry per player; the unused `player.hand.randomDiscard` key is removed.
+  - **Supplemental Data (`core_encounter.json`), approved by the owner:** `01179` discards each energy resource (wild included) from your hand, then surges if nothing was discarded; `01169` discards 1 random card from each player's hand, then adds 1 threat per different resource type discarded. Confidence 95; the two ambiguity reports are deleted; `tests/data/blocked-placeholder-cards.test.ts` no longer lists them.
+  - **Spec:** `06_effects_zones_cards.md` documents the hand source. No schema or Card Editor change.
+  - `tests/engine/universal-discard-engine.test.ts` (9 new tests): filter with and without a match, random with a filter, random across players with an empty hand, random results, the `IF_AMOUNT_ZERO` gate, and both cards through the real reveal path. The `01179` case in `surge-keyword.test.ts` now reveals with an energy card in hand.
+
 - **Data: _Genetically Enhanced_ `01163` placeholder stripped, card blocked ([Issue #228](https://github.com/SteveRodrigue/MCD/issues/228))**
   - **Supplemental Data (`core_encounter.json`), approved by the owner:** the `CONSTANT` `ADD_STATUS` with the unread `bonusAttack: 1` contradicted the printed "+3 hit points" and did nothing; removed per the circuit-breaker (`audit.confidence` 70).
   - New `docs/ambiguities/core_encounter_01163_genetically-enhanced.md` (needs #209 conditional attach and a minion hit point modifier). Owner decision recorded: on a tie for highest printed hit points, the first player chooses.

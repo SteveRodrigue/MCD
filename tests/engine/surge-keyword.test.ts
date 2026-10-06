@@ -110,8 +110,11 @@ describe('Surge keyword (#218): reveal 1 additional encounter card after the car
   });
 
   describe('cards that do not print Surge', () => {
-    it('a card that only mentions "gains surge" and has no modelled ability (Yon-Rogg 01179) reveals no extra card', () => {
+    it('a card that only conditionally "gains surge" (Yon-Rogg 01179) does not surge when it discards an energy resource', () => {
       const [a] = deckWithFillers('a');
+      p1().hand = [
+        createCardInstance({ ...cardCatalog.getCard('01006')!, resources: { energy: 1 } } as any),
+      ];
       revealCode('01179');
       expect(revealed(a)).toBe(false);
       expect(surgeLogs()).toBe(0);

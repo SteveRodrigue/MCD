@@ -1253,66 +1253,36 @@ export function executeDiscard(
 
   // 1. DISCARD FROM HAND
   if (source === 'HAND') {
-    const targetPlayers = resolvePlayerTargets(state, params.target as any, context);
-    const targetPlayer = targetPlayers[0] || player;
-
-    if (mode === 'RANDOM') {
-      let discardedCount = 0;
-      for (let i = 0; i < count; i++) {
-        if (targetPlayer.hand.length > 0) {
-          const randIdx = Math.floor(Math.random() * targetPlayer.hand.length);
-          const [discarded] = targetPlayer.hand.splice(randIdx, 1);
-          targetPlayer.discard.push(discarded);
-          discardedCount++;
-          dispatchTrigger(state, 'CARD_DISCARDED', {
-            targetPlayerId: targetPlayer.id,
-            sourceInstanceId: discarded.instanceId,
-            triggerChain: context.triggerChain,
-          });
-          state.log.push({
-            id: `log_${Date.now()}_${discarded.instanceId}`,
-            timestamp: Date.now(),
-            round: state.roundNumber,
-            phase: state.phase,
-            category: 'combat',
-            key: 'player.hand.randomDiscard',
-            params: { player: targetPlayer.name, card: discarded.card.name },
-            onomatopoeia: 'RANDOM DISCARD!',
-          });
-        }
-      }
-      return {
-        state,
-        success: true,
-        mutatedState: discardedCount > 0,
-        value: discardedCount,
-        onomatopoeia: 'RANDOM DISCARD!',
-      };
-    }
-
-    let discardedCount = 0;
+    const resolved = resolvePlayerTargets(state, params.target as any, context);
+    const targetPlayers = resolved.length > 0 ? resolved : [player];
+    const isRandom = mode === 'RANDOM';
     const discardedCards: CardInstance[] = [];
-    const discardedCardNames: string[] = [];
-    const toDiscardCount = isCountAll
-      ? targetPlayer.hand.length
-      : Math.min(count, targetPlayer.hand.length);
-    for (let i = 0; i < toDiscardCount; i++) {
-      if (targetPlayer.hand.length > 0) {
-        const [discarded] = targetPlayer.hand.splice(0, 1);
+
+    for (const targetPlayer of targetPlayers) {
+      const candidates = filter
+        ? targetPlayer.hand.filter((c) => matchCardFilter(c.card, filter, targetPlayer))
+        : [...targetPlayer.hand];
+      const toDiscardCount = isCountAll ? candidates.length : Math.min(count, candidates.length);
+      const chosen: CardInstance[] = [];
+      for (let i = 0; i < toDiscardCount; i++) {
+        const idx = isRandom ? Math.floor(Math.random() * candidates.length) : 0;
+        chosen.push(...candidates.splice(idx, 1));
+      }
+      if (chosen.length === 0) continue;
+
+      for (const discarded of chosen) {
+        const handIdx = targetPlayer.hand.indexOf(discarded);
+        targetPlayer.hand.splice(handIdx, 1);
         targetPlayer.discard.push(discarded);
         discardedCards.push(discarded);
-        discardedCardNames.push(discarded.card.name);
-        discardedCount++;
         dispatchTrigger(state, 'CARD_DISCARDED', {
           targetPlayerId: targetPlayer.id,
           sourceInstanceId: discarded.instanceId,
           triggerChain: context.triggerChain,
         });
       }
-    }
-    if (discardedCount > 0) {
       state.log.push({
-        id: `log_${Date.now()}_discard_hand`,
+        id: `log_${Date.now()}_discard_hand_${targetPlayer.id}`,
         timestamp: Date.now(),
         round: state.roundNumber,
         phase: state.phase,
@@ -1321,20 +1291,22 @@ export function executeDiscard(
         params: {
           who: targetPlayer.name,
           player: targetPlayer.name,
-          count: discardedCount,
+          count: chosen.length,
           source: 'hand',
-          cards: discardedCardNames.join(', '),
+          cards: chosen.map((c) => c.card.name).join(', '),
         },
-        onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+        onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${chosen.length} CARDS!`,
       });
     }
+
+    const discardedCount = discardedCards.length;
     return {
       state,
       success: true,
       mutatedState: discardedCount > 0,
       value: discardedCount,
       discardedCards,
-      onomatopoeia: `DISCARDED ${discardedCount} CARDS!`,
+      onomatopoeia: isRandom ? 'RANDOM DISCARD!' : `DISCARDED ${discardedCount} CARDS!`,
     };
   }
 

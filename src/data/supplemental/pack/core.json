@@ -3089,6 +3089,9 @@
           "timing": "INTERRUPT",
           "trigger": "THREAT_WOULD_BE_PLACED",
           "zone": "HAND",
+          "triggerFilter": {
+            "threatSource": "VILLAIN_SCHEME"
+          },
           "cost": {
             "discardSelf": true
           },
@@ -3105,7 +3108,7 @@
       ],
       "audit": {
         "createdAt": "2026-08-27T23:00",
-        "updatedAt": "2026-09-16T22:00:00Z",
+        "updatedAt": "2026-10-05T12:00",
         "reviewedAt": "2026-09-16T22:00:00Z",
         "reviewedBy": "antigravity",
         "rulesVersion": "v1.8",

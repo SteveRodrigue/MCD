@@ -69,3 +69,11 @@ The three in-hand scans in `dispatchTrigger` (damage about to be taken, threat a
 **Decision:** a single `scanHandReactions` helper in `trigger-dispatcher.ts` owns what every hand reaction shares: pick the first hand card per scanned player whose `zone: HAND` ability matches the trigger, the player's form, `canPayAbilityCost` and `triggerFilter`; then either resolve at once (`FORCED_` timing or `acceptOptionalTriggers`: pay the cost, move the card to the discard unless `discardSelf: false`, run the effect) or queue the optional prompt (`requiresPayment` only when the cost is above 0). Per-trigger behaviour is passed in as callbacks (damage prevention, threat reduction, encounter cancellation, prompt display fields). The scan scope is explicit per trigger: threat and `ATTACK_DEFENDED` scan every player (the card's own `triggerFilter` decides who qualifies); damage and encounter reveals scan the targeted player only, because their "you" cards carry no filter.
 
 `ATTACK_DEFENDED` is dispatched with `defenderType` (`HERO` or `ALLY`) and `targetInstanceId` set to the attacking enemy, so cards can say "your hero defends" (`triggerFilter.defenderType`) and "that enemy" (`TRIGGERING_ENEMY`).
+
+---
+
+## Addendum (2026-10-05, #240): "the villain schemes" is scoped by the placement source
+
+Emergency `01085` ("When the villain schemes, reduce the amount of threat placed on the scheme by 1") was offered for every threat placement. **Decision:** no separate trigger. `applyThreatPlacement` passes its `sourceType` as `threatSource` in the `THREAT_WOULD_BE_PLACED` context, and `TriggerFilter.threatSource` scopes a card to a source (Emergency: `VILLAIN_SCHEME`). Cards that say "any threat" (Great Responsibility, "I Object!") carry no filter.
+
+Setup: opening hands are drawn after the scenario setup (Appendix II step 14), and while `setupState.stage` is `SCENARIO_SETUP` (the whole of `setupGame`) `dispatchTrigger` skips player-controlled abilities (hand reactions, identity, tableau and allies); encounter-side abilities still resolve.

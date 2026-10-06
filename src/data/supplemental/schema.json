@@ -148,6 +148,17 @@
                         "HERO",
                         "ALLY"
                       ]
+                    },
+                    "threatSource": {
+                      "type": "string",
+                      "enum": [
+                        "VILLAIN_PHASE_STEP_1",
+                        "VILLAIN_SCHEME",
+                        "MINION_SCHEME",
+                        "CARD_EFFECT",
+                        "INCITE",
+                        "HAZARD"
+                      ]
                     }
                   },
                   "additionalProperties": false

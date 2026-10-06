@@ -177,6 +177,20 @@ describe('TriggerFilterSection', () => {
     await user.selectOptions(screen.getByTestId('trigger-defender-type-0'), '');
     expect(handleChange).toHaveBeenLastCalledWith(undefined);
   });
+  it('selects threatSource', async () => {
+    const user = userEvent.setup();
+    const handleChange = vi.fn();
+
+    render(<StatefulTriggerFilterSection initial={{}} isExpanded={true} onChange={handleChange} />);
+
+    await user.selectOptions(screen.getByTestId('trigger-threat-source-0'), 'VILLAIN_SCHEME');
+    expect(handleChange).toHaveBeenCalledWith(
+      expect.objectContaining({ threatSource: 'VILLAIN_SCHEME' }),
+    );
+
+    await user.selectOptions(screen.getByTestId('trigger-threat-source-0'), '');
+    expect(handleChange).toHaveBeenLastCalledWith(undefined);
+  });
   it('shows the Counter-Punch (01077) trigger filter as configured', () => {
     render(
       <TriggerFilterSection

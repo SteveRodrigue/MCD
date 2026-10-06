@@ -41,7 +41,7 @@ Each supplemental pack file under `src/data/supplemental/pack/*.json` maps 5-to-
 | `maxPerPlayer`              | `number`                       | Optional | Maximum copies a single player can have in play simultaneously (e.g. `1` for Max 1 per player).                     |
 | `recipient`                 | `PlayerRecipient`              | Optional | Obligation recipient override, outside `abilities` (`FIRST_PLAYER`, `REVEALING_PLAYER`, `CARD_SET_OWNER`, `{ type: "IDENTITY", codes }`). Absent = default: owner of the card's hero set when it belongs to one, else the revealing player (ADR-0075). |
 | `playUnderAnyPlayerControl` | `boolean`                      | Optional | Allows card to be played under any player's control (RR v1.8, ADR-0066).                                           |
-| `uses`                      | `CardUses`                     | Optional | Counters configured when entering play (`count`, `counterType`, `max`, `discardOnEmpty`).                          |
+| `uses`                      | `CardUses`                     | Optional | Counters configured when entering play (`count`, `counterType`, `discardOnEmpty`).                          |
 | `victoryPoints`             | `number`                       | Optional | Numeric value of printed `Victory X` keyword (RR v1.8 p. 30, ADR-0034). Paired with `keywords: ["Victory"]`.       |
 | `keywords`                  | `KeywordEntry[]`               | Optional | Card-level keywords. Supports plain strings or `StructuredKeywordSchema` for parameterized keywords per ADR-0054.  |
 | `traits`                    | `string[]`                     | Optional | Printed traits or supplemental trait extensions (e.g. `["Avenger", "Aerial"]`).                                    |

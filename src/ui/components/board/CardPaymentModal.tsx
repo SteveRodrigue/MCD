@@ -47,7 +47,8 @@ interface CardPaymentModalProps {
     amount?: number;
     resourceType?: 'physical' | 'energy' | 'mental' | 'wild';
     requirePrinted?: boolean;
-    scaling?: string;
+    /** The ability's amount is the number of resources spent (`RESOURCES_SPENT`), e.g. Energy Channel. */
+    scalesWithResources?: boolean;
     title?: string;
     discardCount?: number;
     discardFilter?: UniversalCardFilter;
@@ -447,7 +448,7 @@ export const CardPaymentModal: React.FC<CardPaymentModalProps> = ({
   ]);
 
   const isRequirePrinted = Boolean(abilityCost?.requirePrinted);
-  const isScalingPerResource = abilityCost?.scaling === 'PER_RESOURCE_SPENT';
+  const isScalingPerResource = Boolean(abilityCost?.scalesWithResources);
 
   const committedMatching = useMemo(() => {
     if (abilityCost?.resourceType) {

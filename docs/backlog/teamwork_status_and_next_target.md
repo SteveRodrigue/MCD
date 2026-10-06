@@ -3,7 +3,7 @@
 > **Last updated:** 2026-10-06
 > **Repository state:** `main`, last work commit `d40febb` (#266, pausable threat placement). Check `git log -1` and `git status` first.
 > **Release gate:** Gate 1 ("Rhino Release" vertical slice: the 5 core heroes against Rhino).
-> **Verification baseline:** 🟢 2,096 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
+> **Verification baseline:** 🟢 2,137 tests passing (0 failed, 0 skipped), 0 TypeScript diagnostics, 0 ESLint warnings, Prettier clean. One known flaky test: #217.
 > **This file is the entry point for anyone (person or agent) picking the work up.** Read sections 1 to 4, then pick the first ready item of section 3.
 
 ---
@@ -46,6 +46,7 @@ Done since 2026-10-03 (each has a changelog entry; plans were deleted after thei
 | #220 | `CardAbility.forEachPlayer` (whole step list once per player, player order, pausable); Electromagnetic Backlash `01174` modelled (confidence 95); deck `DISCARD` no longer continues into a reshuffled deck; mixed case filed as #272 | `git log --grep "#220"` |
 | #223 | `ENEMY_ATTACKS` (a specific minion or named villain attacks; the step fails if it did not attack); minion Attack X (`getEffectiveMinionAttack`, `REMAINING_HIT_POINTS`); Titania's Fury `01164` modelled (confidence 95) | `git log --grep "#223"` |
 | #225 | `executeSequence` stops on a step that fails with an `error` (also `forEachPlayer`), logs `engine.stepError`; Dev Mode banner and combat log entry; outcomes without an error keep `IF_FAILED` working (ADR-0019 addendum) | `git log --grep "#225"` |
+| #231 | `scaling` / `multiplier` / `maxBonus` retired: Jessica Jones, Legal Practice, Energy Channel use `ENTITY_COUNT` / `DISCARDED_CARDS` / `RESOURCES_SPENT`; cost results (`discardedCards`, `resourcesSpent`) in the effect context; "up to N" discard cap enforced; `uses.max` removed (dead); Legal Practice played from hand is broken: [#277](https://github.com/SteveRodrigue/MCD/issues/277) | `git log --grep "#231"` |
 | #246 | Player elimination: a defeated hero eliminates that player only, the group loses with the last hero; per-player icon counts the starting players; game-over screen (ADR-0079) | `git log --grep "#246"` |
 
 ---
@@ -99,6 +100,7 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | 3g | Webbed Up `01009` does not trigger / replace properly when villain is already Stunned | [#250](https://github.com/SteveRodrigue/MCD/issues/250) | replacement timing bug | 🟢 **Closed** 2026-10-06, not a bug: status cards have timing priority (RR Status Cards), Test 3 asserts it |
 | 3h | Lead from the Front `01070` did not prompt to choose a player | [#251](https://github.com/SteveRodrigue/MCD/issues/251) | missing player choice prompt | 🟢 **Done** 2026-10-06; `MODIFY_STAT` `targetPlayer: CHOSEN_PLAYER`, `ALL_CONTROLLED_CHARACTERS` |
 | — | Caught Off Guard "no prompt" (needs the reporter's detail), Card Editor delete feature | [#233](https://github.com/SteveRodrigue/MCD/issues/233), [#237](https://github.com/SteveRodrigue/MCD/issues/237) | waiting / enhancement | |
+| 4b | Legal Practice `01023` played from hand pays no discard cost and removes no threat | [#277](https://github.com/SteveRodrigue/MCD/issues/277) | **P1**, card does nothing in a real game | 🟡 Open; found while doing #231 |
 | 4 | Genetically Enhanced `01163` (invented `bonusAttack`) | [#228](https://github.com/SteveRodrigue/MCD/issues/228) | blocks the guard test | 🟢 **Circuit-breaker applied** 2026-10-06 (stripped, ambiguity report, tie: first player chooses); **She-Hulk nemesis card, Gate 1:** not playable until #209 (now Gate 1), a highest-printed-HP selector (tie: first player chooses), a +3 HP modifier and the surge fallback exist; issue stays open, P1 |
 
 ### 3.2 Engine prerequisites that unblock stripped cards
@@ -116,8 +118,9 @@ Formatting, CRLF pack JSON, deterministic tests and commit mechanics are in `.ag
 | # | Item | Issue | Depends on |
 | :-- | :-- | :-- | :-- |
 | 10 | WP5: guard test, unknown `effectParams` key fails the data test (the `target` slice is already done) | [#230](https://github.com/SteveRodrigue/MCD/issues/230) | 🟢 **Done** 2026-10-06; table `src/data/supplemental/effect-params.ts`, guard `tests/data/effect-params-keys.test.ts`; `REMOVE_THREAT.aerialAllSchemes` left out (owner decision) |
-| 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives (`MODIFY_HAND_SIZE` already done) | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | WP5 not required, but CONSTANT `MODIFY_STAT` must evaluate dynamic amounts |
-| 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5 |
+| 11 | WP6: retire `PER_SIDE_SCHEME` / `PER_DISCARDED_CARD` / `PER_RESOURCE_SPENT` pseudo-primitives | [#231](https://github.com/SteveRodrigue/MCD/issues/231) | 🟢 **Done** 2026-10-06 |
+| 11b | **P1, next:** every schema member needs a reader in code and a test, enforced by a failing data test (`uses.max` was dead for weeks; removed 2026-10-06) | [#276](https://github.com/SteveRodrigue/MCD/issues/276) | #231 |
+| 12 | WP7: documentation gaps, decorative keys, ad-hoc selector strings (`HERO`, `IDENTITY`, `ALTER_EGO`), `TRIGGERING_HERO` overlap | [#232](https://github.com/SteveRodrigue/MCD/issues/232) | WP5; partly subsumed by #276 |
 
 ### 3.4 Core player cards review
 
@@ -167,7 +170,7 @@ See [README.md](README.md) (session start, plan anatomy, owner preferences, wher
 - [#261](https://github.com/SteveRodrigue/MCD/issues/261): core player cards questions (B4 canonical defeat trigger, C9 Alpha Flight Station form, C10 identity timing convention, C13 `maxPerDeck`, Repulsor Blast single hit or two).
 - [#233](https://github.com/SteveRodrigue/MCD/issues/233): how many upgrades/supports did the revealing player control when Caught Off Guard showed no prompt?
 - 2 moderate Dependabot alerts on `main` are not reviewed yet (`dependabot` skill).
-- Next ready item: item 11, #231 (needs a plan and approval).
+- Next ready item: item 11b, [#276](https://github.com/SteveRodrigue/MCD/issues/276) (every schema member needs a reader and a test). Also P1: [#277](https://github.com/SteveRodrigue/MCD/issues/277) Legal Practice played from hand (its `audit.confidence` stays 0 until fixed).
 - Whether to schedule item 14 (data read-through) and #243 before the remaining Tier 1 cosmetics.
 
 ---

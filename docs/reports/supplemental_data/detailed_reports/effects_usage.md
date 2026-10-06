@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-06T20:10:50.473Z` | **Active Effects In Use:** **44/64**
+> **Generated:** `2026-10-06T21:35:45.310Z` | **Active Effects In Use:** **44/64**
 
 This detailed catalog groups cards declaring each effect primitive in `src/data/supplemental/`.
 

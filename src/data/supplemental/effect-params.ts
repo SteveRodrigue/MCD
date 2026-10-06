@@ -8,13 +8,12 @@ import type { EffectType } from './schema';
  * must expose exactly these keys per effect; tests/ui/effect-parameter-registry.test.ts enforces it.
  * `AbilityStepSchema.effectParams` stays a free-form record; this table is validated by a data test only.
  *
- * Pseudo-primitive keys (scaling, multiplier, maxBonus, ATTACHMENT_DAMAGE_SHIELD.mode,
- * TRANSFER_DAMAGE.from/to, and `target` on a few effects) are allowed for now and
- * are tracked for removal in #231 / #232.
+ * Pseudo-primitive keys (ATTACHMENT_DAMAGE_SHIELD.mode, TRANSFER_DAMAGE.from/to, and `target`
+ * on a few effects) are allowed for now and are tracked for removal in #232.
  */
 export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   ADD_ACCELERATION: ['amount'],
-  ADD_COUNTERS: ['amount', 'counterType', 'multiplier', 'scaling', 'target'], // includes pseudo-primitive keys (#231 / #232)
+  ADD_COUNTERS: ['amount', 'counterType', 'target'],
   ADD_STATUS: ['status', 'target'],
   ADD_THREAT: ['amount', 'cardCode', 'condition', 'perPlayer', 'target'],
   ADD_TRAIT: ['duration', 'target', 'trait'],
@@ -50,7 +49,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   MODIFY_HAND_SIZE: ['amount', 'applicableForm', 'maxHandSize'],
   MODIFY_MAX_HEALTH: ['amount', 'target'],
   MODIFY_RESTRICTED_LIMIT: ['amount'],
-  MODIFY_STAT: ['amount', 'atkBonus', 'duration', 'maxBonus', 'multiplier', 'scaling', 'stat', 'target', 'targetPlayer', 'thwBonus'], // includes pseudo-primitive keys (#231 / #232)
+  MODIFY_STAT: ['amount', 'atkBonus', 'duration', 'stat', 'target', 'targetPlayer', 'thwBonus'],
   PLACE_CARD_UNDER_HOST: [],
   PLAYER_CHOICE: ['description', 'isVoluntary', 'options', 'title'],
   PLAY_FROM_ZONE: ['control', 'costMode', 'costReduction', 'destination', 'filter', 'promptTitle', 'source'],
@@ -63,7 +62,7 @@ export const EFFECT_PARAM_KEYS: Record<EffectType, readonly string[]> = {
   REMOVE_COUNTERS_MATCHING_FILTER: ['amount', 'counterType', 'targetZone', 'traitFilter'],
   REMOVE_FROM_GAME: ['target'],
   REMOVE_STATUS: ['status', 'target'],
-  REMOVE_THREAT: ['amount', 'distinctFrom', 'dynamicBonus', 'finisherBonus', 'multiplier', 'scaling', 'target'], // includes pseudo-primitive keys (#231 / #232)
+  REMOVE_THREAT: ['amount', 'distinctFrom', 'dynamicBonus', 'finisherBonus', 'target'],
   RESTRICTED_LIMIT_BONUS: ['amount'],
   RETURN_TO_HAND: ['target'],
   REVEAL_ENCOUNTER_CARD: [],

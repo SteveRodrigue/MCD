@@ -5,6 +5,7 @@ import { setupGame } from '../../src/engine/state/game-setup';
 import { dispatchAction } from '../../src/engine/pipeline';
 import { canPayAbilityCost } from '../../src/engine/pipeline/cost-engine';
 import { canInitiateAbility } from '../../src/engine/pipeline/legality-checker';
+import { peekDecisionPrompt } from '../../src/engine/pipeline/prompt-queue';
 
 describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
   let state: GameState;
@@ -158,6 +159,73 @@ describe('Milestone 2A.1: Declarative Action Cost & Pre-Check Engine', () => {
       expect(res.state.players[1].hand.length).toBe(1);
       expect(res.state.players[1].discard.length).toBe(2);
       expect(res.state.mainScheme.threat).toBe(3); // 5 - 2 = 3
+    });
+  });
+
+  describe('01023 Legal Practice (discarded cards are the threat removed)', () => {
+    const useLegalPractice = (discardIds: string[], handSize: number) => {
+      const p2 = state.players[1];
+      state.activePlayerIndex = 1;
+      state.mainScheme.threat = 8;
+      p2.hand = Array.from({ length: handSize }, (_, i) => ({
+        instanceId: `h${i + 1}`,
+        card: { name: `Card ${i + 1}` } as any,
+        exhausted: false,
+      }));
+      p2.discard = [];
+      p2.tableau.push({
+        instanceId: 'legal_practice_inst',
+        card: cardCatalog.getCard('01023')!,
+        exhausted: false,
+      });
+      return dispatchAction(state, {
+        type: 'USE_CARD_ABILITY',
+        playerId: p2.id,
+        cardInstanceId: 'legal_practice_inst',
+        abilityId: 'legal_practice_action',
+        discardCardInstanceIds: discardIds,
+      } as any);
+    };
+
+    it('removes 5 threat when 5 cards are discarded', () => {
+      const res = useLegalPractice(['h1', 'h2', 'h3', 'h4', 'h5'], 6);
+      expect(res.result.success).toBe(true);
+      expect(res.state.players[1].hand.length).toBe(1);
+      expect(res.state.mainScheme.threat).toBe(3);
+    });
+
+    it('rejects discarding more than 5 cards ("up to 5")', () => {
+      const res = useLegalPractice(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], 6);
+      expect(res.result.success).toBe(false);
+      expect(res.state.players[1].hand.length).toBe(6);
+      expect(res.state.mainScheme.threat).toBe(8);
+    });
+
+    it('removes no threat when no card is discarded ("up to 5")', () => {
+      const res = useLegalPractice([], 0);
+      expect(res.state.mainScheme.threat).toBe(8);
+    });
+
+    it('keeps the discarded count through the scheme choice prompt', () => {
+      state.sideSchemes.push({
+        instanceId: 'ss_legal',
+        card: cardCatalog.getCard('01109')!,
+        threat: 4,
+      } as any);
+      const res = useLegalPractice(['h1', 'h2', 'h3'], 3);
+      const prompt = peekDecisionPrompt(res.state);
+      expect(prompt).toBeDefined();
+      expect(res.state.mainScheme.threat).toBe(8);
+
+      const chosen = prompt!.options.find((o) => o.id === 'ss_legal')!;
+      const resolved = dispatchAction(res.state, {
+        type: 'RESOLVE_DECISION_PROMPT',
+        playerId: 'p2',
+        selectedOptionId: chosen.id,
+      });
+      expect(resolved.result.success).toBe(true);
+      expect(resolved.state.sideSchemes.find((x) => x.instanceId === 'ss_legal')?.threat).toBe(1);
+      expect(resolved.state.mainScheme.threat).toBe(8);
     });
   });
 

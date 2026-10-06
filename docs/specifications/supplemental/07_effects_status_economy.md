@@ -196,11 +196,13 @@ Universal effect primitives to manipulate the orientation (exhausted vs. ready) 
   "effect": "ADD_COUNTERS",
   "effectParams": {
     "counterType": "energy",
-    "amount": 1,
+    "amount": { "from": "RESOURCES_SPENT", "resource": "energy" },
     "target": "SELF"
   }
 }
 ```
+
+`amount` is a number or a dynamic formula (default `1`). _Energy Channel_ puts X counters for the X energy resources spent as its cost.
 
 ---
 

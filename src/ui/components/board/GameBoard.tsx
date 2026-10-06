@@ -541,15 +541,18 @@ const GameTable: React.FC<GameBoardProps> = ({ gameState, onReset, onDispatchAct
                     const discardCount =
                       ab.cost.discardCard?.from === 'HAND' ? ab.cost.discardCard.count || 1 : 0;
                     const discardFilter = ab.cost.discardCard?.filter;
-                    const scaling = ab.steps?.find(
-                      (s) => s.effectParams?.scaling === 'PER_RESOURCE_SPENT',
-                    )?.effectParams?.scaling;
+                    const scalesWithResources = ab.steps?.some(
+                      (s) =>
+                        typeof s.effectParams?.amount === 'object' &&
+                        (s.effectParams.amount as { from?: string } | null)?.from ===
+                          'RESOURCES_SPENT',
+                    );
                     if (amount > 0 || discardCount > 0) {
                       return {
                         amount,
                         resourceType: reqType,
                         requirePrinted: ab.cost.requirePrinted,
-                        scaling: scaling as string | undefined,
+                        scalesWithResources,
                         title: pendingPaymentAction.headline,
                         discardCount,
                         discardFilter,

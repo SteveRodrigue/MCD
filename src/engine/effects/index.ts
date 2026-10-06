@@ -3400,12 +3400,16 @@ export function executeStep(
         const atkBonus =
           (stepParams.atkBonus as number) ||
           (step.effectParams?.atkBonus as number) ||
-          (stepParams.stat === 'ATK' ? (stepParams.amount as number) : 0) ||
+          (stepParams.stat === 'ATK'
+            ? resolveNumericAmount(stepParams.amount, context, 0, { state, player })
+            : 0) ||
           0;
         const thwBonus =
           (stepParams.thwBonus as number) ||
           (step.effectParams?.thwBonus as number) ||
-          (stepParams.stat === 'THW' ? (stepParams.amount as number) : 0) ||
+          (stepParams.stat === 'THW'
+            ? resolveNumericAmount(stepParams.amount, context, 0, { state, player })
+            : 0) ||
           0;
 
         // "Choose a player": the characters that player controls get the bonus
@@ -4445,7 +4449,7 @@ export function executeStep(
     case 'MODIFY_COUNTER': {
       const targetParam = (step.effectParams?.target as string) || 'SELF';
       const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-      const amount = typeof step.effectParams?.amount === 'number' ? step.effectParams.amount : 1;
+      const amount = resolveNumericAmount(step.effectParams?.amount, context, 1, { state, player });
 
       if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};
@@ -4477,7 +4481,7 @@ export function executeStep(
     case 'REMOVE_COUNTERS': {
       const targetParam = (step.effectParams?.target as string) || 'SELF';
       const counterType = (step.effectParams?.counterType as string) || 'all_purpose';
-      const amount = typeof step.effectParams?.amount === 'number' ? step.effectParams.amount : 1;
+      const amount = resolveNumericAmount(step.effectParams?.amount, context, 1, { state, player });
 
       if (targetParam === 'IDENTITY') {
         player.counters = player.counters || {};

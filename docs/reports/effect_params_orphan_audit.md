@@ -53,7 +53,7 @@ Every recommendation below is a work package with a GitHub issue carrying its ac
 
 1. **Fix the four class A cards** as separate, planned items (one per card, per the card-integration protocol). Mark V Helmet becomes a Tier 2 item that supersedes tracker A4; Genetically Enhanced and Kree Manipulator are new defects not yet in the tracker.
 2. **Add a guard** (a test, not a one-off script): per-effect allowed-key lists, or a typed `effectParams` schema per effect, so an unknown key fails `tests/data/supplemental-schema.test.ts`. This is the permanent fix for the whole class.
-3. **Retire the pseudo-primitives** (`scaling`/`multiplier`/`maxBonus`) in favor of the generic dynamic amount formulas, once CONSTANT `MODIFY_STAT` can evaluate dynamic amounts.
+3. **Retire the pseudo-primitives** (`scaling`/`multiplier`/`maxBonus`) in favor of the generic dynamic amount formulas, once CONSTANT `MODIFY_STAT` can evaluate dynamic amounts. 🟢 Done in #231 (2026-10-06).
 4. **Fill the documentation gaps** in class B (spec and editor registry), and remove the undocumented `threshold` alias.
 
 ## Appendix: pairs missing from the editor registry (16)

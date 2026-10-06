@@ -729,26 +729,6 @@ export const CardAttributesSection: React.FC<CardAttributesSectionProps> = ({
                     className="w-full bg-white border border-black p-1 text-xs rounded"
                   />
                 </div>
-                <div>
-                  <label className="block text-[9px] font-bold uppercase text-gray-600 mb-0.5">
-                    Max Limit
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    data-testid="uses-max-input"
-                    value={supplemental.uses.max ?? ''}
-                    placeholder="Optional"
-                    onChange={(e) => {
-                      const max = parseInt(e.target.value, 10);
-                      onChange({
-                        ...supplemental,
-                        uses: { ...supplemental.uses, max: isNaN(max) ? undefined : max },
-                      });
-                    }}
-                    className="w-full bg-white border border-black p-1 text-xs rounded text-center"
-                  />
-                </div>
                 <div className="flex items-center pt-3">
                   <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-black">
                     <input

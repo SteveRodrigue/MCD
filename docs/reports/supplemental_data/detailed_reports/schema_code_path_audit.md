@@ -2,7 +2,7 @@
 
 [← Back to Main Usage Report](../usage_report.md)
 
-> **Generated:** `2026-10-06T20:10:50.473Z` | **Overall Coverage:** **98.4%**
+> **Generated:** `2026-10-06T21:35:45.310Z` | **Overall Coverage:** **98.4%**
 
 This matrix audits every schema primitive defined in `src/data/supplemental/schema.ts` across 3 dimensions:
 1. **In Schema**: Is the enum option formally defined in schema.ts?

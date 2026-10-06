@@ -105,4 +105,26 @@ describe('effectParams key guard (#230)', () => {
     const v = findUnknownEffectParamKeys(card, '99998');
     expect(v.map((x) => `${x.effect}.${x.key}`)).toEqual(['DRAW.nope']);
   });
+
+  it('rejects the retired pseudo-primitive keys scaling, multiplier and maxBonus (#231)', () => {
+    const card = {
+      code: '99997',
+      abilities: [
+        {
+          steps: [
+            { effect: 'MODIFY_STAT', effectParams: { stat: 'THWART', scaling: 'X', maxBonus: 1 } },
+            { effect: 'REMOVE_THREAT', effectParams: { multiplier: 1 } },
+            { effect: 'ADD_COUNTERS', effectParams: { scaling: 'X' } },
+          ],
+        },
+      ],
+    };
+    const v = findUnknownEffectParamKeys(card, '99997');
+    expect(v.map((x) => `${x.effect}.${x.key}`).sort()).toEqual([
+      'ADD_COUNTERS.scaling',
+      'MODIFY_STAT.maxBonus',
+      'MODIFY_STAT.scaling',
+      'REMOVE_THREAT.multiplier',
+    ]);
+  });
 });

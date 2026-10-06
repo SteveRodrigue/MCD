@@ -1,6 +1,6 @@
 # Supplemental Card Declarations Usage & Impact Report
 
-> **Generated:** `2026-10-06T20:10:50.473Z`  
+> **Generated:** `2026-10-06T21:35:45.310Z`  
 > **Source Packs Scanned:** `core, core_encounter, cw_encounter`
 
 ---
@@ -120,8 +120,8 @@ These cards are currently isolated in [`docs/ambiguities/`](../../ambiguities/RE
 
 | Feature | In Use | Declared Keys / Resolvers |
 | :--- | :---: | :--- |
-| **Dynamic Value Sources** | **12** | `HAS_IDENTITY`, `COUNTERS (counter: energy)`, `STAT_VALUE (stat: SUFFERED_DAMAGE)`, `ENTITY_COUNT`, `DISCARDED_CARDS (attr: RESOURCE_ICONS)`, `HAS_TRAIT` *(+6 more)* |
-| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (2), `types` (15), `traits` (10), `sets` (3) |
+| **Dynamic Value Sources** | **14** | `HAS_IDENTITY`, `RESOURCES_SPENT`, `COUNTERS (counter: energy)`, `STAT_VALUE (stat: SUFFERED_DAMAGE)`, `DISCARDED_CARDS (attr: COUNT)`, `ENTITY_COUNT` *(+8 more)* |
+| **Filter Criteria Keys** | **5** | `resourceIcons` (2), `codes` (2), `types` (17), `traits` (10), `sets` (3) |
 | **Filter Compositions** | **0** | *(None declared)* |
 
 ---

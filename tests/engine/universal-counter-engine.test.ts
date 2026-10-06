@@ -504,4 +504,34 @@ describe('Universal Named Counter Map & Cross-Entity Targeting Engine (ADR-0035,
     expect(inPlayCard?.tokens?.counters).toBe(3);
     expect(inPlayCard?.counters?.attack).toBe(3);
   });
+
+  it('ADD_COUNTERS evaluates a dynamic amount (resources spent), not just a number', () => {
+    const channel = createCardInstance(cardCatalog.getCard('01018')!);
+    const state = setupGame({
+      scenarioId: 'rhino',
+      players: [
+        {
+          id: 'p1',
+          name: 'P1',
+          hero: spiderManHero,
+          alterEgo: peterParkerAlterEgo,
+          deckCards: Array(15).fill(cardCatalog.getCard('01005')!),
+        },
+      ],
+      villain: rhinoVillain,
+      mainScheme,
+      encounterCards: [],
+      skipMulligan: true,
+    });
+    const ability = channel.card.enrichment!.abilities!.find((a) => a.id === 'energy_channel_add')!;
+
+    const res = executeEffect(state, ability, {
+      playerId: 'p1',
+      sourceCardInstance: channel,
+      resourcesSpent: ['energy', 'wild', 'mental'],
+    });
+
+    expect(res.success).toBe(true);
+    expect(channel.counters?.energy).toBe(2);
+  });
 });

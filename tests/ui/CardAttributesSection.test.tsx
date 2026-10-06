@@ -158,12 +158,7 @@ describe('CardAttributesSection', () => {
       }),
     );
 
-    fireEvent.change(screen.getByTestId('uses-max-input'), { target: { value: '6' } });
-    expect(handleChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        uses: expect.objectContaining({ max: 6 }),
-      }),
-    );
+    expect(screen.queryByTestId('uses-max-input')).toBeNull();
 
     await user.click(screen.getByTestId('uses-discard-on-empty-checkbox'));
     expect(handleChange).toHaveBeenCalledWith(

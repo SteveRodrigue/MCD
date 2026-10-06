@@ -16,6 +16,7 @@ import {
 import { enqueueDecisionPrompt, popDecisionPrompt, peekDecisionPrompt } from './prompt-queue';
 import { dispatchTrigger, TriggerDispatchResult } from '../triggers/trigger-dispatcher';
 import { dispatchDefeat, type DefeatSource } from './damage-pipeline';
+import { eliminatePlayer } from './player-elimination';
 import { executeEffect, processHostDefeated, resetCardState } from '../effects';
 import {
   getEffectiveHeroStats,
@@ -1028,7 +1029,13 @@ export function applyCalculatedAttackDamage(
               onomatopoeia: 'OVERKILL SPILLOVER!',
             });
             if (player.health <= 0) {
-              state.winner = 'VILLAIN';
+              dispatchDefeat(state, {
+                targetPlayerId: player.id,
+                targetInstanceId: player.id,
+                targetType: 'HERO',
+                defeatSource: ENEMY_ATTACK_DEFEAT,
+              });
+              eliminatePlayer(state, player.id);
             }
           }
         }
@@ -1100,7 +1107,7 @@ export function applyCalculatedAttackDamage(
           targetType: 'HERO',
           defeatSource: ENEMY_ATTACK_DEFEAT,
         });
-        state.winner = 'VILLAIN';
+        eliminatePlayer(state, player.id);
       }
     }
   }
@@ -1352,8 +1359,9 @@ export function step7_resolvePostAttackAndRetaliate(
     }
   }
 
-  // Forced Responses on minion attack (e.g. Sandman 01102, Yon-Rogg 01177)
-  if (attackContext.attackerType === 'MINION' && attackContext.attackerCard) {
+  // Forced Responses on minion attack (e.g. Sandman 01102, Yon-Rogg 01177). An attack whose target
+  // was eliminated has ended (RR v1.8 Player Elimination).
+  if (player && attackContext.attackerType === 'MINION' && attackContext.attackerCard) {
     const minion = attackContext.attackerCard;
     const abilities = minion.card.enrichment?.abilities || [];
     for (const ability of abilities) {

@@ -278,6 +278,7 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
     it('does NOT deal Retaliate damage if defending hero is defeated', () => {
       (state.players[0].hero as any).keywords = [{ keyword: 'Retaliate', amount: 2 }];
       state.players[0].health = 1; // 1 HP left, will be defeated by Rhino ATK 2+
+      const hero = state.players[0];
 
       const endState = executeEnemyAttackSynchronously(
         state,
@@ -286,8 +287,8 @@ describe('Feature: Parameterized Keyword Stacking & Retaliate Value Accumulation
         'TAKE_UNDEFENDED',
       );
 
-      // Hero defeated, villain takes 0 retaliate damage
-      expect(endState.players[0].health).toBe(0);
+      // Hero defeated and eliminated (#246), villain takes 0 retaliate damage
+      expect(hero.health).toBe(0);
       expect(endState.villain.health).toBe(14); // Rhino I base HP unchanged
     });
 

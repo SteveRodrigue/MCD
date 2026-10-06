@@ -142,11 +142,12 @@ describe('Sub-Milestone 2B-3: Damage Prevention, Overkill, Retaliate & Direct Da
       state.players[0].health = 1; // 1 HP left
 
       const initialVillainHp = state.villain.health;
+      const hero = state.players[0];
 
       executeEnemyAttackSynchronously(state, { type: 'VILLAIN' }, 'p1', 'TAKE_UNDEFENDED');
 
-      // Hero defeated
-      expect(state.players[0].health).toBe(0);
+      // Hero defeated and eliminated (#246)
+      expect(hero.health).toBe(0);
       // Villain took 0 retaliate damage because hero was defeated
       expect(state.villain.health).toBe(initialVillainHp);
     });

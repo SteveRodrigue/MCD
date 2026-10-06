@@ -11,6 +11,7 @@ import {
 } from '@engine/models';
 import { getEffectiveRetaliate } from './stat-calculator';
 import { handleVillainDefeat } from './scenario-helpers';
+import { eliminatePlayer } from './player-elimination';
 import { dispatchTrigger, type DefeatSource } from '../triggers/trigger-dispatcher';
 import type { TriggerCallNode } from '../errors/infinite-loop-error';
 import { moveDefeatedCardToPile, isEncounterCard, processHostDefeated } from '../effects';
@@ -435,7 +436,7 @@ export function applyDamageToTarget(
             targetType: 'PLAYER',
             defeatSource,
           });
-          state.winner = 'VILLAIN';
+          eliminatePlayer(state, player.id);
         }
         break;
       }

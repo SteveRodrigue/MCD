@@ -510,6 +510,8 @@ export interface GameState {
   firstPlayerIndex: number;
   activePlayerIndex: number;
   players: PlayerState[];
+  /** Players removed from the game by elimination (#246, RR v1.8 Player Elimination); `players` holds only who is still playing. */
+  eliminatedPlayers?: PlayerState[];
 
   /**
    * Multi-Villain Collection & Active Counter (#194, ADR-0076). `villains` is canonical.
@@ -574,6 +576,14 @@ export function getActivePlayer(state: GameState): PlayerState {
     return state.players[idx] || state.players[0];
   }
   throw new Error('GameState has no players initialized');
+}
+
+/**
+ * The number the per-player icon multiplies by: the players who started the scenario. An
+ * eliminated player still counts (RR v1.8 Per Player Icon, #246).
+ */
+export function getPerPlayerCount(state: GameState): number {
+  return state.players.length + (state.eliminatedPlayers?.length ?? 0);
 }
 
 /**

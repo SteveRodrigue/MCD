@@ -11,6 +11,7 @@ import {
   setActiveVillain,
   replaceVillain,
   replaceActiveMainScheme,
+  getPerPlayerCount,
 } from '@engine/models';
 import { cardCatalog } from '../../../../data/importer/card-loader';
 import { createCardInstance } from '../../../state/card-instance';
@@ -156,7 +157,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     const villain = getVillainById(state, defeatedVillainInstanceId) || getActiveVillain(state);
     const currentCode = villain.card.code;
     const difficulty = state.difficulty || 'STANDARD';
-    const numPlayers = state.players.length || 1;
+    const numPlayers = getPerPlayerCount(state) || 1;
 
     // Skirmish Mode: Stage I defeated -> Immediate Victory
     if (difficulty === 'SKIRMISH') {
@@ -254,9 +255,8 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
         };
       }
     }
-    // Hero survival check
-    const allHeroesDefeated = state.players.every((p) => p.health <= 0);
-    if (allHeroesDefeated && state.players.length > 0) {
+    // Hero survival check: a defeated hero leaves state.players (#246), the group loses with the last one
+    if (state.players.length === 0) {
       return { winner: 'VILLAIN', reason: 'All heroes have been defeated.' };
     }
     return null;
@@ -319,7 +319,7 @@ export class RhinoScenarioPlugin implements ScenarioPlugin {
     if (foundInstance) {
       const sideSchemeCard = foundInstance.card as SideSchemeCard;
       const baseThreat =
-        sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+        sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
       state.sideSchemes.push({
         instanceId: foundInstance.instanceId,
         card: sideSchemeCard,

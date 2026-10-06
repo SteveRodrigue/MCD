@@ -26,6 +26,7 @@ import {
   getVillainById,
   PendingSequence,
   DamagedCharacter,
+  getPerPlayerCount,
 } from '@engine/models';
 import { handleVillainDefeat } from '../pipeline/scenario-helpers';
 import { matchesCardFilter } from '../filters/card-filter';
@@ -884,6 +885,22 @@ function dealDamageToIdentity(
   return applyAbilityDamage(state, playerTargetRef(player), amount, opts, {
     dispatchDamageTaken: true,
     triggerChain: opts.triggerChain,
+  }).state;
+}
+
+/** Damage a player assigns to a hero while distributing points: through the damage pipeline. */
+export function dealDistributedDamageToPlayer(
+  state: GameState,
+  player: PlayerState,
+  amount: number,
+  sourceCardInstance?: CardInstance,
+): GameState {
+  return applyAbilityDamage(state, playerTargetRef(player), amount, {
+    sourceType: 'CARD_EFFECT',
+    sourcePlayerId: player.id,
+    sourceCardInstance,
+    isAttack: false,
+    hasPiercing: false,
   }).state;
 }
 
@@ -2044,8 +2061,8 @@ export function executeStep(
         // 1. Villain and minions
         state = dealDamageToEnemies(state, amount, state.players, damageOpts);
 
-        // 2. Heroes
-        for (const p of state.players) {
+        // 2. Heroes. A snapshot: a hero eliminated by this damage leaves state.players (#246).
+        for (const p of [...state.players]) {
           state = applyAbilityDamage(state, playerTargetRef(p), amount, damageOpts).state;
         }
 
@@ -2471,13 +2488,12 @@ export function executeStep(
                 targetId === 'villain' ? getActiveVillain(state) : getVillainById(state, targetId);
 
               if (targetPlayer) {
-                const toughIdx = targetPlayer.statusCards.indexOf(StatusCard.TOUGH);
-                if (toughIdx !== -1) {
-                  targetPlayer.statusCards.splice(toughIdx, 1);
-                } else {
-                  targetPlayer.health = Math.max(0, targetPlayer.health - amount);
-                  if (targetPlayer.health <= 0) state.winner = 'VILLAIN';
-                }
+                state = dealDistributedDamageToPlayer(
+                  state,
+                  targetPlayer,
+                  amount,
+                  context.sourceCardInstance,
+                );
               } else if (targetVillain) {
                 const vToughIdx = targetVillain.statusCards.indexOf(StatusCard.TOUGH);
                 if (vToughIdx !== -1) {
@@ -2663,13 +2679,7 @@ export function executeStep(
 
       // 3. Headless fallback: deterministic default
       if (allocationDomain === 'DAMAGE') {
-        const toughIdx = player.statusCards.indexOf(StatusCard.TOUGH);
-        if (toughIdx !== -1) {
-          player.statusCards.splice(toughIdx, 1);
-        } else {
-          player.health = Math.max(0, player.health - budget);
-          if (player.health <= 0) state.winner = 'VILLAIN';
-        }
+        state = dealDistributedDamageToPlayer(state, player, budget, context.sourceCardInstance);
       } else if (allocationDomain === 'THREAT_REMOVAL') {
         if (getActiveMainScheme(state)) {
           getActiveMainScheme(state).threat = Math.max(
@@ -3944,7 +3954,7 @@ export function executeStep(
         if (toZone === 'SIDE_SCHEMES' || cardInst.card.type === CardType.SIDE_SCHEME) {
           const sideCard = cardInst.card as SideSchemeCard;
           const baseThreat =
-            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : state.players.length);
+            sideCard.baseThreat * (sideCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
           state.sideSchemes.push({
             instanceId: cardInst.instanceId,
             card: sideCard,
@@ -4265,7 +4275,7 @@ export function executeStep(
         { state, player },
       );
       const isPerPlayer = !!(step.effectParams?.perPlayer || step.effectParams?.amountPerPlayer);
-      const amount = isPerPlayer ? baseAmount * state.players.length : baseAmount;
+      const amount = isPerPlayer ? baseAmount * getPerPlayerCount(state) : baseAmount;
       const targetParam =
         (step.effectParams?.target as string) ||
         (step.effectParams?.targetInstanceId ? 'CHOSEN_SCHEME' : undefined) ||
@@ -4843,7 +4853,7 @@ export function executeStep(
               const sideSchemeCard = card.card as SideSchemeCard;
               const baseThreat =
                 sideSchemeCard.baseThreat *
-                (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+                (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
               state.sideSchemes.push({
                 instanceId: card.instanceId,
                 card: sideSchemeCard,

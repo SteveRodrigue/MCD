@@ -14,6 +14,7 @@ import {
   cloneGameState,
   getActiveVillain,
   getActiveMainScheme,
+  getPerPlayerCount,
 } from '@engine/models';
 import { dispatchTrigger } from '../triggers';
 import { executeEffect } from '../effects';
@@ -46,7 +47,7 @@ export {
  */
 export function step1_placeThreat(state: GameState): GameState {
   state.villainPhaseStep = VillainPhaseStep.MAIN_SCHEME_THREAT;
-  const playerCount = state.players.length;
+  const playerCount = getPerPlayerCount(state);
 
   // Escalation threat per player + acceleration tokens + side scheme acceleration icons
   let totalThreatToAdd =
@@ -576,9 +577,14 @@ export function step4_revealEncounterCards(
   if (state.winner) return state;
   state.villainPhaseStep = VillainPhaseStep.REVEAL_ENCOUNTER_CARDS;
 
-  for (let i = 0; i < state.players.length; i++) {
-    const playerIdx = (state.firstPlayerIndex + i) % state.players.length;
-    const player = state.players[playerIdx];
+  // Player ids in player order, taken before any reveal: a reveal can eliminate a player (#246),
+  // which shifts the indices of the others.
+  const playerOrder = state.players.map(
+    (_, i) => state.players[(state.firstPlayerIndex + i) % state.players.length].id,
+  );
+  for (const playerId of playerOrder) {
+    const player = state.players.find((p) => p.id === playerId);
+    if (!player) continue;
 
     while (player.dealtEncounterCards.length > 0) {
       const cardInstance = player.dealtEncounterCards.shift()!;
@@ -690,7 +696,7 @@ export function resolveActiveEncounterCardAfterInterrupt(
   } else if (card.type === CardType.SIDE_SCHEME) {
     const sideSchemeCard = card as SideSchemeCard;
     const baseThreat =
-      sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : state.players.length);
+      sideSchemeCard.baseThreat * (sideSchemeCard.baseThreatFixed ? 1 : getPerPlayerCount(state));
     state.sideSchemes.push({
       instanceId: cardInstance.instanceId,
       card: sideSchemeCard,

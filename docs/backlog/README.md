@@ -13,7 +13,7 @@
 
 Prompt: `Continue work on Marvel Champions Digital. Follow docs/backlog/README.md, then take the next task of docs/backlog/teamwork_status_and_next_target.md.`
 
-1. `rtk git pull`, `rtk git status`, `rtk npm test` (baseline in the status file header; #217 is flaky: rerun once before assuming you broke something).
+1. `rtk git pull`, `rtk git status`, `rtk npm test` (baseline in the status file header).
 2. Read the status file (sections 1 to 4) and the issue you take: the first item of section 3.1 not done. Say which in one line.
 3. Write the plan (below), stop for approval, then work test-first.
 
